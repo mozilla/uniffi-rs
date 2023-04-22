@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
-use crate::MergeWith;
+use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -64,25 +64,14 @@ impl Config {
     }
 }
 
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            package_name: Some(format!("uniffi.{}", ci.namespace())),
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            custom_types: HashMap::new(),
-            external_packages: HashMap::new(),
-        }
-    }
-}
+impl BindingsConfig for Config {
+    const TOML_KEY: &'static str = "kotlin";
 
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            package_name: self.package_name.merge_with(&other.package_name),
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            custom_types: self.custom_types.merge_with(&other.custom_types),
-            external_packages: self.external_packages.merge_with(&other.external_packages),
-        }
+    fn update_from_ci(&mut self, ci: &ComponentInterface) {
+        self.package_name
+            .get_or_insert_with(|| format!("uniffi.{}", ci.namespace()));
+        self.cdylib_name
+            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
     }
 }
 

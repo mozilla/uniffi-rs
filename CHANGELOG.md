@@ -24,6 +24,7 @@
   but any string could be used as long as it was consistent with the external type map in
   `uniffi.toml`.
 - `External` types must be available in the Rust crate root.
+- External bindings: The `ExternalBindingsConfig` trait was replaced with `BindingsConfig`. External bindings implementations will need to make minor changes to implement the new trait instead.
 
 ### What's changed
 

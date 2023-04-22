@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 
 use crate::interface::*;
-use crate::MergeWith;
+use crate::BindingsConfig;
 
 const RESERVED_WORDS: &[&str] = &[
     "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do", "else",
@@ -47,21 +47,12 @@ impl Config {
     }
 }
 
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            cdylib_path: None,
-        }
-    }
-}
+impl BindingsConfig for Config {
+    const TOML_KEY: &'static str = "ruby";
 
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            cdylib_path: self.cdylib_path.merge_with(&other.cdylib_path),
-        }
+    fn update_from_ci(&mut self, ci: &ComponentInterface) {
+        self.cdylib_name
+            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
     }
 }
 

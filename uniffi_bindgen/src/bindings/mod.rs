@@ -12,7 +12,6 @@ use camino::Utf8Path;
 use serde::{Deserialize, Serialize};
 
 use crate::interface::ComponentInterface;
-use crate::MergeWith;
 
 pub mod kotlin;
 pub mod python;
@@ -80,35 +79,13 @@ impl TryFrom<String> for TargetLanguage {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    kotlin: kotlin::Config,
+    pub(crate) kotlin: kotlin::Config,
     #[serde(default)]
-    swift: swift::Config,
+    pub(crate) swift: swift::Config,
     #[serde(default)]
-    python: python::Config,
+    pub(crate) python: python::Config,
     #[serde(default)]
-    ruby: ruby::Config,
-}
-
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            kotlin: ci.into(),
-            swift: ci.into(),
-            python: ci.into(),
-            ruby: ci.into(),
-        }
-    }
-}
-
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            kotlin: self.kotlin.merge_with(&other.kotlin),
-            swift: self.swift.merge_with(&other.swift),
-            python: self.python.merge_with(&other.python),
-            ruby: self.ruby.merge_with(&other.ruby),
-        }
-    }
+    pub(crate) ruby: ruby::Config,
 }
 
 /// Generate foreign language bindings from a compiled `uniffi` library.
