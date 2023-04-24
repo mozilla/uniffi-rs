@@ -426,7 +426,9 @@ pub mod filters {
             Some(t) => t.canonical_name().to_snake_case(),
             None => "void".into(),
         };
-        Ok(format!("uniffi_async_callback_{return_string}__{throws_string}"))
+        Ok(format!(
+            "uniffi_async_callback_{return_string}__{throws_string}"
+        ))
     }
 
     pub fn literal_py(
