@@ -85,6 +85,14 @@ jobs:
             # Ensures that all examples are built and avaiable
             cargo build
       - run: cargo test
+      - run:
+          name: mypy Python typechecks
+          command: |
+            pip install mypy
+            for file in $(find target -name "*.py"); do
+              mypy "$file";
+            done
+
   Rust and Foreign Language tests - min supported rust:
     docker:
       - image: janerik/uniffi-ci-test:latest
