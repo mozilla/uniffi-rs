@@ -324,7 +324,7 @@ impl CodeOracle for KotlinCodeOracle {
             FfiType::ForeignExecutorHandle => "USize".to_string(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
             FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", return_type.canonical_name(),)
+                format!("UniFfiFutureCallback{}", return_type.canonical_name())
             }
             FfiType::FutureCallbackData => "USize".to_string(),
         }
@@ -395,13 +395,11 @@ pub mod filters {
     }
 
     pub fn future_continuation_type(result_type: &ResultType) -> Result<String, askama::Error> {
-        Ok(format!(
-            "Continuation<{}>",
-            match &result_type.return_type {
-                Some(t) => type_name(t)?,
-                None => "Unit".into(),
-            }
-        ))
+        let return_type_name = match &result_type.return_type {
+            Some(t) => type_name(t)?,
+            None => "Unit".into(),
+        };
+        Ok(format!("Continuation<{return_type_name}>"))
     }
 
     pub fn render_literal(

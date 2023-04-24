@@ -86,7 +86,7 @@ impl FfiType {
             Self::ForeignExecutorHandle => "ForeignExecutorHandle".into(),
             Self::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
             Self::FutureCallback { return_type } => {
-                format!("FutureCallback{}", return_type.canonical_name(),)
+                format!("FutureCallback{}", return_type.canonical_name())
             }
             Self::FutureCallbackData => "FutureCallbackData".into(),
         }

@@ -61,6 +61,7 @@ impl ForeignExecutorTester {
         self.last_result.lock().unwrap().take()
     }
 }
+
 #[derive(uniffi::Record)]
 pub struct TestResult {
     pub call_happened_in_different_thread: bool,

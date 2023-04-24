@@ -201,7 +201,7 @@ where
 
     /// Wake up soon and poll our future.
     ///
-    /// This method ensures that a call to `do_wake()` is scheduled.  One one call will be scheduled
+    /// This method ensures that a call to `do_wake()` is scheduled.  Only one call will be scheduled
     /// at any time, even if `wake_soon` called multiple times from multiple threads.
     pub fn wake(self: Pin<Arc<Self>>) {
         if self.wake_counter.fetch_add(1, Ordering::Relaxed) == 0 {
