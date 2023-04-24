@@ -65,23 +65,23 @@ This is it, you have an MVP integration of UniFFI in your project.
 ## Running uniffi-bindgen using a crate
 
 Use `generate --crate` to foreign bindings by specifying a Rust crate.  This generation mode can be
-more convenient that specifying the UDL file -- especially if when dependent crates also use UniFFI.
+more convenient than specifying the UDL file -- especially when dependent crates also use UniFFI.
 
 From the `example/arithmetic` directory, run:
 ```
 cargo run --bin uniffi-bindgen generate --crate uniffi-example-arithmetic --language kotlin --out-dir out
 ```
 
-The check out the `out` directory.
+Then check out the `out` directory.
 
 When using crate mode:
-  - If the any dependent crates that use UniFFI, will also have bindings generated for them.
+  - If any dependent crates use UniFFI, they will also have bindings generated for them.
   - The `cdylib_name` and `kotlin.external_packages` fields do not need to be specified
     `uniffi.toml`.
 
 Crate mode adds some extra requirements:
   - It must be run from within the cargo workspace of your project
   - There must be exactly 1 UDL file used when compiling the Rust library.  However, crates can have
-    multiple UDL files if they have feature flag system that ensures only one is used for any
-    particular build.
+    multiple UDL files as long as they ensure only one is used for any particular build,
+    e.g. by using feature flags.
   - Rust sources must use `uniffi::include_scaffolding!` to include the scaffolding code.

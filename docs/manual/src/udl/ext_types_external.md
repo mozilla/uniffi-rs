@@ -66,11 +66,10 @@ which varies slightly for each language:
 
 ### Kotlin
 
-For Kotlin, "crate mode" generation with `generate --crate [crate-name]` is recommended when using
-exteral types. If you use `generate [udl-path]` then the generated code needs to know how to import
-the external types from the Kotlin module that corresponds to the Rust crate.  By default, UniFFI
-assumes that the Kotlin module name matches the Rust crate name, but this can be configured in
-`uniffi.toml` with an entry like this:
+For Kotlin, "crate mode" generation with `generate --crate [crate-name]` is recommended when using external types.
+If you use `generate [udl-path]` then the generated code needs to know how to import
+the external types from the Kotlin module that corresponds to the Rust crate.
+By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in `uniffi.toml` with an entry like this:
 
 ```
 [bindings.kotlin.external_packages]

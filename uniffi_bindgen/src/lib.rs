@@ -203,7 +203,7 @@ pub trait BindingGenerator: Sized {
     ///
     /// # Arguments
     /// - `ci`: A [`ComponentInterface`] representing the interface
-    /// - `config`: A instance of the [`BindingsConfig`] associated with this type
+    /// - `config`: An instance of the [`BindingsConfig`] associated with this type
     /// - `out_dir`: The path to where the binding generator should write the output bindings
     fn write_bindings(
         &self,
