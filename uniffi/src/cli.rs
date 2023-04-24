@@ -56,10 +56,6 @@ enum Commands {
         #[clap(long, short)]
         out_dir: Option<Utf8PathBuf>,
 
-        /// Path to the optional uniffi config file. If not provided, uniffi-bindgen will try to guess it from the UDL's file location.
-        #[clap(long, short)]
-        config: Option<Utf8PathBuf>,
-
         /// Do not try to format the generated bindings.
         #[clap(long, short)]
         no_format: bool,
@@ -96,7 +92,7 @@ pub fn run_main() -> anyhow::Result<()> {
                 }
                 let out_dir = out_dir.expect("--out-dir is required when using --crate");
                 if language.is_empty() {
-                    panic!("no languages specified")
+                    panic!("please specify at least one language with --language")
                 }
                 uniffi_bindgen::crate_mode::generate_bindings(
                     &source, &language, &out_dir, !no_format,
@@ -114,13 +110,11 @@ pub fn run_main() -> anyhow::Result<()> {
         }
         Commands::Scaffolding {
             out_dir,
-            config,
             no_format,
             udl_file,
         } => {
             uniffi_bindgen::generate_component_scaffolding(
                 &udl_file,
-                config.as_deref(),
                 out_dir.as_deref(),
                 !no_format,
             )?;

@@ -121,21 +121,18 @@ pub trait BindingsConfig: DeserializeOwned {
     const TOML_KEY: &'static str;
 
     /// Update missing values using the `ComponentInterface`
-    #[allow(unused)]
-    fn update_from_ci(&mut self, ci: &ComponentInterface) {}
+    fn update_from_ci(&mut self, ci: &ComponentInterface);
 
     /// Update missing values using the dylib file for the main crate, when in crate mode.
     ///
     /// cdylib_name will be the library filename without the leading `lib` and trailing extension
-    #[allow(unused)]
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {}
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str);
 
     /// Update missing values from config instances from dependent crates
     ///
     /// config_map maps crate names to config instances. This is mostly used to set up external
     /// types.
-    #[allow(unused)]
-    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>) {}
+    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>);
 }
 
 fn load_bindings_config<BC: BindingsConfig>(
@@ -159,6 +156,10 @@ pub struct EmptyBindingsConfig;
 
 impl BindingsConfig for EmptyBindingsConfig {
     const TOML_KEY: &'static str = "";
+
+    fn update_from_ci(&mut self, _ci: &ComponentInterface) {}
+    fn update_from_cdylib_name(&mut self, _cdylib_name: &str) {}
+    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 // Load the binding-specific config
@@ -247,7 +248,6 @@ pub fn generate_external_bindings(
 // such as the `extern "C"` function definitions and record data types.
 pub fn generate_component_scaffolding(
     udl_file: &Utf8Path,
-    _config_file_override: Option<&Utf8Path>,
     out_dir_override: Option<&Utf8Path>,
     format_code: bool,
 ) -> Result<()> {

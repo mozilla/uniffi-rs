@@ -121,6 +121,8 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| cdylib_name.to_string());
     }
+
+    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 /// Generate UniFFI component bindings for Swift, as strings in memory.

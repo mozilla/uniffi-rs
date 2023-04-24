@@ -109,6 +109,8 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| cdylib_name.to_string());
     }
+
+    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.

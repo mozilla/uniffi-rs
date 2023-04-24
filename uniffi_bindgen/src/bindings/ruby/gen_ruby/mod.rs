@@ -7,6 +7,7 @@ use askama::Template;
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
+use std::collections::HashMap;
 
 use crate::interface::*;
 use crate::BindingsConfig;
@@ -59,6 +60,8 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| cdylib_name.to_string());
     }
+
+    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 #[derive(Template)]

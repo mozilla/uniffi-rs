@@ -25,6 +25,7 @@
   `uniffi.toml`.
 - `External` types must be available in the Rust crate root.
 - External bindings: The `ExternalBindingsConfig` trait was replaced with `BindingsConfig`. External bindings implementations will need to make minor changes to implement the new trait instead.
+- Removed support for the `--config` flag when running the `scaffolding` command.  This flag has never an effect, because there was no scaffolding configuration options.
 
 ### What's changed
 
