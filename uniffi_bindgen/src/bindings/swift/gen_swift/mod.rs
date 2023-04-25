@@ -166,7 +166,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
 /// This template is a bit different than others in that it stores internal state from the render
 /// process.  Make sure to only call `render()` once.
 #[derive(Template)]
-#[template(syntax = "kt", escape = "none", path = "Types.swift")]
+#[template(syntax = "swift", escape = "none", path = "Types.swift")]
 pub struct TypeRenderer<'a> {
     config: &'a Config,
     ci: &'a ComponentInterface,
@@ -186,7 +186,7 @@ impl<'a> TypeRenderer<'a> {
         }
     }
 
-    // The following methods are used by the `Types.kt` macros.
+    // The following methods are used by the `Types.swift` macros.
 
     // Helper for the including a template, but only once.
     //
