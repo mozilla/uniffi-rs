@@ -452,4 +452,30 @@ impl ThreadsafeCounter {
     }
 }
 
+#[derive(Default)]
+pub struct IFirst;
+
+impl IFirst {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn compare(&self, _other: Option<Arc<ISecond>>) -> bool {
+        false
+    }
+}
+
+#[derive(Default)]
+pub struct ISecond;
+
+impl ISecond {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn compare(&self, _other: Option<Arc<IFirst>>) -> bool {
+        false
+    }
+}
+
 uniffi::include_scaffolding!("coverall");
