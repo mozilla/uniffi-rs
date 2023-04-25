@@ -209,3 +209,21 @@ interface TestTrait {
     /// Returns what was previously set via `take_other()`, or null.
     TestTrait? get_other();
 };
+
+// Forward/backward declarations are fine in UDL.
+// Running the Python tests & type checks will ensure this works,
+// no function calls needed
+
+interface IFirst {
+  constructor();
+
+  // Handling optional with a default value
+  boolean compare(optional ISecond? other = null);
+};
+
+interface ISecond {
+  constructor();
+
+  // Default only
+  boolean compare(IFirst? other);
+};
