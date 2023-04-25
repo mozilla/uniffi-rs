@@ -638,7 +638,7 @@
 /// This template is a bit different than others in that it stores internal state from the render
 /// process.  Make sure to only call `render()` once.
 </span><span class="attribute">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;kt&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.swift&quot;</span>)]
+#[template(syntax = <span class="string">&quot;swift&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.swift&quot;</span>)]
 </span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
     config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
@@ -658,7 +658,7 @@
         }
     }
 
-    <span class="comment">// The following methods are used by the `Types.kt` macros.
+    <span class="comment">// The following methods are used by the `Types.swift` macros.
 
     // Helper for the including a template, but only once.
     //
