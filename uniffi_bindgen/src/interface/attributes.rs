@@ -308,6 +308,12 @@ impl<T: TryInto<InterfaceAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
 #[derive(Debug, Clone, Checksum, Default)]
 pub(super) struct ConstructorAttributes(Vec<Attribute>);
 
+impl FromIterator<Attribute> for ConstructorAttributes {
+    fn from_iter<T: IntoIterator<Item = Attribute>>(iter: T) -> Self {
+        Self(Vec::from_iter(iter))
+    }
+}
+
 impl ConstructorAttributes {
     pub(super) fn get_throws_err(&self) -> Option<&str> {
         self.0.iter().find_map(|attr| match attr {

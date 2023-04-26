@@ -4,7 +4,7 @@ use proc_macro2::Span;
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    LitStr, Token,
+    Attribute, LitStr, PathSegment, Token,
 };
 
 pub(crate) mod kw {
@@ -61,5 +61,66 @@ impl Spanned for AsyncRuntime {
         match self {
             AsyncRuntime::Tokio(span) => *span,
         }
+    }
+}
+
+#[derive(Default)]
+pub(super) struct ExportedImplFnAttributes {
+    pub constructor: bool,
+}
+
+impl ExportedImplFnAttributes {
+    pub fn new(attrs: &[Attribute]) -> syn::Result<Self> {
+        let mut this = Self::default();
+        for attr in attrs {
+            let segs = &attr.path.segments;
+
+            let fst = segs
+                .first()
+                .expect("attributes have at least one path segment");
+            if fst.ident != "uniffi" {
+                continue;
+            }
+            ensure_no_path_args(fst)?;
+
+            if !attr.tokens.is_empty() {
+                return Err(syn::Error::new_spanned(
+                    &attr.tokens,
+                    "attribute arguments are not currently recognized in this position",
+                ));
+            }
+
+            if segs.len() != 2 {
+                return Err(syn::Error::new_spanned(
+                    segs,
+                    "unsupported uniffi attribute",
+                ));
+            }
+            let snd = &segs[1];
+            ensure_no_path_args(snd)?;
+
+            match snd.ident.to_string().as_str() {
+                "constructor" => {
+                    if this.constructor {
+                        return Err(syn::Error::new_spanned(
+                            attr,
+                            "duplicate constructor attribute",
+                        ));
+                    }
+                    this.constructor = true;
+                }
+                _ => return Err(syn::Error::new_spanned(snd, "unknown uniffi attribute")),
+            }
+        }
+
+        Ok(this)
+    }
+}
+
+fn ensure_no_path_args(seg: &PathSegment) -> syn::Result<()> {
+    if seg.arguments.is_none() {
+        Ok(())
+    } else {
+        Err(syn::Error::new_spanned(&seg.arguments, "unexpected syntax"))
     }
 }

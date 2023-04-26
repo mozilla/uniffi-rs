@@ -43,6 +43,7 @@ impl<'a> MetadataReader<'a> {
             }
             .into(),
             codes::FUNC => self.read_func()?.into(),
+            codes::CONSTRUCTOR => self.read_constructor()?.into(),
             codes::METHOD => self.read_method()?.into(),
             codes::RECORD => self.read_record()?.into(),
             codes::ENUM => self.read_enum()?.into(),
@@ -169,6 +170,31 @@ impl<'a> MetadataReader<'a> {
             is_async,
             inputs,
             return_type,
+            throws,
+            checksum: self.calc_checksum(),
+        })
+    }
+
+    fn read_constructor(&mut self) -> Result<ConstructorMetadata> {
+        let module_path = self.read_string()?;
+        let self_name = self.read_string()?;
+        let name = self.read_string()?;
+        let inputs = self.read_inputs()?;
+        let (return_type, throws) = self.read_return_type()?;
+
+        return_type
+            .filter(|t| {
+                *t == Type::ArcObject {
+                    object_name: self_name.clone(),
+                }
+            })
+            .context("Constructor return type must be Arc<Self>")?;
+
+        Ok(ConstructorMetadata {
+            module_path,
+            self_name,
+            name,
+            inputs,
             throws,
             checksum: self.calc_checksum(),
         })

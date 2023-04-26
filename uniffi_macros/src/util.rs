@@ -148,13 +148,13 @@ pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> 
 }
 
 #[derive(Default)]
-struct ArgumentNotAllowedHere;
+pub struct ArgumentNotAllowedHere;
 
 impl UniffiAttributeArgs for ArgumentNotAllowedHere {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         Err(syn::Error::new(
             input.span(),
-            "UniFFI attributes are not currently recognized in this position",
+            "attribute arguments are not currently recognized in this position",
         ))
     }
 

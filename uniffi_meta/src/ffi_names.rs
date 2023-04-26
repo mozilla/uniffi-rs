@@ -14,13 +14,20 @@
 //! worth the code complexity to prevent it.
 
 /// FFI symbol name for a top-level function
-pub fn fn_ffi_symbol_name(namespace: &str, name: &str) -> String {
+pub fn fn_symbol_name(namespace: &str, name: &str) -> String {
     let name = name.to_ascii_lowercase();
     format!("uniffi_{namespace}_fn_func_{name}")
 }
 
-/// FFI symbol name for an object method or constructor
-pub fn method_fn_symbol_name(namespace: &str, object_name: &str, name: &str) -> String {
+/// FFI symbol name for an object constructor
+pub fn constructor_symbol_name(namespace: &str, object_name: &str, name: &str) -> String {
+    let object_name = object_name.to_ascii_lowercase();
+    let name = name.to_ascii_lowercase();
+    format!("uniffi_{namespace}_fn_constructor_{object_name}_{name}")
+}
+
+/// FFI symbol name for an object method
+pub fn method_symbol_name(namespace: &str, object_name: &str, name: &str) -> String {
     let object_name = object_name.to_ascii_lowercase();
     let name = name.to_ascii_lowercase();
     format!("uniffi_{namespace}_fn_method_{object_name}_{name}")
@@ -42,6 +49,13 @@ pub fn init_callback_fn_symbol_name(namespace: &str, callback_interface_name: &s
 pub fn fn_checksum_symbol_name(namespace: &str, name: &str) -> String {
     let name = name.to_ascii_lowercase();
     format!("uniffi_{namespace}_checksum_func_{name}")
+}
+
+/// FFI checksum symbol name for an object constructor
+pub fn constructor_checksum_symbol_name(namespace: &str, object_name: &str, name: &str) -> String {
+    let object_name = object_name.to_ascii_lowercase();
+    let name = name.to_ascii_lowercase();
+    format!("uniffi_{namespace}_checksum_constructor_{object_name}_{name}")
 }
 
 /// FFI checksum symbol name for an object method

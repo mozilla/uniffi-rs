@@ -10,7 +10,7 @@ assert one.inner == 123
 two = Two("a", None)
 assert take_two(two) == "a"
 
-obj = make_object()
+obj = Object()
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
 
 assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE

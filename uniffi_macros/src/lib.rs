@@ -214,3 +214,16 @@ pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
         }
     }.into()
 }
+
+/// A dummy macro that does nothing.
+///
+/// This exists so `#[uniffi::export]` can emit its input verbatim without
+/// causing unexpected errors, plus some extra code in case everything is okay.
+///
+/// It is important for `#[uniffi::export]` to not raise unexpected errors if it
+/// fails to parse the input as this happens very often when the proc-macro is
+/// run on an incomplete input by rust-analyzer while the developer is typing.
+#[proc_macro_attribute]
+pub fn constructor(_attrs: TokenStream, input: TokenStream) -> TokenStream {
+    input
+}

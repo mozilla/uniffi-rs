@@ -10,7 +10,7 @@ assert(one.inner == 123)
 let two = Two(a: "a", b: nil)
 assert(takeTwo(two: two) == "a")
 
-let obj = makeObject()
+let obj = Object()
 assert(obj.isHeavy() == .uncertain)
 
 assert(enumIdentity(value: .true) == .true)

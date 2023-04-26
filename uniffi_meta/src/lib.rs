@@ -123,11 +123,31 @@ pub struct FnMetadata {
 
 impl FnMetadata {
     pub fn ffi_symbol_name(&self) -> String {
-        fn_ffi_symbol_name(&self.module_path, &self.name)
+        fn_symbol_name(&self.module_path, &self.name)
     }
 
     pub fn checksum_symbol_name(&self) -> String {
         fn_checksum_symbol_name(&self.module_path, &self.name)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+pub struct ConstructorMetadata {
+    pub module_path: String,
+    pub self_name: String,
+    pub name: String,
+    pub inputs: Vec<FnParamMetadata>,
+    pub throws: Option<Type>,
+    pub checksum: u16,
+}
+
+impl ConstructorMetadata {
+    pub fn ffi_symbol_name(&self) -> String {
+        constructor_symbol_name(&self.module_path, &self.self_name, &self.name)
+    }
+
+    pub fn checksum_symbol_name(&self) -> String {
+        constructor_checksum_symbol_name(&self.module_path, &self.self_name, &self.name)
     }
 }
 
@@ -145,7 +165,7 @@ pub struct MethodMetadata {
 
 impl MethodMetadata {
     pub fn ffi_symbol_name(&self) -> String {
-        method_fn_symbol_name(&self.module_path, &self.self_name, &self.name)
+        method_symbol_name(&self.module_path, &self.self_name, &self.name)
     }
 
     pub fn checksum_symbol_name(&self) -> String {
@@ -272,6 +292,7 @@ pub fn checksum<T: Checksum>(val: &T) -> u16 {
 pub enum Metadata {
     Namespace(NamespaceMetadata),
     Func(FnMetadata),
+    Constructor(ConstructorMetadata),
     Method(MethodMetadata),
     Record(RecordMetadata),
     Enum(EnumMetadata),
@@ -294,6 +315,12 @@ impl From<NamespaceMetadata> for Metadata {
 impl From<FnMetadata> for Metadata {
     fn from(value: FnMetadata) -> Metadata {
         Self::Func(value)
+    }
+}
+
+impl From<ConstructorMetadata> for Metadata {
+    fn from(c: ConstructorMetadata) -> Self {
+        Self::Constructor(c)
     }
 }
 

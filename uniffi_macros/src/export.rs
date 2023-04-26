@@ -12,8 +12,8 @@ mod scaffolding;
 
 use self::{
     attributes::ExportAttributeArguments,
-    item::ExportItem,
-    scaffolding::{gen_fn_scaffolding, gen_method_scaffolding},
+    item::{ExportItem, ImplItem},
+    scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
 };
 
 // TODO(jplatte): Ensure no generics, …
@@ -33,17 +33,20 @@ pub(crate) fn expand_export(
     let metadata = ExportItem::new(item)?;
 
     match metadata {
-        ExportItem::Function { sig } => gen_fn_scaffolding(&sig, &mod_path, &args),
-        ExportItem::Impl {
-            methods,
-            self_ident,
-        } => {
-            let mut method_tokens = vec![];
-            for method in methods {
-                let sig = method?.sig;
-                method_tokens.push(gen_method_scaffolding(&sig, &mod_path, &self_ident, &args)?)
-            }
-            Ok(quote_spanned! { self_ident.span() => #(#method_tokens)* })
+        ExportItem::Function { sig } => gen_fn_scaffolding(sig, &mod_path, &args),
+        ExportItem::Impl { items, self_ident } => {
+            let item_tokens: TokenStream = items
+                .into_iter()
+                .map(|item| match item? {
+                    ImplItem::Constructor(sig) => {
+                        gen_constructor_scaffolding(sig, &mod_path, &self_ident, &args)
+                    }
+                    ImplItem::Method(sig) => {
+                        gen_method_scaffolding(sig, &mod_path, &self_ident, &args)
+                    }
+                })
+                .collect::<syn::Result<_>>()?;
+            Ok(quote_spanned! { self_ident.span() => #item_tokens })
         }
     }
 }

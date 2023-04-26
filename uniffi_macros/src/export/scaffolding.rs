@@ -8,12 +8,12 @@ use syn::{spanned::Spanned, FnArg, Pat};
 
 use super::{
     attributes::{AsyncRuntime, ExportAttributeArguments},
-    item::Signature,
+    item::{ConstructorSignature, FnSignature},
 };
 use crate::util::{create_metadata_items, ident_to_string, try_metadata_value_from_usize};
 
 pub(super) fn gen_fn_scaffolding(
-    sig: &Signature,
+    sig: FnSignature,
     mod_path: &str,
     arguments: &ExportAttributeArguments,
 ) -> syn::Result<TokenStream> {
@@ -21,7 +21,7 @@ pub(super) fn gen_fn_scaffolding(
     let name_s = ident_to_string(name);
 
     let ffi_ident = Ident::new(
-        &uniffi_meta::fn_ffi_symbol_name(mod_path, &name_s),
+        &uniffi_meta::fn_symbol_name(mod_path, &name_s),
         Span::call_site(),
     );
 
@@ -30,16 +30,16 @@ pub(super) fn gen_fn_scaffolding(
     let mut bits = ScaffoldingBits::new();
     bits.collect_params(&sig.inputs, ERROR_MSG);
     bits.set_rust_fn_call(quote! { #name });
-    let metadata_var = bits.gen_function_meta_static_var(sig, mod_path)?;
-    let scaffolding_func = gen_ffi_function(sig, ffi_ident, &bits, arguments);
+    let metadata_var = bits.gen_function_meta_static_var(&sig, mod_path)?;
+    let scaffolding_func = gen_ffi_function(&sig, ffi_ident, &bits, arguments);
     Ok(quote! {
         #scaffolding_func
         #metadata_var
     })
 }
 
-pub(super) fn gen_method_scaffolding(
-    sig: &Signature,
+pub(super) fn gen_constructor_scaffolding(
+    sig: ConstructorSignature,
     mod_path: &str,
     self_ident: &Ident,
     arguments: &ExportAttributeArguments,
@@ -48,7 +48,35 @@ pub(super) fn gen_method_scaffolding(
     let name_s = ident_to_string(ident);
 
     let ffi_ident = Ident::new(
-        &uniffi_meta::method_fn_symbol_name(mod_path, &ident_to_string(self_ident), &name_s),
+        &uniffi_meta::constructor_symbol_name(mod_path, &ident_to_string(self_ident), &name_s),
+        Span::call_site(),
+    );
+
+    const RECEIVER_ERROR: &str = "constructors must not have a self parameter";
+
+    let mut bits = ScaffoldingBits::new();
+    bits.collect_params(sig.inputs.iter().skip(1), RECEIVER_ERROR);
+    bits.set_rust_fn_call(quote! { #self_ident::#ident });
+
+    let metadata_var = bits.gen_constructor_meta_static_var(self_ident, &sig, mod_path);
+    let scaffolding_func = gen_ffi_function(&sig.into(), ffi_ident, &bits, arguments);
+    Ok(quote! {
+        #scaffolding_func
+        #metadata_var
+    })
+}
+
+pub(super) fn gen_method_scaffolding(
+    sig: FnSignature,
+    mod_path: &str,
+    self_ident: &Ident,
+    arguments: &ExportAttributeArguments,
+) -> syn::Result<TokenStream> {
+    let ident = &sig.ident;
+    let name_s = ident_to_string(ident);
+
+    let ffi_ident = Ident::new(
+        &uniffi_meta::method_symbol_name(mod_path, &ident_to_string(self_ident), &name_s),
         Span::call_site(),
     );
 
@@ -83,8 +111,8 @@ pub(super) fn gen_method_scaffolding(
         }
     };
 
-    let metadata_var = bits.gen_method_meta_static_var(self_ident, sig, mod_path);
-    let scaffolding_func = gen_ffi_function(sig, ffi_ident, &bits, arguments);
+    let metadata_var = bits.gen_method_meta_static_var(self_ident, &sig, mod_path);
+    let scaffolding_func = gen_ffi_function(&sig, ffi_ident, &bits, arguments);
     Ok(quote! {
         #scaffolding_func
         #metadata_var
@@ -190,16 +218,16 @@ impl ScaffoldingBits {
                     .concat_str(#meta_name)
                     .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
                 },
-            )
+            );
         }
     }
 
     fn set_rust_fn_call(&mut self, rust_fn_call: TokenStream) {
-        self.rust_fn_call = Some(rust_fn_call)
+        self.rust_fn_call = Some(rust_fn_call);
     }
 
     fn add_self_param(&mut self, param: TokenStream) {
-        self.params.insert(0, param)
+        self.params.insert(0, param);
     }
 
     fn rust_fn_call(&self) -> TokenStream {
@@ -214,7 +242,7 @@ impl ScaffoldingBits {
 
     fn gen_function_meta_static_var(
         &self,
-        sig: &Signature,
+        sig: &FnSignature,
         mod_path: &str,
     ) -> syn::Result<TokenStream> {
         let name = ident_to_string(&sig.ident);
@@ -243,10 +271,51 @@ impl ScaffoldingBits {
         ))
     }
 
+    fn gen_constructor_meta_static_var(
+        &self,
+        self_ident: &Ident,
+        sig: &ConstructorSignature,
+        mod_path: &str,
+    ) -> TokenStream {
+        let object_name = ident_to_string(self_ident);
+        let name = ident_to_string(&sig.ident);
+
+        let args_len = try_metadata_value_from_usize(
+            // Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
+            // params
+            self.param_lifts.len(),
+            "UniFFI limits functions to 256 arguments",
+        );
+        let metadata_expr = match args_len {
+            Ok(args_len) => {
+                let return_ty = &sig.output;
+                let arg_metadata_calls = &self.arg_metadata_calls;
+
+                quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_str(#name)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(
+                            <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META,
+                        )
+                }
+            }
+            Err(e) => e.into_compile_error(),
+        };
+
+        let symbol_name =
+            uniffi_meta::constructor_checksum_symbol_name(mod_path, &object_name, &name);
+        let name = format!("{object_name}_{name}");
+        create_metadata_items("constructor", &name, metadata_expr, Some(symbol_name))
+    }
+
     fn gen_method_meta_static_var(
         &self,
         self_ident: &Ident,
-        sig: &Signature,
+        sig: &FnSignature,
         mod_path: &str,
     ) -> TokenStream {
         let object_name = ident_to_string(self_ident);
@@ -287,7 +356,7 @@ impl ScaffoldingBits {
 }
 
 fn gen_ffi_function(
-    sig: &Signature,
+    sig: &FnSignature,
     ffi_ident: Ident,
     bits: &ScaffoldingBits,
     arguments: &ExportAttributeArguments,

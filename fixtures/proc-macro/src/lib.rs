@@ -31,6 +31,11 @@ pub struct Object;
 
 #[uniffi::export]
 impl Object {
+    #[uniffi::constructor]
+    fn new() -> Arc<Object> {
+        Arc::new(Object)
+    }
+
     fn is_heavy(&self) -> MaybeBool {
         MaybeBool::Uncertain
     }
@@ -44,11 +49,6 @@ fn make_one(inner: i32) -> One {
 #[uniffi::export]
 fn take_two(two: Two) -> String {
     two.a
-}
-
-#[uniffi::export]
-fn make_object() -> Arc<Object> {
-    Arc::new(Object)
 }
 
 // Type that's defined in the UDL and not wrapped with #[uniffi::export]

@@ -76,7 +76,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
-use uniffi_meta::{MethodMetadata, ObjectMetadata};
+use uniffi_meta::{ConstructorMetadata, MethodMetadata, ObjectMetadata};
 
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -605,6 +605,18 @@ impl ComponentInterface {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
         self.functions.push(defn);
+
+        Ok(())
+    }
+
+    pub(super) fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
+        let defn: Constructor = meta.into();
+
+        for arg in &defn.arguments {
+            self.types.add_known_type(&arg.type_)?;
+        }
+        object.constructors.push(defn);
 
         Ok(())
     }

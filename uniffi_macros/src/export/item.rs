@@ -5,13 +5,15 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
 
+use super::attributes::ExportedImplFnAttributes;
+
 pub(super) enum ExportItem {
     Function {
-        sig: Signature,
+        sig: FnSignature,
     },
     Impl {
         self_ident: Ident,
-        methods: Vec<syn::Result<Method>>,
+        items: Vec<syn::Result<ImplItem>>,
     },
 }
 
@@ -19,7 +21,7 @@ impl ExportItem {
     pub fn new(item: syn::Item) -> syn::Result<Self> {
         match item {
             syn::Item::Fn(item) => {
-                let sig = Signature::new(item.sig)?;
+                let sig = FnSignature::new(item.sig)?;
                 Ok(Self::Function { sig })
             }
             syn::Item::Impl(item) => Self::from_impl(item),
@@ -59,43 +61,51 @@ impl ExportItem {
             }
         };
 
-        let methods = item.items.into_iter().map(Method::new).collect();
+        let items = item
+            .items
+            .into_iter()
+            .map(|item| {
+                let impl_fn = match item {
+                    syn::ImplItem::Method(m) => m,
+                    _ => {
+                        return Err(syn::Error::new_spanned(
+                            item,
+                            "only fn's are supported in impl blocks annotated with uniffi::export",
+                        ));
+                    }
+                };
+
+                let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
+                let item = if attrs.constructor {
+                    ImplItem::Constructor(ConstructorSignature::new(impl_fn.sig)?)
+                } else {
+                    ImplItem::Method(FnSignature::new(impl_fn.sig)?)
+                };
+
+                Ok(item)
+            })
+            .collect();
 
         Ok(Self::Impl {
-            methods,
+            items,
             self_ident: self_ident.to_owned(),
         })
     }
 }
 
-pub(super) struct Method {
-    pub sig: Signature,
+pub(super) enum ImplItem {
+    Constructor(ConstructorSignature),
+    Method(FnSignature),
 }
 
-impl Method {
-    fn new(it: syn::ImplItem) -> syn::Result<Self> {
-        let sig = match it {
-            syn::ImplItem::Method(m) => Signature::new(m.sig)?,
-            _ => {
-                return Err(syn::Error::new_spanned(
-                    it,
-                    "only methods are supported in impl blocks annotated with uniffi::export",
-                ));
-            }
-        };
-
-        Ok(Self { sig })
-    }
-}
-
-pub(super) struct Signature {
+pub(super) struct FnSignature {
     pub ident: Ident,
     pub is_async: bool,
     pub inputs: Vec<syn::FnArg>,
     pub output: TokenStream,
 }
 
-impl Signature {
+impl FnSignature {
     fn new(item: syn::Signature) -> syn::Result<Self> {
         let output = match item.output {
             syn::ReturnType::Default => quote! { () },
@@ -108,6 +118,38 @@ impl Signature {
             inputs: item.inputs.into_iter().collect(),
             output,
         })
+    }
+}
+
+pub(super) struct ConstructorSignature {
+    pub ident: Ident,
+    pub inputs: Vec<syn::FnArg>,
+    pub output: TokenStream,
+}
+
+impl ConstructorSignature {
+    fn new(item: syn::Signature) -> syn::Result<Self> {
+        let output = match item.output {
+            syn::ReturnType::Default => quote! { () },
+            syn::ReturnType::Type(_, ty) => quote! { #ty },
+        };
+
+        Ok(Self {
+            ident: item.ident,
+            inputs: item.inputs.into_iter().collect(),
+            output,
+        })
+    }
+}
+
+impl From<ConstructorSignature> for FnSignature {
+    fn from(value: ConstructorSignature) -> Self {
+        Self {
+            ident: value.ident,
+            is_async: false,
+            inputs: value.inputs,
+            output: value.output,
+        }
     }
 }
 
