@@ -10,7 +10,7 @@ use crate::{
     util::{
         chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
         parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
-        AttributeSliceExt, UniffiAttribute,
+        AttributeSliceExt, UniffiAttributeArgs,
     },
 };
 
@@ -26,7 +26,7 @@ pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
     };
 
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attributes::<ErrorAttr>()?;
+    let attr = input.attrs.parse_uniffi_attr_args::<ErrorAttr>()?;
     let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr);
     let meta_static_var = error_meta_static_var(ident, &enum_, attr.flat.is_some())?;
 
@@ -35,11 +35,11 @@ pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
         .iter()
         .flat_map(|variant| {
             chain(
-                variant.attrs.attributes_not_allowed_here(),
+                variant.attrs.uniffi_attr_args_not_allowed_here(),
                 variant
                     .fields
                     .iter()
-                    .flat_map(|field| field.attrs.attributes_not_allowed_here()),
+                    .flat_map(|field| field.attrs.uniffi_attr_args_not_allowed_here()),
             )
         })
         .map(syn::Error::into_compile_error)
@@ -192,7 +192,7 @@ pub(crate) struct ErrorAttr {
     with_try_read: Option<kw::with_try_read>,
 }
 
-impl UniffiAttribute for ErrorAttr {
+impl UniffiAttributeArgs for ErrorAttr {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::tag) {

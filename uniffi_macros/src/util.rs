@@ -137,20 +137,20 @@ pub fn chain<T>(
     a.into_iter().chain(b)
 }
 
-pub trait UniffiAttribute: Default {
+pub trait UniffiAttributeArgs: Default {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self>;
     fn merge(self, other: Self) -> syn::Result<Self>;
 }
 
-pub fn parse_comma_separated<T: UniffiAttribute>(input: ParseStream<'_>) -> syn::Result<T> {
+pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> syn::Result<T> {
     let punctuated = input.parse_terminated::<T, Token![,]>(T::parse_one)?;
     punctuated.into_iter().try_fold(T::default(), T::merge)
 }
 
 #[derive(Default)]
-struct AttributeNotAllowedHere;
+struct ArgumentNotAllowedHere;
 
-impl UniffiAttribute for AttributeNotAllowedHere {
+impl UniffiAttributeArgs for ArgumentNotAllowedHere {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         Err(syn::Error::new(
             input.span(),
@@ -164,23 +164,21 @@ impl UniffiAttribute for AttributeNotAllowedHere {
 }
 
 pub trait AttributeSliceExt {
-    fn parse_uniffi_attributes<T: UniffiAttribute>(&self) -> syn::Result<T>;
-    fn attributes_not_allowed_here(&self) -> Option<syn::Error>;
+    fn parse_uniffi_attr_args<T: UniffiAttributeArgs>(&self) -> syn::Result<T>;
+    fn uniffi_attr_args_not_allowed_here(&self) -> Option<syn::Error> {
+        self.parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
+            .err()
+    }
 }
 
 impl AttributeSliceExt for [Attribute] {
-    fn parse_uniffi_attributes<T: UniffiAttribute>(&self) -> syn::Result<T> {
+    fn parse_uniffi_attr_args<T: UniffiAttributeArgs>(&self) -> syn::Result<T> {
         self.iter()
             .filter(|attr| attr.path.is_ident("uniffi"))
             .try_fold(T::default(), |res, attr| {
                 let parsed = attr.parse_args_with(parse_comma_separated)?;
                 res.merge(parsed)
             })
-    }
-
-    fn attributes_not_allowed_here(&self) -> Option<syn::Error> {
-        self.parse_uniffi_attributes::<AttributeNotAllowedHere>()
-            .err()
     }
 }
 
@@ -217,7 +215,7 @@ pub(crate) struct CommonAttr {
     pub tag: Option<Path>,
 }
 
-impl UniffiAttribute for CommonAttr {
+impl UniffiAttributeArgs for CommonAttr {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::tag) {

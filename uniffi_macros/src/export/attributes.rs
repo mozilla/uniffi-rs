@@ -1,4 +1,4 @@
-use crate::util::{either_attribute_arg, parse_comma_separated, UniffiAttribute};
+use crate::util::{either_attribute_arg, parse_comma_separated, UniffiAttributeArgs};
 
 use proc_macro2::Span;
 use syn::{
@@ -22,7 +22,7 @@ impl Parse for ExportAttributeArguments {
     }
 }
 
-impl UniffiAttribute for ExportAttributeArguments {
+impl UniffiAttributeArgs for ExportAttributeArguments {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let _: kw::async_runtime = input.parse()?;
         let _: Token![=] = input.parse()?;
