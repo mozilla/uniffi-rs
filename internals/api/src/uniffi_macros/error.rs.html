@@ -244,7 +244,7 @@
     util::{
         chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
         parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
-        AttributeSliceExt, UniffiAttribute,
+        AttributeSliceExt, UniffiAttributeArgs,
     },
 };
 
@@ -260,7 +260,7 @@
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;ErrorAttr&gt;()<span class="question-mark">?</span>;
+    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;ErrorAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr);
     <span class="kw">let </span>meta_static_var = error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())<span class="question-mark">?</span>;
 
@@ -269,11 +269,11 @@
         .iter()
         .flat_map(|variant| {
             chain(
-                variant.attrs.attributes_not_allowed_here(),
+                variant.attrs.uniffi_attr_args_not_allowed_here(),
                 variant
                     .fields
                     .iter()
-                    .flat_map(|field| field.attrs.attributes_not_allowed_here()),
+                    .flat_map(|field| field.attrs.uniffi_attr_args_not_allowed_here()),
             )
         })
         .map(syn::Error::into_compile_error)
@@ -426,7 +426,7 @@
     with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
 }
 
-<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>ErrorAttr {
+<span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ErrorAttr {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
         <span class="kw">if </span>lookahead.peek(kw::tag) {

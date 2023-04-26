@@ -242,61 +242,6 @@
 <span id="242">242</span>
 <span id="243">243</span>
 <span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -307,8 +252,7 @@
     ext::IdentExt,
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    visit_mut::VisitMut,
-    Attribute, Item, Path, Token, Type,
+    Attribute, Path, Token,
 };
 
 <span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
@@ -370,58 +314,6 @@
     </span><span class="kw">let </span>expanded_module_path = TokenStream::expand_expr(<span class="kw-2">&amp;</span>module_path_invoc)
         .map_err(|e| syn::Error::new(Span::call_site(), e))<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(syn::parse::&lt;syn::LitStr&gt;(expanded_module_path)<span class="question-mark">?</span>.value())
-}
-
-<span class="doccomment">/// Rewrite Self type alias usage in an impl block to the type itself.
-///
-/// For example,
-///
-/// ```ignore
-/// impl some::module::Foo {
-///     fn method(
-///         self: Arc&lt;Self&gt;,
-///         arg: Option&lt;Bar&lt;(), Self&gt;&gt;,
-///     ) -&gt; Result&lt;Self, Error&gt; {
-///         todo!()
-///     }
-/// }
-/// ```
-///
-/// will be rewritten to
-///
-///  ```ignore
-/// impl some::module::Foo {
-///     fn method(
-///         self: Arc&lt;some::module::Foo&gt;,
-///         arg: Option&lt;Bar&lt;(), some::module::Foo&gt;&gt;,
-///     ) -&gt; Result&lt;some::module::Foo, Error&gt; {
-///         todo!()
-///     }
-/// }
-/// ```
-</span><span class="kw">pub fn </span>rewrite_self_type(item: <span class="kw-2">&amp;mut </span>Item) {
-    <span class="kw">let </span>item = <span class="kw">match </span>item {
-        Item::Impl(i) =&gt; i,
-        <span class="kw">_ </span>=&gt; <span class="kw">return</span>,
-    };
-
-    <span class="kw">struct </span>RewriteSelfVisitor&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type);
-
-    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; VisitMut <span class="kw">for </span>RewriteSelfVisitor&lt;<span class="lifetime">&#39;a</span>&gt; {
-        <span class="kw">fn </span>visit_type_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, i: <span class="kw-2">&amp;mut </span>Type) {
-            <span class="kw">match </span>i {
-                Type::Path(p) <span class="kw">if </span>p.qself.is_none() &amp;&amp; p.path.is_ident(<span class="string">&quot;Self&quot;</span>) =&gt; {
-                    <span class="kw-2">*</span>i = <span class="self">self</span>.<span class="number">0</span>.clone();
-                }
-                <span class="kw">_ </span>=&gt; syn::visit_mut::visit_type_mut(<span class="self">self</span>, i),
-            }
-        }
-    }
-
-    <span class="kw">let </span><span class="kw-2">mut </span>visitor = RewriteSelfVisitor(<span class="kw-2">&amp;</span>item.self_ty);
-    <span class="kw">for </span>item <span class="kw">in </span><span class="kw-2">&amp;mut </span>item.items {
-        visitor.visit_impl_item_mut(item);
-    }
 }
 
 <span class="kw">pub fn </span>try_read_field(f: <span class="kw-2">&amp;</span>syn::Field) -&gt; TokenStream {
@@ -489,24 +381,24 @@
     a.into_iter().chain(b)
 }
 
-<span class="kw">pub trait </span>UniffiAttribute: Default {
+<span class="kw">pub trait </span>UniffiAttributeArgs: Default {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
 }
 
-<span class="kw">pub fn </span>parse_comma_separated&lt;T: UniffiAttribute&gt;(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;T&gt; {
+<span class="kw">pub fn </span>parse_comma_separated&lt;T: UniffiAttributeArgs&gt;(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;T&gt; {
     <span class="kw">let </span>punctuated = input.parse_terminated::&lt;T, <span class="macro">Token!</span>[,]&gt;(T::parse_one)<span class="question-mark">?</span>;
     punctuated.into_iter().try_fold(T::default(), T::merge)
 }
 
 <span class="attribute">#[derive(Default)]
-</span><span class="kw">struct </span>AttributeNotAllowedHere;
+</span><span class="kw">pub struct </span>ArgumentNotAllowedHere;
 
-<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>AttributeNotAllowedHere {
+<span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ArgumentNotAllowedHere {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Err</span>(syn::Error::new(
             input.span(),
-            <span class="string">&quot;UniFFI attributes are not currently recognized in this position&quot;</span>,
+            <span class="string">&quot;attribute arguments are not currently recognized in this position&quot;</span>,
         ))
     }
 
@@ -516,23 +408,21 @@
 }
 
 <span class="kw">pub trait </span>AttributeSliceExt {
-    <span class="kw">fn </span>parse_uniffi_attributes&lt;T: UniffiAttribute&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt;;
-    <span class="kw">fn </span>attributes_not_allowed_here(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;syn::Error&gt;;
+    <span class="kw">fn </span>parse_uniffi_attr_args&lt;T: UniffiAttributeArgs&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt;;
+    <span class="kw">fn </span>uniffi_attr_args_not_allowed_here(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;syn::Error&gt; {
+        <span class="self">self</span>.parse_uniffi_attr_args::&lt;ArgumentNotAllowedHere&gt;()
+            .err()
+    }
 }
 
 <span class="kw">impl </span>AttributeSliceExt <span class="kw">for </span>[Attribute] {
-    <span class="kw">fn </span>parse_uniffi_attributes&lt;T: UniffiAttribute&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt; {
+    <span class="kw">fn </span>parse_uniffi_attr_args&lt;T: UniffiAttributeArgs&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt; {
         <span class="self">self</span>.iter()
             .filter(|attr| attr.path.is_ident(<span class="string">&quot;uniffi&quot;</span>))
             .try_fold(T::default(), |res, attr| {
                 <span class="kw">let </span>parsed = attr.parse_args_with(parse_comma_separated)<span class="question-mark">?</span>;
                 res.merge(parsed)
             })
-    }
-
-    <span class="kw">fn </span>attributes_not_allowed_here(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;syn::Error&gt; {
-        <span class="self">self</span>.parse_uniffi_attributes::&lt;AttributeNotAllowedHere&gt;()
-            .err()
     }
 }
 
@@ -569,7 +459,7 @@
     <span class="kw">pub </span>tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
 }
 
-<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>CommonAttr {
+<span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>CommonAttr {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
         <span class="kw">if </span>lookahead.peek(kw::tag) {

@@ -129,7 +129,7 @@
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
+    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, attr.tag.as_ref());
     <span class="kw">let </span>meta_static_var = record_meta_static_var(ident, <span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
 

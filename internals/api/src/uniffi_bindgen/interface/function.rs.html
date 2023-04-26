@@ -481,7 +481,7 @@
         <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don&#39;t overwrite it in that case.
         </span><span class="kw">if </span><span class="self">self</span>.ffi_func.name.is_empty() {
-            <span class="self">self</span>.ffi_func.name = uniffi_meta::fn_ffi_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
+            <span class="self">self</span>.ffi_func.name = uniffi_meta::fn_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
         }
 
         <span class="self">self</span>.ffi_func.arguments = <span class="self">self</span>.arguments.iter().map(|arg| arg.into()).collect();

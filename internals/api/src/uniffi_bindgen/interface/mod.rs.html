@@ -1139,6 +1139,18 @@
 <span id="1139">1139</span>
 <span id="1140">1140</span>
 <span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1217,7 +1229,7 @@
 
 <span class="kw">pub mod </span>ffi;
 <span class="kw">pub use </span>ffi::{FfiArgument, FfiFunction, FfiType};
-<span class="kw">use </span>uniffi_meta::{MethodMetadata, ObjectMetadata};
+<span class="kw">use </span>uniffi_meta::{ConstructorMetadata, MethodMetadata, ObjectMetadata};
 
 <span class="comment">// This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -1746,6 +1758,18 @@
             <span class="macro">bail!</span>(<span class="string">&quot;Conflicting type definition for \&quot;{}\&quot;&quot;</span>, defn.name());
         }
         <span class="self">self</span>.functions.push(defn);
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_constructor_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ConstructorMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name);
+        <span class="kw">let </span>defn: Constructor = meta.into();
+
+        <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>defn.arguments {
+            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_)<span class="question-mark">?</span>;
+        }
+        object.constructors.push(defn);
 
         <span class="prelude-val">Ok</span>(())
     }

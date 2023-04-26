@@ -102,182 +102,108 @@
 <span id="102">102</span>
 <span id="103">103</span>
 <span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
-<span id="130">130</span>
-<span id="131">131</span>
-<span id="132">132</span>
-<span id="133">133</span>
-<span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
-<span class="kw">use </span>quote::{quote, quote_spanned};
-<span class="kw">use </span>syn::{
-    parse::{Parse, ParseStream},
-    spanned::Spanned,
-    LitStr, Token,
-};
+</span><span class="kw">use </span>proc_macro2::TokenStream;
+<span class="kw">use </span>quote::quote_spanned;
+<span class="kw">use </span>syn::{visit_mut::VisitMut, Item, Type};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>metadata;
+<span class="kw">mod </span>attributes;
+<span class="kw">mod </span>item;
 <span class="kw">mod </span>scaffolding;
 
-<span class="kw">pub use </span><span class="self">self</span>::metadata::gen_metadata;
-<span class="kw">use </span><span class="self">self</span>::scaffolding::{gen_fn_scaffolding, gen_method_scaffolding};
-<span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, parse_comma_separated, UniffiAttribute};
+<span class="kw">use </span><span class="self">self</span>::{
+    attributes::ExportAttributeArguments,
+    item::{ExportItem, ImplItem},
+    scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
+};
 
 <span class="comment">// TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
 
-</span><span class="kw">pub enum </span>ExportItem {
-    Function {
-        sig: Signature,
-    },
-    Impl {
-        self_ident: Ident,
-        methods: Vec&lt;syn::Result&lt;Method&gt;&gt;,
-    },
-}
-
-<span class="kw">pub struct </span>Method {
-    sig: Signature,
-}
-
-<span class="kw">pub struct </span>Signature {
-    ident: Ident,
-    is_async: bool,
-    inputs: Vec&lt;syn::FnArg&gt;,
-    output: TokenStream,
-}
-
-<span class="kw">impl </span>Signature {
-    <span class="kw">fn </span>new(item: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>output = <span class="kw">match </span>item.output {
-            syn::ReturnType::Default =&gt; <span class="macro">quote! </span>{ () },
-            syn::ReturnType::Type(<span class="kw">_</span>, ty) =&gt; <span class="macro">quote! </span>{ #ty },
-        };
-
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            ident: item.ident,
-            is_async: item.asyncness.is_some(),
-            inputs: item.inputs.into_iter().collect(),
-            output,
-        })
-    }
-}
-
-<span class="kw">pub fn </span>expand_export(
-    metadata: ExportItem,
-    arguments: ExportAttributeArguments,
-    mod_path: <span class="kw-2">&amp;</span>str,
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_export(
+    <span class="kw-2">mut </span>item: Item,
+    args: ExportAttributeArguments,
+    mod_path: String,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="comment">// If the input is an `impl` block, rewrite any uses of the `Self` type
+    // alias to the actual type, so we don&#39;t have to special-case it in the
+    // metadata collection or scaffolding code generation (which generates
+    // new functions outside of the `impl`).
+    </span>rewrite_self_type(<span class="kw-2">&amp;mut </span>item);
+
+    <span class="kw">let </span>metadata = ExportItem::new(item)<span class="question-mark">?</span>;
+
     <span class="kw">match </span>metadata {
-        ExportItem::Function { sig } =&gt; gen_fn_scaffolding(<span class="kw-2">&amp;</span>sig, mod_path, <span class="kw-2">&amp;</span>arguments),
-        ExportItem::Impl {
-            methods,
-            self_ident,
-        } =&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>method_tokens = <span class="macro">vec!</span>[];
-            <span class="kw">for </span>method <span class="kw">in </span>methods {
-                <span class="kw">let </span>sig = method<span class="question-mark">?</span>.sig;
-                method_tokens.push(gen_method_scaffolding(
-                    <span class="kw-2">&amp;</span>sig,
-                    mod_path,
-                    <span class="kw-2">&amp;</span>self_ident,
-                    <span class="kw-2">&amp;</span>arguments,
-                )<span class="question-mark">?</span>)
+        ExportItem::Function { sig } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>args),
+        ExportItem::Impl { items, self_ident } =&gt; {
+            <span class="kw">let </span>item_tokens: TokenStream = items
+                .into_iter()
+                .map(|item| <span class="kw">match </span>item<span class="question-mark">? </span>{
+                    ImplItem::Constructor(sig) =&gt; {
+                        gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>args)
+                    }
+                    ImplItem::Method(sig) =&gt; {
+                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>args)
+                    }
+                })
+                .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt; #item_tokens })
+        }
+    }
+}
+
+<span class="doccomment">/// Rewrite Self type alias usage in an impl block to the type itself.
+///
+/// For example,
+///
+/// ```ignore
+/// impl some::module::Foo {
+///     fn method(
+///         self: Arc&lt;Self&gt;,
+///         arg: Option&lt;Bar&lt;(), Self&gt;&gt;,
+///     ) -&gt; Result&lt;Self, Error&gt; {
+///         todo!()
+///     }
+/// }
+/// ```
+///
+/// will be rewritten to
+///
+///  ```ignore
+/// impl some::module::Foo {
+///     fn method(
+///         self: Arc&lt;some::module::Foo&gt;,
+///         arg: Option&lt;Bar&lt;(), some::module::Foo&gt;&gt;,
+///     ) -&gt; Result&lt;some::module::Foo, Error&gt; {
+///         todo!()
+///     }
+/// }
+/// ```
+</span><span class="kw">pub fn </span>rewrite_self_type(item: <span class="kw-2">&amp;mut </span>Item) {
+    <span class="kw">let </span>item = <span class="kw">match </span>item {
+        Item::Impl(i) =&gt; i,
+        <span class="kw">_ </span>=&gt; <span class="kw">return</span>,
+    };
+
+    <span class="kw">struct </span>RewriteSelfVisitor&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type);
+
+    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; VisitMut <span class="kw">for </span>RewriteSelfVisitor&lt;<span class="lifetime">&#39;a</span>&gt; {
+        <span class="kw">fn </span>visit_type_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, i: <span class="kw-2">&amp;mut </span>Type) {
+            <span class="kw">match </span>i {
+                Type::Path(p) <span class="kw">if </span>p.qself.is_none() &amp;&amp; p.path.is_ident(<span class="string">&quot;Self&quot;</span>) =&gt; {
+                    <span class="kw-2">*</span>i = <span class="self">self</span>.<span class="number">0</span>.clone();
+                }
+                <span class="kw">_ </span>=&gt; syn::visit_mut::visit_type_mut(<span class="self">self</span>, i),
             }
-            <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt; #(#method_tokens)* })
         }
     }
-}
 
-<span class="kw">mod </span>kw {
-    <span class="macro">syn::custom_keyword!</span>(async_runtime);
-}
-
-<span class="attribute">#[derive(Default)]
-</span><span class="kw">pub struct </span>ExportAttributeArguments {
-    async_runtime: <span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
-}
-
-<span class="kw">impl </span>Parse <span class="kw">for </span>ExportAttributeArguments {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        parse_comma_separated(input)
-    }
-}
-
-<span class="kw">impl </span>UniffiAttribute <span class="kw">for </span>ExportAttributeArguments {
-    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let _</span>: kw::async_runtime = input.parse()<span class="question-mark">?</span>;
-        <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
-        <span class="kw">let </span>async_runtime = input.parse()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            async_runtime: <span class="prelude-val">Some</span>(async_runtime),
-        })
-    }
-
-    <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            async_runtime: either_attribute_arg(<span class="self">self</span>.async_runtime, other.async_runtime)<span class="question-mark">?</span>,
-        })
-    }
-}
-
-<span class="kw">enum </span>AsyncRuntime {
-    Tokio(Span),
-}
-
-<span class="kw">impl </span>Parse <span class="kw">for </span>AsyncRuntime {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>lit: LitStr = input.parse()<span class="question-mark">?</span>;
-        <span class="kw">match </span>lit.value().as_str() {
-            <span class="string">&quot;tokio&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Tokio(lit.span())),
-            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
-                lit,
-                <span class="string">&quot;unknown async runtime, currently only `tokio` is supported&quot;</span>,
-            )),
-        }
-    }
-}
-
-<span class="kw">impl </span>Spanned <span class="kw">for </span>AsyncRuntime {
-    <span class="kw">fn </span>span(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Span {
-        <span class="kw">match </span><span class="self">self </span>{
-            AsyncRuntime::Tokio(span) =&gt; <span class="kw-2">*</span>span,
-        }
+    <span class="kw">let </span><span class="kw-2">mut </span>visitor = RewriteSelfVisitor(<span class="kw-2">&amp;</span>item.self_ty);
+    <span class="kw">for </span>item <span class="kw">in </span><span class="kw-2">&amp;mut </span>item.items {
+        visitor.visit_impl_item_mut(item);
     }
 }
 </code></pre></div>

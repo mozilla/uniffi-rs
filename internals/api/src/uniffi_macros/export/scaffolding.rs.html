@@ -359,6 +359,81 @@
 <span id="359">359</span>
 <span id="360">360</span>
 <span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -367,11 +442,14 @@
 <span class="kw">use </span>quote::{format_ident, quote, ToTokens};
 <span class="kw">use </span>syn::{spanned::Spanned, FnArg, Pat};
 
-<span class="kw">use super</span>::{AsyncRuntime, ExportAttributeArguments, Signature};
+<span class="kw">use super</span>::{
+    attributes::{AsyncRuntime, ExportAttributeArguments},
+    item::{ConstructorSignature, FnSignature},
+};
 <span class="kw">use </span><span class="kw">crate</span>::util::{create_metadata_items, ident_to_string, try_metadata_value_from_usize};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
-    sig: <span class="kw-2">&amp;</span>Signature,
+    sig: FnSignature,
     mod_path: <span class="kw-2">&amp;</span>str,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -379,7 +457,7 @@
     <span class="kw">let </span>name_s = ident_to_string(name);
 
     <span class="kw">let </span>ffi_ident = Ident::new(
-        <span class="kw-2">&amp;</span>uniffi_meta::fn_ffi_symbol_name(mod_path, <span class="kw-2">&amp;</span>name_s),
+        <span class="kw-2">&amp;</span>uniffi_meta::fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>name_s),
         Span::call_site(),
     );
 
@@ -388,16 +466,16 @@
     <span class="kw">let </span><span class="kw-2">mut </span>bits = ScaffoldingBits::new();
     bits.collect_params(<span class="kw-2">&amp;</span>sig.inputs, ERROR_MSG);
     bits.set_rust_fn_call(<span class="macro">quote! </span>{ #name });
-    <span class="kw">let </span>metadata_var = bits.gen_function_meta_static_var(sig, mod_path)<span class="question-mark">?</span>;
-    <span class="kw">let </span>scaffolding_func = gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>bits, arguments);
+    <span class="kw">let </span>metadata_var = bits.gen_function_meta_static_var(<span class="kw-2">&amp;</span>sig, mod_path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, ffi_ident, <span class="kw-2">&amp;</span>bits, arguments);
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_var
     })
 }
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
-    sig: <span class="kw-2">&amp;</span>Signature,
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_constructor_scaffolding(
+    sig: ConstructorSignature,
     mod_path: <span class="kw-2">&amp;</span>str,
     self_ident: <span class="kw-2">&amp;</span>Ident,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
@@ -406,7 +484,35 @@
     <span class="kw">let </span>name_s = ident_to_string(ident);
 
     <span class="kw">let </span>ffi_ident = Ident::new(
-        <span class="kw-2">&amp;</span>uniffi_meta::method_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), <span class="kw-2">&amp;</span>name_s),
+        <span class="kw-2">&amp;</span>uniffi_meta::constructor_symbol_name(mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), <span class="kw-2">&amp;</span>name_s),
+        Span::call_site(),
+    );
+
+    <span class="kw">const </span>RECEIVER_ERROR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;constructors must not have a self parameter&quot;</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>bits = ScaffoldingBits::new();
+    bits.collect_params(sig.inputs.iter().skip(<span class="number">1</span>), RECEIVER_ERROR);
+    bits.set_rust_fn_call(<span class="macro">quote! </span>{ #self_ident::#ident });
+
+    <span class="kw">let </span>metadata_var = bits.gen_constructor_meta_static_var(self_ident, <span class="kw-2">&amp;</span>sig, mod_path);
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig.into(), ffi_ident, <span class="kw-2">&amp;</span>bits, arguments);
+    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+        #scaffolding_func
+        #metadata_var
+    })
+}
+
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
+    sig: FnSignature,
+    mod_path: <span class="kw-2">&amp;</span>str,
+    self_ident: <span class="kw-2">&amp;</span>Ident,
+    arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
+) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
+    <span class="kw">let </span>name_s = ident_to_string(ident);
+
+    <span class="kw">let </span>ffi_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::method_symbol_name(mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), <span class="kw-2">&amp;</span>name_s),
         Span::call_site(),
     );
 
@@ -441,8 +547,8 @@
         }
     };
 
-    <span class="kw">let </span>metadata_var = bits.gen_method_meta_static_var(self_ident, sig, mod_path)<span class="question-mark">?</span>;
-    <span class="kw">let </span>scaffolding_func = gen_ffi_function(sig, ffi_ident, <span class="kw-2">&amp;</span>bits, arguments);
+    <span class="kw">let </span>metadata_var = bits.gen_method_meta_static_var(self_ident, <span class="kw-2">&amp;</span>sig, mod_path);
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, ffi_ident, <span class="kw-2">&amp;</span>bits, arguments);
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_var
@@ -505,7 +611,7 @@
 
     <span class="kw">fn </span>collect_params&lt;<span class="lifetime">&#39;a</span>&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        inputs: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>FnArg&gt; + <span class="lifetime">&#39;a</span>,
+        inputs: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>FnArg&gt;,
         receiver_error_msg: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
     ) {
         <span class="kw">for </span>(i, arg) <span class="kw">in </span>inputs.into_iter().enumerate() {
@@ -541,24 +647,23 @@
             <span class="self">self</span>.collect_param(
                 <span class="macro">quote! </span>{ #arg_n: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType },
                 <span class="macro">quote! </span>{
-                    &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(#arg_n).unwrap_or_else(|err| {
-                        <span class="macro">::std::panic!</span>(#panic_fmt, err)
-                    })
+                    &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(#arg_n)
+                        .unwrap_or_else(|err| <span class="macro">::std::panic!</span>(#panic_fmt, err))
                 },
                 <span class="macro">quote! </span>{
                     .concat_str(#meta_name)
                     .concat(&lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                 },
-            )
+            );
         }
     }
 
     <span class="kw">fn </span>set_rust_fn_call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, rust_fn_call: TokenStream) {
-        <span class="self">self</span>.rust_fn_call = <span class="prelude-val">Some</span>(rust_fn_call)
+        <span class="self">self</span>.rust_fn_call = <span class="prelude-val">Some</span>(rust_fn_call);
     }
 
     <span class="kw">fn </span>add_self_param(<span class="kw-2">&amp;mut </span><span class="self">self</span>, param: TokenStream) {
-        <span class="self">self</span>.params.insert(<span class="number">0</span>, param)
+        <span class="self">self</span>.params.insert(<span class="number">0</span>, param);
     }
 
     <span class="kw">fn </span>rust_fn_call(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
@@ -573,7 +678,7 @@
 
     <span class="kw">fn </span>gen_function_meta_static_var(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        sig: <span class="kw-2">&amp;</span>Signature,
+        sig: <span class="kw-2">&amp;</span>FnSignature,
         mod_path: <span class="kw-2">&amp;</span>str,
     ) -&gt; syn::Result&lt;TokenStream&gt; {
         <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
@@ -590,39 +695,81 @@
             <span class="string">&quot;func&quot;</span>,
             <span class="kw-2">&amp;</span>name,
             <span class="macro">quote! </span>{
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
-                        .concat_str(#mod_path)
-                        .concat_str(#name)
-                        .concat_bool(#is_async)
-                        .concat_value(#args_len)
-                        #(#arg_metadata_calls)*
-                        .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
+                    .concat_str(#mod_path)
+                    .concat_str(#name)
+                    .concat_bool(#is_async)
+                    .concat_value(#args_len)
+                    #(#arg_metadata_calls)*
+                    .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
             },
             <span class="prelude-val">Some</span>(uniffi_meta::fn_checksum_symbol_name(mod_path, <span class="kw-2">&amp;</span>name)),
         ))
     }
 
-    <span class="kw">fn </span>gen_method_meta_static_var(
+    <span class="kw">fn </span>gen_constructor_meta_static_var(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         self_ident: <span class="kw-2">&amp;</span>Ident,
-        sig: <span class="kw-2">&amp;</span>Signature,
+        sig: <span class="kw-2">&amp;</span>ConstructorSignature,
         mod_path: <span class="kw-2">&amp;</span>str,
-    ) -&gt; syn::Result&lt;TokenStream&gt; {
+    ) -&gt; TokenStream {
         <span class="kw">let </span>object_name = ident_to_string(self_ident);
         <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
-        <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;
-        <span class="kw">let </span>is_async = sig.is_async;
+
         <span class="kw">let </span>args_len = try_metadata_value_from_usize(
             <span class="comment">// Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
             // params
             </span><span class="self">self</span>.param_lifts.len(),
             <span class="string">&quot;UniFFI limits functions to 256 arguments&quot;</span>,
-        )<span class="question-mark">?</span>;
-        <span class="kw">let </span>arg_metadata_calls = <span class="kw-2">&amp;</span><span class="self">self</span>.arg_metadata_calls;
-        <span class="prelude-val">Ok</span>(create_metadata_items(
-            <span class="string">&quot;method&quot;</span>,
-            <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}_{}&quot;</span>, object_name, name),
-            <span class="macro">quote! </span>{
+        );
+        <span class="kw">let </span>metadata_expr = <span class="kw">match </span>args_len {
+            <span class="prelude-val">Ok</span>(args_len) =&gt; {
+                <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;
+                <span class="kw">let </span>arg_metadata_calls = <span class="kw-2">&amp;</span><span class="self">self</span>.arg_metadata_calls;
+
+                <span class="macro">quote! </span>{
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_str(#name)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(
+                            &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META,
+                        )
+                }
+            }
+            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
+        };
+
+        <span class="kw">let </span>symbol_name =
+            uniffi_meta::constructor_checksum_symbol_name(mod_path, <span class="kw-2">&amp;</span>object_name, <span class="kw-2">&amp;</span>name);
+        <span class="kw">let </span>name = <span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>);
+        create_metadata_items(<span class="string">&quot;constructor&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">Some</span>(symbol_name))
+    }
+
+    <span class="kw">fn </span>gen_method_meta_static_var(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        self_ident: <span class="kw-2">&amp;</span>Ident,
+        sig: <span class="kw-2">&amp;</span>FnSignature,
+        mod_path: <span class="kw-2">&amp;</span>str,
+    ) -&gt; TokenStream {
+        <span class="kw">let </span>object_name = ident_to_string(self_ident);
+        <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
+
+        <span class="kw">let </span>args_len = try_metadata_value_from_usize(
+            <span class="comment">// Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
+            // params
+            </span><span class="self">self</span>.param_lifts.len(),
+            <span class="string">&quot;UniFFI limits functions to 256 arguments&quot;</span>,
+        );
+        <span class="kw">let </span>metadata_expr = <span class="kw">match </span>args_len {
+            <span class="prelude-val">Ok</span>(args_len) =&gt; {
+                <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;
+                <span class="kw">let </span>is_async = sig.is_async;
+                <span class="kw">let </span>arg_metadata_calls = <span class="kw-2">&amp;</span><span class="self">self</span>.arg_metadata_calls;
+
+                <span class="macro">quote! </span>{
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
@@ -630,19 +777,22 @@
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-            },
-            <span class="prelude-val">Some</span>(uniffi_meta::method_checksum_symbol_name(
-                mod_path,
-                <span class="kw-2">&amp;</span>object_name,
-                <span class="kw-2">&amp;</span>name,
-            )),
-        ))
+                        .concat(
+                            &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META,
+                        )
+                }
+            }
+            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
+        };
+
+        <span class="kw">let </span>symbol_name = uniffi_meta::method_checksum_symbol_name(mod_path, <span class="kw-2">&amp;</span>object_name, <span class="kw-2">&amp;</span>name);
+        <span class="kw">let </span>name = <span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>);
+        create_metadata_items(<span class="string">&quot;method&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">Some</span>(symbol_name))
     }
 }
 
 <span class="kw">fn </span>gen_ffi_function(
-    sig: <span class="kw-2">&amp;</span>Signature,
+    sig: <span class="kw-2">&amp;</span>FnSignature,
     ffi_ident: Ident,
     bits: <span class="kw-2">&amp;</span>ScaffoldingBits,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
@@ -679,8 +829,8 @@
             <span class="prelude-val">Some</span>(AsyncRuntime::Tokio(<span class="kw">_</span>)) =&gt; <span class="macro">quote! </span>{ new_tokio },
             <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ new },
         };
-        <span class="kw">let </span>ffi_poll_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{}_poll&quot;</span>, ffi_ident);
-        <span class="kw">let </span>ffi_drop_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{}_drop&quot;</span>, ffi_ident);
+        <span class="kw">let </span>ffi_poll_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{ffi_ident}_poll&quot;</span>);
+        <span class="kw">let </span>ffi_drop_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{ffi_ident}_drop&quot;</span>);
 
         <span class="macro">quote! </span>{
             <span class="attribute">#[doc(hidden)]
@@ -688,9 +838,9 @@
             </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
                 #(#fn_params,)*
                 call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-            ) -&gt; Box&lt;::uniffi::RustFuture&lt;#return_ty&gt;&gt; {
+            ) -&gt; ::std::boxed::Box&lt;::uniffi::RustFuture&lt;#return_ty&gt;&gt; {
                 <span class="macro">::uniffi::deps::log::debug!</span>(#name);
-                Box::new(::uniffi::RustFuture::#rust_future_ctor(
+                ::std::boxed::Box::new(::uniffi::RustFuture::#rust_future_ctor(
                     <span class="kw">async move </span>{ #rust_fn_call.<span class="kw">await </span>}
                 ))
             }
@@ -704,7 +854,7 @@
                 waker_environment: <span class="kw-2">*const </span>::std::ffi::c_void,
                 polled_result: <span class="kw-2">&amp;mut </span>::std::mem::MaybeUninit&lt;&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::ReturnType&gt;,
                 call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-            ) -&gt; bool {
+            ) -&gt; ::std::primitive::bool {
                 ::uniffi::ffi::uniffi_rustfuture_poll::&lt;<span class="kw">_</span>, <span class="kw">crate</span>::UniFfiTag&gt;(future, waker, waker_environment, polled_result, call_status)
             }
 

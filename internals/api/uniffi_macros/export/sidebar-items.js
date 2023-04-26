@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["AsyncRuntime",""],["ExportItem",""]],"fn":[["expand_export",""]],"mod":[["kw",""],["metadata",""],["scaffolding",""]],"struct":[["ExportAttributeArguments",""],["Method",""],["Signature",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["expand_export",""],["rewrite_self_type","Rewrite Self type alias usage in an impl block to the type itself."]],"mod":[["attributes",""],["item",""],["scaffolding",""]]};

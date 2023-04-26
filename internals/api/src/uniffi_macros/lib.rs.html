@@ -225,6 +225,8 @@
 <span id="225">225</span>
 <span id="226">226</span>
 <span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -240,7 +242,6 @@
 <span class="kw">use </span>proc_macro::TokenStream;
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{parse_macro_input, LitStr};
-<span class="kw">use </span>util::rewrite_self_type;
 
 <span class="kw">mod </span>enum_;
 <span class="kw">mod </span>error;
@@ -281,16 +282,8 @@
     <span class="kw">let </span>gen_output = || {
         <span class="kw">let </span>mod_path = util::mod_path()<span class="question-mark">?</span>;
         <span class="kw">let </span>args = syn::parse(attr_args)<span class="question-mark">?</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>item = syn::parse(input)<span class="question-mark">?</span>;
-
-        <span class="comment">// If the input is an `impl` block, rewrite any uses of the `Self` type
-        // alias to the actual type, so we don&#39;t have to special-case it in the
-        // metadata collection or scaffolding code generation (which generates
-        // new functions outside of the `impl`).
-        </span>rewrite_self_type(<span class="kw-2">&amp;mut </span>item);
-
-        <span class="kw">let </span>metadata = export::gen_metadata(item)<span class="question-mark">?</span>;
-        expand_export(metadata, args, <span class="kw-2">&amp;</span>mod_path)
+        <span class="kw">let </span>item = syn::parse(input)<span class="question-mark">?</span>;
+        expand_export(item, args, mod_path)
     };
     <span class="kw">let </span>output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
@@ -404,7 +397,6 @@
 /// This will expand to the appropriate `include!` invocation to include
 /// the generated `my_component_name.uniffi.rs` (which it assumes has
 /// been successfully built by your crate&#39;s `build.rs` script).
-///
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>include_scaffolding(component_name: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>name = <span class="macro">syn::parse_macro_input!</span>(component_name <span class="kw">as </span>LitStr);
@@ -429,7 +421,6 @@
 /// ```rs
 /// uniffi_macros::generate_and_include_scaffolding!(&quot;path/to/my/interface.udl&quot;);
 /// ```
-///
 </span><span class="attribute">#[proc_macro]
 </span><span class="kw">pub fn </span>generate_and_include_scaffolding(udl_file: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>udl_file = <span class="macro">syn::parse_macro_input!</span>(udl_file <span class="kw">as </span>LitStr);
@@ -451,6 +442,19 @@
             <span class="macro">uniffi_macros::include_scaffolding!</span>(#name);
         }
     }.into()
+}
+
+<span class="doccomment">/// A dummy macro that does nothing.
+///
+/// This exists so `#[uniffi::export]` can emit its input verbatim without
+/// causing unexpected errors, plus some extra code in case everything is okay.
+///
+/// It is important for `#[uniffi::export]` to not raise unexpected errors if it
+/// fails to parse the input as this happens very often when the proc-macro is
+/// run on an incomplete input by rust-analyzer while the developer is typing.
+</span><span class="attribute">#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>constructor(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    input
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

@@ -103,6 +103,13 @@
 <span id="103">103</span>
 <span id="104">104</span>
 <span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -137,6 +144,10 @@
         <span class="kw">let </span>(item_desc, module_path) = <span class="kw">match </span><span class="kw-2">&amp;</span>item {
             Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="kw">continue</span>,
             Metadata::Func(meta) =&gt; (<span class="macro">format!</span>(<span class="string">&quot;function `{}`&quot;</span>, meta.name), <span class="kw-2">&amp;</span>meta.module_path),
+            Metadata::Constructor(meta) =&gt; (
+                <span class="macro">format!</span>(<span class="string">&quot;constructor `{}.{}`&quot;</span>, meta.self_name, meta.name),
+                <span class="kw-2">&amp;</span>meta.module_path,
+            ),
             Metadata::Method(meta) =&gt; (
                 <span class="macro">format!</span>(<span class="string">&quot;method `{}.{}`&quot;</span>, meta.self_name, meta.name),
                 <span class="kw-2">&amp;</span>meta.module_path,
@@ -165,6 +176,9 @@
             Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(),
             Metadata::Func(meta) =&gt; {
                 iface.add_function_definition(meta.into())<span class="question-mark">?</span>;
+            }
+            Metadata::Constructor(meta) =&gt; {
+                iface.add_constructor_meta(meta)<span class="question-mark">?</span>;
             }
             Metadata::Method(meta) =&gt; {
                 iface.add_method_meta(meta)<span class="question-mark">?</span>;

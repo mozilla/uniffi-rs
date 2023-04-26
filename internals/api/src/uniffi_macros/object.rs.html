@@ -80,7 +80,7 @@
 
 <span class="kw">pub fn </span>expand_object(input: DeriveInput, module_path: String) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attributes::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
+    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name), Span::call_site());
     <span class="kw">let </span>meta_static_var = interface_meta_static_var(ident, <span class="kw-2">&amp;</span>module_path)<span class="question-mark">?</span>;
