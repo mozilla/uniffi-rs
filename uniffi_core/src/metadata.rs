@@ -34,6 +34,7 @@ pub mod codes {
     pub const INTERFACE: u8 = 4;
     pub const ERROR: u8 = 5;
     pub const NAMESPACE: u8 = 6;
+    pub const CONSTRUCTOR: u8 = 7;
     pub const UNKNOWN: u8 = 255;
 
     // Type codes

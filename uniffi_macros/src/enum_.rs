@@ -19,7 +19,7 @@ pub fn expand_enum(input: DeriveInput) -> syn::Result<TokenStream> {
     };
 
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
+    let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
     let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, attr.tag.as_ref());
 
     let meta_static_var =

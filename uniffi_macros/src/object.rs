@@ -9,7 +9,7 @@ use crate::util::{
 
 pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<TokenStream> {
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attributes::<CommonAttr>()?;
+    let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
     let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
     let meta_static_var = interface_meta_static_var(ident, &module_path)?;

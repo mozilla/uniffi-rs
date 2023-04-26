@@ -13,7 +13,6 @@ use camino::Utf8Path;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, LitStr};
-use util::rewrite_self_type;
 
 mod enum_;
 mod error;
@@ -54,16 +53,8 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
     let gen_output = || {
         let mod_path = util::mod_path()?;
         let args = syn::parse(attr_args)?;
-        let mut item = syn::parse(input)?;
-
-        // If the input is an `impl` block, rewrite any uses of the `Self` type
-        // alias to the actual type, so we don't have to special-case it in the
-        // metadata collection or scaffolding code generation (which generates
-        // new functions outside of the `impl`).
-        rewrite_self_type(&mut item);
-
-        let metadata = export::gen_metadata(item)?;
-        expand_export(metadata, args, &mod_path)
+        let item = syn::parse(input)?;
+        expand_export(item, args, mod_path)
     };
     let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
@@ -177,7 +168,6 @@ pub fn ffi_converter_interface(attrs: TokenStream, input: TokenStream) -> TokenS
 /// This will expand to the appropriate `include!` invocation to include
 /// the generated `my_component_name.uniffi.rs` (which it assumes has
 /// been successfully built by your crate's `build.rs` script).
-///
 #[proc_macro]
 pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
     let name = syn::parse_macro_input!(component_name as LitStr);
@@ -202,7 +192,6 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
 /// ```rs
 /// uniffi_macros::generate_and_include_scaffolding!("path/to/my/interface.udl");
 /// ```
-///
 #[proc_macro]
 pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
     let udl_file = syn::parse_macro_input!(udl_file as LitStr);
@@ -224,4 +213,17 @@ pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
             uniffi_macros::include_scaffolding!(#name);
         }
     }.into()
+}
+
+/// A dummy macro that does nothing.
+///
+/// This exists so `#[uniffi::export]` can emit its input verbatim without
+/// causing unexpected errors, plus some extra code in case everything is okay.
+///
+/// It is important for `#[uniffi::export]` to not raise unexpected errors if it
+/// fails to parse the input as this happens very often when the proc-macro is
+/// run on an incomplete input by rust-analyzer while the developer is typing.
+#[proc_macro_attribute]
+pub fn constructor(_attrs: TokenStream, input: TokenStream) -> TokenStream {
+    input
 }

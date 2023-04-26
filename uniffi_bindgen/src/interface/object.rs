@@ -304,7 +304,13 @@ impl Constructor {
     }
 
     fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) {
-        self.ffi_func.name = uniffi_meta::method_fn_symbol_name(ci_namespace, obj_name, &self.name);
+        // The name is already set if the function is defined through a proc-macro invocation
+        // rather than in UDL. Don't overwrite it in that case.
+        if self.ffi_func.name.is_empty() {
+            self.ffi_func.name =
+                uniffi_meta::constructor_symbol_name(ci_namespace, obj_name, &self.name);
+        }
+
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
         self.ffi_func.return_type = Some(FfiType::RustArcPtr(obj_name.to_string()));
     }
@@ -317,10 +323,42 @@ impl Constructor {
         // This is when we setup checksum_fn_name for objects defined in the UDL.  However, don't
         // overwrite checksum_fn_name if we got it from the proc-macro metadata.
         if self.checksum_fn_name.is_empty() {
-            self.checksum_fn_name =
-                uniffi_meta::method_checksum_symbol_name(ci_namespace, &object_name, &self.name);
+            self.checksum_fn_name = uniffi_meta::constructor_checksum_symbol_name(
+                ci_namespace,
+                &object_name,
+                &self.name,
+            );
         }
         self.object_name = object_name;
+    }
+}
+
+impl From<uniffi_meta::ConstructorMetadata> for Constructor {
+    fn from(meta: uniffi_meta::ConstructorMetadata) -> Self {
+        let ffi_name = meta.ffi_symbol_name();
+        let checksum_fn_name = meta.checksum_symbol_name();
+        let arguments = meta.inputs.into_iter().map(Into::into).collect();
+
+        let ffi_func = FfiFunction {
+            name: ffi_name,
+            ..FfiFunction::default()
+        };
+
+        Self {
+            name: meta.name,
+            object_name: meta.self_name,
+            arguments,
+            ffi_func,
+            attributes: match meta.throws {
+                None => ConstructorAttributes::from_iter(vec![]),
+                Some(uniffi_meta::Type::Error { name }) => {
+                    ConstructorAttributes::from_iter(vec![Attribute::Throws(name)])
+                }
+                Some(ty) => panic!("Invalid throws type: {ty:?}"),
+            },
+            checksum_fn_name,
+            checksum_override: Some(meta.checksum),
+        }
     }
 }
 
@@ -441,7 +479,7 @@ impl Method {
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func.name.is_empty() {
             self.ffi_func.name =
-                uniffi_meta::method_fn_symbol_name(ci_namespace, obj_name, &self.name);
+                uniffi_meta::method_symbol_name(ci_namespace, obj_name, &self.name);
         }
 
         self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();

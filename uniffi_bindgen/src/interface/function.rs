@@ -122,7 +122,7 @@ impl Function {
         // The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don't overwrite it in that case.
         if self.ffi_func.name.is_empty() {
-            self.ffi_func.name = uniffi_meta::fn_ffi_symbol_name(ci_namespace, &self.name);
+            self.ffi_func.name = uniffi_meta::fn_symbol_name(ci_namespace, &self.name);
         }
 
         self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();

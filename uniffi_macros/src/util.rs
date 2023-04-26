@@ -8,8 +8,7 @@ use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    visit_mut::VisitMut,
-    Attribute, Item, Path, Token, Type,
+    Attribute, Path, Token,
 };
 
 #[cfg(not(feature = "nightly"))]
@@ -71,58 +70,6 @@ pub fn mod_path() -> syn::Result<String> {
     let expanded_module_path = TokenStream::expand_expr(&module_path_invoc)
         .map_err(|e| syn::Error::new(Span::call_site(), e))?;
     Ok(syn::parse::<syn::LitStr>(expanded_module_path)?.value())
-}
-
-/// Rewrite Self type alias usage in an impl block to the type itself.
-///
-/// For example,
-///
-/// ```ignore
-/// impl some::module::Foo {
-///     fn method(
-///         self: Arc<Self>,
-///         arg: Option<Bar<(), Self>>,
-///     ) -> Result<Self, Error> {
-///         todo!()
-///     }
-/// }
-/// ```
-///
-/// will be rewritten to
-///
-///  ```ignore
-/// impl some::module::Foo {
-///     fn method(
-///         self: Arc<some::module::Foo>,
-///         arg: Option<Bar<(), some::module::Foo>>,
-///     ) -> Result<some::module::Foo, Error> {
-///         todo!()
-///     }
-/// }
-/// ```
-pub fn rewrite_self_type(item: &mut Item) {
-    let item = match item {
-        Item::Impl(i) => i,
-        _ => return,
-    };
-
-    struct RewriteSelfVisitor<'a>(&'a Type);
-
-    impl<'a> VisitMut for RewriteSelfVisitor<'a> {
-        fn visit_type_mut(&mut self, i: &mut Type) {
-            match i {
-                Type::Path(p) if p.qself.is_none() && p.path.is_ident("Self") => {
-                    *i = self.0.clone();
-                }
-                _ => syn::visit_mut::visit_type_mut(self, i),
-            }
-        }
-    }
-
-    let mut visitor = RewriteSelfVisitor(&item.self_ty);
-    for item in &mut item.items {
-        visitor.visit_impl_item_mut(item);
-    }
 }
 
 pub fn try_read_field(f: &syn::Field) -> TokenStream {
@@ -190,24 +137,24 @@ pub fn chain<T>(
     a.into_iter().chain(b)
 }
 
-pub trait UniffiAttribute: Default {
+pub trait UniffiAttributeArgs: Default {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self>;
     fn merge(self, other: Self) -> syn::Result<Self>;
 }
 
-pub fn parse_comma_separated<T: UniffiAttribute>(input: ParseStream<'_>) -> syn::Result<T> {
+pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> syn::Result<T> {
     let punctuated = input.parse_terminated::<T, Token![,]>(T::parse_one)?;
     punctuated.into_iter().try_fold(T::default(), T::merge)
 }
 
 #[derive(Default)]
-struct AttributeNotAllowedHere;
+pub struct ArgumentNotAllowedHere;
 
-impl UniffiAttribute for AttributeNotAllowedHere {
+impl UniffiAttributeArgs for ArgumentNotAllowedHere {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         Err(syn::Error::new(
             input.span(),
-            "UniFFI attributes are not currently recognized in this position",
+            "attribute arguments are not currently recognized in this position",
         ))
     }
 
@@ -217,23 +164,21 @@ impl UniffiAttribute for AttributeNotAllowedHere {
 }
 
 pub trait AttributeSliceExt {
-    fn parse_uniffi_attributes<T: UniffiAttribute>(&self) -> syn::Result<T>;
-    fn attributes_not_allowed_here(&self) -> Option<syn::Error>;
+    fn parse_uniffi_attr_args<T: UniffiAttributeArgs>(&self) -> syn::Result<T>;
+    fn uniffi_attr_args_not_allowed_here(&self) -> Option<syn::Error> {
+        self.parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
+            .err()
+    }
 }
 
 impl AttributeSliceExt for [Attribute] {
-    fn parse_uniffi_attributes<T: UniffiAttribute>(&self) -> syn::Result<T> {
+    fn parse_uniffi_attr_args<T: UniffiAttributeArgs>(&self) -> syn::Result<T> {
         self.iter()
             .filter(|attr| attr.path.is_ident("uniffi"))
             .try_fold(T::default(), |res, attr| {
                 let parsed = attr.parse_args_with(parse_comma_separated)?;
                 res.merge(parsed)
             })
-    }
-
-    fn attributes_not_allowed_here(&self) -> Option<syn::Error> {
-        self.parse_uniffi_attributes::<AttributeNotAllowedHere>()
-            .err()
     }
 }
 
@@ -270,7 +215,7 @@ pub(crate) struct CommonAttr {
     pub tag: Option<Path>,
 }
 
-impl UniffiAttribute for CommonAttr {
+impl UniffiAttributeArgs for CommonAttr {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::tag) {

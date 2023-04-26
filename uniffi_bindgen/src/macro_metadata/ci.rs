@@ -32,6 +32,10 @@ pub fn add_to_ci(
         let (item_desc, module_path) = match &item {
             Metadata::Namespace(_) => continue,
             Metadata::Func(meta) => (format!("function `{}`", meta.name), &meta.module_path),
+            Metadata::Constructor(meta) => (
+                format!("constructor `{}.{}`", meta.self_name, meta.name),
+                &meta.module_path,
+            ),
             Metadata::Method(meta) => (
                 format!("method `{}.{}`", meta.self_name, meta.name),
                 &meta.module_path,
@@ -60,6 +64,9 @@ pub fn add_to_ci(
             Metadata::Namespace(_) => unreachable!(),
             Metadata::Func(meta) => {
                 iface.add_function_definition(meta.into())?;
+            }
+            Metadata::Constructor(meta) => {
+                iface.add_constructor_meta(meta)?;
             }
             Metadata::Method(meta) => {
                 iface.add_method_meta(meta)?;
