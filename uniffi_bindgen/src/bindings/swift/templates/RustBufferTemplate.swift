@@ -176,8 +176,8 @@ extension FfiConverterRustBuffer {
     }
 
     public static func lower(_ value: SwiftType) -> RustBuffer {
-          var writer = createWriter()
-          write(value, into: &writer)
-          return RustBuffer(bytes: writer)
+        var writer = createWriter()
+        write(value, into: &writer)
+        return RustBuffer(bytes: writer)
     }
 }
