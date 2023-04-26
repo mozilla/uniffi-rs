@@ -177,7 +177,6 @@ pub fn ffi_converter_interface(attrs: TokenStream, input: TokenStream) -> TokenS
 /// This will expand to the appropriate `include!` invocation to include
 /// the generated `my_component_name.uniffi.rs` (which it assumes has
 /// been successfully built by your crate's `build.rs` script).
-///
 #[proc_macro]
 pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
     let name = syn::parse_macro_input!(component_name as LitStr);
@@ -202,7 +201,6 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
 /// ```rs
 /// uniffi_macros::generate_and_include_scaffolding!("path/to/my/interface.udl");
 /// ```
-///
 #[proc_macro]
 pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
     let udl_file = syn::parse_macro_input!(udl_file as LitStr);
