@@ -83,7 +83,7 @@ pub(super) fn gen_method_scaffolding(
         }
     };
 
-    let metadata_var = bits.gen_method_meta_static_var(self_ident, sig, mod_path)?;
+    let metadata_var = bits.gen_method_meta_static_var(self_ident, sig, mod_path);
     let scaffolding_func = gen_ffi_function(sig, ffi_ident, &bits, arguments);
     Ok(quote! {
         #scaffolding_func
@@ -147,7 +147,7 @@ impl ScaffoldingBits {
 
     fn collect_params<'a>(
         &mut self,
-        inputs: impl IntoIterator<Item = &'a FnArg> + 'a,
+        inputs: impl IntoIterator<Item = &'a FnArg>,
         receiver_error_msg: &'static str,
     ) {
         for (i, arg) in inputs.into_iter().enumerate() {
@@ -248,37 +248,41 @@ impl ScaffoldingBits {
         self_ident: &Ident,
         sig: &Signature,
         mod_path: &str,
-    ) -> syn::Result<TokenStream> {
+    ) -> TokenStream {
         let object_name = ident_to_string(self_ident);
         let name = ident_to_string(&sig.ident);
-        let return_ty = &sig.output;
-        let is_async = sig.is_async;
+
         let args_len = try_metadata_value_from_usize(
             // Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
             // params
             self.param_lifts.len(),
             "UniFFI limits functions to 256 arguments",
-        )?;
-        let arg_metadata_calls = &self.arg_metadata_calls;
-        Ok(create_metadata_items(
-            "method",
-            &format!("{}_{}", object_name, name),
-            quote! {
-                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
-                    .concat_str(#mod_path)
-                    .concat_str(#object_name)
-                    .concat_str(#name)
-                    .concat_bool(#is_async)
-                    .concat_value(#args_len)
-                    #(#arg_metadata_calls)*
-                    .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-            },
-            Some(uniffi_meta::method_checksum_symbol_name(
-                mod_path,
-                &object_name,
-                &name,
-            )),
-        ))
+        );
+        let metadata_expr = match args_len {
+            Ok(args_len) => {
+                let return_ty = &sig.output;
+                let is_async = sig.is_async;
+                let arg_metadata_calls = &self.arg_metadata_calls;
+
+                quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_str(#name)
+                        .concat_bool(#is_async)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(
+                            <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META,
+                        )
+                }
+            }
+            Err(e) => e.into_compile_error(),
+        };
+
+        let symbol_name = uniffi_meta::method_checksum_symbol_name(mod_path, &object_name, &name);
+        let name = format!("{object_name}_{name}");
+        create_metadata_items("method", &name, metadata_expr, Some(symbol_name))
     }
 }
 
@@ -320,8 +324,8 @@ fn gen_ffi_function(
             Some(AsyncRuntime::Tokio(_)) => quote! { new_tokio },
             None => quote! { new },
         };
-        let ffi_poll_ident = format_ident!("{}_poll", ffi_ident);
-        let ffi_drop_ident = format_ident!("{}_drop", ffi_ident);
+        let ffi_poll_ident = format_ident!("{ffi_ident}_poll");
+        let ffi_drop_ident = format_ident!("{ffi_ident}_drop");
 
         quote! {
             #[doc(hidden)]
@@ -329,9 +333,9 @@ fn gen_ffi_function(
             pub extern "C" fn #ffi_ident(
                 #(#fn_params,)*
                 call_status: &mut ::uniffi::RustCallStatus,
-            ) -> Box<::uniffi::RustFuture<#return_ty>> {
+            ) -> ::std::boxed::Box<::uniffi::RustFuture<#return_ty>> {
                 ::uniffi::deps::log::debug!(#name);
-                Box::new(::uniffi::RustFuture::#rust_future_ctor(
+                ::std::boxed::Box::new(::uniffi::RustFuture::#rust_future_ctor(
                     async move { #rust_fn_call.await }
                 ))
             }
@@ -345,7 +349,7 @@ fn gen_ffi_function(
                 waker_environment: *const ::std::ffi::c_void,
                 polled_result: &mut ::std::mem::MaybeUninit<<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType>,
                 call_status: &mut ::uniffi::RustCallStatus,
-            ) -> bool {
+            ) -> ::std::primitive::bool {
                 ::uniffi::ffi::uniffi_rustfuture_poll::<_, crate::UniFfiTag>(future, waker, waker_environment, polled_result, call_status)
             }
 
