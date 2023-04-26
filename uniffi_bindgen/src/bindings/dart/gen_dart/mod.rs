@@ -415,6 +415,7 @@ pub mod filters {
     pub fn ffi_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(format!("{}Ffi", type_name(codetype)?))
     }
+
     pub fn dart_ffi_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(format!("{}DartFfi", type_name(codetype)?))
     }
@@ -422,6 +423,7 @@ pub mod filters {
     pub fn lift_type(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(format!("{}Lifted", type_name(codetype)?))
     }
+
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(codetype.write(oracle()))
     }

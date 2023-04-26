@@ -51,7 +51,7 @@ class ForeignBytes extends Struct {
 // An error type for FFI errors. These errors occur at the UniFFI level, not
 // the library level.
 
-class UniffiInternalError extends Exception {
+class UniffiInternalError implements Exception {
   static const int bufferOverflow = 0;
   static const int incompleteData = 1;
   static const int unexpectedOptionalTag = 2;

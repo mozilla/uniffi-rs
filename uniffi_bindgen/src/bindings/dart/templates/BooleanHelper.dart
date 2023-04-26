@@ -3,7 +3,7 @@ typedef BoolDartFfi = bool;
 typedef BoolLowered = Bool;
 typedef BoolLifted = bool;
 
-class FfiConverterbool {
+class FfiConverterBool {
   //extends FfiConverter {
 
   static BoolLifted lift(Api _api, BoolDartFfi value) {
