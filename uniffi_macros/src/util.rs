@@ -8,8 +8,7 @@ use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    visit_mut::VisitMut,
-    Attribute, Item, Path, Token, Type,
+    Attribute, Path, Token,
 };
 
 #[cfg(not(feature = "nightly"))]
@@ -71,58 +70,6 @@ pub fn mod_path() -> syn::Result<String> {
     let expanded_module_path = TokenStream::expand_expr(&module_path_invoc)
         .map_err(|e| syn::Error::new(Span::call_site(), e))?;
     Ok(syn::parse::<syn::LitStr>(expanded_module_path)?.value())
-}
-
-/// Rewrite Self type alias usage in an impl block to the type itself.
-///
-/// For example,
-///
-/// ```ignore
-/// impl some::module::Foo {
-///     fn method(
-///         self: Arc<Self>,
-///         arg: Option<Bar<(), Self>>,
-///     ) -> Result<Self, Error> {
-///         todo!()
-///     }
-/// }
-/// ```
-///
-/// will be rewritten to
-///
-///  ```ignore
-/// impl some::module::Foo {
-///     fn method(
-///         self: Arc<some::module::Foo>,
-///         arg: Option<Bar<(), some::module::Foo>>,
-///     ) -> Result<some::module::Foo, Error> {
-///         todo!()
-///     }
-/// }
-/// ```
-pub fn rewrite_self_type(item: &mut Item) {
-    let item = match item {
-        Item::Impl(i) => i,
-        _ => return,
-    };
-
-    struct RewriteSelfVisitor<'a>(&'a Type);
-
-    impl<'a> VisitMut for RewriteSelfVisitor<'a> {
-        fn visit_type_mut(&mut self, i: &mut Type) {
-            match i {
-                Type::Path(p) if p.qself.is_none() && p.path.is_ident("Self") => {
-                    *i = self.0.clone();
-                }
-                _ => syn::visit_mut::visit_type_mut(self, i),
-            }
-        }
-    }
-
-    let mut visitor = RewriteSelfVisitor(&item.self_ty);
-    for item in &mut item.items {
-        visitor.visit_impl_item_mut(item);
-    }
 }
 
 pub fn try_read_field(f: &syn::Field) -> TokenStream {

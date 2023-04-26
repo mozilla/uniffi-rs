@@ -6,7 +6,10 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::{spanned::Spanned, FnArg, Pat};
 
-use super::{AsyncRuntime, ExportAttributeArguments, Signature};
+use super::{
+    attributes::{AsyncRuntime, ExportAttributeArguments},
+    item::Signature,
+};
 use crate::util::{create_metadata_items, ident_to_string, try_metadata_value_from_usize};
 
 pub(super) fn gen_fn_scaffolding(
@@ -180,9 +183,8 @@ impl ScaffoldingBits {
             self.collect_param(
                 quote! { #arg_n: <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType },
                 quote! {
-                    <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(#arg_n).unwrap_or_else(|err| {
-                        ::std::panic!(#panic_fmt, err)
-                    })
+                    <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(#arg_n)
+                        .unwrap_or_else(|err| ::std::panic!(#panic_fmt, err))
                 },
                 quote! {
                     .concat_str(#meta_name)
@@ -229,13 +231,13 @@ impl ScaffoldingBits {
             "func",
             &name,
             quote! {
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
-                        .concat_str(#mod_path)
-                        .concat_str(#name)
-                        .concat_bool(#is_async)
-                        .concat_value(#args_len)
-                        #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
+                    .concat_str(#mod_path)
+                    .concat_str(#name)
+                    .concat_bool(#is_async)
+                    .concat_value(#args_len)
+                    #(#arg_metadata_calls)*
+                    .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
             },
             Some(uniffi_meta::fn_checksum_symbol_name(mod_path, &name)),
         ))
@@ -262,14 +264,14 @@ impl ScaffoldingBits {
             "method",
             &format!("{}_{}", object_name, name),
             quote! {
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
-                        .concat_str(#mod_path)
-                        .concat_str(#object_name)
-                        .concat_str(#name)
-                        .concat_bool(#is_async)
-                        .concat_value(#args_len)
-                        #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
+                    .concat_str(#mod_path)
+                    .concat_str(#object_name)
+                    .concat_str(#name)
+                    .concat_bool(#is_async)
+                    .concat_value(#args_len)
+                    #(#arg_metadata_calls)*
+                    .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
             },
             Some(uniffi_meta::method_checksum_symbol_name(
                 mod_path,

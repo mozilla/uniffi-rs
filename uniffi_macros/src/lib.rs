@@ -13,7 +13,6 @@ use camino::Utf8Path;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, LitStr};
-use util::rewrite_self_type;
 
 mod enum_;
 mod error;
@@ -54,16 +53,8 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
     let gen_output = || {
         let mod_path = util::mod_path()?;
         let args = syn::parse(attr_args)?;
-        let mut item = syn::parse(input)?;
-
-        // If the input is an `impl` block, rewrite any uses of the `Self` type
-        // alias to the actual type, so we don't have to special-case it in the
-        // metadata collection or scaffolding code generation (which generates
-        // new functions outside of the `impl`).
-        rewrite_self_type(&mut item);
-
-        let metadata = export::gen_metadata(item)?;
-        expand_export(metadata, args, &mod_path)
+        let item = syn::parse(input)?;
+        expand_export(item, args, mod_path)
     };
     let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
