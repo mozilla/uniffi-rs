@@ -112,6 +112,18 @@ Task {
 	counter.leave()
 }
 
+// Test async function returning an object
+counter.enter()
+
+Task {
+	let megaphone = await asyncNewMegaphone()
+
+	let result = try await megaphone.fallibleMe(doFail: false)
+	assert(result == 42)
+
+	counter.leave()
+}
+
 // Test with the Tokio runtime.
 counter.enter()
 

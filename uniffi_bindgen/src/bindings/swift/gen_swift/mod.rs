@@ -443,7 +443,7 @@ pub mod filters {
             FfiType::UInt64 => "UInt64".into(),
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
-            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
+            FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback  _Nonnull".to_string(),
