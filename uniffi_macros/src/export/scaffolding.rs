@@ -55,7 +55,7 @@ pub(super) fn gen_constructor_scaffolding(
     const RECEIVER_ERROR: &str = "constructors must not have a self parameter";
 
     let mut bits = ScaffoldingBits::new();
-    bits.collect_params(sig.inputs.iter().skip(1), RECEIVER_ERROR);
+    bits.collect_params(&sig.inputs, RECEIVER_ERROR);
     bits.set_rust_fn_call(quote! { #self_ident::#ident });
 
     let metadata_var = bits.gen_constructor_meta_static_var(self_ident, &sig, mod_path);

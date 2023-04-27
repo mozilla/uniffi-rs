@@ -32,8 +32,14 @@ pub struct Object;
 #[uniffi::export]
 impl Object {
     #[uniffi::constructor]
-    fn new() -> Arc<Object> {
-        Arc::new(Object)
+    fn new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+
+    #[uniffi::constructor]
+    fn named_ctor(arg: u32) -> Arc<Self> {
+        _ = arg;
+        Self::new()
     }
 
     fn is_heavy(&self) -> MaybeBool {

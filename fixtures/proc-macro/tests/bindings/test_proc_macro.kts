@@ -10,7 +10,8 @@ assert(one.inner == 123)
 val two = Two("a", null)
 assert(takeTwo(two) == "a")
 
-val obj = Object()
+var obj = Object()
+obj = Object.namedCtor(1u)
 assert(obj.isHeavy() == MaybeBool.UNCERTAIN)
 
 assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
