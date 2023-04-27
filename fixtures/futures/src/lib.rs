@@ -124,6 +124,12 @@ pub fn new_megaphone() -> Arc<Megaphone> {
     Arc::new(Megaphone)
 }
 
+/// Async function that generates a new `Megaphone`.
+#[uniffi::export]
+pub async fn async_new_megaphone() -> Arc<Megaphone> {
+    new_megaphone()
+}
+
 /// A megaphone. Be careful with the neighbours.
 #[derive(uniffi::Object)]
 pub struct Megaphone;
