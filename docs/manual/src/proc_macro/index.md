@@ -43,12 +43,28 @@ struct MyObject {
 
 #[uniffi::export]
 impl MyObject {
-    // All methods must have a `self` argument
+    // Constructors need to be annotated as such.
+    // As of right now, they must return `Arc<Self>`, this might change.
+    // If the constructor is named `new`, it is treated as the primary
+    // constructor, so in most languages this is invoked with `MyObject()`.
+    #[uniffi::constructor]
+    fn new(argument: String) -> Arc<Self> {
+        // ...
+    }
+
+    // Constructors with different names are also supported, usually invoked
+    // as `MyObject.named()` (depending on the target language)
+    #[uniffi::constructor]
+    fn named() -> Arc<Self> {
+        // ...
+    }
+
+    // All functions that are not constructors must have a `self` argument
     fn method_a(&self) {
         // ...
     }
 
-    // Arc<Self> is also supported
+    // `Arc<Self>` is also supported
     fn method_b(self: Arc<Self>) {
         // ...
     }
