@@ -43,7 +43,7 @@ If you want to try them out, you will need:
 * The [Ruby FFI](https://github.com/ffi/ffi#installation)
   * `gem install ffi test-unit rubocop`
 
-We publish a [docker image](https://hub.docker.com/r/rfkelly/uniffi-ci) that has all of this dependencies
+We publish a [docker image](https://hub.docker.com/r/janerik/uniffi-ci) that has all of this dependencies
 pre-installed, if you want to get up and running quickly.
 
 With that in place, try the following:

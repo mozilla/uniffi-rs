@@ -10,4 +10,4 @@ docker run \
     -v $HOME/.cargo/registry:/usr/local/cargo/registry \
     -v $PWD:/mounted_workdir \
     -w /mounted_workdir \
-    rfkelly/uniffi-ci:latest bash -i -c "cargo $*"
+    janerik/uniffi-ci:latest bash -i -c "cargo $*"
