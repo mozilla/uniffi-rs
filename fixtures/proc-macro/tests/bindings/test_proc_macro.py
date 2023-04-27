@@ -11,6 +11,7 @@ two = Two("a", None)
 assert take_two(two) == "a"
 
 obj = Object()
+obj = Object.named_ctor(1)
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
 
 assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
