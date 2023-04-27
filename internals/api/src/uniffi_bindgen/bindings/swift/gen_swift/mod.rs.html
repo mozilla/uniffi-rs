@@ -915,7 +915,7 @@
             FfiType::UInt64 =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
             FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.to_string(),
