@@ -26,6 +26,19 @@ pub struct Three {
     obj: Arc<Object>,
 }
 
+// An object that's not used anywhere (ie, in records, function signatures, etc)
+// should not break things.
+#[derive(uniffi::Object)]
+pub struct Unused;
+
+#[uniffi::export]
+impl Unused {
+    #[uniffi::constructor]
+    fn new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+}
+
 #[derive(uniffi::Object)]
 pub struct Object;
 

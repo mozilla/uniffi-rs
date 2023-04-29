@@ -636,9 +636,12 @@ impl ComponentInterface {
         Ok(())
     }
 
-    pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) {
+    pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) -> Result<()> {
+        self.types
+            .add_known_type(&Type::Object(meta.name.clone()))?;
         let object = get_or_insert_object(&mut self.objects, &meta.name);
         object.ffi_func_free.name = meta.free_ffi_symbol_name();
+        Ok(())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
