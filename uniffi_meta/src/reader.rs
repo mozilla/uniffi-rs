@@ -110,6 +110,7 @@ impl<'a> MetadataReader<'a> {
             },
             codes::TYPE_INTERFACE => Type::ArcObject {
                 object_name: self.read_string()?,
+                is_trait: self.read_bool()?,
             },
             codes::TYPE_CALLBACK_INTERFACE => Type::CallbackInterface {
                 name: self.read_string()?,
@@ -186,6 +187,7 @@ impl<'a> MetadataReader<'a> {
             .filter(|t| {
                 *t == Type::ArcObject {
                     object_name: self_name.clone(),
+                    is_trait: false,
                 }
             })
             .context("Constructor return type must be Arc<Self>")?;
@@ -203,6 +205,7 @@ impl<'a> MetadataReader<'a> {
     fn read_method(&mut self) -> Result<MethodMetadata> {
         let module_path = self.read_string()?;
         let self_name = self.read_string()?;
+        let self_is_trait = self.read_bool()?;
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
@@ -210,6 +213,7 @@ impl<'a> MetadataReader<'a> {
         Ok(MethodMetadata {
             module_path,
             self_name,
+            self_is_trait,
             name,
             is_async,
             inputs,
@@ -255,6 +259,7 @@ impl<'a> MetadataReader<'a> {
         Ok(ObjectMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
+            is_trait: self.read_bool()?,
         })
     }
 

@@ -15,6 +15,10 @@ pub(super) enum ExportItem {
         self_ident: Ident,
         items: Vec<syn::Result<ImplItem>>,
     },
+    Trait {
+        self_ident: Ident,
+        items: Vec<syn::Result<ImplItem>>,
+    },
 }
 
 impl ExportItem {
@@ -25,6 +29,7 @@ impl ExportItem {
                 Ok(Self::Function { sig })
             }
             syn::Item::Impl(item) => Self::from_impl(item),
+            syn::Item::Trait(item) => Self::from_trait(item),
             // FIXME: Support const / static?
             _ => Err(syn::Error::new(
                 Span::call_site(),
@@ -90,6 +95,46 @@ impl ExportItem {
             items,
             self_ident: self_ident.to_owned(),
         })
+    }
+
+    fn from_trait(item: syn::ItemTrait) -> syn::Result<Self> {
+        if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
+            return Err(syn::Error::new_spanned(
+                &item.generics,
+                "generic impls are not currently supported by uniffi::export",
+            ));
+        }
+
+        let self_ident = item.ident.to_owned();
+        let items = item
+            .items
+            .into_iter()
+            .map(|item| {
+                let tim = match item {
+                    syn::TraitItem::Method(tim) => tim,
+                    _ => {
+                        return Err(syn::Error::new_spanned(
+                            item,
+                            "only fn's are supported in traits annotated with uniffi::export",
+                        ));
+                    }
+                };
+
+                let attrs = ExportedImplFnAttributes::new(&tim.attrs)?;
+                let item = if attrs.constructor {
+                    return Err(syn::Error::new_spanned(
+                        tim,
+                        "traits can not have constructors",
+                    ));
+                } else {
+                    ImplItem::Method(FnSignature::new(tim.sig)?)
+                };
+
+                Ok(item)
+            })
+            .collect();
+
+        Ok(Self::Trait { items, self_ident })
     }
 }
 

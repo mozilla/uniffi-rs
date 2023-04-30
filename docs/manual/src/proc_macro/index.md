@@ -25,8 +25,8 @@ command line invocation.
 
 ## The `#[uniffi::export]` attribute
 
-The most important proc-macro is the `export` attribute. It can be used on functions and `impl`
-blocks to make UniFFI aware of them.
+The most important proc-macro is the `export` attribute. It can be used on functions, `impl`
+blocks, and `trait` definitions to make UniFFI aware of them.
 
 ```rust
 #[uniffi::export]
@@ -69,6 +69,15 @@ impl MyObject {
         // ...
     }
 }
+
+// Corresponding UDL:
+// [Trait]
+// interface MyTrait {};
+#[uniffi::export]
+trait MyTrait {
+    // ...
+}
+
 ```
 
 Most UniFFI [builtin types](../udl/builtin_types.md) can be used as parameter and return types.

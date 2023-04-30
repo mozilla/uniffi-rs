@@ -52,6 +52,16 @@ impl ObjectImpl {
             format!("r#{name}")
         }
     }
+
+    // uniffi_meta and procmacro support tend to carry around `is_trait` bools. This makes that
+    // mildly less painful
+    pub fn from_is_trait(is_trait: bool) -> Self {
+        if is_trait {
+            ObjectImpl::Trait
+        } else {
+            ObjectImpl::Struct
+        }
+    }
 }
 
 /// Represents all the different high-level types that can be used in a component interface.

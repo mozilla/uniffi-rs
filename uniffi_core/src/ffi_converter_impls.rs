@@ -470,8 +470,9 @@ unsafe impl<UT, T: Interface<UT>> FfiConverter<UT> for std::sync::Arc<T> {
 
     ffi_converter_default_return!(UT);
 
-    const TYPE_ID_META: MetadataBuffer =
-        MetadataBuffer::from_code(metadata::codes::TYPE_INTERFACE).concat_str(T::NAME);
+    const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_INTERFACE)
+        .concat_str(T::NAME)
+        .concat_bool(false);
 }
 
 /// Support `Result<>` via the FFI.

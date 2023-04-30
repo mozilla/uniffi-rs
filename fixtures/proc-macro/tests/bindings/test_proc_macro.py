@@ -14,6 +14,10 @@ obj = Object()
 obj = Object.named_ctor(1)
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
 
+trait_impl = obj.get_trait(None)
+assert trait_impl.name() == "TraitImpl"
+assert obj.get_trait(trait_impl).name() == "TraitImpl"
+
 assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 
 # just make sure this works / doesn't crash
