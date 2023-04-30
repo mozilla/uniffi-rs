@@ -362,6 +362,41 @@ macro_rules! ffi_converter_forward {
     };
 }
 
+/// Macro to implement `FfiConverter<T>` for a trait
+#[macro_export]
+macro_rules! ffi_converter_trait_decl {
+     ($T:ty, $name:expr, $uniffi_tag:ty) => {
+        use $crate::deps::bytes::{Buf, BufMut};
+        unsafe impl $crate::FfiConverter<$uniffi_tag> for std::sync::Arc<$T> {
+            type FfiType = *const std::os::raw::c_void;
+            $crate::ffi_converter_default_return!($uniffi_tag);
+            //type ReturnType = *const std::os::raw::c_void;
+
+            fn lower(obj: std::sync::Arc<$T>) -> Self::FfiType {
+                Box::into_raw(Box::new(obj)) as *const std::os::raw::c_void
+            }
+
+            fn try_lift(v: Self::FfiType) -> $crate::Result<std::sync::Arc<$T>> {
+                let foreign_arc = Box::leak(unsafe { Box::from_raw(v as *mut std::sync::Arc<$T>) });
+                // Take a clone for our own use.
+                Ok(std::sync::Arc::clone(foreign_arc))
+            }
+
+            fn write(obj: std::sync::Arc<$T>, buf: &mut Vec<u8>) {
+                $crate::deps::static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
+                buf.put_u64(<Self as $crate::FfiConverter<$uniffi_tag>>::lower(obj) as u64);
+            }
+
+            fn try_read(buf: &mut &[u8]) -> $crate::Result<std::sync::Arc<$T>> {
+                $crate::deps::static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
+                $crate::check_remaining(buf, 8)?;
+                <Self as $crate::FfiConverter<$uniffi_tag>>::try_lift(buf.get_u64() as Self::FfiType)
+            }
+            const TYPE_ID_META: $crate::MetadataBuffer = $crate::MetadataBuffer::from_code($crate::metadata::codes::TYPE_INTERFACE).concat_str($name);
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{FfiConverter, UniFfiTag};

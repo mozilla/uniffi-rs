@@ -66,12 +66,12 @@ use uniffi_meta::Checksum;
 use super::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::function::{Argument, Callable};
-use super::types::{Type, TypeIterator};
+use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{convert_type, APIConverter, ComponentInterface};
 
-/// An "object" is an opaque type that can be instantiated and passed around by reference,
+/// An "object" is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
-/// type of deal, except without elaborate inheritance hierarchies.
+/// type of deal, except without elaborate inheritance hierarchies. Some can be instantiated.
 ///
 /// In UDL these correspond to the `interface` keyword.
 ///
@@ -86,6 +86,8 @@ use super::{convert_type, APIConverter, ComponentInterface};
 #[derive(Debug, Clone, Checksum)]
 pub struct Object {
     pub(super) name: String,
+    /// How this object is implemented in Rust
+    pub(super) imp: ObjectImpl,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     // We don't include the FfiFunc in the hash calculation, because:
@@ -96,18 +98,16 @@ pub struct Object {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func_free: FfiFunction,
-    #[checksum_ignore]
-    pub(super) uses_deprecated_threadsafe_attribute: bool,
 }
 
 impl Object {
-    pub(super) fn new(name: String) -> Object {
-        Object {
+    pub(super) fn new(name: String, imp: ObjectImpl) -> Self {
+        Self {
             name,
+            imp,
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
-            uses_deprecated_threadsafe_attribute: false,
         }
     }
 
@@ -115,8 +115,22 @@ impl Object {
         &self.name
     }
 
+    /// Returns the fully qualified name that should be used by Rust code for this object.
+    /// Includes `r#`, traits get a leading `dyn`. If we ever supported associated types, then
+    /// this would also include them.
+    pub fn rust_name(&self) -> String {
+        self.imp.rust_name_for(&self.name)
+    }
+
+    pub fn imp(&self) -> &ObjectImpl {
+        &self.imp
+    }
+
     pub fn type_(&self) -> Type {
-        Type::Object(self.name.clone())
+        Type::Object {
+            name: self.name.clone(),
+            imp: self.imp,
+        }
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -152,10 +166,6 @@ impl Object {
         &self.ffi_func_free
     }
 
-    pub fn uses_deprecated_threadsafe_attribute(&self) -> bool {
-        self.uses_deprecated_threadsafe_attribute
-    }
-
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
         iter::once(&self.ffi_func_free)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
@@ -170,7 +180,7 @@ impl Object {
         }
         self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
-            type_: FfiType::RustArcPtr(self.name().to_string()),
+            type_: FfiType::RustArcPtr(self.name.to_string()),
         }];
         self.ffi_func_free.return_type = None;
         self.ffi_func_free.is_object_free_function = true;
@@ -201,18 +211,27 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         if self.inheritance.is_some() {
             bail!("interface inheritance is not supported");
         }
-        let mut object = Object::new(self.identifier.0.to_string());
         let attributes = match &self.attributes {
             Some(attrs) => InterfaceAttributes::try_from(attrs)?,
             None => Default::default(),
         };
-        object.uses_deprecated_threadsafe_attribute = attributes.threadsafe();
+
+        let name = self.identifier.0;
+        let object_impl = attributes.object_impl();
+
+        let mut object = Object::new(name.to_string(), object_impl);
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Constructor(t) => {
                     let mut cons: Constructor = t.convert(ci)?;
+                    if object_impl == ObjectImpl::Trait {
+                        bail!(
+                            "Trait interfaces can not have constructors: \"{}\"",
+                            cons.name()
+                        )
+                    }
                     if !member_names.insert(cons.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", cons.name())
                     }
@@ -224,7 +243,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name())
                     }
-                    method.set_object_name(ci.namespace(), object.name.clone());
+                    method.set_object_info(ci.namespace(), &object);
                     object.methods.push(method);
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -391,6 +410,7 @@ pub struct Method {
     pub(super) name: String,
     pub(super) object_name: String,
     pub(super) is_async: bool,
+    pub(super) object_impl: ObjectImpl,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
@@ -429,7 +449,10 @@ impl Method {
             name: "ptr".to_string(),
             // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
-            type_: Type::Object(self.object_name.clone()),
+            type_: Type::Object {
+                name: self.object_name.clone(),
+                imp: self.object_impl,
+            },
             by_ref: !self.attributes.get_self_by_arc(),
             optional: false,
             default: None,
@@ -496,14 +519,15 @@ impl Method {
         )
     }
 
-    fn set_object_name(&mut self, ci_namespace: &str, object_name: String) {
+    fn set_object_info(&mut self, ci_namespace: &str, object: &Object) {
         // This is when we setup checksum_fn_name for objects defined in the UDL.  However, don't
         // overwrite checksum_fn_name if we got it from the proc-macro metadata.
         if self.checksum_fn_name.is_empty() {
             self.checksum_fn_name =
-                uniffi_meta::method_checksum_symbol_name(ci_namespace, &object_name, &self.name);
+                uniffi_meta::method_checksum_symbol_name(ci_namespace, &object.name, &self.name);
         }
-        self.object_name = object_name;
+        self.object_name = object.name.clone();
+        self.object_impl = object.imp;
     }
 }
 
@@ -525,6 +549,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             name: meta.name,
             object_name: meta.self_name,
             is_async,
+            object_impl: ObjectImpl::Struct,
             arguments,
             return_type,
             ffi_func,
@@ -566,6 +591,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             // Also fill in checksum_fn_name later, since it depends on the object name
             checksum_fn_name: Default::default(),
             is_async: false,
+            object_impl: ObjectImpl::Struct, // We'll fill this in later too.
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
@@ -581,7 +607,10 @@ impl Callable for Constructor {
     }
 
     fn return_type(&self) -> Option<Type> {
-        Some(Type::Object(self.object_name.clone()))
+        Some(Type::Object {
+            name: self.object_name.clone(),
+            imp: ObjectImpl::Struct,
+        })
     }
 
     fn throws_type(&self) -> Option<Type> {
@@ -727,5 +756,38 @@ mod test {
         "#;
         let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
         assert_eq!(err.to_string(), "Duplicate interface member name: \"new\"");
+    }
+
+    #[test]
+    fn test_trait_attribute() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface NotATrait {
+            };
+            [Trait]
+            interface ATrait {
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let obj = ci.get_object_definition("NotATrait").unwrap();
+        assert_eq!(obj.imp.rust_name_for(&obj.name), "r#NotATrait");
+        let obj = ci.get_object_definition("ATrait").unwrap();
+        assert_eq!(obj.imp.rust_name_for(&obj.name), "dyn r#ATrait");
+    }
+
+    #[test]
+    fn test_trait_constructors_not_allowed() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Trait]
+            interface Testing {
+                constructor();
+            };
+        "#;
+        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "Trait interfaces can not have constructors: \"new\""
+        );
     }
 }

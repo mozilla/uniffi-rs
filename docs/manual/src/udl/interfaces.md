@@ -73,6 +73,61 @@ func display(list: TodoListProtocol) {
 Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
 for testing.
 
+## Exposing Traits as interfaces
+
+It's possible to have UniFFI expose a Rust trait as an interface by specifying a `Trait` attribute.
+
+For example, in the UDL file you might specify:
+
+```idl
+[Trait]
+interface Button {
+    string name();
+};
+
+```
+
+With the following Rust implementation:
+
+```rust
+pub trait Button: Send + Sync {
+    fn name(&self) -> String;
+}
+
+struct StopButton {}
+
+impl Button for StopButton  {
+    fn name(&self) -> String {
+        "stop".to_string()
+    }
+}
+```
+
+Uniffi explicitly checks all interfaces are `Send + Sync` - there's a ui-test which demonstrates obscure rust compiler errors when it's not true. Traits however need to explicitly add those bindings.
+
+References to traits are passed around like normal interface objects - in an `Arc<>`.
+For example, this UDL:
+
+```idl
+namespace traits {
+    sequence<Button> get_buttons();
+    Button press(Button button);
+};
+```
+
+would have these signatures in Rust:
+
+```rust
+fn get_buttons() -> Vec<Arc<dyn Button>> { ... }
+fn press(button: Arc<dyn Button>) -> Arc<dyn Button> { ... }
+```
+
+See the ["traits" example](https://github.com/mozilla/uniffi-rs/tree/main/examples/traits) for more.
+
+### Traits construction
+
+Because any number of `struct`s may implement a trait, they don't have constructors.
+
 ## Alternate Named Constructors
 
 In addition to the default constructor connected to the `::new()` method, you can specify

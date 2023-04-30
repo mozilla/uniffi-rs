@@ -1,0 +1,5 @@
+namespace uitests {};
+
+[Trait]
+interface Trait {
+};

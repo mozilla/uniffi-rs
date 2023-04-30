@@ -18,6 +18,8 @@ use crate::interface::types::ExternalKind;
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
+use super::types::ObjectImpl;
+
 /// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
 ///
 /// This is a convenience enum for parsing UDL attributes and erroring out if we encounter
@@ -30,7 +32,6 @@ pub(super) enum Attribute {
     Error,
     Name(String),
     SelfType(SelfType),
-    Threadsafe, // N.B. the `[Threadsafe]` attribute is deprecated and will be removed
     Throws(String),
     // `[External="crate_name"]` - We can `use crate_name::...` for the type.
     External {
@@ -39,6 +40,8 @@ pub(super) enum Attribute {
     },
     // Custom type on the scaffolding side
     Custom,
+    // The interface described is implemented as a trait.
+    Trait,
 }
 
 impl Attribute {
@@ -63,8 +66,8 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "ByRef" => Ok(Attribute::ByRef),
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
-                "Threadsafe" => Ok(Attribute::Threadsafe),
                 "Custom" => Ok(Attribute::Custom),
+                "Trait" => Ok(Attribute::Trait),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -263,10 +266,12 @@ impl InterfaceAttributes {
         self.0.iter().any(|attr| attr.is_error())
     }
 
-    pub fn threadsafe(&self) -> bool {
-        self.0
-            .iter()
-            .any(|attr| matches!(attr, Attribute::Threadsafe))
+    pub fn object_impl(&self) -> ObjectImpl {
+        if self.0.iter().any(|attr| matches!(attr, Attribute::Trait)) {
+            ObjectImpl::Trait
+        } else {
+            ObjectImpl::Struct
+        }
     }
 }
 
@@ -278,11 +283,11 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
-            Attribute::Threadsafe => Ok(()),
+            Attribute::Trait => Ok(()),
             _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
-        // Can't be both `[Threadsafe]` and an `[Enum]`.
-        if attrs.len() > 1 {
+        if attrs.iter().any(|a| matches!(a, Attribute::Enum)) && attrs.len() != 1 {
+            // If `[Enum]` is specified it must be the only attribute.
             bail!("conflicting attributes on interface definition");
         }
         Ok(Self(attrs))
@@ -540,10 +545,10 @@ mod test {
     }
 
     #[test]
-    fn test_threadsafe() -> Result<()> {
-        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Threadsafe").unwrap();
+    fn test_trait() -> Result<()> {
+        let (_, node) = weedle::attribute::ExtendedAttribute::parse("Trait").unwrap();
         let attr = Attribute::try_from(&node)?;
-        assert!(matches!(attr, Attribute::Threadsafe));
+        assert!(matches!(attr, Attribute::Trait));
         Ok(())
     }
 
@@ -700,14 +705,14 @@ mod test {
     }
 
     #[test]
-    fn test_threadsafe_attribute() {
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Threadsafe]").unwrap();
+    fn test_trait_attribute() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.threadsafe(), true));
+        assert_eq!(attrs.object_impl(), ObjectImpl::Trait);
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.threadsafe(), false));
+        assert_eq!(attrs.object_impl(), ObjectImpl::Struct);
     }
 
     #[test]
@@ -720,12 +725,11 @@ mod test {
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.contains_enum_attr(), false));
 
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Threadsafe]").unwrap();
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.contains_enum_attr(), false));
 
-        let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse("[Threadsafe, Enum]").unwrap();
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait, Enum]").unwrap();
         let err = InterfaceAttributes::try_from(&node).unwrap_err();
         assert_eq!(
             err.to_string(),
@@ -735,8 +739,7 @@ mod test {
 
     #[test]
     fn test_other_attributes_not_supported_for_interfaces() {
-        let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse("[Threadsafe, ByRef]").unwrap();
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait, ByRef]").unwrap();
         let err = InterfaceAttributes::try_from(&node).unwrap_err();
         assert_eq!(
             err.to_string(),

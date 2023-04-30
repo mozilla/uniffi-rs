@@ -4,6 +4,8 @@ namespace coverall {
 
     u64 get_num_alive();
 
+    sequence<TestTrait> get_traits();
+
     // void returning error throwing namespace function to catch clippy warnings (eg, #1330)
     [Throws=CoverallError]
     void println(string text);
@@ -29,6 +31,7 @@ dictionary SimpleDict {
     double float64;
     double? maybe_float64;
     Coveralls? coveralls;
+    TestTrait? test_trait;
 };
 
 dictionary DictWithDefaults {
@@ -149,4 +152,24 @@ interface ThreadsafeCounter {
   constructor();
   void busy_wait(i32 ms);
   i32 increment_if_busy();
+};
+
+// This is a trait implemented on the Rust side.
+[Trait]
+interface TestTrait {
+    string name(); // The name of the implementation
+
+    [Self=ByArc]
+    u64 number();
+
+    /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
+    [Self=ByArc]
+    u64 strong_count();
+
+    /// Takes an `Arc<Self>` and stores it in `self`, dropping the existing
+    /// reference. Note you can create circular references by passing `self`.
+    void take_other(TestTrait? other);
+
+    /// Returns what was previously set via `take_other()`, or null.
+    TestTrait? get_other();
 };

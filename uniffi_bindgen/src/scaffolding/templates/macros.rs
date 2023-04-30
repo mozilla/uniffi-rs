@@ -10,8 +10,14 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
     {%- for arg in func.full_arguments() %}
         match {{- arg.type_().borrow()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
         {%- if arg.by_ref() %}
+        {#  args passed by reference get special treatment for traits and their Box<> #}
+        {%-     if arg.is_trait_ref() %}
+            Ok(ref val) => &**val,
+        {%-     else %}
             Ok(ref val) => val,
+        {%-     endif %}
         {%- else %}
+        {#  args not passed by reference get passed directly #}
             Ok(val) => val,
         {%- endif %}
 

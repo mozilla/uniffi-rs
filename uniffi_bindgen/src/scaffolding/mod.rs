@@ -43,7 +43,7 @@ mod filters {
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
             Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{name}"),
-            Type::Object(name) => format!("std::sync::Arc<r#{name}>"),
+            Type::Object { name, imp } => format!("std::sync::Arc<{}>", imp.rust_name_for(name)),
             Type::CallbackInterface(name) => format!("Box<dyn r#{name}>"),
             Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
             Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),

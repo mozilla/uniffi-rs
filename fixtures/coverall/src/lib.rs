@@ -9,6 +9,9 @@ use std::time::SystemTime;
 
 use once_cell::sync::Lazy;
 
+mod traits;
+pub use traits::{get_traits, TestTrait};
+
 static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
 #[derive(Debug, thiserror::Error)]
@@ -41,7 +44,7 @@ pub enum ComplexError {
     PermissionDenied { reason: String },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Default)]
 pub struct SimpleDict {
     text: String,
     maybe_text: Option<String>,
@@ -62,6 +65,7 @@ pub struct SimpleDict {
     float64: f64,
     maybe_float64: Option<f64>,
     coveralls: Option<Arc<Coveralls>>,
+    test_trait: Option<Arc<dyn TestTrait>>,
 }
 
 #[derive(Debug, Clone)]
@@ -98,30 +102,21 @@ fn create_some_dict() -> SimpleDict {
         float64: 0.0,
         maybe_float64: Some(1.0),
         coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
+        test_trait: Some(Arc::new(traits::Trait2 {})),
     }
 }
 
 fn create_none_dict() -> SimpleDict {
     SimpleDict {
         text: "text".to_string(),
-        maybe_text: None,
         a_bool: true,
-        maybe_a_bool: None,
         unsigned8: 1,
-        maybe_unsigned8: None,
         unsigned16: 3,
-        maybe_unsigned16: None,
         unsigned64: u64::MAX,
-        maybe_unsigned64: None,
         signed8: 8,
-        maybe_signed8: None,
         signed64: i64::MAX,
-        maybe_signed64: None,
         float32: 1.2345,
-        maybe_float32: None,
-        float64: 0.0,
-        maybe_float64: None,
-        coveralls: None,
+        ..Default::default()
     }
 }
 

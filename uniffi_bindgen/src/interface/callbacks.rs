@@ -38,7 +38,7 @@ use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
-use super::types::{Type, TypeIterator};
+use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{APIConverter, ComponentInterface};
 
 #[derive(Debug, Clone, Checksum)]
@@ -108,7 +108,15 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
                     let mut method: Method = t.convert(ci)?;
+                    // A CallbackInterface is described in Rust as a trait, but uniffi
+                    // generates a struct implementing the trait and passes the concrete version
+                    // of that.
+                    // This really just reflects the fact that CallbackInterface and Object
+                    // should be merged; we'd still need a way to ask for a struct delegating to
+                    // foreign implementations be done.
+                    // But currently they are passed as a concrete type with no associated types.
                     method.object_name = object.name.clone();
+                    method.object_impl = ObjectImpl::Struct;
                     object.methods.push(method);
                 }
                 _ => bail!(
