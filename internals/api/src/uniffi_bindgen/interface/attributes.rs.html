@@ -788,6 +788,9 @@
 <span id="788">788</span>
 <span id="789">789</span>
 <span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -808,6 +811,8 @@
 <span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>uniffi_meta::Checksum;
 
+<span class="kw">use </span><span class="kw">super</span>::types::ObjectImpl;
+
 <span class="doccomment">/// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
 ///
 /// This is a convenience enum for parsing UDL attributes and erroring out if we encounter
@@ -820,8 +825,7 @@
     Error,
     Name(String),
     SelfType(SelfType),
-    Threadsafe, <span class="comment">// N.B. the `[Threadsafe]` attribute is deprecated and will be removed
-    </span>Throws(String),
+    Throws(String),
     <span class="comment">// `[External=&quot;crate_name&quot;]` - We can `use crate_name::...` for the type.
     </span>External {
         crate_name: String,
@@ -829,6 +833,8 @@
     },
     <span class="comment">// Custom type on the scaffolding side
     </span>Custom,
+    <span class="comment">// The interface described is implemented as a trait.
+    </span>Trait,
 }
 
 <span class="kw">impl </span>Attribute {
@@ -853,8 +859,8 @@
                 <span class="string">&quot;ByRef&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::ByRef),
                 <span class="string">&quot;Enum&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Enum),
                 <span class="string">&quot;Error&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Error),
-                <span class="string">&quot;Threadsafe&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Threadsafe),
                 <span class="string">&quot;Custom&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Custom),
+                <span class="string">&quot;Trait&quot; </span>=&gt; <span class="prelude-val">Ok</span>(Attribute::Trait),
                 <span class="kw">_ </span>=&gt; <span class="macro">anyhow::bail!</span>(<span class="string">&quot;ExtendedAttributeNoArgs not supported: {:?}&quot;</span>, (attr.<span class="number">0</span>).<span class="number">0</span>),
             },
             <span class="comment">// Matches assignment-style attributes like [&quot;Throws=Error&quot;]
@@ -1053,10 +1059,12 @@
         <span class="self">self</span>.<span class="number">0</span>.iter().any(|attr| attr.is_error())
     }
 
-    <span class="kw">pub fn </span>threadsafe(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.<span class="number">0
-            </span>.iter()
-            .any(|attr| <span class="macro">matches!</span>(attr, Attribute::Threadsafe))
+    <span class="kw">pub fn </span>object_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ObjectImpl {
+        <span class="kw">if </span><span class="self">self</span>.<span class="number">0</span>.iter().any(|attr| <span class="macro">matches!</span>(attr, Attribute::Trait)) {
+            ObjectImpl::Trait
+        } <span class="kw">else </span>{
+            ObjectImpl::Struct
+        }
     }
 }
 
@@ -1068,12 +1076,12 @@
         <span class="kw">let </span>attrs = parse_attributes(weedle_attributes, |attr| <span class="kw">match </span>attr {
             Attribute::Enum =&gt; <span class="prelude-val">Ok</span>(()),
             Attribute::Error =&gt; <span class="prelude-val">Ok</span>(()),
-            Attribute::Threadsafe =&gt; <span class="prelude-val">Ok</span>(()),
+            Attribute::Trait =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;{attr:?} not supported for interface definition&quot;</span>)),
         })<span class="question-mark">?</span>;
-        <span class="comment">// Can&#39;t be both `[Threadsafe]` and an `[Enum]`.
-        </span><span class="kw">if </span>attrs.len() &gt; <span class="number">1 </span>{
-            <span class="macro">bail!</span>(<span class="string">&quot;conflicting attributes on interface definition&quot;</span>);
+        <span class="kw">if </span>attrs.iter().any(|a| <span class="macro">matches!</span>(a, Attribute::Enum)) &amp;&amp; attrs.len() != <span class="number">1 </span>{
+            <span class="comment">// If `[Enum]` is specified it must be the only attribute.
+            </span><span class="macro">bail!</span>(<span class="string">&quot;conflicting attributes on interface definition&quot;</span>);
         }
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(attrs))
     }
@@ -1330,10 +1338,10 @@
     }
 
     <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_threadsafe() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Threadsafe&quot;</span>).unwrap();
+    </span><span class="kw">fn </span>test_trait() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttribute::parse(<span class="string">&quot;Trait&quot;</span>).unwrap();
         <span class="kw">let </span>attr = Attribute::try_from(<span class="kw-2">&amp;</span>node)<span class="question-mark">?</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Threadsafe));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attr, Attribute::Trait));
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -1490,14 +1498,14 @@
     }
 
     <span class="attribute">#[test]
-    </span><span class="kw">fn </span>test_threadsafe_attribute() {
-        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe]&quot;</span>).unwrap();
+    </span><span class="kw">fn </span>test_trait_attribute() {
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Trait]&quot;</span>).unwrap();
         <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.threadsafe(), <span class="bool-val">true</span>));
+        <span class="macro">assert_eq!</span>(attrs.object_impl(), ObjectImpl::Trait);
 
         <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[]&quot;</span>).unwrap();
         <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.threadsafe(), <span class="bool-val">false</span>));
+        <span class="macro">assert_eq!</span>(attrs.object_impl(), ObjectImpl::Struct);
     }
 
     <span class="attribute">#[test]
@@ -1510,12 +1518,11 @@
         <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.contains_enum_attr(), <span class="bool-val">false</span>));
 
-        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe]&quot;</span>).unwrap();
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Trait]&quot;</span>).unwrap();
         <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap();
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(attrs.contains_enum_attr(), <span class="bool-val">false</span>));
 
-        <span class="kw">let </span>(<span class="kw">_</span>, node) =
-            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe, Enum]&quot;</span>).unwrap();
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Trait, Enum]&quot;</span>).unwrap();
         <span class="kw">let </span>err = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
@@ -1525,8 +1532,7 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>test_other_attributes_not_supported_for_interfaces() {
-        <span class="kw">let </span>(<span class="kw">_</span>, node) =
-            weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Threadsafe, ByRef]&quot;</span>).unwrap();
+        <span class="kw">let </span>(<span class="kw">_</span>, node) = weedle::attribute::ExtendedAttributeList::parse(<span class="string">&quot;[Trait, ByRef]&quot;</span>).unwrap();
         <span class="kw">let </span>err = InterfaceAttributes::try_from(<span class="kw-2">&amp;</span>node).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),

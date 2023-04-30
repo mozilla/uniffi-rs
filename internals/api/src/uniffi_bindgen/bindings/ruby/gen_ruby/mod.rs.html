@@ -261,6 +261,8 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -426,7 +428,9 @@
             | Type::UInt64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_i&quot;</span>), <span class="comment">// TODO: check max/min value
             </span>Type::Float32 | Type::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_f&quot;</span>),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm} ? true : false&quot;</span>),
-            Type::Object(<span class="kw">_</span>) | Type::Enum(<span class="kw">_</span>) | Type::Error(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; nm.to_string(),
+            Type::Object { .. } | Type::Enum(<span class="kw">_</span>) | Type::Error(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; {
+                nm.to_string()
+            }
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_s&quot;</span>),
             Type::Timestamp | Type::Duration =&gt; nm.to_string(),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
@@ -470,7 +474,7 @@
             | Type::Float64 =&gt; nm.to_string(),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? 1 : 0)&quot;</span>),
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromString({nm})&quot;</span>),
-            Type::Object(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
+            Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>),
             Type::Error(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
             Type::Enum(<span class="kw">_</span>)
@@ -502,7 +506,7 @@
             Type::Float32 | Type::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_f&quot;</span>),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;1 == {nm}&quot;</span>),
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.consumeIntoString&quot;</span>),
-            Type::Object(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
+            Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>),
             Type::Error(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
             Type::Enum(<span class="kw">_</span>)

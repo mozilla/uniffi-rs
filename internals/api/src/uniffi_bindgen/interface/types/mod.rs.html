@@ -344,6 +344,32 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -380,6 +406,26 @@
 <span class="kw">mod </span>resolver;
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">use </span>resolver::{resolve_builtin_type, TypeResolver};
 
+<span class="attribute">#[derive(Debug, Copy, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd)]
+</span><span class="kw">pub enum </span>ObjectImpl {
+    Struct,
+    Trait,
+}
+
+<span class="kw">impl </span>ObjectImpl {
+    <span class="doccomment">/// Return the fully qualified name which should be used by Rust code for
+    /// an object with the given name.
+    /// Includes `r#`, traits get a leading `dyn`. If we ever supported associated types, then
+    /// this would also include them.
+    </span><span class="kw">pub fn </span>rust_name_for(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="kw">if </span><span class="self">self </span>== <span class="kw-2">&amp;</span>ObjectImpl::Trait {
+            <span class="macro">format!</span>(<span class="string">&quot;dyn r#{name}&quot;</span>)
+        } <span class="kw">else </span>{
+            <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>)
+        }
+    }
+}
+
 <span class="doccomment">/// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
@@ -400,9 +446,14 @@
     String,
     Timestamp,
     Duration,
+    Object {
+        <span class="comment">// The name in the &quot;type universe&quot;
+        </span>name: String,
+        <span class="comment">// How the object is implemented.
+        </span>imp: ObjectImpl,
+    },
     <span class="comment">// Types defined in the component API, each of which has a string name.
-    </span>Object(String),
-    Record(String),
+    </span>Record(String),
     Enum(String),
     Error(String),
     CallbackInterface(String),
@@ -458,7 +509,7 @@
             // cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`.
             // However, types that support importing all end up with the same prefix of &quot;Type&quot;, so
             // that the import handling code knows how to find the remote reference.
-            </span>Type::Object(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
+            </span>Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
             Type::Error(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
             Type::Enum(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
             Type::Record(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
@@ -521,7 +572,7 @@
             // We might add a separate type for borrowed strings in future.
             </span>Type::String =&gt; FfiType::RustBuffer(<span class="prelude-val">None</span>),
             <span class="comment">// Objects are pointers to an Arc&lt;&gt;
-            </span>Type::Object(name) =&gt; FfiType::RustArcPtr(name.to_owned()),
+            </span>Type::Object { name, .. } =&gt; FfiType::RustArcPtr(name.to_owned()),
             <span class="comment">// Callback interfaces are passed as opaque integer handles.
             </span>Type::CallbackInterface(<span class="kw">_</span>) =&gt; FfiType::UInt64,
             <span class="comment">// Other types are serialized into a bytebuffer and deserialized on the other side.
@@ -676,9 +727,10 @@
         </span><span class="macro">assert_eq!</span>(Type::UInt8.canonical_name(), <span class="string">&quot;u8&quot;</span>);
         <span class="macro">assert_eq!</span>(Type::String.canonical_name(), <span class="string">&quot;string&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object(
-                <span class="string">&quot;Example&quot;</span>.into()
-            )))))
+            Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object {
+                name: <span class="string">&quot;Example&quot;</span>.into(),
+                imp: ObjectImpl::Struct,
+            }))))
             .canonical_name(),
             <span class="string">&quot;OptionalSequenceTypeExample&quot;
         </span>);

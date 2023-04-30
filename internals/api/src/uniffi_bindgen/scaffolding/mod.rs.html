@@ -169,7 +169,7 @@
             Type::Timestamp =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.into(),
             Type::Duration =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.into(),
             Type::Enum(name) | Type::Record(name) | Type::Error(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
-            Type::Object(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;r#{name}&gt;&quot;</span>),
+            Type::Object { name, imp } =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;{}&gt;&quot;</span>, imp.rust_name_for(name)),
             Type::CallbackInterface(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn r#{name}&gt;&quot;</span>),
             Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, type_rs(t)<span class="question-mark">?</span>),
             Type::Sequence(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, type_rs(t)<span class="question-mark">?</span>),

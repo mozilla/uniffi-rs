@@ -729,6 +729,68 @@
 <span id="729">729</span>
 <span id="730">730</span>
 <span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -797,12 +859,12 @@
 <span class="kw">use </span><span class="kw">super</span>::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 <span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">use </span><span class="kw">super</span>::function::{Argument, Callable};
-<span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
+<span class="kw">use </span><span class="kw">super</span>::types::{ObjectImpl, Type, TypeIterator};
 <span class="kw">use super</span>::{convert_type, APIConverter, ComponentInterface};
 
-<span class="doccomment">/// An &quot;object&quot; is an opaque type that can be instantiated and passed around by reference,
+<span class="doccomment">/// An &quot;object&quot; is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
-/// type of deal, except without elaborate inheritance hierarchies.
+/// type of deal, except without elaborate inheritance hierarchies. Some can be instantiated.
 ///
 /// In UDL these correspond to the `interface` keyword.
 ///
@@ -817,6 +879,8 @@
 </span><span class="attribute">#[derive(Debug, Clone, Checksum)]
 </span><span class="kw">pub struct </span>Object {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="doccomment">/// How this object is implemented in Rust
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) imp: ObjectImpl,
     <span class="kw">pub</span>(<span class="kw">super</span>) constructors: Vec&lt;Constructor&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
     <span class="comment">// We don&#39;t include the FfiFunc in the hash calculation, because:
@@ -827,18 +891,16 @@
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attribute">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func_free: FfiFunction,
-    <span class="attribute">#[checksum_ignore]
-    </span><span class="kw">pub</span>(<span class="kw">super</span>) uses_deprecated_threadsafe_attribute: bool,
 }
 
 <span class="kw">impl </span>Object {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>new(name: String) -&gt; Object {
-        Object {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>new(name: String, imp: ObjectImpl) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
             name,
+            imp,
             constructors: Default::default(),
             methods: Default::default(),
             ffi_func_free: Default::default(),
-            uses_deprecated_threadsafe_attribute: <span class="bool-val">false</span>,
         }
     }
 
@@ -846,8 +908,22 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
+    <span class="doccomment">/// Returns the fully qualified name that should be used by Rust code for this object.
+    /// Includes `r#`, traits get a leading `dyn`. If we ever supported associated types, then
+    /// this would also include them.
+    </span><span class="kw">pub fn </span>rust_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.imp.rust_name_for(<span class="kw-2">&amp;</span><span class="self">self</span>.name)
+    }
+
+    <span class="kw">pub fn </span>imp(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ObjectImpl {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.imp
+    }
+
     <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        Type::Object(<span class="self">self</span>.name.clone())
+        Type::Object {
+            name: <span class="self">self</span>.name.clone(),
+            imp: <span class="self">self</span>.imp,
+        }
     }
 
     <span class="kw">pub fn </span>constructors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Constructor&gt; {
@@ -883,10 +959,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free
     }
 
-    <span class="kw">pub fn </span>uses_deprecated_threadsafe_attribute(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.uses_deprecated_threadsafe_attribute
-    }
-
     <span class="kw">pub fn </span>iter_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>FfiFunction&gt; {
         iter::once(<span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free)
             .chain(<span class="self">self</span>.constructors.iter().map(|f| <span class="kw-2">&amp;</span>f.ffi_func))
@@ -901,7 +973,7 @@
         }
         <span class="self">self</span>.ffi_func_free.arguments = <span class="macro">vec!</span>[FfiArgument {
             name: <span class="string">&quot;ptr&quot;</span>.to_string(),
-            type_: FfiType::RustArcPtr(<span class="self">self</span>.name().to_string()),
+            type_: FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()),
         }];
         <span class="self">self</span>.ffi_func_free.return_type = <span class="prelude-val">None</span>;
         <span class="self">self</span>.ffi_func_free.is_object_free_function = <span class="bool-val">true</span>;
@@ -932,18 +1004,27 @@
         <span class="kw">if </span><span class="self">self</span>.inheritance.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;interface inheritance is not supported&quot;</span>);
         }
-        <span class="kw">let </span><span class="kw-2">mut </span>object = Object::new(<span class="self">self</span>.identifier.<span class="number">0</span>.to_string());
         <span class="kw">let </span>attributes = <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.attributes {
             <span class="prelude-val">Some</span>(attrs) =&gt; InterfaceAttributes::try_from(attrs)<span class="question-mark">?</span>,
             <span class="prelude-val">None </span>=&gt; Default::default(),
         };
-        object.uses_deprecated_threadsafe_attribute = attributes.threadsafe();
+
+        <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>;
+        <span class="kw">let </span>object_impl = attributes.object_impl();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>object = Object::new(name.to_string(), object_impl);
         <span class="comment">// Convert each member into a constructor or method, guarding against duplicate names.
         </span><span class="kw">let </span><span class="kw-2">mut </span>member_names = HashSet::new();
         <span class="kw">for </span>member <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.members.body {
             <span class="kw">match </span>member {
                 weedle::interface::InterfaceMember::Constructor(t) =&gt; {
                     <span class="kw">let </span><span class="kw-2">mut </span>cons: Constructor = t.convert(ci)<span class="question-mark">?</span>;
+                    <span class="kw">if </span>object_impl == ObjectImpl::Trait {
+                        <span class="macro">bail!</span>(
+                            <span class="string">&quot;Trait interfaces can not have constructors: \&quot;{}\&quot;&quot;</span>,
+                            cons.name()
+                        )
+                    }
                     <span class="kw">if </span>!member_names.insert(cons.name.clone()) {
                         <span class="macro">bail!</span>(<span class="string">&quot;Duplicate interface member name: \&quot;{}\&quot;&quot;</span>, cons.name())
                     }
@@ -955,7 +1036,7 @@
                     <span class="kw">if </span>!member_names.insert(method.name.clone()) {
                         <span class="macro">bail!</span>(<span class="string">&quot;Duplicate interface member name: \&quot;{}\&quot;&quot;</span>, method.name())
                     }
-                    method.set_object_name(ci.namespace(), object.name.clone());
+                    method.set_object_info(ci.namespace(), <span class="kw-2">&amp;</span>object);
                     object.methods.push(method);
                 }
                 <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;no support for interface member type {:?} yet&quot;</span>, member),
@@ -1122,6 +1203,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
+    <span class="kw">pub</span>(<span class="kw">super</span>) object_impl: ObjectImpl,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
@@ -1160,7 +1242,10 @@
             name: <span class="string">&quot;ptr&quot;</span>.to_string(),
             <span class="comment">// TODO: ideally we&#39;d get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
-            </span>type_: Type::Object(<span class="self">self</span>.object_name.clone()),
+            </span>type_: Type::Object {
+                name: <span class="self">self</span>.object_name.clone(),
+                imp: <span class="self">self</span>.object_impl,
+            },
             by_ref: !<span class="self">self</span>.attributes.get_self_by_arc(),
             optional: <span class="bool-val">false</span>,
             default: <span class="prelude-val">None</span>,
@@ -1227,14 +1312,15 @@
         )
     }
 
-    <span class="kw">fn </span>set_object_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, object_name: String) {
+    <span class="kw">fn </span>set_object_info(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, object: <span class="kw-2">&amp;</span>Object) {
         <span class="comment">// This is when we setup checksum_fn_name for objects defined in the UDL.  However, don&#39;t
         // overwrite checksum_fn_name if we got it from the proc-macro metadata.
         </span><span class="kw">if </span><span class="self">self</span>.checksum_fn_name.is_empty() {
             <span class="self">self</span>.checksum_fn_name =
-                uniffi_meta::method_checksum_symbol_name(ci_namespace, <span class="kw-2">&amp;</span>object_name, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
+                uniffi_meta::method_checksum_symbol_name(ci_namespace, <span class="kw-2">&amp;</span>object.name, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
         }
-        <span class="self">self</span>.object_name = object_name;
+        <span class="self">self</span>.object_name = object.name.clone();
+        <span class="self">self</span>.object_impl = object.imp;
     }
 }
 
@@ -1256,6 +1342,7 @@
             name: meta.name,
             object_name: meta.self_name,
             is_async,
+            object_impl: ObjectImpl::Struct,
             arguments,
             return_type,
             ffi_func,
@@ -1297,7 +1384,8 @@
             <span class="comment">// Also fill in checksum_fn_name later, since it depends on the object name
             </span>checksum_fn_name: Default::default(),
             is_async: <span class="bool-val">false</span>,
-            arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
+            object_impl: ObjectImpl::Struct, <span class="comment">// We&#39;ll fill this in later too.
+            </span>arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
             return_type,
             ffi_func: Default::default(),
             attributes: MethodAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>,
@@ -1312,7 +1400,10 @@
     }
 
     <span class="kw">fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
-        <span class="prelude-val">Some</span>(Type::Object(<span class="self">self</span>.object_name.clone()))
+        <span class="prelude-val">Some</span>(Type::Object {
+            name: <span class="self">self</span>.object_name.clone(),
+            imp: ObjectImpl::Struct,
+        })
     }
 
     <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
@@ -1458,6 +1549,39 @@
         &quot;#</span>;
         <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2).unwrap_err();
         <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Duplicate interface member name: \&quot;new\&quot;&quot;</span>);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_trait_attribute() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+            namespace test{};
+            interface NotATrait {
+            };
+            [Trait]
+            interface ATrait {
+            };
+        &quot;#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;NotATrait&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">&quot;r#NotATrait&quot;</span>);
+        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;ATrait&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">&quot;dyn r#ATrait&quot;</span>);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_trait_constructors_not_allowed() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+            namespace test{};
+            [Trait]
+            interface Testing {
+                constructor();
+            };
+        &quot;#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        <span class="macro">assert_eq!</span>(
+            err.to_string(),
+            <span class="string">&quot;Trait interfaces can not have constructors: \&quot;new\&quot;&quot;
+        </span>);
     }
 }
 </code></pre></div>

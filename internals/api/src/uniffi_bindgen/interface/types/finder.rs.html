@@ -252,6 +252,8 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -312,13 +314,15 @@
 <span class="kw">impl </span>TypeFinder <span class="kw">for </span>weedle::InterfaceDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">fn </span>add_type_definitions_to(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>.to_string();
+        <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>;
         <span class="comment">// Some enum types are defined using an `interface` with a special attribute.
-        </span><span class="kw">if </span>InterfaceAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>.contains_enum_attr() {
+        </span><span class="kw">if </span>attrs.contains_enum_attr() {
             types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Enum(name))
-        } <span class="kw">else if </span>InterfaceAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>.contains_error_attr() {
+        } <span class="kw">else if </span>attrs.contains_error_attr() {
             types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Error(name))
         } <span class="kw">else </span>{
-            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Object(name))
+            <span class="kw">let </span>obj = <span class="kw">crate</span>::interface::Object::new(name, attrs.object_impl());
+            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, obj.type_())
         }
     }
 }
@@ -457,7 +461,7 @@
         &quot;#</span>,
             |types| {
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestObject&quot;</span>).unwrap(), Type::Object(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestObject&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestObject&quot;</span>).unwrap(), Type::Object{ name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestObject&quot;</span>)
                 );
             },
         );

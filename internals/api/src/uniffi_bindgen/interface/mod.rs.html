@@ -1151,6 +1151,19 @@
 <span id="1151">1151</span>
 <span id="1152">1152</span>
 <span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1206,7 +1219,7 @@
 <span class="kw">use </span>anyhow::{bail, ensure, <span class="prelude-ty">Result</span>};
 
 <span class="kw">pub mod </span>types;
-<span class="kw">pub use </span>types::{ExternalKind, Type};
+<span class="kw">pub use </span>types::{ExternalKind, ObjectImpl, Type};
 <span class="kw">use </span>types::{TypeIterator, TypeUniverse};
 
 <span class="kw">mod </span>attributes;
@@ -1433,7 +1446,7 @@
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
     </span><span class="kw">pub fn </span>item_contains_object_references(<span class="kw-2">&amp;</span><span class="self">self</span>, item: <span class="kw-2">&amp;</span>Type) -&gt; bool {
         <span class="self">self</span>.iter_types_in_item(item)
-            .any(|t| <span class="macro">matches!</span>(t, Type::Object(<span class="kw">_</span>)))
+            .any(|t| <span class="macro">matches!</span>(t, Type::Object { .. }))
     }
 
     <span class="doccomment">/// Check whether the given item contains any (possibly nested) unsigned types
@@ -1852,11 +1865,11 @@
 
         <span class="kw">for </span>ty <span class="kw">in </span><span class="self">self</span>.iter_types() {
             <span class="kw">match </span>ty {
-                Type::Object(name) =&gt; {
+                Type::Object { name, .. } =&gt; {
                     <span class="macro">ensure!</span>(
                         <span class="self">self</span>.objects.iter().any(|o| o.name == <span class="kw-2">*</span>name),
-                        <span class="string">&quot;Object `{name}` has no definition&quot;</span>,
-                    );
+                        <span class="string">&quot;Object `{name}` has no definition&quot;
+                    </span>);
                 }
                 Type::Record(name) =&gt; {
                     <span class="macro">ensure!</span>(
@@ -1902,7 +1915,8 @@
     </span><span class="kw">match </span>objects.iter_mut().position(|o| o.name == name) {
         <span class="prelude-val">Some</span>(idx) =&gt; <span class="kw-2">&amp;mut </span>objects[idx],
         <span class="prelude-val">None </span>=&gt; {
-            objects.push(Object::new(name.to_owned()));
+            <span class="comment">// proc-macros don&#39;t yet support describing traits.
+            </span>objects.push(Object::new(name.to_owned(), ObjectImpl::Struct));
             objects.last_mut().unwrap()
         }
     }
@@ -1953,7 +1967,7 @@
             Type::Record(nm)
             | Type::Enum(nm)
             | Type::Error(nm)
-            | Type::Object(nm)
+            | Type::Object { name: nm, .. }
             | Type::CallbackInterface(nm) =&gt; {
                 <span class="kw">if </span>!<span class="self">self</span>.seen.contains(nm.as_str()) {
                     <span class="self">self</span>.pending.push(type_);
@@ -1979,7 +1993,9 @@
                 Type::Record(nm) =&gt; <span class="self">self</span>.ci.get_record_definition(nm).map(Record::iter_types),
                 Type::Enum(nm) =&gt; <span class="self">self</span>.ci.get_enum_definition(nm).map(Enum::iter_types),
                 Type::Error(nm) =&gt; <span class="self">self</span>.ci.get_error_definition(nm).map(Error::iter_types),
-                Type::Object(nm) =&gt; <span class="self">self</span>.ci.get_object_definition(nm).map(Object::iter_types),
+                Type::Object { name: nm, .. } =&gt; {
+                    <span class="self">self</span>.ci.get_object_definition(nm).map(Object::iter_types)
+                }
                 Type::CallbackInterface(nm) =&gt; <span class="self">self
                     </span>.ci
                     .get_callback_interface_definition(nm)
@@ -2121,7 +2137,11 @@
         Ty::Duration =&gt; Type::Duration,
         Ty::Record { name } =&gt; Type::Record(name.clone()),
         Ty::Enum { name } =&gt; Type::Enum(name.clone()),
-        Ty::ArcObject { object_name } =&gt; Type::Object(object_name.clone()),
+        Ty::ArcObject { object_name } =&gt; Type::Object {
+            name: object_name.clone(),
+            <span class="comment">// proc-macros don&#39;t yet describe traits.
+            </span>imp: ObjectImpl::Struct,
+        },
         Ty::Error { name } =&gt; Type::Error(name.clone()),
         Ty::CallbackInterface { name } =&gt; Type::CallbackInterface(name.clone()),
         Ty::Custom { name, builtin } =&gt; Type::Custom {
@@ -2162,7 +2182,7 @@
         <span class="macro">assert_eq!</span>(
             err.to_string(),
             <span class="string">&quot;Conflicting type definition for `Testing`! \
-             existing definition: Object(\&quot;Testing\&quot;), \
+             existing definition: Object { name: \&quot;Testing\&quot;, imp: Struct }, \
              new definition: Record(\&quot;Testing\&quot;)&quot;
         </span>);
 
@@ -2283,7 +2303,10 @@
             };
         &quot;#</span>;
         <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
-        <span class="macro">assert!</span>(!ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object(<span class="string">&quot;Testing&quot;</span>.into())));
+        <span class="macro">assert!</span>(!ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object {
+            name: <span class="string">&quot;Testing&quot;</span>.into(),
+            imp: ObjectImpl::Struct,
+        }));
     }
 
     <span class="attribute">#[test]
@@ -2301,7 +2324,10 @@
             };
         &quot;#</span>;
         <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
-        <span class="macro">assert!</span>(ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object(<span class="string">&quot;TestObj&quot;</span>.into())));
+        <span class="macro">assert!</span>(ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object {
+            name: <span class="string">&quot;TestObj&quot;</span>.into(),
+            imp: ObjectImpl::Struct,
+        }));
     }
 }
 </code></pre></div>

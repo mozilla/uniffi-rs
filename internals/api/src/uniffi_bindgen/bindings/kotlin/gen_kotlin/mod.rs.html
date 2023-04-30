@@ -687,7 +687,7 @@
             Type::Duration =&gt; Box::new(miscellany::DurationCodeType),
 
             Type::Enum(id) =&gt; Box::new(enum_::EnumCodeType::new(id)),
-            Type::Object(id) =&gt; Box::new(object::ObjectCodeType::new(id)),
+            Type::Object { name, .. } =&gt; Box::new(object::ObjectCodeType::new(name)),
             Type::Record(id) =&gt; Box::new(record::RecordCodeType::new(id)),
             Type::Error(id) =&gt; Box::new(error::ErrorCodeType::new(id)),
             Type::CallbackInterface(id) =&gt; {

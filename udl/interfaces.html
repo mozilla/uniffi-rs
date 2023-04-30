@@ -220,6 +220,51 @@ func display(list: TodoListProtocol) {
 </code></pre>
 <p>Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
 for testing.</p>
+<h2><a class="header" href="#exposing-traits-as-interfaces" id="exposing-traits-as-interfaces">Exposing Traits as interfaces</a></h2>
+<p>It's possible to have UniFFI expose a Rust trait as an interface by specifying a <code>Trait</code> attribute.</p>
+<p>For example, in the UDL file you might specify:</p>
+<pre><code class="language-idl">[Trait]
+interface Button {
+    string name();
+};
+
+</code></pre>
+<p>With the following Rust implementation:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub trait Button: Send + Sync {
+    fn name(&amp;self) -&gt; String;
+}
+
+struct StopButton {}
+
+impl Button for StopButton  {
+    fn name(&amp;self) -&gt; String {
+        &quot;stop&quot;.to_string()
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Uniffi explicitly checks all interfaces are <code>Send + Sync</code> - there's a ui-test which demonstrates obscure rust compiler errors when it's not true. Traits however need to explicitly add those bindings.</p>
+<p>References to traits are passed around like normal interface objects - in an <code>Arc&lt;&gt;</code>.
+For example, this UDL:</p>
+<pre><code class="language-idl">namespace traits {
+    sequence&lt;Button&gt; get_buttons();
+    Button press(Button button);
+};
+</code></pre>
+<p>would have these signatures in Rust:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn get_buttons() -&gt; Vec&lt;Arc&lt;dyn Button&gt;&gt; { ... }
+fn press(button: Arc&lt;dyn Button&gt;) -&gt; Arc&lt;dyn Button&gt; { ... }
+<span class="boring">}
+</span></code></pre></pre>
+<p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/traits">&quot;traits&quot; example</a> for more.</p>
+<h3><a class="header" href="#traits-construction" id="traits-construction">Traits construction</a></h3>
+<p>Because any number of <code>struct</code>s may implement a trait, they don't have constructors.</p>
 <h2><a class="header" href="#alternate-named-constructors" id="alternate-named-constructors">Alternate Named Constructors</a></h2>
 <p>In addition to the default constructor connected to the <code>::new()</code> method, you can specify
 alternate named constructors to create object instances in different ways. Each such constructor
