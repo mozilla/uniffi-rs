@@ -1164,6 +1164,11 @@
 <span id="1164">1164</span>
 <span id="1165">1165</span>
 <span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1802,9 +1807,14 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_object_free_fn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ObjectMetadata) {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_object_free_fn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ObjectMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::Object {
+            name: meta.name.clone(),
+            imp: ObjectImpl::Struct,
+        })<span class="question-mark">?</span>;
         <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.name);
         object.ffi_func_free.name = meta.free_ffi_symbol_name();
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.

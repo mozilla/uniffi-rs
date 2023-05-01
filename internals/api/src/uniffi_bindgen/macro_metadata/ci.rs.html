@@ -200,7 +200,7 @@
                 iface.add_enum_definition(enum_)<span class="question-mark">?</span>;
             }
             Metadata::Object(meta) =&gt; {
-                iface.add_object_free_fn(meta);
+                iface.add_object_free_fn(meta)<span class="question-mark">?</span>;
             }
             Metadata::Error(meta) =&gt; {
                 <span class="kw">let </span>ty = Type::Error(meta.name.clone());
