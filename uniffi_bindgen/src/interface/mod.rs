@@ -637,8 +637,10 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) -> Result<()> {
-        self.types
-            .add_known_type(&Type::Object(meta.name.clone()))?;
+        self.types.add_known_type(&Type::Object {
+            name: meta.name.clone(),
+            imp: ObjectImpl::Struct,
+        })?;
         let object = get_or_insert_object(&mut self.objects, &meta.name);
         object.ffi_func_free.name = meta.free_ffi_symbol_name();
         Ok(())
