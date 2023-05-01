@@ -88,7 +88,7 @@ pub fn add_to_ci(
                 iface.add_enum_definition(enum_)?;
             }
             Metadata::Object(meta) => {
-                iface.add_object_free_fn(meta);
+                iface.add_object_free_fn(meta)?;
             }
             Metadata::Error(meta) => {
                 let ty = Type::Error(meta.name.clone());
