@@ -22,7 +22,7 @@ class {{ type_name }} implements Exception {
 }
 
 class {{ ffi_converter_name }} {
-    static {{ type_name }} read(Uint8List buf) {
+    static void throwIt(Uint8List buf) {
         print("1234567890");
         var bytes = ByteData.view(buf.buffer);
         int errorCode = bytes.getInt32(0);
@@ -31,12 +31,38 @@ class {{ ffi_converter_name }} {
         switch (errorCode) {
         {% for variant in e.variants() %}
         case {{ type_name }}.{{ variant.name()|class_name }}:
-            return {{ type_name }}({{ type_name }}.{{ variant.name()|class_name }});
+            throw {{ type_name }}({{ type_name }}.{{ variant.name()|class_name }});
         {% endfor %}
         default:
             throw UniffiInternalError.unexpectedEnumCase;
         }
     }
+
+  static T rustCallWithError<T>(Api api, Function(Pointer<RustCallStatus>) callback) {
+    var callStatus = RustCallStatus.allocate();
+    final returnValue = callback(callStatus);
+
+    switch (callStatus.ref.code) {
+      case CALL_SUCCESS:
+        calloc.free(callStatus);
+        return returnValue;
+      case CALL_ERROR:
+        throwIt(callStatus.ref.errorBuf.asByteBuffer());
+        // fallback for the linter
+        throw UniffiInternalError(callStatus.ref.code, null);
+      case CALL_PANIC:
+        if (callStatus.ref.errorBuf.len > 0) {
+          final message = {{ Type::String.borrow()|lift_fn }}(api, callStatus.ref.errorBuf);
+          calloc.free(callStatus);
+          throw UniffiInternalError.panicked(message);
+        } else {
+          calloc.free(callStatus);
+          throw UniffiInternalError.panicked("Rust panic");
+        }
+      default:
+        throw UniffiInternalError(callStatus.ref.code, null);
+    }
+  }
 
     static void write({{ type_name }} value, Uint8List buf) {
         switch (value.errorCode) {

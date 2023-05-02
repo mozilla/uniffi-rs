@@ -7,8 +7,7 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError(this,
-        {{ e|type_name }},
+    {{ e|ffi_converter_name }}.rustCallWithError(this,
         (status) => _{{ func.name()|fn_name }}(
             {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}
             status
@@ -66,7 +65,7 @@
     {#
       {%- match func.throws_type() %}
       {%- when Some with (e) %}
-      rustCallWithError({{ e|ffi_converter_name }}.self) {
+        {{ e|ffi_converter_name }}.rustCallWithError(self) {
       {%- else %}
       rustCall() {
     {% endmatch %}
