@@ -610,7 +610,7 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name, ObjectImpl::Struct);
         let defn: Constructor = meta.into();
 
         for arg in &defn.arguments {
@@ -622,7 +622,8 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name);
+        let imp = ObjectImpl::from_is_trait(meta.self_is_trait);
+        let object = get_or_insert_object(&mut self.objects, &meta.self_name, imp);
         let defn: Method = meta.into();
 
         for arg in &defn.arguments {
@@ -637,11 +638,12 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) -> Result<()> {
+        let imp = ObjectImpl::from_is_trait(meta.is_trait);
         self.types.add_known_type(&Type::Object {
             name: meta.name.clone(),
-            imp: ObjectImpl::Struct,
+            imp,
         })?;
-        let object = get_or_insert_object(&mut self.objects, &meta.name);
+        let object = get_or_insert_object(&mut self.objects, &meta.name, imp);
         object.ffi_func_free.name = meta.free_ffi_symbol_name();
         Ok(())
     }
@@ -748,14 +750,21 @@ impl ComponentInterface {
     }
 }
 
-fn get_or_insert_object<'a>(objects: &'a mut Vec<Object>, name: &str) -> &'a mut Object {
+fn get_or_insert_object<'a>(
+    objects: &'a mut Vec<Object>,
+    name: &str,
+    imp: ObjectImpl,
+) -> &'a mut Object {
     // The find-based way of writing this currently runs into a borrow checker
     // error, so we use position
     match objects.iter_mut().position(|o| o.name == name) {
-        Some(idx) => &mut objects[idx],
+        Some(idx) => {
+            // what we created before must match the implementation.
+            assert_eq!(objects[idx].imp, imp);
+            &mut objects[idx]
+        }
         None => {
-            // proc-macros don't yet support describing traits.
-            objects.push(Object::new(name.to_owned(), ObjectImpl::Struct));
+            objects.push(Object::new(name.to_owned(), imp));
             objects.last_mut().unwrap()
         }
     }
@@ -976,10 +985,12 @@ fn convert_type(s: &uniffi_meta::Type) -> Type {
         Ty::Duration => Type::Duration,
         Ty::Record { name } => Type::Record(name.clone()),
         Ty::Enum { name } => Type::Enum(name.clone()),
-        Ty::ArcObject { object_name } => Type::Object {
+        Ty::ArcObject {
+            object_name,
+            is_trait,
+        } => Type::Object {
             name: object_name.clone(),
-            // proc-macros don't yet describe traits.
-            imp: ObjectImpl::Struct,
+            imp: ObjectImpl::from_is_trait(*is_trait),
         },
         Ty::Error { name } => Type::Error(name.clone()),
         Ty::CallbackInterface { name } => Type::CallbackInterface(name.clone()),

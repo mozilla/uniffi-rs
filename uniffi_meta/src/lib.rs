@@ -155,6 +155,7 @@ impl ConstructorMetadata {
 pub struct MethodMetadata {
     pub module_path: String,
     pub self_name: String,
+    pub self_is_trait: bool,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
@@ -204,6 +205,7 @@ pub enum Type {
     },
     ArcObject {
         object_name: String,
+        is_trait: bool,
     },
     Error {
         name: String,
@@ -258,6 +260,7 @@ pub struct VariantMetadata {
 pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
+    pub is_trait: bool,
 }
 
 impl ObjectMetadata {

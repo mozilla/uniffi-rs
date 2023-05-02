@@ -71,6 +71,7 @@ pub(super) fn gen_method_scaffolding(
     mod_path: &str,
     self_ident: &Ident,
     arguments: &ExportAttributeArguments,
+    is_trait: bool,
 ) -> syn::Result<TokenStream> {
     let ident = &sig.ident;
     let name_s = ident_to_string(ident);
@@ -84,8 +85,14 @@ pub(super) fn gen_method_scaffolding(
     let bits = match sig.inputs.first() {
         // Method calls
         Some(arg) if is_receiver(arg) => {
-            let ffi_converter = quote! {
-                <::std::sync::Arc<#self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+            let ffi_converter = if is_trait {
+                quote! {
+                    <::std::sync::Arc<dyn #self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+                }
+            } else {
+                quote! {
+                    <::std::sync::Arc<#self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+                }
             };
             let mut bits = ScaffoldingBits::new();
             // The first scaffolding parameter is `this` -- the lowered value for `self`
@@ -111,7 +118,7 @@ pub(super) fn gen_method_scaffolding(
         }
     };
 
-    let metadata_var = bits.gen_method_meta_static_var(self_ident, &sig, mod_path);
+    let metadata_var = bits.gen_method_meta_static_var(self_ident, &sig, mod_path, is_trait);
     let scaffolding_func = gen_ffi_function(&sig, ffi_ident, &bits, arguments);
     Ok(quote! {
         #scaffolding_func
@@ -317,6 +324,7 @@ impl ScaffoldingBits {
         self_ident: &Ident,
         sig: &FnSignature,
         mod_path: &str,
+        self_is_trait: bool,
     ) -> TokenStream {
         let object_name = ident_to_string(self_ident);
         let name = ident_to_string(&sig.ident);
@@ -337,6 +345,7 @@ impl ScaffoldingBits {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
+                        .concat_bool(#self_is_trait)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)

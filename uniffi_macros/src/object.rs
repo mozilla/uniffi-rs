@@ -12,7 +12,7 @@ pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<Tok
     let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
     let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
-    let meta_static_var = interface_meta_static_var(ident, &module_path)?;
+    let meta_static_var = interface_meta_static_var(ident, false, &module_path)?;
     let interface_impl = interface_impl(ident, attr.tag.as_ref());
 
     Ok(quote! {
@@ -55,6 +55,7 @@ pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
 
 pub(crate) fn interface_meta_static_var(
     ident: &Ident,
+    is_trait: bool,
     module_path: &str,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
@@ -65,6 +66,7 @@ pub(crate) fn interface_meta_static_var(
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
                     .concat_str(#module_path)
                     .concat_str(#name)
+                    .concat_bool(#is_trait)
         },
         None,
     ))

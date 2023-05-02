@@ -39,6 +39,19 @@ impl Unused {
     }
 }
 
+#[uniffi::export]
+pub trait Trait: Send + Sync {
+    fn name(&self) -> String;
+}
+
+struct TraitImpl {}
+
+impl Trait for TraitImpl {
+    fn name(&self) -> String {
+        "TraitImpl".to_string()
+    }
+}
+
 #[derive(uniffi::Object)]
 pub struct Object;
 
@@ -57,6 +70,10 @@ impl Object {
 
     fn is_heavy(&self) -> MaybeBool {
         MaybeBool::Uncertain
+    }
+
+    fn get_trait(&self, inc: Option<Arc<dyn Trait>>) -> Arc<dyn Trait> {
+        inc.unwrap_or_else(|| Arc::new(TraitImpl {}))
     }
 }
 

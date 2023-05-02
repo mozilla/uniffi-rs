@@ -132,6 +132,7 @@ mod test_type_ids {
         });
         check_type_id::<Arc<Calculator>>(Type::ArcObject {
             object_name: "Calculator".into(),
+            is_trait: false,
         });
     }
 
@@ -302,6 +303,7 @@ mod test_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
+                is_trait: false,
             },
         );
     }
@@ -309,6 +311,7 @@ mod test_metadata {
 
 mod test_function_metadata {
     use super::*;
+    use std::sync::Arc;
 
     #[uniffi::export]
     #[allow(unused)]
@@ -343,6 +346,11 @@ mod test_function_metadata {
     }
 
     #[uniffi::export]
+    pub trait CalculatorDisplay: Send + Sync {
+        fn display_result(&self, val: String);
+    }
+
+    #[uniffi::export]
     impl Calculator {
         #[allow(unused)]
         pub fn add(&self, a: u8, b: u8) -> u8 {
@@ -351,6 +359,11 @@ mod test_function_metadata {
 
         #[allow(unused)]
         pub async fn async_sub(&self, a: u8, b: u8) -> u8 {
+            unimplemented!()
+        }
+
+        #[allow(unused)]
+        pub fn get_display(&self) -> Arc<dyn CalculatorDisplay> {
             unimplemented!()
         }
     }
@@ -449,6 +462,7 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
+                self_is_trait: false,
                 name: "add".into(),
                 is_async: false,
                 inputs: vec![
@@ -527,6 +541,7 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
+                self_is_trait: false,
                 name: "async_sub".into(),
                 is_async: true,
                 inputs: vec![
@@ -542,6 +557,52 @@ mod test_function_metadata {
                 return_type: Some(Type::U8),
                 throws: None,
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
+                    .checksum(),
+            },
+        );
+    }
+
+    #[test]
+    fn test_trait_result() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY,
+            MethodMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                self_name: "Calculator".into(),
+                self_is_trait: false,
+                name: "get_display".into(),
+                is_async: false,
+                inputs: vec![],
+                return_type: Some(Type::ArcObject {
+                    object_name: "CalculatorDisplay".into(),
+                    is_trait: true,
+                }),
+                throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY
+                    .checksum(),
+            },
+        );
+    }
+
+    #[test]
+    fn test_trait_method() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT,
+            MethodMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                self_name: "CalculatorDisplay".into(),
+                self_is_trait: true,
+                name: "display_result".into(),
+                is_async: false,
+                inputs: vec![
+                    FnParamMetadata {
+                        name: "val".into(),
+                        ty: Type::String,
+                    },
+                ],
+                return_type: None,
+                throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
                     .checksum(),
             },
         );
