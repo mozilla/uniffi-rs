@@ -1,6 +1,7 @@
 [Error]
 enum ArithmeticError {
   "IntegerOverflow",
+  "DivideByZero",
 };
 
 namespace arithmetic {
@@ -10,6 +11,7 @@ namespace arithmetic {
   [Throws=ArithmeticError]
   u64 sub(u64 a, u64 b);
 
+  [Throws=ArithmeticError]
   u64 div(u64 dividend, u64 divisor);
 
   boolean equal(u64 a, u64 b);
