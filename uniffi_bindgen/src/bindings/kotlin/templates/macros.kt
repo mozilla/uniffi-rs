@@ -7,7 +7,7 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|type_name}})
+    rustCallWithError({{ e|type_name }})
     {%- else %}
     rustCall()
     {%- endmatch %} { _status ->
@@ -18,7 +18,7 @@
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|type_name}})
+    rustCallWithError({{ e|type_name }})
     {%- else %}
     rustCall()
     {%- endmatch %} { _status ->

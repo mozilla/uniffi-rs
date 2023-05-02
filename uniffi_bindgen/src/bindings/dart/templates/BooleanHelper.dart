@@ -4,8 +4,6 @@ typedef BoolLowered = Bool;
 typedef BoolLifted = bool;
 
 class FfiConverterBool {
-  //extends FfiConverter {
-
   static BoolLifted lift(Api _api, BoolDartFfi value) {
     return value != 0;
   }

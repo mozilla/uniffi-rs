@@ -1,10 +1,10 @@
-typedef StringLowered = RustBuffer;
-typedef StringLifted = String;
+// typedef StringLowered = RustBuffer;
+// typedef StringLifted = String;
 
-typedef StringFfi = RustBuffer;
+// typedef StringFfi = RustBuffer;
 
 class FfiConverterString {
-  static StringLifted lift(Api api, StringLowered value) {
+  static String lift(Api api, RustBuffer value) {
     final codeUnits = value.data.cast<Uint8>();
     return utf8.decode(codeUnits.asTypedList(value.len));
   }
