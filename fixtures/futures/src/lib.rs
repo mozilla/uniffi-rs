@@ -130,6 +130,16 @@ pub async fn async_new_megaphone() -> Arc<Megaphone> {
     new_megaphone()
 }
 
+/// Async function that possibly generates a new `Megaphone`.
+#[uniffi::export]
+pub async fn async_maybe_new_megaphone(y: bool) -> Option<Arc<Megaphone>> {
+    if y {
+        Some(new_megaphone())
+    } else {
+        None
+    }
+}
+
 /// A megaphone. Be careful with the neighbours.
 #[derive(uniffi::Object)]
 pub struct Megaphone;
