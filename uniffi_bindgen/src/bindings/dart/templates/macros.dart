@@ -5,12 +5,23 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    rustCall(this,
-      (status) => _{{func.name()|fn_name}}(
-          {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}
-          status
-      )
+    {%- match func.throws_type() %}
+    {%- when Some with (e) %}
+    rustCallWithError(this,
+        {{ e|type_name }},
+        (status) => _{{ func.name()|fn_name }}(
+            {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}
+            status
+        )
     )
+    {%- else %}
+    rustCall(this,
+        (status) => _{{ func.name()|fn_name }}(
+            {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %}
+            status
+        )
+    )
+    {%- endmatch %}
 {%- endmacro -%}
 
 {%- macro gen_ffi_signatures_global(meth) -%}

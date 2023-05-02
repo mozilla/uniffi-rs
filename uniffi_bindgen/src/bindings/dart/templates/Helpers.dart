@@ -59,12 +59,35 @@ class RustCallStatus extends Struct {
 
   static Pointer<RustCallStatus> allocate({int count = 1}) =>
     calloc<RustCallStatus>(count * sizeOf<RustCallStatus>()).cast();
-
-
 }
 
 T noop<T>(T t) {
   return t;
+}
+
+T rustCallWithError<T, E>(Api api, E err, Function(Pointer<RustCallStatus>) callback) {
+  var callStatus = RustCallStatus.allocate();
+  final returnValue = callback(callStatus);
+
+  switch (callStatus.ref.code) {
+    case CALL_SUCCESS:
+      calloc.free(callStatus);
+      return returnValue;
+    case CALL_ERROR:
+      throw FfiConverterTypeArithmeticError.read(callStatus.ref.errorBuf.asByteBuffer());
+      {# throw E.read(callStatus.ref.errorBuf.asByteBuffer()); #}
+    case CALL_PANIC:
+      if (callStatus.ref.errorBuf.len > 0) {
+        final message = {{ Type::String.borrow()|lift_fn }}(api, callStatus.ref.errorBuf);
+        calloc.free(callStatus);
+        throw UniffiInternalError.panicked(message);
+      } else {
+        calloc.free(callStatus);
+        throw UniffiInternalError.panicked("Rust panic");
+      }
+    default:
+      throw UniffiInternalError(callStatus.ref.code, null);
+  }
 }
 
 T rustCall<T>(Api api, Function(Pointer<RustCallStatus>) callback) {
@@ -72,10 +95,10 @@ T rustCall<T>(Api api, Function(Pointer<RustCallStatus>) callback) {
   final returnValue = callback(callStatus);
 
   switch (callStatus.ref.code) {
-    case CALL_SUCCESS: 
+    case CALL_SUCCESS:
       calloc.free(callStatus);
       return returnValue;
-    case CALL_ERROR: 
+    case CALL_ERROR:
       throw callStatus.ref.errorBuf;
     case CALL_PANIC:
       if (callStatus.ref.errorBuf.len > 0) {

@@ -67,10 +67,10 @@
 {%- when Type::Custom { name, builtin } %}
 {%- include "CustomType.dart" %}
 
+#}
+
 {%- when Type::Error(name) %}
 {%- include "ErrorTemplate.dart" %}
-
-#}
 
 {%- when Type::Enum(name) %}
 {%- include "EnumTemplate.dart" %}

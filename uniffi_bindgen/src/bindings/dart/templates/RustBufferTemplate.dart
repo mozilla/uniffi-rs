@@ -1,4 +1,4 @@
-
+// Struct comes from dart:ffi
 class RustBuffer extends Struct {
   @Int32()
   external int capacity;
@@ -11,10 +11,37 @@ class RustBuffer extends Struct {
   static RustBuffer fromBytes(Api api, Pointer<ForeignBytes> bytes) {
     final _fromBytesPtr = api._lookup<
       NativeFunction<
-          Void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}"); 
+          Void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}");
     final fromBytes =
       _fromBytesPtr.asFunction<void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>();
     return rustCall(api, (res) => fromBytes(bytes, res));
+  }
+
+  void deallocate(Api api) {
+    final _freePtr = api._lookup<
+      NativeFunction<
+          Void Function(RustBuffer, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_free().name() }}");
+    final free = _freePtr.asFunction<void Function(RustBuffer, Pointer<RustCallStatus>)>();
+    rustCall(api, (res) => free(this, res));
+  }
+
+  Uint8List asByteBuffer() {
+    List<int> buf = [];
+    for (int i = 0; i < len; i++) {
+        int char = data.cast<Uint8>().elementAt(i).value;
+        buf.add(char);
+    }
+    return Uint8List.fromList(buf);
+  }
+
+  @override
+  String toString() {
+    String res = "RustBuffer { capacity: $capacity, len: $len, data: $data }";
+    for (int i = 0; i < len; i++) {
+        int char = data.cast<Uint8>().elementAt(i).value;
+        res += String.fromCharCode(char);
+    }
+    return res;
   }
 
 }
@@ -42,25 +69,23 @@ class RustType {
   late final _freePtr = _api._lookup<
       NativeFunction<
           Void Function(RustBuffer, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_free().name() }}"); 
-  late final _free = _freePtr.asFunction<void Function<RustBuffer, Pointer<RustCallStatus>>>();
+  late final _free = _freePtr.asFunction<void Function(RustBuffer, Pointer<RustCallStatus>)>();
 
   late final _allocPtr = _api._lookup<
       NativeFunction<
           Void Function(Int32, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_alloc().name() }}"); 
-  late final _alloc = _allocPtr.asFunction<void Function<Int32, Pointer<RustCallStatus>>>();
+  late final _alloc = _allocPtr.asFunction<void Function(Int32, Pointer<RustCallStatus>)>();
 
   late final _fromBytesPtr = _api._lookup<
       NativeFunction<
           Void Function(Int32, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}"); 
-  late final _fromBytes = _allocPtr.asFunction<void Function<Int32, Pointer<RustCallStatus>>>();
-
+  late final _fromBytes = _allocPtr.asFunction<void Function(Int32, Pointer<RustCallStatus>)>();
 
   // Frees the buffer in place.
   // The buffer must not be used after this is called.
   void drop() {
     _free(_inner);
   }
-
 
   static Pointer<RustBuffer> allocate(Api api) {
     buf = _alloc();
@@ -70,7 +95,6 @@ class RustType {
     RustType._(api, Pointer<RustBuffer>.fromAddress(ptr).ref);
   }
 }
-
 
 fileprivate extension RustBuffer {
     // Allocate a new buffer, copying the contents of a `UInt8` array.
@@ -233,23 +257,21 @@ extension FfiConverterPrimitive {
 
 // Types conforming to `FfiConverterRustBuffer` lift and lower into a `RustBuffer`.
 // Used for complex types where it's hard to write a custom lift/lower.
-fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustBuffer {}
-
-extension FfiConverterRustBuffer {
-    public static func lift(_ buf: RustBuffer) throws -> DartType {
-        var reader = createReader(data: Data(rustBuffer: buf))
-        let value = try read(from: &reader)
+class FfiConverterRustBuffer {
+    static DartType lift<DartType>(RustBuffer buf) {
+        val byteBuf = buf.asByteBuffer();
+        let value = try read<DartType>(byteBuf);
         if hasRemaining(reader) {
-            throw UniffiInternalError.incompleteData
+            throw UniffiInternalError.incompleteData;
         }
-        buf.deallocate()
-        return value
+        buf.deallocate();
+        return value;
     }
 
-    public static func lower(_ value: DartType) -> RustBuffer {
-          var writer = createWriter()
-          write(value, into: &writer)
-          return RustBuffer(bytes: writer)
+    static RustBuffer lower<DartType>(DartType value) {
+        var writer = createWriter();
+        write<DartType>(value, into: &writer);
+        return RustBuffer(bytes: writer);
     }
 }
 
