@@ -102,12 +102,56 @@
 <span id="102">102</span>
 <span id="103">103</span>
 <span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>proc_macro2::TokenStream;
-<span class="kw">use </span>quote::quote_spanned;
+</span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
+<span class="kw">use </span>quote::{quote, quote_spanned};
 <span class="kw">use </span>syn::{visit_mut::VisitMut, Item, Type};
 
 <span class="kw">mod </span>attributes;
@@ -119,6 +163,8 @@
     item::{ExportItem, ImplItem},
     scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
 };
+<span class="kw">use crate</span>::{object::interface_meta_static_var, util::ident_to_string};
+<span class="kw">use </span>uniffi_meta::free_fn_symbol_name;
 
 <span class="comment">// TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
@@ -146,11 +192,53 @@
                         gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>args)
                     }
                     ImplItem::Method(sig) =&gt; {
-                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>args)
+                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>args, <span class="bool-val">false</span>)
                     }
                 })
                 .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt; #item_tokens })
+        }
+        ExportItem::Trait { items, self_ident } =&gt; {
+            <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>self_ident);
+            <span class="kw">let </span>free_fn_ident =
+                Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>name), Span::call_site());
+
+            <span class="kw">let </span>free_tokens = <span class="macro">quote! </span>{
+                <span class="attribute">#[doc(hidden)]
+                #[no_mangle]
+                </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#free_fn_ident(
+                    ptr: <span class="kw-2">*const </span>::std::ffi::c_void,
+                    call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
+                ) {
+                    uniffi::rust_call(call_status, || {
+                        <span class="macro">assert!</span>(!ptr.is_null());
+                        drop(<span class="kw">unsafe </span>{ ::std::boxed::Box::from_raw(ptr <span class="kw">as </span><span class="kw-2">*mut </span>std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt;) });
+                        <span class="prelude-val">Ok</span>(())
+                    });
+                }
+            };
+
+            <span class="kw">let </span>impl_tokens: TokenStream = items
+                .into_iter()
+                .map(|item| <span class="kw">match </span>item<span class="question-mark">? </span>{
+                    ImplItem::Method(sig) =&gt; {
+                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>args, <span class="bool-val">true</span>)
+                    }
+                    <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
+                })
+                .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
+
+            <span class="kw">let </span>meta_static_var = interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>mod_path)<span class="question-mark">?</span>;
+            <span class="kw">let </span>macro_tokens = <span class="macro">quote! </span>{
+                <span class="macro">::uniffi::ffi_converter_trait_decl!</span>(<span class="kw">dyn </span>#self_ident, <span class="macro">stringify!</span>(#self_ident), <span class="kw">crate</span>::UniFfiTag);
+            };
+
+            <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt;
+                #meta_static_var
+                #free_tokens
+                #macro_tokens
+                #impl_tokens
+            })
         }
     }
 }

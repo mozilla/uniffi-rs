@@ -1169,6 +1169,17 @@
 <span id="1169">1169</span>
 <span id="1170">1170</span>
 <span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
+<span id="1177">1177</span>
+<span id="1178">1178</span>
+<span id="1179">1179</span>
+<span id="1180">1180</span>
+<span id="1181">1181</span>
+<span id="1182">1182</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1781,7 +1792,7 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_constructor_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ConstructorMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name);
+        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name, ObjectImpl::Struct);
         <span class="kw">let </span>defn: Constructor = meta.into();
 
         <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>defn.arguments {
@@ -1793,7 +1804,8 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_method_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: MethodMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name);
+        <span class="kw">let </span>imp = ObjectImpl::from_is_trait(meta.self_is_trait);
+        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name, imp);
         <span class="kw">let </span>defn: Method = meta.into();
 
         <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>defn.arguments {
@@ -1808,11 +1820,12 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_object_free_fn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ObjectMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>imp = ObjectImpl::from_is_trait(meta.is_trait);
         <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::Object {
             name: meta.name.clone(),
-            imp: ObjectImpl::Struct,
+            imp,
         })<span class="question-mark">?</span>;
-        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.name);
+        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.name, imp);
         object.ffi_func_free.name = meta.free_ffi_symbol_name();
         <span class="prelude-val">Ok</span>(())
     }
@@ -1919,14 +1932,21 @@
     }
 }
 
-<span class="kw">fn </span>get_or_insert_object&lt;<span class="lifetime">&#39;a</span>&gt;(objects: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Vec&lt;Object&gt;, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Object {
+<span class="kw">fn </span>get_or_insert_object&lt;<span class="lifetime">&#39;a</span>&gt;(
+    objects: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Vec&lt;Object&gt;,
+    name: <span class="kw-2">&amp;</span>str,
+    imp: ObjectImpl,
+) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Object {
     <span class="comment">// The find-based way of writing this currently runs into a borrow checker
     // error, so we use position
     </span><span class="kw">match </span>objects.iter_mut().position(|o| o.name == name) {
-        <span class="prelude-val">Some</span>(idx) =&gt; <span class="kw-2">&amp;mut </span>objects[idx],
+        <span class="prelude-val">Some</span>(idx) =&gt; {
+            <span class="comment">// what we created before must match the implementation.
+            </span><span class="macro">assert_eq!</span>(objects[idx].imp, imp);
+            <span class="kw-2">&amp;mut </span>objects[idx]
+        }
         <span class="prelude-val">None </span>=&gt; {
-            <span class="comment">// proc-macros don&#39;t yet support describing traits.
-            </span>objects.push(Object::new(name.to_owned(), ObjectImpl::Struct));
+            objects.push(Object::new(name.to_owned(), imp));
             objects.last_mut().unwrap()
         }
     }
@@ -2147,10 +2167,12 @@
         Ty::Duration =&gt; Type::Duration,
         Ty::Record { name } =&gt; Type::Record(name.clone()),
         Ty::Enum { name } =&gt; Type::Enum(name.clone()),
-        Ty::ArcObject { object_name } =&gt; Type::Object {
+        Ty::ArcObject {
+            object_name,
+            is_trait,
+        } =&gt; Type::Object {
             name: object_name.clone(),
-            <span class="comment">// proc-macros don&#39;t yet describe traits.
-            </span>imp: ObjectImpl::Struct,
+            imp: ObjectImpl::from_is_trait(<span class="kw-2">*</span>is_trait),
         },
         Ty::Error { name } =&gt; Type::Error(name.clone()),
         Ty::CallbackInterface { name } =&gt; Type::CallbackInterface(name.clone()),

@@ -434,6 +434,15 @@
 <span id="434">434</span>
 <span id="435">435</span>
 <span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -507,6 +516,7 @@
     mod_path: <span class="kw-2">&amp;</span>str,
     self_ident: <span class="kw-2">&amp;</span>Ident,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
+    is_trait: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
     <span class="kw">let </span>name_s = ident_to_string(ident);
@@ -520,8 +530,14 @@
     <span class="kw">let </span>bits = <span class="kw">match </span>sig.inputs.first() {
         <span class="comment">// Method calls
         </span><span class="prelude-val">Some</span>(arg) <span class="kw">if </span>is_receiver(arg) =&gt; {
-            <span class="kw">let </span>ffi_converter = <span class="macro">quote! </span>{
-                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+            <span class="kw">let </span>ffi_converter = <span class="kw">if </span>is_trait {
+                <span class="macro">quote! </span>{
+                    &lt;::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+                }
+            } <span class="kw">else </span>{
+                <span class="macro">quote! </span>{
+                    &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+                }
             };
             <span class="kw">let </span><span class="kw-2">mut </span>bits = ScaffoldingBits::new();
             <span class="comment">// The first scaffolding parameter is `this` -- the lowered value for `self`
@@ -547,7 +563,7 @@
         }
     };
 
-    <span class="kw">let </span>metadata_var = bits.gen_method_meta_static_var(self_ident, <span class="kw-2">&amp;</span>sig, mod_path);
+    <span class="kw">let </span>metadata_var = bits.gen_method_meta_static_var(self_ident, <span class="kw-2">&amp;</span>sig, mod_path, is_trait);
     <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, ffi_ident, <span class="kw-2">&amp;</span>bits, arguments);
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
@@ -753,6 +769,7 @@
         self_ident: <span class="kw-2">&amp;</span>Ident,
         sig: <span class="kw-2">&amp;</span>FnSignature,
         mod_path: <span class="kw-2">&amp;</span>str,
+        self_is_trait: bool,
     ) -&gt; TokenStream {
         <span class="kw">let </span>object_name = ident_to_string(self_ident);
         <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
@@ -773,6 +790,7 @@
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
+                        .concat_bool(#self_is_trait)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)

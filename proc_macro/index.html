@@ -177,8 +177,8 @@ to start with a build of your library and add
 <code>--lib-file &lt;CARGO WORKSPACE&gt;/target/&lt;TARGET&gt;/&lt;BUILT CDYLIB OR STATICLIB&gt;</code> to your <code>uniffi-bindgen</code>
 command line invocation.</p>
 <h2><a class="header" href="#the-uniffiexport-attribute" id="the-uniffiexport-attribute">The <code>#[uniffi::export]</code> attribute</a></h2>
-<p>The most important proc-macro is the <code>export</code> attribute. It can be used on functions and <code>impl</code>
-blocks to make UniFFI aware of them.</p>
+<p>The most important proc-macro is the <code>export</code> attribute. It can be used on functions, <code>impl</code>
+blocks, and <code>trait</code> definitions to make UniFFI aware of them.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -222,6 +222,15 @@ impl MyObject {
         // ...
     }
 }
+
+// Corresponding UDL:
+// [Trait]
+// interface MyTrait {};
+#[uniffi::export]
+trait MyTrait {
+    // ...
+}
+
 <span class="boring">}
 </span></code></pre></pre>
 <p>Most UniFFI <a href="../udl/builtin_types.html">builtin types</a> can be used as parameter and return types.

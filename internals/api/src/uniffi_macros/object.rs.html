@@ -69,6 +69,8 @@
 <span id="69">69</span>
 <span id="70">70</span>
 <span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{DeriveInput, Path};
@@ -83,7 +85,7 @@
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name), Span::call_site());
-    <span class="kw">let </span>meta_static_var = interface_meta_static_var(ident, <span class="kw-2">&amp;</span>module_path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>meta_static_var = interface_meta_static_var(ident, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>module_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>interface_impl = interface_impl(ident, attr.tag.as_ref());
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
@@ -126,6 +128,7 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_meta_static_var(
     ident: <span class="kw-2">&amp;</span>Ident,
+    is_trait: bool,
     module_path: <span class="kw-2">&amp;</span>str,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
@@ -136,6 +139,7 @@
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
                     .concat_str(#module_path)
                     .concat_str(#name)
+                    .concat_bool(#is_trait)
         },
         <span class="prelude-val">None</span>,
     ))

@@ -168,6 +168,51 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -185,6 +230,10 @@
         self_ident: Ident,
         items: Vec&lt;syn::Result&lt;ImplItem&gt;&gt;,
     },
+    Trait {
+        self_ident: Ident,
+        items: Vec&lt;syn::Result&lt;ImplItem&gt;&gt;,
+    },
 }
 
 <span class="kw">impl </span>ExportItem {
@@ -195,6 +244,7 @@
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Function { sig })
             }
             syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item),
+            syn::Item::Trait(item) =&gt; <span class="self">Self</span>::from_trait(item),
             <span class="comment">// FIXME: Support const / static?
             </span><span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
@@ -260,6 +310,46 @@
             items,
             self_ident: self_ident.to_owned(),
         })
+    }
+
+    <span class="kw">fn </span>from_trait(item: syn::ItemTrait) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>!item.generics.params.is_empty() || item.generics.where_clause.is_some() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                <span class="kw-2">&amp;</span>item.generics,
+                <span class="string">&quot;generic impls are not currently supported by uniffi::export&quot;</span>,
+            ));
+        }
+
+        <span class="kw">let </span>self_ident = item.ident.to_owned();
+        <span class="kw">let </span>items = item
+            .items
+            .into_iter()
+            .map(|item| {
+                <span class="kw">let </span>tim = <span class="kw">match </span>item {
+                    syn::TraitItem::Method(tim) =&gt; tim,
+                    <span class="kw">_ </span>=&gt; {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                            item,
+                            <span class="string">&quot;only fn&#39;s are supported in traits annotated with uniffi::export&quot;</span>,
+                        ));
+                    }
+                };
+
+                <span class="kw">let </span>attrs = ExportedImplFnAttributes::new(<span class="kw-2">&amp;</span>tim.attrs)<span class="question-mark">?</span>;
+                <span class="kw">let </span>item = <span class="kw">if </span>attrs.constructor {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                        tim,
+                        <span class="string">&quot;traits can not have constructors&quot;</span>,
+                    ));
+                } <span class="kw">else </span>{
+                    ImplItem::Method(FnSignature::new(tim.sig)<span class="question-mark">?</span>)
+                };
+
+                <span class="prelude-val">Ok</span>(item)
+            })
+            .collect();
+
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Trait { items, self_ident })
     }
 }
 

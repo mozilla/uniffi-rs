@@ -370,6 +370,16 @@
 <span id="370">370</span>
 <span id="371">371</span>
 <span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -422,6 +432,16 @@
             <span class="macro">format!</span>(<span class="string">&quot;dyn r#{name}&quot;</span>)
         } <span class="kw">else </span>{
             <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>)
+        }
+    }
+
+    <span class="comment">// uniffi_meta and procmacro support tend to carry around `is_trait` bools. This makes that
+    // mildly less painful
+    </span><span class="kw">pub fn </span>from_is_trait(is_trait: bool) -&gt; <span class="self">Self </span>{
+        <span class="kw">if </span>is_trait {
+            ObjectImpl::Trait
+        } <span class="kw">else </span>{
+            ObjectImpl::Struct
         }
     }
 }
