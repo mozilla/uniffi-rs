@@ -29,50 +29,50 @@ class {{ ffi_converter_name }} {
         print("error code - $errorCode");
 
         switch (errorCode) {
-        {% for variant in e.variants() %}
-        case {{ type_name }}.{{ variant.name()|class_name }}:
-            throw {{ type_name }}({{ type_name }}.{{ variant.name()|class_name }});
-        {% endfor %}
-        default:
-            throw UniffiInternalError.unexpectedEnumCase;
+            {% for variant in e.variants() %}
+            case {{ type_name }}.{{ variant.name()|class_name }}:
+                throw {{ type_name }}({{ type_name }}.{{ variant.name()|class_name }});
+            {% endfor %}
+            default:
+                throw UniffiInternalError.unexpectedEnumCase;
         }
     }
 
-  static T rustCallWithError<T>(Api api, Function(Pointer<RustCallStatus>) callback) {
-    var callStatus = RustCallStatus.allocate();
-    final returnValue = callback(callStatus);
+    static T rustCallWithError<T>(Api api, Function(Pointer<RustCallStatus>) callback) {
+        var callStatus = RustCallStatus.allocate();
+        final returnValue = callback(callStatus);
 
-    switch (callStatus.ref.code) {
-      case CALL_SUCCESS:
-        calloc.free(callStatus);
-        return returnValue;
-      case CALL_ERROR:
-        throwIt(callStatus.ref.errorBuf.asByteBuffer());
-        // fallback for the linter
-        throw UniffiInternalError(callStatus.ref.code, null);
-      case CALL_PANIC:
-        if (callStatus.ref.errorBuf.len > 0) {
-          final message = {{ Type::String.borrow()|lift_fn }}(api, callStatus.ref.errorBuf);
-          calloc.free(callStatus);
-          throw UniffiInternalError.panicked(message);
-        } else {
-          calloc.free(callStatus);
-          throw UniffiInternalError.panicked("Rust panic");
+        switch (callStatus.ref.code) {
+            case CALL_SUCCESS:
+                calloc.free(callStatus);
+                return returnValue;
+            case CALL_ERROR:
+                throwIt(callStatus.ref.errorBuf.asByteBuffer());
+                // fallback for the linter
+                throw UniffiInternalError(callStatus.ref.code, null);
+            case CALL_PANIC:
+                if (callStatus.ref.errorBuf.len > 0) {
+                    final message = {{ Type::String.borrow()|lift_fn }}(api, callStatus.ref.errorBuf);
+                    calloc.free(callStatus);
+                    throw UniffiInternalError.panicked(message);
+                } else {
+                    calloc.free(callStatus);
+                    throw UniffiInternalError.panicked("Rust panic");
+                }
+            default:
+                throw UniffiInternalError(callStatus.ref.code, null);
         }
-      default:
-        throw UniffiInternalError(callStatus.ref.code, null);
     }
-  }
 
     static void write({{ type_name }} value, Uint8List buf) {
         switch (value.errorCode) {
-        {% for variant in e.variants() %}
-        case {{ type_name }}.{{ variant.name()|class_name }}: {
-            var bytes = ByteData.view(buf.buffer);
-            bytes.setUint32(0, {{ type_name }}.{{ variant.name()|class_name }});
-        }
-        break;
-        {%- endfor %}
+            {% for variant in e.variants() %}
+            case {{ type_name }}.{{ variant.name()|class_name }}: {
+                var bytes = ByteData.view(buf.buffer);
+                bytes.setUint32(0, {{ type_name }}.{{ variant.name()|class_name }});
+            }
+            break;
+            {%- endfor %}
         }
     }
 }

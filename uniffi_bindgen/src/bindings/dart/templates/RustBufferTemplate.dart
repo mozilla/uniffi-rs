@@ -1,99 +1,96 @@
 // Struct comes from dart:ffi
 class RustBuffer extends Struct {
-  @Int32()
-  external int capacity;
+    @Int32()
+    external int capacity;
 
-  @Int32()
-  external int len;
+    @Int32()
+    external int len;
 
-  external Pointer data;
+    external Pointer data;
 
-  static RustBuffer fromBytes(Api api, Pointer<ForeignBytes> bytes) {
-    final _fromBytesPtr = api._lookup<
-      NativeFunction<
-          Void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}");
-    final fromBytes =
-      _fromBytesPtr.asFunction<void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>();
-    return rustCall(api, (res) => fromBytes(bytes, res));
-  }
-
-  void deallocate(Api api) {
-    final _freePtr = api._lookup<
-      NativeFunction<
-          Void Function(RustBuffer, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_free().name() }}");
-    final free = _freePtr.asFunction<void Function(RustBuffer, Pointer<RustCallStatus>)>();
-    rustCall(api, (res) => free(this, res));
-  }
-
-  Uint8List asByteBuffer() {
-    List<int> buf = [];
-    for (int i = 0; i < len; i++) {
-        int char = data.cast<Uint8>().elementAt(i).value;
-        buf.add(char);
+    static RustBuffer fromBytes(Api api, Pointer<ForeignBytes> bytes) {
+        final _fromBytesPtr = api._lookup<
+        NativeFunction<
+            Void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}");
+        final fromBytes =
+        _fromBytesPtr.asFunction<void Function(Pointer<ForeignBytes>, Pointer<RustCallStatus>)>();
+        return rustCall(api, (res) => fromBytes(bytes, res));
     }
-    return Uint8List.fromList(buf);
-  }
 
-  @override
-  String toString() {
-    String res = "RustBuffer { capacity: $capacity, len: $len, data: $data }";
-    for (int i = 0; i < len; i++) {
-        int char = data.cast<Uint8>().elementAt(i).value;
-        res += String.fromCharCode(char);
+    void deallocate(Api api) {
+        final _freePtr = api._lookup<
+        NativeFunction<
+            Void Function(RustBuffer, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_free().name() }}");
+        final free = _freePtr.asFunction<void Function(RustBuffer, Pointer<RustCallStatus>)>();
+        rustCall(api, (res) => free(this, res));
     }
-    return res;
-  }
 
+    Uint8List asByteBuffer() {
+        List<int> buf = [];
+        for (int i = 0; i < len; i++) {
+            int char = data.cast<Uint8>().elementAt(i).value;
+            buf.add(char);
+        }
+        return Uint8List.fromList(buf);
+    }
+
+    @override
+    String toString() {
+        String res = "RustBuffer { capacity: $capacity, len: $len, data: $data }";
+        for (int i = 0; i < len; i++) {
+            int char = data.cast<Uint8>().elementAt(i).value;
+            res += String.fromCharCode(char);
+        }
+        return res;
+    }
 }
 
 class ForeignBytes extends Struct {
-  @Int32()
-  external int len;
+    @Int32()
+    external int len;
 
-  external Pointer data;
+    external Pointer data;
 
-  static Pointer<ForeignBytes> allocate({int count = 1}) =>
-    calloc<ForeignBytes>(count * sizeOf<ForeignBytes>());
-
+    static Pointer<ForeignBytes> allocate({int count = 1}) =>
+        calloc<ForeignBytes>(count * sizeOf<ForeignBytes>());
 }
 
 {# comment
 
 class RustType {
+    late final Api _api;
+    late final RustBuffer _inner;
 
-  late final Api _api;
-  late final RustBuffer _inner;
+    RustType._(this._api, this._inner);
+    
+    late final _freePtr = _api._lookup<
+        NativeFunction<
+            Void Function(RustBuffer, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_free().name() }}"); 
+    late final _free = _freePtr.asFunction<void Function(RustBuffer, Pointer<RustCallStatus>)>();
 
-  RustType._(this._api, this._inner);
-  
-  late final _freePtr = _api._lookup<
-      NativeFunction<
-          Void Function(RustBuffer, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_free().name() }}"); 
-  late final _free = _freePtr.asFunction<void Function(RustBuffer, Pointer<RustCallStatus>)>();
+    late final _allocPtr = _api._lookup<
+        NativeFunction<
+            Void Function(Int32, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_alloc().name() }}"); 
+    late final _alloc = _allocPtr.asFunction<void Function(Int32, Pointer<RustCallStatus>)>();
 
-  late final _allocPtr = _api._lookup<
-      NativeFunction<
-          Void Function(Int32, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_alloc().name() }}"); 
-  late final _alloc = _allocPtr.asFunction<void Function(Int32, Pointer<RustCallStatus>)>();
+    late final _fromBytesPtr = _api._lookup<
+        NativeFunction<
+            Void Function(Int32, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}"); 
+    late final _fromBytes = _allocPtr.asFunction<void Function(Int32, Pointer<RustCallStatus>)>();
 
-  late final _fromBytesPtr = _api._lookup<
-      NativeFunction<
-          Void Function(Int32, Pointer<RustCallStatus>)>>("{{ ci.ffi_rustbuffer_from_bytes().name() }}"); 
-  late final _fromBytes = _allocPtr.asFunction<void Function(Int32, Pointer<RustCallStatus>)>();
+    // Frees the buffer in place.
+    // The buffer must not be used after this is called.
+    void drop() {
+        _free(_inner);
+    }
 
-  // Frees the buffer in place.
-  // The buffer must not be used after this is called.
-  void drop() {
-    _free(_inner);
-  }
+    static Pointer<RustBuffer> allocate(Api api) {
+        buf = _alloc();
+    }
 
-  static Pointer<RustBuffer> allocate(Api api) {
-    buf = _alloc();
-  }
-
-  static RustType from(Api api, int ptr) {
-    RustType._(api, Pointer<RustBuffer>.fromAddress(ptr).ref);
-  }
+    static RustType from(Api api, int ptr) {
+        RustType._(api, Pointer<RustBuffer>.fromAddress(ptr).ref);
+    }
 }
 
 fileprivate extension RustBuffer {

@@ -55,49 +55,48 @@ endcomment #}
 
 /// Main entry point to library.
 class Api {
-  /// Holds the symbol lookup function.
-  final Pointer<T> Function<T extends NativeType>(String symbolName)
-      _lookup;
+    /// Holds the symbol lookup function.
+    final Pointer<T> Function<T extends NativeType>(String symbolName)
+        _lookup;
 
-  /// The symbols are looked up in [dynamicLibrary].
-  Api(DynamicLibrary dynamicLibrary) : _lookup = dynamicLibrary.lookup;
+    /// The symbols are looked up in [dynamicLibrary].
+    Api(DynamicLibrary dynamicLibrary) : _lookup = dynamicLibrary.lookup;
 
-  /// The symbols are looked up with [lookup].
-  Api.fromLookup(
-      Pointer<T> Function<T extends NativeType>(String symbolName)
-          lookup)
-      : _lookup = lookup;
+    /// The symbols are looked up with [lookup].
+    Api.fromLookup(
+        Pointer<T> Function<T extends NativeType>(String symbolName)
+            lookup)
+        : _lookup = lookup;
 
-  /// The library is loaded from the executable.
-  factory Api.loadStatic() {
-    return Api(DynamicLibrary.executable());
-  }
-
-  /// The library is dynamically loaded.
-  factory Api.loadDynamic(String name) {
-    return Api(DynamicLibrary.open(name));
-  }
-
-  /// The library is loaded based on platform conventions.
-  factory Api.load() {
-    String? name; {# FIXME: dynamic naming #}
-    if (Platform.isLinux) name = "lib{{ config.cdylib_name() }}.so";
-    if (Platform.isAndroid) name = "lib{{ config.cdylib_name() }}.so";
-    if (Platform.isMacOS) name = "lib{{ config.cdylib_name() }}.dylib";
-    if (Platform.isIOS) name = "";
-    if (Platform.isWindows) name = "{{ config.cdylib_name() }}.dll";
-    if (name == null) {
-      throw UnsupportedError("\"This platform is not supported.\"");
+    /// The library is loaded from the executable.
+    factory Api.loadStatic() {
+        return Api(DynamicLibrary.executable());
     }
-    if (name == "") {
-      return Api.loadStatic();
-    } else {
-      return Api.loadDynamic(name);
+
+    /// The library is dynamically loaded.
+    factory Api.loadDynamic(String name) {
+        return Api(DynamicLibrary.open(name));
     }
-  }
 
-  {%- for func in ci.function_definitions() %}
-  {%- include "TopLevelFunctionTemplate.dart" %}
-  {%- endfor %}
+    /// The library is loaded based on platform conventions.
+    factory Api.load() {
+        String? name; {# FIXME: dynamic naming #}
+        if (Platform.isLinux) name = "lib{{ config.cdylib_name() }}.so";
+        if (Platform.isAndroid) name = "lib{{ config.cdylib_name() }}.so";
+        if (Platform.isMacOS) name = "lib{{ config.cdylib_name() }}.dylib";
+        if (Platform.isIOS) name = "";
+        if (Platform.isWindows) name = "{{ config.cdylib_name() }}.dll";
+        if (name == null) {
+            throw UnsupportedError("\"This platform is not supported.\"");
+        }
+        if (name == "") {
+            return Api.loadStatic();
+        } else {
+            return Api.loadDynamic(name);
+        }
+    }
 
+    {%- for func in ci.function_definitions() %}
+    {%- include "TopLevelFunctionTemplate.dart" %}
+    {%- endfor %}
 }

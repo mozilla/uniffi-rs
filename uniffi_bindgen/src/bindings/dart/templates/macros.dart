@@ -25,52 +25,52 @@
 
 {%- macro gen_ffi_signatures_global(meth) -%}
     late final _{{meth.name()|fn_name}}Ptr = _lookup<NativeFunction<{% match meth.return_type() -%}
-      {%- when Some with (return_type) -%} {{ return_type|ffi_type }} 
-      {%- when None %} Void 
+        {%- when Some with (return_type) -%} {{ return_type|ffi_type }} 
+        {%- when None %} Void 
     {%- endmatch %} Function(
-      {% call _arg_types_ffi_call(meth) %},
-      Pointer<RustCallStatus>
+        {% call _arg_types_ffi_call(meth) %},
+        Pointer<RustCallStatus>
     )>>("{{ func.ffi_func().name() }}");
 
     late final _{{meth.name()|fn_name}} = _{{meth.name()|fn_name}}Ptr.asFunction<{% match meth.return_type() -%}
-      {%- when Some with (return_type) -%} {{ return_type|dart_ffi_type }} 
-      {%- when None %} void 
+        {%- when Some with (return_type) -%} {{ return_type|dart_ffi_type }} 
+        {%- when None %} void 
     {%- endmatch %} Function(
-      {% call _arg_types_ffi_lifted(meth) %},
-      Pointer<RustCallStatus>
-      )>();
+        {% call _arg_types_ffi_lifted(meth) %},
+        Pointer<RustCallStatus>
+    )>();
 {%- endmacro %}
 
 
 {%- macro gen_ffi_signatures(meth) -%}
     late final _{{meth.name()|fn_name}}Ptr = _api._lookup<NativeFunction<{% match meth.return_type() -%}
-      {%- when Some with (return_type) -%} {{ return_type|ffi_type }} 
-      {%- when None %} Void 
+        {%- when Some with (return_type) -%} {{ return_type|ffi_type }} 
+        {%- when None %} Void 
     {%- endmatch %} Function(
         Pointer,
         {% call _arg_types_ffi_call(meth) %},
         Pointer<RustCallStatus>
-      )>>("{{ func.ffi_func().name() }}");
+    )>>("{{ func.ffi_func().name() }}");
 
     late final _{{meth.name()|fn_name}} = _{{meth.name()|fn_name}}Ptr.asFunction<{% match meth.return_type() -%}
-      {%- when Some with (return_type) -%} {{ return_type|dart_ffi_type }} 
-      {%- when None %} void 
+        {%- when Some with (return_type) -%} {{ return_type|dart_ffi_type }} 
+        {%- when None %} void 
     {%- endmatch %} Function(Pointer,
-      {% call _arg_types_ffi_lifted(meth) %},
-      Pointer<RustCallStatus>
-      )>();
+        {% call _arg_types_ffi_lifted(meth) %},
+        Pointer<RustCallStatus>
+    )>();
 {%- endmacro %}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
     {#
-      {%- match func.throws_type() %}
-      {%- when Some with (e) %}
+    {%- match func.throws_type() %}
+    {%- when Some with (e) %}
         {{ e|ffi_converter_name }}.rustCallWithError(self) {
-      {%- else %}
-      rustCall() {
+    {%- else %}
+        rustCall() {
     {% endmatch %}
     #}
-      _{{ func.name()|fn_name }}(
+    _{{ func.name()|fn_name }}(
         {{- prefix }}, {% call _arg_list_ffi_call(func) -%}{% if func.arguments().len() > 0 %}, {% endif %})
 {%- endmacro %}
 
@@ -160,5 +160,5 @@
 {%- macro try(func) %}
 {%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}
-import 'dart:ffi';
-import 'Helpers.dart';
+import "dart:ffi";
+import "Helpers.dart";

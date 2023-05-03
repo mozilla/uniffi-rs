@@ -81,7 +81,7 @@ public func {{ func.name()|fn_name }}({%- call dart::arg_list_decl(func) -%}) as
 
 {% else %}
 
-  {% call dart::gen_ffi_signatures_global(func) %}
+    {% call dart::gen_ffi_signatures_global(func) %}
 
 {%- match func.return_type() -%}
 

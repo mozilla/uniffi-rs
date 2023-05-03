@@ -4,15 +4,15 @@ typedef {{ type_name }}Lowered = Pointer<Void>;
 typedef {{ type_name }}Lifted = {{ type_name }};
 
 class {{ type_name }} {
-  final {{ type_name }}Lowered _pointer;
-  final Api _api;
+    final {{ type_name }}Lowered _pointer;
+    final Api _api;
   
     late final _dropPtr = _api._lookup<NativeFunction<Void Function(Pointer, Pointer<RustCallStatus>)>>("{{ obj.ffi_object_free().name() }}");
     late final _drop = _dropPtr.asFunction<void Function(Pointer, Pointer<RustCallStatus>)>();
   
-  {% for meth in obj.methods( )%}
-    {% call dart::gen_ffi_signatures(meth) %}
-  {% endfor %}
+    {% for meth in obj.methods( )%}
+        {% call dart::gen_ffi_signatures(meth) %}
+    {% endfor %}
 
 
     {%- match obj.primary_constructor() %}
@@ -21,11 +21,11 @@ class {{ type_name }} {
     {%- when None %}
     {%- endmatch %}
 
-  {#
+{#
     void drop() {
         _drop(pointer);
     }
-  #}
+#}
 
     {% for cons in obj.alternate_constructors() %}
 
@@ -42,9 +42,9 @@ class {{ type_name }} {
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) %}
-      Future<{{ return_type|type_name }}> {{ meth.name()|fn_name }}({%- call dart::arg_list_decl(meth) -%}) async {
+    Future<{{ return_type|type_name }}> {{ meth.name()|fn_name }}({%- call dart::arg_list_decl(meth) -%}) async {
     {% when None %}
-      Future<void> {{ meth.name()|fn_name }}({%- call dart::arg_list_decl(meth) -%}) async {
+    Future<void> {{ meth.name()|fn_name }}({%- call dart::arg_list_decl(meth) -%}) async {
     {%- endmatch -%}
         let future = {% call dart::to_ffi_call_with_prefix("_pointer", meth) %}
 
@@ -65,7 +65,7 @@ class {{ type_name }} {
 
     {%- when Some with (return_type) %}
 
-     {{ return_type|type_name }} {{ meth.name()|fn_name }}({% call dart::arg_list_decl(meth) %}) {
+    {{ return_type|type_name }} {{ meth.name()|fn_name }}({% call dart::arg_list_decl(meth) %}) {
         return {{ return_type|lift_fn }}(_api, 
             {% call dart::to_ffi_call_with_prefix("_pointer", meth) %}
         );
