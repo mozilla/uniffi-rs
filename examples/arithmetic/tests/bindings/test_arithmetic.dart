@@ -5,7 +5,7 @@ import "package:test/test.dart";
 void main() {
     test("arithmetic works", () {
         final api = Api.load();
-/*
+
         try {
             var _ = api.add(9223372036854775807, 1);
             throw Exception("Should have thrown a IntegerOverflow exception!");
@@ -17,7 +17,7 @@ void main() {
 
         assert(api.add(2, 4) == 6, "add work");
         assert(api.add(4, 8) == 12, "add work");
-*/
+
         try {
             var _ = api.sub(0, 1);
             // throw Exception("Should have thrown a IntegerOverflow exception!");
