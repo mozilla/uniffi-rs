@@ -29,6 +29,51 @@ class {{ type_name }}:
         {%- endfor %}
         return True
 
+    {%- if python_config.json_support %}
+
+    def to_dict(self):
+        return dict({
+            {%- for field in rec.fields() %}
+            {%- let field_name = field.name()|var_name %}
+            {%- let field_from_type = field_name|from_type("self", field.type_().borrow(), ci, python_config) %}
+            "{{ field_name }}": {{ field_from_type }}
+            {%- if !loop.last %},{% endif %}
+            {%- endfor %}
+        })
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+
+    @staticmethod
+    def from_json(str):
+        value = json.loads(str)
+        return {{ type_name }}.from_dict(value)
+
+
+    @staticmethod
+    def from_dict(dict_value):
+        {%- for field in rec.fields() %}
+        {%- let field_name = field.name()|var_name %}
+        {%- match field_name|into_type("dict_value", field.type_().borrow(), ci, python_config) %}
+        {%- when None %}
+        {%- when Some with(value) %}
+        dict_value["{{ field_name }}"] = {{ value }}
+        {%- endmatch %}
+        {%- endfor %}
+
+        {%- for field in rec.fields() %}
+        {%- let field_name = field.name()|var_name %}
+        {%- match field.default_value() %}
+        {%- when None %}
+        {{ field_name }} = dict_value.pop("{{ field_name }}", None)
+        {%- when Some with(literal) %}
+        {%- endmatch %}
+        {%- endfor %}
+
+        return {{ type_name }}({% for field in rec.fields() %}{% let field_name = field.name()|var_name %}{% match field.default_value() %}{% when None %}{{ field_name }}{% if !loop.last || rec.has_field_with_default()  %}, {% endif %}{%- when Some with(literal) %}{% endmatch %}{% endfor %}{% if rec.has_field_with_default() %}**dict_value{% endif %})
+    {%- endif %}
+
 class {{ ffi_converter_name }}(FfiConverterRustBuffer):
     @staticmethod
     def read(buf):

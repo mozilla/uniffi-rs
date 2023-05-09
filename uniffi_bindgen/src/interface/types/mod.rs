@@ -148,6 +148,26 @@ impl Type {
         };
         Box::new(std::iter::once(self).chain(nested_types))
     }
+
+    pub fn is_primitive(&self) -> bool {
+        return match self {
+            Type::UInt8 |
+            Type::Int8 |
+            Type::UInt16 |
+            Type::Int16 |
+            Type::UInt32 |
+            Type::Int32 |
+            Type::UInt64 |
+            Type::Int64 |
+            Type::Float32 |
+            Type::Float64 |
+            Type::Boolean |
+            Type::String |
+            Type::Timestamp |
+            Type::Duration => true,
+            _ => false
+        }
+    }
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding

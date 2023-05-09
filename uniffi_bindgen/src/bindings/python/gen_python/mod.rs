@@ -69,18 +69,24 @@ static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
     HashSet::from_iter(kwlist.into_iter().map(|s| s.to_string()))
 });
 
+fn default_false() -> bool {
+    false
+}
+
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     cdylib_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    #[serde(default = "default_false")]
+    json_support: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CustomTypeConfig {
-    // This `CustomTypeConfig` doesn't have a `type_name` like the others -- which is why we have
-    // separate structs rather than a shared one.
+    into_type: Option<String>,
+    from_type: Option<String>,
     imports: Option<Vec<String>>,
     into_custom: TemplateExpression,
     from_custom: TemplateExpression,
@@ -101,6 +107,7 @@ impl From<&ComponentInterface> for Config {
         Config {
             cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
             custom_types: HashMap::new(),
+            json_support: false,
         }
     }
 }
@@ -110,6 +117,7 @@ impl MergeWith for Config {
         Config {
             cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
             custom_types: self.custom_types.merge_with(&other.custom_types),
+            json_support: self.json_support || other.json_support,
         }
     }
 }
@@ -178,7 +186,16 @@ impl<'a> TypeRenderer<'a> {
             python_config,
             ci,
             include_once_names: RefCell::new(HashSet::new()),
-            imports: RefCell::new(BTreeSet::new()),
+            imports: RefCell::new(
+                match python_config.json_support {
+                    true => BTreeSet::from([
+                        ImportRequirement::Module {
+                            mod_name: "json".to_string(),
+                        }
+                    ]),
+                    false => BTreeSet::new()
+                }
+            ),
         }
     }
 
@@ -441,5 +458,92 @@ pub mod filters {
     pub fn coerce_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         let oracle = oracle();
         Ok(oracle.find(type_).coerce(oracle, nm))
+    }
+
+    pub fn from_type(nm: &str, prefix: &str, type_: &Type, ci: &ComponentInterface, config: &Config) -> Result<String, askama::Error> {
+        let basic = match nm.is_empty() {
+            true => prefix.to_string(),
+            false => format!("{}.{}", prefix, nm)
+        };
+        Ok(match type_ {
+            Type::Record(_) => format!("{}.to_dict()", basic),
+            Type::Enum(name) => {
+                let enum_ = ci.get_enum_definition(name).unwrap();
+                match enum_.is_flat() {
+                    true => format!("{}.name", basic),
+                    false => format!("{}.to_dict() if hasattr({}, \"to_dict\") else {}", basic, basic, basic)
+                }
+            },
+            Type::Map(_, value_inner) => match Type::is_primitive(&**value_inner) {
+                false => format!("{{key: {} for (key, value) in {}.items()}}", from_type("", "value", value_inner, ci, config)?, basic),
+                true => basic,
+            },
+            Type::Sequence(inner) => match Type::is_primitive(&**inner) {
+                false => format!("[{} for i in {}]", from_type("", "i", inner, ci, config)?, basic),
+                true => format!("[i for i in {}]", basic)
+            },
+            Type::Optional(inner) => match Type::is_primitive(&**inner) {
+                false => format!("{}.{} if {}.{} is None else {}", prefix, nm, prefix, nm, from_type(nm, "self", inner, ci, config)?),
+                true => basic
+            },
+            Type::Custom { name, .. } => match config.custom_types.get(name).unwrap().clone().from_type {
+                Some(type_name) => format!("{}({})", type_name, basic),
+                None => basic
+            },
+            Type::Object(_) => basic,
+            Type::Error(_) => basic,
+            Type::CallbackInterface(_) => basic,
+            Type::External { .. } => basic,
+            _ => basic
+        })
+    }
+
+    pub fn into_type(nm: &str, prefix: &str, type_: &Type, ci: &ComponentInterface, config: &Config) -> Result<Option<String>, askama::Error> {
+        let oracle = oracle();
+        let codetype = &*oracle.create_code_type((type_).clone());
+        let basic = match nm.is_empty() {
+            true => prefix.to_string(),
+            false => format!("{}[\"{}\"]", prefix, nm)
+        };
+        Ok(match type_ {
+            Type::Record(_) => Some(format!("{}.from_dict({})", codetype.type_label(oracle), basic)),
+            Type::Enum(name) => match ci.get_enum_definition(name) {
+                Some(enum_def) => match enum_def.is_flat() {
+                    true => Some(format!("{}[{}]", enum_def.type_label(oracle), basic)),
+                    false => Some(format!("{}.from_dict({})", codetype.type_label(oracle), basic)),
+                },
+                None => None
+            },
+            Type::Map(_, value_inner) => match Type::is_primitive(&**value_inner) {
+                false => match into_type("", "value",value_inner, ci, config)? {
+                    Some(into) => Some(format!("{{key: {} for (key, value) in {}.items()}}", into, basic)),
+                    None => None
+                },
+                true => None,
+            },
+            Type::Sequence(inner) => match Type::is_primitive(&**inner) {
+                false => match into_type("", "i", inner, ci, config)? {
+                    Some(into) => Some(format!("[{} for i in {}]", into, basic)),
+                    None => None
+                }
+                true => None
+            },
+            Type::Optional(inner) => match Type::is_primitive(&**inner) {
+                false => match into_type(nm, "self",inner, ci, config)? {
+                    Some(into) => Some(format!("None if {}.get(\"{}\") is None else {}", prefix, nm, into)),
+                    None => None
+                },
+                true => None
+            },
+            Type::Custom { name, .. } => match config.custom_types.get(name).unwrap().clone().into_type {
+                Some(type_name) => Some(format!("{}({})", type_name, basic)),
+                None => None
+            },
+            Type::Object(_) => Some(format!("{}.__dict__", basic)),
+            Type::Error(_) => None,
+            Type::CallbackInterface(_) => None,
+            Type::External { .. } => None,
+            _ => None
+        })
     }
 }

@@ -205,6 +205,10 @@ impl Variant {
         !self.fields.is_empty()
     }
 
+    pub fn has_field_with_default(&self) -> bool {
+        self.fields.iter().any(|f| f.default.is_some())
+    }
+
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
     }
