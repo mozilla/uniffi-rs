@@ -92,6 +92,15 @@ runBlocking {
     println(" ... ok")
 }
 
+// Test async method returning optional object
+runBlocking {
+    val megaphone = asyncMaybeNewMegaphone(true)
+    assert(megaphone != null)
+
+    val not_megaphone = asyncMaybeNewMegaphone(false)
+    assert(not_megaphone == null)
+}
+
 // Test with the Tokio runtime.
 runBlocking {
     val time = measureTimeMillis {
