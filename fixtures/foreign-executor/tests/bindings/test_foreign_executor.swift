@@ -6,7 +6,7 @@ import Foundation
 import fixture_foreign_executor
 
 func runTest(tester: ForeignExecutorTester, delay: UInt32) async -> TestResult {
-    let handle = Task {
+    let handle = Task { () -> TestResult in
         tester.scheduleTest(delay: delay)
         try! await Task.sleep(nanoseconds: numericCast((delay + 10) * 1000000))
         return tester.getLastResult()!

@@ -382,11 +382,11 @@ pub mod filters {
 
     pub fn future_callback_handler(result_type: &ResultType) -> Result<String, askama::Error> {
         let return_component = match &result_type.return_type {
-            Some(return_type) => return_type.type_label(oracle()),
+            Some(return_type) => return_type.canonical_name(),
             None => "Void".into(),
         };
         let throws_component = match &result_type.throws_type {
-            Some(throws_type) => format!("_{}", throws_type.type_label(oracle())),
+            Some(throws_type) => format!("_{}", throws_type.canonical_name()),
             None => "".into(),
         };
         Ok(format!(
