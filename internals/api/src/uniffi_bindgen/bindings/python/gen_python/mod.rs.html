@@ -443,6 +443,32 @@
 <span id="443">443</span>
 <span id="444">444</span>
 <span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -465,6 +491,7 @@
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
 <span class="kw">mod </span>error;
+<span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
 <span class="kw">mod </span>object;
@@ -744,7 +771,7 @@
             Type::CallbackInterface(id) =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
+            Type::ForeignExecutor =&gt; Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) =&gt; Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner)),
             Type::Sequence(inner) =&gt; Box::new(compounds::SequenceCodeType::new(<span class="kw-2">*</span>inner)),
             Type::Map(key, value) =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key, <span class="kw-2">*</span>value)),
@@ -808,6 +835,16 @@
             },
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;FOREIGN_CALLBACK_T&quot;</span>.to_string(),
+            <span class="comment">// Pointer to an `asyncio.EventLoop` instance
+            </span>FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T&quot;</span>.to_string(),
+            FfiType::FutureCallback { return_type } =&gt; {
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;uniffi_future_callback_t({})&quot;</span>,
+                    <span class="self">self</span>.ffi_type_label(return_type),
+                )
+            }
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
         }
     }
 }
@@ -848,6 +885,21 @@
 
     <span class="kw">pub fn </span>write_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, ffi_converter_name(codetype)<span class="question-mark">?</span>))
+    }
+
+    <span class="comment">// Name of the callback function we pass to Rust to complete an async call
+    </span><span class="kw">pub fn </span>async_callback_fn(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>return_string = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.return_type {
+            <span class="prelude-val">Some</span>(t) =&gt; t.canonical_name().to_snake_case(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;void&quot;</span>.into(),
+        };
+        <span class="kw">let </span>throws_string = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.throws_type {
+            <span class="prelude-val">Some</span>(t) =&gt; t.canonical_name().to_snake_case(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;void&quot;</span>.into(),
+        };
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;uniffi_async_callback_{return_string}__{throws_string}&quot;
+        </span>))
     }
 
     <span class="kw">pub fn </span>literal_py(

@@ -438,6 +438,17 @@
 <span id="438">438</span>
 <span id="439">439</span>
 <span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -460,6 +471,7 @@
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
 <span class="kw">mod </span>error;
+<span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
 <span class="kw">mod </span>object;
@@ -693,6 +705,7 @@
             Type::CallbackInterface(id) =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
+            Type::ForeignExecutor =&gt; Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) =&gt; Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner)),
             Type::Sequence(inner) =&gt; Box::new(compounds::SequenceCodeType::new(<span class="kw-2">*</span>inner)),
             Type::Map(key, value) =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key, <span class="kw-2">*</span>value)),
@@ -759,6 +772,12 @@
             },
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.to_string(),
+            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;USize&quot;</span>.to_string(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UniFfiForeignExecutorCallback&quot;</span>.to_string(),
+            FfiType::FutureCallback { return_type } =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;UniFfiFutureCallback{}&quot;</span>, return_type.canonical_name())
+            }
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;USize&quot;</span>.to_string(),
         }
     }
 }
@@ -805,6 +824,35 @@
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, codetype.ffi_converter_name(oracle())))
     }
 
+    <span class="kw">pub fn </span>error_handler(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.throws_type {
+            <span class="prelude-val">Some</span>(error_type) =&gt; type_name(error_type),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="string">&quot;NullCallStatusErrorHandler&quot;</span>.into()),
+        }
+    }
+
+    <span class="kw">pub fn </span>future_callback_handler(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>return_component = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.return_type {
+            <span class="prelude-val">Some</span>(return_type) =&gt; return_type.canonical_name(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Void&quot;</span>.into(),
+        };
+        <span class="kw">let </span>throws_component = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.throws_type {
+            <span class="prelude-val">Some</span>(throws_type) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_{}&quot;</span>, throws_type.canonical_name()),
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;&quot;</span>.into(),
+        };
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;UniFfiFutureCallbackHandler{return_component}{throws_component}&quot;
+        </span>))
+    }
+
+    <span class="kw">pub fn </span>future_continuation_type(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>return_type_name = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.return_type {
+            <span class="prelude-val">Some</span>(t) =&gt; type_name(t)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Unit&quot;</span>.into(),
+        };
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;Continuation&lt;{return_type_name}&gt;&quot;</span>))
+    }
+
     <span class="kw">pub fn </span>render_literal(
         literal: <span class="kw-2">&amp;</span>Literal,
         codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType,
@@ -815,32 +863,6 @@
     <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.
     </span><span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(oracle().ffi_type_label(type_))
-    }
-
-    <span class="doccomment">/// Get the type that a type is lowered into.  This is subtly different than `type_ffi`.
-    ///
-    /// For example, if we need to pre-allocate a Kotlin value that will store
-    /// an FFI lowered value, this method is your friend.
-    </span><span class="kw">pub fn </span>type_ffi_lowered(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;Byte&quot;</span>.into(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;Byte&quot;</span>.into(),
-            FfiType::Int16 =&gt; <span class="string">&quot;Short&quot;</span>.into(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;Short&quot;</span>.into(),
-            FfiType::Int32 =&gt; <span class="string">&quot;Int&quot;</span>.into(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;Int&quot;</span>.into(),
-            FfiType::Int64 =&gt; <span class="string">&quot;Long&quot;</span>.into(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;Long&quot;</span>.into(),
-            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
-            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.into(),
-            FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}&quot;</span>),
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
-            },
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.into(),
-        })
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).

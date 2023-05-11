@@ -124,6 +124,13 @@
 <span id="124">124</span>
 <span id="125">125</span>
 <span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -171,6 +178,7 @@
             Type::Enum(name) | Type::Record(name) | Type::Error(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),
             Type::Object { name, imp } =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;{}&gt;&quot;</span>, imp.rust_name_for(name)),
             Type::CallbackInterface(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn r#{name}&gt;&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="string">&quot;::uniffi::ForeignExecutor&quot;</span>.into(),
             Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, type_rs(t)<span class="question-mark">?</span>),
             Type::Sequence(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;std::vec::Vec&lt;{}&gt;&quot;</span>, type_rs(t)<span class="question-mark">?</span>),
             Type::Map(k, v) =&gt; <span class="macro">format!</span>(
@@ -201,9 +209,15 @@
             FfiType::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;*const std::os::raw::c_void&quot;</span>.into(),
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;uniffi::RustBuffer&quot;</span>.into(),
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;uniffi::ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;uniffi::ForeignCallback&quot;</span>.into(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;::uniffi::RustBuffer&quot;</span>.into(),
+            FfiType::ForeignBytes =&gt; <span class="string">&quot;::uniffi::ForeignBytes&quot;</span>.into(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;::uniffi::ForeignCallback&quot;</span>.into(),
+            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;::uniffi::ForeignExecutorHandle&quot;</span>.into(),
+            FfiType::FutureCallback { return_type } =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;::uniffi::FutureCallback&lt;{}&gt;&quot;</span>, type_ffi(return_type)<span class="question-mark">?</span>)
+            }
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;*const ()&quot;</span>.into(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;::uniffi::ForeignExecutorCallback&quot;</span>.into(),
         })
     }
 

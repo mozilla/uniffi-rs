@@ -263,6 +263,18 @@
 <span id="263">263</span>
 <span id="264">264</span>
 <span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -361,6 +373,15 @@
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.to_string(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
             FfiType::ForeignCallback =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Callback interfaces are not implemented&quot;</span>),
+            FfiType::ForeignExecutorCallback =&gt; {
+                <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>)
+            }
+            FfiType::ForeignExecutorHandle =&gt; {
+                <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>)
+            }
+            FfiType::FutureCallback { .. } | FfiType::FutureCallbackData =&gt; {
+                <span class="macro">unimplemented!</span>(<span class="string">&quot;Async functions are not implemented&quot;</span>)
+            }
         })
     }
 
@@ -457,6 +478,7 @@
             }
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for custom types, yet&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
         })
     }
 
@@ -490,6 +512,7 @@
             ),
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering custom types, yet&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
         })
     }
 
@@ -522,6 +545,7 @@
             </span>),
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting custom types, yet&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
         })
     }
 }

@@ -791,6 +791,7 @@
 <span id="791">791</span>
 <span id="792">792</span>
 <span id="793">793</span>
+<span id="794">794</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1297,9 +1298,10 @@
             <span class="self">self</span>.ffi_func.name =
                 uniffi_meta::method_symbol_name(ci_namespace, obj_name, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
         }
-
-        <span class="self">self</span>.ffi_func.arguments = <span class="self">self</span>.full_arguments().iter().map(Into::into).collect();
-        <span class="self">self</span>.ffi_func.return_type = <span class="self">self</span>.return_type.as_ref().map(Into::into);
+        <span class="self">self</span>.ffi_func.init(
+            <span class="self">self</span>.return_type.as_ref().map(Into::into),
+            <span class="self">self</span>.full_arguments().iter().map(Into::into),
+        );
         <span class="prelude-val">Ok</span>(())
     }
 

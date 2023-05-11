@@ -470,6 +470,53 @@
 <span id="470">470</span>
 <span id="471">471</span>
 <span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -493,6 +540,7 @@
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
 <span class="kw">mod </span>error;
+<span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
 <span class="kw">mod </span>object;
@@ -791,7 +839,7 @@
             Type::CallbackInterface(id) =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
+            Type::ForeignExecutor =&gt; Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) =&gt; Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner)),
             Type::Sequence(inner) =&gt; Box::new(compounds::SequenceCodeType::new(<span class="kw-2">*</span>inner)),
             Type::Map(key, value) =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key, <span class="kw-2">*</span>value)),
@@ -846,7 +894,14 @@
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.to_string(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.into(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UniFfiForeignExecutorCallback _Nonnull&quot;</span>.into(),
+            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;size_t&quot;</span>.into(),
+            FfiType::FutureCallback { return_type } =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;UniFfiFutureCallback{} _Nonnull&quot;</span>,
+                return_type.canonical_name()
+            ),
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
         }
     }
 }
@@ -918,7 +973,14 @@
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback  _Nonnull&quot;</span>.to_string(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.into(),
+            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;Int&quot;</span>.into(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;ForeignExecutorCallback _Nonnull&quot;</span>.into(),
+            FfiType::FutureCallback { return_type } =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;UniFfiFutureCallback{} _Nonnull&quot;</span>,
+                return_type.canonical_name()
+            ),
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
         })
     }
 
@@ -940,6 +1002,38 @@
     <span class="doccomment">/// Get the idiomatic Swift rendering of an individual enum variant.
     </span><span class="kw">pub fn </span>enum_variant_swift(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(oracle().enum_variant_name(nm))
+    }
+
+    <span class="kw">pub fn </span>error_handler(result: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span><span class="kw-2">&amp;</span>result.throws_type {
+            <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, ffi_converter_name(t)<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;nil&quot;</span>.into(),
+        })
+    }
+
+    <span class="doccomment">/// Name of the callback function to handle an async result
+    </span><span class="kw">pub fn </span>future_callback(result: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;uniffiFutureCallbackHandler{}{}&quot;</span>,
+            <span class="kw">match </span><span class="kw-2">&amp;</span>result.return_type {
+                <span class="prelude-val">Some</span>(t) =&gt; t.canonical_name(),
+                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Void&quot;</span>.into(),
+            },
+            <span class="kw">match </span><span class="kw-2">&amp;</span>result.throws_type {
+                <span class="prelude-val">Some</span>(t) =&gt; t.canonical_name(),
+                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;&quot;</span>.into(),
+            }
+        ))
+    }
+
+    <span class="kw">pub fn </span>future_continuation_type(result: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;CheckedContinuation&lt;{}, Error&gt;&quot;</span>,
+            <span class="kw">match </span><span class="kw-2">&amp;</span>result.return_type {
+                <span class="prelude-val">Some</span>(return_type) =&gt; type_name(return_type)<span class="question-mark">?</span>,
+                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;()&quot;</span>.into(),
+            }
+        ))
     }
 }
 </code></pre></div>

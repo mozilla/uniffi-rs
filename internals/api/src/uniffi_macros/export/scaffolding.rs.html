@@ -438,11 +438,6 @@
 <span id="438">438</span>
 <span id="439">439</span>
 <span id="440">440</span>
-<span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -544,14 +539,14 @@
             </span>bits.add_self_param(<span class="macro">quote! </span>{ this: #ffi_converter::FfiType });
             <span class="comment">// This is followed by the method arguments
             </span>bits.collect_params(sig.inputs.iter().skip(<span class="number">1</span>), RECEIVER_ERROR);
-            <span class="comment">// To call the method:
-            //   - lift the `this` param to get the object
-            //   - Add `.#ident` to get the method
-            </span>bits.set_rust_fn_call(<span class="macro">quote! </span>{
-                #ffi_converter::try_lift(this).unwrap_or_else(|err| {
+            <span class="comment">// Lift self before calling the method.  This avoids any issues with temporary
+            // references.
+            </span>bits.set_pre_fn_call(<span class="macro">quote! </span>{
+                <span class="kw">let </span>this = #ffi_converter::try_lift(this).unwrap_or_else(|err| {
                     <span class="macro">::std::panic!</span>(<span class="string">&quot;Failed to convert arg &#39;self&#39;: {}&quot;</span>, err)
-                }).#ident
+                });
             });
+            bits.set_rust_fn_call(<span class="macro">quote! </span>{ this.#ident });
             bits
         }
         <span class="comment">// Associated functions
@@ -583,8 +578,10 @@
     <span class="doccomment">/// Tokenstream that represents the function to call
     ///
     /// For functions, this is simple the function ident.
-    /// For methods, this will lift for the `self` param, followed by the method name.
+    /// For methods, this will be `self.{method_name}`.
     </span>rust_fn_call: <span class="prelude-ty">Option</span>&lt;TokenStream&gt;,
+    <span class="doccomment">/// Tokenstream of statements that we should have before `rust_fn_call`
+    </span>pre_fn_call: <span class="prelude-ty">Option</span>&lt;TokenStream&gt;,
     <span class="doccomment">/// Parameters for the scaffolding function
     </span>params: Vec&lt;TokenStream&gt;,
     <span class="doccomment">/// Expressions to lift the arguments in order to pass them to the exported function
@@ -597,6 +594,7 @@
     <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             rust_fn_call: <span class="prelude-val">None</span>,
+            pre_fn_call: <span class="prelude-val">None</span>,
             params: <span class="macro">vec!</span>[],
             param_lifts: <span class="macro">vec!</span>[],
             arg_metadata_calls: <span class="macro">vec!</span>[],
@@ -676,6 +674,10 @@
 
     <span class="kw">fn </span>set_rust_fn_call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, rust_fn_call: TokenStream) {
         <span class="self">self</span>.rust_fn_call = <span class="prelude-val">Some</span>(rust_fn_call);
+    }
+
+    <span class="kw">fn </span>set_pre_fn_call(<span class="kw-2">&amp;mut </span><span class="self">self</span>, pre_fn_call: TokenStream) {
+        <span class="self">self</span>.pre_fn_call = <span class="prelude-val">Some</span>(pre_fn_call)
     }
 
     <span class="kw">fn </span>add_self_param(<span class="kw-2">&amp;mut </span><span class="self">self</span>, param: TokenStream) {
@@ -816,6 +818,7 @@
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>sig.ident);
+    <span class="kw">let </span>pre_fn_call = <span class="kw-2">&amp;</span>bits.pre_fn_call;
     <span class="kw">let </span>rust_fn_call = bits.rust_fn_call();
     <span class="kw">let </span>fn_params = <span class="kw-2">&amp;</span>bits.params;
     <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.output;
@@ -838,52 +841,39 @@
             ) -&gt; &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::ReturnType {
                 <span class="macro">::uniffi::deps::log::debug!</span>(#name);
                 ::uniffi::rust_call(call_status, || {
+                    #pre_fn_call
                     &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower_return(#rust_fn_call)
                 })
             }
         }
     } <span class="kw">else </span>{
-        <span class="kw">let </span>rust_future_ctor = <span class="kw">match </span><span class="kw-2">&amp;</span>arguments.async_runtime {
-            <span class="prelude-val">Some</span>(AsyncRuntime::Tokio(<span class="kw">_</span>)) =&gt; <span class="macro">quote! </span>{ new_tokio },
-            <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ new },
-        };
-        <span class="kw">let </span>ffi_poll_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{ffi_ident}_poll&quot;</span>);
-        <span class="kw">let </span>ffi_drop_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{ffi_ident}_drop&quot;</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>future_expr = rust_fn_call;
+        <span class="kw">if </span><span class="macro">matches!</span>(arguments.async_runtime, <span class="prelude-val">Some</span>(AsyncRuntime::Tokio(<span class="kw">_</span>))) {
+            future_expr = <span class="macro">quote! </span>{ ::uniffi::deps::async_compat::Compat::new(#future_expr) }
+        }
 
         <span class="macro">quote! </span>{
             <span class="attribute">#[doc(hidden)]
             #[no_mangle]
             </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
                 #(#fn_params,)*
-                call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-            ) -&gt; ::std::boxed::Box&lt;::uniffi::RustFuture&lt;#return_ty&gt;&gt; {
-                <span class="macro">::uniffi::deps::log::debug!</span>(#name);
-                ::std::boxed::Box::new(::uniffi::RustFuture::#rust_future_ctor(
-                    <span class="kw">async move </span>{ #rust_fn_call.<span class="kw">await </span>}
-                ))
-            }
-
-            <span class="comment">// Monomorphised poll function.
-            </span><span class="attribute">#[doc(hidden)]
-            #[no_mangle]
-            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_poll_ident(
-                future: ::std::option::Option&lt;<span class="kw-2">&amp;mut </span>::uniffi::RustFuture&lt;#return_ty&gt;&gt;,
-                waker: ::std::option::Option&lt;::uniffi::RustFutureForeignWakerFunction&gt;,
-                waker_environment: <span class="kw-2">*const </span>::std::ffi::c_void,
-                polled_result: <span class="kw-2">&amp;mut </span>::std::mem::MaybeUninit&lt;&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::ReturnType&gt;,
-                call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-            ) -&gt; ::std::primitive::bool {
-                ::uniffi::ffi::uniffi_rustfuture_poll::&lt;<span class="kw">_</span>, <span class="kw">crate</span>::UniFfiTag&gt;(future, waker, waker_environment, polled_result, call_status)
-            }
-
-            <span class="comment">// Monomorphised drop function.
-            </span><span class="attribute">#[doc(hidden)]
-            #[no_mangle]
-            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_drop_ident(
-                future: ::std::option::Option&lt;::std::boxed::Box&lt;::uniffi::RustFuture&lt;#return_ty&gt;&gt;&gt;,
-                call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
+                uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
+                uniffi_callback: &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FutureCallback,
+                uniffi_callback_data: <span class="kw-2">*const </span>(),
+                uniffi_call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
             ) {
-                ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+                <span class="macro">::uniffi::deps::log::debug!</span>(#name);
+                ::uniffi::rust_call(uniffi_call_status, || {
+                    #pre_fn_call;
+                    <span class="kw">let </span>uniffi_rust_future = ::uniffi::RustFuture::&lt;<span class="kw">_</span>, #return_ty, <span class="kw">crate</span>::UniFfiTag&gt;::new(
+                        #future_expr,
+                        uniffi_executor_handle,
+                        uniffi_callback,
+                        uniffi_callback_data
+                    );
+                    uniffi_rust_future.wake();
+                    <span class="prelude-val">Ok</span>(())
+                });
             }
         }
     }

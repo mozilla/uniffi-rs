@@ -380,6 +380,14 @@
 <span id="380">380</span>
 <span id="381">381</span>
 <span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -472,6 +480,7 @@
         <span class="comment">// How the object is implemented.
         </span>imp: ObjectImpl,
     },
+    ForeignExecutor,
     <span class="comment">// Types defined in the component API, each of which has a string name.
     </span>Record(String),
     Enum(String),
@@ -536,6 +545,7 @@
             Type::CallbackInterface(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{nm}&quot;</span>),
             Type::Timestamp =&gt; <span class="string">&quot;Timestamp&quot;</span>.into(),
             Type::Duration =&gt; <span class="string">&quot;Duration&quot;</span>.into(),
+            Type::ForeignExecutor =&gt; <span class="string">&quot;ForeignExecutor&quot;</span>.into(),
             <span class="comment">// Recursive types.
             // These add a prefix to the name of the underlying type.
             // The component API definition cannot give names to recursive types, so as long as the
@@ -595,6 +605,7 @@
             </span>Type::Object { name, .. } =&gt; FfiType::RustArcPtr(name.to_owned()),
             <span class="comment">// Callback interfaces are passed as opaque integer handles.
             </span>Type::CallbackInterface(<span class="kw">_</span>) =&gt; FfiType::UInt64,
+            Type::ForeignExecutor =&gt; FfiType::ForeignExecutorHandle,
             <span class="comment">// Other types are serialized into a bytebuffer and deserialized on the other side.
             </span>Type::Enum(<span class="kw">_</span>)
             | Type::Error(<span class="kw">_</span>)
@@ -723,6 +734,11 @@
         }
 
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Check if a [Type] is present
+    </span><span class="kw">pub fn </span>contains(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; bool {
+        <span class="self">self</span>.all_known_types.contains(type_)
     }
 
     <span class="doccomment">/// Iterator over all the known types in this universe.
