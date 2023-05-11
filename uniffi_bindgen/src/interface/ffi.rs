@@ -18,7 +18,7 @@
 /// For the types that involve memory allocation, we make a distinction between
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FfiType {
     // N.B. there are no booleans at this layer, since they cause problems for JNA.
     UInt8,
@@ -45,11 +45,52 @@ pub enum FfiType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
-    /// A pointer to a single function in to the foreign language.
-    /// This function contains all the machinery to make callbacks work on the foreign language side.
+    /// Pointer to a callback function that handles all callbacks on the foreign language side.
     ForeignCallback,
+    /// Pointer-sized opaque handle that represents a foreign executor.  Foreign bindings can
+    /// either use an actual pointer or a usized integer.
+    ForeignExecutorHandle,
+    /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
+    ForeignExecutorCallback,
+    /// Pointer to a callback function to complete an async Rust function
+    FutureCallback {
+        /// Note: `return_type` is not optional because we have a void callback parameter like we
+        /// can have a void return.  Instead, we use `UInt8` as a placeholder value.
+        return_type: Box<FfiType>,
+    },
+    /// Opaque pointer passed to the FutureCallback
+    FutureCallbackData,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
+}
+
+impl FfiType {
+    pub fn canonical_name(&self) -> String {
+        match self {
+            Self::UInt8 => "UInt8".into(),
+            Self::Int8 => "Int8".into(),
+            Self::UInt16 => "UInt16".into(),
+            Self::Int16 => "Int16".into(),
+            Self::UInt32 => "UInt32".into(),
+            Self::Int32 => "Int32".into(),
+            Self::UInt64 => "UInt64".into(),
+            Self::Int64 => "Int64".into(),
+            Self::Float32 => "Float32".into(),
+            Self::Float64 => "Float64".into(),
+            Self::RustArcPtr(name) => format!("RustArcPtr{name}"),
+            Self::RustBuffer(maybe_suffix) => {
+                format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
+            }
+            Self::ForeignBytes => "ForeignBytes".into(),
+            Self::ForeignCallback => "ForeignCallback".into(),
+            Self::ForeignExecutorHandle => "ForeignExecutorHandle".into(),
+            Self::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
+            Self::FutureCallback { return_type } => {
+                format!("FutureCallback{}", return_type.canonical_name())
+            }
+            Self::FutureCallbackData => "FutureCallbackData".into(),
+        }
+    }
 }
 
 /// Represents an "extern C"-style function that will be part of the FFI.
@@ -93,6 +134,40 @@ impl FfiFunction {
 
     pub fn is_object_free_function(&self) -> bool {
         self.is_object_free_function
+    }
+
+    pub fn init(
+        &mut self,
+        return_type: Option<FfiType>,
+        args: impl IntoIterator<Item = FfiArgument>,
+    ) {
+        self.arguments = args.into_iter().collect();
+        if self.is_async() {
+            self.arguments.extend([
+                // Used to schedule polls
+                FfiArgument {
+                    name: "uniffi_executor".into(),
+                    type_: FfiType::ForeignExecutorHandle,
+                },
+                // Invoked when the future is ready
+                FfiArgument {
+                    name: "uniffi_callback".into(),
+                    type_: FfiType::FutureCallback {
+                        return_type: Box::new(return_type.unwrap_or(FfiType::UInt8)),
+                    },
+                },
+                // Data pointer passed to the callback
+                FfiArgument {
+                    name: "uniffi_callback_data".into(),
+                    type_: FfiType::FutureCallbackData,
+                },
+            ]);
+            // Async scaffolding functions never return values.  Instead, the callback is invoked
+            // when the Future is ready.
+            self.return_type = None;
+        } else {
+            self.return_type = return_type;
+        }
     }
 }
 

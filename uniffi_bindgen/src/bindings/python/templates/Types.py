@@ -88,6 +88,13 @@
 {%- when Type::External { name, crate_name, kind } %}
 {%- include "ExternalTemplate.py" %}
 
+{%- when Type::ForeignExecutor %}
+{%- include "ForeignExecutorTemplate.py" %}
+
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
+
+{%- if ci.has_async_fns() %}
+{%- include "AsyncTypes.py" %}
+{%- endif %}

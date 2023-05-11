@@ -4,7 +4,8 @@
 
 use crate::{
     check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
-    metadata, FfiConverter, Interface, MetadataBuffer, Result, RustBuffer,
+    metadata, FfiConverter, FutureCallback, Interface, MetadataBuffer, Result, RustBuffer,
+    RustCallStatus,
 };
 /// This module contains builtin `FFIConverter` implementations.  These cover:
 ///   - Simple privitive types: u8, i32, String, Arc<T>, etc
@@ -113,22 +114,45 @@ unsafe impl<UT> FfiConverter<UT> for bool {
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_BOOL);
 }
 
-/// Support for passing the unit type via the FFI.  This is currently only used for void returns
+/// Support unit-type returns via the FFI.
+///
+/// This is currently supported for function returns. Unit types can not be passed as arguments.
 unsafe impl<UT> FfiConverter<UT> for () {
-    ffi_converter_default_return!(UT);
-
+    // This actually isn't used, but we need to specify something
     type FfiType = ();
+    // Returning `()` is FFI-safe, since it gets translated into a void return
+    type ReturnType = ();
+    // However, we can't use `FutureCallback<()>` since passing `()` as an argument is not
+    // FFI-safe.  So we used an arbitrary non-ZST type instead.
+    type FutureCallback = FutureCallback<u8>;
 
     fn try_lift(_: Self::FfiType) -> Result<()> {
+        panic!("lifting the unit type is not allowed")
+    }
+
+    fn lower(_: ()) -> Self::FfiType {
+        panic!("lowering the unit type is not allowed")
+    }
+
+    fn write(_: (), _: &mut Vec<u8>) {
+        panic!("writing the unit type is not allowed")
+    }
+
+    fn try_read(_: &mut &[u8]) -> Result<()> {
+        panic!("reading the unit type is not allowed")
+    }
+
+    fn lower_return(_: ()) -> Result<Self::ReturnType, RustBuffer> {
         Ok(())
     }
 
-    fn lower(_: ()) -> Self::FfiType {}
-
-    fn write(_: (), _: &mut Vec<u8>) {}
-
-    fn try_read(_: &mut &[u8]) -> Result<()> {
-        Ok(())
+    fn invoke_future_callback(
+        callback: Self::FutureCallback,
+        callback_data: *const (),
+        _return_value: (),
+        call_status: RustCallStatus,
+    ) {
+        callback(callback_data, 0, call_status)
     }
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_UNIT);
@@ -475,6 +499,49 @@ unsafe impl<UT, T: Interface<UT>> FfiConverter<UT> for std::sync::Arc<T> {
         .concat_bool(false);
 }
 
+/// FFI support for ForeignSchedulers
+///
+/// These are passed over the FFI as opaque pointer-sized types representing the foreign executor.
+/// The foreign bindings may use an actual pointer to the executor object, or a usized integer
+/// handle.
+unsafe impl<UT> FfiConverter<UT> for crate::ForeignExecutor {
+    type FfiType = crate::ForeignExecutorHandle;
+
+    // Passing these back to the foreign bindings is currently not supported
+    fn lower(executor: Self) -> Self::FfiType {
+        executor.handle
+    }
+
+    fn write(executor: Self, buf: &mut Vec<u8>) {
+        // Use native endian when writing these values, so they can be casted to pointer values
+        match std::mem::size_of::<usize>() {
+            // Use native endian when reading these values, so they can be casted to pointer values
+            4 => buf.put_u32_ne(executor.handle.0 as u32),
+            8 => buf.put_u64_ne(executor.handle.0 as u64),
+            n => panic!("Invalid usize width: {n}"),
+        };
+    }
+
+    fn try_lift(executor: Self::FfiType) -> Result<Self> {
+        Ok(crate::ForeignExecutor::new(executor))
+    }
+
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+        let usize_val = match std::mem::size_of::<usize>() {
+            // Use native endian when reading these values, so they can be casted to pointer values
+            4 => buf.get_u32_ne() as usize,
+            8 => buf.get_u64_ne() as usize,
+            n => panic!("Invalid usize width: {n}"),
+        };
+        <Self as FfiConverter<UT>>::try_lift(crate::ForeignExecutorHandle(usize_val as *const ()))
+    }
+
+    ffi_converter_default_return!(UT);
+
+    const TYPE_ID_META: MetadataBuffer =
+        MetadataBuffer::from_code(metadata::codes::TYPE_FOREIGN_EXECUTOR);
+}
+
 /// Support `Result<>` via the FFI.
 ///
 /// This is currently supported for function returns. Lifting/lowering Result<> arguments is not
@@ -486,6 +553,7 @@ where
 {
     type FfiType = (); // Placeholder while lower/lift/serializing is unimplemented
     type ReturnType = R::ReturnType;
+    type FutureCallback = R::FutureCallback;
 
     fn try_lift(_: Self::FfiType) -> Result<Self> {
         unimplemented!();
@@ -508,6 +576,15 @@ where
             Ok(r) => R::lower_return(r),
             Err(e) => Err(E::lower(e)),
         }
+    }
+
+    fn invoke_future_callback(
+        callback: Self::FutureCallback,
+        callback_data: *const (),
+        return_value: Self::ReturnType,
+        call_status: RustCallStatus,
+    ) {
+        R::invoke_future_callback(callback, callback_data, return_value, call_status)
     }
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)

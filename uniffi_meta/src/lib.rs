@@ -196,6 +196,7 @@ pub enum Type {
     Bool,
     String,
     Duration,
+    ForeignExecutor,
     SystemTime,
     Enum {
         name: String,

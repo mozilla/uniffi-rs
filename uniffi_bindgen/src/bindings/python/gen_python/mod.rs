@@ -20,6 +20,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -299,7 +300,7 @@ impl PythonCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
-
+            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
@@ -363,6 +364,16 @@ impl CodeOracle for PythonCodeOracle {
             },
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            // Pointer to an `asyncio.EventLoop` instance
+            FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
+            FfiType::ForeignExecutorCallback => "UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
+            FfiType::FutureCallback { return_type } => {
+                format!(
+                    "uniffi_future_callback_t({})",
+                    self.ffi_type_label(return_type),
+                )
+            }
+            FfiType::FutureCallbackData => "ctypes.c_size_t".to_string(),
         }
     }
 }
@@ -403,6 +414,21 @@ pub mod filters {
 
     pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
         Ok(format!("{}.write", ffi_converter_name(codetype)?))
+    }
+
+    // Name of the callback function we pass to Rust to complete an async call
+    pub fn async_callback_fn(result_type: &ResultType) -> Result<String, askama::Error> {
+        let return_string = match &result_type.return_type {
+            Some(t) => t.canonical_name().to_snake_case(),
+            None => "void".into(),
+        };
+        let throws_string = match &result_type.throws_type {
+            Some(t) => t.canonical_name().to_snake_case(),
+            None => "void".into(),
+        };
+        Ok(format!(
+            "uniffi_async_callback_{return_string}__{throws_string}"
+        ))
     }
 
     pub fn literal_py(

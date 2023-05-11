@@ -504,9 +504,10 @@ impl Method {
             self.ffi_func.name =
                 uniffi_meta::method_symbol_name(ci_namespace, obj_name, &self.name);
         }
-
-        self.ffi_func.arguments = self.full_arguments().iter().map(Into::into).collect();
-        self.ffi_func.return_type = self.return_type.as_ref().map(Into::into);
+        self.ffi_func.init(
+            self.return_type.as_ref().map(Into::into),
+            self.full_arguments().iter().map(Into::into),
+        );
         Ok(())
     }
 

@@ -37,7 +37,7 @@ use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
 use super::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
-use super::ffi::{FfiArgument, FfiFunction};
+use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::literal::{convert_default_value, Literal};
 use super::types::{ObjectImpl, Type, TypeIterator};
 use super::{convert_type, APIConverter, ComponentInterface};
@@ -124,9 +124,10 @@ impl Function {
         if self.ffi_func.name.is_empty() {
             self.ffi_func.name = uniffi_meta::fn_symbol_name(ci_namespace, &self.name);
         }
-
-        self.ffi_func.arguments = self.arguments.iter().map(|arg| arg.into()).collect();
-        self.ffi_func.return_type = self.return_type.as_ref().map(|rt| rt.into());
+        self.ffi_func.init(
+            self.return_type.as_ref().map(Into::into),
+            self.arguments.iter().map(Into::into),
+        );
         Ok(())
     }
 }
@@ -280,11 +281,34 @@ impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
     }
 }
 
+/// Combines the return and throws type of a function/method
+#[derive(Debug, PartialOrd, Ord, PartialEq, Eq)]
+pub struct ResultType {
+    pub return_type: Option<Type>,
+    pub throws_type: Option<Type>,
+}
+
+impl ResultType {
+    /// Get the `T` parameters for the `FutureCallback<T>` for this ResultType
+    pub fn future_callback_param(&self) -> FfiType {
+        match &self.return_type {
+            Some(t) => t.ffi_type(),
+            None => FfiType::UInt8,
+        }
+    }
+}
+
 /// Implemented by function-like types (Function, Method, Constructor)
 pub trait Callable {
     fn arguments(&self) -> Vec<&Argument>;
     fn return_type(&self) -> Option<Type>;
     fn throws_type(&self) -> Option<Type>;
+    fn result_type(&self) -> ResultType {
+        ResultType {
+            return_type: self.return_type(),
+            throws_type: self.throws_type(),
+        }
+    }
 }
 
 impl Callable for Function {

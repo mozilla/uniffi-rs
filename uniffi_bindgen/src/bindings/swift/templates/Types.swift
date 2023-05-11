@@ -61,6 +61,9 @@
 {%- when Type::CallbackInterface(name) %}
 {%- include "CallbackInterfaceTemplate.swift" %}
 
+{%- when Type::ForeignExecutor %}
+{%- include "ForeignExecutorTemplate.swift" %}
+
 {%- when Type::Custom { name, builtin } %}
 {%- include "CustomType.swift" %}
 
@@ -88,3 +91,7 @@
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
+
+{%- if ci.has_async_fns() %}
+{%- include "AsyncTypes.swift" %}
+{%- endif %}

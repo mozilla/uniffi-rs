@@ -18,6 +18,7 @@ package {{ config.package_name() }};
 // helpers directly inline like we're doing here.
 
 import com.sun.jna.Library
+import com.sun.jna.IntegerType
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
@@ -26,24 +27,12 @@ import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.ConcurrentHashMap
-{%- if ci.has_async_fns() %}
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
-{%- endif %}
 
 {%- for req in self.imports() %}
 {{ req.render() }}
 {%- endfor %}
 
 {% include "RustBufferTemplate.kt" %}
-{% if ci.has_async_fns() %}{% include "RustFutureTemplate.kt" %}{% endif %}
 {% include "FfiConverterTemplate.kt" %}
 {% include "Helpers.kt" %}
 

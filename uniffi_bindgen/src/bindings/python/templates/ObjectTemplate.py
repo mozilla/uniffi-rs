@@ -35,54 +35,16 @@ class {{ type_name }}(object):
 
     {% for meth in obj.methods() -%}
     {% if meth.is_async() %}
+
     async def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::setup_args_extra_indent(meth) %}
-        {#- Get the `RustFuture`. -#}
-        rust_future = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
-        future = None
+        return await rust_call_async(
+            _UniFFILib.{{ func.ffi_func().name() }},
+            {{ func.result_type().borrow()|async_callback_fn }},
+            self._pointer,
+            {% call py::arg_list_lowered(func) %}
+        )
 
-        def trampoline() -> (FuturePoll, any):
-            nonlocal rust_future
-
-            {% match meth.ffi_func().return_type() -%}
-            {%- when Some with (return_type) -%}
-            polled_result = {{ return_type|ffi_type_name }}()
-            polled_result_ref = ctypes.byref(polled_result)
-            {% when None %}
-            polled_result_ref = ctypes.c_void_type()
-            {% endmatch %}
-
-            is_ready = {% match meth.throws_type() -%}
-            {%- when Some with (error) -%}
-            rust_call_with_error({{ error|ffi_converter_name }},
-            {%- when None -%}
-            rust_call(
-            {%- endmatch %}
-                _UniFFILib.{{ meth.ffi_func().name() }}_poll,
-                rust_future,
-                future._future_ffi_waker(),
-                ctypes.c_void_p(),
-                polled_result_ref,
-            )
-
-            if is_ready is True:
-                result = {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(polled_result){% when None %}None{% endmatch %}
-
-                return (FuturePoll.DONE, result)
-            else:
-                return (FuturePoll.PENDING, None)
-
-        {# Create our own Python `Future` and poll it. -#}
-        future = Future(trampoline)
-        future.init()
-
-        {# Let's wait on it. -#}
-        result = await future
-
-        {# Drop the `rust_future`. -#}
-        rust_call(_UniFFILib.{{ meth.ffi_func().name() }}_drop, rust_future)
-
-        return result
     {% else %}
     {%- match meth.return_type() -%}
 

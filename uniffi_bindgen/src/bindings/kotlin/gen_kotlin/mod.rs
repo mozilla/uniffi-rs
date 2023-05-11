@@ -20,6 +20,7 @@ mod compounds;
 mod custom;
 mod enum_;
 mod error;
+mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -253,6 +254,7 @@ impl KotlinCodeOracle {
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
+            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
             Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
             Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
@@ -319,6 +321,12 @@ impl CodeOracle for KotlinCodeOracle {
             },
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
+            FfiType::ForeignExecutorHandle => "USize".to_string(),
+            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
+            FfiType::FutureCallback { return_type } => {
+                format!("UniFfiFutureCallback{}", return_type.canonical_name())
+            }
+            FfiType::FutureCallbackData => "USize".to_string(),
         }
     }
 }
@@ -365,6 +373,35 @@ pub mod filters {
         Ok(format!("{}.read", codetype.ffi_converter_name(oracle())))
     }
 
+    pub fn error_handler(result_type: &ResultType) -> Result<String, askama::Error> {
+        match &result_type.throws_type {
+            Some(error_type) => type_name(error_type),
+            None => Ok("NullCallStatusErrorHandler".into()),
+        }
+    }
+
+    pub fn future_callback_handler(result_type: &ResultType) -> Result<String, askama::Error> {
+        let return_component = match &result_type.return_type {
+            Some(return_type) => return_type.canonical_name(),
+            None => "Void".into(),
+        };
+        let throws_component = match &result_type.throws_type {
+            Some(throws_type) => format!("_{}", throws_type.canonical_name()),
+            None => "".into(),
+        };
+        Ok(format!(
+            "UniFfiFutureCallbackHandler{return_component}{throws_component}"
+        ))
+    }
+
+    pub fn future_continuation_type(result_type: &ResultType) -> Result<String, askama::Error> {
+        let return_type_name = match &result_type.return_type {
+            Some(t) => type_name(t)?,
+            None => "Unit".into(),
+        };
+        Ok(format!("Continuation<{return_type_name}>"))
+    }
+
     pub fn render_literal(
         literal: &Literal,
         codetype: &impl CodeType,
@@ -375,32 +412,6 @@ pub mod filters {
     /// Get the Kotlin syntax for representing a given low-level `FfiType`.
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(type_))
-    }
-
-    /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`.
-    ///
-    /// For example, if we need to pre-allocate a Kotlin value that will store
-    /// an FFI lowered value, this method is your friend.
-    pub fn type_ffi_lowered(ffi_type: &FfiType) -> Result<String, askama::Error> {
-        Ok(match ffi_type {
-            FfiType::Int8 => "Byte".into(),
-            FfiType::UInt8 => "Byte".into(),
-            FfiType::Int16 => "Short".into(),
-            FfiType::UInt16 => "Short".into(),
-            FfiType::Int32 => "Int".into(),
-            FfiType::UInt32 => "Int".into(),
-            FfiType::Int64 => "Long".into(),
-            FfiType::UInt64 => "Long".into(),
-            FfiType::Float32 => "Float".into(),
-            FfiType::Float64 => "Double".into(),
-            FfiType::RustArcPtr(_) => "Pointer".into(),
-            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("RustBuffer{suffix}"),
-                None => "RustBuffer".into(),
-            },
-            FfiType::ForeignBytes => "ForeignBytes".into(),
-            FfiType::ForeignCallback => "ForeignCallback".into(),
-        })
     }
 
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).

@@ -1,13 +1,39 @@
-# This is how we find and load the dynamic library provided by the component.
-# For now we just look it up by name.
-#
-# XXX TODO: This will probably grow some magic for resolving megazording in future.
-# E.g. we might start by looking for the named component in `libuniffi.so` and if
-# that fails, fall back to loading it separately from `lib${componentName}.so`.
+# Define some ctypes FFI types that we use in the library
+
+"""
+ctypes type for the foreign executor callback.  This is a built-in interface for scheduling
+tasks
+
+Args:
+  executor: opaque c_size_t value representing the eventloop
+  delay: delay in ms
+  task: function pointer to the task callback
+  task_data: void pointer to the task callback data
+
+Normally we should call task(task_data) after the detail.
+However, when task is NULL this indicates that Rust has dropped the ForeignExecutor and we should
+decrease the EventLoop refcount.
+"""
+UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T = ctypes.CFUNCTYPE(None, ctypes.c_size_t, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_void_p)
+
+"""
+Function pointer for a Rust task, which a callback function that takes a opaque pointer
+"""
+UNIFFI_RUST_TASK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
+
+def uniffi_future_callback_t(return_type):
+    """
+    Factory function to create callback function types for async functions
+    """
+    return ctypes.CFUNCTYPE(None, ctypes.c_size_t, return_type, RustCallStatus)
 
 from pathlib import Path
 
 def loadIndirect():
+    """
+    This is how we find and load the dynamic library provided by the component.
+    For now we just look it up by name.
+    """
     if sys.platform == "darwin":
         libname = "lib{}.dylib"
     elif sys.platform.startswith("win"):
@@ -51,34 +77,8 @@ def uniffi_check_api_checksums(lib):
 
 _UniFFILib = loadIndirect()
 {%- for func in ci.iter_ffi_function_definitions() %}
-{%- if func.is_async() %}
-
-_UniFFILib.{{ func.name() }}.argtypes = (
-    {%- call py::arg_list_ffi_decl(func) -%}
-)
-_UniFFILib.{{ func.name() }}.restype = ctypes.POINTER(RustFuture)
-
-_UniFFILib.{{ func.name() }}_poll.argtypes = (
-    ctypes.POINTER(RustFuture),
-    FUTURE_WAKER_T,
-    FUTURE_WAKER_ENVIRONMENT_T,
-    {% match func.return_type() %}{% when Some with (type_) %}ctypes.POINTER({{ type_|ffi_type_name }}){% when None %}ctypes.c_void_p{% endmatch %},
-    {%- if func.has_rust_call_status_arg() %}ctypes.POINTER(RustCallStatus), {% endif %}
-)
-_UniFFILib.{{ func.name() }}_poll.restype = ctypes.c_bool
-
-_UniFFILib.{{ func.name() }}_drop.argtypes = (
-    ctypes.POINTER(RustFuture),
-    ctypes.POINTER(RustCallStatus),
-)
-_UniFFILib.{{ func.name() }}_drop.restype = None
-
-{%- else %}
-
 _UniFFILib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
 _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
-
-{%- endif %}
 {%- endfor %}

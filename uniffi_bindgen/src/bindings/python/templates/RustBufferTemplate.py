@@ -137,6 +137,8 @@ class RustBufferStream(object):
     def readDouble(self):
         return self._unpack_from(8, ">d")
 
+    def readCSizeT(self):
+        return self._unpack_from(ctypes.sizeof(ctypes.c_size_t) , "@N")
 
 class RustBufferBuilder(object):
     """
@@ -204,3 +206,6 @@ class RustBufferBuilder(object):
 
     def writeDouble(self, v):
         self._pack_into(8, ">d", v)
+
+    def writeCSizeT(self, v):
+        self._pack_into(ctypes.sizeof(ctypes.c_size_t) , "@N", v)

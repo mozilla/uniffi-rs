@@ -77,6 +77,9 @@
 {%- when Type::CallbackInterface(name) %}
 {% include "CallbackInterfaceTemplate.kt" %}
 
+{%- when Type::ForeignExecutor %}
+{% include "ForeignExecutorTemplate.kt" %}
+
 {%- when Type::Timestamp %}
 {% include "TimestampHelper.kt" %}
 
@@ -92,3 +95,7 @@
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
+
+{%- if ci.has_async_fns() %}
+{% include "AsyncTypes.kt" %}
+{%- endif %}

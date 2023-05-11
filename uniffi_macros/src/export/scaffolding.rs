@@ -99,14 +99,14 @@ pub(super) fn gen_method_scaffolding(
             bits.add_self_param(quote! { this: #ffi_converter::FfiType });
             // This is followed by the method arguments
             bits.collect_params(sig.inputs.iter().skip(1), RECEIVER_ERROR);
-            // To call the method:
-            //   - lift the `this` param to get the object
-            //   - Add `.#ident` to get the method
-            bits.set_rust_fn_call(quote! {
-                #ffi_converter::try_lift(this).unwrap_or_else(|err| {
+            // Lift self before calling the method.  This avoids any issues with temporary
+            // references.
+            bits.set_pre_fn_call(quote! {
+                let this = #ffi_converter::try_lift(this).unwrap_or_else(|err| {
                     ::std::panic!("Failed to convert arg 'self': {}", err)
-                }).#ident
+                });
             });
+            bits.set_rust_fn_call(quote! { this.#ident });
             bits
         }
         // Associated functions
@@ -138,8 +138,10 @@ struct ScaffoldingBits {
     /// Tokenstream that represents the function to call
     ///
     /// For functions, this is simple the function ident.
-    /// For methods, this will lift for the `self` param, followed by the method name.
+    /// For methods, this will be `self.{method_name}`.
     rust_fn_call: Option<TokenStream>,
+    /// Tokenstream of statements that we should have before `rust_fn_call`
+    pre_fn_call: Option<TokenStream>,
     /// Parameters for the scaffolding function
     params: Vec<TokenStream>,
     /// Expressions to lift the arguments in order to pass them to the exported function
@@ -152,6 +154,7 @@ impl ScaffoldingBits {
     fn new() -> Self {
         Self {
             rust_fn_call: None,
+            pre_fn_call: None,
             params: vec![],
             param_lifts: vec![],
             arg_metadata_calls: vec![],
@@ -231,6 +234,10 @@ impl ScaffoldingBits {
 
     fn set_rust_fn_call(&mut self, rust_fn_call: TokenStream) {
         self.rust_fn_call = Some(rust_fn_call);
+    }
+
+    fn set_pre_fn_call(&mut self, pre_fn_call: TokenStream) {
+        self.pre_fn_call = Some(pre_fn_call)
     }
 
     fn add_self_param(&mut self, param: TokenStream) {
@@ -371,6 +378,7 @@ fn gen_ffi_function(
     arguments: &ExportAttributeArguments,
 ) -> TokenStream {
     let name = ident_to_string(&sig.ident);
+    let pre_fn_call = &bits.pre_fn_call;
     let rust_fn_call = bits.rust_fn_call();
     let fn_params = &bits.params;
     let return_ty = &sig.output;
@@ -393,52 +401,39 @@ fn gen_ffi_function(
             ) -> <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
                 ::uniffi::deps::log::debug!(#name);
                 ::uniffi::rust_call(call_status, || {
+                    #pre_fn_call
                     <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower_return(#rust_fn_call)
                 })
             }
         }
     } else {
-        let rust_future_ctor = match &arguments.async_runtime {
-            Some(AsyncRuntime::Tokio(_)) => quote! { new_tokio },
-            None => quote! { new },
-        };
-        let ffi_poll_ident = format_ident!("{ffi_ident}_poll");
-        let ffi_drop_ident = format_ident!("{ffi_ident}_drop");
+        let mut future_expr = rust_fn_call;
+        if matches!(arguments.async_runtime, Some(AsyncRuntime::Tokio(_))) {
+            future_expr = quote! { ::uniffi::deps::async_compat::Compat::new(#future_expr) }
+        }
 
         quote! {
             #[doc(hidden)]
             #[no_mangle]
             pub extern "C" fn #ffi_ident(
                 #(#fn_params,)*
-                call_status: &mut ::uniffi::RustCallStatus,
-            ) -> ::std::boxed::Box<::uniffi::RustFuture<#return_ty>> {
-                ::uniffi::deps::log::debug!(#name);
-                ::std::boxed::Box::new(::uniffi::RustFuture::#rust_future_ctor(
-                    async move { #rust_fn_call.await }
-                ))
-            }
-
-            // Monomorphised poll function.
-            #[doc(hidden)]
-            #[no_mangle]
-            pub extern "C" fn #ffi_poll_ident(
-                future: ::std::option::Option<&mut ::uniffi::RustFuture<#return_ty>>,
-                waker: ::std::option::Option<::uniffi::RustFutureForeignWakerFunction>,
-                waker_environment: *const ::std::ffi::c_void,
-                polled_result: &mut ::std::mem::MaybeUninit<<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType>,
-                call_status: &mut ::uniffi::RustCallStatus,
-            ) -> ::std::primitive::bool {
-                ::uniffi::ffi::uniffi_rustfuture_poll::<_, crate::UniFfiTag>(future, waker, waker_environment, polled_result, call_status)
-            }
-
-            // Monomorphised drop function.
-            #[doc(hidden)]
-            #[no_mangle]
-            pub extern "C" fn #ffi_drop_ident(
-                future: ::std::option::Option<::std::boxed::Box<::uniffi::RustFuture<#return_ty>>>,
-                call_status: &mut ::uniffi::RustCallStatus,
+                uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
+                uniffi_callback: <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FutureCallback,
+                uniffi_callback_data: *const (),
+                uniffi_call_status: &mut ::uniffi::RustCallStatus,
             ) {
-                ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
+                ::uniffi::deps::log::debug!(#name);
+                ::uniffi::rust_call(uniffi_call_status, || {
+                    #pre_fn_call;
+                    let uniffi_rust_future = ::uniffi::RustFuture::<_, #return_ty, crate::UniFfiTag>::new(
+                        #future_expr,
+                        uniffi_executor_handle,
+                        uniffi_callback,
+                        uniffi_callback_data
+                    );
+                    uniffi_rust_future.wake();
+                    Ok(())
+                });
             }
         }
     }

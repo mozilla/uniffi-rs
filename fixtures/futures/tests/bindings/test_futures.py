@@ -45,12 +45,12 @@ class TestFutures(unittest.TestCase):
     def test_sequential_futures(self):
         async def test():
             t0 = now()
-            result_alice = await say_after(1000, 'Alice')
-            result_bob = await say_after(2000, 'Bob')
+            result_alice = await say_after(100, 'Alice')
+            result_bob = await say_after(200, 'Bob')
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 3 and t_delta < 3.1)
+            self.assertTrue(t_delta > 0.3 and t_delta < 0.31)
             self.assertEqual(result_alice, 'Hello, Alice!')
             self.assertEqual(result_bob, 'Hello, Bob!')
 
@@ -58,8 +58,8 @@ class TestFutures(unittest.TestCase):
 
     def test_concurrent_tasks(self):
         async def test():
-            alice = asyncio.create_task(say_after(1000, 'Alice'))
-            bob = asyncio.create_task(say_after(2000, 'Bob'))
+            alice = asyncio.create_task(say_after(100, 'Alice'))
+            bob = asyncio.create_task(say_after(200, 'Bob'))
 
             t0 = now()
             result_alice = await alice
@@ -67,7 +67,7 @@ class TestFutures(unittest.TestCase):
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 2 and t_delta < 2.1)
+            self.assertTrue(t_delta > 0.2 and t_delta < 0.21)
             self.assertEqual(result_alice, 'Hello, Alice!')
             self.assertEqual(result_bob, 'Hello, Bob!')
 
@@ -77,11 +77,11 @@ class TestFutures(unittest.TestCase):
         async def test():
             megaphone = new_megaphone()
             t0 = now()
-            result_alice = await megaphone.say_after(2000, 'Alice')
+            result_alice = await megaphone.say_after(200, 'Alice')
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 2 and t_delta < 2.1)
+            self.assertTrue(t_delta > 0.2 and t_delta < 0.21)
             self.assertEqual(result_alice, 'HELLO, ALICE!')
 
         asyncio.run(test())
@@ -89,11 +89,11 @@ class TestFutures(unittest.TestCase):
     def test_with_tokio_runtime(self):
         async def test():
             t0 = now()
-            result_alice = await say_after_with_tokio(2000, 'Alice')
+            result_alice = await say_after_with_tokio(200, 'Alice')
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 2 and t_delta < 2.1)
+            self.assertTrue(t_delta > 0.2 and t_delta < 0.21)
             self.assertEqual(result_alice, 'Hello, Alice (with Tokio)!')
 
         asyncio.run(test())
@@ -106,7 +106,7 @@ class TestFutures(unittest.TestCase):
 
             t_delta = (t1 - t0).total_seconds()
             self.assertTrue(t_delta > 0 and t_delta < 0.1)
-            self.assertEqual(result.value, 42)
+            self.assertEqual(result, 42)
 
             try:
                 result = await fallible_me(True)
@@ -122,7 +122,7 @@ class TestFutures(unittest.TestCase):
 
             t_delta = (t1 - t0).total_seconds()
             self.assertTrue(t_delta > 0 and t_delta < 0.1)
-            self.assertEqual(result.value, 42)
+            self.assertEqual(result, 42)
 
             try:
                 result = await megaphone.fallible_me(True)
@@ -138,6 +138,22 @@ class TestFutures(unittest.TestCase):
             self.assertEqual(result.__class__, MyRecord)
             self.assertEqual(result.a, "foo")
             self.assertEqual(result.b, 42)
+
+        asyncio.run(test())
+
+    def test_cancel(self):
+        async def test():
+            # Create a task
+            task = asyncio.create_task(say_after(200, 'Alice'))
+            # Wait to ensure that the polling has started, then cancel the task
+            await asyncio.sleep(0.1)
+            task.cancel()
+            # Wait long enough for the Rust callback to fire.  This shouldn't cause an exception,
+            # even though the task is cancelled.
+            await asyncio.sleep(0.2)
+            # Awaiting the task should result in a CancelledError.
+            with self.assertRaises(asyncio.CancelledError):
+                await task
 
         asyncio.run(test())
 

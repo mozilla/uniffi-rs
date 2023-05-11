@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // The following structs are used to implement the lowest level
@@ -30,17 +31,23 @@ typedef struct RustBuffer
 
 typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const uint8_t *_Nonnull, int32_t, RustBuffer *_Nonnull);
 
+// Task defined in Rust that Swift executes
+typedef void (*UniFfiRustTaskCallback)(const void * _Nullable);
+
+// Callback to execute Rust tasks using a Swift Task
+//
+// Args:
+//   executor: ForeignExecutor lowered into a size_t value
+//   delay: Delay in MS
+//   task: UniFfiRustTaskCallback to call
+//   task_data: data to pass the task callback
+typedef void (*UniFfiForeignExecutorCallback)(size_t, uint32_t, UniFfiRustTaskCallback _Nullable, const void * _Nullable);
+
 typedef struct ForeignBytes
 {
     int32_t len;
     const uint8_t *_Nullable data;
 } ForeignBytes;
-
-// `RustFuture` is an opaque type.
-typedef struct RustFuture RustFuture;
-
-typedef void rust_future_waker_environment_t;
-typedef void (*rust_future_waker_t)(rust_future_waker_environment_t*_Nullable);
 
 // Error definitions
 typedef struct RustCallStatus {
@@ -52,26 +59,16 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-{%- for func in ci.iter_ffi_function_definitions() -%}
-{%- if func.is_async() %}
+// Callbacks for UniFFI Futures
+{%- for ffi_type in ci.iter_future_callback_params() %}
+typedef void (*UniFfiFutureCallback{{ ffi_type.canonical_name() }})(const void * _Nonnull, {{ ffi_type|ffi_type_name }}, RustCallStatus);
+{%- endfor %}
 
-RustFuture*_Nonnull {{ func.name() }}({% call swift::arg_list_ffi_decl(func) %});
-
-bool {{ func.name() }}_poll(
-    RustFuture*_Nonnull const,
-    rust_future_waker_t _Nonnull,
-    rust_future_waker_environment_t*_Nullable const,
-    {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %}*_Nullable,
-    RustCallStatus*_Nonnull
-);
-
-void {{ func.name() }}_drop(RustFuture*_Nonnull, RustCallStatus*_Nonnull);
-{%- else %}
-
+// Scaffolding functions
+{%- for func in ci.iter_ffi_function_definitions() %}
 {% match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
     {% call swift::arg_list_ffi_decl(func) %}
 );
-{%- endif -%}
-{%- endfor -%}
+{%- endfor %}
 
 {% import "macros.swift" as swift %}

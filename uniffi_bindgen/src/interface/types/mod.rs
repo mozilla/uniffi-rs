@@ -90,6 +90,7 @@ pub enum Type {
         // How the object is implemented.
         imp: ObjectImpl,
     },
+    ForeignExecutor,
     // Types defined in the component API, each of which has a string name.
     Record(String),
     Enum(String),
@@ -154,6 +155,7 @@ impl Type {
             Type::CallbackInterface(nm) => format!("CallbackInterface{nm}"),
             Type::Timestamp => "Timestamp".into(),
             Type::Duration => "Duration".into(),
+            Type::ForeignExecutor => "ForeignExecutor".into(),
             // Recursive types.
             // These add a prefix to the name of the underlying type.
             // The component API definition cannot give names to recursive types, so as long as the
@@ -213,6 +215,7 @@ impl From<&Type> for FfiType {
             Type::Object { name, .. } => FfiType::RustArcPtr(name.to_owned()),
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface(_) => FfiType::UInt64,
+            Type::ForeignExecutor => FfiType::ForeignExecutorHandle,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
             Type::Enum(_)
             | Type::Error(_)
@@ -341,6 +344,11 @@ impl TypeUniverse {
         }
 
         Ok(())
+    }
+
+    /// Check if a [Type] is present
+    pub fn contains(&self, type_: &Type) -> bool {
+        self.all_known_types.contains(type_)
     }
 
     /// Iterator over all the known types in this universe.
