@@ -1238,6 +1238,13 @@
 <span id="1238">1238</span>
 <span id="1239">1239</span>
 <span id="1240">1240</span>
+<span id="1241">1241</span>
+<span id="1242">1242</span>
+<span id="1243">1243</span>
+<span id="1244">1244</span>
+<span id="1245">1245</span>
+<span id="1246">1246</span>
+<span id="1247">1247</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1458,7 +1465,10 @@
 
     <span class="doccomment">/// Get the definitions for every Method type in the interface.
     </span><span class="kw">pub fn </span>iter_callables(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="kw">dyn </span>Callable&gt; {
-        <span class="self">self</span>.function_definitions()
+        <span class="comment">// Each of the `as &amp;dyn Callable` casts is a trivial cast, but it seems like the clearest
+        // way to express the logic in the current Rust
+        </span><span class="attribute">#[allow(trivial_casts)]
+        </span><span class="self">self</span>.function_definitions()
             .iter()
             .map(|f| f <span class="kw">as </span><span class="kw-2">&amp;</span><span class="kw">dyn </span>Callable)
             .chain(<span class="self">self</span>.objects.iter().flat_map(|o| {
@@ -1928,6 +1938,10 @@
         }
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ty) = <span class="kw-2">&amp;</span>defn.return_type {
             <span class="self">self</span>.types.add_known_type(ty)<span class="question-mark">?</span>;
+        }
+        <span class="kw">if </span>defn.is_async() {
+            <span class="comment">// Async functions depend on the foreign executor
+            </span><span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::ForeignExecutor)<span class="question-mark">?</span>;
         }
         object.methods.push(defn);
 
