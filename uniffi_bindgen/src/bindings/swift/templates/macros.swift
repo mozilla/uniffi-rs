@@ -76,21 +76,6 @@
 {%- endmacro %}
 
 
-{#-
-// Arglist as used in the _UniFFILib function declarations.
-// Note unfiltered name but ffi_type_name filters.
--#}
-{%- macro arg_list_ffi_decl(func) %}
-    {%- if func.arguments().len() > 0 %}
-        {%- for arg in func.arguments() %}
-            {{- arg.type_().borrow()|ffi_type_name }} {{ arg.name() -}}{% if !loop.last || func.has_rust_call_status_arg() %}, {% endif %}
-        {%- endfor %}
-        {%- if func.has_rust_call_status_arg() %}RustCallStatus *_Nonnull out_status{% endif %}
-    {%- else %}
-        {%- if func.has_rust_call_status_arg() %}RustCallStatus *_Nonnull out_status{%- else %}void{% endif %}
-    {% endif %}
-{%- endmacro -%}
-
 {%- macro async(func) %}
 {%- if func.is_async() %}async{% endif %}
 {%- endmacro -%}

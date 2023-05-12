@@ -5,7 +5,7 @@
 {%- for result_type in ci.iter_async_result_types() %}
 fileprivate func {{ result_type|future_callback }}(
     rawContinutation: UnsafeRawPointer,
-    returnValue: {{ result_type.future_callback_param().borrow()|type_ffi_lowered }},
+    returnValue: {{ result_type.future_callback_param().borrow()|ffi_type_name }},
     callStatus: RustCallStatus) {
 
     let continuation = rawContinutation.bindMemory(
