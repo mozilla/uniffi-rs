@@ -218,6 +218,9 @@ impl ComponentInterface {
 
     /// Get the definitions for every Method type in the interface.
     pub fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
+        // Each of the `as &dyn Callable` casts is a trivial cast, but it seems like the clearest
+        // way to express the logic in the current Rust
+        #[allow(trivial_casts)]
         self.function_definitions()
             .iter()
             .map(|f| f as &dyn Callable)
@@ -688,6 +691,10 @@ impl ComponentInterface {
         }
         if let Some(ty) = &defn.return_type {
             self.types.add_known_type(ty)?;
+        }
+        if defn.is_async() {
+            // Async functions depend on the foreign executor
+            self.types.add_known_type(&Type::ForeignExecutor)?;
         }
         object.methods.push(defn);
 

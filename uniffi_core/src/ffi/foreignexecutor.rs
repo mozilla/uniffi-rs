@@ -144,13 +144,8 @@ where
     }
 
     fn schedule_callback(self, handle: ForeignExecutorHandle, delay: u32) {
-        let leaked_ptr = Box::leak(Box::new(self));
-        schedule_raw(
-            handle,
-            delay,
-            Self::callback,
-            leaked_ptr as *const Self as *const (),
-        );
+        let leaked_ptr: *const Self = Box::leak(Box::new(self));
+        schedule_raw(handle, delay, Self::callback, leaked_ptr as *const ());
     }
 
     extern "C" fn callback(data: *const ()) {
