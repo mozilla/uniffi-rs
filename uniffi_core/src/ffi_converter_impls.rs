@@ -2,11 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{
-    check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
-    metadata, FfiConverter, FutureCallback, Interface, MetadataBuffer, Result, RustBuffer,
-    RustCallStatus,
-};
 /// This module contains builtin `FFIConverter` implementations.  These cover:
 ///   - Simple privitive types: u8, i32, String, Arc<T>, etc
 ///   - Composite types: Vec<T>, Option<T>, etc.
@@ -26,6 +21,11 @@ use crate::{
 /// This crate needs to implement `FFIConverter<UT>` on `UniFfiTag` instances for all UniFFI
 /// consumer crates.  To do this, it defines blanket impls like `impl<UT> FFIConverter<UT> for u8`.
 /// "UT" means an abitrary `UniFfiTag` type.
+use crate::{
+    check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
+    metadata, FfiConverter, FutureCallback, Interface, MetadataBuffer, Result, RustBuffer,
+    RustCallStatus,
+};
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
 use paste::paste;
