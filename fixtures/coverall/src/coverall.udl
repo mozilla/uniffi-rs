@@ -14,7 +14,7 @@ namespace coverall {
 dictionary SimpleDict {
     string text;
     string? maybe_text;
-    boolean	a_bool;
+    boolean a_bool;
     boolean? maybe_a_bool;
     u8 unsigned8;
     u8? maybe_unsigned8;

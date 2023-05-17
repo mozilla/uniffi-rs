@@ -5,5 +5,5 @@
 fn main() {
     // Force a rebuild when we set this env var to force a contract version mismatch
     println!("cargo:rerun-if-env-changed=UNIFFI_FORCE_CONTRACT_VERSION");
-    uniffi::generate_scaffolding("./src/api_v1.udl").unwrap();
+    uniffi::generate_scaffolding("src/api_v1.udl").unwrap();
 }
