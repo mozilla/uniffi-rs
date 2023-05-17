@@ -131,6 +131,10 @@
 <span id="131">131</span>
 <span id="132">132</span>
 <span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -240,23 +244,27 @@
         })
     }
 
-    <span class="comment">// Map return types to their fully-qualified `FfiConverter` impl.
-    </span><span class="kw">pub fn </span>return_ffi_converter&lt;T: Callable&gt;(callable: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>result_type = <span class="kw">match </span>callable.return_type() {
+    <span class="kw">pub fn </span>return_type&lt;T: Callable&gt;(callable: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>return_type = <span class="kw">match </span>callable.return_type() {
+            <span class="prelude-val">Some</span>(t) =&gt; type_rs(<span class="kw-2">&amp;</span>t)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;()&quot;</span>.to_string(),
+        };
+        <span class="kw">match </span>callable.throws_type() {
             <span class="prelude-val">Some</span>(t) =&gt; type_rs(<span class="kw-2">&amp;</span>t)<span class="question-mark">?</span>,
             <span class="prelude-val">None </span>=&gt; <span class="string">&quot;()&quot;</span>.to_string(),
         };
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>callable.throws_type() {
-            <span class="prelude-val">Some</span>(e) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;&lt;::std::result::Result&lt;{}, {}&gt; as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
-                result_type,
-                type_rs(<span class="kw-2">&amp;</span>e)<span class="question-mark">?
-            </span>),
-            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;&lt;{} as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
-                result_type
-            ),
+            <span class="prelude-val">Some</span>(e) =&gt; <span class="macro">format!</span>(<span class="string">&quot;::std::result::Result&lt;{return_type}, {}&gt;&quot;</span>, type_rs(<span class="kw-2">&amp;</span>e)<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; return_type,
         })
+    }
+
+    <span class="comment">// Map return types to their fully-qualified `FfiConverter` impl.
+    </span><span class="kw">pub fn </span>return_ffi_converter&lt;T: Callable&gt;(callable: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>return_type = return_type(callable)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;&lt;{return_type} as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;
+        </span>))
     }
 
     <span class="comment">// Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
