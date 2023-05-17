@@ -547,7 +547,7 @@
 //! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
 //!
 //! ```text
-//! uniffi_build::generate_scaffolding(&quot;./src/example.udl&quot;)
+//! uniffi_build::generate_scaffolding(&quot;src/example.udl&quot;)
 //! ```
 //!
 //! This would output a rust file named `example.uniffi.rs`, ready to be
@@ -952,14 +952,14 @@
         <span class="kw">let </span>example_crate_root = this_crate_root
             .parent()
             .expect(<span class="string">&quot;should have a parent directory&quot;</span>)
-            .join(<span class="string">&quot;./examples/arithmetic&quot;</span>);
+            .join(<span class="string">&quot;examples/arithmetic&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            guess_crate_root(<span class="kw-2">&amp;</span>example_crate_root.join(<span class="string">&quot;./src/arthmetic.udl&quot;</span>)).unwrap(),
+            guess_crate_root(<span class="kw-2">&amp;</span>example_crate_root.join(<span class="string">&quot;src/arthmetic.udl&quot;</span>)).unwrap(),
             example_crate_root
         );
 
-        <span class="kw">let </span>not_a_crate_root = <span class="kw-2">&amp;</span>this_crate_root.join(<span class="string">&quot;./src/templates&quot;</span>);
-        <span class="macro">assert!</span>(guess_crate_root(<span class="kw-2">&amp;</span>not_a_crate_root.join(<span class="string">&quot;./src/example.udl&quot;</span>)).is_err());
+        <span class="kw">let </span>not_a_crate_root = <span class="kw-2">&amp;</span>this_crate_root.join(<span class="string">&quot;src/templates&quot;</span>);
+        <span class="macro">assert!</span>(guess_crate_root(<span class="kw-2">&amp;</span>not_a_crate_root.join(<span class="string">&quot;src/example.udl&quot;</span>)).is_err());
     }
 }
 </code></pre></div>

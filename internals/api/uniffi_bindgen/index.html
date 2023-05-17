@@ -42,7 +42,7 @@ Then add to your crate <code>uniffi_build</code> under <code>[build-dependencies
 Finally, add a <code>build.rs</code> script to your crate and have it call <code>uniffi_build::generate_scaffolding</code>
 to process your <code>.udl</code> file. This will generate some Rust code to be included in the top-level source
 code of your crate. If your UDL file is named <code>example.udl</code>, then your build script would call:</p>
-<div class="example-wrap"><pre class="language-text"><code>uniffi_build::generate_scaffolding(&quot;./src/example.udl&quot;)
+<div class="example-wrap"><pre class="language-text"><code>uniffi_build::generate_scaffolding(&quot;src/example.udl&quot;)
 </code></pre></div>
 <p>This would output a rust file named <code>example.uniffi.rs</code>, ready to be
 included into the code of your rust crate like this:</p>

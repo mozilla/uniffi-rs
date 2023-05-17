@@ -171,7 +171,7 @@ uniffi = { version = &quot;0.XX.0&quot;, features = [&quot;build&quot;] }
 </code></pre>
 <p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
 <pre><pre class="playground"><code class="language-rust">fn main() {
-    uniffi::generate_scaffolding(&quot;./src/math.udl&quot;).unwrap();
+    uniffi::generate_scaffolding(&quot;src/math.udl&quot;).unwrap();
 }
 </code></pre></pre>
 <p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code> using this handy macro:</p>
