@@ -31,6 +31,14 @@ class KotlinGetters(): ForeignGetters {
         return if (arg2) v?.uppercase() else v
     }
     override fun getList(v: List<Int>, arg2: Boolean): List<Int> = if (arg2) v else listOf()
+    override fun getNothing(v: String): Unit {
+         if (v == "bad-argument") {
+            throw SimpleException.BadArgument("bad argument")
+        }
+        if (v == "unexpected-error") {
+            throw RuntimeException("something failed")
+        }
+    }
 }
 
 val callback = KotlinGetters()
@@ -65,6 +73,8 @@ listOf("Some", null).forEach { v ->
 assert(rustGetters.getStringOptionalCallback(callback, "TestString", false) == "TestString")
 assert(rustGetters.getStringOptionalCallback(null, "TestString", false) == null)
 
+// Should not throw
+rustGetters.getNothing(callback, "TestString")
 
 try {
     rustGetters.getString(callback, "bad-argument", true)
@@ -93,6 +103,20 @@ try {
 } catch (e: ComplexException.UnexpectedErrorWithReason) {
     // Expected error
     assert(e.reason == RuntimeException("something failed").toString())
+}
+
+
+try {
+    rustGetters.getNothing(callback, "bad-argument")
+    throw RuntimeException("Expected SimpleException.BadArgument")
+} catch (e: SimpleException.BadArgument){
+    // Expected error
+}
+try {
+    rustGetters.getNothing(callback, "unexpected-error")
+    throw RuntimeException("Expected SimpleException.UnexpectedException")
+} catch (e: SimpleException.UnexpectedException) {
+    // Expected error
 }
 
 rustGetters.destroy()

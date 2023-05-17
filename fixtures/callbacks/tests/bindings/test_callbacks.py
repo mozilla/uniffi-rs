@@ -45,6 +45,12 @@ class PythonGetters(ForeignGetters):
         else:
             return []
 
+    def get_nothing(self, v):
+        if v == "bad-argument":
+            raise SimpleError.BadArgument()
+        elif v == "unexpected-error":
+            raise ValueError("unexpected value")
+
 class ForeignGettersTest(unittest.TestCase):
     def test_get_bool(self):
         callback = PythonGetters()
@@ -82,6 +88,9 @@ class ForeignGettersTest(unittest.TestCase):
         self.assertEqual(rust_getters.get_string_optional_callback(PythonGetters(), "TestString", False), "TestString")
         self.assertEqual(rust_getters.get_string_optional_callback(None, "TestString", False), None)
 
+    def test_get_nothing(self):
+        rust_getters.get_nothing(PythonGetters(), "TestString")
+
 # 2. Pass the callback in as a constructor argument, to be stored on the Object struct.
 # This is crucial if we want to configure a system at startup,
 # then use it without passing callbacks all the time.
@@ -106,6 +115,11 @@ class TestCallbackErrors(unittest.TestCase):
             rust_getters.get_string(callback, "bad-argument", True)
         with self.assertRaises(SimpleError.UnexpectedError):
             rust_getters.get_string(callback, "unexpected-error", True)
+
+        with self.assertRaises(SimpleError.BadArgument):
+            rust_getters.get_nothing(callback, "bad-argument")
+        with self.assertRaises(SimpleError.UnexpectedError):
+            rust_getters.get_nothing(callback, "unexpected-error")
 
     def test_complex_errors(self):
         callback = PythonGetters()
