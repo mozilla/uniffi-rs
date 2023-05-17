@@ -1,4 +1,4 @@
-{%- let ffi_type_name=builtin.ffi_type().borrow()|type_ffi_lowered %}
+{%- let ffi_type_name=builtin.ffi_type().borrow()|ffi_type_name %}
 {%- match config.custom_types.get(name.as_str())  %}
 {%- when None %}
 {#- No config, just forward all methods to our builtin type #}

@@ -61,13 +61,20 @@ typedef struct RustCallStatus {
 
 // Callbacks for UniFFI Futures
 {%- for ffi_type in ci.iter_future_callback_params() %}
-typedef void (*UniFfiFutureCallback{{ ffi_type.canonical_name() }})(const void * _Nonnull, {{ ffi_type|ffi_type_name }}, RustCallStatus);
+typedef void (*UniFfiFutureCallback{{ ffi_type.canonical_name() }})(const void * _Nonnull, {{ ffi_type|header_ffi_type_name }}, RustCallStatus);
 {%- endfor %}
 
 // Scaffolding functions
 {%- for func in ci.iter_ffi_function_definitions() %}
-{% match func.return_type() -%}{%- when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
-    {% call swift::arg_list_ffi_decl(func) %}
+{% match func.return_type() -%}{%- when Some with (type_) %}{{ type_|header_ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
+    {%- if func.arguments().len() > 0 %}
+        {%- for arg in func.arguments() %}
+            {{- arg.type_().borrow()|header_ffi_type_name }} {{ arg.name() -}}{% if !loop.last || func.has_rust_call_status_arg() %}, {% endif %}
+        {%- endfor %}
+        {%- if func.has_rust_call_status_arg() %}RustCallStatus *_Nonnull out_status{% endif %}
+    {%- else %}
+        {%- if func.has_rust_call_status_arg() %}RustCallStatus *_Nonnull out_status{%- else %}void{% endif %}
+    {% endif %}
 );
 {%- endfor %}
 

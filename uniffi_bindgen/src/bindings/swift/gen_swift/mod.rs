@@ -362,27 +362,27 @@ impl CodeOracle for SwiftCodeOracle {
 
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
-            FfiType::Int8 => "int8_t".into(),
-            FfiType::UInt8 => "uint8_t".into(),
-            FfiType::Int16 => "int16_t".into(),
-            FfiType::UInt16 => "uint16_t".into(),
-            FfiType::Int32 => "int32_t".into(),
-            FfiType::UInt32 => "uint32_t".into(),
-            FfiType::Int64 => "int64_t".into(),
-            FfiType::UInt64 => "uint64_t".into(),
-            FfiType::Float32 => "float".into(),
-            FfiType::Float64 => "double".into(),
-            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
+            FfiType::Int8 => "Int8".into(),
+            FfiType::UInt8 => "UInt8".into(),
+            FfiType::Int16 => "Int16".into(),
+            FfiType::UInt16 => "UInt16".into(),
+            FfiType::Int32 => "Int32".into(),
+            FfiType::UInt32 => "UInt32".into(),
+            FfiType::Int64 => "Int64".into(),
+            FfiType::UInt64 => "UInt64".into(),
+            FfiType::Float32 => "Float".into(),
+            FfiType::Float64 => "Double".into(),
+            FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
-            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
-            FfiType::ForeignExecutorHandle => "size_t".into(),
+            FfiType::ForeignExecutorHandle => "Int".into(),
+            FfiType::ForeignExecutorCallback => "ForeignExecutorCallback _Nonnull".into(),
             FfiType::FutureCallback { return_type } => format!(
                 "UniFfiFutureCallback{} _Nonnull",
                 return_type.canonical_name()
             ),
-            FfiType::FutureCallbackData => "void* _Nonnull".into(),
+            FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
         }
     }
 }
@@ -432,36 +432,36 @@ pub mod filters {
         Ok(codetype.literal(oracle, literal))
     }
 
-    /// Get the Swift syntax for representing a given low-level `FfiType`.
-    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(oracle().ffi_type_label(type_))
+    /// Get the Swift type for an FFIType
+    pub fn ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
+        Ok(oracle().ffi_type_label(ffi_type))
     }
 
-    /// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
-    /// #1106 for details
-    pub fn type_ffi_lowered(ffi_type: &FfiType) -> Result<String, askama::Error> {
+    /// Like `ffi_type_name`, but used in `BridgingHeaderTemplate.h` which uses a slightly different
+    /// names.
+    pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(match ffi_type {
-            FfiType::Int8 => "Int8".into(),
-            FfiType::UInt8 => "UInt8".into(),
-            FfiType::Int16 => "Int16".into(),
-            FfiType::UInt16 => "UInt16".into(),
-            FfiType::Int32 => "Int32".into(),
-            FfiType::UInt32 => "UInt32".into(),
-            FfiType::Int64 => "Int64".into(),
-            FfiType::UInt64 => "UInt64".into(),
-            FfiType::Float32 => "Float".into(),
-            FfiType::Float64 => "Double".into(),
-            FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
+            FfiType::Int8 => "int8_t".into(),
+            FfiType::UInt8 => "uint8_t".into(),
+            FfiType::Int16 => "int16_t".into(),
+            FfiType::UInt16 => "uint16_t".into(),
+            FfiType::Int32 => "int32_t".into(),
+            FfiType::UInt32 => "uint32_t".into(),
+            FfiType::Int64 => "int64_t".into(),
+            FfiType::UInt64 => "uint64_t".into(),
+            FfiType::Float32 => "float".into(),
+            FfiType::Float64 => "double".into(),
+            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
-            FfiType::ForeignExecutorHandle => "Int".into(),
-            FfiType::ForeignExecutorCallback => "ForeignExecutorCallback _Nonnull".into(),
+            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
+            FfiType::ForeignExecutorHandle => "size_t".into(),
             FfiType::FutureCallback { return_type } => format!(
                 "UniFfiFutureCallback{} _Nonnull",
                 return_type.canonical_name()
             ),
-            FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
+            FfiType::FutureCallbackData => "void* _Nonnull".into(),
         })
     }
 
