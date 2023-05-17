@@ -59,7 +59,6 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {% for variant in e.variants() %}
         case let .{{ variant.name()|class_name }}(message):
             writeInt(&buf, Int32({{ loop.index }}))
-            {{ Type::String.borrow()|write_fn }}(message, into: &buf)
         {%- endfor %}
 
         {% else %}

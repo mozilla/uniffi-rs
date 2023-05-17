@@ -23,8 +23,8 @@
 /// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
-    metadata, FfiConverter, FutureCallback, Interface, MetadataBuffer, Result, RustBuffer,
-    RustCallStatus,
+    lower_into_rust_buffer, metadata, try_lift_from_rust_buffer, FfiConverter, FutureCallback,
+    Interface, MetadataBuffer, Result, RustBuffer, RustCallStatus,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -115,8 +115,6 @@ unsafe impl<UT> FfiConverter<UT> for bool {
 }
 
 /// Support unit-type returns via the FFI.
-///
-/// This is currently supported for function returns. Unit types can not be passed as arguments.
 unsafe impl<UT> FfiConverter<UT> for () {
     // This actually isn't used, but we need to specify something
     type FfiType = ();
@@ -127,19 +125,15 @@ unsafe impl<UT> FfiConverter<UT> for () {
     type FutureCallback = FutureCallback<u8>;
 
     fn try_lift(_: Self::FfiType) -> Result<()> {
-        panic!("lifting the unit type is not allowed")
+        Ok(())
     }
 
-    fn lower(_: ()) -> Self::FfiType {
-        panic!("lowering the unit type is not allowed")
-    }
+    fn lower(_: ()) -> Self::FfiType {}
 
-    fn write(_: (), _: &mut Vec<u8>) {
-        panic!("writing the unit type is not allowed")
-    }
+    fn write(_: (), _: &mut Vec<u8>) {}
 
     fn try_read(_: &mut &[u8]) -> Result<()> {
-        panic!("reading the unit type is not allowed")
+        Ok(())
     }
 
     fn lower_return(_: ()) -> Result<Self::ReturnType, RustBuffer> {
@@ -549,33 +543,43 @@ unsafe impl<UT> FfiConverter<UT> for crate::ForeignExecutor {
 unsafe impl<UT, R, E> FfiConverter<UT> for Result<R, E>
 where
     R: FfiConverter<UT>,
-    E: FfiConverter<UT, FfiType = RustBuffer>,
+    E: FfiConverter<UT>,
 {
     type FfiType = (); // Placeholder while lower/lift/serializing is unimplemented
     type ReturnType = R::ReturnType;
     type FutureCallback = R::FutureCallback;
 
     fn try_lift(_: Self::FfiType) -> Result<Self> {
-        unimplemented!();
+        unimplemented!("try_lift");
     }
 
     fn lower(_: Self) -> Self::FfiType {
-        unimplemented!();
+        unimplemented!("lower");
     }
 
     fn write(_: Self, _: &mut Vec<u8>) {
-        unimplemented!();
+        unimplemented!("write");
     }
 
     fn try_read(_: &mut &[u8]) -> Result<Self> {
-        unimplemented!();
+        unimplemented!("try_read");
     }
 
     fn lower_return(v: Self) -> Result<Self::ReturnType, RustBuffer> {
         match v {
             Ok(r) => R::lower_return(r),
-            Err(e) => Err(E::lower(e)),
+            Err(e) => Err(lower_into_rust_buffer(e)),
         }
+    }
+
+    fn lift_callback_return(buf: RustBuffer) -> Self {
+        Ok(try_lift_from_rust_buffer::<R, UT>(buf)
+            .expect("Error reading callback interface result"))
+    }
+
+    fn lift_callback_error(buf: RustBuffer) -> Self {
+        Err(try_lift_from_rust_buffer::<E, UT>(buf)
+            .expect("Error reading callback interface Err result"))
     }
 
     fn invoke_future_callback(
