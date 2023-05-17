@@ -355,7 +355,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::MockExecutor;
+    use crate::{try_lift_from_rust_buffer, MockExecutor};
     use std::sync::Weak;
 
     // Mock future that we can manually control using an Option<>
@@ -489,7 +489,7 @@ mod tests {
         assert_eq!(result.status.code, 1);
         unsafe {
             assert_eq!(
-                <String as FfiConverter<crate::UniFfiTag>>::try_lift(
+                try_lift_from_rust_buffer::<String, crate::UniFfiTag>(
                     result.status.error_buf.assume_init()
                 )
                 .unwrap(),

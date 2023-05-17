@@ -219,6 +219,19 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// values of type Self::FfiType, this method is fallible.
     fn try_lift(v: Self::FfiType) -> Result<Self>;
 
+    /// Lift a Rust value based on a callback interface method result
+    fn lift_callback_return(buf: RustBuffer) -> Self {
+        try_lift_from_rust_buffer(buf).expect("Error reading callback interface result")
+    }
+
+    /// Lift a Rust value based on a callback interface method error result
+    ///
+    /// This is called for "expected errors" -- the callback method returns a Result<> type and the
+    /// foreign code throws an exception that corresponds to the error type.
+    fn lift_callback_error(_buf: RustBuffer) -> Self {
+        panic!("Callback interface method returned unexpected error")
+    }
+
     /// Write a rust value into a buffer, to send over the FFI in serialized form.
     ///
     /// This trait method can be used for sending data from rust to the foreign language code,
@@ -295,6 +308,24 @@ where
     }
 }
 
+/// Helper function to create a RustBuffer with a single value
+pub fn lower_into_rust_buffer<T: FfiConverter<UT>, UT>(obj: T) -> RustBuffer {
+    let mut buf = ::std::vec::Vec::new();
+    T::write(obj, &mut buf);
+    RustBuffer::from_vec(buf)
+}
+
+/// Helper function to deserialize a RustBuffer with a single value
+pub fn try_lift_from_rust_buffer<T: FfiConverter<UT>, UT>(v: RustBuffer) -> Result<T> {
+    let vec = v.destroy_into_vec();
+    let mut buf = vec.as_slice();
+    let value = T::try_read(&mut buf)?;
+    match Buf::remaining(&buf) {
+        0 => Ok(value),
+        n => bail!("junk data left in buffer after lifting (count: {n})",),
+    }
+}
+
 /// Macro to implement returning values by simply lowering them and returning them
 ///
 /// This is what we use for all FfiConverters except for `Result`.  This would be nicer as a
@@ -332,20 +363,12 @@ macro_rules! ffi_converter_rust_buffer_lift_and_lower {
     ($uniffi_tag:ty) => {
         type FfiType = $crate::RustBuffer;
 
-        fn lower(obj: Self) -> $crate::RustBuffer {
-            let mut buf = ::std::vec::Vec::new();
-            <Self as $crate::FfiConverter<$uniffi_tag>>::write(obj, &mut buf);
-            $crate::RustBuffer::from_vec(buf)
+        fn lower(v: Self) -> $crate::RustBuffer {
+            $crate::lower_into_rust_buffer::<Self, $uniffi_tag>(v)
         }
 
-        fn try_lift(v: $crate::RustBuffer) -> $crate::Result<Self> {
-            let vec = v.destroy_into_vec();
-            let mut buf = vec.as_slice();
-            let value = <Self as $crate::FfiConverter<$uniffi_tag>>::try_read(&mut buf)?;
-            if $crate::deps::bytes::buf::Buf::remaining(&buf) != 0 {
-                $crate::deps::anyhow::bail!("junk data left in buffer after lifting")
-            }
-            Ok(value)
+        fn try_lift(buf: $crate::RustBuffer) -> $crate::Result<Self> {
+            $crate::try_lift_from_rust_buffer::<Self, $uniffi_tag>(buf)
         }
     };
 }

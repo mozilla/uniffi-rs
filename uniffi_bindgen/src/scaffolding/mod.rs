@@ -107,23 +107,27 @@ mod filters {
         })
     }
 
-    // Map return types to their fully-qualified `FfiConverter` impl.
-    pub fn return_ffi_converter<T: Callable>(callable: &T) -> Result<String, askama::Error> {
-        let result_type = match callable.return_type() {
+    pub fn return_type<T: Callable>(callable: &T) -> Result<String, askama::Error> {
+        let return_type = match callable.return_type() {
+            Some(t) => type_rs(&t)?,
+            None => "()".to_string(),
+        };
+        match callable.throws_type() {
             Some(t) => type_rs(&t)?,
             None => "()".to_string(),
         };
         Ok(match callable.throws_type() {
-            Some(e) => format!(
-                "<::std::result::Result<{}, {}> as ::uniffi::FfiConverter<crate::UniFfiTag>>",
-                result_type,
-                type_rs(&e)?
-            ),
-            None => format!(
-                "<{} as ::uniffi::FfiConverter<crate::UniFfiTag>>",
-                result_type
-            ),
+            Some(e) => format!("::std::result::Result<{return_type}, {}>", type_rs(&e)?),
+            None => return_type,
         })
+    }
+
+    // Map return types to their fully-qualified `FfiConverter` impl.
+    pub fn return_ffi_converter<T: Callable>(callable: &T) -> Result<String, askama::Error> {
+        let return_type = return_type(callable)?;
+        Ok(format!(
+            "<{return_type} as ::uniffi::FfiConverter<crate::UniFfiTag>>"
+        ))
     }
 
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
