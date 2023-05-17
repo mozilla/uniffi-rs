@@ -18,7 +18,7 @@ Then create a `build.rs` file next to `Cargo.toml` that uses `uniffi` to generat
 
 ```rust
 fn main() {
-    uniffi::generate_scaffolding("./src/math.udl").unwrap();
+    uniffi::generate_scaffolding("src/math.udl").unwrap();
 }
 ```
 

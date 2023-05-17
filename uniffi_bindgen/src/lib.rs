@@ -65,7 +65,7 @@
 //! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
 //!
 //! ```text
-//! uniffi_build::generate_scaffolding("./src/example.udl")
+//! uniffi_build::generate_scaffolding("src/example.udl")
 //! ```
 //!
 //! This would output a rust file named `example.uniffi.rs`, ready to be
@@ -470,13 +470,13 @@ mod test {
         let example_crate_root = this_crate_root
             .parent()
             .expect("should have a parent directory")
-            .join("./examples/arithmetic");
+            .join("examples/arithmetic");
         assert_eq!(
-            guess_crate_root(&example_crate_root.join("./src/arthmetic.udl")).unwrap(),
+            guess_crate_root(&example_crate_root.join("src/arthmetic.udl")).unwrap(),
             example_crate_root
         );
 
-        let not_a_crate_root = &this_crate_root.join("./src/templates");
-        assert!(guess_crate_root(&not_a_crate_root.join("./src/example.udl")).is_err());
+        let not_a_crate_root = &this_crate_root.join("src/templates");
+        assert!(guess_crate_root(&not_a_crate_root.join("src/example.udl")).is_err());
     }
 }

@@ -14,7 +14,7 @@ fn read_file(path: &str) -> String {
 
 #[test]
 pub fn should_parse_dom_webidl() {
-    let content = read_file("./tests/defs/dom.webidl");
+    let content = read_file("tests/defs/dom.webidl");
     let parsed = weedle::parse(&content).unwrap();
 
     assert_eq!(parsed.len(), 62);
@@ -22,7 +22,7 @@ pub fn should_parse_dom_webidl() {
 
 #[test]
 fn should_parse_html_webidl() {
-    let content = read_file("./tests/defs/html.webidl");
+    let content = read_file("tests/defs/html.webidl");
     let parsed = weedle::parse(&content).unwrap();
 
     assert_eq!(parsed.len(), 325);
@@ -30,7 +30,7 @@ fn should_parse_html_webidl() {
 
 #[test]
 fn should_parse_mediacapture_streams_webidl() {
-    let content = read_file("./tests/defs/mediacapture-streams.webidl");
+    let content = read_file("tests/defs/mediacapture-streams.webidl");
     let parsed = weedle::parse(&content).unwrap();
 
     assert_eq!(parsed.len(), 37);
@@ -38,7 +38,7 @@ fn should_parse_mediacapture_streams_webidl() {
 
 #[test]
 fn should_parse_streams_webidl() {
-    let content = read_file("./tests/defs/streams.webidl");
+    let content = read_file("tests/defs/streams.webidl");
     let parsed = weedle::parse(&content).unwrap();
 
     assert_eq!(parsed.len(), 37);
@@ -46,7 +46,7 @@ fn should_parse_streams_webidl() {
 
 #[test]
 fn interface_constructor() {
-    let content = read_file("./tests/defs/interface-constructor.webidl");
+    let content = read_file("tests/defs/interface-constructor.webidl");
     let mut parsed = weedle::parse(&content).unwrap();
 
     assert_eq!(parsed.len(), 1);
