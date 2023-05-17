@@ -881,27 +881,27 @@
 
     <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;int8_t&quot;</span>.into(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;uint8_t&quot;</span>.into(),
-            FfiType::Int16 =&gt; <span class="string">&quot;int16_t&quot;</span>.into(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;uint16_t&quot;</span>.into(),
-            FfiType::Int32 =&gt; <span class="string">&quot;int32_t&quot;</span>.into(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;uint32_t&quot;</span>.into(),
-            FfiType::Int64 =&gt; <span class="string">&quot;int64_t&quot;</span>.into(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;uint64_t&quot;</span>.into(),
-            FfiType::Float32 =&gt; <span class="string">&quot;float&quot;</span>.into(),
-            FfiType::Float64 =&gt; <span class="string">&quot;double&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
+            FfiType::Int8 =&gt; <span class="string">&quot;Int8&quot;</span>.into(),
+            FfiType::UInt8 =&gt; <span class="string">&quot;UInt8&quot;</span>.into(),
+            FfiType::Int16 =&gt; <span class="string">&quot;Int16&quot;</span>.into(),
+            FfiType::UInt16 =&gt; <span class="string">&quot;UInt16&quot;</span>.into(),
+            FfiType::Int32 =&gt; <span class="string">&quot;Int32&quot;</span>.into(),
+            FfiType::UInt32 =&gt; <span class="string">&quot;UInt32&quot;</span>.into(),
+            FfiType::Int64 =&gt; <span class="string">&quot;Int64&quot;</span>.into(),
+            FfiType::UInt64 =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
+            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
+            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.into(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UniFfiForeignExecutorCallback _Nonnull&quot;</span>.into(),
-            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;size_t&quot;</span>.into(),
+            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;Int&quot;</span>.into(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;ForeignExecutorCallback _Nonnull&quot;</span>.into(),
             FfiType::FutureCallback { return_type } =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;UniFfiFutureCallback{} _Nonnull&quot;</span>,
                 return_type.canonical_name()
             ),
-            FfiType::FutureCallbackData =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
         }
     }
 }
@@ -951,36 +951,36 @@
         <span class="prelude-val">Ok</span>(codetype.literal(oracle, literal))
     }
 
-    <span class="doccomment">/// Get the Swift syntax for representing a given low-level `FfiType`.
-    </span><span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().ffi_type_label(type_))
+    <span class="doccomment">/// Get the Swift type for an FFIType
+    </span><span class="kw">pub fn </span>ffi_type_name(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().ffi_type_label(ffi_type))
     }
 
-    <span class="doccomment">/// Get the type that a type is lowered into.  This is subtly different than `type_ffi`, see
-    /// #1106 for details
-    </span><span class="kw">pub fn </span>type_ffi_lowered(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="doccomment">/// Like `ffi_type_name`, but used in `BridgingHeaderTemplate.h` which uses a slightly different
+    /// names.
+    </span><span class="kw">pub fn </span>header_ffi_type_name(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;Int8&quot;</span>.into(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;UInt8&quot;</span>.into(),
-            FfiType::Int16 =&gt; <span class="string">&quot;Int16&quot;</span>.into(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;UInt16&quot;</span>.into(),
-            FfiType::Int32 =&gt; <span class="string">&quot;Int32&quot;</span>.into(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;UInt32&quot;</span>.into(),
-            FfiType::Int64 =&gt; <span class="string">&quot;Int64&quot;</span>.into(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
-            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
-            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
+            FfiType::Int8 =&gt; <span class="string">&quot;int8_t&quot;</span>.into(),
+            FfiType::UInt8 =&gt; <span class="string">&quot;uint8_t&quot;</span>.into(),
+            FfiType::Int16 =&gt; <span class="string">&quot;int16_t&quot;</span>.into(),
+            FfiType::UInt16 =&gt; <span class="string">&quot;uint16_t&quot;</span>.into(),
+            FfiType::Int32 =&gt; <span class="string">&quot;int32_t&quot;</span>.into(),
+            FfiType::UInt32 =&gt; <span class="string">&quot;uint32_t&quot;</span>.into(),
+            FfiType::Int64 =&gt; <span class="string">&quot;int64_t&quot;</span>.into(),
+            FfiType::UInt64 =&gt; <span class="string">&quot;uint64_t&quot;</span>.into(),
+            FfiType::Float32 =&gt; <span class="string">&quot;float&quot;</span>.into(),
+            FfiType::Float64 =&gt; <span class="string">&quot;double&quot;</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.into(),
-            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;Int&quot;</span>.into(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;ForeignExecutorCallback _Nonnull&quot;</span>.into(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UniFfiForeignExecutorCallback _Nonnull&quot;</span>.into(),
+            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;size_t&quot;</span>.into(),
             FfiType::FutureCallback { return_type } =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;UniFfiFutureCallback{} _Nonnull&quot;</span>,
                 return_type.canonical_name()
             ),
-            FfiType::FutureCallbackData =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
         })
     }
 
