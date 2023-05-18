@@ -4,7 +4,7 @@ use proc_macro2::Span;
 use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Attribute, LitStr, PathSegment, Token,
+    Attribute, LitStr, PathArguments, PathSegment, Token,
 };
 
 pub(crate) mod kw {
@@ -118,7 +118,7 @@ impl ExportedImplFnAttributes {
 }
 
 fn ensure_no_path_args(seg: &PathSegment) -> syn::Result<()> {
-    if seg.arguments.is_none() {
+    if matches!(seg.arguments, PathArguments::None) {
         Ok(())
     } else {
         Err(syn::Error::new_spanned(&seg.arguments, "unexpected syntax"))
