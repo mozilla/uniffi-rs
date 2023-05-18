@@ -42,12 +42,12 @@ enum Commands {
         #[clap(long)]
         lib_file: Option<Utf8PathBuf>,
 
-        /// Pass in a crate name rather than a UDL file
-        #[clap(long = "crate")]
-        crate_mode: bool,
+        /// Pass in a cdylib path rather than a UDL file
+        #[clap(long = "library")]
+        library_mode: bool,
 
-        /// Path to the UDL file or crate
-        source: String,
+        /// Path to the UDL file, or cdylib if `library-mode` is specified
+        source: Utf8PathBuf,
     },
 
     /// Generate Rust scaffolding code
@@ -81,25 +81,25 @@ pub fn run_main() -> anyhow::Result<()> {
             config,
             lib_file,
             source,
-            crate_mode,
+            library_mode,
         } => {
-            if crate_mode {
+            if library_mode {
                 if lib_file.is_some() {
-                    panic!("--lib-file is not compatible with --crate.  The library will be found automatically.")
+                    panic!("--lib-file is not compatible with --library.")
                 }
                 if config.is_some() {
-                    panic!("--config is not compatible with --crate.  The config file(s) will be found automatically.")
+                    panic!("--config is not compatible with --library.  The config file(s) will be found automatically.")
                 }
-                let out_dir = out_dir.expect("--out-dir is required when using --crate");
+                let out_dir = out_dir.expect("--out-dir is required when using --library");
                 if language.is_empty() {
                     panic!("please specify at least one language with --language")
                 }
-                uniffi_bindgen::crate_mode::generate_bindings(
+                uniffi_bindgen::library_mode::generate_bindings(
                     &source, &language, &out_dir, !no_format,
                 )?;
             } else {
                 uniffi_bindgen::generate_bindings(
-                    &Utf8PathBuf::from(source),
+                    &source,
                     config.as_deref(),
                     language.iter().map(String::as_str).collect(),
                     out_dir.as_deref(),

@@ -33,4 +33,4 @@ impl Button for StopButton {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/traits.uniffi.rs"));
+uniffi::include_scaffolding!("traits");

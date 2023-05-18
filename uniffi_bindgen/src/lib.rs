@@ -104,8 +104,8 @@ use std::{collections::HashMap, env, process::Command, str::FromStr};
 
 pub mod backend;
 pub mod bindings;
-pub mod crate_mode;
 pub mod interface;
+pub mod library_mode;
 pub mod macro_metadata;
 pub mod scaffolding;
 
@@ -123,7 +123,7 @@ pub trait BindingsConfig: DeserializeOwned {
     /// Update missing values using the `ComponentInterface`
     fn update_from_ci(&mut self, ci: &ComponentInterface);
 
-    /// Update missing values using the dylib file for the main crate, when in crate mode.
+    /// Update missing values using the dylib file for the main crate, when in library mode.
     ///
     /// cdylib_name will be the library filename without the leading `lib` and trailing extension
     fn update_from_cdylib_name(&mut self, cdylib_name: &str);

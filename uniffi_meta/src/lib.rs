@@ -115,7 +115,7 @@ pub struct NamespaceMetadata {
 
 // UDL file included with `include_scaffolding!()`
 //
-// This is to find the UDL files in crate-mode generation
+// This is to find the UDL files in library mode generation
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct UdlFile {
     pub module_path: String,

@@ -2,7 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{bindings::RunScriptOptions, crate_mode::generate_bindings};
+use crate::{bindings::RunScriptOptions, library_mode::generate_bindings};
 use anyhow::{Context, Result};
 use camino::Utf8Path;
 use std::env;
@@ -34,8 +34,8 @@ pub fn run_script(
     let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
-    test_helper.copy_cdylib_to_out_dir(&out_dir)?;
-    generate_bindings(crate_name, &["python".into()], &out_dir, false)?;
+    let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
+    generate_bindings(&cdylib_path, &["python".into()], &out_dir, false)?;
 
     let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
     let pythonpath = env::join_paths(

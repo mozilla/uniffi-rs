@@ -135,11 +135,11 @@ impl UniFFITestHelper {
     /// This is typically needed for the bindings to open it when running the tests
     ///
     /// Returns the path to the copied library
-    pub fn copy_cdylib_to_out_dir(&self, out_dir: impl AsRef<Utf8Path>) -> Result<()> {
+    pub fn copy_cdylib_to_out_dir(&self, out_dir: impl AsRef<Utf8Path>) -> Result<Utf8PathBuf> {
         let path = self.cdylib_path()?;
         let dest = out_dir.as_ref().join(path.file_name().unwrap());
-        fs::copy(&path, dest)?;
-        Ok(())
+        fs::copy(&path, &dest)?;
+        Ok(dest)
     }
 
     /// Get the path to the cdylib file for this package

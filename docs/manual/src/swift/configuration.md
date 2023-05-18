@@ -6,7 +6,7 @@ The generated Swift module can be configured using a `uniffi.toml` configuration
 
 | Configuration name | Default  | Description |
 | ------------------ | -------  |------------ |
-| `cdylib_name`      | `uniffi_{namespace}`[^1] | The name of the compiled Rust library containing the FFI implementation (not needed when using `generate --crate`). |
+| `cdylib_name`      | `uniffi_{namespace}`[^1] | The name of the compiled Rust library containing the FFI implementation (not needed when using `generate --library`). |
 | `module_name`      | `{namespace}`[^1] | The name of the Swift module containing the high-level foreign-language bindings. |
 | `ffi_module_name`  | `{module_name}FFI` | The name of the lower-level C module containing the FFI declarations. |
 | `ffi_module_filename` | `{ffi_module_name}` | The filename stem for the lower-level C module containing the FFI declarations. |
