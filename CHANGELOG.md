@@ -29,7 +29,7 @@
 
 ### What's changed
 
-- Added "library mode" bindings generation using `generate --library [path-to-cdylib]`.  This mode simplifes bindings generation, especially when using UniFFIed dependencies.  See the tutoral for a description.
+- Added "library mode" bindings generation using `generate --library [path-to-cdylib]`.  This mode simplifes bindings generation, especially when you have dependencies between multiple UniFFIed crates.  See the tutoral for a description.
 - The `include_scaffolding!()` macro must now either be called from your crate root or you must have `use the_mod_that_calls_include_scaffolding::*` in your crate root.  This was always the expectation, but wasn't required before.  This will now start failing with errors that say `crate::UniFfiTag` does not exist.
 - proc-macros now work with many more types including type aliases, type paths, etc.
 - The `uniffi_types` module is no longer needed when using proc-macros.

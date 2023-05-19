@@ -41,7 +41,7 @@ Then your can run `uniffi-bindgen` from any create in your project using `cargo 
 ## Running uniffi-bindgen using a library file
 
 Use `generate --library` to generate foreign bindings by using a cdylib file built for your library.
-This flag was added in UniFFI 0.24 and can be mode can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
+This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
 The plan is to make library mode the default in a future UniFFI version.
 
 Taking `example/arithmetic` as an example, you can generate the bindings with:
