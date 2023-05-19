@@ -46,6 +46,10 @@ enum Commands {
         #[clap(long = "library")]
         library_mode: bool,
 
+        /// When `--library` is passed, only generate bindings for one crate
+        #[clap(long = "crate")]
+        crate_name: Option<String>,
+
         /// Path to the UDL file, or cdylib if `library-mode` is specified
         source: Utf8PathBuf,
     },
@@ -81,6 +85,7 @@ pub fn run_main() -> anyhow::Result<()> {
             config,
             lib_file,
             source,
+            crate_name,
             library_mode,
         } => {
             if library_mode {
@@ -95,9 +100,12 @@ pub fn run_main() -> anyhow::Result<()> {
                     panic!("please specify at least one language with --language")
                 }
                 uniffi_bindgen::library_mode::generate_bindings(
-                    &source, &language, &out_dir, !no_format,
+                    &source, crate_name, &language, &out_dir, !no_format,
                 )?;
             } else {
+                if crate_name.is_some() {
+                    panic!("--crate requires --library.")
+                }
                 uniffi_bindgen::generate_bindings(
                     &source,
                     config.as_deref(),

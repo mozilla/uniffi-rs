@@ -31,6 +31,7 @@ use uniffi_meta::group_metadata;
 /// Returns the list of sources used to generate the bindings, in no particular order.
 pub fn generate_bindings(
     library_path: &Utf8Path,
+    crate_name: Option<String>,
     target_languages: &[String],
     out_dir: &Utf8Path,
     try_format_code: bool,
@@ -60,6 +61,18 @@ pub fn generate_bindings(
         source.config.update_from_dependency_configs(config_map);
     }
     fs::create_dir_all(out_dir)?;
+    if let Some(crate_name) = &crate_name {
+        let old_elements = sources.drain(..);
+        let mut matches: Vec<_> = old_elements
+            .filter(|s| &s.crate_name == crate_name)
+            .collect();
+        match matches.len() {
+            0 => bail!("Crate {crate_name} not found in {library_path}"),
+            1 => sources.push(matches.pop().unwrap()),
+            n => bail!("{n} crates named {crate_name} found in {library_path}"),
+        }
+    }
+
     for source in sources.iter() {
         for language in target_languages {
             let language: bindings::TargetLanguage = language.as_str().try_into()?;

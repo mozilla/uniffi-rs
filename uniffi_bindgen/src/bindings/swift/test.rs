@@ -123,7 +123,7 @@ struct GeneratedSources {
 
 impl GeneratedSources {
     fn new(crate_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
-        let sources = generate_bindings(cdylib_path, &["swift".into()], out_dir, false)?;
+        let sources = generate_bindings(cdylib_path, None, &["swift".into()], out_dir, false)?;
         let main_source = sources
             .iter()
             .find(|s| s.package.name == crate_name)
