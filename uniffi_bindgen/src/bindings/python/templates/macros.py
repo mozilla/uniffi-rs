@@ -100,3 +100,39 @@ rust_call(
         {%- endmatch %}
         {% endfor -%}
 {%- endmacro -%}
+
+{#
+ # Macro to call methods
+ #}
+{%- macro method_decl(py_method_name, meth) %}
+{%  if meth.is_async() %}
+
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+        {%- call setup_args_extra_indent(meth) %}
+        return await rust_call_async(
+            _UniFFILib.{{ func.ffi_func().name() }},
+            {{ func.result_type().borrow()|async_callback_fn }},
+            self._pointer,
+            {% call arg_list_lowered(func) %}
+        )
+
+{%- else -%}
+{%-     match meth.return_type() %}
+
+{%-         when Some with (return_type) %}
+
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+        {%- call setup_args_extra_indent(meth) %}
+        return {{ return_type|lift_fn }}(
+            {% call to_ffi_call_with_prefix("self._pointer", meth) %}
+        )
+
+{%-         when None %}
+
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+        {%- call setup_args_extra_indent(meth) %}
+        {% call to_ffi_call_with_prefix("self._pointer", meth) %}
+{%      endmatch %}
+{%  endif %}
+
+{% endmacro %}

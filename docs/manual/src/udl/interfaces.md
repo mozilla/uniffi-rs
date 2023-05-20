@@ -148,6 +148,35 @@ For each alternate constructor, UniFFI will expose an appropriate static-method,
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.
 
+## Exposing methods from standard Rust traits
+
+Rust has a number of general purpose traits which add functionality to objects, such
+as `Debug`, `Display`, etc. It's possible to tell UniFFI that your object implements these
+traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
+generate special methods on the object.
+
+For example, consider the following example:
+```
+[Traits=Debug]
+interface TodoList {
+    ...
+}
+```
+and the following Rust code:
+```rust
+#[derive(Debug)]
+struct TodoList {
+   ...
+}
+```
+
+This will cause the Python bindings to generate a `__repr__` method that returns the value implemented by the `Debug` trait.
+Not all bindings support generating special methods, so they may be ignored.
+It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.
+
+The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
+is `Debug`, `Display`, `Eq` and `Hash`.
+
 ## Managing Shared References
 
 To the foreign-language consumer, UniFFI object instances are designed to behave as much like

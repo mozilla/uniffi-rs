@@ -201,9 +201,10 @@ pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
         quote! {
             compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
         }
-    } else if uniffi_build::generate_scaffolding(udl_file_path).is_err() {
+    } else if let Err(e) = uniffi_build::generate_scaffolding(udl_file_path) {
+        let err = format!("{e:#}");
         quote! {
-            compile_error!(concat!("Failed to generate scaffolding from UDL file at ", #udl_file));
+            compile_error!(concat!("Failed to generate scaffolding from UDL file at ", #udl_file, ": ", #err));
         }
     } else {
         // We know the filename is good because `generate_scaffolding` succeeded,

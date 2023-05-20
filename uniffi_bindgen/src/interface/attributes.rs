@@ -33,6 +33,7 @@ pub(super) enum Attribute {
     Name(String),
     SelfType(SelfType),
     Throws(String),
+    Traits(Vec<String>),
     // `[External="crate_name"]` - We can `use crate_name::...` for the type.
     External {
         crate_name: String,
@@ -87,6 +88,23 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
+                    ),
+                }
+            }
+            weedle::attribute::ExtendedAttribute::IdentList(attr_list) => {
+                match attr_list.identifier.0 {
+                    "Traits" => Ok(Attribute::Traits(
+                        attr_list
+                            .list
+                            .body
+                            .list
+                            .iter()
+                            .map(|i| i.0.to_string())
+                            .collect(),
+                    )),
+                    _ => anyhow::bail!(
+                        "Attribute identity list not supported: {:?}",
+                        attr_list.identifier.0
                     ),
                 }
             }
@@ -273,6 +291,15 @@ impl InterfaceAttributes {
             ObjectImpl::Struct
         }
     }
+    pub fn get_traits(&self) -> Vec<String> {
+        self.0
+            .iter()
+            .find_map(|attr| match attr {
+                Attribute::Traits(inner) => Some(inner.clone()),
+                _ => None,
+            })
+            .unwrap_or_default()
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttributes {
@@ -284,6 +311,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
             Attribute::Trait => Ok(()),
+            Attribute::Traits(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
         if attrs.iter().any(|a| matches!(a, Attribute::Enum)) && attrs.len() != 1 {

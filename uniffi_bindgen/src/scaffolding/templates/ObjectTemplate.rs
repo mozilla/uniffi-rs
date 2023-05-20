@@ -65,19 +65,69 @@ pub extern "C" fn {{ ffi_free.name() }}(ptr: *const std::os::raw::c_void, call_s
 {%- endfor %}
 
 {%- for meth in obj.methods() %}
-    #[doc(hidden)]
-    #[no_mangle]
-    #[allow(clippy::let_unit_value,clippy::unit_arg)] // The generated code uses the unit type like other types to keep things uniform
-    pub extern "C" fn r#{{ meth.ffi_func().name() }}(
-        {%- call rs::arg_list_ffi_decl(meth.ffi_func()) %}
-    ) {% call rs::return_signature(meth) %} {
-        uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
-        // If the method does not have the same signature as declared in the UDL, then
-        // this attempt to call it will fail with a (somewhat) helpful compiler error.
-        uniffi::rust_call(call_status, || {
-            {{ meth|return_ffi_converter }}::lower_return(
-                <{{ obj.rust_name() }}>::{% call rs::to_rs_call(meth) %}{% if meth.throws() %}.map_err(Into::into){% endif %}
+    {% call rs::method_decl_prelude(meth) %}
+            <{{ obj.rust_name() }}>::{% call rs::to_rs_call(meth) %}
+    {% call rs::method_decl_postscript(meth) %}
+{% endfor %}
+
+{%- for tm in obj.uniffi_traits() %}
+{#      All magic methods get an explicit shim #}
+{%      match tm %}
+{%          when UniffiTrait::Debug { fmt }%}
+    {% call rs::method_decl_prelude(fmt) %}
+        {
+            uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: std::fmt::Debug); // This object has a trait method which requires `Debug` be implemented.
+            format!(
+                "{:?}",
+                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+                    Ok(ref val) => val,
+                    Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
+                }
             )
-        })
-    }
+        }
+    {% call rs::method_decl_postscript(fmt) %}
+{%          when UniffiTrait::Display { fmt }%}
+    {% call rs::method_decl_prelude(fmt) %}
+        {
+            uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: std::fmt::Display); // This object has a trait method which requires `Display` be implemented.
+            format!(
+                "{}",
+                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+                    Ok(ref val) => val,
+                    Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
+                }
+            )
+        }
+    {% call rs::method_decl_postscript(fmt) %}
+{%          when UniffiTrait::Hash { hash }%}
+    {% call rs::method_decl_prelude(hash) %}
+            {
+                use ::std::hash::{Hash, Hasher};
+                uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: Hash); // This object has a trait method which requires `Hash` be implemented.
+                let mut s = ::std::collections::hash_map::DefaultHasher::new();
+                Hash::hash(match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+                    Ok(ref val) => val,
+                    Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
+                }, &mut s);
+                s.finish()
+            }
+    {% call rs::method_decl_postscript(hash) %}
+{%          when UniffiTrait::Eq { eq, ne }%}
+        {# PartialEq::Eq #}
+        {% call rs::method_decl_prelude(eq) %}
+            {
+                use ::std::cmp::PartialEq;
+                uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: PartialEq); // This object has a trait method which requires `PartialEq` be implemented.
+                PartialEq::eq({% call rs::_arg_list_rs_call(eq) -%})
+            }
+        {% call rs::method_decl_postscript(eq) %}
+        {# PartialEq::Ne #}
+        {% call rs::method_decl_prelude(ne) %}
+            {
+                use ::std::cmp::PartialEq;
+                uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: PartialEq); // This object has a trait method which requires `PartialEq` be implemented.
+                PartialEq::ne({% call rs::_arg_list_rs_call(ne) -%})
+            }
+        {% call rs::method_decl_postscript(ne) %}
+{%      endmatch %}
 {% endfor %}

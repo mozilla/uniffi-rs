@@ -70,7 +70,7 @@ pub use literal::{Literal, Radix};
 mod namespace;
 pub use namespace::Namespace;
 mod object;
-pub use object::{Constructor, Method, Object};
+pub use object::{Constructor, Method, Object, UniffiTrait};
 mod record;
 pub use record::{Field, Record};
 
