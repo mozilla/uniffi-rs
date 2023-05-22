@@ -1,0 +1,19 @@
+[package]
+name = "uniffi-fixture-type-limits"
+version = "0.22.0"
+edition = "2018"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_type_limits"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+uniffi = { path = "../../uniffi" }
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

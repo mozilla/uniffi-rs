@@ -57,6 +57,7 @@ members = [
   "fixtures/swift-omit-labels",
   "fixtures/futures",
   "fixtures/swift-bridging-header-compile",
+  "fixtures/type-limits",
 ]
 
 resolver = "2"
