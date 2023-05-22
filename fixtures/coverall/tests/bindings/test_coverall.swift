@@ -45,6 +45,30 @@ do {
     assert(d.coveralls!.getName() == "some_dict")
 }
 
+// Test none_dict().
+do {
+    let d = createNoneDict()
+    assert(d.text == "text")
+    assert(d.maybeText == nil)
+    assert(d.aBool)
+    assert(d.maybeABool == nil);
+    assert(d.unsigned8 == 1)
+    assert(d.maybeUnsigned8 == nil)
+    assert(d.unsigned16 == 3)
+    assert(d.maybeUnsigned16 == nil)
+    assert(d.unsigned64 == 18446744073709551615)
+    assert(d.maybeUnsigned64 == nil)
+    assert(d.signed8 == 8)
+    assert(d.maybeSigned8 == nil)
+    assert(d.signed64 == 9223372036854775807)
+    assert(d.maybeSigned64 == nil)
+    assert(d.float32.almostEquals(1.2345))
+    assert(d.maybeFloat32 == nil)
+    assert(d.float64.almostEquals(0.0))
+    assert(d.maybeFloat64 == nil)
+    assert(d.coveralls == nil)
+}
+
 // Test arcs.
 do {
     let coveralls = Coveralls(name: "test_arcs")
