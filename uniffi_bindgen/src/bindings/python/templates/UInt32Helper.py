@@ -1,9 +1,7 @@
-class FfiConverterUInt32(FfiConverterPrimitive):
-    @classmethod
-    def lower(cls, value):
-        if not 0 <= value < 2**32:
-            raise ValueError("u32 requires {} <= value < {}".format(0, 2**32))
-        return super().lower(value)
+class FfiConverterUInt32(FfiConverterPrimitiveInt):
+    CLASS_NAME = "u32"
+    VALUE_MIN = 0
+    VALUE_MAX = 2**32
 
     @staticmethod
     def read(buf):

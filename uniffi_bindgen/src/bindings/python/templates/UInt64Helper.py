@@ -1,9 +1,7 @@
-class FfiConverterUInt64(FfiConverterPrimitive):
-    @classmethod
-    def lower(cls, value):
-        if not 0 <= value < 2**64:
-            raise ValueError("u64 requires {} <= value < {}".format(0, 2**64))
-        return super().lower(value)
+class FfiConverterUInt64(FfiConverterPrimitiveInt):
+    CLASS_NAME = "u64"
+    VALUE_MIN = 0
+    VALUE_MAX = 2**64
 
     @staticmethod
     def read(buf):

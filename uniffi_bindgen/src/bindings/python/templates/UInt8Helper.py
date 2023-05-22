@@ -1,9 +1,7 @@
-class FfiConverterUInt8(FfiConverterPrimitive):
-    @classmethod
-    def lower(cls, value):
-        if not 0 <= value < 2**8:
-            raise ValueError("u8 requires {} <= value < {}".format(0, 2**8))
-        return super().lower(value)
+class FfiConverterUInt8(FfiConverterPrimitiveInt):
+    CLASS_NAME = "u8"
+    VALUE_MIN = 0
+    VALUE_MAX = 2**8
 
     @staticmethod
     def read(buf):

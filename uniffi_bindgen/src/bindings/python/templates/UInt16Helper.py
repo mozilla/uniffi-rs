@@ -1,9 +1,7 @@
-class FfiConverterUInt16(FfiConverterPrimitive):
-    @classmethod
-    def lower(cls, value):
-        if not 0 <= value < 2**16:
-            raise ValueError("u16 requires {} <= value < {}".format(0, 2**16))
-        return super().lower(value)
+class FfiConverterUInt16(FfiConverterPrimitiveInt):
+    CLASS_NAME = "u16"
+    VALUE_MIN = 0
+    VALUE_MAX = 2**16
 
     @staticmethod
     def read(buf):
