@@ -175,7 +175,7 @@ mod filters {
             Type::Object { .. } | Type::Enum(_) | Type::Error(_) | Type::Record(_) => {
                 nm.to_string()
             }
-            Type::String => format!("{nm}.to_s"),
+            Type::String | Type::Bytes => format!("{nm}.to_s"),
             Type::Timestamp | Type::Duration => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Optional(t) => format!("({nm} ? {} : nil)", coerce_rb(nm, t)?),
@@ -219,6 +219,7 @@ mod filters {
             | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("({nm} ? 1 : 0)"),
             Type::String => format!("RustBuffer.allocFromString({nm})"),
+            Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
             Type::Object { name, .. } => format!("({}._uniffi_lower {nm})", class_name_rb(name)?),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),
@@ -252,6 +253,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
             Type::Boolean => format!("1 == {nm}"),
             Type::String => format!("{nm}.consumeIntoString"),
+            Type::Bytes => format!("{nm}.consumeIntoBytes"),
             Type::Object { name, .. } => format!("{}._uniffi_allocate({nm})", class_name_rb(name)?),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
             Type::Error(_) => panic!("No support for lowering errors, yet"),

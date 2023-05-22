@@ -40,6 +40,7 @@ mod filters {
             Type::Float64 => "f64".into(),
             Type::Boolean => "bool".into(),
             Type::String => "String".into(),
+            Type::Bytes => "Vec<u8>".into(),
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
             Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{name}"),

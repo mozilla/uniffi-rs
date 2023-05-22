@@ -48,6 +48,8 @@ pub enum ComplexError {
 pub struct SimpleDict {
     text: String,
     maybe_text: Option<String>,
+    some_bytes: Vec<u8>,
+    maybe_some_bytes: Option<Vec<u8>>,
     a_bool: bool,
     maybe_a_bool: Option<bool>,
     unsigned8: u8,
@@ -85,6 +87,8 @@ fn create_some_dict() -> SimpleDict {
     SimpleDict {
         text: "text".to_string(),
         maybe_text: Some("maybe_text".to_string()),
+        some_bytes: b"some_bytes".to_vec(),
+        maybe_some_bytes: Some(b"maybe_some_bytes".to_vec()),
         a_bool: true,
         maybe_a_bool: Some(false),
         unsigned8: 1,
@@ -109,6 +113,7 @@ fn create_some_dict() -> SimpleDict {
 fn create_none_dict() -> SimpleDict {
     SimpleDict {
         text: "text".to_string(),
+        some_bytes: b"some_bytes".to_vec(),
         a_bool: true,
         unsigned8: 1,
         unsigned16: 3,
@@ -276,6 +281,11 @@ impl Coveralls {
     fn get_repairs(&self) -> Vec<Repair> {
         let repairs = self.repairs.lock().unwrap();
         repairs.clone()
+    }
+
+    fn reverse(&self, mut value: Vec<u8>) -> Vec<u8> {
+        value.reverse();
+        value
     }
 }
 

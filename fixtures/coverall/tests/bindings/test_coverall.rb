@@ -12,7 +12,14 @@ class TestCoverall < Test::Unit::TestCase
   def test_some_dict
     d = Coverall.create_some_dict
     assert_equal(d.text, 'text')
+    assert_equal(d.text.encoding, Encoding::UTF_8)
     assert_equal(d.maybe_text, 'maybe_text')
+    assert_equal(d.maybe_text.encoding, Encoding::UTF_8)
+    assert_equal(d.some_bytes, 'some_bytes')
+    assert_equal(d.some_bytes.encoding, Encoding::BINARY)
+    assert_equal(d.maybe_some_bytes, 'maybe_some_bytes')
+    assert_equal(d.maybe_some_bytes.encoding, Encoding::BINARY)
+    assert_true(d.a_bool)
     assert_true(d.a_bool)
     assert_false(d.maybe_a_bool)
     assert_equal(d.unsigned8, 1)
@@ -38,7 +45,11 @@ class TestCoverall < Test::Unit::TestCase
   def test_none_dict
     d = Coverall.create_none_dict
     assert_equal(d.text, 'text')
+    assert_equal(d.text.encoding, Encoding::UTF_8)
     assert_nil(d.maybe_text)
+    assert_equal(d.some_bytes, 'some_bytes')
+    assert_equal(d.some_bytes.encoding, Encoding::BINARY)
+    assert_nil(d.maybe_some_bytes)
     assert_true(d.a_bool)
     assert_nil(d.maybe_a_bool)
     assert_equal(d.unsigned8, 1)
@@ -234,5 +245,10 @@ class TestCoverall < Test::Unit::TestCase
     end
   end
 
+  def test_bytes
+    coveralls = Coverall::Coveralls.new "test_bytes"
+    assert_equal coveralls.reverse("123"), "321"
+    assert_equal coveralls.reverse("123").encoding, Encoding::BINARY
+  end
 
 end

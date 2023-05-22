@@ -14,6 +14,8 @@ namespace coverall {
 dictionary SimpleDict {
     string text;
     string? maybe_text;
+    bytes some_bytes;
+    bytes? maybe_some_bytes;
     boolean a_bool;
     boolean? maybe_a_bool;
     u8 unsigned8;
@@ -131,6 +133,9 @@ interface Coveralls {
 
     /// Returns all repairs made.
     sequence<Repair> get_repairs();
+
+    /// Reverses the bytes.
+    bytes reverse(bytes value);
 };
 
 // coveralls keep track of their repairs (an interface in a dict)

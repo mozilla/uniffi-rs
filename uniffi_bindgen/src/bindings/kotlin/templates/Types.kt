@@ -53,6 +53,9 @@
 {%- when Type::String %}
 {%- include "StringHelper.kt" %}
 
+{%- when Type::Bytes %}
+{%- include "UByteArrayHelper.kt" %}
+
 {%- when Type::Enum(name) %}
 {% include "EnumTemplate.kt" %}
 

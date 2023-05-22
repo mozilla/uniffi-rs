@@ -26,6 +26,8 @@ do {
     let d = createSomeDict()
     assert(d.text == "text")
     assert(d.maybeText == "maybe_text")
+    assert(d.someBytes == Data("some_bytes".utf8))
+    assert(d.maybeSomeBytes == Data("maybe_some_bytes".utf8))
     assert(d.aBool)
     assert(d.maybeABool == false);
     assert(d.unsigned8 == 1)
@@ -50,6 +52,8 @@ do {
     let d = createNoneDict()
     assert(d.text == "text")
     assert(d.maybeText == nil)
+    assert(d.someBytes == Data("some_bytes".utf8))
+    assert(d.maybeSomeBytes == nil)
     assert(d.aBool)
     assert(d.maybeABool == nil);
     assert(d.unsigned8 == 1)
@@ -225,4 +229,10 @@ do {
     coveralls.addPatch(patch: Patch(color: Color.red))
     coveralls.addRepair(repair: Repair(when: Date.init(), patch: Patch(color: Color.blue)))
     assert(coveralls.getRepairs().count == 2)
+}
+
+// Test bytes
+do {
+    let coveralls = Coveralls(name: "test_bytes")
+    assert(coveralls.reverse(value: Data("123".utf8)) == Data("321".utf8))
 }

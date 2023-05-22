@@ -14,6 +14,8 @@ import uniffi.coverall.*
 createSomeDict().use { d ->
     assert(d.text == "text")
     assert(d.maybeText == "maybe_text")
+    assert(d.someBytes.contentEquals("some_bytes".toByteArray(Charsets.UTF_8).toUByteArray()))
+    assert(d.maybeSomeBytes.contentEquals("maybe_some_bytes".toByteArray(Charsets.UTF_8).toUByteArray()))
     assert(d.aBool)
     assert(d.maybeABool == false)
     assert(d.unsigned8 == 1.toUByte())
@@ -42,6 +44,8 @@ createSomeDict().use { d ->
 createNoneDict().use { d ->
     assert(d.text == "text")
     assert(d.maybeText == null)
+    assert(d.someBytes.contentEquals("some_bytes".toByteArray(Charsets.UTF_8).toUByteArray()))
+    assert(d.maybeSomeBytes == null)
     assert(d.aBool)
     assert(d.maybeABool == null)
     assert(d.unsigned8 == 1.toUByte())
@@ -244,3 +248,8 @@ d = DictWithDefaults(name = "this", category = "that", integer = 42UL)
 assert(d.name == "this")
 assert(d.category == "that")
 assert(d.integer == 42UL)
+
+// Test bytes
+Coveralls("test_bytes").use { coveralls ->
+    assert(coveralls.reverse("123".toByteArray(Charsets.UTF_8).toUByteArray()).toByteArray().toString(Charsets.UTF_8) == "321")
+}

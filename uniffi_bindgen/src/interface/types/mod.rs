@@ -82,6 +82,7 @@ pub enum Type {
     Float64,
     Boolean,
     String,
+    Bytes,
     Timestamp,
     Duration,
     Object {
@@ -141,6 +142,7 @@ impl Type {
             Type::Float32 => "f32".into(),
             Type::Float64 => "f64".into(),
             Type::String => "string".into(),
+            Type::Bytes => "bytes".into(),
             Type::Boolean => "bool".into(),
             // API defined types.
             // Note that these all get unique names, and the parser ensures that the names do not
@@ -211,6 +213,9 @@ impl From<&Type> for FfiType {
             // Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
             Type::String => FfiType::RustBuffer(None),
+            // Byte strings are also always owned rust values.
+            // We might add a separate type for borrowed byte strings in future as well.
+            Type::Bytes => FfiType::RustBuffer(None),
             // Objects are pointers to an Arc<>
             Type::Object { name, .. } => FfiType::RustArcPtr(name.to_owned()),
             // Callback interfaces are passed as opaque integer handles.
@@ -372,6 +377,7 @@ mod test_type {
         // Non-exhaustive, but gives a bit of a flavour of what we want.
         assert_eq!(Type::UInt8.canonical_name(), "u8");
         assert_eq!(Type::String.canonical_name(), "string");
+        assert_eq!(Type::Bytes.canonical_name(), "bytes");
         assert_eq!(
             Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object {
                 name: "Example".into(),

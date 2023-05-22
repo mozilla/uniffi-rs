@@ -105,6 +105,14 @@ class RustBufferBuilder
     write v
   end
 
+  {% when Type::Bytes -%}
+
+  def write_Bytes(v)
+    v = v.to_s
+    pack_into 4, 'l>', v.bytes.size
+    write v
+  end
+
   {% when Type::Timestamp -%}
   # The Timestamp type.
   ONE_SECOND_IN_NANOSECONDS = 10**9
