@@ -127,7 +127,7 @@ public class USize(value: Long = 0) : IntegerType(Native.SIZE_T_SIZE, value, tru
 // Rust when it needs an opaque pointer.
 //
 // TODO: refactor callbacks to use this class
-internal class UniFfiHandleMap<T> {
+internal class UniFfiHandleMap<T: Any> {
     private val map = ConcurrentHashMap<USize, T>()
     // Use AtomicInteger for our counter, since we may be on a 32-bit system.  4 billion possible
     // values seems like enough. If somehow we generate 4 billion handles, then this will wrap
