@@ -21,7 +21,6 @@ use camino::Utf8Path;
 use cargo_metadata::{MetadataCommand, Package};
 use std::{
     collections::{HashMap, HashSet},
-    env::consts::{DLL_PREFIX, DLL_SUFFIX},
     fs,
 };
 use uniffi_meta::group_metadata;
@@ -39,7 +38,8 @@ pub fn generate_bindings(
     let cargo_metadata = MetadataCommand::new()
         .exec()
         .context("error running cargo metadata")?;
-    let mut sources = find_sources(&cargo_metadata, library_path)?;
+    let cdylib_name = calc_cdylib_name(library_path);
+    let mut sources = find_sources(&cargo_metadata, library_path, cdylib_name)?;
     for i in 0..sources.len() {
         // Partition up the sources list because we're eventually going to call
         // `update_from_dependency_configs()` which requires an exclusive reference to one source and
@@ -76,6 +76,9 @@ pub fn generate_bindings(
     for source in sources.iter() {
         for language in target_languages {
             let language: bindings::TargetLanguage = language.as_str().try_into()?;
+            if cdylib_name.is_none() && language != bindings::TargetLanguage::Swift {
+                bail!("Generate bindings for {language} requires a cdylib, but {library_path} was given");
+            }
             bindings::write_bindings(
                 &source.config.bindings,
                 &source.ci,
@@ -98,17 +101,23 @@ pub struct Source {
     pub config: Config,
 }
 
+// If `library_path` is a C dynamic library, return its name
+fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
+    let cdylib_extentions = [".so", ".dll", ".dylib"];
+    let filename = library_path.file_name()?.strip_prefix("lib")?;
+    for ext in cdylib_extentions {
+        if let Some(f) = filename.strip_suffix(ext) {
+            return Some(f);
+        }
+    }
+    None
+}
+
 fn find_sources(
     cargo_metadata: &cargo_metadata::Metadata,
     library_path: &Utf8Path,
+    cdylib_name: Option<&str>,
 ) -> Result<Vec<Source>> {
-    let cdylib_name = library_path
-        .file_name()
-        .expect("Unexpected library path: {library_path}")
-        .strip_prefix(DLL_PREFIX)
-        .expect("Unexpected library path: {library_path}")
-        .strip_suffix(DLL_SUFFIX)
-        .expect("Unexpected library path: {library_path}");
     group_metadata(macro_metadata::extract_from_library(library_path)?)?
         .into_iter()
         .map(|group| {
@@ -122,7 +131,9 @@ fn find_sources(
             let crate_name = group.namespace.crate_name.clone();
             macro_metadata::add_group_to_ci(&mut ci, group)?;
             let mut config = Config::load_initial(crate_root, None)?;
-            config.update_from_cdylib_name(cdylib_name);
+            if let Some(cdylib_name) = cdylib_name {
+                config.update_from_cdylib_name(cdylib_name);
+            }
             config.update_from_ci(&ci);
             Ok(Source {
                 config,
