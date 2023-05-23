@@ -59,6 +59,7 @@ Calling this function from foreign language code involves the following steps:
 | `f64`/`double` | `double` |
 | `boolean` | `int8_t`, either `0` or `1` |
 | `string` | `RustBuffer` struct pointing to utf8 bytes |
+| `bytes` | Same as `sequence<u8>` |
 | `timestamp` | `RustBuffer` struct pointing to a i64 representing seconds and a u32 representing nanoseconds |
 | `duration` | `RustBuffer` struct pointing to a u64 representing seconds and a u32 representing nanoseconds |
 | `T?` | `RustBuffer` struct pointing to serialized bytes |
