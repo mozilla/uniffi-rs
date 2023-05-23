@@ -45,8 +45,6 @@ pub fn run_script(
         .arg("-J-ea")
         // Our test scripts should not produce any warnings.
         .arg("-Werror")
-        // Allow `UByteArray`
-        .arg("-opt-in=kotlin.ExperimentalUnsignedTypes")
         .arg("-script")
         .arg(script_path)
         .args(if args.is_empty() {
@@ -105,8 +103,6 @@ fn build_jar(
     command
         // Our generated bindings should not produce any warnings; fail tests if they do.
         .arg("-Werror")
-        // Allow `UByteArray`
-        .arg("-opt-in=kotlin.ExperimentalUnsignedTypes")
         .arg("-d")
         .arg(&jar_file)
         .arg("-classpath")
