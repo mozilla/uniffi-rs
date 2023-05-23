@@ -19,7 +19,7 @@ class {{ type_name }}:
 
     # Each enum variant is a nested class of the enum itself.
     {% for variant in e.variants() -%}
-    class {{ variant.name()|enum_variant_py }}(object):
+    class {{ variant.name()|enum_variant_py }}:
         def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
             {% if variant.has_fields() %}
             {%- for field in variant.fields() %}

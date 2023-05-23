@@ -75,7 +75,7 @@ class ForeignBytes(ctypes.Structure):
         return "ForeignBytes(len={}, data={})".format(self.len, self.data[0:self.len])
 
 
-class RustBufferStream(object):
+class RustBufferStream:
     """
     Helper for structured reading of bytes from a RustBuffer
     """
@@ -140,7 +140,7 @@ class RustBufferStream(object):
     def readCSizeT(self):
         return self._unpack_from(ctypes.sizeof(ctypes.c_size_t) , "@N")
 
-class RustBufferBuilder(object):
+class RustBufferBuilder:
     """
     Helper for structured writing of bytes into a RustBuffer.
     """
