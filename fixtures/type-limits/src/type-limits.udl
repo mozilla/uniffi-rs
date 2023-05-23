@@ -8,4 +8,7 @@ namespace uniffi_type_limits {
   u16 take_u16(u16 v);
   u32 take_u32(u32 v);
   u64 take_u64(u64 v);
+
+  f32 take_f32(f32 v);
+  f64 take_f64(f64 v);
 };

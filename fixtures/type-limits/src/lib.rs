@@ -28,4 +28,11 @@ fn take_u64(v: u64) -> u64 {
     v
 }
 
+fn take_f32(v: f32) -> f32 {
+    v
+}
+fn take_f64(v: f64) -> f64 {
+    v
+}
+
 uniffi::include_scaffolding!("type-limits");
