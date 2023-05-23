@@ -34,7 +34,7 @@ fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $class_name:literal, $coerce_code:expr) => {
+    ($T:ty, $class_name:literal) => {
         paste! {
             pub struct $T;
 
@@ -46,25 +46,21 @@ macro_rules! impl_code_type_for_primitive {
                 fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
                     render_literal(oracle, &literal)
                 }
-
-                fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
-                    format!($coerce_code, nm)
-                }
             }
         }
     };
 }
 
-impl_code_type_for_primitive!(BooleanCodeType, "Bool", "bool({})");
-impl_code_type_for_primitive!(StringCodeType, "String", "{}");
-impl_code_type_for_primitive!(BytesCodeType, "Bytes", "{}");
-impl_code_type_for_primitive!(Int8CodeType, "Int8", "int({})");
-impl_code_type_for_primitive!(Int16CodeType, "Int16", "int({})");
-impl_code_type_for_primitive!(Int32CodeType, "Int32", "int({})");
-impl_code_type_for_primitive!(Int64CodeType, "Int64", "int({})");
-impl_code_type_for_primitive!(UInt8CodeType, "UInt8", "int({})");
-impl_code_type_for_primitive!(UInt16CodeType, "UInt16", "int({})");
-impl_code_type_for_primitive!(UInt32CodeType, "UInt32", "int({})");
-impl_code_type_for_primitive!(UInt64CodeType, "UInt64", "int({})");
-impl_code_type_for_primitive!(Float32CodeType, "Float", "float({})");
-impl_code_type_for_primitive!(Float64CodeType, "Double", "float({})");
+impl_code_type_for_primitive!(BooleanCodeType, "Bool");
+impl_code_type_for_primitive!(StringCodeType, "String");
+impl_code_type_for_primitive!(BytesCodeType, "Bytes");
+impl_code_type_for_primitive!(Int8CodeType, "Int8");
+impl_code_type_for_primitive!(Int16CodeType, "Int16");
+impl_code_type_for_primitive!(Int32CodeType, "Int32");
+impl_code_type_for_primitive!(Int64CodeType, "Int64");
+impl_code_type_for_primitive!(UInt8CodeType, "UInt8");
+impl_code_type_for_primitive!(UInt16CodeType, "UInt16");
+impl_code_type_for_primitive!(UInt32CodeType, "UInt32");
+impl_code_type_for_primitive!(UInt64CodeType, "UInt64");
+impl_code_type_for_primitive!(Float32CodeType, "Float");
+impl_code_type_for_primitive!(Float64CodeType, "Double");

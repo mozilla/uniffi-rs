@@ -26,8 +26,4 @@ impl CodeType for RecordCodeType {
     fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
         unreachable!();
     }
-
-    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
-        nm.to_string()
-    }
 }

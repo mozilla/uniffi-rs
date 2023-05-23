@@ -8,5 +8,5 @@ class FfiConverterUInt16(FfiConverterPrimitiveInt):
         return buf.readU16()
 
     @staticmethod
-    def write(value, buf):
+    def writeUnchecked(value, buf):
         buf.writeU16(value)

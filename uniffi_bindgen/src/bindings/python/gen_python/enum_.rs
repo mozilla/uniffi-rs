@@ -34,8 +34,4 @@ impl CodeType for EnumCodeType {
             unreachable!();
         }
     }
-
-    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
-        nm.to_string()
-    }
 }

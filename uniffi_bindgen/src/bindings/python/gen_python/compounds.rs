@@ -32,14 +32,6 @@ impl CodeType for OptionalCodeType {
             _ => oracle.find(&self.inner).literal(oracle, literal),
         }
     }
-
-    fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
-        format!(
-            "(None if {} is None else {})",
-            nm,
-            oracle.find(&self.inner).coerce(oracle, nm)
-        )
-    }
 }
 
 pub struct SequenceCodeType {
@@ -69,14 +61,6 @@ impl CodeType for SequenceCodeType {
             Literal::EmptySequence => "[]".into(),
             _ => unimplemented!(),
         }
-    }
-
-    fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
-        format!(
-            "list({} for x in {})",
-            oracle.find(&self.inner).coerce(oracle, "x"),
-            nm
-        )
     }
 }
 
@@ -109,14 +93,5 @@ impl CodeType for MapCodeType {
             Literal::EmptyMap => "{}".into(),
             _ => unimplemented!(),
         }
-    }
-
-    fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
-        format!(
-            "dict(({}, {}) for (k, v) in {}.items())",
-            self.key.coerce(oracle, "k"),
-            self.value.coerce(oracle, "v"),
-            nm
-        )
     }
 }

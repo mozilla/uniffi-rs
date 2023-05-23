@@ -2,7 +2,7 @@
 class FfiConverterPrimitive:
     @classmethod
     def check(cls, value):
-        pass
+        return value
 
     @classmethod
     def lift(cls, value):
@@ -10,15 +10,28 @@ class FfiConverterPrimitive:
 
     @classmethod
     def lower(cls, value):
-        cls.check(value)
+        return cls.lowerUnchecked(cls.check(value))
+
+    @classmethod
+    def lowerUnchecked(cls, value):
         return value
+
+    @classmethod
+    def write(cls, value, buf):
+        cls.writeUnchecked(cls.check(value), buf)
 
 class FfiConverterPrimitiveInt(FfiConverterPrimitive):
     @classmethod
     def check(cls, value):
+        value = int(value)
         if not cls.VALUE_MIN <= value < cls.VALUE_MAX:
             raise ValueError("{} requires {} <= value < {}".format(cls.CLASS_NAME, cls.VALUE_MIN, cls.VALUE_MAX))
-        super().check(value)
+        return super().check(value)
+
+class FfiConverterPrimitiveFloat(FfiConverterPrimitive):
+    @classmethod
+    def check(cls, value):
+        return super().check(float(value))
 
 # Helper class for wrapper types that will always go through a RustBuffer.
 # Classes should inherit from this and implement the `read` and `write` static methods.

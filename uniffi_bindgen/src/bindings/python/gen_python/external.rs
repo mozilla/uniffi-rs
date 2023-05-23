@@ -22,8 +22,4 @@ impl CodeType for ExternalCodeType {
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
         format!("Type{}", self.name)
     }
-
-    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
-        nm.into()
-    }
 }

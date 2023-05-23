@@ -66,19 +66,15 @@ rust_call(
 {% endmacro -%}
 
 {#
- # Setup function arguments by initializing default values and passing other
- # values through coerce.
+ # Setup function arguments by initializing default values.
  #}
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
     {%- match arg.default_value() %}
     {%- when None %}
-    {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
     {%- when Some with(literal) %}
     if {{ arg.name()|var_name }} is DEFAULT:
         {{ arg.name()|var_name }} = {{ literal|literal_py(arg.type_().borrow()) }}
-    else:
-        {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
     {%- endmatch %}
     {% endfor -%}
 {%- endmacro -%}
@@ -91,12 +87,9 @@ rust_call(
         {%- for arg in func.arguments() %}
         {%- match arg.default_value() %}
         {%- when None %}
-        {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
         {%- when Some with(literal) %}
         if {{ arg.name()|var_name }} is DEFAULT:
             {{ arg.name()|var_name }} = {{ literal|literal_py(arg.type_().borrow()) }}
-        else:
-            {{ arg.name()|var_name }} = {{ arg.name()|var_name|coerce_py(arg.type_().borrow()) -}}
         {%- endmatch %}
         {% endfor -%}
 {%- endmacro -%}

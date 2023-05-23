@@ -14,8 +14,4 @@ impl CodeType for ForeignExecutorCodeType {
     fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
         "ForeignExecutor".into()
     }
-
-    fn coerce(&self, _oracle: &dyn CodeOracle, nm: &str) -> String {
-        nm.to_string()
-    }
 }

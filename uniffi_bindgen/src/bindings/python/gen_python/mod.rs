@@ -462,9 +462,4 @@ pub mod filters {
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
     }
-
-    pub fn coerce_py(nm: &str, type_: &Type) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(oracle.find(type_).coerce(oracle, nm))
-    }
 }
