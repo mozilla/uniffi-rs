@@ -211,6 +211,7 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>f64</code>/<code>double</code></td><td><code>double</code></td></tr>
 <tr><td><code>boolean</code></td><td><code>int8_t</code>, either <code>0</code> or <code>1</code></td></tr>
 <tr><td><code>string</code></td><td><code>RustBuffer</code> struct pointing to utf8 bytes</td></tr>
+<tr><td><code>bytes</code></td><td>Same as <code>sequence&lt;u8&gt;</code></td></tr>
 <tr><td><code>timestamp</code></td><td><code>RustBuffer</code> struct pointing to a i64 representing seconds and a u32 representing nanoseconds</td></tr>
 <tr><td><code>duration</code></td><td><code>RustBuffer</code> struct pointing to a u64 representing seconds and a u32 representing nanoseconds</td></tr>
 <tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>

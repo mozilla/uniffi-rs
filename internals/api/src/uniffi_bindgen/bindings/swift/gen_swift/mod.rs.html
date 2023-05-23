@@ -517,6 +517,7 @@
 <span id="517">517</span>
 <span id="518">518</span>
 <span id="519">519</span>
+<span id="520">520</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -828,6 +829,7 @@
             Type::Float64 =&gt; Box::new(primitives::Float64CodeType),
             Type::Boolean =&gt; Box::new(primitives::BooleanCodeType),
             Type::String =&gt; Box::new(primitives::StringCodeType),
+            Type::Bytes =&gt; Box::new(primitives::BytesCodeType),
 
             Type::Timestamp =&gt; Box::new(miscellany::TimestampCodeType),
             Type::Duration =&gt; Box::new(miscellany::DurationCodeType),

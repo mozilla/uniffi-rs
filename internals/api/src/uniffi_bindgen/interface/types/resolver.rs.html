@@ -366,6 +366,7 @@
 <span id="366">366</span>
 <span id="367">367</span>
 <span id="368">368</span>
+<span id="369">369</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -572,6 +573,7 @@
 </span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>resolve_builtin_type(name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
     <span class="kw">match </span>name {
         <span class="string">&quot;string&quot; </span>=&gt; <span class="prelude-val">Some</span>(Type::String),
+        <span class="string">&quot;bytes&quot; </span>=&gt; <span class="prelude-val">Some</span>(Type::Bytes),
         <span class="string">&quot;u8&quot; </span>=&gt; <span class="prelude-val">Some</span>(Type::UInt8),
         <span class="string">&quot;i8&quot; </span>=&gt; <span class="prelude-val">Some</span>(Type::Int8),
         <span class="string">&quot;u16&quot; </span>=&gt; <span class="prelude-val">Some</span>(Type::UInt16),

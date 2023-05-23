@@ -67,6 +67,7 @@
 <span id="67">67</span>
 <span id="68">68</span>
 <span id="69">69</span>
+<span id="70">70</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -126,6 +127,7 @@
 
 <span class="macro">impl_code_type_for_primitive!</span>(BooleanCodeType, <span class="string">&quot;Bool&quot;</span>, <span class="string">&quot;bool({})&quot;</span>);
 <span class="macro">impl_code_type_for_primitive!</span>(StringCodeType, <span class="string">&quot;String&quot;</span>, <span class="string">&quot;{}&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(BytesCodeType, <span class="string">&quot;Bytes&quot;</span>, <span class="string">&quot;{}&quot;</span>);
 <span class="macro">impl_code_type_for_primitive!</span>(Int8CodeType, <span class="string">&quot;Int8&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
 <span class="macro">impl_code_type_for_primitive!</span>(Int16CodeType, <span class="string">&quot;Int16&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
 <span class="macro">impl_code_type_for_primitive!</span>(Int32CodeType, <span class="string">&quot;Int32&quot;</span>, <span class="string">&quot;int({})&quot;</span>);

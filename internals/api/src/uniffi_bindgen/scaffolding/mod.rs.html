@@ -135,6 +135,7 @@
 <span id="135">135</span>
 <span id="136">136</span>
 <span id="137">137</span>
+<span id="138">138</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -177,6 +178,7 @@
             Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
             Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
             Type::String =&gt; <span class="string">&quot;String&quot;</span>.into(),
+            Type::Bytes =&gt; <span class="string">&quot;Vec&lt;u8&gt;&quot;</span>.into(),
             Type::Timestamp =&gt; <span class="string">&quot;std::time::SystemTime&quot;</span>.into(),
             Type::Duration =&gt; <span class="string">&quot;std::time::Duration&quot;</span>.into(),
             Type::Enum(name) | Type::Record(name) | Type::Error(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;r#{name}&quot;</span>),

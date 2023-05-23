@@ -388,6 +388,12 @@
 <span id="388">388</span>
 <span id="389">389</span>
 <span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -472,6 +478,7 @@
     Float64,
     Boolean,
     String,
+    Bytes,
     Timestamp,
     Duration,
     Object {
@@ -531,6 +538,7 @@
             Type::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
             Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
             Type::String =&gt; <span class="string">&quot;string&quot;</span>.into(),
+            Type::Bytes =&gt; <span class="string">&quot;bytes&quot;</span>.into(),
             Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
             <span class="comment">// API defined types.
             // Note that these all get unique names, and the parser ensures that the names do not
@@ -601,6 +609,9 @@
             <span class="comment">// Strings are always owned rust values.
             // We might add a separate type for borrowed strings in future.
             </span>Type::String =&gt; FfiType::RustBuffer(<span class="prelude-val">None</span>),
+            <span class="comment">// Byte strings are also always owned rust values.
+            // We might add a separate type for borrowed byte strings in future as well.
+            </span>Type::Bytes =&gt; FfiType::RustBuffer(<span class="prelude-val">None</span>),
             <span class="comment">// Objects are pointers to an Arc&lt;&gt;
             </span>Type::Object { name, .. } =&gt; FfiType::RustArcPtr(name.to_owned()),
             <span class="comment">// Callback interfaces are passed as opaque integer handles.
@@ -762,6 +773,7 @@
         <span class="comment">// Non-exhaustive, but gives a bit of a flavour of what we want.
         </span><span class="macro">assert_eq!</span>(Type::UInt8.canonical_name(), <span class="string">&quot;u8&quot;</span>);
         <span class="macro">assert_eq!</span>(Type::String.canonical_name(), <span class="string">&quot;string&quot;</span>);
+        <span class="macro">assert_eq!</span>(Type::Bytes.canonical_name(), <span class="string">&quot;bytes&quot;</span>);
         <span class="macro">assert_eq!</span>(
             Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object {
                 name: <span class="string">&quot;Example&quot;</span>.into(),

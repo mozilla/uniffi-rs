@@ -164,7 +164,7 @@
 Concepts from the UDL file map into Swift as follows:</p>
 <ul>
 <li>Primitive datatypes map to their obvious Swift counterpart, e.g. <code>u32</code> becomes <code>UInt32</code>,
-<code>string</code> becomes <code>String</code>, etc.</li>
+<code>string</code> becomes <code>String</code>, <code>bytes</code> becomes <code>Data</code>, etc.</li>
 <li>An object interface declared as <code>interface T</code> is represented as a Swift <code>protocol TProtocol</code>
 and a concrete Swift <code>class T</code> that conforms to it. Having the protocol declared explicitly
 can be useful for mocking instances of the class in unittests.</li>
