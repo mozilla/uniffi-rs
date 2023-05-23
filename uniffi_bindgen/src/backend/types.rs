@@ -99,11 +99,6 @@ pub trait CodeType {
     fn initialization_fn(&self, _oracle: &dyn CodeOracle) -> Option<String> {
         None
     }
-
-    /// An expression to coerce the given variable to the expected type.
-    fn coerce(&self, oracle: &dyn CodeOracle, _nm: &str) -> String {
-        panic!("Unimplemented for {}", self.type_label(oracle));
-    }
 }
 
 /// This trait is used to implement `CodeType` for `Type` and type-like structs (`Record`, `Enum`, `Field`,
@@ -210,9 +205,5 @@ impl<T: CodeTypeDispatch> CodeType for T {
 
     fn initialization_fn(&self, oracle: &dyn CodeOracle) -> Option<String> {
         self.code_type_impl(oracle).initialization_fn(oracle)
-    }
-
-    fn coerce(&self, oracle: &dyn CodeOracle, nm: &str) -> String {
-        self.code_type_impl(oracle).coerce(oracle, nm)
     }
 }
