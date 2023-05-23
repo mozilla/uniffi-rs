@@ -22,6 +22,9 @@
 {%- when Type::String %}
 {%- include "StringHelper.swift" %}
 
+{%- when Type::Bytes %}
+{%- include "DataHelper.swift" %}
+
 {%- when Type::Int8 %}
 {%- include "Int8Helper.swift" %}
 

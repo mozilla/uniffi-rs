@@ -106,6 +106,16 @@ class RustBufferStream
     read(size).force_encoding(Encoding::UTF_8)
   end
 
+  {% when Type::Bytes -%}
+
+  def readBytes
+    size = unpack_from 4, 'l>'
+
+    raise InternalError, 'Unexpected negative byte string length' if size.negative?
+
+    read(size).force_encoding(Encoding::BINARY)
+  end
+
   {% when Type::Timestamp -%}
   # The Timestamp type.
   ONE_SECOND_IN_NANOSECONDS = 10**9

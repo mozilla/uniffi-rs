@@ -204,6 +204,7 @@ impl TypeResolver for weedle::types::DoubleType {
 pub(in super::super) fn resolve_builtin_type(name: &str) -> Option<Type> {
     match name {
         "string" => Some(Type::String),
+        "bytes" => Some(Type::Bytes),
         "u8" => Some(Type::UInt8),
         "i8" => Some(Type::Int8),
         "u16" => Some(Type::UInt16),

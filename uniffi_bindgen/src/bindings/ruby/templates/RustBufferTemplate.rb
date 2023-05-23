@@ -80,6 +80,22 @@ class RustBuffer < FFI::Struct
     end
   end
 
+  {% when Type::Bytes -%}
+  # The primitive Bytes type.
+
+  def self.allocFromBytes(value)
+    RustBuffer.allocWithBuilder do |builder|
+      builder.write_Bytes(value)
+      return builder.finalize
+    end
+  end
+
+  def consumeIntoBytes
+    consumeWithStream do |stream|
+      return stream.readBytes
+    end
+  end
+
   {% when Type::Timestamp -%}
   def self.alloc_from_{{ canonical_type_name }}(v)
     RustBuffer.allocWithBuilder do |builder|

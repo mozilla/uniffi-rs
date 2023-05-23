@@ -52,6 +52,9 @@
 {%- when Type::String %}
 {%- include "StringHelper.py" %}
 
+{%- when Type::Bytes %}
+{%- include "BytesHelper.py" %}
+
 {%- when Type::Enum(name) %}
 {%- include "EnumTemplate.py" %}
 

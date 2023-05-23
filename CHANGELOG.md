@@ -30,6 +30,8 @@
 - Traits can be exposed as a UniFFI `interface` by using a `[Trait]` attribute in the UDL.
   See [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#exposing-traits-as-interfaces).
 
+- The `bytes` primitive type was added, it represents an array of bytes. It maps to `ByteArray` in Kotlin, `bytes` in Python, `String` with `Encoding::BINARY` in Ruby and `Data` in Swift.
+
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
 [All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...v0.23.0).

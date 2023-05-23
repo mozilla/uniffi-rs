@@ -16,6 +16,8 @@ class TestCoverall(unittest.TestCase):
         d = create_some_dict()
         self.assertEqual(d.text, "text")
         self.assertEqual(d.maybe_text, "maybe_text")
+        self.assertEqual(d.some_bytes, b"some_bytes")
+        self.assertEqual(d.maybe_some_bytes, b"maybe_some_bytes")
         self.assertTrue(d.a_bool)
         self.assertFalse(d.maybe_a_bool)
         self.assertEqual(d.unsigned8, 1)
@@ -42,6 +44,8 @@ class TestCoverall(unittest.TestCase):
         d = create_none_dict()
         self.assertEqual(d.text, "text")
         self.assertIsNone(d.maybe_text)
+        self.assertEqual(d.some_bytes, b"some_bytes")
+        self.assertIsNone(d.maybe_some_bytes)
         self.assertTrue(d.a_bool)
         self.assertIsNone(d.maybe_a_bool)
         self.assertEqual(d.unsigned8, 1)
@@ -213,6 +217,10 @@ class TestCoverall(unittest.TestCase):
 
         dict3 = coveralls.get_dict3(key=31, value=42)
         assert dict3[31] == 42
+
+    def test_bytes(self):
+        coveralls = Coveralls("test_bytes")
+        self.assertEqual(coveralls.reverse(b"123"), b"321")
 
 class TraitsTest(unittest.TestCase):
     def test_simple(self):
