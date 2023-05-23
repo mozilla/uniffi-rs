@@ -4,6 +4,7 @@
 
 from uniffi_type_limits import *
 
+import math
 import unittest
 
 class TestTypeLimits(unittest.TestCase):
@@ -63,6 +64,115 @@ class TestTypeLimits(unittest.TestCase):
         self.assertEqual(take_u16(10**4), 10**4)
         self.assertEqual(take_u32(10**9), 10**9)
         self.assertEqual(take_u64(10**19), 10**19)
+
+    def test_non_integer(self):
+        self.assertRaises(TypeError, lambda: take_i8("0"))
+        self.assertRaises(TypeError, lambda: take_i16("0"))
+        self.assertRaises(TypeError, lambda: take_i32("0"))
+        self.assertRaises(TypeError, lambda: take_i64("0"))
+        self.assertRaises(TypeError, lambda: take_u8("0"))
+        self.assertRaises(TypeError, lambda: take_u16("0"))
+        self.assertRaises(TypeError, lambda: take_u32("0"))
+        self.assertRaises(TypeError, lambda: take_u64("0"))
+
+        self.assertRaises(TypeError, lambda: take_i8(0.0))
+        self.assertRaises(TypeError, lambda: take_i16(0.0))
+        self.assertRaises(TypeError, lambda: take_i32(0.0))
+        self.assertRaises(TypeError, lambda: take_i64(0.0))
+        self.assertRaises(TypeError, lambda: take_u8(0.0))
+        self.assertRaises(TypeError, lambda: take_u16(0.0))
+        self.assertRaises(TypeError, lambda: take_u32(0.0))
+        self.assertRaises(TypeError, lambda: take_u64(0.0))
+
+        class A:
+            pass
+
+        self.assertRaises(TypeError, lambda: take_i8(A()))
+        self.assertRaises(TypeError, lambda: take_i16(A()))
+        self.assertRaises(TypeError, lambda: take_i32(A()))
+        self.assertRaises(TypeError, lambda: take_i64(A()))
+        self.assertRaises(TypeError, lambda: take_u8(A()))
+        self.assertRaises(TypeError, lambda: take_u16(A()))
+        self.assertRaises(TypeError, lambda: take_u32(A()))
+        self.assertRaises(TypeError, lambda: take_u64(A()))
+
+    def test_integer_like(self):
+        self.assertEqual(take_i8(False), 0)
+        self.assertEqual(take_i16(False), 0)
+        self.assertEqual(take_i32(False), 0)
+        self.assertEqual(take_i64(False), 0)
+        self.assertEqual(take_u8(False), 0)
+        self.assertEqual(take_u16(False), 0)
+        self.assertEqual(take_u32(False), 0)
+        self.assertEqual(take_u64(False), 0)
+
+        self.assertEqual(take_i8(True), 1)
+        self.assertEqual(take_i16(True), 1)
+        self.assertEqual(take_i32(True), 1)
+        self.assertEqual(take_i64(True), 1)
+        self.assertEqual(take_u8(True), 1)
+        self.assertEqual(take_u16(True), 1)
+        self.assertEqual(take_u32(True), 1)
+        self.assertEqual(take_u64(True), 1)
+
+        class A:
+            def __index__(self):
+                return 123
+
+        self.assertEqual(take_i8(A()), 123)
+        self.assertEqual(take_i16(A()), 123)
+        self.assertEqual(take_i32(A()), 123)
+        self.assertEqual(take_i64(A()), 123)
+        self.assertEqual(take_u8(A()), 123)
+        self.assertEqual(take_u16(A()), 123)
+        self.assertEqual(take_u32(A()), 123)
+        self.assertEqual(take_u64(A()), 123)
+
+    def test_non_float(self):
+        self.assertRaises(TypeError, lambda: take_f32("0"))
+        self.assertRaises(TypeError, lambda: take_f64("0"))
+
+        self.assertRaises(TypeError, lambda: take_f32(1j))
+        self.assertRaises(TypeError, lambda: take_f64(1j))
+
+        class A:
+            pass
+
+        self.assertRaises(TypeError, lambda: take_f32(A()))
+        self.assertRaises(TypeError, lambda: take_f64(A()))
+
+    def test_float_like(self):
+        self.assertEqual(take_f32(False), 0.0)
+        self.assertEqual(take_f64(False), 0.0)
+
+        self.assertEqual(take_f32(True), 1.0)
+        self.assertEqual(take_f64(True), 1.0)
+
+        self.assertEqual(take_f32(123), 123.0)
+        self.assertEqual(take_f64(123), 123.0)
+
+        class A:
+            def __float__(self):
+                return 456.0
+
+        self.assertEqual(take_f32(A()), 456.0)
+        self.assertEqual(take_f64(A()), 456.0)
+
+    def test_special_floats(self):
+        self.assertEqual(take_f32(math.inf), math.inf)
+        self.assertEqual(take_f64(math.inf), math.inf)
+
+        self.assertEqual(take_f32(-math.inf), -math.inf)
+        self.assertEqual(take_f64(-math.inf), -math.inf)
+
+        self.assertEqual(math.copysign(1.0, take_f32(0.0)), 1.0)
+        self.assertEqual(math.copysign(1.0, take_f64(0.0)), 1.0)
+
+        self.assertEqual(math.copysign(1.0, take_f32(-0.0)), -1.0)
+        self.assertEqual(math.copysign(1.0, take_f64(-0.0)), -1.0)
+
+        self.assertTrue(math.isnan(take_f32(math.nan)))
+        self.assertTrue(math.isnan(take_f64(math.nan)))
 
 if __name__ == "__main__":
     unittest.main()

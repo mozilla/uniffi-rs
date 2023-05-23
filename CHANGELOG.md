@@ -26,6 +26,7 @@
 - `External` types must be available in the Rust crate root.
 - External bindings: The `ExternalBindingsConfig` trait was replaced with `BindingsConfig`. External bindings implementations will need to make minor changes to implement the new trait instead.
 - Removed support for the `--config` flag when running the `scaffolding` command.  This flag has never an effect, because there was no scaffolding configuration options.
+- Python bindings are now more strict with their types. You can no longer pass strings to methods taking integers or floats, or floats to methods taking integers.
 
 ### What's changed
 
