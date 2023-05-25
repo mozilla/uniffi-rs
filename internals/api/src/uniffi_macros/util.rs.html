@@ -242,6 +242,26 @@
 <span id="242">242</span>
 <span id="243">243</span>
 <span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -456,7 +476,27 @@
 
 <span class="attribute">#[derive(Default)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>CommonAttr {
-    <span class="kw">pub </span>tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
+    <span class="doccomment">/// Specifies the `UniFfiTag` used when implementing `FfiConverter`
+    ///   - When things are defined with proc-macros, this is `None` which means create a blanket
+    ///     impl for all types.
+    ///   - When things are defined with UDL files this is `Some(crate::UniFfiTag)`, which means only
+    ///     implement it for the local tag in the crate
+    ///
+    /// The reason for this split is remote types, i.e. types defined in remote crates that we
+    /// don&#39;t control and therefore can&#39;t define a blanket impl on because of the orphan rules.
+    ///
+    /// With UDL, we handle this by only implementing `FfiConverter&lt;crate::UniFfiTag&gt;` for the
+    /// type.  This gets around the orphan rules since a local type is in the trait, but requires
+    /// a `uniffi::ffi_converter_forward!` call if the type is used in a second local crate (an
+    /// External typedef).  This is natural for UDL-based generation, since you always need to
+    /// define the external type in the UDL file.
+    ///
+    /// With proc-macros this system isn&#39;t so natural.  Instead, we plan to use this system:
+    ///   - Most of the time, types aren&#39;t remote and we use the blanket impl.
+    ///   - When types are remote, we&#39;ll need a special syntax to define an `FfiConverter` for them
+    ///     and also a special declaration to use the types in other crates.  This requires some
+    ///     extra work for the consumer, but it should be rare.
+    </span><span class="kw">pub </span>tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
 }
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>CommonAttr {
