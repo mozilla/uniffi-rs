@@ -5,7 +5,7 @@
 use std::{collections::BTreeMap, hash::Hasher};
 pub use uniffi_checksum_derive::Checksum;
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 mod ffi_names;
 pub use ffi_names::*;
@@ -104,13 +104,13 @@ impl Checksum for &str {
 // The namespace of a Component interface.
 //
 // This is used to match up the macro metadata with the UDL items.
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct NamespaceMetadata {
     pub crate_name: String,
     pub name: String,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct FnMetadata {
     pub module_path: String,
     pub name: String,
@@ -131,7 +131,7 @@ impl FnMetadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct ConstructorMetadata {
     pub module_path: String,
     pub self_name: String,
@@ -151,7 +151,7 @@ impl ConstructorMetadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct MethodMetadata {
     pub module_path: String,
     pub self_name: String,
@@ -174,14 +174,14 @@ impl MethodMetadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct FnParamMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub enum Type {
     U8,
     U16,
@@ -230,34 +230,34 @@ pub enum Type {
     },
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct RecordMetadata {
     pub module_path: String,
     pub name: String,
     pub fields: Vec<FieldMetadata>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct FieldMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
     pub variants: Vec<VariantMetadata>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct VariantMetadata {
     pub name: String,
     pub fields: Vec<FieldMetadata>,
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
@@ -273,7 +273,7 @@ impl ObjectMetadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct ErrorMetadata {
     pub module_path: String,
     pub name: String,
@@ -292,7 +292,7 @@ pub fn checksum<T: Checksum>(val: &T) -> u16 {
 }
 
 /// Enum covering all the possible metadata types
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum Metadata {
     Namespace(NamespaceMetadata),
     Func(FnMetadata),
