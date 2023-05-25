@@ -80,7 +80,8 @@ pub(crate) fn expand_export(
                 })
                 .collect::<syn::Result<_>>()?;
 
-            let meta_static_var = interface_meta_static_var(&self_ident, true, &mod_path)?;
+            let meta_static_var = interface_meta_static_var(&self_ident, true, &mod_path)
+                .unwrap_or_else(syn::Error::into_compile_error);
             let macro_tokens = quote! {
                 ::uniffi::ffi_converter_trait_decl!(dyn #self_ident, stringify!(#self_ident), crate::UniFfiTag);
             };

@@ -28,7 +28,8 @@ pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
     let ident = &input.ident;
     let attr = input.attrs.parse_uniffi_attr_args::<ErrorAttr>()?;
     let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr);
-    let meta_static_var = error_meta_static_var(ident, &enum_, attr.flat.is_some())?;
+    let meta_static_var = error_meta_static_var(ident, &enum_, attr.flat.is_some())
+        .unwrap_or_else(syn::Error::into_compile_error);
 
     let variant_errors: TokenStream = enum_
         .variants
