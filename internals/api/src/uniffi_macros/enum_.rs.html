@@ -196,37 +196,45 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
     create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, CommonAttr,
+    try_metadata_value_from_usize, try_read_field, ArgumentNotAllowedHere, AttributeSliceExt,
+    CommonAttr,
 };
 
-<span class="kw">pub fn </span>expand_enum(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub fn </span>expand_enum(input: DeriveInput) -&gt; TokenStream {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                Span::call_site(),
-                <span class="string">&quot;This derive must only be used on enums&quot;</span>,
-            ));
+            <span class="kw">return </span>syn::Error::new(Span::call_site(), <span class="string">&quot;This derive must only be used on enums&quot;</span>)
+                .into_compile_error();
         }
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, attr.tag.as_ref());
+    <span class="kw">let </span>attr_error = input
+        .attrs
+        .parse_uniffi_attr_args::&lt;ArgumentNotAllowedHere&gt;()
+        .err()
+        .map(syn::Error::into_compile_error);
+    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="prelude-val">None</span>);
 
     <span class="kw">let </span>meta_static_var =
         enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(syn::Error::into_compile_error);
 
-    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+    <span class="macro">quote! </span>{
+        #attr_error
         #ffi_converter_impl
         #meta_static_var
-    })
+    }
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_enum_ffi_converter(attr: CommonAttr, input: DeriveInput) -&gt; TokenStream {

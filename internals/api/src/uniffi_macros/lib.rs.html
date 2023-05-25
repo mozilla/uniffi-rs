@@ -221,12 +221,6 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -296,16 +290,12 @@
 
 <span class="attribute">#[proc_macro_derive(Record)]
 </span><span class="kw">pub fn </span>derive_record(input: TokenStream) -&gt; TokenStream {
-    expand_record(<span class="macro">parse_macro_input!</span>(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+    expand_record(<span class="macro">parse_macro_input!</span>(input)).into()
 }
 
 <span class="attribute">#[proc_macro_derive(Enum)]
 </span><span class="kw">pub fn </span>derive_enum(input: TokenStream) -&gt; TokenStream {
-    expand_enum(<span class="macro">parse_macro_input!</span>(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+    expand_enum(<span class="macro">parse_macro_input!</span>(input)).into()
 }
 
 <span class="attribute">#[proc_macro_derive(Object)]
@@ -316,9 +306,7 @@
     };
     <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
 
-    expand_object(input, mod_path)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+    expand_object(input, mod_path).into()
 }
 
 <span class="attribute">#[proc_macro_derive(Error, attributes(uniffi))]
