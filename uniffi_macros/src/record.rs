@@ -87,11 +87,16 @@ pub(crate) fn record_meta_static_var(
     let module_path = mod_path()?;
     let fields_len =
         try_metadata_value_from_usize(record.fields.len(), "UniFFI limits structs to 256 fields")?;
-    let field_names = record
-        .fields
-        .iter()
-        .map(|f| ident_to_string(f.ident.as_ref().unwrap()));
-    let field_types = record.fields.iter().map(|f| &f.ty);
+
+    let concat_fields = record.fields.iter().map(|f| {
+        let name = ident_to_string(f.ident.as_ref().unwrap());
+        let ty = &f.ty;
+        quote! {
+            .concat_str(#name)
+            .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+        }
+    });
+
     Ok(create_metadata_items(
         "record",
         &name,
@@ -100,10 +105,7 @@ pub(crate) fn record_meta_static_var(
                 .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_value(#fields_len)
-                #(
-                    .concat_str(#field_names)
-                    .concat(<#field_types as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-                )*
+                #(#concat_fields)*
         },
         None,
     ))
