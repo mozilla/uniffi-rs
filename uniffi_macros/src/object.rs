@@ -4,19 +4,24 @@ use syn::{DeriveInput, Path};
 use uniffi_meta::free_fn_symbol_name;
 
 use crate::util::{
-    create_metadata_items, ident_to_string, tagged_impl_header, AttributeSliceExt, CommonAttr,
+    create_metadata_items, ident_to_string, tagged_impl_header, ArgumentNotAllowedHere,
+    AttributeSliceExt, CommonAttr,
 };
 
-pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<TokenStream> {
+pub fn expand_object(input: DeriveInput, module_path: String) -> TokenStream {
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
+    let attr_error = input
+        .attrs
+        .parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
+        .err()
+        .map(syn::Error::into_compile_error);
     let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
     let meta_static_var = interface_meta_static_var(ident, false, &module_path)
         .unwrap_or_else(syn::Error::into_compile_error);
-    let interface_impl = interface_impl(ident, attr.tag.as_ref());
+    let interface_impl = interface_impl(ident, None);
 
-    Ok(quote! {
+    quote! {
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(
@@ -33,9 +38,10 @@ pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<Tok
             });
         }
 
+        #attr_error
         #interface_impl
         #meta_static_var
-    })
+    }
 }
 
 pub(crate) fn expand_ffi_converter_interface(attr: CommonAttr, input: DeriveInput) -> TokenStream {

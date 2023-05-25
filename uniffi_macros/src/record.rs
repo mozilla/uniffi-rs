@@ -4,30 +4,37 @@ use syn::{Data, DataStruct, DeriveInput, Field, Path};
 
 use crate::util::{
     create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, CommonAttr,
+    try_metadata_value_from_usize, try_read_field, ArgumentNotAllowedHere, AttributeSliceExt,
+    CommonAttr,
 };
 
-pub fn expand_record(input: DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_record(input: DeriveInput) -> TokenStream {
     let record = match input.data {
         Data::Struct(s) => s,
         _ => {
-            return Err(syn::Error::new(
+            return syn::Error::new(
                 Span::call_site(),
                 "This derive must only be used on structs",
-            ));
+            )
+            .into_compile_error();
         }
     };
 
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
-    let ffi_converter = record_ffi_converter_impl(ident, &record, attr.tag.as_ref());
+    let attr_error = input
+        .attrs
+        .parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
+        .err()
+        .map(syn::Error::into_compile_error);
+    let ffi_converter = record_ffi_converter_impl(ident, &record, None);
     let meta_static_var =
         record_meta_static_var(ident, &record).unwrap_or_else(syn::Error::into_compile_error);
 
-    Ok(quote! {
+    quote! {
+        #attr_error
         #ffi_converter
         #meta_static_var
-    })
+    }
 }
 
 pub(crate) fn expand_record_ffi_converter(attr: CommonAttr, input: DeriveInput) -> TokenStream {
