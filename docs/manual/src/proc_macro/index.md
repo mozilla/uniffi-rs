@@ -104,6 +104,12 @@ will fail).
 pub struct MyRecord {
     pub field_a: String,
     pub field_b: Option<Arc<MyObject>>,
+    // Fields can have a default value.
+    // Currently, only string, integer, float and boolean literals are supported as defaults.
+    #[uniffi(default = "hello")]
+    pub greeting: String,
+    #[uniffi(default = true)]
+    pub some_flag: bool,
 }
 ```
 
