@@ -232,6 +232,7 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
+<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -262,7 +263,8 @@
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;ErrorAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr);
-    <span class="kw">let </span>meta_static_var = error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())<span class="question-mark">?</span>;
+    <span class="kw">let </span>meta_static_var = error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())
+        .unwrap_or_else(syn::Error::into_compile_error);
 
     <span class="kw">let </span>variant_errors: TokenStream = enum_
         .variants

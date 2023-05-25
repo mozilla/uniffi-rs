@@ -108,6 +108,9 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{Data, DataStruct, DeriveInput, Field, Path};
@@ -131,7 +134,8 @@
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;CommonAttr&gt;()<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, attr.tag.as_ref());
-    <span class="kw">let </span>meta_static_var = record_meta_static_var(ident, <span class="kw-2">&amp;</span>record)<span class="question-mark">?</span>;
+    <span class="kw">let </span>meta_static_var =
+        record_meta_static_var(ident, <span class="kw-2">&amp;</span>record).unwrap_or_else(syn::Error::into_compile_error);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter
@@ -197,11 +201,16 @@
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>fields_len =
         try_metadata_value_from_usize(record.fields.len(), <span class="string">&quot;UniFFI limits structs to 256 fields&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>field_names = record
-        .fields
-        .iter()
-        .map(|f| ident_to_string(f.ident.as_ref().unwrap()));
-    <span class="kw">let </span>field_types = record.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
+
+    <span class="kw">let </span>concat_fields = record.fields.iter().map(|f| {
+        <span class="kw">let </span>name = ident_to_string(f.ident.as_ref().unwrap());
+        <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
+        <span class="macro">quote! </span>{
+            .concat_str(#name)
+            .concat(&lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+        }
+    });
+
     <span class="prelude-val">Ok</span>(create_metadata_items(
         <span class="string">&quot;record&quot;</span>,
         <span class="kw-2">&amp;</span>name,
@@ -210,10 +219,7 @@
                 .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_value(#fields_len)
-                #(
-                    .concat_str(#field_names)
-                    .concat(&lt;#field_types <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                )*
+                #(#concat_fields)*
         },
         <span class="prelude-val">None</span>,
     ))

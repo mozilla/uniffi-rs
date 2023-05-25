@@ -221,7 +221,7 @@
     <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, attr.tag.as_ref());
 
     <span class="kw">let </span>meta_static_var =
-        enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(|e| e.into_compile_error());
+        enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(syn::Error::into_compile_error);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl

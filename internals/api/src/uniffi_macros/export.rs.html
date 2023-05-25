@@ -146,6 +146,7 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
+<span id="149">149</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -228,7 +229,8 @@
                 })
                 .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
-            <span class="kw">let </span>meta_static_var = interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>mod_path)<span class="question-mark">?</span>;
+            <span class="kw">let </span>meta_static_var = interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>mod_path)
+                .unwrap_or_else(syn::Error::into_compile_error);
             <span class="kw">let </span>macro_tokens = <span class="macro">quote! </span>{
                 <span class="macro">::uniffi::ffi_converter_trait_decl!</span>(<span class="kw">dyn </span>#self_ident, <span class="macro">stringify!</span>(#self_ident), <span class="kw">crate</span>::UniFfiTag);
             };
