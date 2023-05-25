@@ -62,3 +62,22 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 {%- else -%}
 {%- endmatch -%}
 {%- endmacro -%}
+
+{%- macro method_decl_prelude(meth) %}
+#[doc(hidden)]
+#[no_mangle]
+#[allow(clippy::let_unit_value,clippy::unit_arg)] // The generated code uses the unit type like other types to keep things uniform
+pub extern "C" fn r#{{ meth.ffi_func().name() }}(
+    {%- call arg_list_ffi_decl(meth.ffi_func()) %}
+) {% call return_signature(meth) %} {
+    uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
+    uniffi::rust_call(call_status, || {
+        {{ meth|return_ffi_converter }}::lower_return(
+{%- endmacro %}
+
+{%- macro method_decl_postscript(meth) %}
+            {% if meth.throws() %}.map_err(Into::into){% endif %}
+        )
+    })
+}
+{% endmacro %}

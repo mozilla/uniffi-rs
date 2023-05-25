@@ -90,6 +90,10 @@ pub struct Object {
     pub(super) imp: ObjectImpl,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
+    // The "trait" methods - they have a (presumably "well known") name, and
+    // a regular method (albeit with a generated name)
+    // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
+    pub(super) uniffi_traits: Vec<UniffiTrait>,
     // We don't include the FfiFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -107,6 +111,7 @@ impl Object {
             imp,
             constructors: Default::default(),
             methods: Default::default(),
+            uniffi_traits: Default::default(),
             ffi_func_free: Default::default(),
         }
     }
@@ -162,6 +167,10 @@ impl Object {
         }
     }
 
+    pub fn uniffi_traits(&self) -> Vec<&UniffiTrait> {
+        self.uniffi_traits.iter().collect()
+    }
+
     pub fn ffi_object_free(&self) -> &FfiFunction {
         &self.ffi_func_free
     }
@@ -170,6 +179,18 @@ impl Object {
         iter::once(&self.ffi_func_free)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
             .chain(self.methods.iter().map(|f| &f.ffi_func))
+            .chain(
+                self.uniffi_traits
+                    .iter()
+                    .flat_map(|ut| match ut {
+                        UniffiTrait::Display { fmt: m }
+                        | UniffiTrait::Debug { fmt: m }
+                        | UniffiTrait::Hash { hash: m } => vec![m],
+                        UniffiTrait::Eq { eq, ne } => vec![eq, ne],
+                    })
+                    .into_iter()
+                    .map(|m| &m.ffi_func),
+            )
     }
 
     pub fn derive_ffi_funcs(&mut self, ci_namespace: &str) -> Result<()> {
@@ -191,6 +212,9 @@ impl Object {
         for meth in self.methods.iter_mut() {
             meth.derive_ffi_func(ci_namespace, &self.name)?;
         }
+        for ut in self.uniffi_traits.iter_mut() {
+            ut.derive_ffi_func(ci_namespace, &self.name)?;
+        }
 
         Ok(())
     }
@@ -200,6 +224,7 @@ impl Object {
             self.methods
                 .iter()
                 .map(Method::iter_types)
+                .chain(self.uniffi_traits.iter().map(UniffiTrait::iter_types))
                 .chain(self.constructors.iter().map(Constructor::iter_types))
                 .flatten(),
         )
@@ -248,6 +273,77 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
             }
+        }
+        // A helper for our trait methods
+        let mut make_trait_method =
+            |name: &str, arguments: Vec<Argument>, return_type: Option<Type>| -> Result<Method> {
+                // need to add known types as they aren't explicitly referenced in
+                // the UDL
+                if let Some(ref return_type) = return_type {
+                    ci.types.add_known_type(return_type)?;
+                }
+                for arg in &arguments {
+                    ci.types.add_known_type(&arg.type_)?;
+                }
+                Ok(Method {
+                    // The name is used to create the ffi function for the method.
+                    name: name.to_string(),
+                    object_name: object.name.clone(),
+                    checksum_fn_name: Default::default(), // gets filled in later.
+                    is_async: false,
+                    object_impl,
+                    arguments,
+                    return_type,
+                    ffi_func: Default::default(),
+                    attributes: Default::default(),
+                    checksum_override: None,
+                })
+            };
+        // synthesize the trait methods.
+        for trait_name in attributes.get_traits() {
+            let trait_method = match trait_name.as_str() {
+                "Debug" => UniffiTrait::Debug {
+                    fmt: make_trait_method("uniffi_trait_debug", vec![], Some(Type::String))?,
+                },
+                "Display" => UniffiTrait::Display {
+                    fmt: make_trait_method("uniffi_trait_display", vec![], Some(Type::String))?,
+                },
+                "Eq" => UniffiTrait::Eq {
+                    eq: make_trait_method(
+                        "uniffi_trait_eq_eq",
+                        vec![Argument {
+                            name: "other".to_string(),
+                            type_: Type::Object {
+                                name: object.name().to_string(),
+                                imp: object_impl,
+                            },
+                            by_ref: true,
+                            default: None,
+                            optional: false,
+                        }],
+                        Some(Type::Boolean),
+                    )?,
+                    ne: make_trait_method(
+                        "uniffi_trait_eq_ne",
+                        vec![Argument {
+                            name: "other".to_string(),
+                            type_: Type::Object {
+                                name: object.name().to_string(),
+                                imp: object_impl,
+                            },
+                            by_ref: true,
+                            default: None,
+                            optional: false,
+                        }],
+                        Some(Type::Boolean),
+                    )?,
+                },
+                "Hash" => UniffiTrait::Hash {
+                    hash: make_trait_method("uniffi_trait_hash", vec![], Some(Type::UInt64))?,
+                },
+                _ => bail!("Invalid trait name: {}", trait_name),
+            };
+            object.uniffi_traits.push(trait_method);
         }
         Ok(object)
     }
@@ -599,6 +695,45 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
             checksum_override: None,
         })
+    }
+}
+
+/// The list of traits we support generating helper methods for.
+#[derive(Clone, Debug, Checksum)]
+pub enum UniffiTrait {
+    Debug { fmt: Method },
+    Display { fmt: Method },
+    Eq { eq: Method, ne: Method },
+    Hash { hash: Method },
+}
+
+impl UniffiTrait {
+    pub fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(
+            match self {
+                UniffiTrait::Display { fmt: m }
+                | UniffiTrait::Debug { fmt: m }
+                | UniffiTrait::Hash { hash: m } => vec![m.iter_types()],
+                UniffiTrait::Eq { eq, ne } => vec![eq.iter_types(), ne.iter_types()],
+            }
+            .into_iter()
+            .flatten(),
+        )
+    }
+
+    pub fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) -> Result<()> {
+        match self {
+            UniffiTrait::Display { fmt: m }
+            | UniffiTrait::Debug { fmt: m }
+            | UniffiTrait::Hash { hash: m } => {
+                m.derive_ffi_func(ci_namespace, obj_name)?;
+            }
+            UniffiTrait::Eq { eq, ne } => {
+                eq.derive_ffi_func(ci_namespace, obj_name)?;
+                ne.derive_ffi_func(ci_namespace, obj_name)?;
+            }
+        }
+        Ok(())
     }
 }
 

@@ -33,6 +33,9 @@
 - The `bytes` primitive type was added, it represents an array of bytes. It maps to `ByteArray` in Kotlin, `bytes` in Python, `String` with `Encoding::BINARY` in Ruby and `Data` in Swift.
 - Shortened `str()` representations of errors in Python to align with other exceptions in Python. Use `repr()` or the `{!r}` format to get the old representation back.
 
+- Methods implemented by standard Rust traits, such as `Debug`, `Display`, `Eq` and `Hash` can now be exposed over the FFI and bindings may implement special methods for them.
+  See [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#exposing-methods-from-standard-rust-traits).
+
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
 [All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...v0.23.0).
