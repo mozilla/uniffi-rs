@@ -231,6 +231,14 @@ pub enum Type {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub enum Literal {
+    Str { value: String },
+    Int { base10_digits: String },
+    Float { base10_digits: String },
+    Bool { value: bool },
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct RecordMetadata {
     pub module_path: String,
     pub name: String,
@@ -242,6 +250,7 @@ pub struct FieldMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
+    pub default: Option<Literal>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

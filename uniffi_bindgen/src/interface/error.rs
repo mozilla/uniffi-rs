@@ -135,16 +135,22 @@ impl Error {
     }
 }
 
-impl From<uniffi_meta::ErrorMetadata> for Error {
-    fn from(meta: uniffi_meta::ErrorMetadata) -> Self {
-        Self {
+impl TryFrom<uniffi_meta::ErrorMetadata> for Error {
+    type Error = anyhow::Error;
+
+    fn try_from(meta: uniffi_meta::ErrorMetadata) -> Result<Self> {
+        Ok(Self {
             name: meta.name.clone(),
             enum_: Enum {
                 name: meta.name,
-                variants: meta.variants.into_iter().map(Into::into).collect(),
+                variants: meta
+                    .variants
+                    .into_iter()
+                    .map(TryInto::try_into)
+                    .collect::<Result<_>>()?,
                 flat: meta.flat,
             },
-        }
+        })
     }
 }
 

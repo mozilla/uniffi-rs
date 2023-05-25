@@ -194,6 +194,8 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                             #(
                                 .concat_str(#field_names)
                                 .concat(<#field_types as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                                // field defaults not yet supported for enums
+                                .concat_bool(false)
                             )*
                     })
                 })
