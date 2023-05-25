@@ -151,8 +151,16 @@ class TestCoverall < Test::Unit::TestCase
       raise 'should have thrown'
     end
 
-    assert_raise Coverall::InternalError do
+    begin
       coveralls.maybe_throw_complex(3)
+    rescue Coverall::ComplexError::UnknownError => err
+      assert_equal err.to_s, 'Coverall::ComplexError::UnknownError()'
+    else
+      raise 'should have thrown'
+    end
+
+    assert_raise Coverall::InternalError do
+      coveralls.maybe_throw_complex(4)
     end
   end
 
