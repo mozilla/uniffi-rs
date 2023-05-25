@@ -55,8 +55,9 @@ enum CoverallError {
 
 [Error]
 interface ComplexError {
-   OsError(i16 code, i16 extended_code);
-   PermissionDenied(string reason);
+    OsError(i16 code, i16 extended_code);
+    PermissionDenied(string reason);
+    UnknownError();
 };
 
 interface Coveralls {

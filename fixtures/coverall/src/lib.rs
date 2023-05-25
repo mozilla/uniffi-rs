@@ -42,6 +42,8 @@ pub enum ComplexError {
     OsError { code: i16, extended_code: i16 },
     #[error("PermissionDenied: {reason}")]
     PermissionDenied { reason: String },
+    #[error("Unknown error")]
+    UnknownError,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -203,6 +205,7 @@ impl Coveralls {
             2 => Err(ComplexError::PermissionDenied {
                 reason: "Forbidden".to_owned(),
             }),
+            3 => Err(ComplexError::UnknownError),
             _ => panic!("Invalid input"),
         }
     }

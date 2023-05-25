@@ -162,6 +162,17 @@ do {
     do {
         let _ = try coveralls.maybeThrowComplex(input: 3)
         fatalError("should have thrown")
+    } catch let e as ComplexError {
+        if case .UnknownError = e {
+        } else {
+            fatalError("wrong error variant: \(e)")
+        }
+        assert(String(describing: e) == "UnknownError", "Unexpected ComplexError.UnknownError description: \(e)")
+    }
+
+    do {
+        let _ = try coveralls.maybeThrowComplex(input: 4)
+        fatalError("should have thrown")
     } catch {
         assert(String(describing: error) == "rustPanic(\"Invalid input\")")
     }

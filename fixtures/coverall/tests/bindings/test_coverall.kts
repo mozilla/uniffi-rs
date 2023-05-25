@@ -171,7 +171,7 @@ Coveralls("test_complex_errors").use { coveralls ->
         assert(e.code == 10.toShort())
         assert(e.extendedCode == 20.toShort())
         assert(e.toString() == "uniffi.coverall.ComplexException\$OsException: code=10, extendedCode=20") {
-            "Unexpected ComplexError.OsError.toString() value: ${e.toString()}"
+            "Unexpected ComplexException.OsError.toString() value: ${e.toString()}"
         }
     }
 
@@ -181,12 +181,21 @@ Coveralls("test_complex_errors").use { coveralls ->
     } catch(e: ComplexException.PermissionDenied) {
         assert(e.reason == "Forbidden")
         assert(e.toString() == "uniffi.coverall.ComplexException\$PermissionDenied: reason=Forbidden") {
-            "Unexpected ComplexError.PermissionDenied.toString() value: ${e.toString()}"
+            "Unexpected ComplexException.PermissionDenied.toString() value: ${e.toString()}"
         }
     }
 
     try {
         coveralls.maybeThrowComplex(3)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: ComplexException.UnknownException) {
+        assert(e.toString() == "uniffi.coverall.ComplexException\$UnknownException: ") {
+            "Unexpected ComplexException.UnknownException.toString() value: ${e.toString()}"
+        }
+    }
+
+    try {
+        coveralls.maybeThrowComplex(4)
         throw RuntimeException("Expected method to throw exception")
     } catch(e: InternalException) {
         // Expected result
