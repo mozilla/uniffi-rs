@@ -23,7 +23,7 @@ pub fn expand_enum(input: DeriveInput) -> syn::Result<TokenStream> {
     let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, attr.tag.as_ref());
 
     let meta_static_var =
-        enum_meta_static_var(ident, &enum_).unwrap_or_else(|e| e.into_compile_error());
+        enum_meta_static_var(ident, &enum_).unwrap_or_else(syn::Error::into_compile_error);
 
     Ok(quote! {
         #ffi_converter_impl

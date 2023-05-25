@@ -12,7 +12,8 @@ pub fn expand_object(input: DeriveInput, module_path: String) -> syn::Result<Tok
     let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
     let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
-    let meta_static_var = interface_meta_static_var(ident, false, &module_path)?;
+    let meta_static_var = interface_meta_static_var(ident, false, &module_path)
+        .unwrap_or_else(syn::Error::into_compile_error);
     let interface_impl = interface_impl(ident, attr.tag.as_ref());
 
     Ok(quote! {

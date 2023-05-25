@@ -21,7 +21,8 @@ pub fn expand_record(input: DeriveInput) -> syn::Result<TokenStream> {
     let ident = &input.ident;
     let attr = input.attrs.parse_uniffi_attr_args::<CommonAttr>()?;
     let ffi_converter = record_ffi_converter_impl(ident, &record, attr.tag.as_ref());
-    let meta_static_var = record_meta_static_var(ident, &record)?;
+    let meta_static_var =
+        record_meta_static_var(ident, &record).unwrap_or_else(syn::Error::into_compile_error);
 
     Ok(quote! {
         #ffi_converter
