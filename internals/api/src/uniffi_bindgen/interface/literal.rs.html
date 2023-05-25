@@ -184,6 +184,66 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -193,7 +253,7 @@
 //! This module provides support for interpreting literal values from the UDL,
 //! which appear in places such as default arguments.
 
-</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span>anyhow::{bail, ensure, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>uniffi_meta::Checksum;
 
 <span class="kw">use </span><span class="kw">super</span>::types::Type;
@@ -218,6 +278,66 @@
     EmptySequence,
     EmptyMap,
     Null,
+}
+
+<span class="kw">impl </span>Literal {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_metadata(
+        name: <span class="kw-2">&amp;</span>str,
+        ty: <span class="kw-2">&amp;</span>Type,
+        default: uniffi_meta::Literal,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>default {
+            uniffi_meta::Literal::Str { value } =&gt; {
+                <span class="macro">ensure!</span>(
+                    <span class="macro">matches!</span>(ty, Type::String),
+                    <span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type string&quot;
+                </span>);
+                <span class="self">Self</span>::String(value)
+            }
+            uniffi_meta::Literal::Int { base10_digits } =&gt; {
+                <span class="macro">macro_rules! </span>parse_int {
+                    (<span class="macro-nonterminal">$ty</span>:ident, <span class="macro-nonterminal">$variant</span>:ident) =&gt; {
+                        <span class="self">Self</span>::<span class="macro-nonterminal">$variant</span>(
+                            base10_digits
+                                .parse::&lt;<span class="macro-nonterminal">$ty</span>&gt;()
+                                .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;parsing default for field {}&quot;</span>, name))<span class="question-mark">?
+                                </span>.into(),
+                            Radix::Decimal,
+                            ty.to_owned(),
+                        )
+                    };
+                }
+
+                <span class="kw">match </span>ty {
+                    Type::UInt8 =&gt; <span class="macro">parse_int!</span>(u8, UInt),
+                    Type::Int8 =&gt; <span class="macro">parse_int!</span>(i8, Int),
+                    Type::UInt16 =&gt; <span class="macro">parse_int!</span>(u16, UInt),
+                    Type::Int16 =&gt; <span class="macro">parse_int!</span>(i16, Int),
+                    Type::UInt32 =&gt; <span class="macro">parse_int!</span>(u32, UInt),
+                    Type::Int32 =&gt; <span class="macro">parse_int!</span>(i32, Int),
+                    Type::UInt64 =&gt; <span class="macro">parse_int!</span>(u64, UInt),
+                    Type::Int64 =&gt; <span class="macro">parse_int!</span>(i64, Int),
+                    <span class="kw">_ </span>=&gt; {
+                        <span class="macro">bail!</span>(<span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type integer&quot;</span>);
+                    }
+                }
+            }
+            uniffi_meta::Literal::Float { base10_digits } =&gt; <span class="kw">match </span>ty {
+                Type::Float32 =&gt; <span class="self">Self</span>::Float(base10_digits, Type::Float32),
+                Type::Float64 =&gt; <span class="self">Self</span>::Float(base10_digits, Type::Float64),
+                <span class="kw">_ </span>=&gt; {
+                    <span class="macro">bail!</span>(<span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type float&quot;</span>);
+                }
+            },
+            uniffi_meta::Literal::Bool { value } =&gt; {
+                <span class="macro">ensure!</span>(
+                    <span class="macro">matches!</span>(ty, Type::String),
+                    <span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type boolean&quot;
+                </span>);
+                <span class="self">Self</span>::Boolean(value)
+            }
+        })
+    }
 }
 
 <span class="comment">// Represent the radix of integer literal values.

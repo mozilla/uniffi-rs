@@ -200,6 +200,8 @@
 <span id="200">200</span>
 <span id="201">201</span>
 <span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
@@ -396,6 +398,8 @@
                             #(
                                 .concat_str(#field_names)
                                 .concat(&lt;#field_types <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                                <span class="comment">// field defaults not yet supported for enums
+                                </span>.concat_bool(<span class="bool-val">false</span>)
                             )*
                     })
                 })

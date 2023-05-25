@@ -188,7 +188,7 @@
                 iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
                 iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>record: Record = meta.into();
+                <span class="kw">let </span>record: Record = meta.try_into()<span class="question-mark">?</span>;
                 iface.add_record_definition(record)<span class="question-mark">?</span>;
             }
             Metadata::Enum(meta) =&gt; {
@@ -196,7 +196,7 @@
                 iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
                 iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>enum_: Enum = meta.into();
+                <span class="kw">let </span>enum_: Enum = meta.try_into()<span class="question-mark">?</span>;
                 iface.add_enum_definition(enum_)<span class="question-mark">?</span>;
             }
             Metadata::Object(meta) =&gt; {
@@ -207,7 +207,7 @@
                 iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
                 iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>error: Error = meta.into();
+                <span class="kw">let </span>error: Error = meta.try_into()<span class="question-mark">?</span>;
                 iface.add_error_definition(error)<span class="question-mark">?</span>;
             }
         }

@@ -289,7 +289,7 @@
     .into()
 }
 
-<span class="attribute">#[proc_macro_derive(Record)]
+<span class="attribute">#[proc_macro_derive(Record, attributes(uniffi))]
 </span><span class="kw">pub fn </span>derive_record(input: TokenStream) -&gt; TokenStream {
     expand_record(<span class="macro">parse_macro_input!</span>(input)).into()
 }

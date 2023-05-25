@@ -241,6 +241,20 @@
 <span id="241">241</span>
 <span id="242">242</span>
 <span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -328,12 +342,18 @@
     }
 }
 
-<span class="kw">impl </span>From&lt;uniffi_meta::RecordMetadata&gt; <span class="kw">for </span>Record {
-    <span class="kw">fn </span>from(meta: uniffi_meta::RecordMetadata) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
+<span class="kw">impl </span>TryFrom&lt;uniffi_meta::RecordMetadata&gt; <span class="kw">for </span>Record {
+    <span class="kw">type </span>Error = anyhow::Error;
+
+    <span class="kw">fn </span>try_from(meta: uniffi_meta::RecordMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             name: meta.name,
-            fields: meta.fields.into_iter().map(Into::into).collect(),
-        }
+            fields: meta
+                .fields
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>,
+        })
     }
 }
 
@@ -378,13 +398,21 @@
     }
 }
 
-<span class="kw">impl </span>From&lt;uniffi_meta::FieldMetadata&gt; <span class="kw">for </span>Field {
-    <span class="kw">fn </span>from(meta: uniffi_meta::FieldMetadata) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            name: meta.name,
-            type_: convert_type(<span class="kw-2">&amp;</span>meta.ty),
-            default: <span class="prelude-val">None</span>,
-        }
+<span class="kw">impl </span>TryFrom&lt;uniffi_meta::FieldMetadata&gt; <span class="kw">for </span>Field {
+    <span class="kw">type </span>Error = anyhow::Error;
+
+    <span class="kw">fn </span>try_from(meta: uniffi_meta::FieldMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>name = meta.name;
+        <span class="kw">let </span>type_ = convert_type(<span class="kw-2">&amp;</span>meta.ty);
+        <span class="kw">let </span>default = meta
+            .default
+            .map(|d| Literal::from_metadata(<span class="kw-2">&amp;</span>name, <span class="kw-2">&amp;</span>type_, d))
+            .transpose()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            name,
+            type_,
+            default,
+        })
     }
 }
 
