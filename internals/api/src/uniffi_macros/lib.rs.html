@@ -221,6 +221,7 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
+<span id="224">224</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -418,9 +419,10 @@
         <span class="macro">quote! </span>{
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
-    } <span class="kw">else if </span>uniffi_build::generate_scaffolding(udl_file_path).is_err() {
+    } <span class="kw">else if let </span><span class="prelude-val">Err</span>(e) = uniffi_build::generate_scaffolding(udl_file_path) {
+        <span class="kw">let </span>err = <span class="macro">format!</span>(<span class="string">&quot;{e:#}&quot;</span>);
         <span class="macro">quote! </span>{
-            <span class="macro">compile_error!</span>(<span class="macro">concat!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #udl_file));
+            <span class="macro">compile_error!</span>(<span class="macro">concat!</span>(<span class="string">&quot;Failed to generate scaffolding from UDL file at &quot;</span>, #udl_file, <span class="string">&quot;: &quot;</span>, #err));
         }
     } <span class="kw">else </span>{
         <span class="comment">// We know the filename is good because `generate_scaffolding` succeeded,

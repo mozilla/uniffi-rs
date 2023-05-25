@@ -757,6 +757,32 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.</p>
+<h2><a class="header" href="#exposing-methods-from-standard-rust-traits" id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</a></h2>
+<p>Rust has a number of general purpose traits which add functionality to objects, such
+as <code>Debug</code>, <code>Display</code>, etc. It's possible to tell UniFFI that your object implements these
+traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
+generate special methods on the object.</p>
+<p>For example, consider the following example:</p>
+<pre><code>[Traits=Debug]
+interface TodoList {
+    ...
+}
+</code></pre>
+<p>and the following Rust code:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug)]
+struct TodoList {
+   ...
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>This will cause the Python bindings to generate a <code>__repr__</code> method that returns the value implemented by the <code>Debug</code> trait.
+Not all bindings support generating special methods, so they may be ignored.
+It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.</p>
+<p>The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
+is <code>Debug</code>, <code>Display</code>, <code>Eq</code> and <code>Hash</code>.</p>
 <h2><a class="header" href="#managing-shared-references" id="managing-shared-references">Managing Shared References</a></h2>
 <p>To the foreign-language consumer, UniFFI object instances are designed to behave as much like
 regular language objects as possible. They can be freely passed as arguments or returned as values,

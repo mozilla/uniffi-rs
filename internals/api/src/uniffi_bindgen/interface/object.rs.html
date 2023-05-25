@@ -792,6 +792,141 @@
 <span id="792">792</span>
 <span id="793">793</span>
 <span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -884,6 +1019,10 @@
     </span><span class="kw">pub</span>(<span class="kw">super</span>) imp: ObjectImpl,
     <span class="kw">pub</span>(<span class="kw">super</span>) constructors: Vec&lt;Constructor&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
+    <span class="comment">// The &quot;trait&quot; methods - they have a (presumably &quot;well known&quot;) name, and
+    // a regular method (albeit with a generated name)
+    // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) uniffi_traits: Vec&lt;UniffiTrait&gt;,
     <span class="comment">// We don&#39;t include the FfiFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -901,6 +1040,7 @@
             imp,
             constructors: Default::default(),
             methods: Default::default(),
+            uniffi_traits: Default::default(),
             ffi_func_free: Default::default(),
         }
     }
@@ -956,6 +1096,10 @@
         }
     }
 
+    <span class="kw">pub fn </span>uniffi_traits(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>UniffiTrait&gt; {
+        <span class="self">self</span>.uniffi_traits.iter().collect()
+    }
+
     <span class="kw">pub fn </span>ffi_object_free(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>FfiFunction {
         <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free
     }
@@ -964,6 +1108,18 @@
         iter::once(<span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free)
             .chain(<span class="self">self</span>.constructors.iter().map(|f| <span class="kw-2">&amp;</span>f.ffi_func))
             .chain(<span class="self">self</span>.methods.iter().map(|f| <span class="kw-2">&amp;</span>f.ffi_func))
+            .chain(
+                <span class="self">self</span>.uniffi_traits
+                    .iter()
+                    .flat_map(|ut| <span class="kw">match </span>ut {
+                        UniffiTrait::Display { fmt: m }
+                        | UniffiTrait::Debug { fmt: m }
+                        | UniffiTrait::Hash { hash: m } =&gt; <span class="macro">vec!</span>[m],
+                        UniffiTrait::Eq { eq, ne } =&gt; <span class="macro">vec!</span>[eq, ne],
+                    })
+                    .into_iter()
+                    .map(|m| <span class="kw-2">&amp;</span>m.ffi_func),
+            )
     }
 
     <span class="kw">pub fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -985,6 +1141,9 @@
         <span class="kw">for </span>meth <span class="kw">in </span><span class="self">self</span>.methods.iter_mut() {
             meth.derive_ffi_func(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name)<span class="question-mark">?</span>;
         }
+        <span class="kw">for </span>ut <span class="kw">in </span><span class="self">self</span>.uniffi_traits.iter_mut() {
+            ut.derive_ffi_func(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name)<span class="question-mark">?</span>;
+        }
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -994,6 +1153,7 @@
             <span class="self">self</span>.methods
                 .iter()
                 .map(Method::iter_types)
+                .chain(<span class="self">self</span>.uniffi_traits.iter().map(UniffiTrait::iter_types))
                 .chain(<span class="self">self</span>.constructors.iter().map(Constructor::iter_types))
                 .flatten(),
         )
@@ -1042,6 +1202,77 @@
                 }
                 <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;no support for interface member type {:?} yet&quot;</span>, member),
             }
+        }
+        <span class="comment">// A helper for our trait methods
+        </span><span class="kw">let </span><span class="kw-2">mut </span>make_trait_method =
+            |name: <span class="kw-2">&amp;</span>str, arguments: Vec&lt;Argument&gt;, return_type: <span class="prelude-ty">Option</span>&lt;Type&gt;| -&gt; <span class="prelude-ty">Result</span>&lt;Method&gt; {
+                <span class="comment">// need to add known types as they aren&#39;t explicitly referenced in
+                // the UDL
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>return_type) = return_type {
+                    ci.types.add_known_type(return_type)<span class="question-mark">?</span>;
+                }
+                <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>arguments {
+                    ci.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_)<span class="question-mark">?</span>;
+                }
+                <span class="prelude-val">Ok</span>(Method {
+                    <span class="comment">// The name is used to create the ffi function for the method.
+                    </span>name: name.to_string(),
+                    object_name: object.name.clone(),
+                    checksum_fn_name: Default::default(), <span class="comment">// gets filled in later.
+                    </span>is_async: <span class="bool-val">false</span>,
+                    object_impl,
+                    arguments,
+                    return_type,
+                    ffi_func: Default::default(),
+                    attributes: Default::default(),
+                    checksum_override: <span class="prelude-val">None</span>,
+                })
+            };
+        <span class="comment">// synthesize the trait methods.
+        </span><span class="kw">for </span>trait_name <span class="kw">in </span>attributes.get_traits() {
+            <span class="kw">let </span>trait_method = <span class="kw">match </span>trait_name.as_str() {
+                <span class="string">&quot;Debug&quot; </span>=&gt; UniffiTrait::Debug {
+                    fmt: make_trait_method(<span class="string">&quot;uniffi_trait_debug&quot;</span>, <span class="macro">vec!</span>[], <span class="prelude-val">Some</span>(Type::String))<span class="question-mark">?</span>,
+                },
+                <span class="string">&quot;Display&quot; </span>=&gt; UniffiTrait::Display {
+                    fmt: make_trait_method(<span class="string">&quot;uniffi_trait_display&quot;</span>, <span class="macro">vec!</span>[], <span class="prelude-val">Some</span>(Type::String))<span class="question-mark">?</span>,
+                },
+                <span class="string">&quot;Eq&quot; </span>=&gt; UniffiTrait::Eq {
+                    eq: make_trait_method(
+                        <span class="string">&quot;uniffi_trait_eq_eq&quot;</span>,
+                        <span class="macro">vec!</span>[Argument {
+                            name: <span class="string">&quot;other&quot;</span>.to_string(),
+                            type_: Type::Object {
+                                name: object.name().to_string(),
+                                imp: object_impl,
+                            },
+                            by_ref: <span class="bool-val">true</span>,
+                            default: <span class="prelude-val">None</span>,
+                            optional: <span class="bool-val">false</span>,
+                        }],
+                        <span class="prelude-val">Some</span>(Type::Boolean),
+                    )<span class="question-mark">?</span>,
+                    ne: make_trait_method(
+                        <span class="string">&quot;uniffi_trait_eq_ne&quot;</span>,
+                        <span class="macro">vec!</span>[Argument {
+                            name: <span class="string">&quot;other&quot;</span>.to_string(),
+                            type_: Type::Object {
+                                name: object.name().to_string(),
+                                imp: object_impl,
+                            },
+                            by_ref: <span class="bool-val">true</span>,
+                            default: <span class="prelude-val">None</span>,
+                            optional: <span class="bool-val">false</span>,
+                        }],
+                        <span class="prelude-val">Some</span>(Type::Boolean),
+                    )<span class="question-mark">?</span>,
+                },
+                <span class="string">&quot;Hash&quot; </span>=&gt; UniffiTrait::Hash {
+                    hash: make_trait_method(<span class="string">&quot;uniffi_trait_hash&quot;</span>, <span class="macro">vec!</span>[], <span class="prelude-val">Some</span>(Type::UInt64))<span class="question-mark">?</span>,
+                },
+                <span class="kw">_ </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Invalid trait name: {}&quot;</span>, trait_name),
+            };
+            object.uniffi_traits.push(trait_method);
         }
         <span class="prelude-val">Ok</span>(object)
     }
@@ -1393,6 +1624,45 @@
             attributes: MethodAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>,
             checksum_override: <span class="prelude-val">None</span>,
         })
+    }
+}
+
+<span class="doccomment">/// The list of traits we support generating helper methods for.
+</span><span class="attribute">#[derive(Clone, Debug, Checksum)]
+</span><span class="kw">pub enum </span>UniffiTrait {
+    Debug { fmt: Method },
+    Display { fmt: Method },
+    Eq { eq: Method, ne: Method },
+    Hash { hash: Method },
+}
+
+<span class="kw">impl </span>UniffiTrait {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+        Box::new(
+            <span class="kw">match </span><span class="self">self </span>{
+                UniffiTrait::Display { fmt: m }
+                | UniffiTrait::Debug { fmt: m }
+                | UniffiTrait::Hash { hash: m } =&gt; <span class="macro">vec!</span>[m.iter_types()],
+                UniffiTrait::Eq { eq, ne } =&gt; <span class="macro">vec!</span>[eq.iter_types(), ne.iter_types()],
+            }
+            .into_iter()
+            .flatten(),
+        )
+    }
+
+    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, obj_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            UniffiTrait::Display { fmt: m }
+            | UniffiTrait::Debug { fmt: m }
+            | UniffiTrait::Hash { hash: m } =&gt; {
+                m.derive_ffi_func(ci_namespace, obj_name)<span class="question-mark">?</span>;
+            }
+            UniffiTrait::Eq { eq, ne } =&gt; {
+                eq.derive_ffi_func(ci_namespace, obj_name)<span class="question-mark">?</span>;
+                ne.derive_ffi_func(ci_namespace, obj_name)<span class="question-mark">?</span>;
+            }
+        }
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
