@@ -67,16 +67,12 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Record)]
 pub fn derive_record(input: TokenStream) -> TokenStream {
-    expand_record(parse_macro_input!(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+    expand_record(parse_macro_input!(input)).into()
 }
 
 #[proc_macro_derive(Enum)]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
-    expand_enum(parse_macro_input!(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+    expand_enum(parse_macro_input!(input)).into()
 }
 
 #[proc_macro_derive(Object)]
@@ -87,9 +83,7 @@ pub fn derive_object(input: TokenStream) -> TokenStream {
     };
     let input = parse_macro_input!(input);
 
-    expand_object(input, mod_path)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+    expand_object(input, mod_path).into()
 }
 
 #[proc_macro_derive(Error, attributes(uniffi))]
