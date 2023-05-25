@@ -212,6 +212,26 @@ mod kw {
 
 #[derive(Default)]
 pub(crate) struct CommonAttr {
+    /// Specifies the `UniFfiTag` used when implementing `FfiConverter`
+    ///   - When things are defined with proc-macros, this is `None` which means create a blanket
+    ///     impl for all types.
+    ///   - When things are defined with UDL files this is `Some(crate::UniFfiTag)`, which means only
+    ///     implement it for the local tag in the crate
+    ///
+    /// The reason for this split is remote types, i.e. types defined in remote crates that we
+    /// don't control and therefore can't define a blanket impl on because of the orphan rules.
+    ///
+    /// With UDL, we handle this by only implementing `FfiConverter<crate::UniFfiTag>` for the
+    /// type.  This gets around the orphan rules since a local type is in the trait, but requires
+    /// a `uniffi::ffi_converter_forward!` call if the type is used in a second local crate (an
+    /// External typedef).  This is natural for UDL-based generation, since you always need to
+    /// define the external type in the UDL file.
+    ///
+    /// With proc-macros this system isn't so natural.  Instead, we plan to use this system:
+    ///   - Most of the time, types aren't remote and we use the blanket impl.
+    ///   - When types are remote, we'll need a special syntax to define an `FfiConverter` for them
+    ///     and also a special declaration to use the types in other crates.  This requires some
+    ///     extra work for the consumer, but it should be rare.
     pub tag: Option<Path>,
 }
 

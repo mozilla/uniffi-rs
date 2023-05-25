@@ -20,6 +20,10 @@
   - External bindings authors will need to update their bindings code.  See PR #1494 for details.
 - ABI: Changed API checksum handling.  This affects external bindings authors who will need to update their code to work with the new system.  See PR #1469 for details.
 - Removed the long deprecated `ThreadSafe` attribute.
+- `External` types now require a valid crate name.  Before the docs said it must be a crate name,
+  but any string could be used as long as it was consistent with the external type map in
+  `uniffi.toml`.
+- `External` types must be available in the Rust crate root.
 
 ### What's changed
 
