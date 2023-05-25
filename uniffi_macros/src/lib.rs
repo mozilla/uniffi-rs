@@ -65,7 +65,7 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
-#[proc_macro_derive(Record)]
+#[proc_macro_derive(Record, attributes(uniffi))]
 pub fn derive_record(input: TokenStream) -> TokenStream {
     expand_record(parse_macro_input!(input)).into()
 }

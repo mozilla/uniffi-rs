@@ -76,7 +76,7 @@ pub fn add_to_ci(
                 iface.types.add_known_type(&ty)?;
                 iface.types.add_type_definition(&meta.name, ty)?;
 
-                let record: Record = meta.into();
+                let record: Record = meta.try_into()?;
                 iface.add_record_definition(record)?;
             }
             Metadata::Enum(meta) => {
@@ -84,7 +84,7 @@ pub fn add_to_ci(
                 iface.types.add_known_type(&ty)?;
                 iface.types.add_type_definition(&meta.name, ty)?;
 
-                let enum_: Enum = meta.into();
+                let enum_: Enum = meta.try_into()?;
                 iface.add_enum_definition(enum_)?;
             }
             Metadata::Object(meta) => {
@@ -95,7 +95,7 @@ pub fn add_to_ci(
                 iface.types.add_known_type(&ty)?;
                 iface.types.add_type_definition(&meta.name, ty)?;
 
-                let error: Error = meta.into();
+                let error: Error = meta.try_into()?;
                 iface.add_error_definition(error)?;
             }
         }

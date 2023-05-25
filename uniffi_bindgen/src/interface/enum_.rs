@@ -120,14 +120,20 @@ impl Enum {
     }
 }
 
-impl From<uniffi_meta::EnumMetadata> for Enum {
-    fn from(meta: uniffi_meta::EnumMetadata) -> Self {
+impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
+    type Error = anyhow::Error;
+
+    fn try_from(meta: uniffi_meta::EnumMetadata) -> Result<Self> {
         let flat = meta.variants.iter().all(|v| v.fields.is_empty());
-        Self {
+        Ok(Self {
             name: meta.name,
-            variants: meta.variants.into_iter().map(Into::into).collect(),
+            variants: meta
+                .variants
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<_>>()?,
             flat,
-        }
+        })
     }
 }
 
@@ -210,12 +216,18 @@ impl Variant {
     }
 }
 
-impl From<uniffi_meta::VariantMetadata> for Variant {
-    fn from(meta: uniffi_meta::VariantMetadata) -> Self {
-        Self {
+impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
+    type Error = anyhow::Error;
+
+    fn try_from(meta: uniffi_meta::VariantMetadata) -> Result<Self> {
+        Ok(Self {
             name: meta.name,
-            fields: meta.fields.into_iter().map(Into::into).collect(),
-        }
+            fields: meta
+                .fields
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<_>>()?,
+        })
     }
 }
 

@@ -11,6 +11,7 @@ use uniffi_meta::*;
 mod person {
     #[derive(uniffi::Record, Debug)]
     pub struct Person {
+        #[uniffi(default = "test")]
         name: String,
         age: u16,
     }
@@ -173,10 +174,14 @@ mod test_metadata {
                     FieldMetadata {
                         name: "name".into(),
                         ty: Type::String,
+                        default: Some(Literal::Str {
+                            value: "test".to_owned(),
+                        }),
                     },
                     FieldMetadata {
                         name: "age".into(),
                         ty: Type::U16,
+                        default: None,
                     },
                 ],
             },
@@ -225,6 +230,7 @@ mod test_metadata {
                         fields: vec![FieldMetadata {
                             name: "data".into(),
                             ty: Type::String,
+                            default: None,
                         }],
                     },
                     VariantMetadata {
@@ -234,6 +240,7 @@ mod test_metadata {
                             ty: Type::Record {
                                 name: "Person".into(),
                             },
+                            default: None,
                         }],
                     },
                 ],
@@ -281,6 +288,7 @@ mod test_metadata {
                         fields: vec![FieldMetadata {
                             name: "reason".into(),
                             ty: Type::String,
+                            default: None,
                         }],
                     },
                     VariantMetadata {
@@ -290,6 +298,7 @@ mod test_metadata {
                             ty: Type::Enum {
                                 name: "Weapon".into(),
                             },
+                            default: None,
                         }],
                     },
                 ],

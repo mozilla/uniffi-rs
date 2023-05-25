@@ -268,10 +268,10 @@ impl<'a> MetadataReader<'a> {
         let len = self.read_u8()?;
         (0..len)
             .map(|_| {
-                Ok(FieldMetadata {
-                    name: self.read_string()?,
-                    ty: self.read_type()?,
-                })
+                let name = self.read_string()?;
+                let ty = self.read_type()?;
+                let default = self.read_default()?;
+                Ok(FieldMetadata { name, ty, default })
             })
             .collect()
     }
@@ -316,5 +316,29 @@ impl<'a> MetadataReader<'a> {
         let bytes_read = self.initial_data.len() - self.buf.len();
         let metadata_buf = &self.initial_data[..bytes_read];
         checksum_metadata(metadata_buf)
+    }
+
+    fn read_default(&mut self) -> Result<Option<Literal>> {
+        let has_default = self.read_bool()?;
+        if !has_default {
+            return Ok(None);
+        }
+
+        let literal_kind = self.read_u8()?;
+        Ok(Some(match literal_kind {
+            codes::LIT_STR => Literal::Str {
+                value: self.read_string()?,
+            },
+            codes::LIT_INT => Literal::Int {
+                base10_digits: self.read_string()?,
+            },
+            codes::LIT_FLOAT => Literal::Float {
+                base10_digits: self.read_string()?,
+            },
+            codes::LIT_BOOL => Literal::Bool {
+                value: self.read_bool()?,
+            },
+            _ => bail!("Unexpected literal kind code: {literal_kind:?}"),
+        }))
     }
 }

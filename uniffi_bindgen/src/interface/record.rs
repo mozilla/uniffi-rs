@@ -85,12 +85,18 @@ impl Record {
     }
 }
 
-impl From<uniffi_meta::RecordMetadata> for Record {
-    fn from(meta: uniffi_meta::RecordMetadata) -> Self {
-        Self {
+impl TryFrom<uniffi_meta::RecordMetadata> for Record {
+    type Error = anyhow::Error;
+
+    fn try_from(meta: uniffi_meta::RecordMetadata) -> Result<Self> {
+        Ok(Self {
             name: meta.name,
-            fields: meta.fields.into_iter().map(Into::into).collect(),
-        }
+            fields: meta
+                .fields
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<_>>()?,
+        })
     }
 }
 
@@ -135,13 +141,21 @@ impl Field {
     }
 }
 
-impl From<uniffi_meta::FieldMetadata> for Field {
-    fn from(meta: uniffi_meta::FieldMetadata) -> Self {
-        Self {
-            name: meta.name,
-            type_: convert_type(&meta.ty),
-            default: None,
-        }
+impl TryFrom<uniffi_meta::FieldMetadata> for Field {
+    type Error = anyhow::Error;
+
+    fn try_from(meta: uniffi_meta::FieldMetadata) -> Result<Self> {
+        let name = meta.name;
+        let type_ = convert_type(&meta.ty);
+        let default = meta
+            .default
+            .map(|d| Literal::from_metadata(&name, &type_, d))
+            .transpose()?;
+        Ok(Self {
+            name,
+            type_,
+            default,
+        })
     }
 }
 

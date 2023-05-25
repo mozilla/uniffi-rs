@@ -1,11 +1,11 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{Data, DataStruct, DeriveInput, Field, Path};
+use syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Lit, Path, Token};
 
 use crate::util::{
-    create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
+    create_metadata_items, either_attribute_arg, ident_to_string, mod_path, tagged_impl_header,
     try_metadata_value_from_usize, try_read_field, ArgumentNotAllowedHere, AttributeSliceExt,
-    CommonAttr,
+    CommonAttr, UniffiAttributeArgs,
 };
 
 pub fn expand_record(input: DeriveInput) -> TokenStream {
@@ -87,6 +87,32 @@ fn write_field(f: &Field) -> TokenStream {
     }
 }
 
+mod kw {
+    syn::custom_keyword!(default);
+}
+
+#[derive(Default)]
+pub struct FieldAttributeArguments {
+    pub(crate) default: Option<Lit>,
+}
+
+impl UniffiAttributeArgs for FieldAttributeArguments {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let _: kw::default = input.parse()?;
+        let _: Token![=] = input.parse()?;
+        let default = input.parse()?;
+        Ok(Self {
+            default: Some(default),
+        })
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            default: either_attribute_arg(self.default, other.default)?,
+        })
+    }
+}
+
 pub(crate) fn record_meta_static_var(
     ident: &Ident,
     record: &DataStruct,
@@ -96,14 +122,34 @@ pub(crate) fn record_meta_static_var(
     let fields_len =
         try_metadata_value_from_usize(record.fields.len(), "UniFFI limits structs to 256 fields")?;
 
-    let concat_fields = record.fields.iter().map(|f| {
-        let name = ident_to_string(f.ident.as_ref().unwrap());
-        let ty = &f.ty;
-        quote! {
-            .concat_str(#name)
-            .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-        }
-    });
+    let concat_fields: TokenStream = record
+        .fields
+        .iter()
+        .map(|f| {
+            let attrs = f
+                .attrs
+                .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
+
+            let name = ident_to_string(f.ident.as_ref().unwrap());
+            let ty = &f.ty;
+            let default = match attrs.default {
+                Some(default) => {
+                    let default_value = default_value_concat_calls(default)?;
+                    quote! {
+                        .concat_bool(true)
+                        #default_value
+                    }
+                }
+                None => quote! { .concat_bool(false) },
+            };
+
+            Ok(quote! {
+                .concat_str(#name)
+                .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                #default
+            })
+        })
+        .collect::<syn::Result<_>>()?;
 
     Ok(create_metadata_items(
         "record",
@@ -113,8 +159,49 @@ pub(crate) fn record_meta_static_var(
                 .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_value(#fields_len)
-                #(#concat_fields)*
+                #concat_fields
         },
         None,
     ))
+}
+
+fn default_value_concat_calls(default: Lit) -> syn::Result<TokenStream> {
+    match default {
+        Lit::Int(i) if !i.suffix().is_empty() => Err(syn::Error::new_spanned(
+            i,
+            "integer literals with suffix not supported here",
+        )),
+        Lit::Float(f) if !f.suffix().is_empty() => Err(syn::Error::new_spanned(
+            f,
+            "float literals with suffix not supported here",
+        )),
+
+        Lit::Str(s) => Ok(quote! {
+            .concat_value(::uniffi::metadata::codes::LIT_STR)
+            .concat_str(#s)
+        }),
+        Lit::Int(i) => {
+            let digits = i.base10_digits();
+            Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::LIT_INT)
+                .concat_str(#digits)
+            })
+        }
+        Lit::Float(f) => {
+            let digits = f.base10_digits();
+            Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::LIT_FLOAT)
+                .concat_str(#digits)
+            })
+        }
+        Lit::Bool(b) => Ok(quote! {
+            .concat_value(::uniffi::metadata::codes::LIT_BOOL)
+            .concat_bool(#b)
+        }),
+
+        _ => Err(syn::Error::new_spanned(
+            default,
+            "this type of literal is not currently supported as a default",
+        )),
+    }
 }
