@@ -148,4 +148,4 @@ impl Object {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
+uniffi::include_scaffolding!("proc-macro");

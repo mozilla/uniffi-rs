@@ -2,7 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::RunScriptOptions;
+use crate::{bindings::RunScriptOptions, library_mode::generate_bindings};
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env;
@@ -33,8 +33,8 @@ pub fn run_script(
     let script_path = Utf8Path::new(".").join(script_file);
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
-    test_helper.copy_cdylibs_to_out_dir(&out_dir)?;
-    generate_sources(&test_helper.cdylib_path()?, &out_dir, &test_helper)?;
+    let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
+    generate_bindings(&cdylib_path, None, &["kotlin".into()], &out_dir, false)?;
     let jar_file = build_jar(crate_name, &out_dir, options)?;
 
     let mut command = kotlinc_command(options);
@@ -60,24 +60,6 @@ pub fn run_script(
         .context("Failed to wait for `kotlinc` when running Kotlin script")?;
     if !status.success() {
         anyhow::bail!("running `kotlinc` failed")
-    }
-    Ok(())
-}
-
-fn generate_sources(
-    library_path: &Utf8Path,
-    out_dir: &Utf8Path,
-    test_helper: &UniFFITestHelper,
-) -> Result<()> {
-    for source in test_helper.get_compile_sources()? {
-        crate::generate_bindings(
-            &source.udl_path,
-            source.config_path.as_deref(),
-            vec!["kotlin"],
-            Some(out_dir),
-            Some(library_path),
-            false,
-        )?;
     }
     Ok(())
 }

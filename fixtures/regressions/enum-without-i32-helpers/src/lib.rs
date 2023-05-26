@@ -15,4 +15,4 @@ pub fn which(arg: bool) -> Which {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/test.uniffi.rs"));
+uniffi::include_scaffolding!("test");

@@ -68,4 +68,4 @@ pub struct TestResult {
     pub delay_ms: u32,
 }
 
-include!(concat!(env!("OUT_DIR"), "/foreign_executor.uniffi.rs"));
+uniffi::include_scaffolding!("foreign_executor");

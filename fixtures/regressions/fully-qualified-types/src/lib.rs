@@ -35,4 +35,4 @@ pub fn test() -> t::Option<t::HashMap<String, t::Vec<Values>>> {
     None
 }
 
-include!(concat!(env!("OUT_DIR"), "/test.uniffi.rs"));
+uniffi::include_scaffolding!("test");

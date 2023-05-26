@@ -70,4 +70,4 @@ fn set_seconds_before_unix_epoch(seconds: u64) -> Result<SystemTime> {
 
 type Result<T, E = ChronologicalError> = std::result::Result<T, E>;
 
-include!(concat!(env!("OUT_DIR"), "/chronological.uniffi.rs"));
+uniffi::include_scaffolding!("chronological");

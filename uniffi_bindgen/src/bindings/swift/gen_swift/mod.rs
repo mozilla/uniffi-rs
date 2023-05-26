@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use super::Bindings;
 use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
-use crate::MergeWith;
+use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -107,34 +107,22 @@ impl Config {
     }
 }
 
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            module_name: Some(ci.namespace().into()),
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            ..Default::default()
-        }
-    }
-}
+impl BindingsConfig for Config {
+    const TOML_KEY: &'static str = "swift";
 
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            module_name: self.module_name.merge_with(&other.module_name),
-            ffi_module_name: self.ffi_module_name.merge_with(&other.ffi_module_name),
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            ffi_module_filename: self
-                .ffi_module_filename
-                .merge_with(&other.ffi_module_filename),
-            generate_module_map: self
-                .generate_module_map
-                .merge_with(&other.generate_module_map),
-            omit_argument_labels: self
-                .omit_argument_labels
-                .merge_with(&other.omit_argument_labels),
-            custom_types: self.custom_types.merge_with(&other.custom_types),
-        }
+    fn update_from_ci(&mut self, ci: &ComponentInterface) {
+        self.module_name
+            .get_or_insert_with(|| ci.namespace().into());
+        self.cdylib_name
+            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
     }
+
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
+        self.cdylib_name
+            .get_or_insert_with(|| cdylib_name.to_string());
+    }
+
+    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 /// Generate UniFFI component bindings for Swift, as strings in memory.

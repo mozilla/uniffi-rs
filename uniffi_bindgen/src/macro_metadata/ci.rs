@@ -3,9 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::interface::{ComponentInterface, Enum, Error, Record, Type};
-use anyhow::{anyhow, bail, Context};
-use std::collections::HashMap;
-use uniffi_meta::Metadata;
+use anyhow::{bail, Context};
+use uniffi_meta::{group_metadata, Metadata, MetadataGroup};
 
 /// Add Metadata items to the ComponentInterface
 ///
@@ -19,49 +18,33 @@ pub fn add_to_ci(
     iface: &mut ComponentInterface,
     metadata_items: Vec<Metadata>,
 ) -> anyhow::Result<()> {
-    // Map crate names to namespaces
-    let namespace_map = metadata_items
-        .iter()
-        .filter_map(|i| match i {
-            Metadata::Namespace(meta) => Some((meta.crate_name.clone(), meta.name.clone())),
-            _ => None,
-        })
-        .collect::<HashMap<_, _>>();
-
-    for item in metadata_items {
-        let (item_desc, module_path) = match &item {
-            Metadata::Namespace(_) => continue,
-            Metadata::Func(meta) => (format!("function `{}`", meta.name), &meta.module_path),
-            Metadata::Constructor(meta) => (
-                format!("constructor `{}.{}`", meta.self_name, meta.name),
-                &meta.module_path,
-            ),
-            Metadata::Method(meta) => (
-                format!("method `{}.{}`", meta.self_name, meta.name),
-                &meta.module_path,
-            ),
-            Metadata::Record(meta) => (format!("record `{}`", meta.name), &meta.module_path),
-            Metadata::Enum(meta) => (format!("enum `{}`", meta.name), &meta.module_path),
-            Metadata::Object(meta) => (format!("object `{}`", meta.name), &meta.module_path),
-            Metadata::Error(meta) => (format!("error `{}`", meta.name), &meta.module_path),
-        };
-
-        let iface_ns = iface.namespace();
-        let crate_name = module_path.split("::").next().unwrap();
-        let item_ns = match namespace_map.get(crate_name) {
-            Some(ns) => ns,
-            None => bail!("Unknown namespace for {item_desc} ({crate_name})"),
-        };
-        if item_ns != iface_ns {
-            return Err(anyhow!("Found {item_desc} from crate `{crate_name}`.")
-                .context(format!(
-                    "Main crate is expected to be named `{iface_ns}` based on the UDL namespace."
-                ))
-                .context("Mixing symbols from multiple crates is not supported yet."));
+    for group in group_metadata(metadata_items)? {
+        if group.items.is_empty() {
+            continue;
         }
+        if group.namespace.name != iface.namespace() {
+            let crate_name = group.namespace.crate_name;
+            bail!("Found metadata items from crate `{crate_name}`.  Use the `--crate` to generate bindings for multiple crates")
+        }
+        add_group_to_ci(iface, group)?;
+    }
 
+    Ok(())
+}
+
+/// Add items from a MetadataGroup to a component interface
+pub fn add_group_to_ci(iface: &mut ComponentInterface, group: MetadataGroup) -> anyhow::Result<()> {
+    if group.namespace.name != iface.namespace() {
+        bail!(
+            "Namespace mismatch: {} - {}",
+            group.namespace.name,
+            iface.namespace()
+        );
+    }
+    for item in group.items {
         match item {
             Metadata::Namespace(_) => unreachable!(),
+            Metadata::UdlFile(_) => (),
             Metadata::Func(meta) => {
                 iface.add_function_definition(meta.into())?;
             }

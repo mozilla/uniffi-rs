@@ -9,7 +9,7 @@ use camino::Utf8Path;
 mod ci;
 mod extract;
 
-pub use ci::add_to_ci;
+pub use ci::{add_group_to_ci, add_to_ci};
 pub use extract::extract_from_library;
 
 pub fn add_to_ci_from_library(

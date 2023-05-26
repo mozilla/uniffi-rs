@@ -26,4 +26,4 @@ impl Object {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/simple-iface.uniffi.rs"));
+uniffi::include_scaffolding!("simple-iface");

@@ -71,4 +71,4 @@ pub enum r#for {
     r#yield { r#async: u8 },
 }
 
-include!(concat!(env!("OUT_DIR"), "/keywords.uniffi.rs"));
+uniffi::include_scaffolding!("keywords");

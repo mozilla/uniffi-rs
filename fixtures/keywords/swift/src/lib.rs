@@ -43,4 +43,4 @@ pub enum func {
     class { object: u8 },
 }
 
-include!(concat!(env!("OUT_DIR"), "/keywords.uniffi.rs"));
+uniffi::include_scaffolding!("keywords");

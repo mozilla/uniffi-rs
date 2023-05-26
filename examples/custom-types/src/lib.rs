@@ -108,4 +108,4 @@ pub fn get_custom_types_demo(v: Option<CustomTypesDemo>) -> CustomTypesDemo {
     })
 }
 
-include!(concat!(env!("OUT_DIR"), "/custom-types.uniffi.rs"));
+uniffi::include_scaffolding!("custom-types");

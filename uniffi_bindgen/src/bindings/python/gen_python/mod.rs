@@ -13,7 +13,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
-use crate::MergeWith;
+use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -97,22 +97,20 @@ impl Config {
     }
 }
 
-impl From<&ComponentInterface> for Config {
-    fn from(ci: &ComponentInterface) -> Self {
-        Config {
-            cdylib_name: Some(format!("uniffi_{}", ci.namespace())),
-            custom_types: HashMap::new(),
-        }
-    }
-}
+impl BindingsConfig for Config {
+    const TOML_KEY: &'static str = "python";
 
-impl MergeWith for Config {
-    fn merge_with(&self, other: &Self) -> Self {
-        Config {
-            cdylib_name: self.cdylib_name.merge_with(&other.cdylib_name),
-            custom_types: self.custom_types.merge_with(&other.custom_types),
-        }
+    fn update_from_ci(&mut self, ci: &ComponentInterface) {
+        self.cdylib_name
+            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
     }
+
+    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
+        self.cdylib_name
+            .get_or_insert_with(|| cdylib_name.to_string());
+    }
+
+    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.

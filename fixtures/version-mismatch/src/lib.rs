@@ -18,4 +18,4 @@ fn a_udl_function() -> u32 {
     1
 }
 
-include!(concat!(env!("OUT_DIR"), "/api_v1.uniffi.rs"));
+uniffi::include_scaffolding!("api_v1");
