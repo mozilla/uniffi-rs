@@ -169,10 +169,10 @@ that you have an existing crate named <code>demo_crate</code> with the following
   boolean bool_val;
 };
 </code></pre>
-<p>And further, assume that you have another crate called <code>consuming-crate</code> which would like to use
-this dictionary. Inside <code>consuming-crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
+<p>And further, assume that you have another crate called <code>consuming_crate</code> which would like to use
+this dictionary. Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
 <code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
-<pre><code class="language-idl">[External=&quot;demo-crate&quot;]
+<pre><code class="language-idl">[External=&quot;demo_crate&quot;]
 typedef extern DemoDict;
 
 // Now define our own dictionary which references the imported type.
@@ -184,8 +184,8 @@ dictionary ConsumingDict {
 </code></pre>
 <p>(Note the special type <code>extern</code> used on the <code>typedef</code>. It is not currently enforced that the
 literal <code>extern</code> is used, but we hope to enforce this later, so please use it!)</p>
-<p>Inside <code>consuming-crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
-<code>consuming-crate</code>'s <code>lib.rs</code> might look like:</p>
+<p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
+<code>consuming_crate</code>'s <code>lib.rs</code> might look like:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -196,24 +196,24 @@ pub struct ConsumingDict {
     another_bool: bool,
 }
 
-include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/consuming_crate.uniffi.rs&quot;));
+uniffi::include_scaffolding!(&quot;consuming_crate&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
 <p>The <code>External</code> attribute can be specified on dictionaries, enums and errors.</p>
 <h2><a class="header" href="#external-interface-types" id="external-interface-types">External interface types</a></h2>
 <p>If the external type is an <a href="./interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
-<pre><code class="language-idl">[ExternalInterface=&quot;demo-crate&quot;]
+<pre><code class="language-idl">[ExternalInterface=&quot;demo_crate&quot;]
 typedef extern DemoInterface;
 </code></pre>
 <h2><a class="header" href="#foreign-bindings" id="foreign-bindings">Foreign bindings</a></h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>
 <h3><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h3>
-<p>For Kotlin, the generated code needs to import the external types from the
-Kotlin module that corresponds to the Rust crate.  By default, UniFFI assumes
-that the Kotlin module name matches the Rust crate name, but this can be
-configured in <code>uniffi.toml</code> with an entry like this:</p>
+<p>For Kotlin, &quot;library mode&quot; generation with <code>generate --library [path-to-cdylib]</code> is recommended when using external types.
+If you use <code>generate [udl-path]</code> then the generated code needs to know how to import
+the external types from the Kotlin module that corresponds to the Rust crate.
+By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in <code>uniffi.toml</code> with an entry like this:</p>
 <pre><code>[bindings.kotlin.external_packages]
 # Map the crate names from [External={name}] into Kotlin package names
 rust-crate-name = &quot;kotlin.package.name&quot;

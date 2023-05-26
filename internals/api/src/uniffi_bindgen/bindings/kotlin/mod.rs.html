@@ -39,16 +39,14 @@
 <span id="39">39</span>
 <span id="40">40</span>
 <span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
-<span class="kw">use </span>fs_err::{<span class="self">self </span><span class="kw">as </span>fs, File};
-<span class="kw">use </span>std::{io::Write, process::Command};
+<span class="kw">use </span>fs_err <span class="kw">as </span>fs;
+<span class="kw">use </span>std::process::Command;
 
 <span class="kw">pub mod </span>gen_kotlin;
 <span class="kw">pub use </span>gen_kotlin::{generate_bindings, Config};
@@ -66,9 +64,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>kt_file = full_bindings_path(config, out_dir);
     fs::create_dir_all(<span class="kw-2">&amp;</span>kt_file)<span class="question-mark">?</span>;
     kt_file.push(<span class="macro">format!</span>(<span class="string">&quot;{}.kt&quot;</span>, ci.namespace()));
-    <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>kt_file)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, generate_bindings(config, ci)<span class="question-mark">?</span>)
-        .context(<span class="string">&quot;Failed to write generated bindings&quot;</span>)<span class="question-mark">?</span>;
+    fs::write(<span class="kw-2">&amp;</span>kt_file, generate_bindings(config, ci)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
     <span class="kw">if </span>try_format_code {
         <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = Command::new(<span class="string">&quot;ktlint&quot;</span>).arg(<span class="string">&quot;-F&quot;</span>).arg(<span class="kw-2">&amp;</span>kt_file).output() {
             <span class="macro">println!</span>(

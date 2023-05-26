@@ -222,6 +222,23 @@
 <span id="222">222</span>
 <span id="223">223</span>
 <span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -394,7 +411,24 @@
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
     } <span class="kw">else </span>{
+        <span class="kw">let </span>udl_name = name.value();
+        <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
+            <span class="prelude-val">Ok</span>(v) =&gt; <span class="macro">quote! </span>{ #v },
+            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error()
+        };
+        <span class="kw">let </span>metadata = util::create_metadata_items(
+            <span class="string">&quot;UDL&quot;</span>,
+            <span class="kw-2">&amp;</span>udl_name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>).to_ascii_uppercase(),
+            <span class="macro">quote! </span>{
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::UDL_FILE)
+                        .concat_str(#mod_path)
+                        .concat_str(#udl_name)
+            },
+            <span class="prelude-val">None</span>,
+        );
         <span class="macro">quote! </span>{
+            #metadata
+
             <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #name, <span class="string">&quot;.uniffi.rs&quot;</span>));
         }
     }.into()

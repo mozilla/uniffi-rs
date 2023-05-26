@@ -58,7 +58,7 @@
     // Calling the command line helps making sure that the generated swift/Kotlin/whatever
     // bindings were generated with the same version of uniffi as the Rust scaffolding code.
     </span><span class="kw">let </span>out_dir = env::var(<span class="string">&quot;OUT_DIR&quot;</span>).context(<span class="string">&quot;$OUT_DIR missing?!&quot;</span>)<span class="question-mark">?</span>;
-    uniffi_bindgen::generate_component_scaffolding(udl_file, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(out_dir.as_ref()), <span class="bool-val">false</span>)
+    uniffi_bindgen::generate_component_scaffolding(udl_file, <span class="prelude-val">Some</span>(out_dir.as_ref()), <span class="bool-val">false</span>)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="uniffi_build" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

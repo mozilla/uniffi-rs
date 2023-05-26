@@ -95,7 +95,6 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
-<span id="98">98</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -127,11 +126,11 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-</span><span class="kw">use </span>std::{io::Write, process::Command};
+</span><span class="kw">use </span>std::process::Command;
 
-<span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>camino::Utf8Path;
-<span class="kw">use </span>fs_err::File;
+<span class="kw">use </span>fs_err <span class="kw">as </span>fs;
 
 <span class="kw">pub mod </span>gen_swift;
 <span class="kw">pub use </span>gen_swift::{generate_bindings, Config};
@@ -169,15 +168,14 @@
     } = generate_bindings(config, ci)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>source_file = out_dir.join(<span class="macro">format!</span>(<span class="string">&quot;{}.swift&quot;</span>, config.module_name()));
-    <span class="kw">let </span><span class="kw-2">mut </span>l = File::create(<span class="kw-2">&amp;</span>source_file)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(l, <span class="string">&quot;{library}&quot;</span>).context(<span class="string">&quot;Failed to write generated library code&quot;</span>)<span class="question-mark">?</span>;
+    fs::write(<span class="kw-2">&amp;</span>source_file, library)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>h = File::create(out_dir.join(config.header_filename()))<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(h, <span class="string">&quot;{header}&quot;</span>).context(<span class="string">&quot;Failed to write generated header file&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>header_file = out_dir.join(config.header_filename());
+    fs::write(header_file, header)<span class="question-mark">?</span>;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(modulemap) = modulemap {
-        <span class="kw">let </span><span class="kw-2">mut </span>m = File::create(out_dir.join(config.modulemap_filename()))<span class="question-mark">?</span>;
-        <span class="macro">write!</span>(m, <span class="string">&quot;{modulemap}&quot;</span>).context(<span class="string">&quot;Failed to write generated modulemap&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>modulemap_file = out_dir.join(config.modulemap_filename());
+        fs::write(modulemap_file, modulemap)<span class="question-mark">?</span>;
     }
 
     <span class="kw">if </span>try_format_code {

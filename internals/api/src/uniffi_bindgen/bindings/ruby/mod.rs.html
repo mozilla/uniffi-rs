@@ -46,17 +46,15 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>std::{io::Write, process::Command};
+</span><span class="kw">use </span>std::process::Command;
 
 <span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::Utf8Path;
-<span class="kw">use </span>fs_err::File;
+<span class="kw">use </span>fs_err <span class="kw">as </span>fs;
 
 <span class="kw">pub mod </span>gen_ruby;
 <span class="kw">mod </span>test;
@@ -74,9 +72,7 @@
     try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>rb_file = out_dir.join(<span class="macro">format!</span>(<span class="string">&quot;{}.rb&quot;</span>, ci.namespace()));
-    <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>rb_file)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, generate_ruby_bindings(config, ci)<span class="question-mark">?</span>)
-        .context(<span class="string">&quot;Failed to write generated Ruby bindings&quot;</span>)<span class="question-mark">?</span>;
+    fs::write(<span class="kw-2">&amp;</span>rb_file, generate_ruby_bindings(config, ci)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if </span>try_format_code {
         <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = Command::new(<span class="string">&quot;rubocop&quot;</span>).arg(<span class="string">&quot;-A&quot;</span>).arg(<span class="kw-2">&amp;</span>rb_file).output() {

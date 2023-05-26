@@ -163,7 +163,7 @@
 <p>The generated Swift module can be configured using a <code>uniffi.toml</code> configuration file.</p>
 <h2><a class="header" href="#available-options" id="available-options">Available options</a></h2>
 <table><thead><tr><th>Configuration name</th><th>Default</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation.</td></tr>
+<tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td></tr>
 <tr><td><code>module_name</code></td><td><code>{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the Swift module containing the high-level foreign-language bindings.</td></tr>
 <tr><td><code>ffi_module_name</code></td><td><code>{module_name}FFI</code></td><td>The name of the lower-level C module containing the FFI declarations.</td></tr>
 <tr><td><code>ffi_module_filename</code></td><td><code>{ffi_module_name}</code></td><td>The filename stem for the lower-level C module containing the FFI declarations.</td></tr>

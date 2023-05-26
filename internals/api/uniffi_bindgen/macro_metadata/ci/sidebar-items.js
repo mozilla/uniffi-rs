@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["add_to_ci","Add Metadata items to the ComponentInterface"]]};
+window.SIDEBAR_ITEMS = {"fn":[["add_group_to_ci","Add items from a MetadataGroup to a component interface"],["add_to_ci","Add Metadata items to the ComponentInterface"]]};

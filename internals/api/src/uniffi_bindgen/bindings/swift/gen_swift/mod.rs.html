@@ -506,18 +506,6 @@
 <span id="506">506</span>
 <span id="507">507</span>
 <span id="508">508</span>
-<span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -534,7 +522,7 @@
 <span class="kw">use </span><span class="kw">super</span>::Bindings;
 <span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::MergeWith;
+<span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>compounds;
@@ -627,34 +615,22 @@
     }
 }
 
-<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ComponentInterface&gt; <span class="kw">for </span>Config {
-    <span class="kw">fn </span>from(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="self">Self </span>{
-        Config {
-            module_name: <span class="prelude-val">Some</span>(ci.namespace().into()),
-            cdylib_name: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace())),
-            ..Default::default()
-        }
-    }
-}
+<span class="kw">impl </span>BindingsConfig <span class="kw">for </span>Config {
+    <span class="kw">const </span>TOML_KEY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;swift&quot;</span>;
 
-<span class="kw">impl </span>MergeWith <span class="kw">for </span>Config {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
-        Config {
-            module_name: <span class="self">self</span>.module_name.merge_with(<span class="kw-2">&amp;</span>other.module_name),
-            ffi_module_name: <span class="self">self</span>.ffi_module_name.merge_with(<span class="kw-2">&amp;</span>other.ffi_module_name),
-            cdylib_name: <span class="self">self</span>.cdylib_name.merge_with(<span class="kw-2">&amp;</span>other.cdylib_name),
-            ffi_module_filename: <span class="self">self
-                </span>.ffi_module_filename
-                .merge_with(<span class="kw-2">&amp;</span>other.ffi_module_filename),
-            generate_module_map: <span class="self">self
-                </span>.generate_module_map
-                .merge_with(<span class="kw-2">&amp;</span>other.generate_module_map),
-            omit_argument_labels: <span class="self">self
-                </span>.omit_argument_labels
-                .merge_with(<span class="kw-2">&amp;</span>other.omit_argument_labels),
-            custom_types: <span class="self">self</span>.custom_types.merge_with(<span class="kw-2">&amp;</span>other.custom_types),
-        }
+    <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
+        <span class="self">self</span>.module_name
+            .get_or_insert_with(|| ci.namespace().into());
+        <span class="self">self</span>.cdylib_name
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace()));
     }
+
+    <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
+        <span class="self">self</span>.cdylib_name
+            .get_or_insert_with(|| cdylib_name.to_string());
+    }
+
+    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {}
 }
 
 <span class="doccomment">/// Generate UniFFI component bindings for Swift, as strings in memory.

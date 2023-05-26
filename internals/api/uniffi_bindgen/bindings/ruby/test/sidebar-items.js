@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["generate_sources",""],["run_test","Run Ruby tests for a UniFFI test fixture"],["test_script_command","Create a `Command` instance that runs a test script"]]};
+window.SIDEBAR_ITEMS = {"fn":[["run_test","Run Ruby tests for a UniFFI test fixture"],["test_script_command","Create a `Command` instance that runs a test script"]]};

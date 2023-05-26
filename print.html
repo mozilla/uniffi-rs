@@ -342,17 +342,36 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 <li>Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
 <p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
-<h2><a class="header" href="#running-uniffi-bindgen" id="running-uniffi-bindgen">Running uniffi-bindgen</a></h2>
-<h3><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h3>
-<p>Run</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
+<h2><a class="header" href="#running-uniffi-bindgen-using-a-library-file" id="running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</a></h2>
+<p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
+This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
+The plan is to make library mode the default in a future UniFFI version.</p>
+<p>Taking <code>example/arithmetic</code> as an example, you can generate the bindings with:</p>
+<pre><code>cargo build --release
+cargo run --bin uniffi-bindgen generate --library target/release/libarithmetical.so --language kotlin --out-dir out
 </code></pre>
-<p>then have a look at <code>src/uniffi/math/math.kt</code></p>
+<p>Then check out the <code>out</code> directory.</p>
+<p>When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.</p>
+<p>Library mode comes with some extra requirements:</p>
+<ul>
+<li>It must be run from within the cargo workspace of your project</li>
+<li>Each crate must use exactly 1 UDL file when compiling the Rust library.  However, crates can have
+multiple UDL files as long as they ensure only one is used for any particular build,
+e.g. by using feature flags.</li>
+<li>Rust sources must use <code>uniffi::include_scaffolding!</code> to include the scaffolding code.</li>
+</ul>
+<h2><a class="header" href="#running-uniffi-bindgen-with-a-single-udl-file" id="running-uniffi-bindgen-with-a-single-udl-file">Running uniffi-bindgen with a single UDL file</a></h2>
+<p>Use the <code>generate</code> command to generate bindings by specifying a UDL file.</p>
+<h3><a class="header" href="#kotlin" id="kotlin">Kotlin</a></h3>
+<p>From the <code>example/arithmetic</code> directory, run:</p>
+<pre><code>cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language kotlin
+</code></pre>
+<p>then have a look at <code>src/uniffi/arithmetic/arithmetic.kt</code></p>
 <h3><a class="header" href="#swift" id="swift">Swift</a></h3>
 <p>Run</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
+<pre><code>cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language swift
 </code></pre>
-<p>then check out <code>src/math.swift</code></p>
+<p>then check out <code>src/arithmetic.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>
 <p>This is it, you have an MVP integration of UniFFI in your project.</p>
 <h1><a class="header" href="#the-udl-file-1" id="the-udl-file-1">The UDL file</a></h1>
@@ -1132,10 +1151,10 @@ that you have an existing crate named <code>demo_crate</code> with the following
   boolean bool_val;
 };
 </code></pre>
-<p>And further, assume that you have another crate called <code>consuming-crate</code> which would like to use
-this dictionary. Inside <code>consuming-crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
+<p>And further, assume that you have another crate called <code>consuming_crate</code> which would like to use
+this dictionary. Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
 <code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
-<pre><code class="language-idl">[External=&quot;demo-crate&quot;]
+<pre><code class="language-idl">[External=&quot;demo_crate&quot;]
 typedef extern DemoDict;
 
 // Now define our own dictionary which references the imported type.
@@ -1147,8 +1166,8 @@ dictionary ConsumingDict {
 </code></pre>
 <p>(Note the special type <code>extern</code> used on the <code>typedef</code>. It is not currently enforced that the
 literal <code>extern</code> is used, but we hope to enforce this later, so please use it!)</p>
-<p>Inside <code>consuming-crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
-<code>consuming-crate</code>'s <code>lib.rs</code> might look like:</p>
+<p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
+<code>consuming_crate</code>'s <code>lib.rs</code> might look like:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1159,24 +1178,24 @@ pub struct ConsumingDict {
     another_bool: bool,
 }
 
-include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/consuming_crate.uniffi.rs&quot;));
+uniffi::include_scaffolding!(&quot;consuming_crate&quot;);
 <span class="boring">}
 </span></code></pre></pre>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
 <p>The <code>External</code> attribute can be specified on dictionaries, enums and errors.</p>
 <h2><a class="header" href="#external-interface-types" id="external-interface-types">External interface types</a></h2>
 <p>If the external type is an <a href="udl/./interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
-<pre><code class="language-idl">[ExternalInterface=&quot;demo-crate&quot;]
+<pre><code class="language-idl">[ExternalInterface=&quot;demo_crate&quot;]
 typedef extern DemoInterface;
 </code></pre>
 <h2><a class="header" href="#foreign-bindings" id="foreign-bindings">Foreign bindings</a></h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>
 <h3><a class="header" href="#kotlin-1" id="kotlin-1">Kotlin</a></h3>
-<p>For Kotlin, the generated code needs to import the external types from the
-Kotlin module that corresponds to the Rust crate.  By default, UniFFI assumes
-that the Kotlin module name matches the Rust crate name, but this can be
-configured in <code>uniffi.toml</code> with an entry like this:</p>
+<p>For Kotlin, &quot;library mode&quot; generation with <code>generate --library [path-to-cdylib]</code> is recommended when using external types.
+If you use <code>generate [udl-path]</code> then the generated code needs to know how to import
+the external types from the Kotlin module that corresponds to the Rust crate.
+By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in <code>uniffi.toml</code> with an entry like this:</p>
 <pre><code>[bindings.kotlin.external_packages]
 # Map the crate names from [External={name}] into Kotlin package names
 rust-crate-name = &quot;kotlin.package.name&quot;
@@ -1688,7 +1707,7 @@ individual modules.</p>
 <p>The generated Swift module can be configured using a <code>uniffi.toml</code> configuration file.</p>
 <h2><a class="header" href="#available-options" id="available-options">Available options</a></h2>
 <table><thead><tr><th>Configuration name</th><th>Default</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation.</td></tr>
+<tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td></tr>
 <tr><td><code>module_name</code></td><td><code>{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the Swift module containing the high-level foreign-language bindings.</td></tr>
 <tr><td><code>ffi_module_name</code></td><td><code>{module_name}FFI</code></td><td>The name of the lower-level C module containing the FFI declarations.</td></tr>
 <tr><td><code>ffi_module_filename</code></td><td><code>{ffi_module_name}</code></td><td>The filename stem for the lower-level C module containing the FFI declarations.</td></tr>

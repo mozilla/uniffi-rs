@@ -130,7 +130,7 @@
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
-    Attribute, LitStr, PathSegment, Token,
+    Attribute, LitStr, PathArguments, PathSegment, Token,
 };
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>kw {
@@ -244,7 +244,7 @@
 }
 
 <span class="kw">fn </span>ensure_no_path_args(seg: <span class="kw-2">&amp;</span>PathSegment) -&gt; syn::Result&lt;()&gt; {
-    <span class="kw">if </span>seg.arguments.is_none() {
+    <span class="kw">if </span><span class="macro">matches!</span>(seg.arguments, PathArguments::None) {
         <span class="prelude-val">Ok</span>(())
     } <span class="kw">else </span>{
         <span class="prelude-val">Err</span>(syn::Error::new_spanned(<span class="kw-2">&amp;</span>seg.arguments, <span class="string">&quot;unexpected syntax&quot;</span>))

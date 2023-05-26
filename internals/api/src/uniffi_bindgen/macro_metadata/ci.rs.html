@@ -93,31 +93,13 @@
 <span id="93">93</span>
 <span id="94">94</span>
 <span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::interface::{ComponentInterface, Enum, Error, Record, Type};
-<span class="kw">use </span>anyhow::{anyhow, bail, Context};
-<span class="kw">use </span>std::collections::HashMap;
-<span class="kw">use </span>uniffi_meta::Metadata;
+<span class="kw">use </span>anyhow::{bail, Context};
+<span class="kw">use </span>uniffi_meta::{group_metadata, Metadata, MetadataGroup};
 
 <span class="doccomment">/// Add Metadata items to the ComponentInterface
 ///
@@ -131,49 +113,33 @@
     iface: <span class="kw-2">&amp;mut </span>ComponentInterface,
     metadata_items: Vec&lt;Metadata&gt;,
 ) -&gt; anyhow::Result&lt;()&gt; {
-    <span class="comment">// Map crate names to namespaces
-    </span><span class="kw">let </span>namespace_map = metadata_items
-        .iter()
-        .filter_map(|i| <span class="kw">match </span>i {
-            Metadata::Namespace(meta) =&gt; <span class="prelude-val">Some</span>((meta.crate_name.clone(), meta.name.clone())),
-            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-        })
-        .collect::&lt;HashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;();
-
-    <span class="kw">for </span>item <span class="kw">in </span>metadata_items {
-        <span class="kw">let </span>(item_desc, module_path) = <span class="kw">match </span><span class="kw-2">&amp;</span>item {
-            Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="kw">continue</span>,
-            Metadata::Func(meta) =&gt; (<span class="macro">format!</span>(<span class="string">&quot;function `{}`&quot;</span>, meta.name), <span class="kw-2">&amp;</span>meta.module_path),
-            Metadata::Constructor(meta) =&gt; (
-                <span class="macro">format!</span>(<span class="string">&quot;constructor `{}.{}`&quot;</span>, meta.self_name, meta.name),
-                <span class="kw-2">&amp;</span>meta.module_path,
-            ),
-            Metadata::Method(meta) =&gt; (
-                <span class="macro">format!</span>(<span class="string">&quot;method `{}.{}`&quot;</span>, meta.self_name, meta.name),
-                <span class="kw-2">&amp;</span>meta.module_path,
-            ),
-            Metadata::Record(meta) =&gt; (<span class="macro">format!</span>(<span class="string">&quot;record `{}`&quot;</span>, meta.name), <span class="kw-2">&amp;</span>meta.module_path),
-            Metadata::Enum(meta) =&gt; (<span class="macro">format!</span>(<span class="string">&quot;enum `{}`&quot;</span>, meta.name), <span class="kw-2">&amp;</span>meta.module_path),
-            Metadata::Object(meta) =&gt; (<span class="macro">format!</span>(<span class="string">&quot;object `{}`&quot;</span>, meta.name), <span class="kw-2">&amp;</span>meta.module_path),
-            Metadata::Error(meta) =&gt; (<span class="macro">format!</span>(<span class="string">&quot;error `{}`&quot;</span>, meta.name), <span class="kw-2">&amp;</span>meta.module_path),
-        };
-
-        <span class="kw">let </span>iface_ns = iface.namespace();
-        <span class="kw">let </span>crate_name = module_path.split(<span class="string">&quot;::&quot;</span>).next().unwrap();
-        <span class="kw">let </span>item_ns = <span class="kw">match </span>namespace_map.get(crate_name) {
-            <span class="prelude-val">Some</span>(ns) =&gt; ns,
-            <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Unknown namespace for {item_desc} ({crate_name})&quot;</span>),
-        };
-        <span class="kw">if </span>item_ns != iface_ns {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">anyhow!</span>(<span class="string">&quot;Found {item_desc} from crate `{crate_name}`.&quot;</span>)
-                .context(<span class="macro">format!</span>(
-                    <span class="string">&quot;Main crate is expected to be named `{iface_ns}` based on the UDL namespace.&quot;
-                </span>))
-                .context(<span class="string">&quot;Mixing symbols from multiple crates is not supported yet.&quot;</span>));
+    <span class="kw">for </span>group <span class="kw">in </span>group_metadata(metadata_items)<span class="question-mark">? </span>{
+        <span class="kw">if </span>group.items.is_empty() {
+            <span class="kw">continue</span>;
         }
+        <span class="kw">if </span>group.namespace.name != iface.namespace() {
+            <span class="kw">let </span>crate_name = group.namespace.crate_name;
+            <span class="macro">bail!</span>(<span class="string">&quot;Found metadata items from crate `{crate_name}`.  Use the `--crate` to generate bindings for multiple crates&quot;</span>)
+        }
+        add_group_to_ci(iface, group)<span class="question-mark">?</span>;
+    }
 
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="doccomment">/// Add items from a MetadataGroup to a component interface
+</span><span class="kw">pub fn </span>add_group_to_ci(iface: <span class="kw-2">&amp;mut </span>ComponentInterface, group: MetadataGroup) -&gt; anyhow::Result&lt;()&gt; {
+    <span class="kw">if </span>group.namespace.name != iface.namespace() {
+        <span class="macro">bail!</span>(
+            <span class="string">&quot;Namespace mismatch: {} - {}&quot;</span>,
+            group.namespace.name,
+            iface.namespace()
+        );
+    }
+    <span class="kw">for </span>item <span class="kw">in </span>group.items {
         <span class="kw">match </span>item {
             Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(),
+            Metadata::UdlFile(<span class="kw">_</span>) =&gt; (),
             Metadata::Func(meta) =&gt; {
                 iface.add_function_definition(meta.into())<span class="question-mark">?</span>;
             }

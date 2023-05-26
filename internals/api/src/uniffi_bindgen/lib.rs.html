@@ -456,30 +456,6 @@
 <span id="456">456</span>
 <span id="457">457</span>
 <span id="458">458</span>
-<span id="459">459</span>
-<span id="460">460</span>
-<span id="461">461</span>
-<span id="462">462</span>
-<span id="463">463</span>
-<span id="464">464</span>
-<span id="465">465</span>
-<span id="466">466</span>
-<span id="467">467</span>
-<span id="468">468</span>
-<span id="469">469</span>
-<span id="470">470</span>
-<span id="471">471</span>
-<span id="472">472</span>
-<span id="473">473</span>
-<span id="474">474</span>
-<span id="475">475</span>
-<span id="476">476</span>
-<span id="477">477</span>
-<span id="478">478</span>
-<span id="479">479</span>
-<span id="480">480</span>
-<span id="481">481</span>
-<span id="482">482</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -554,7 +530,7 @@
 //! included into the code of your rust crate like this:
 //!
 //! ```text
-//! include!(concat!(env!(&quot;OUT_DIR&quot;), &quot;/example.uniffi.rs&quot;));
+//! include_scaffolding!(&quot;example&quot;);
 //! ```
 //!
 //! ### 4) Generate foreign language bindings for the library
@@ -579,7 +555,7 @@
 <span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>fs_err::{<span class="self">self </span><span class="kw">as </span>fs, File};
-<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>serde::{de::DeserializeOwned, Deserialize, Serialize};
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::io::ErrorKind;
 <span class="kw">use </span>std::{collections::HashMap, env, process::Command, str::FromStr};
@@ -587,76 +563,61 @@
 <span class="kw">pub mod </span>backend;
 <span class="kw">pub mod </span>bindings;
 <span class="kw">pub mod </span>interface;
+<span class="kw">pub mod </span>library_mode;
 <span class="kw">pub mod </span>macro_metadata;
 <span class="kw">pub mod </span>scaffolding;
 
 <span class="kw">pub use </span>interface::ComponentInterface;
 <span class="kw">use </span>scaffolding::RustScaffolding;
 
-<span class="doccomment">/// A trait representing a Binding Generator Configuration
+<span class="doccomment">/// Trait for bindings configuration.  Each bindings language defines one of these.
 ///
-/// External crates that implement binding generators need to implement this trait and set it as
-/// the `BindingGenerator.config` associated type.  `generate_external_bindings()` then uses it to
-/// generate the config that&#39;s passed to `BindingGenerator.write_bindings()`
-</span><span class="kw">pub trait </span>BindingGeneratorConfig: <span class="kw">for</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; {
-    <span class="doccomment">/// Get the entry for this config from the `bindings` table.
-    </span><span class="kw">fn </span>get_entry_from_bindings_table(bindings: <span class="kw-2">&amp;</span>toml::Value) -&gt; <span class="prelude-ty">Option</span>&lt;toml::Value&gt;;
+/// BindingsConfigs are initially loaded from `uniffi.toml` file.  Then the trait methods are used
+/// to fill in missing values.
+</span><span class="kw">pub trait </span>BindingsConfig: DeserializeOwned {
+    <span class="doccomment">/// key in the `bindings` table from `uniffi.toml` for this configuration
+    </span><span class="kw">const </span>TOML_KEY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str;
 
-    <span class="doccomment">/// Get default config values from the `ComponentInterface`
+    <span class="doccomment">/// Update missing values using the `ComponentInterface`
+    </span><span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface);
+
+    <span class="doccomment">/// Update missing values using the dylib file for the main crate, when in library mode.
     ///
-    /// These will replace missing entries in the bindings-specific config
-    </span><span class="kw">fn </span>get_config_defaults(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; Vec&lt;(String, toml::Value)&gt;;
+    /// cdylib_name will be the library filename without the leading `lib` and trailing extension
+    </span><span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str);
+
+    <span class="doccomment">/// Update missing values from config instances from dependent crates
+    ///
+    /// config_map maps crate names to config instances. This is mostly used to set up external
+    /// types.
+    </span><span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;);
 }
 
-<span class="kw">fn </span>load_bindings_config&lt;BC: BindingGeneratorConfig&gt;(
+<span class="kw">fn </span>load_bindings_config&lt;BC: BindingsConfig&gt;(
     ci: <span class="kw-2">&amp;</span>ComponentInterface,
     crate_root: <span class="kw-2">&amp;</span>Utf8Path,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;BC&gt; {
     <span class="comment">// Load the config from the TOML value, falling back to an empty map if it doesn&#39;t exist
-    </span><span class="kw">let </span><span class="kw-2">mut </span>config_map: toml::value::Table =
-        <span class="kw">match </span>load_bindings_config_toml::&lt;BC&gt;(crate_root, config_file_override)<span class="question-mark">? </span>{
-            <span class="prelude-val">Some</span>(value) =&gt; value
-                .try_into()
-                .context(<span class="string">&quot;Bindings config must be a TOML table&quot;</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None </span>=&gt; toml::map::Map::new(),
-        };
+    </span><span class="kw">let </span>toml_config = load_bindings_config_toml(crate_root, config_file_override)<span class="question-mark">?
+        </span>.and_then(|<span class="kw-2">mut </span>v| v.as_table_mut().and_then(|t| t.remove(BC::TOML_KEY)))
+        .unwrap_or_else(|| toml::Value::from(toml::value::Table::default()));
 
-    <span class="comment">// Update it with the defaults from the component interface
-    </span><span class="kw">for </span>(key, value) <span class="kw">in </span>BC::get_config_defaults(ci) {
-        config_map.entry(key).or_insert(value);
-    }
-
-    <span class="comment">// Leverage serde to convert toml::Value into the config type
-    </span>toml::Value::from(config_map)
-        .try_into()
-        .context(<span class="string">&quot;Generating bindings config from toml::Value&quot;</span>)
+    <span class="kw">let </span><span class="kw-2">mut </span>config: BC = toml_config.try_into()<span class="question-mark">?</span>;
+    config.update_from_ci(ci);
+    <span class="prelude-val">Ok</span>(config)
 }
 
 <span class="doccomment">/// Binding generator config with no members
-</span><span class="attribute">#[derive(Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq)]
-</span><span class="kw">pub struct </span>EmptyBindingGeneratorConfig;
+</span><span class="attribute">#[derive(Clone, Debug, Deserialize, Hash, PartialEq, PartialOrd, Ord, Eq)]
+</span><span class="kw">pub struct </span>EmptyBindingsConfig;
 
-<span class="kw">impl </span>BindingGeneratorConfig <span class="kw">for </span>EmptyBindingGeneratorConfig {
-    <span class="kw">fn </span>get_entry_from_bindings_table(_bindings: <span class="kw-2">&amp;</span>toml::Value) -&gt; <span class="prelude-ty">Option</span>&lt;toml::Value&gt; {
-        <span class="prelude-val">None
-    </span>}
+<span class="kw">impl </span>BindingsConfig <span class="kw">for </span>EmptyBindingsConfig {
+    <span class="kw">const </span>TOML_KEY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;&quot;</span>;
 
-    <span class="kw">fn </span>get_config_defaults(_ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; Vec&lt;(String, toml::Value)&gt; {
-        Vec::new()
-    }
-}
-
-<span class="comment">// EmptyBindingGeneratorConfig is a unit struct, so the `derive(Deserialize)` implementation
-// expects a null value rather than the empty map that we pass it.  So we need to implement
-// `Deserialize` ourselves.
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>EmptyBindingGeneratorConfig {
-    <span class="kw">fn </span>deserialize&lt;D&gt;(_deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
-    <span class="kw">where
-        </span>D: serde::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
-    {
-        <span class="prelude-val">Ok</span>(EmptyBindingGeneratorConfig)
-    }
+    <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _ci: <span class="kw-2">&amp;</span>ComponentInterface) {}
+    <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _cdylib_name: <span class="kw-2">&amp;</span>str) {}
+    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {}
 }
 
 <span class="comment">// Load the binding-specific config
@@ -666,7 +627,7 @@
 //
 // If there is an error parsing the file then Err will be returned. If the file is missing or the
 // entry for the bindings is missing, then Ok(None) will be returned.
-</span><span class="kw">fn </span>load_bindings_config_toml&lt;BC: BindingGeneratorConfig&gt;(
+</span><span class="kw">fn </span>load_bindings_config_toml(
     crate_root: <span class="kw-2">&amp;</span>Utf8Path,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;toml::Value&gt;&gt; {
@@ -681,12 +642,12 @@
 
     <span class="kw">let </span>contents = fs::read_to_string(<span class="kw-2">&amp;</span>config_path)
         .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read config file from {config_path}&quot;</span>))<span class="question-mark">?</span>;
-    <span class="kw">let </span>full_config = toml::Value::from_str(<span class="kw-2">&amp;</span>contents)
+    <span class="kw">let </span><span class="kw-2">mut </span>full_config = toml::Value::from_str(<span class="kw-2">&amp;</span>contents)
         .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to parse config file {config_path}&quot;</span>))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(full_config
-        .get(<span class="string">&quot;bindings&quot;</span>)
-        .and_then(BC::get_entry_from_bindings_table))
+        .as_table_mut()
+        .and_then(|t| t.remove(<span class="string">&quot;bindings&quot;</span>)))
 }
 
 <span class="doccomment">/// A trait representing a UniFFI Binding Generator
@@ -694,15 +655,14 @@
 /// External crates that implement binding generators, should implement this type
 /// and call the [`generate_external_bindings`] using a type that implements this trait.
 </span><span class="kw">pub trait </span>BindingGenerator: Sized {
-    <span class="doccomment">/// Associated type representing a the bindings-specifig configuration parsed from the
-    /// uniffi.toml
-    </span><span class="kw">type </span>Config: BindingGeneratorConfig;
+    <span class="doccomment">/// Handles configuring the bindings
+    </span><span class="kw">type </span>Config: BindingsConfig;
 
     <span class="doccomment">/// Writes the bindings to the output directory
     ///
     /// # Arguments
     /// - `ci`: A [`ComponentInterface`] representing the interface
-    /// - `config`: A instance of the BindingGeneratorConfig associated with this type
+    /// - `config`: An instance of the [`BindingsConfig`] associated with this type
     /// - `out_dir`: The path to where the binding generator should write the output bindings
     </span><span class="kw">fn </span>write_bindings(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -718,7 +678,7 @@
 /// Implements an entry point for external binding generators.
 /// The function does the following:
 /// - It parses the `udl` in a [`ComponentInterface`]
-/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingGeneratorConfig`]
+/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingsConfig`]
 /// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
 ///
 /// # Arguments
@@ -746,16 +706,10 @@
 // such as the `extern &quot;C&quot;` function definitions and record data types.
 </span><span class="kw">pub fn </span>generate_component_scaffolding(
     udl_file: <span class="kw-2">&amp;</span>Utf8Path,
-    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>component = parse_udl(udl_file)<span class="question-mark">?</span>;
-    <span class="kw">let </span>_config = get_config(
-        <span class="kw-2">&amp;</span>component,
-        guess_crate_root(udl_file)<span class="question-mark">?</span>,
-        config_file_override,
-    );
     <span class="kw">let </span>file_stem = udl_file.file_stem().context(<span class="string">&quot;not a file&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>filename = <span class="macro">format!</span>(<span class="string">&quot;{file_stem}.uniffi.rs&quot;</span>);
     <span class="kw">let </span>out_path = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>.join(filename);
@@ -783,7 +737,8 @@
     }
     <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file).context(<span class="string">&quot;Failed to guess crate root&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>config = get_config(<span class="kw-2">&amp;</span>component, crate_root, config_file_override)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>config = Config::load_initial(crate_root, config_file_override)<span class="question-mark">?</span>;
+    config.update_from_ci(<span class="kw-2">&amp;</span>component);
     <span class="kw">let </span>out_dir = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>;
     <span class="kw">for </span>language <span class="kw">in </span>target_languages {
         bindings::write_bindings(
@@ -825,29 +780,6 @@
     <span class="prelude-val">Ok</span>(path_guess)
 }
 
-<span class="kw">fn </span>get_config(
-    component: <span class="kw-2">&amp;</span>ComponentInterface,
-    crate_root: <span class="kw-2">&amp;</span>Utf8Path,
-    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Config&gt; {
-    <span class="kw">let </span>default_config: Config = component.into();
-
-    <span class="kw">let </span>config_file = <span class="kw">match </span>config_file_override {
-        <span class="prelude-val">Some</span>(cfg) =&gt; <span class="prelude-val">Some</span>(cfg.to_owned()),
-        <span class="prelude-val">None </span>=&gt; crate_root.join(<span class="string">&quot;uniffi.toml&quot;</span>).canonicalize_utf8().ok(),
-    };
-
-    <span class="kw">match </span>config_file {
-        <span class="prelude-val">Some</span>(path) =&gt; {
-            <span class="kw">let </span>contents = fs::read_to_string(<span class="kw-2">&amp;</span>path).context(<span class="string">&quot;Failed to read config file&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let </span>loaded_config: Config = toml::de::from_str(<span class="kw-2">&amp;</span>contents)
-                .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to generate config from file {path}&quot;</span>))<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(loaded_config.merge_with(<span class="kw-2">&amp;</span>default_config))
-        }
-        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(default_config),
-    }
-}
-
 <span class="kw">fn </span>get_out_dir(udl_file: <span class="kw-2">&amp;</span>Utf8Path, out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Utf8PathBuf&gt; {
     <span class="prelude-val">Ok</span>(<span class="kw">match </span>out_dir_override {
         <span class="prelude-val">Some</span>(s) =&gt; {
@@ -883,49 +815,69 @@
 }
 
 <span class="attribute">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-</span><span class="kw">struct </span>Config {
+</span><span class="kw">pub struct </span>Config {
     <span class="attribute">#[serde(default)]
     </span>bindings: bindings::Config,
 }
 
-<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ComponentInterface&gt; <span class="kw">for </span>Config {
-    <span class="kw">fn </span>from(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="self">Self </span>{
-        Config {
-            bindings: ci.into(),
-        }
+<span class="kw">impl </span>Config {
+    <span class="kw">fn </span>load_initial(
+        crate_root: <span class="kw-2">&amp;</span>Utf8Path,
+        config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>path = <span class="kw">match </span>config_file_override {
+            <span class="prelude-val">Some</span>(cfg) =&gt; <span class="prelude-val">Some</span>(cfg.to_owned()),
+            <span class="prelude-val">None </span>=&gt; crate_root.join(<span class="string">&quot;uniffi.toml&quot;</span>).canonicalize_utf8().ok(),
+        };
+        <span class="kw">let </span>toml_config = <span class="kw">match </span>path {
+            <span class="prelude-val">Some</span>(path) =&gt; {
+                <span class="kw">let </span>contents = fs::read_to_string(path).context(<span class="string">&quot;Failed to read config file&quot;</span>)<span class="question-mark">?</span>;
+                toml::de::from_str(<span class="kw-2">&amp;</span>contents)<span class="question-mark">?
+            </span>}
+            <span class="prelude-val">None </span>=&gt; toml::Value::from(toml::value::Table::default()),
+        };
+        <span class="prelude-val">Ok</span>(toml_config.try_into()<span class="question-mark">?</span>)
     }
-}
 
-<span class="kw">pub trait </span>MergeWith {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self</span>;
-}
-
-<span class="kw">impl </span>MergeWith <span class="kw">for </span>Config {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
-        Config {
-            bindings: <span class="self">self</span>.bindings.merge_with(<span class="kw-2">&amp;</span>other.bindings),
-        }
+    <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
+        <span class="self">self</span>.bindings.kotlin.update_from_ci(ci);
+        <span class="self">self</span>.bindings.swift.update_from_ci(ci);
+        <span class="self">self</span>.bindings.python.update_from_ci(ci);
+        <span class="self">self</span>.bindings.ruby.update_from_ci(ci);
     }
-}
 
-<span class="kw">impl</span>&lt;T: Clone&gt; MergeWith <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt; {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
-        <span class="kw">match </span>(<span class="self">self</span>, other) {
-            (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="kw">_</span>) =&gt; <span class="self">self</span>.clone(),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; other.clone(),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
-        }
+    <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
+        <span class="self">self</span>.bindings.kotlin.update_from_cdylib_name(cdylib_name);
+        <span class="self">self</span>.bindings.swift.update_from_cdylib_name(cdylib_name);
+        <span class="self">self</span>.bindings.python.update_from_cdylib_name(cdylib_name);
+        <span class="self">self</span>.bindings.ruby.update_from_cdylib_name(cdylib_name);
     }
-}
 
-<span class="kw">impl</span>&lt;V: Clone&gt; MergeWith <span class="kw">for </span>HashMap&lt;String, V&gt; {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>merged = HashMap::new();
-        <span class="comment">// Iterate through other first so our keys override theirs
-        </span><span class="kw">for </span>(key, value) <span class="kw">in </span>other.iter().chain(<span class="self">self</span>) {
-            merged.insert(key.clone(), value.clone());
-        }
-        merged
+    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {
+        <span class="self">self</span>.bindings.kotlin.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.kotlin))
+                .collect(),
+        );
+        <span class="self">self</span>.bindings.swift.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.swift))
+                .collect(),
+        );
+        <span class="self">self</span>.bindings.python.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.python))
+                .collect(),
+        );
+        <span class="self">self</span>.bindings.ruby.update_from_dependency_configs(
+            config_map
+                .iter()
+                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.ruby))
+                .collect(),
+        );
     }
 }
 

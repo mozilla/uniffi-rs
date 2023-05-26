@@ -450,6 +450,9 @@
 <span id="450">450</span>
 <span id="451">451</span>
 <span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -465,7 +468,7 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::MergeWith;
+<span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>compounds;
@@ -516,24 +519,27 @@
     }
 }
 
-<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ComponentInterface&gt; <span class="kw">for </span>Config {
-    <span class="kw">fn </span>from(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="self">Self </span>{
-        Config {
-            package_name: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi.{}&quot;</span>, ci.namespace())),
-            cdylib_name: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace())),
-            custom_types: HashMap::new(),
-            external_packages: HashMap::new(),
-        }
-    }
-}
+<span class="kw">impl </span>BindingsConfig <span class="kw">for </span>Config {
+    <span class="kw">const </span>TOML_KEY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;kotlin&quot;</span>;
 
-<span class="kw">impl </span>MergeWith <span class="kw">for </span>Config {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
-        Config {
-            package_name: <span class="self">self</span>.package_name.merge_with(<span class="kw-2">&amp;</span>other.package_name),
-            cdylib_name: <span class="self">self</span>.cdylib_name.merge_with(<span class="kw-2">&amp;</span>other.cdylib_name),
-            custom_types: <span class="self">self</span>.custom_types.merge_with(<span class="kw-2">&amp;</span>other.custom_types),
-            external_packages: <span class="self">self</span>.external_packages.merge_with(<span class="kw-2">&amp;</span>other.external_packages),
+    <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
+        <span class="self">self</span>.package_name
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi.{}&quot;</span>, ci.namespace()));
+        <span class="self">self</span>.cdylib_name
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace()));
+    }
+
+    <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
+        <span class="self">self</span>.cdylib_name
+            .get_or_insert_with(|| cdylib_name.to_string());
+    }
+
+    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {
+        <span class="kw">for </span>(crate_name, config) <span class="kw">in </span>config_map {
+            <span class="kw">if </span>!<span class="self">self</span>.external_packages.contains_key(crate_name) {
+                <span class="self">self</span>.external_packages
+                    .insert(crate_name.to_string(), config.package_name());
+            }
         }
     }
 }

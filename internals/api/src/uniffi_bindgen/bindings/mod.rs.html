@@ -122,17 +122,6 @@
 <span id="122">122</span>
 <span id="123">123</span>
 <span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
-<span id="130">130</span>
-<span id="131">131</span>
-<span id="132">132</span>
-<span id="133">133</span>
-<span id="134">134</span>
-<span id="135">135</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -145,9 +134,9 @@
 </span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>std::fmt;
 
 <span class="kw">use </span><span class="kw">crate</span>::interface::ComponentInterface;
-<span class="kw">use </span><span class="kw">crate</span>::MergeWith;
 
 <span class="kw">pub mod </span>kotlin;
 <span class="kw">pub mod </span>python;
@@ -166,6 +155,17 @@
     Swift,
     Python,
     Ruby,
+}
+
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>TargetLanguage {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Kotlin =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;kotlin&quot;</span>),
+            <span class="self">Self</span>::Swift =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;swift&quot;</span>),
+            <span class="self">Self</span>::Python =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;python&quot;</span>),
+            <span class="self">Self</span>::Ruby =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;ruby&quot;</span>),
+        }
+    }
 }
 
 <span class="doccomment">/// Mode for the `run_script` function defined for each language
@@ -215,35 +215,13 @@
 <span class="attribute">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>Config {
     <span class="attribute">#[serde(default)]
-    </span>kotlin: kotlin::Config,
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) kotlin: kotlin::Config,
     <span class="attribute">#[serde(default)]
-    </span>swift: swift::Config,
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) swift: swift::Config,
     <span class="attribute">#[serde(default)]
-    </span>python: python::Config,
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) python: python::Config,
     <span class="attribute">#[serde(default)]
-    </span>ruby: ruby::Config,
-}
-
-<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>ComponentInterface&gt; <span class="kw">for </span>Config {
-    <span class="kw">fn </span>from(ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="self">Self </span>{
-        Config {
-            kotlin: ci.into(),
-            swift: ci.into(),
-            python: ci.into(),
-            ruby: ci.into(),
-        }
-    }
-}
-
-<span class="kw">impl </span>MergeWith <span class="kw">for </span>Config {
-    <span class="kw">fn </span>merge_with(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="self">Self </span>{
-        Config {
-            kotlin: <span class="self">self</span>.kotlin.merge_with(<span class="kw-2">&amp;</span>other.kotlin),
-            swift: <span class="self">self</span>.swift.merge_with(<span class="kw-2">&amp;</span>other.swift),
-            python: <span class="self">self</span>.python.merge_with(<span class="kw-2">&amp;</span>other.python),
-            ruby: <span class="self">self</span>.ruby.merge_with(<span class="kw-2">&amp;</span>other.ruby),
-        }
-    }
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) ruby: ruby::Config,
 }
 
 <span class="doccomment">/// Generate foreign language bindings from a compiled `uniffi` library.

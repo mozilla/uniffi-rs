@@ -196,72 +196,19 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::bindings::RunScriptOptions;
+</span><span class="kw">use crate</span>::{bindings::RunScriptOptions, library_mode::generate_bindings};
 <span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
-<span class="kw">use </span>heck::ToSnakeCase;
 <span class="kw">use </span>std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 <span class="kw">use </span>std::ffi::OsStr;
 <span class="kw">use </span>std::fs::{read_to_string, File};
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::process::{Command, Stdio};
-<span class="kw">use </span>uniffi_testing::{CompileSource, UniFFITestHelper};
+<span class="kw">use </span>uniffi_testing::UniFFITestHelper;
 
 <span class="doccomment">/// Run Swift tests for a UniFFI test fixture
 </span><span class="kw">pub fn </span>run_test(tmp_dir: <span class="kw-2">&amp;</span>str, fixture_name: <span class="kw-2">&amp;</span>str, script_file: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -287,14 +234,13 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
     <span class="kw">let </span>test_helper = UniFFITestHelper::new(crate_name)<span class="question-mark">?</span>;
     <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
-    test_helper.copy_cdylibs_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
-    <span class="kw">let </span>generated_sources =
-        GeneratedSources::new(<span class="kw-2">&amp;</span>test_helper.cdylib_path()<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>out_dir, <span class="kw-2">&amp;</span>test_helper)<span class="question-mark">?</span>;
+    <span class="kw">let </span>cdylib_path = test_helper.copy_cdylib_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
+    <span class="kw">let </span>generated_sources = GeneratedSources::new(crate_name, <span class="kw-2">&amp;</span>cdylib_path, <span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
 
     <span class="comment">// Compile the generated sources together to create a single swift module
     </span>compile_swift_module(
         <span class="kw-2">&amp;</span>out_dir,
-        <span class="kw-2">&amp;</span>calc_module_name(<span class="kw-2">&amp;</span>generated_sources.main_source_filename),
+        <span class="kw-2">&amp;</span>generated_sources.main_module,
         <span class="kw-2">&amp;</span>generated_sources.generated_swift_files,
         <span class="kw-2">&amp;</span>generated_sources.module_map,
         options,
@@ -325,10 +271,6 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         <span class="macro">bail!</span>(<span class="string">&quot;running `swift` to run test script failed ({:?})&quot;</span>, command)
     }
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">fn </span>calc_module_name(filename: <span class="kw-2">&amp;</span>str) -&gt; String {
-    filename.strip_suffix(<span class="string">&quot;.swift&quot;</span>).unwrap().to_snake_case()
 }
 
 <span class="kw">fn </span>compile_swift_module&lt;T: AsRef&lt;OsStr&gt;&gt;(
@@ -372,93 +314,47 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 <span class="comment">// Stores sources generated by `uniffi-bindgen-swift`
 </span><span class="kw">struct </span>GeneratedSources {
+    main_module: String,
     generated_swift_files: Vec&lt;Utf8PathBuf&gt;,
     module_map: Utf8PathBuf,
-    main_source_filename: String,
 }
 
 <span class="kw">impl </span>GeneratedSources {
-    <span class="kw">fn </span>new(
-        library_path: <span class="kw-2">&amp;</span>Utf8Path,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-        test_helper: <span class="kw-2">&amp;</span>UniFFITestHelper,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="comment">// Generate the bindings for the main compile source, and use that for the swift module name
-        </span><span class="kw">let </span>main_compile_source = test_helper.get_main_compile_source()<span class="question-mark">?</span>;
-        <span class="self">Self</span>::run_generate_bindings(<span class="kw-2">&amp;</span>main_compile_source, library_path, out_dir)<span class="question-mark">?</span>;
-        <span class="kw">let </span>generated_files = glob(<span class="kw-2">&amp;</span>out_dir.join(<span class="string">&quot;*.swift&quot;</span>))<span class="question-mark">?</span>;
-        <span class="kw">let </span>main_source_filename = <span class="kw">match </span>generated_files.len() {
-            <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(
-                <span class="string">&quot;No .swift file generated for {}&quot;</span>,
-                main_compile_source.udl_path
-            ),
-            <span class="number">1 </span>=&gt; generated_files
-                .into_iter()
-                .next()
-                .unwrap()
-                .file_name()
-                .unwrap()
-                .to_string(),
-            n =&gt; <span class="macro">bail!</span>(
-                <span class="string">&quot;{n} .swift files generated for {}&quot;</span>,
-                main_compile_source.udl_path
-            ),
+    <span class="kw">fn </span>new(crate_name: <span class="kw-2">&amp;</span>str, cdylib_path: <span class="kw-2">&amp;</span>Utf8Path, out_dir: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>sources = generate_bindings(cdylib_path, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="string">&quot;swift&quot;</span>.into()], out_dir, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>main_source = sources
+            .iter()
+            .find(|s| s.package.name == crate_name)
+            .unwrap();
+        <span class="kw">let </span>main_module = main_source.config.bindings.swift.module_name();
+        <span class="kw">let </span>modulemap_glob = glob(<span class="kw-2">&amp;</span>out_dir.join(<span class="string">&quot;*.modulemap&quot;</span>))<span class="question-mark">?</span>;
+        <span class="kw">let </span>module_map = <span class="kw">match </span>modulemap_glob.len() {
+            <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;No modulemap files found in {out_dir}&quot;</span>),
+            <span class="comment">// Normally we only generate 1 module map and can return it directly
+            </span><span class="number">1 </span>=&gt; modulemap_glob.into_iter().next().unwrap(),
+            <span class="comment">// When we use multiple UDL files in a test, for example the ext-types fixture,
+            // then we get multiple module maps and need to combine them
+            </span><span class="kw">_ </span>=&gt; {
+                <span class="kw">let </span>path = out_dir.join(<span class="string">&quot;combined.modulemap&quot;</span>);
+                <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>path)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(
+                    f,
+                    <span class="string">&quot;{}&quot;</span>,
+                    modulemap_glob
+                        .into_iter()
+                        .map(|path| <span class="prelude-val">Ok</span>(read_to_string(path)<span class="question-mark">?</span>))
+                        .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;&gt;&gt;()<span class="question-mark">?
+                        </span>.join(<span class="string">&quot;\n&quot;</span>)
+                )<span class="question-mark">?</span>;
+                path
+            }
         };
 
-        <span class="comment">// Generate the bindings for other compile sources (crates used by external types)
-        </span><span class="kw">for </span>source <span class="kw">in </span>test_helper.get_external_compile_sources()<span class="question-mark">? </span>{
-            <span class="kw">crate</span>::generate_bindings(
-                <span class="kw-2">&amp;</span>source.udl_path,
-                source.config_path.as_deref(),
-                <span class="macro">vec!</span>[<span class="string">&quot;swift&quot;</span>],
-                <span class="prelude-val">Some</span>(out_dir),
-                <span class="prelude-val">Some</span>(library_path),
-                <span class="bool-val">false</span>,
-            )<span class="question-mark">?</span>;
-        }
-
-        <span class="kw">let </span>generated_module_maps = glob(<span class="kw-2">&amp;</span>out_dir.join(<span class="string">&quot;*.modulemap&quot;</span>))<span class="question-mark">?</span>;
-
         <span class="prelude-val">Ok</span>(GeneratedSources {
-            main_source_filename,
+            main_module,
             generated_swift_files: glob(<span class="kw-2">&amp;</span>out_dir.join(<span class="string">&quot;*.swift&quot;</span>))<span class="question-mark">?</span>,
-            module_map: <span class="kw">match </span>generated_module_maps.len() {
-                <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;No modulemap files found in {out_dir}&quot;</span>),
-                <span class="comment">// Normally we only generate 1 module map and can return it directly
-                </span><span class="number">1 </span>=&gt; generated_module_maps.into_iter().next().unwrap(),
-                <span class="comment">// When we use multiple UDL files in a test, for example the ext-types fixture,
-                // then we get multiple module maps and need to combine them
-                </span><span class="kw">_ </span>=&gt; {
-                    <span class="kw">let </span>path = out_dir.join(<span class="string">&quot;combined.modulemap&quot;</span>);
-                    <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>path)<span class="question-mark">?</span>;
-                    <span class="macro">write!</span>(
-                        f,
-                        <span class="string">&quot;{}&quot;</span>,
-                        generated_module_maps
-                            .into_iter()
-                            .map(|path| <span class="prelude-val">Ok</span>(read_to_string(path)<span class="question-mark">?</span>))
-                            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;&gt;&gt;()<span class="question-mark">?
-                            </span>.join(<span class="string">&quot;\n&quot;</span>)
-                    )<span class="question-mark">?</span>;
-                    path
-                }
-            },
+            module_map,
         })
-    }
-
-    <span class="kw">fn </span>run_generate_bindings(
-        source: <span class="kw-2">&amp;</span>CompileSource,
-        library_path: <span class="kw-2">&amp;</span>Utf8Path,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">crate</span>::generate_bindings(
-            <span class="kw-2">&amp;</span>source.udl_path,
-            source.config_path.as_deref(),
-            <span class="macro">vec!</span>[<span class="string">&quot;swift&quot;</span>],
-            <span class="prelude-val">Some</span>(out_dir),
-            <span class="prelude-val">Some</span>(library_path),
-            <span class="bool-val">false</span>,
-        )
     }
 }
 
