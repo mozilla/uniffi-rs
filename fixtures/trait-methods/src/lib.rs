@@ -18,4 +18,4 @@ impl std::fmt::Display for TraitMethods {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/trait_methods.uniffi.rs"));
+uniffi::include_scaffolding!("trait_methods");
