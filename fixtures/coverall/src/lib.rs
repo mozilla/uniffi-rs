@@ -20,6 +20,48 @@ pub enum CoverallError {
     TooManyHoles,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum CoverallFlatError {
+    #[error("Too many variants: {num}")]
+    TooManyVariants { num: i16 },
+}
+
+fn throw_flat_error() -> Result<(), CoverallFlatError> {
+    Err(CoverallFlatError::TooManyVariants { num: 99 })
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+#[uniffi(flat_error)] // "flat" isn't really the correct terminology here.
+pub enum CoverallMacroError {
+    #[error("The coverall has too many macros")]
+    TooManyMacros,
+}
+
+#[uniffi::export]
+fn throw_macro_error() -> Result<(), CoverallMacroError> {
+    Err(CoverallMacroError::TooManyMacros)
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+#[uniffi(flat_error)]
+pub enum CoverallFlatMacroError {
+    #[error("Too many variants: {num}")]
+    TooManyVariants { num: i16 },
+}
+
+#[uniffi::export]
+fn throw_flat_macro_error() -> Result<(), CoverallFlatMacroError> {
+    Err(CoverallFlatMacroError::TooManyVariants { num: 88 })
+}
+
+pub enum CoverallRichErrorNoVariantData {
+    TooManyPlainVariants,
+}
+
+fn throw_rich_error_no_variant_data() -> Result<(), CoverallRichErrorNoVariantData> {
+    Err(CoverallRichErrorNoVariantData::TooManyPlainVariants)
+}
+
 /// This error doesn't appear in the interface, instead
 /// we rely on an `Into<CoverallError>` impl to surface it to consumers.
 #[derive(Debug, thiserror::Error)]
@@ -44,6 +86,24 @@ pub enum ComplexError {
     PermissionDenied { reason: String },
     #[error("Unknown error")]
     UnknownError,
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+pub enum ComplexMacroError {
+    #[error("OsError: {code} ({extended_code})")]
+    OsError { code: i16, extended_code: i16 },
+    #[error("PermissionDenied: {reason}")]
+    PermissionDenied { reason: String },
+    #[error("Unknown error")]
+    UnknownError,
+}
+
+#[uniffi::export]
+fn throw_complex_macro_error() -> Result<(), ComplexMacroError> {
+    Err(ComplexMacroError::OsError {
+        code: 1,
+        extended_code: 2,
+    })
 }
 
 #[derive(Clone, Debug, Default)]
@@ -83,6 +143,40 @@ pub struct DictWithDefaults {
 pub enum MaybeSimpleDict {
     Yeah { d: SimpleDict },
     Nah,
+}
+
+fn get_maybe_simple_dict(index: i8) -> MaybeSimpleDict {
+    match index {
+        0 => MaybeSimpleDict::Yeah {
+            d: SimpleDict::default(),
+        },
+        1 => MaybeSimpleDict::Nah,
+        _ => unreachable!("invalid index: {index}"),
+    }
+}
+
+// UDL can not describe this as a "flat" enum, but we'll keep it here to help demonstrate that!
+#[derive(Debug, Clone)]
+pub enum SimpleFlatEnum {
+    First { val: String },
+    Second { num: u16 },
+}
+
+#[derive(Debug, Clone, uniffi::Enum)]
+pub enum SimpleFlatMacroEnum {
+    First { val: String },
+    Second { num: u16 },
+}
+
+#[uniffi::export]
+fn get_simple_flat_macro_enum(index: i8) -> SimpleFlatMacroEnum {
+    match index {
+        0 => SimpleFlatMacroEnum::First {
+            val: "the first".to_string(),
+        },
+        1 => SimpleFlatMacroEnum::Second { num: 2 },
+        _ => unreachable!("invalid index: {index}"),
+    }
 }
 
 fn create_some_dict() -> SimpleDict {

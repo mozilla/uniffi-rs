@@ -6,9 +6,17 @@ namespace coverall {
 
     sequence<TestTrait> get_traits();
 
+    MaybeSimpleDict get_maybe_simple_dict(i8 index);
+
     // void returning error throwing namespace function to catch clippy warnings (eg, #1330)
     [Throws=CoverallError]
     void println(string text);
+
+    [Throws=CoverallFlatError]
+    void throw_flat_error();
+
+    [Throws=CoverallRichErrorNoVariantData]
+    void throw_rich_error_no_variant_data();
 };
 
 dictionary SimpleDict {
@@ -48,9 +56,31 @@ interface MaybeSimpleDict {
     Nah();
 };
 
+// Note that UDL *can not* express flat enums (ie, those with variants that carry data which
+// should be ignored for the ffi), only flat errors?
+//enum SimpleFlatEnum {
+//    "First",
+//    "Second",
+//};
+
 [Error]
 enum CoverallError {
     "TooManyHoles"
+};
+
+// This error is described in Rust with variants, but because it's declared
+// here via an `enum` it's considered "flat"
+[Error]
+enum CoverallFlatError {
+    "TooManyVariants"
+};
+
+// This error is for an enum that's still "flat" on the Rust side (ie, no
+// variants have associated data), but it behaves differently on the bindings
+// side than had it been described via `enum`
+[Error]
+interface CoverallRichErrorNoVariantData {
+    TooManyPlainVariants();
 };
 
 [Error]

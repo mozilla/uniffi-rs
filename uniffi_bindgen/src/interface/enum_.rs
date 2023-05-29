@@ -92,7 +92,23 @@ use super::{APIConverter, ComponentInterface};
 pub struct Enum {
     pub(super) name: String,
     pub(super) variants: Vec<Variant>,
-    // "Flat" enums do not have variants with associated data.
+    // NOTE: `flat` is a misleading name and to make matters worse, has 2 different
+    // meanings depending on the context :(
+    // * When used as part of Rust scaffolding generation, it means "is this enum
+    //   used with an Error, and that error should we lowered to foreign bindings
+    //   by converting each variant to a string and lowering the variant with that
+    //   string?". In that context, it should probably be called `lowered_as_string` or
+    //   similar.
+    // * When used as part of bindings generation, it means "does this enum have only
+    //   variants with no associated data"? The foreign binding generators are likely
+    //   to generate significantly different versions of the enum based on that value.
+    //
+    // The reason it is described as "has 2 different meanings" by way of example:
+    // * For an Enum described as being a flat error, but the enum itself has variants with data,
+    //   `flat` will be `true` for the Enum when generating scaffolding and `false` when
+    //   generating bindings.
+    // * For an Enum not used as an error but which has no variants with data, `flat` will be
+    //   false when generating the scaffolding but `true` when generating bindings.
     pub(super) flat: bool,
 }
 
@@ -156,7 +172,9 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                     })
                 })
                 .collect::<Result<Vec<_>>>()?,
-            // Enums declared using the `enum` syntax can never have variants with fields.
+            // Enums declared using the `enum` syntax can never have variants with fields described in the UDL.
+            // So regardless of whether this enum has variants with fields or not, we lower it with
+            // a string representation of itself.
             flat: true,
         })
     }
