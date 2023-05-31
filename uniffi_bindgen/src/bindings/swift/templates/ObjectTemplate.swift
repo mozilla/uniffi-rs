@@ -1,4 +1,4 @@
-{%- let obj = ci.get_object_definition(name).unwrap() %}
+{%- let obj = ci.get_object_definition_unchecked(name) %}
 public protocol {{ obj.name() }}Protocol {
     {% for meth in obj.methods() -%}
     func {{ meth.name()|fn_name }}({% call swift::arg_list_protocol(meth) %}) {% call swift::async(meth) %} {% call swift::throws(meth) -%}

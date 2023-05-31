@@ -1,4 +1,4 @@
-{%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let rec = ci.get_record_definition_unchecked(name) %}
 
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
