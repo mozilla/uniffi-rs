@@ -193,6 +193,21 @@ class TestCoverall(unittest.TestCase):
         coveralls = None
         self.assertEqual(get_num_alive(), 0)
 
+    def test_into(self):
+        # Test errors and results being into'd - in reality the fact things compile is the real test,
+        # but we should check things actually do what we think.
+        self.assertEqual(get_maybe_simple_internal_dict(None), MaybeSimpleDict.NAH())
+        self.assertTrue(get_maybe_simple_internal_dict("foo").d.text, "foo")
+        with self.assertRaises(CoverallError):
+            fallible_get_maybe_simple_internal_dict(None)
+
+        # Same tests on an instance.
+        coveralls = Coveralls("test_return_objects")
+        self.assertEqual(coveralls.get_maybe_simple_internal_dict(None), MaybeSimpleDict.NAH())
+        self.assertTrue(coveralls.get_maybe_simple_internal_dict("foo").d.text, "foo")
+        with self.assertRaises(CoverallError):
+            coveralls.fallible_get_maybe_simple_internal_dict(None)
+
     def test_bad_objects(self):
         coveralls = Coveralls("test_bad_objects")
         patch = Patch(Color.RED)

@@ -85,6 +85,53 @@ pub enum MaybeSimpleDict {
     Nah,
 }
 
+/// This struct doesn't appear in the interface, instead
+/// we rely on an `Into<MaybeSimpleDict>` impl to surface it to consumers.
+pub struct InternalMaybeSimpleDict {
+    text: Option<String>,
+}
+
+impl From<InternalMaybeSimpleDict> for MaybeSimpleDict {
+    fn from(err: InternalMaybeSimpleDict) -> MaybeSimpleDict {
+        match err.text {
+            Some(text) => MaybeSimpleDict::Yeah {
+                d: SimpleDict {
+                    text,
+                    ..Default::default()
+                },
+            },
+            None => MaybeSimpleDict::Nah,
+        }
+    }
+}
+
+fn get_maybe_simple_dict(index: i8) -> MaybeSimpleDict {
+    match index {
+        0 => MaybeSimpleDict::Yeah {
+            d: SimpleDict::default(),
+        },
+        1 => MaybeSimpleDict::Nah,
+        _ => unreachable!("invalid index: {index}"),
+    }
+}
+
+// Note that the UDL describes this as returning `MaybeSimpleDict`, but UniFFI generates a magic `Into::into()`
+fn get_maybe_simple_internal_dict(text: Option<String>) -> InternalMaybeSimpleDict {
+    InternalMaybeSimpleDict { text }
+}
+
+// Double the Into::into goodness! Note that the UDL describes returning Result<MaybeSimpleDict, CoverallError>,
+// but we are actually returning both T and E as into'able variants.
+fn fallible_get_maybe_simple_internal_dict(
+    text: Option<String>,
+) -> Result<InternalMaybeSimpleDict, InternalCoverallError> {
+    if text.is_some() {
+        Ok(InternalMaybeSimpleDict { text })
+    } else {
+        Err(InternalCoverallError::ExcessiveHoles)
+    }
+}
+
 fn create_some_dict() -> SimpleDict {
     SimpleDict {
         text: "text".to_string(),
@@ -265,6 +312,24 @@ impl Coveralls {
         let mut map = HashMap::new();
         map.insert(key, value);
         map
+    }
+
+    // Note that the UDL describes this as returning `MaybeSimpleDict`, but UniFFI generates a magic `Into::into()`
+    fn get_maybe_simple_internal_dict(&self, text: Option<String>) -> InternalMaybeSimpleDict {
+        InternalMaybeSimpleDict { text }
+    }
+
+    // Double the Into::into goodness! Note that the UDL describes returning Result<MaybeSimpleDict, CoverallError>,
+    // but we are actually returning both T and E as into'able variants.
+    fn fallible_get_maybe_simple_internal_dict(
+        &self,
+        text: Option<String>,
+    ) -> Result<InternalMaybeSimpleDict, InternalCoverallError> {
+        if text.is_some() {
+            Ok(InternalMaybeSimpleDict { text })
+        } else {
+            Err(InternalCoverallError::ExcessiveHoles)
+        }
     }
 
     fn add_patch(&self, patch: Arc<Patch>) {

@@ -6,6 +6,11 @@ namespace coverall {
 
     sequence<TestTrait> get_traits();
 
+    MaybeSimpleDict get_maybe_simple_dict(i8 index);
+    MaybeSimpleDict get_maybe_simple_internal_dict(string? text);
+    [Throws=CoverallError]
+    MaybeSimpleDict fallible_get_maybe_simple_internal_dict(string? text);
+
     // void returning error throwing namespace function to catch clippy warnings (eg, #1330)
     [Throws=CoverallError]
     void println(string text);
@@ -88,6 +93,10 @@ interface Coveralls {
 
     [Throws=CoverallError]
     void fallible_panic(string message);
+
+    MaybeSimpleDict get_maybe_simple_internal_dict(string? text);
+    [Throws=CoverallError]
+    MaybeSimpleDict fallible_get_maybe_simple_internal_dict(string? text);
 
     // *** Test functions which take either `self` or other params as `Arc<Self>` ***
 

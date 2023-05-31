@@ -49,5 +49,5 @@ error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
 error[E0425]: cannot find function `get_dict` in this scope
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
-  |             r#get_dict())
-  |             ^^^^^^^^^^ not found in this scope
+  |         r#get_dict().into()
+  |         ^^^^^^^^^^ not found in this scope
