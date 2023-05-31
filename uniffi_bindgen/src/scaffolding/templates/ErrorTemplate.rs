@@ -15,6 +15,9 @@
     with_try_read,
     {%- endif %}
     {%- endif %}
+    {%- if ci.is_callback_interface_throws_type(e.as_type()) %}
+    callback_error,
+    {%- endif %}
 )]
 enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}

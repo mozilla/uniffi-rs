@@ -100,6 +100,8 @@ pub struct ComponentInterface {
     callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
     errors: HashSet<String>,
+    // Types which were seen used as callback interface error.
+    callback_interface_throws_types: BTreeSet<Type>,
 }
 
 impl ComponentInterface {
@@ -268,6 +270,10 @@ impl ComponentInterface {
     /// Get a specific type
     pub fn get_type(&self, name: &str) -> Option<Type> {
         self.types.get_type_definition(name)
+    }
+
+    pub fn is_callback_interface_throws_type(&self, type_: Type) -> bool {
+        self.callback_interface_throws_types.contains(&type_)
     }
 
     /// Iterate over all types contained in the given item.
@@ -718,6 +724,11 @@ impl ComponentInterface {
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
     fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
+        for method in defn.methods() {
+            if let Some(error) = method.throws_type() {
+                self.callback_interface_throws_types.insert(error.clone());
+            }
+        }
         self.callback_interfaces.push(defn);
     }
 

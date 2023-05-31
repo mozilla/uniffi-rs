@@ -224,20 +224,15 @@ impl ForeignCallbackInternals {
     }
 
     /// Invoke a callback interface method on the foreign side and return the result
-    pub fn invoke_callback<R, UniFfiTag>(
-        &self,
-        handle: u64,
-        method: u32,
-        args: RustBuffer,
-    ) -> Result<R, UnexpectedUniFFICallbackError>
+    pub fn invoke_callback<R, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> R
     where
         R: FfiConverter<UniFfiTag>,
     {
         let mut ret_rbuf = RustBuffer::new();
         let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
         match callback_result {
-            CALLBACK_SUCCESS => Ok(R::lift_callback_return(ret_rbuf)),
-            CALLBACK_ERROR => Ok(R::lift_callback_error(ret_rbuf)),
+            CALLBACK_SUCCESS => R::lift_callback_return(ret_rbuf),
+            CALLBACK_ERROR => R::lift_callback_error(ret_rbuf),
             CALLBACK_UNEXPECTED_ERROR => {
                 let reason = if !ret_rbuf.is_empty() {
                     match <String as FfiConverter<UniFfiTag>>::try_lift(ret_rbuf) {
@@ -251,7 +246,7 @@ impl ForeignCallbackInternals {
                     RustBuffer::destroy(ret_rbuf);
                     String::from("[Unknown Reason]")
                 };
-                Err(UnexpectedUniFFICallbackError { reason })
+                R::handle_callback_unexpected_error(UnexpectedUniFFICallbackError { reason })
             }
             // Other values should never be returned
             _ => panic!("Callback failed with unexpected return code"),

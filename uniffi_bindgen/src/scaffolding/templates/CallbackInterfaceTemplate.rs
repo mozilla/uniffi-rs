@@ -42,7 +42,7 @@ impl Drop for {{ trait_impl }} {
     fn drop(&mut self) {
         {{ foreign_callback_internals }}.invoke_callback::<(), crate::UniFfiTag>(
             self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
-        ).expect("Unexpected error dropping {{ trait_impl }}")
+        )
     }
 }
 
@@ -75,17 +75,6 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
 
         {#- Calling into foreign code. #}
         {{ foreign_callback_internals }}.invoke_callback::<{{ meth|return_type }}, crate::UniFfiTag>(self.handle, {{ loop.index }}, args_rbuf)
-            {%- match meth.throws_type() %}
-            {%- when Some(error_type) %}
-            // `invoke_callback()` returns an Err value for unexpected errors.  Convert that into
-            // the error type returned by the method. Note: we require all error types used in
-            // CallbackInterfaces to implement From<UnexpectedUniFFICallbackError>
-            .unwrap_or_else(|e| Err(e.into()))
-            {%- when None %}
-            // No error type, the only option is panicking
-            .unwrap_or_else(|e| panic!("callback failed. Reason: {}", e.reason))
-            {%- endmatch %}
-
     }
     {%- endfor %}
 }

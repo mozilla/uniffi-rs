@@ -219,16 +219,29 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// values of type Self::FfiType, this method is fallible.
     fn try_lift(v: Self::FfiType) -> Result<Self>;
 
-    /// Lift a Rust value based on a callback interface method result
+    /// Lift a Rust value for a callback interface method result
     fn lift_callback_return(buf: RustBuffer) -> Self {
         try_lift_from_rust_buffer(buf).expect("Error reading callback interface result")
     }
 
-    /// Lift a Rust value based on a callback interface method error result
+    /// Lift a Rust value for a callback interface method error result
     ///
     /// This is called for "expected errors" -- the callback method returns a Result<> type and the
     /// foreign code throws an exception that corresponds to the error type.
     fn lift_callback_error(_buf: RustBuffer) -> Self {
+        panic!("Callback interface method returned unexpected error")
+    }
+
+    /// Lift a Rust value for an unexpected callback interface error
+    ///
+    /// The main reason this is called is when the callback interface throws an error type that
+    /// doesn't match the Rust trait definition.  It's also called for corner cases, like when the
+    /// foreign code doesn't follow the FFI contract.
+    ///
+    /// The default implementation panics unconditionally.  Errors used in callback interfaces
+    /// handle this using the `From<UnexpectedUniFFICallbackError>` impl that the library author
+    /// must provide.
+    fn handle_callback_unexpected_error(_e: UnexpectedUniFFICallbackError) -> Self {
         panic!("Callback interface method returned unexpected error")
     }
 

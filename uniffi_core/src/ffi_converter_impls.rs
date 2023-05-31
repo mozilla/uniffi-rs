@@ -24,7 +24,7 @@
 use crate::{
     check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
     lower_into_rust_buffer, metadata, try_lift_from_rust_buffer, FfiConverter, FutureCallback,
-    Interface, MetadataBuffer, Result, RustBuffer, RustCallStatus,
+    Interface, MetadataBuffer, Result, RustBuffer, RustCallStatus, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -580,6 +580,10 @@ where
     fn lift_callback_error(buf: RustBuffer) -> Self {
         Err(try_lift_from_rust_buffer::<E, UT>(buf)
             .expect("Error reading callback interface Err result"))
+    }
+
+    fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Self {
+        Err(E::handle_callback_unexpected_error(e))
     }
 
     fn invoke_future_callback(
