@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use proc_macro2::{Ident, Span, TokenStream};
-use quote::{quote, ToTokens};
+use crate::fnsig::FnSignature;
+use proc_macro2::{Ident, Span};
+use quote::ToTokens;
 
 use super::attributes::ExportedImplFnAttributes;
 
@@ -25,7 +26,7 @@ impl ExportItem {
     pub fn new(item: syn::Item) -> syn::Result<Self> {
         match item {
             syn::Item::Fn(item) => {
-                let sig = FnSignature::new(item.sig)?;
+                let sig = FnSignature::new_function(item.sig)?;
                 Ok(Self::Function { sig })
             }
             syn::Item::Impl(item) => Self::from_impl(item),
@@ -82,9 +83,14 @@ impl ExportItem {
 
                 let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
                 let item = if attrs.constructor {
-                    ImplItem::Constructor(ConstructorSignature::new(impl_fn.sig)?)
+                    let sig = FnSignature::new_constructor(self_ident.clone(), impl_fn.sig)?;
+                    if sig.is_async {
+                        return sig.syn_err("Async constructors are not supported");
+                    }
+                    ImplItem::Constructor(sig)
                 } else {
-                    ImplItem::Method(FnSignature::new(impl_fn.sig)?)
+                    let sig = FnSignature::new_method(self_ident.clone(), impl_fn.sig)?;
+                    ImplItem::Method(sig)
                 };
 
                 Ok(item)
@@ -127,7 +133,7 @@ impl ExportItem {
                         "traits can not have constructors",
                     ));
                 } else {
-                    ImplItem::Method(FnSignature::new(tim.sig)?)
+                    ImplItem::Method(FnSignature::new_trait_method(self_ident.clone(), tim.sig)?)
                 };
 
                 Ok(item)
@@ -139,63 +145,8 @@ impl ExportItem {
 }
 
 pub(super) enum ImplItem {
-    Constructor(ConstructorSignature),
+    Constructor(FnSignature),
     Method(FnSignature),
-}
-
-pub(super) struct FnSignature {
-    pub ident: Ident,
-    pub is_async: bool,
-    pub inputs: Vec<syn::FnArg>,
-    pub output: TokenStream,
-}
-
-impl FnSignature {
-    fn new(item: syn::Signature) -> syn::Result<Self> {
-        let output = match item.output {
-            syn::ReturnType::Default => quote! { () },
-            syn::ReturnType::Type(_, ty) => quote! { #ty },
-        };
-
-        Ok(Self {
-            ident: item.ident,
-            is_async: item.asyncness.is_some(),
-            inputs: item.inputs.into_iter().collect(),
-            output,
-        })
-    }
-}
-
-pub(super) struct ConstructorSignature {
-    pub ident: Ident,
-    pub inputs: Vec<syn::FnArg>,
-    pub output: TokenStream,
-}
-
-impl ConstructorSignature {
-    fn new(item: syn::Signature) -> syn::Result<Self> {
-        let output = match item.output {
-            syn::ReturnType::Default => quote! { () },
-            syn::ReturnType::Type(_, ty) => quote! { #ty },
-        };
-
-        Ok(Self {
-            ident: item.ident,
-            inputs: item.inputs.into_iter().collect(),
-            output,
-        })
-    }
-}
-
-impl From<ConstructorSignature> for FnSignature {
-    fn from(value: ConstructorSignature) -> Self {
-        Self {
-            ident: value.ident,
-            is_async: false,
-            inputs: value.inputs,
-            output: value.output,
-        }
-    }
 }
 
 fn type_as_type_path(ty: &syn::Type) -> syn::Result<&syn::TypePath> {

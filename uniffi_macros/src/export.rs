@@ -35,17 +35,13 @@ pub(crate) fn expand_export(
     let metadata = ExportItem::new(item)?;
 
     match metadata {
-        ExportItem::Function { sig } => gen_fn_scaffolding(sig, &mod_path, &args),
+        ExportItem::Function { sig } => gen_fn_scaffolding(sig, &args),
         ExportItem::Impl { items, self_ident } => {
             let item_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| match item? {
-                    ImplItem::Constructor(sig) => {
-                        gen_constructor_scaffolding(sig, &mod_path, &self_ident, &args)
-                    }
-                    ImplItem::Method(sig) => {
-                        gen_method_scaffolding(sig, &mod_path, &self_ident, &args, false)
-                    }
+                    ImplItem::Constructor(sig) => gen_constructor_scaffolding(sig, &args),
+                    ImplItem::Method(sig) => gen_method_scaffolding(sig, &args),
                 })
                 .collect::<syn::Result<_>>()?;
             Ok(quote_spanned! { self_ident.span() => #item_tokens })
@@ -73,9 +69,7 @@ pub(crate) fn expand_export(
             let impl_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| match item? {
-                    ImplItem::Method(sig) => {
-                        gen_method_scaffolding(sig, &mod_path, &self_ident, &args, true)
-                    }
+                    ImplItem::Method(sig) => gen_method_scaffolding(sig, &args),
                     _ => unreachable!("traits have no constructors"),
                 })
                 .collect::<syn::Result<_>>()?;
