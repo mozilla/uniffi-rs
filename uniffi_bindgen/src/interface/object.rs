@@ -653,6 +653,29 @@ impl From<uniffi_meta::MethodMetadata> for Method {
     }
 }
 
+impl From<uniffi_meta::CallbackInterfaceMethodMetadata> for Method {
+    fn from(meta: uniffi_meta::CallbackInterfaceMethodMetadata) -> Self {
+        let checksum_fn_name = meta.checksum_symbol_name();
+        let return_type = meta.return_type.map(Into::into);
+        let arguments = meta.inputs.into_iter().map(Into::into).collect();
+        Self {
+            name: meta.name,
+            object_name: meta.trait_name,
+            is_async: false,
+            arguments,
+            return_type,
+            throws: meta.throws.map(Into::into),
+            takes_self_by_arc: false, // not yet supported by procmacros?
+            checksum_fn_name,
+            checksum_override: Some(meta.checksum),
+            // These are placeholder values that don't affect any behavior since we don't create
+            // scaffolding functions for callback interface methods
+            ffi_func: FfiFunction::default(),
+            object_impl: ObjectImpl::Struct,
+        }
+    }
+}
+
 impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
     fn convert(&self, ci: &mut ComponentInterface) -> Result<Method> {
         if self.special.is_some() {

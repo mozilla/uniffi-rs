@@ -16,7 +16,7 @@
     {%- endif %}
     {%- endif %}
     {%- if ci.is_callback_interface_throws_type(e.as_type()) %}
-    callback_error,
+    handle_unknown_callback_error,
     {%- endif %}
 )]
 enum r#{{ e.name() }} {

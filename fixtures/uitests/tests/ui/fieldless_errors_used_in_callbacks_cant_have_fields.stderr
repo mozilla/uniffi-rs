@@ -5,7 +5,7 @@ error[E0533]: expected value, found struct variant `Self::DivisionByZero`
   | |     tag = crate::UniFfiTag,
   | |     flat_error,
   | |     with_try_read,
-  | |     callback_error,
+  | |     handle_unknown_callback_error,
   | | )]
   | |__^ not a value
   |

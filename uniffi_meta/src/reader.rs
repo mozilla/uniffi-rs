@@ -54,6 +54,8 @@ impl<'a> MetadataReader<'a> {
             codes::ENUM => self.read_enum(false)?.into(),
             codes::ERROR => self.read_error()?.into(),
             codes::INTERFACE => self.read_object()?.into(),
+            codes::CALLBACK_INTERFACE => self.read_callback_interface()?.into(),
+            codes::CALLBACK_INTERFACE_METHOD => self.read_callback_interface_method()?.into(),
             _ => bail!("Unexpected metadata code: {value:?}"),
         })
     }
@@ -73,6 +75,20 @@ impl<'a> MetadataReader<'a> {
             Ok(self.buf[0])
         } else {
             bail!("Buffer is empty")
+        }
+    }
+
+    fn read_u32(&mut self) -> Result<u32> {
+        if self.buf.len() >= 4 {
+            // read the value as little-endian
+            let value = self.buf[0] as u32
+                + ((self.buf[1] as u32) << 8)
+                + ((self.buf[2] as u32) << 16)
+                + ((self.buf[3] as u32) << 24);
+            self.buf = &self.buf[4..];
+            Ok(value)
+        } else {
+            bail!("Not enough data left in buffer to read a u32 value");
         }
     }
 
@@ -261,6 +277,32 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             is_trait: self.read_bool()?,
+        })
+    }
+
+    fn read_callback_interface(&mut self) -> Result<CallbackInterfaceMetadata> {
+        Ok(CallbackInterfaceMetadata {
+            module_path: self.read_string()?,
+            name: self.read_string()?,
+        })
+    }
+
+    fn read_callback_interface_method(&mut self) -> Result<CallbackInterfaceMethodMetadata> {
+        let module_path = self.read_string()?;
+        let trait_name = self.read_string()?;
+        let index = self.read_u32()?;
+        let name = self.read_string()?;
+        let inputs = self.read_inputs()?;
+        let (return_type, throws) = self.read_return_type()?;
+        Ok(CallbackInterfaceMethodMetadata {
+            module_path,
+            trait_name,
+            index,
+            name,
+            inputs,
+            return_type,
+            throws,
+            checksum: self.calc_checksum(),
         })
     }
 

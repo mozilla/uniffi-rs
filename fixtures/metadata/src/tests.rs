@@ -85,6 +85,11 @@ mod calc {
     pub struct Calculator {}
 }
 
+#[uniffi::callback_interface]
+pub trait Logger {
+    fn log(&self, message: String);
+}
+
 pub use calc::Calculator;
 pub use error::{ComplexError, FlatError};
 pub use person::Person;
@@ -618,6 +623,35 @@ mod test_function_metadata {
                 throws: None,
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
                     .checksum(),
+            },
+        );
+    }
+
+    #[test]
+    fn test_callback_interface() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_LOGGER,
+            CallbackInterfaceMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "Logger".into(),
+            },
+        );
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_METHOD_LOGGER_LOG,
+            CallbackInterfaceMethodMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                trait_name: "Logger".into(),
+                index: 0,
+                name: "log".into(),
+                inputs: vec![FnParamMetadata {
+                    name: "message".into(),
+                    ty: Type::String,
+                }],
+                return_type: None,
+                throws: None,
+                checksum:
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_METHOD_LOGGER_LOG
+                        .checksum(),
             },
         );
     }

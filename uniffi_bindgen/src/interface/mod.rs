@@ -74,7 +74,9 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
-use uniffi_meta::{ConstructorMetadata, MethodMetadata, ObjectMetadata};
+use uniffi_meta::{
+    CallbackInterfaceMethodMetadata, ConstructorMetadata, MethodMetadata, ObjectMetadata,
+};
 
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -554,9 +556,20 @@ impl ComponentInterface {
                 .into_iter()
                 .map(|c| (c.checksum_fn_name(), c.checksum()))
         });
+        let callback_method_checksums = self.callback_interfaces.iter().flat_map(|cbi| {
+            cbi.methods().into_iter().filter_map(|m| {
+                if m.checksum_fn_name().is_empty() {
+                    // UDL-based callbacks don't have checksum functions, skip these
+                    None
+                } else {
+                    Some((m.checksum_fn_name(), m.checksum()))
+                }
+            })
+        });
         func_checksums
             .chain(method_checksums)
             .chain(constructor_checksums)
+            .chain(callback_method_checksums)
             .map(|(fn_name, checksum)| (fn_name.to_string(), checksum))
     }
 
@@ -752,7 +765,7 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
-    fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
+    pub(super) fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         for method in defn.methods() {
             if let Some(error) = method.throws_type() {
@@ -760,6 +773,29 @@ impl ComponentInterface {
             }
         }
         self.callback_interfaces.push(defn);
+    }
+
+    pub(super) fn add_callback_interface_method_meta(
+        &mut self,
+        meta: CallbackInterfaceMethodMetadata,
+    ) -> Result<()> {
+        let cb = match get_callback_interface(&mut self.callback_interfaces, &meta.trait_name) {
+            Some(cb) => cb,
+            None => bail!("Callback interface not found: {}", meta.trait_name),
+        };
+        // uniffi_meta should ensure that we process callback interface methods in order, double
+        // check that here
+        if cb.methods.len() != meta.index as usize {
+            bail!(
+                "UniFFI internal error: callback interface method index mismatch for {}::{} (expected {}, saw {})",
+                meta.trait_name,
+                meta.name,
+                cb.methods.len(),
+                meta.index,
+            );
+        }
+        cb.methods.push(meta.into());
+        Ok(())
     }
 
     /// Perform global consistency checks on the declared interface.
@@ -852,6 +888,18 @@ fn get_or_insert_object<'a>(
             objects.last_mut().unwrap()
         }
     }
+}
+
+fn get_callback_interface<'a>(
+    callback_interfaces: &'a mut [CallbackInterface],
+    name: &str,
+) -> Option<&'a mut CallbackInterface> {
+    // The find-based way of writing this currently runs into a borrow checker
+    // error, so we use position
+    callback_interfaces
+        .iter_mut()
+        .position(|o| o.name == name)
+        .map(|idx| &mut callback_interfaces[idx])
 }
 
 /// Stateful iterator for yielding all types contained in a given type.

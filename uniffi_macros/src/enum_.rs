@@ -64,13 +64,13 @@ pub(crate) fn rich_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     tag: Option<&Path>,
-    callback_error: bool,
+    handle_unknown_callback_error: bool,
 ) -> TokenStream {
     enum_or_error_ffi_converter_impl(
         ident,
         enum_,
         tag,
-        callback_error,
+        handle_unknown_callback_error,
         quote! { ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
@@ -79,7 +79,7 @@ fn enum_or_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     tag: Option<&Path>,
-    callback_error: bool,
+    handle_unknown_callback_error: bool,
     metadata_type_code: TokenStream,
 ) -> TokenStream {
     let name = ident_to_string(ident);
@@ -120,7 +120,8 @@ fn enum_or_error_ffi_converter_impl(
         })
     };
 
-    let handle_callback_unexpected_error = handle_callback_unexpected_error_fn(callback_error);
+    let handle_callback_unexpected_error =
+        handle_callback_unexpected_error_fn(handle_unknown_callback_error);
 
     quote! {
         #[automatically_derived]
@@ -213,13 +214,15 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
 
 /// Generate the `handle_callback_unexpected_error()` implementation
 ///
-/// If callback_error is true, this will use the `From<UnexpectedUniFFICallbackError>`
+/// If handle_unknown_callback_error is true, this will use the `From<UnexpectedUniFFICallbackError>`
 /// implementation that the library author must provide.
 ///
-/// If callback_error is false, then we won't generate any code, falling back to the default
+/// If handle_unknown_callback_error is false, then we won't generate any code, falling back to the default
 /// implementation which panics.
-pub(crate) fn handle_callback_unexpected_error_fn(callback_error: bool) -> TokenStream {
-    if callback_error {
+pub(crate) fn handle_callback_unexpected_error_fn(
+    handle_unknown_callback_error: bool,
+) -> TokenStream {
+    if handle_unknown_callback_error {
         quote! {
             fn handle_callback_unexpected_error(e: ::uniffi::UnexpectedUniFFICallbackError) -> Self {
                 <Self as ::std::convert::From<::uniffi::UnexpectedUniFFICallbackError>>::from(e)

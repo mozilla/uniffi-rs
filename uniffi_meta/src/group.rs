@@ -4,7 +4,7 @@
 
 use super::{Metadata, NamespaceMetadata};
 use anyhow::{bail, Result};
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
 /// Group metadata by namespace
 pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
@@ -15,7 +15,7 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
             Metadata::Namespace(namespace) => {
                 let group = MetadataGroup {
                     namespace: namespace.clone(),
-                    items: vec![],
+                    items: BTreeSet::new(),
                 };
                 Some((namespace.crate_name.clone(), group))
             }
@@ -39,6 +39,14 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
             Metadata::Record(meta) => (format!("record `{}`", meta.name), &meta.module_path),
             Metadata::Enum(meta) => (format!("enum `{}`", meta.name), &meta.module_path),
             Metadata::Object(meta) => (format!("object `{}`", meta.name), &meta.module_path),
+            Metadata::CallbackInterface(meta) => (
+                format!("callback interface `{}`", meta.name),
+                &meta.module_path,
+            ),
+            Metadata::CallbackInterfaceMethod(meta) => (
+                format!("callback interface method`{}`", meta.name),
+                &meta.module_path,
+            ),
             Metadata::Error(meta) => (format!("error `{}`", meta.name()), meta.module_path()),
         };
 
@@ -47,7 +55,10 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
             Some(ns) => ns,
             None => bail!("Unknown namespace for {item_desc} ({crate_name})"),
         };
-        group.items.push(item);
+        if group.items.contains(&item) {
+            bail!("Duplicate metadata item: {item:?}");
+        }
+        group.items.insert(item);
     }
     Ok(group_map.into_values().collect())
 }
@@ -55,5 +66,5 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
 #[derive(Debug)]
 pub struct MetadataGroup {
     pub namespace: NamespaceMetadata,
-    pub items: Vec<Metadata>,
+    pub items: BTreeSet<Metadata>,
 }

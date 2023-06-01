@@ -149,6 +149,12 @@ pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> 
 #[derive(Default)]
 pub struct ArgumentNotAllowedHere;
 
+impl Parse for ArgumentNotAllowedHere {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
 impl UniffiAttributeArgs for ArgumentNotAllowedHere {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         Err(syn::Error::new(
@@ -260,4 +266,12 @@ impl Parse for CommonAttr {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         parse_comma_separated(input)
     }
+}
+
+// Utility function for creating syn errors
+pub(crate) fn syn_err<T, U: ToTokens, V: std::fmt::Display>(
+    tokens: U,
+    message: V,
+) -> syn::Result<T> {
+    Err(syn::Error::new_spanned(tokens, message))
 }

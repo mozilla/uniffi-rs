@@ -4,6 +4,10 @@
 
 use std::sync::Arc;
 
+mod callback_interface;
+
+use callback_interface::TestCallbackInterface;
+
 #[derive(uniffi::Record)]
 pub struct One {
     inner: i32,
@@ -87,6 +91,21 @@ fn take_two(two: Two) -> String {
     two.a
 }
 
+#[uniffi::export]
+fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
+    cb.do_nothing();
+    assert_eq!(cb.add(1, 1), 2);
+    assert_eq!(Ok(10), cb.try_parse_int("10".to_string()));
+    assert_eq!(
+        Err(BasicError::InvalidInput),
+        cb.try_parse_int("ten".to_string())
+    );
+    assert!(matches!(
+        cb.try_parse_int("force-unexpected-error".to_string()),
+        Err(BasicError::UnexpectedError { .. }),
+    ));
+}
+
 // Type that's defined in the UDL and not wrapped with #[uniffi::export]
 pub struct Zero {
     inner: String,
@@ -111,10 +130,18 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
     value
 }
 
-#[derive(uniffi::Error)]
+#[derive(uniffi::Error, Debug, PartialEq, Eq)]
+#[uniffi(handle_unknown_callback_error)]
 pub enum BasicError {
     InvalidInput,
     OsError,
+    UnexpectedError { reason: String },
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for BasicError {
+    fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self::UnexpectedError { reason: e.reason }
+    }
 }
 
 #[uniffi::export]

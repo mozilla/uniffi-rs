@@ -40,3 +40,21 @@ except FlatError.InvalidInput:
     pass
 else:
     raise Exception("do_stuff should throw if its argument is 0")
+
+class PyTestCallbackInterface(TestCallbackInterface):
+    def do_nothing(self):
+        pass
+
+    def add(self, a, b):
+        return a + b
+
+    def try_parse_int(self, value):
+        if value == "force-unexpected-error":
+            # raise an error that's not expected
+            raise KeyError(value)
+        try:
+            return int(value)
+        except BaseException:
+            raise BasicError.InvalidInput()
+
+test_callback_interface(PyTestCallbackInterface())

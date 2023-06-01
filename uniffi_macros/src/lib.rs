@@ -14,6 +14,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, LitStr};
 
+mod callback_interface;
 mod enum_;
 mod error;
 mod export;
@@ -24,8 +25,8 @@ mod test;
 mod util;
 
 use self::{
-    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
-    record::expand_record,
+    callback_interface::expand_callback_interface, enum_::expand_enum, error::expand_error,
+    export::expand_export, object::expand_object, record::expand_record,
 };
 
 /// A macro to build testcases for a component's generated bindings.
@@ -57,6 +58,19 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
         let item = syn::parse(input)?;
         expand_export(item, args, mod_path)
     };
+    let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
+
+    quote! {
+        #input2
+        #output
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn callback_interface(attr_args: TokenStream, input: TokenStream) -> TokenStream {
+    let input2 = proc_macro2::TokenStream::from(input.clone());
+    let gen_output = || expand_callback_interface(syn::parse(input)?, syn::parse(attr_args)?);
     let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
     quote! {

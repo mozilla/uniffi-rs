@@ -56,7 +56,7 @@ pub struct CallbackInterface {
 }
 
 impl CallbackInterface {
-    fn new(name: String) -> CallbackInterface {
+    pub fn new(name: String) -> CallbackInterface {
         CallbackInterface {
             name,
             methods: Default::default(),

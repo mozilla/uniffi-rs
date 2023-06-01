@@ -38,6 +38,14 @@ impl FnSignature {
         Self::new(FnKind::TraitMethod { self_ident }, sig)
     }
 
+    pub(crate) fn new_callback_interface_method(
+        trait_ident: Ident,
+        index: u32,
+        sig: syn::Signature,
+    ) -> syn::Result<Self> {
+        Self::new(FnKind::CallbackInterfaceMethod { trait_ident, index }, sig)
+    }
+
     pub(crate) fn new(kind: FnKind, sig: syn::Signature) -> syn::Result<Self> {
         let span = sig.span();
         let ident = sig.ident;
@@ -90,8 +98,21 @@ impl FnSignature {
         self.args.iter().map(NamedArg::lift_expr)
     }
 
+    /// Write expressions for each of our arguments
+    pub fn write_exprs<'a>(
+        &'a self,
+        buf_ident: &'a Ident,
+    ) -> impl Iterator<Item = TokenStream> + 'a {
+        self.args.iter().map(|a| a.write_expr(buf_ident))
+    }
+
+    /// Parameters expressions for each of our arguments
+    pub fn params(&self) -> impl Iterator<Item = TokenStream> + '_ {
+        self.args.iter().map(NamedArg::param)
+    }
+
     /// Name of the scaffolding function to generate for this function
-    pub fn scaffolding_fn_ident(&self) -> Ident {
+    pub fn scaffolding_fn_ident(&self) -> syn::Result<Ident> {
         let mod_path = &self.mod_path;
         let name = &self.name;
         let name = match &self.kind {
@@ -102,8 +123,11 @@ impl FnSignature {
             FnKind::Constructor { self_ident } => {
                 uniffi_meta::constructor_symbol_name(mod_path, &ident_to_string(self_ident), name)
             }
+            FnKind::CallbackInterfaceMethod { .. } => {
+                return self.syn_err("UniFFI internal error: attempt to create scaffolding function for a callback interaface method");
+            }
         };
-        Ident::new(&name, Span::call_site())
+        Ok(Ident::new(&name, Span::call_site()))
     }
 
     /// Scaffolding parameters expressions for each of our arguments
@@ -182,6 +206,25 @@ impl FnSignature {
                     Some(self.checksum_symbol_name()),
                 ))
             }
+
+            FnKind::CallbackInterfaceMethod { trait_ident, index } => {
+                let trait_name = ident_to_string(trait_ident);
+                Ok(create_metadata_items(
+                    "callback_interface_method",
+                    &format!("{trait_name}_{name}"),
+                    quote! {
+                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CALLBACK_INTERFACE_METHOD)
+                            .concat_str(#mod_path)
+                            .concat_str(#trait_name)
+                            .concat_u32(#index)
+                            .concat_str(#name)
+                            .concat_value(#args_len)
+                            #(#arg_metadata_calls)*
+                            .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                    },
+                    Some(self.checksum_symbol_name()),
+                ))
+            }
         }
     }
 
@@ -202,6 +245,13 @@ impl FnSignature {
                 &ident_to_string(self_ident),
                 name,
             ),
+            FnKind::CallbackInterfaceMethod { trait_ident, .. } => {
+                uniffi_meta::method_checksum_symbol_name(
+                    mod_path,
+                    &ident_to_string(trait_ident),
+                    name,
+                )
+            }
         }
     }
 }
@@ -278,6 +328,13 @@ impl NamedArg {
         quote! { #ffi_converter::FfiType }
     }
 
+    /// Generate the parameter for this Arg
+    pub(crate) fn param(&self) -> TokenStream {
+        let ident = &self.ident;
+        let ty = &self.ty;
+        quote! { #ident: #ty }
+    }
+
     /// Generate the scaffolding parameter for this Arg
     pub(crate) fn scaffolding_param(&self) -> TokenStream {
         let ident = &self.ident;
@@ -296,7 +353,13 @@ impl NamedArg {
         }
     }
 
-    /// Generate the set of metadata calls for this argument
+    /// Generate the expression to write the scaffolding parameter for this arg
+    pub(crate) fn write_expr(&self, buf_ident: &Ident) -> TokenStream {
+        let ident = &self.ident;
+        let ffi_converter = self.ffi_converter();
+        quote! { #ffi_converter::write(#ident, &mut #buf_ident) }
+    }
+
     pub(crate) fn metadata_calls(&self) -> TokenStream {
         let name = &self.name;
         let ffi_converter = self.ffi_converter();
@@ -307,9 +370,11 @@ impl NamedArg {
     }
 }
 
+#[derive(Debug)]
 pub(crate) enum FnKind {
     Function,
     Constructor { self_ident: Ident },
     Method { self_ident: Ident },
     TraitMethod { self_ident: Ident },
+    CallbackInterfaceMethod { trait_ident: Ident, index: u32 },
 }

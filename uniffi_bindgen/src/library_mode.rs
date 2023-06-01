@@ -23,7 +23,7 @@ use anyhow::{bail, Context};
 use camino::Utf8Path;
 use cargo_metadata::{MetadataCommand, Package};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap, HashSet},
     fs,
 };
 use uniffi_meta::group_metadata;
@@ -170,7 +170,7 @@ fn find_package_by_crate_name(
 fn load_component_interface(
     crate_name: &str,
     crate_root: &Utf8Path,
-    metadata: &[uniffi_meta::Metadata],
+    metadata: &BTreeSet<uniffi_meta::Metadata>,
 ) -> Result<ComponentInterface> {
     let udl_items = metadata
         .iter()

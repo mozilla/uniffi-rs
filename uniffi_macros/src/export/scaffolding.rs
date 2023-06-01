@@ -17,7 +17,7 @@ pub(super) fn gen_fn_scaffolding(
         return sig.syn_err("Unexpected self param (Note: uniffi::export must be used on the impl block, not its containing fn's)");
     }
     let metadata_items = sig.metadata_items()?;
-    let scaffolding_func = gen_ffi_function(&sig, arguments);
+    let scaffolding_func = gen_ffi_function(&sig, arguments)?;
     Ok(quote! {
         #scaffolding_func
         #metadata_items
@@ -32,7 +32,7 @@ pub(super) fn gen_constructor_scaffolding(
         return sig.syn_err("constructors must not have a self parameter");
     }
     let metadata_items = sig.metadata_items()?;
-    let scaffolding_func = gen_ffi_function(&sig, arguments);
+    let scaffolding_func = gen_ffi_function(&sig, arguments)?;
     Ok(quote! {
         #scaffolding_func
         #metadata_items
@@ -46,7 +46,7 @@ pub(super) fn gen_method_scaffolding(
     let scaffolding_func = if sig.receiver.is_none() {
         return sig.syn_err("associated functions are not currently supported");
     } else {
-        gen_ffi_function(&sig, arguments)
+        gen_ffi_function(&sig, arguments)?
     };
 
     let metadata_items = sig.metadata_items()?;
@@ -123,7 +123,10 @@ impl ScaffoldingBits {
 ///
 /// `pre_fn_call` is the statements that we should execute before the rust call
 /// `rust_fn` is the Rust function to call.
-fn gen_ffi_function(sig: &FnSignature, arguments: &ExportAttributeArguments) -> TokenStream {
+fn gen_ffi_function(
+    sig: &FnSignature,
+    arguments: &ExportAttributeArguments,
+) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
         params,
         pre_fn_call,
@@ -135,19 +138,21 @@ fn gen_ffi_function(sig: &FnSignature, arguments: &ExportAttributeArguments) -> 
             ScaffoldingBits::new_for_method(sig, self_ident, true)
         }
         FnKind::Constructor { self_ident } => ScaffoldingBits::new_for_constructor(sig, self_ident),
+        FnKind::CallbackInterfaceMethod { .. } => {
+            return sig.syn_err("UniFFI internal error: attempt to create scaffolding function for a callback interaface method");
+        }
     };
 
-    let ffi_ident = sig.scaffolding_fn_ident();
+    let ffi_ident = sig.scaffolding_fn_ident()?;
     let name = &sig.name;
     let return_ty = &sig.return_ty;
 
-    if !sig.is_async {
+    Ok(if !sig.is_async {
         if let Some(async_runtime) = &arguments.async_runtime {
-            return syn::Error::new_spanned(
+            return Err(syn::Error::new_spanned(
                 async_runtime,
                 "this attribute is only allowed on async functions",
-            )
-            .into_compile_error();
+            ));
         }
 
         quote! {
@@ -194,5 +199,5 @@ fn gen_ffi_function(sig: &FnSignature, arguments: &ExportAttributeArguments) -> 
                 });
             }
         }
-    }
+    })
 }
