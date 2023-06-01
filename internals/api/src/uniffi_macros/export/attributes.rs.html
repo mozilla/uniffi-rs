@@ -126,11 +126,11 @@
 <span id="126">126</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, parse_comma_separated, UniffiAttributeArgs};
 
-<span class="kw">use </span>proc_macro2::Span;
+<span class="kw">use </span>proc_macro2::TokenStream;
+<span class="kw">use </span>quote::ToTokens;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
-    spanned::Spanned,
-    Attribute, LitStr, PathArguments, PathSegment, Token,
+    Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
 };
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>kw {
@@ -166,14 +166,14 @@
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>AsyncRuntime {
-    Tokio(Span),
+    Tokio(LitStr),
 }
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>AsyncRuntime {
     <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lit: LitStr = input.parse()<span class="question-mark">?</span>;
         <span class="kw">match </span>lit.value().as_str() {
-            <span class="string">&quot;tokio&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Tokio(lit.span())),
+            <span class="string">&quot;tokio&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Tokio(lit)),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
                 lit,
                 <span class="string">&quot;unknown async runtime, currently only `tokio` is supported&quot;</span>,
@@ -182,10 +182,10 @@
     }
 }
 
-<span class="kw">impl </span>Spanned <span class="kw">for </span>AsyncRuntime {
-    <span class="kw">fn </span>span(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Span {
+<span class="kw">impl </span>ToTokens <span class="kw">for </span>AsyncRuntime {
+    <span class="kw">fn </span>to_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, tokens: <span class="kw-2">&amp;mut </span>TokenStream) {
         <span class="kw">match </span><span class="self">self </span>{
-            AsyncRuntime::Tokio(span) =&gt; <span class="kw-2">*</span>span,
+            AsyncRuntime::Tokio(lit) =&gt; lit.to_tokens(tokens),
         }
     }
 }
@@ -199,7 +199,7 @@
     <span class="kw">pub fn </span>new(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>this = <span class="self">Self</span>::default();
         <span class="kw">for </span>attr <span class="kw">in </span>attrs {
-            <span class="kw">let </span>segs = <span class="kw-2">&amp;</span>attr.path.segments;
+            <span class="kw">let </span>segs = <span class="kw-2">&amp;</span>attr.path().segments;
 
             <span class="kw">let </span>fst = segs
                 .first()
@@ -209,9 +209,9 @@
             }
             ensure_no_path_args(fst)<span class="question-mark">?</span>;
 
-            <span class="kw">if </span>!attr.tokens.is_empty() {
+            <span class="kw">if let </span>Meta::List(<span class="kw">_</span>) | Meta::NameValue(<span class="kw">_</span>) = <span class="kw-2">&amp;</span>attr.meta {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
-                    <span class="kw-2">&amp;</span>attr.tokens,
+                    <span class="kw-2">&amp;</span>attr.meta,
                     <span class="string">&quot;attribute arguments are not currently recognized in this position&quot;</span>,
                 ));
             }

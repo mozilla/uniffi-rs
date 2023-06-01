@@ -444,7 +444,7 @@
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{format_ident, quote, ToTokens};
-<span class="kw">use </span>syn::{spanned::Spanned, FnArg, Pat};
+<span class="kw">use </span>syn::{FnArg, Pat};
 
 <span class="kw">use super</span>::{
     attributes::{AsyncRuntime, ExportAttributeArguments},
@@ -825,8 +825,8 @@
 
     <span class="kw">if </span>!sig.is_async {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(async_runtime) = <span class="kw-2">&amp;</span>arguments.async_runtime {
-            <span class="kw">return </span>syn::Error::new(
-                async_runtime.span(),
+            <span class="kw">return </span>syn::Error::new_spanned(
+                async_runtime,
                 <span class="string">&quot;this attribute is only allowed on async functions&quot;</span>,
             )
             .into_compile_error();
