@@ -53,6 +53,8 @@ pub struct CallbackInterface {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_init_callback: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl CallbackInterface {
@@ -61,6 +63,7 @@ impl CallbackInterface {
             name,
             methods: Default::default(),
             ffi_init_callback: Default::default(),
+            docstring: None,
         }
     }
 
@@ -78,6 +81,10 @@ impl CallbackInterface {
 
     pub fn ffi_init_callback(&self) -> &FfiFunction {
         &self.ffi_init_callback
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub(super) fn derive_ffi_funcs(&mut self, ci_prefix: &str) {
@@ -103,6 +110,7 @@ impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_>
             bail!("callback interface inheritance is not supported");
         }
         let mut object = CallbackInterface::new(self.identifier.0.to_string());
+        object.docstring = self.docstring.as_ref().map(|v| v.0.clone());
         for member in &self.members.body {
             match member {
                 weedle::interface::InterfaceMember::Operation(t) => {
@@ -165,5 +173,22 @@ mod test {
         assert_eq!(callbacks_two.methods().len(), 2);
         assert_eq!(callbacks_two.methods()[0].name(), "two");
         assert_eq!(callbacks_two.methods()[1].name(), "too");
+    }
+
+    #[test]
+    fn test_docstring_callback_interface() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            callback interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_callback_interface_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

@@ -1,8 +1,10 @@
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 {%- let e = ci.get_enum_definition(name).unwrap() %}
+{%- call swift::docstring(e, 0) %}
 public enum {{ type_name }} {
     {% for variant in e.variants() %}
+    {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
 }

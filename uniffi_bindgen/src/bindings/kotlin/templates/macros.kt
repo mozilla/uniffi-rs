@@ -80,3 +80,11 @@ fun {{ func.name()|fn_name }}(
     {%- call arg_list_ffi_decl(func) %}
 ){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|ffi_type_name }}{% when None %}: Unit{% endmatch %}
 {% endmacro %}
+
+{%- macro docstring(defn, indent_spaces) %}
+{%- match defn.docstring() %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}

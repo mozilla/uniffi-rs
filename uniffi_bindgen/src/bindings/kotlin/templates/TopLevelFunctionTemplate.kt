@@ -1,3 +1,4 @@
+{%- call kt::docstring(func, 8) %}
 {%- match func.throws_type() -%}
 {%- when Some with (throwable) %}
 @Throws({{ throwable|type_name }}::class)

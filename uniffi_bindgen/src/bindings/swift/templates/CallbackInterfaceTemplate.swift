@@ -4,8 +4,10 @@
 
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
 
+{%- call swift::docstring(cbi, 0) %}
 public protocol {{ type_name }} : AnyObject {
     {% for meth in cbi.methods() -%}
+    {%- call swift::docstring(meth, 4) %}
     func {{ meth.name()|fn_name }}({% call swift::arg_list_protocol(meth) %}) {% call swift::throws(meth) -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) %} -> {{ return_type|type_name -}}

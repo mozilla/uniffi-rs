@@ -134,6 +134,10 @@ impl Error {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.wrapped_enum().iter_types()
     }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.enum_.docstring()
+    }
 }
 
 impl From<uniffi_meta::ErrorMetadata> for Error {
@@ -144,6 +148,7 @@ impl From<uniffi_meta::ErrorMetadata> for Error {
                 name: meta.name,
                 variants: meta.variants.into_iter().map(Into::into).collect(),
                 flat: meta.flat,
+                docstring: None,
             },
         }
     }
@@ -226,5 +231,41 @@ mod test {
             vec!("One", "Two")
         );
         assert!(!error.is_flat());
+    }
+
+    #[test]
+    fn test_docstring_error() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            [Error]
+            enum Testing { "one" };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_error_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_associated_error() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            [Error]
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_error_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

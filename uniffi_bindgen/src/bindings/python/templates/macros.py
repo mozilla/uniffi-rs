@@ -37,6 +37,14 @@ rust_call(
     {%- endfor %}
 {%- endmacro -%}
 
+{%- macro docstring(defn, indent_spaces) %}
+{%- match defn.docstring() %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}
+
 {#-
 // Arglist as used in Python declarations of methods, functions and constructors.
 // Note the var_name and type_name filters.

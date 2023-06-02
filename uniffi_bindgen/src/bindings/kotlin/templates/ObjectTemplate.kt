@@ -18,12 +18,14 @@ public interface {{ type_name }}Interface {
     {% endfor %}
 }
 
+{%- call kt::docstring(obj, 0) %}
 class {{ type_name }}(
     pointer: Pointer
 ) : FFIObject(pointer), {{ type_name }}Interface {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+    {%- call kt::docstring(cons, 4) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
         this({% call kt::to_ffi_call(cons) %})
     {%- when None %}
@@ -44,6 +46,7 @@ class {{ type_name }}(
     }
 
     {% for meth in obj.methods() -%}
+    {%- call kt::docstring(meth, 4) %}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
     @Throws({{ throwable|type_name }}::class)
@@ -70,6 +73,7 @@ class {{ type_name }}(
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
+        {%- call kt::docstring(cons, 4) %}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ type_name }} =
             {{ type_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}

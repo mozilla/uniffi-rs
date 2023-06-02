@@ -1,6 +1,7 @@
 {%- let e = ci.get_error_definition(name).unwrap() %}
 
 {% if e.is_flat() %}
+{%- call kt::docstring(e, 0) %}
 sealed class {{ type_name }}(message: String): Exception(message){% if contains_object_references %}, Disposable {% endif %} {
         // Each variant is a nested class
         // Flat enums carries a string error message, so no special implementation is necessary.
@@ -13,9 +14,11 @@ sealed class {{ type_name }}(message: String): Exception(message){% if contains_
     }
 }
 {%- else %}
+{%- call kt::docstring(e, 0) %}
 sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Disposable {% endif %} {
     // Each variant is a nested class
     {% for variant in e.variants() -%}
+    {%- call kt::docstring(variant, 4) %}
     {%- let variant_name = variant.name()|exception_name %}
     class {{ variant_name }}(
         {% for field in variant.fields() -%}
