@@ -109,6 +109,7 @@ pub mod library_mode;
 pub mod macro_metadata;
 pub mod scaffolding;
 
+use bindings::TargetLanguage;
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
@@ -268,7 +269,7 @@ pub fn generate_component_scaffolding(
 pub fn generate_bindings(
     udl_file: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
-    target_languages: Vec<&str>,
+    target_languages: Vec<TargetLanguage>,
     out_dir_override: Option<&Utf8Path>,
     library_file: Option<&Utf8Path>,
     try_format_code: bool,
@@ -287,7 +288,7 @@ pub fn generate_bindings(
             &config.bindings,
             &component,
             &out_dir,
-            language.try_into()?,
+            language,
             try_format_code,
         )?;
     }

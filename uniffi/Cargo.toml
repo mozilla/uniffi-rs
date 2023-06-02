@@ -20,7 +20,7 @@ uniffi_core = { path = "../uniffi_core", version = "=0.23.0" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.23.0" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
-clap = { version = "3.1", features = ["cargo", "std", "derive"], optional = true }
+clap = { version = "4", features = ["cargo", "std", "derive"], optional = true }
 
 [dev-dependencies]
 trybuild = "1"
@@ -35,7 +35,7 @@ build = [ "dep:uniffi_build" ]
 bindgen = ["dep:uniffi_bindgen"]
 # Support for `uniffi_bindgen_main()`. Enable this feature for your
 # `uniffi-bindgen` binaries.
-cli = [ "bindgen", "dep:clap", "dep:camino" ]
+cli = [ "bindgen", "uniffi_bindgen?/clap", "dep:clap", "dep:camino" ]
 # Support for running example/fixture tests for `uniffi-bindgen`.  You probably
 # don't need to enable this.
 bindgen-tests = [ "dep:uniffi_bindgen" ]
