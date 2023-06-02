@@ -17,14 +17,14 @@ assert EnumTest.__doc__
 val = EnumTest.ONE
 
 assert AssociatedEnumTest.__doc__
-val = AssociatedEnumTest.TEST()
+val = AssociatedEnumTest.TEST(0)
 
 # Test errors
 assert ErrorTest.__doc__
 val = ErrorTest.One("hello")
 
 assert AssociatedErrorTest.__doc__
-val = AssociatedErrorTest.Test()
+val = AssociatedErrorTest.Test(0)
 
 # Test objects
 assert ObjectTest.__doc__

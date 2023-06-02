@@ -8,11 +8,11 @@ test()
 
 EnumTest.ONE
 
-AssociatedEnumTest.Test
+AssociatedEnumTest.Test(0)
 
 ErrorTest.One("hello")
 
-AssociatedErrorTest.Test()
+AssociatedErrorTest.Test(0)
 
 val obj1 = ObjectTest
 val obj2 = ObjectTest.newAlternate()

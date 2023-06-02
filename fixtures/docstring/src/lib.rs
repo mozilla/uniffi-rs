@@ -4,27 +4,27 @@
 
 include!(concat!(env!("OUT_DIR"), "/docstring.uniffi.rs"));
 
-enum EnumTest {
+pub enum EnumTest {
     One,
 }
 
-enum AssociatedEnumTest {
-    Test{},
+pub enum AssociatedEnumTest {
+    Test{ code: i16 },
 }
 
 #[derive(Debug, thiserror::Error)]
-enum ErrorTest {
+pub enum ErrorTest {
     #[error("Test")]
     One,
 }
 
 #[derive(Debug, thiserror::Error)]
-enum AssociatedErrorTest {
+pub enum AssociatedErrorTest {
     #[error("Test")]
-    Test{},
+    Test{ code: i16 },
 }
 
-struct ObjectTest {
+pub struct ObjectTest {
 
 }
 
@@ -41,7 +41,7 @@ impl ObjectTest {
     }
 }
 
-struct RecordTest {
+pub struct RecordTest {
     test: i32,
 }
 

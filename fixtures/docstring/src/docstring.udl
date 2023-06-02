@@ -11,7 +11,7 @@ enum EnumTest { "One" };
 [Enum]
 interface AssociatedEnumTest {
     /// <docstring-associated-enum-variant>
-    Test();
+    Test(i16 code);
 };
 
 /// <docstring-error>
@@ -22,7 +22,7 @@ enum ErrorTest { "One" };
 [Error]
 interface AssociatedErrorTest {
     /// <docstring-associated-error-variant>
-    Test();
+    Test(i16 code);
 };
 
 /// <docstring-object>

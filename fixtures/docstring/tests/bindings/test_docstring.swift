@@ -8,11 +8,11 @@ test()
 
 var _ = EnumTest.one
 
-var _ = AssociatedEnumTest.test
+var _ = AssociatedEnumTest.test(code: 0)
 
 var _ = ErrorTest.One(message: "hello")
 
-var _ = AssociatedErrorTest.Test
+var _ = AssociatedErrorTest.Test(code: 0)
 
 var obj1 = ObjectTest()
 var obj2 = ObjectTest.newAlternate()
