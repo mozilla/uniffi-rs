@@ -64,10 +64,6 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -104,7 +100,7 @@
 }
 
 <span class="macro">macro_rules! </span>impl_code_type_for_primitive {
-    (<span class="macro-nonterminal">$T</span>:ty, <span class="macro-nonterminal">$class_name</span>:literal, <span class="macro-nonterminal">$coerce_code</span>:expr) =&gt; {
+    (<span class="macro-nonterminal">$T</span>:ty, <span class="macro-nonterminal">$class_name</span>:literal) =&gt; {
         <span class="macro">paste! </span>{
             <span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
 
@@ -116,27 +112,23 @@
                 <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
                     render_literal(oracle, <span class="kw-2">&amp;</span>literal)
                 }
-
-                <span class="kw">fn </span>coerce(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-                    <span class="macro">format!</span>(<span class="macro-nonterminal">$coerce_code</span>, nm)
-                }
             }
         }
     };
 }
 
-<span class="macro">impl_code_type_for_primitive!</span>(BooleanCodeType, <span class="string">&quot;Bool&quot;</span>, <span class="string">&quot;bool({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(StringCodeType, <span class="string">&quot;String&quot;</span>, <span class="string">&quot;{}&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(BytesCodeType, <span class="string">&quot;Bytes&quot;</span>, <span class="string">&quot;{}&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int8CodeType, <span class="string">&quot;Int8&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int16CodeType, <span class="string">&quot;Int16&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int32CodeType, <span class="string">&quot;Int32&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int64CodeType, <span class="string">&quot;Int64&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt8CodeType, <span class="string">&quot;UInt8&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt16CodeType, <span class="string">&quot;UInt16&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt32CodeType, <span class="string">&quot;UInt32&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt64CodeType, <span class="string">&quot;UInt64&quot;</span>, <span class="string">&quot;int({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Float32CodeType, <span class="string">&quot;Float&quot;</span>, <span class="string">&quot;float({})&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Float64CodeType, <span class="string">&quot;Double&quot;</span>, <span class="string">&quot;float({})&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(BooleanCodeType, <span class="string">&quot;Bool&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(StringCodeType, <span class="string">&quot;String&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(BytesCodeType, <span class="string">&quot;Bytes&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int8CodeType, <span class="string">&quot;Int8&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int16CodeType, <span class="string">&quot;Int16&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int32CodeType, <span class="string">&quot;Int32&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int64CodeType, <span class="string">&quot;Int64&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt8CodeType, <span class="string">&quot;UInt8&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt16CodeType, <span class="string">&quot;UInt16&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt32CodeType, <span class="string">&quot;UInt32&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt64CodeType, <span class="string">&quot;UInt64&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Float32CodeType, <span class="string">&quot;Float&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Float64CodeType, <span class="string">&quot;Double&quot;</span>);
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi_bindgen" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

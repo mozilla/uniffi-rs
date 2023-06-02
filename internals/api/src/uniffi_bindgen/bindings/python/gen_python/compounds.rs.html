@@ -95,31 +95,6 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -154,14 +129,6 @@
             <span class="kw">_ </span>=&gt; oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.inner).literal(oracle, literal),
         }
     }
-
-    <span class="kw">fn </span>coerce(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(
-            <span class="string">&quot;(None if {} is None else {})&quot;</span>,
-            nm,
-            oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.inner).coerce(oracle, nm)
-        )
-    }
 }
 
 <span class="kw">pub struct </span>SequenceCodeType {
@@ -191,14 +158,6 @@
             Literal::EmptySequence =&gt; <span class="string">&quot;[]&quot;</span>.into(),
             <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
         }
-    }
-
-    <span class="kw">fn </span>coerce(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(
-            <span class="string">&quot;list({} for x in {})&quot;</span>,
-            oracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.inner).coerce(oracle, <span class="string">&quot;x&quot;</span>),
-            nm
-        )
     }
 }
 
@@ -231,15 +190,6 @@
             Literal::EmptyMap =&gt; <span class="string">&quot;{}&quot;</span>.into(),
             <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(),
         }
-    }
-
-    <span class="kw">fn </span>coerce(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(
-            <span class="string">&quot;dict(({}, {}) for (k, v) in {}.items())&quot;</span>,
-            <span class="self">self</span>.key.coerce(oracle, <span class="string">&quot;k&quot;</span>),
-            <span class="self">self</span>.value.coerce(oracle, <span class="string">&quot;v&quot;</span>),
-            nm
-        )
     }
 }
 </code></pre></div>
