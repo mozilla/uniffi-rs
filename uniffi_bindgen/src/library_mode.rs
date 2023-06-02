@@ -15,7 +15,10 @@
 ///     all of them at once.
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
-use crate::{bindings, macro_metadata, parse_udl, ComponentInterface, Config, Result};
+use crate::{
+    bindings::{self, TargetLanguage},
+    macro_metadata, parse_udl, ComponentInterface, Config, Result,
+};
 use anyhow::{bail, Context};
 use camino::Utf8Path;
 use cargo_metadata::{MetadataCommand, Package};
@@ -31,7 +34,7 @@ use uniffi_meta::group_metadata;
 pub fn generate_bindings(
     library_path: &Utf8Path,
     crate_name: Option<String>,
-    target_languages: &[String],
+    target_languages: &[TargetLanguage],
     out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<Vec<Source>> {
@@ -74,9 +77,8 @@ pub fn generate_bindings(
     }
 
     for source in sources.iter() {
-        for language in target_languages {
-            let language: bindings::TargetLanguage = language.as_str().try_into()?;
-            if cdylib_name.is_none() && language != bindings::TargetLanguage::Swift {
+        for &language in target_languages {
+            if cdylib_name.is_none() && language != TargetLanguage::Swift {
                 bail!("Generate bindings for {language} requires a cdylib, but {library_path} was given");
             }
             bindings::write_bindings(

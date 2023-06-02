@@ -4,6 +4,7 @@
 
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
+use uniffi_bindgen::bindings::TargetLanguage;
 
 // Structs to help our cmdline parsing. Note that docstrings below form part
 // of the "help" output.
@@ -23,8 +24,8 @@ enum Commands {
     /// Generate foreign language bindings
     Generate {
         /// Foreign language(s) for which to build bindings.
-        #[clap(long, short, possible_values = &["kotlin", "python", "swift", "ruby"])]
-        language: Vec<String>,
+        #[clap(long, short, value_enum)]
+        language: Vec<TargetLanguage>,
 
         /// Directory in which to write generated files. Default is same folder as .udl file.
         #[clap(long, short)]
@@ -109,7 +110,7 @@ pub fn run_main() -> anyhow::Result<()> {
                 uniffi_bindgen::generate_bindings(
                     &source,
                     config.as_deref(),
-                    language.iter().map(String::as_str).collect(),
+                    language,
                     out_dir.as_deref(),
                     lib_file.as_deref(),
                     !no_format,
