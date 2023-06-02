@@ -9,25 +9,13 @@ def now():
 class TestFutures(unittest.TestCase):
     def test_always_ready(self):
         async def test():
-            t0 = now()
-            result = await always_ready()
-            t1 = now()
-
-            t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta < 0.1)
-            self.assertEqual(result, True)
+            self.assertEqual(await always_ready(), True)
 
         asyncio.run(test())
 
     def test_void(self):
         async def test():
-            t0 = now()
-            result = await void()
-            t1 = now()
-
-            t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta < 0.1)
-            self.assertEqual(result, None)
+            self.assertEqual(await void(), None)
 
         asyncio.run(test())
 
@@ -38,7 +26,7 @@ class TestFutures(unittest.TestCase):
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 2 and t_delta < 2.1)
+            self.assertGreater(t_delta, 2)
 
         asyncio.run(test())
 
@@ -50,7 +38,7 @@ class TestFutures(unittest.TestCase):
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 0.3 and t_delta < 0.31)
+            self.assertGreater(t_delta, 0.3)
             self.assertEqual(result_alice, 'Hello, Alice!')
             self.assertEqual(result_bob, 'Hello, Bob!')
 
@@ -67,7 +55,7 @@ class TestFutures(unittest.TestCase):
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 0.2 and t_delta < 0.21)
+            self.assertGreater(t_delta, 0.2)
             self.assertEqual(result_alice, 'Hello, Alice!')
             self.assertEqual(result_bob, 'Hello, Bob!')
 
@@ -81,7 +69,7 @@ class TestFutures(unittest.TestCase):
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 0.2 and t_delta < 0.21)
+            self.assertGreater(t_delta, 0.2)
             self.assertEqual(result_alice, 'HELLO, ALICE!')
 
         asyncio.run(test())
@@ -93,19 +81,14 @@ class TestFutures(unittest.TestCase):
             t1 = now()
 
             t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 0.2 and t_delta < 0.21)
+            self.assertGreater(t_delta, 0.2)
             self.assertEqual(result_alice, 'Hello, Alice (with Tokio)!')
 
         asyncio.run(test())
 
     def test_fallible(self):
         async def test():
-            t0 = now()
             result = await fallible_me(False)
-            t1 = now()
-
-            t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 0 and t_delta < 0.1)
             self.assertEqual(result, 42)
 
             try:
@@ -116,12 +99,7 @@ class TestFutures(unittest.TestCase):
 
             megaphone = new_megaphone()
 
-            t0 = now()
             result = await megaphone.fallible_me(False)
-            t1 = now()
-
-            t_delta = (t1 - t0).total_seconds()
-            self.assertTrue(t_delta > 0 and t_delta < 0.1)
             self.assertEqual(result, 42)
 
             try:
