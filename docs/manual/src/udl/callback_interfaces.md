@@ -23,15 +23,20 @@ pub trait Keychain: Send + Sync + Debug {
 }
 ```
 
-### Why Send + Sync?
+### Send + Sync?
 
-The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's safe to
+The concrete types that UniFFI generates for callback interfaces implement `Send`, `Sync`, and `Debug`, so it's legal to
 include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
 particular, `Send + Sync` is useful when:
   - Storing `Box<dyn CallbackInterfaceTrait>` types inside a type that needs to be `Send + Sync` (for example a UniFFI
     interface type)
   - Storing `Box<dyn CallbackInterfaceTrait>` inside a global `Mutex` or `RwLock`
 
+**⚠ Warning ⚠**: this comes with a caveat: the methods of the foreign class must be safe to call
+from multiple threads at once, for example because they are synchronized with a mutex, or use
+thread-safe data structures.  However, Rust can not enforce this in the foreign code.  If you add
+`Send + Sync` to your callback interface, you must make sure to inform your library consumers that
+their implementations must logically be Send + Sync.
 
 ## 2. Setup error handling
 
