@@ -585,6 +585,15 @@ pub mod filters {
         Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
     }
 
+    pub fn ffi_error_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        // special handling for types used as errors.
+        let mut name = oracle().find(&as_type.as_type()).ffi_converter_name();
+        if matches!(&as_type.as_type(), Type::Object { .. }) {
+            name.push_str("__as_error")
+        }
+        Ok(name)
+    }
+
     pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).lower())
     }

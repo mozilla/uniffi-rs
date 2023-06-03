@@ -3,6 +3,8 @@
 {%- let methods = obj.methods() %}
 {%- let protocol_docstring = obj.docstring() %}
 
+{%- let is_error = ci.is_name_used_as_error(name) %}
+
 {% include "Protocol.swift" %}
 
 {%- call swift::docstring(obj, 0) %}
@@ -20,6 +22,9 @@ open class {{ impl_class_name }}:
     {%-         else %}
     {%-    endmatch %}
     {%- endfor %}
+    {%- if is_error %}
+    Error,
+    {% endif %}
     {{ protocol_name }} {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
@@ -95,7 +100,7 @@ open class {{ impl_class_name }}:
             {%- endmatch %}
             {%- match meth.throws_type() %}
             {%- when Some with (e) %}
-            errorHandler: {{ e|ffi_converter_name }}.lift
+            errorHandler: {{ e|ffi_error_converter_name }}.lift
             {%- else %}
             errorHandler: nil
             {% endmatch %}
@@ -206,6 +211,29 @@ public struct {{ ffi_converter_name }}: FfiConverter {
         writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
     }
 }
+
+{# Objects as error #}
+{%- if is_error %}
+{# Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer holding a pointer #}
+public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
+    public static func lift(_ buf: RustBuffer) throws -> {{ type_name }} {
+        var reader = createReader(data: Data(rustBuffer: buf))
+        return try {{ ffi_converter_name }}.read(from: &reader)
+    }
+
+    public static func lower(_ value: {{ type_name }}) -> RustBuffer {
+        fatalError("not implemented")
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
+        fatalError("not implemented")
+    }
+
+    public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
+        fatalError("not implemented")
+    }
+}
+{%- endif %}
 
 {#
 We always write these public functions just in case the enum is used as

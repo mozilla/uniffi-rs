@@ -21,13 +21,7 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> Non
         {%- when None %}
         lambda val: None,
         {% endmatch %}
-        # Error FFI converter
-        {%- match func.throws_type() %}
-        {%- when Some(e) %}
-        {{ e|ffi_converter_name }},
-        {%- when None %}
-        None,
-        {%- endmatch %}
+        {% call py::error_ffi_converter(func) %}
     )
 
 {%- else %}

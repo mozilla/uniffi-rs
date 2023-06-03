@@ -6,6 +6,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- Objects can be errors - anywhere you can specify an enum error object you can specify
+  an `Arc<Object>` - see [the manual](https://mozilla.github.io/uniffi-rs/udl/errors.html).
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...HEAD).
 
 ### What's new?

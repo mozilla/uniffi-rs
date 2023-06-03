@@ -16,10 +16,6 @@ public enum {{ type_name }} {
     {% endfor %}
 
     {%- endif %}
-
-    fileprivate static func uniffiErrorHandler(_ error: RustBuffer) throws -> Error {
-        return try {{ ffi_converter_name }}.lift(error)
-    }
 }
 
 

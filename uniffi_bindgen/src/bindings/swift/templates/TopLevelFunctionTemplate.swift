@@ -21,7 +21,7 @@ public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) a
         {%- endmatch %}
         {%- match func.throws_type() %}
         {%- when Some with (e) %}
-        errorHandler: {{ e|ffi_converter_name }}.lift
+        errorHandler: {{ e|ffi_error_converter_name }}.lift
         {%- else %}
         errorHandler: nil
         {% endmatch %}
