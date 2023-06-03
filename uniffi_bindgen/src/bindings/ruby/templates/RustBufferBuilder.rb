@@ -168,6 +168,7 @@ class RustBufferBuilder
   end
 
   {% when Type::Enum with (enum_name) -%}
+  {% if !ci.is_name_used_as_error(enum_name) %}
   {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
   # The Enum type {{ enum_name }}.
 
@@ -185,6 +186,7 @@ class RustBufferBuilder
     {%- endfor %}
     {%- endif %}
  end
+   {% endif %}
 
   {% when Type::Record with (record_name) -%}
   {%- let rec = ci.get_record_definition(record_name).unwrap() -%}

@@ -63,11 +63,11 @@ use std::{collections::HashSet, iter};
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
-use super::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
+use super::attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::function::{Argument, Callable};
 use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{convert_type, APIConverter, AsType, ComponentInterface};
+use super::{APIConverter, AsType, ComponentInterface};
 
 /// An "object" is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -287,7 +287,8 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     arguments,
                     return_type,
                     ffi_func: Default::default(),
-                    attributes: Default::default(),
+                    throws: None,
+                    takes_self_by_arc: false,
                     checksum_override: None,
                 })
             };
@@ -367,7 +368,7 @@ pub struct Constructor {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
-    pub(super) attributes: ConstructorAttributes,
+    pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
     // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
     // different checksum method.
@@ -402,17 +403,15 @@ impl Constructor {
     }
 
     pub fn throws(&self) -> bool {
-        self.attributes.get_throws_err().is_some()
+        self.throws.is_some()
     }
 
     pub fn throws_name(&self) -> Option<&str> {
-        self.attributes.get_throws_err()
+        super::throws_name(&self.throws)
     }
 
-    pub fn throws_type(&self) -> Option<Type> {
-        self.attributes
-            .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+    pub fn throws_type(&self) -> Option<&Type> {
+        self.throws.as_ref()
     }
 
     pub fn is_primary_constructor(&self) -> bool {
@@ -459,19 +458,12 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             name: ffi_name,
             ..FfiFunction::default()
         };
-
         Self {
             name: meta.name,
             object_name: meta.self_name,
             arguments,
             ffi_func,
-            attributes: match meta.throws {
-                None => ConstructorAttributes::from_iter(vec![]),
-                Some(uniffi_meta::Type::Error { name }) => {
-                    ConstructorAttributes::from_iter(vec![Attribute::Throws(name)])
-                }
-                Some(ty) => panic!("Invalid throws type: {ty:?}"),
-            },
+            throws: meta.throws.map(Into::into),
             checksum_fn_name,
             checksum_override: Some(meta.checksum),
         }
@@ -484,6 +476,9 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             Some(attr) => ConstructorAttributes::try_from(attr)?,
             None => Default::default(),
         };
+        let throws = attributes
+            .get_throws_err()
+            .map(|name| ci.get_type(name).expect("invalid throws type"));
         Ok(Constructor {
             name: String::from(attributes.get_name().unwrap_or("new")),
             // We don't know the name of the containing `Object` at this point, fill it in later.
@@ -492,7 +487,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             checksum_fn_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
-            attributes,
+            throws,
             checksum_override: None,
         })
     }
@@ -518,7 +513,8 @@ pub struct Method {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
-    pub(super) attributes: MethodAttributes,
+    pub(super) throws: Option<Type>,
+    pub(super) takes_self_by_arc: bool,
     pub(super) checksum_fn_name: String,
     // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
     // different checksum method.
@@ -550,7 +546,7 @@ impl Method {
                 name: self.object_name.clone(),
                 imp: self.object_impl,
             },
-            by_ref: !self.attributes.get_self_by_arc(),
+            by_ref: !self.takes_self_by_arc,
             optional: false,
             default: None,
         }]
@@ -577,21 +573,19 @@ impl Method {
     }
 
     pub fn throws(&self) -> bool {
-        self.attributes.get_throws_err().is_some()
+        self.throws.is_some()
     }
 
     pub fn throws_name(&self) -> Option<&str> {
-        self.attributes.get_throws_err()
+        super::throws_name(&self.throws)
     }
 
-    pub fn throws_type(&self) -> Option<Type> {
-        self.attributes
-            .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+    pub fn throws_type(&self) -> Option<&Type> {
+        self.throws.as_ref()
     }
 
     pub fn takes_self_by_arc(&self) -> bool {
-        self.attributes.get_self_by_arc()
+        self.takes_self_by_arc
     }
 
     pub fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) -> Result<()> {
@@ -634,7 +628,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
-        let return_type = meta.return_type.map(|out| convert_type(&out));
+        let return_type = meta.return_type.map(Into::into);
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FfiFunction {
@@ -651,13 +645,8 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
-            attributes: match meta.throws {
-                None => MethodAttributes::from_iter(vec![]),
-                Some(uniffi_meta::Type::Error { name }) => {
-                    MethodAttributes::from_iter(vec![Attribute::Throws(name)])
-                }
-                Some(ty) => panic!("Invalid throws type: {ty:?}"),
-            },
+            throws: meta.throws.map(Into::into),
+            takes_self_by_arc: false, // not yet supported by procmacros?
             checksum_fn_name,
             checksum_override: Some(meta.checksum),
         }
@@ -673,6 +662,20 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             bail!("method modifiers are not supported")
         }
         let return_type = ci.resolve_return_type_expression(&self.return_type)?;
+        let attributes = MethodAttributes::try_from(self.attributes.as_ref())?;
+
+        let throws = match attributes.get_throws_err() {
+            Some(name) => match ci.get_type(name) {
+                Some(t) => {
+                    ci.note_name_used_as_error(name);
+                    Some(t)
+                }
+                None => bail!("unknown type for error: {name}"),
+            },
+            None => None,
+        };
+
+        let takes_self_by_arc = attributes.get_self_by_arc();
         Ok(Method {
             name: match self.identifier {
                 None => bail!("anonymous methods are not supported {:?}", self),
@@ -693,7 +696,8 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
-            attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
+            throws,
+            takes_self_by_arc,
             checksum_override: None,
         })
     }
@@ -751,7 +755,7 @@ impl Callable for Constructor {
     }
 
     fn throws_type(&self) -> Option<Type> {
-        self.throws_type()
+        self.throws_type().cloned()
     }
 }
 
@@ -765,7 +769,7 @@ impl Callable for Method {
     }
 
     fn throws_type(&self) -> Option<Type> {
-        self.throws_type()
+        self.throws_type().cloned()
     }
 }
 

@@ -51,7 +51,7 @@ impl<'a> MetadataReader<'a> {
             codes::CONSTRUCTOR => self.read_constructor()?.into(),
             codes::METHOD => self.read_method()?.into(),
             codes::RECORD => self.read_record()?.into(),
-            codes::ENUM => self.read_enum()?.into(),
+            codes::ENUM => self.read_enum(false)?.into(),
             codes::ERROR => self.read_error()?.into(),
             codes::INTERFACE => self.read_object()?.into(),
             _ => bail!("Unexpected metadata code: {value:?}"),
@@ -109,9 +109,6 @@ impl<'a> MetadataReader<'a> {
                 name: self.read_string()?,
             },
             codes::TYPE_ENUM => Type::Enum {
-                name: self.read_string()?,
-            },
-            codes::TYPE_ERROR => Type::Error {
                 name: self.read_string()?,
             },
             codes::TYPE_INTERFACE => Type::ArcObject {
@@ -237,28 +234,26 @@ impl<'a> MetadataReader<'a> {
         })
     }
 
-    fn read_enum(&mut self) -> Result<EnumMetadata> {
+    fn read_enum(&mut self, is_flat_error: bool) -> Result<EnumMetadata> {
+        let module_path = self.read_string()?;
+        let name = self.read_string()?;
+        let variants = if is_flat_error {
+            self.read_flat_variants()?
+        } else {
+            self.read_variants()?
+        };
+
         Ok(EnumMetadata {
-            module_path: self.read_string()?,
-            name: self.read_string()?,
-            variants: self.read_variants()?,
+            module_path,
+            name,
+            variants,
         })
     }
 
     fn read_error(&mut self) -> Result<ErrorMetadata> {
-        let module_path = self.read_string()?;
-        let name = self.read_string()?;
-        let flat = self.read_bool()?;
-        Ok(ErrorMetadata {
-            module_path,
-            name,
-            flat,
-            variants: if flat {
-                self.read_flat_variants()?
-            } else {
-                self.read_variants()?
-            },
-        })
+        let is_flat = self.read_bool()?;
+        let enum_ = self.read_enum(is_flat)?;
+        Ok(ErrorMetadata::Enum { enum_, is_flat })
     }
 
     fn read_object(&mut self) -> Result<ObjectMetadata> {

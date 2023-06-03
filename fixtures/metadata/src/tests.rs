@@ -252,20 +252,22 @@ mod test_metadata {
     fn test_simple_error() {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_FLATERROR,
-            ErrorMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
-                name: "FlatError".into(),
-                flat: true,
-                variants: vec![
-                    VariantMetadata {
-                        name: "Overflow".into(),
-                        fields: vec![],
-                    },
-                    VariantMetadata {
-                        name: "DivideByZero".into(),
-                        fields: vec![],
-                    },
-                ],
+            ErrorMetadata::Enum {
+                enum_: EnumMetadata {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "FlatError".into(),
+                    variants: vec![
+                        VariantMetadata {
+                            name: "Overflow".into(),
+                            fields: vec![],
+                        },
+                        VariantMetadata {
+                            name: "DivideByZero".into(),
+                            fields: vec![],
+                        },
+                    ],
+                },
+                is_flat: true,
             },
         );
     }
@@ -274,34 +276,36 @@ mod test_metadata {
     fn test_complex_error() {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_COMPLEXERROR,
-            ErrorMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
-                name: "ComplexError".into(),
-                flat: false,
-                variants: vec![
-                    VariantMetadata {
-                        name: "NotFound".into(),
-                        fields: vec![],
-                    },
-                    VariantMetadata {
-                        name: "PermissionDenied".into(),
-                        fields: vec![FieldMetadata {
-                            name: "reason".into(),
-                            ty: Type::String,
-                            default: None,
-                        }],
-                    },
-                    VariantMetadata {
-                        name: "InvalidWeapon".into(),
-                        fields: vec![FieldMetadata {
-                            name: "weapon".into(),
-                            ty: Type::Enum {
-                                name: "Weapon".into(),
-                            },
-                            default: None,
-                        }],
-                    },
-                ],
+            ErrorMetadata::Enum {
+                enum_: EnumMetadata {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "ComplexError".into(),
+                    variants: vec![
+                        VariantMetadata {
+                            name: "NotFound".into(),
+                            fields: vec![],
+                        },
+                        VariantMetadata {
+                            name: "PermissionDenied".into(),
+                            fields: vec![FieldMetadata {
+                                name: "reason".into(),
+                                ty: Type::String,
+                                default: None,
+                            }],
+                        },
+                        VariantMetadata {
+                            name: "InvalidWeapon".into(),
+                            fields: vec![FieldMetadata {
+                                name: "weapon".into(),
+                                ty: Type::Enum {
+                                    name: "Weapon".into(),
+                                },
+                                default: None,
+                            }],
+                        },
+                    ],
+                },
+                is_flat: false,
             },
         );
     }
@@ -436,7 +440,7 @@ mod test_function_metadata {
                 return_type: Some(Type::Enum {
                     name: "State".into(),
                 }),
-                throws: Some(Type::Error {
+                throws: Some(Type::Enum {
                     name: "FlatError".into(),
                 }),
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS
@@ -455,7 +459,7 @@ mod test_function_metadata {
                 is_async: false,
                 inputs: vec![],
                 return_type: None,
-                throws: Some(Type::Error {
+                throws: Some(Type::Enum {
                     name: "FlatError".into(),
                 }),
                 checksum:
@@ -534,7 +538,7 @@ mod test_function_metadata {
                 return_type: Some(Type::Enum {
                     name: "State".into(),
                 }),
-                throws: Some(Type::Error {
+                throws: Some(Type::Enum {
                     name: "FlatError".into(),
                 }),
                 checksum:

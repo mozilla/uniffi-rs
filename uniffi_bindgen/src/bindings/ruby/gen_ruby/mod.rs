@@ -53,7 +53,6 @@ impl Type {
             // However, types that support importing all end up with the same prefix of "Type", so
             // that the import handling code knows how to find the remote reference.
             Type::Object { name, .. } => format!("Type{name}"),
-            Type::Error(nm) => format!("Type{nm}"),
             Type::Enum(nm) => format!("Type{nm}"),
             Type::Record(nm) => format!("Type{nm}"),
             Type::CallbackInterface(nm) => format!("CallbackInterface{nm}"),
@@ -226,9 +225,7 @@ mod filters {
             Type::UInt64 => format!("{ns}::uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
             Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
             Type::Boolean => format!("{nm} ? true : false"),
-            Type::Object { .. } | Type::Enum(_) | Type::Error(_) | Type::Record(_) => {
-                nm.to_string()
-            }
+            Type::Object { .. } | Type::Enum(_) | Type::Record(_) => nm.to_string(),
             Type::String | Type::Bytes => format!("{nm}.to_s"),
             Type::Timestamp | Type::Duration => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
@@ -276,7 +273,6 @@ mod filters {
             Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
             Type::Object { name, .. } => format!("({}._uniffi_lower {nm})", class_name_rb(name)?),
             Type::CallbackInterface(_) => panic!("No support for lowering callback interfaces yet"),
-            Type::Error(_) => panic!("No support for lowering errors, yet"),
             Type::Enum(_)
             | Type::Record(_)
             | Type::Optional(_)
@@ -310,9 +306,14 @@ mod filters {
             Type::Bytes => format!("{nm}.consumeIntoBytes"),
             Type::Object { name, .. } => format!("{}._uniffi_allocate({nm})", class_name_rb(name)?),
             Type::CallbackInterface(_) => panic!("No support for lifting callback interfaces, yet"),
-            Type::Error(_) => panic!("No support for lowering errors, yet"),
-            Type::Enum(_)
-            | Type::Record(_)
+            Type::Enum(_) => {
+                format!(
+                    "{}.consumeInto{}",
+                    nm,
+                    class_name_rb(&type_.canonical_name())?
+                )
+            }
+            Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
             | Type::Timestamp

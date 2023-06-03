@@ -4,6 +4,7 @@
 
 use crate::backend::{CodeType, Literal};
 
+// When a type is used as an error it gets a special CodeType.
 #[derive(Debug)]
 pub struct ErrorCodeType {
     id: String,

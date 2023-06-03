@@ -4,7 +4,6 @@
 # when none of the variants have associated data, or a generic nested-class
 # construct when they do.
 #}
-{%- let e = ci.get_enum_definition(name).unwrap() %}
 {% if e.is_flat() %}
 
 class {{ type_name }}(enum.Enum):

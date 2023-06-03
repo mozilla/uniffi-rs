@@ -20,7 +20,6 @@ mod callback_interface;
 mod compounds;
 mod custom;
 mod enum_;
-mod error;
 mod executor;
 mod external;
 mod miscellany;
@@ -306,7 +305,6 @@ impl SwiftCodeOracle {
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
-            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }

@@ -36,11 +36,11 @@ use std::convert::TryFrom;
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
-use super::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
+use super::attributes::{ArgumentAttributes, FunctionAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::literal::{convert_default_value, Literal};
 use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{convert_type, APIConverter, AsType, ComponentInterface};
+use super::{APIConverter, AsType, ComponentInterface};
 
 /// Represents a standalone function.
 ///
@@ -62,7 +62,7 @@ pub struct Function {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
-    pub(super) attributes: FunctionAttributes,
+    pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
     // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
     // different checksum method.
@@ -105,17 +105,15 @@ impl Function {
     }
 
     pub fn throws(&self) -> bool {
-        self.attributes.get_throws_err().is_some()
+        self.throws.is_some()
     }
 
     pub fn throws_name(&self) -> Option<&str> {
-        self.attributes.get_throws_err()
+        super::throws_name(&self.throws)
     }
 
-    pub fn throws_type(&self) -> Option<Type> {
-        self.attributes
-            .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+    pub fn throws_type(&self) -> Option<&Type> {
+        self.throws.as_ref()
     }
 
     pub fn derive_ffi_func(&mut self, ci_namespace: &str) -> Result<()> {
@@ -136,7 +134,7 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
     fn from(meta: uniffi_meta::FnParamMetadata) -> Self {
         Argument {
             name: meta.name,
-            type_: convert_type(&meta.ty),
+            type_: meta.ty.into(),
             by_ref: false,
             optional: false,
             default: None,
@@ -149,7 +147,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
-        let return_type = meta.return_type.map(|out| convert_type(&out));
+        let return_type = meta.return_type.map(Into::into);
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FfiFunction {
@@ -158,19 +156,19 @@ impl From<uniffi_meta::FnMetadata> for Function {
             ..FfiFunction::default()
         };
 
+        let throws = match meta.throws {
+            None => None,
+            Some(uniffi_meta::Type::Enum { name, .. }) => Some(Type::Enum(name)),
+            _ => panic!("unsupported error type {:?}", meta.throws),
+        };
+
         Self {
             name: meta.name,
             is_async,
             arguments,
             return_type,
             ffi_func,
-            attributes: match meta.throws {
-                None => FunctionAttributes::from_iter(vec![]),
-                Some(uniffi_meta::Type::Error { name }) => {
-                    FunctionAttributes::from_iter(vec![Attribute::Throws(name)])
-                }
-                Some(ty) => panic!("Invalid throws type: {ty:?}"),
-            },
+            throws,
             checksum_fn_name,
             checksum_override: Some(meta.checksum),
         }
@@ -194,13 +192,24 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             Some(id) => id.0.to_string(),
         };
         let checksum_fn_name = uniffi_meta::fn_checksum_symbol_name(ci.namespace(), &name);
+        let attrs = FunctionAttributes::try_from(self.attributes.as_ref())?;
+        let throws = match attrs.get_throws_err() {
+            None => None,
+            Some(name) => match ci.get_type(name) {
+                Some(t) => {
+                    ci.note_name_used_as_error(name);
+                    Some(t)
+                }
+                None => bail!("unknown type for error: {name}"),
+            },
+        };
         Ok(Function {
             name,
             is_async: false,
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
-            attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
+            throws,
             checksum_fn_name,
             checksum_override: None,
         })
@@ -323,7 +332,7 @@ impl Callable for Function {
     }
 
     fn throws_type(&self) -> Option<Type> {
-        self.throws_type()
+        self.throws_type().cloned()
     }
 }
 
@@ -375,7 +384,9 @@ mod test {
             func2.return_type().unwrap().canonical_name(),
             "SequenceOptionalstring"
         );
-        assert!(matches!(func2.throws_type(), Some(Type::Error(s)) if s == "TestError"));
+        assert!(
+            matches!(func2.throws_type(), Some(Type::Enum(name)) if name == "TestError" && ci.is_name_used_as_error(name))
+        );
         assert_eq!(func2.arguments().len(), 2);
         assert_eq!(func2.arguments()[0].name(), "arg1");
         assert_eq!(func2.arguments()[0].as_type().canonical_name(), "u32");

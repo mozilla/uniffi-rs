@@ -39,7 +39,7 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
             Metadata::Record(meta) => (format!("record `{}`", meta.name), &meta.module_path),
             Metadata::Enum(meta) => (format!("enum `{}`", meta.name), &meta.module_path),
             Metadata::Object(meta) => (format!("object `{}`", meta.name), &meta.module_path),
-            Metadata::Error(meta) => (format!("error `{}`", meta.name), &meta.module_path),
+            Metadata::Error(meta) => (format!("error `{}`", meta.name()), meta.module_path()),
         };
 
         let crate_name = module_path.split("::").next().unwrap();

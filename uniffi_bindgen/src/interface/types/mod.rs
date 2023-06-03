@@ -94,7 +94,6 @@ pub enum Type {
     // Types defined in the component API, each of which has a string name.
     Record(String),
     Enum(String),
-    Error(String),
     CallbackInterface(String),
     // Structurally recursive types.
     Optional(Box<Type>),
@@ -169,7 +168,6 @@ impl From<&Type> for FfiType {
             Type::ForeignExecutor => FfiType::ForeignExecutorHandle,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
             Type::Enum(_)
-            | Type::Error(_)
             | Type::Record(_)
             | Type::Optional(_)
             | Type::Sequence(_)
@@ -220,6 +218,62 @@ where
     }
 }
 
+impl From<uniffi_meta::Type> for Type {
+    fn from(ty: uniffi_meta::Type) -> Self {
+        use uniffi_meta::Type as Ty;
+
+        match ty {
+            Ty::U8 => Type::UInt8,
+            Ty::U16 => Type::UInt16,
+            Ty::U32 => Type::UInt32,
+            Ty::U64 => Type::UInt64,
+            Ty::I8 => Type::Int8,
+            Ty::I16 => Type::Int16,
+            Ty::I32 => Type::Int32,
+            Ty::I64 => Type::Int64,
+            Ty::F32 => Type::Float32,
+            Ty::F64 => Type::Float64,
+            Ty::Bool => Type::Boolean,
+            Ty::String => Type::String,
+            Ty::SystemTime => Type::Timestamp,
+            Ty::Duration => Type::Duration,
+            Ty::ForeignExecutor => Type::ForeignExecutor,
+            Ty::Record { name } => Type::Record(name),
+            Ty::Enum { name, .. } => Type::Enum(name),
+            Ty::ArcObject {
+                object_name,
+                is_trait,
+            } => Type::Object {
+                name: object_name,
+                imp: ObjectImpl::from_is_trait(is_trait),
+            },
+            Ty::CallbackInterface { name } => Type::CallbackInterface(name),
+            Ty::Custom { name, builtin } => Type::Custom {
+                name,
+                builtin: builtin.into(),
+            },
+            Ty::Option { inner_type } => Type::Optional(inner_type.into()),
+            Ty::Vec { inner_type } => Type::Sequence(inner_type.into()),
+            Ty::HashMap {
+                key_type,
+                value_type,
+            } => Type::Map(key_type.into(), value_type.into()),
+        }
+    }
+}
+
+impl From<uniffi_meta::Type> for Box<Type> {
+    fn from(ty: uniffi_meta::Type) -> Self {
+        Box::new(ty.into())
+    }
+}
+
+impl From<Box<uniffi_meta::Type>> for Box<Type> {
+    fn from(ty: Box<uniffi_meta::Type>) -> Self {
+        Box::new((*ty).into())
+    }
+}
+
 /// The set of all possible types used in a particular component interface.
 ///
 /// Every component API uses a finite number of types, including primitive types, API-defined
@@ -257,9 +311,7 @@ impl TypeUniverse {
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(o) => {
                 let existing_def = o.get();
-                if type_ == *existing_def
-                    && matches!(type_, Type::Record(_) | Type::Enum(_) | Type::Error(_))
-                {
+                if type_ == *existing_def && matches!(type_, Type::Record(_) | Type::Enum(_)) {
                     // UDL and proc-macro metadata are allowed to define the same record, enum and
                     // error types, if the definitions match (fields and variants are checked in
                     // add_{record,enum,error}_definition)

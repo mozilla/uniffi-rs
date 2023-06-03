@@ -7,7 +7,7 @@ public interface {{ type_name }}Interface {
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) -%}
-    @Throws({{ throwable|type_name }}::class)
+    @Throws({{ throwable|error_type_name }}::class)
     {%- when None -%}
     {%- endmatch %}
     {% if meth.is_async() -%}
@@ -51,7 +51,7 @@ class {{ type_name }}(
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
-    @Throws({{ throwable|type_name }}::class)
+    @Throws({{ throwable|error_type_name }}::class)
     {%- else -%}
     {%- endmatch -%}
     {%- if meth.is_async() %}

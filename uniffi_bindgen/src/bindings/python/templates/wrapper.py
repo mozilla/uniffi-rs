@@ -67,9 +67,6 @@ __all__ = [
     {%- for obj in ci.object_definitions() %}
     "{{ obj|type_name }}",
     {%- endfor %}
-    {%- for e in ci.error_definitions() %}
-    "{{ e|type_name }}",
-    {%- endfor %}
     {%- for c in ci.callback_interface_definitions() %}
     "{{ c.name()|class_name }}",
     {%- endfor %}

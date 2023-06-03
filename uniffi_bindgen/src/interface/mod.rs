@@ -61,8 +61,6 @@ mod callbacks;
 pub use callbacks::CallbackInterface;
 mod enum_;
 pub use enum_::{Enum, Variant};
-mod error;
-pub use error::Error;
 mod function;
 pub use function::{Argument, Callable, Function, ResultType};
 mod literal;
@@ -100,7 +98,8 @@ pub struct ComponentInterface {
     functions: Vec<Function>,
     objects: Vec<Object>,
     callback_interfaces: Vec<CallbackInterface>,
-    errors: BTreeMap<String, Error>,
+    // Type names which were seen used as an error.
+    errors: HashSet<String>,
 }
 
 impl ComponentInterface {
@@ -206,16 +205,6 @@ impl ComponentInterface {
         self.callback_interfaces.iter().find(|o| o.name == name)
     }
 
-    /// Get the definitions for every Error type in the interface.
-    pub fn error_definitions(&self) -> impl Iterator<Item = &Error> {
-        self.errors.values()
-    }
-
-    /// Get an Error definition by name, or None if no such Error is defined.
-    pub fn get_error_definition(&self, name: &str) -> Option<&Error> {
-        self.errors.get(name)
-    }
-
     /// Get the definitions for every Method type in the interface.
     pub fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
         // Each of the `as &dyn Callable` casts is a trivial cast, but it seems like the clearest
@@ -237,18 +226,18 @@ impl ComponentInterface {
     /// This is a workaround for the fact that lower/write can't be generated for some errors,
     /// specifically errors that are defined as flat in the UDL, but actually have fields in the
     /// Rust source.
-    pub fn should_generate_error_read(&self, error: &Error) -> bool {
+    pub fn should_generate_error_read(&self, e: &Enum) -> bool {
         // We can and should always generate read() methods for fielded errors
-        let fielded = !error.is_flat();
+        let fielded = !e.is_flat();
         // For flat errors, we should only generate read() methods if we need them to support
         // callback interface errors
         let used_in_callback_interface = self
             .callback_interface_definitions()
             .iter()
             .flat_map(|cb| cb.methods())
-            .any(|m| m.throws_type() == Some(error.as_type()));
+            .any(|m| m.throws_type() == Some(&e.as_type()));
 
-        fielded || used_in_callback_interface
+        self.is_name_used_as_error(&e.name) && (fielded || used_in_callback_interface)
     }
 
     /// Get details about all `Type::External` types
@@ -718,32 +707,18 @@ impl ComponentInterface {
         self.objects.push(defn);
     }
 
+    pub(super) fn note_name_used_as_error(&mut self, name: &str) {
+        self.errors.insert(name.to_string());
+    }
+
+    pub fn is_name_used_as_error(&self, name: &str) -> bool {
+        self.errors.contains(name)
+    }
+
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
     fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
         // Note that there will be no duplicates thanks to the previous type-finding pass.
         self.callback_interfaces.push(defn);
-    }
-
-    /// Called by `APIBuilder` impls to add a newly-parsed error definition to the `ComponentInterface`.
-    pub(super) fn add_error_definition(&mut self, defn: Error) -> Result<()> {
-        match self.errors.entry(defn.name().to_owned()) {
-            Entry::Vacant(v) => {
-                v.insert(defn);
-            }
-            Entry::Occupied(o) => {
-                let existing_def = o.get();
-                if defn != *existing_def {
-                    bail!(
-                        "Mismatching definition for error `{}`!\n\
-                         existing definition: {existing_def:#?},\n\
-                         new definition: {defn:#?}",
-                        defn.name(),
-                    );
-                }
-            }
-        }
-
-        Ok(())
     }
 
     /// Perform global consistency checks on the declared interface.
@@ -758,12 +733,16 @@ impl ComponentInterface {
 
         // To keep codegen tractable, enum variant names must not shadow type names.
         for e in self.enums.values() {
-            for variant in &e.variants {
-                if self.types.get_type_definition(variant.name()).is_some() {
-                    bail!(
-                        "Enum variant names must not shadow type names: \"{}\"",
-                        variant.name()
-                    )
+            // Not sure why this was deemed important for "normal" enums but
+            // not those used as errors, but this is what we've always done.
+            if !self.is_name_used_as_error(&e.name) {
+                for variant in &e.variants {
+                    if self.types.get_type_definition(variant.name()).is_some() {
+                        bail!(
+                            "Enum variant names must not shadow type names: \"{}\"",
+                            variant.name()
+                        )
+                    }
                 }
             }
         }
@@ -878,7 +857,6 @@ impl<'a> RecursiveTypeIterator<'a> {
         match type_ {
             Type::Record(nm)
             | Type::Enum(nm)
-            | Type::Error(nm)
             | Type::Object { name: nm, .. }
             | Type::CallbackInterface(nm) => {
                 if !self.seen.contains(nm.as_str()) {
@@ -903,8 +881,7 @@ impl<'a> RecursiveTypeIterator<'a> {
             // call to `next()` to try again with the next pending type.
             let next_iter = match next_type {
                 Type::Record(nm) => self.ci.get_record_definition(nm).map(Record::iter_types),
-                Type::Enum(nm) => self.ci.get_enum_definition(nm).map(Enum::iter_types),
-                Type::Error(nm) => self.ci.get_error_definition(nm).map(Error::iter_types),
+                Type::Enum(name) => self.ci.get_enum_definition(name).map(Enum::iter_types),
                 Type::Object { name: nm, .. } => {
                     self.ci.get_object_definition(nm).map(Object::iter_types)
                 }
@@ -970,8 +947,9 @@ impl APIBuilder for weedle::Definition<'_> {
                 // We check if the enum represents an error...
                 let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_error_attr() {
-                    let err = d.convert(ci)?;
-                    ci.add_error_definition(err)?;
+                    let e = d.convert(ci)?;
+                    ci.note_name_used_as_error(&e.name);
+                    ci.add_enum_definition(e)?;
                 } else {
                     let e = d.convert(ci)?;
                     ci.add_enum_definition(e)?;
@@ -987,8 +965,9 @@ impl APIBuilder for weedle::Definition<'_> {
                     let e = d.convert(ci)?;
                     ci.add_enum_definition(e)?;
                 } else if attrs.contains_error_attr() {
-                    let e = d.convert(ci)?;
-                    ci.add_error_definition(e)?;
+                    let e: Enum = d.convert(ci)?;
+                    ci.note_name_used_as_error(&e.name);
+                    ci.add_enum_definition(e)?;
                 } else {
                     let obj = d.convert(ci)?;
                     ci.add_object_definition(obj);
@@ -1029,49 +1008,13 @@ impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
     }
 }
 
-fn convert_type(s: &uniffi_meta::Type) -> Type {
-    use uniffi_meta::Type as Ty;
-
-    match s {
-        Ty::U8 => Type::UInt8,
-        Ty::U16 => Type::UInt16,
-        Ty::U32 => Type::UInt32,
-        Ty::U64 => Type::UInt64,
-        Ty::I8 => Type::Int8,
-        Ty::I16 => Type::Int16,
-        Ty::I32 => Type::Int32,
-        Ty::I64 => Type::Int64,
-        Ty::F32 => Type::Float32,
-        Ty::F64 => Type::Float64,
-        Ty::Bool => Type::Boolean,
-        Ty::String => Type::String,
-        Ty::SystemTime => Type::Timestamp,
-        Ty::Duration => Type::Duration,
-        Ty::ForeignExecutor => Type::ForeignExecutor,
-        Ty::Record { name } => Type::Record(name.clone()),
-        Ty::Enum { name } => Type::Enum(name.clone()),
-        Ty::ArcObject {
-            object_name,
-            is_trait,
-        } => Type::Object {
-            name: object_name.clone(),
-            imp: ObjectImpl::from_is_trait(*is_trait),
-        },
-        Ty::Error { name } => Type::Error(name.clone()),
-        Ty::CallbackInterface { name } => Type::CallbackInterface(name.clone()),
-        Ty::Custom { name, builtin } => Type::Custom {
-            name: name.clone(),
-            builtin: convert_type(builtin).into(),
-        },
-        Ty::Option { inner_type } => Type::Optional(convert_type(inner_type).into()),
-        Ty::Vec { inner_type } => Type::Sequence(convert_type(inner_type).into()),
-        Ty::HashMap {
-            key_type,
-            value_type,
-        } => Type::Map(
-            convert_type(key_type).into(),
-            convert_type(value_type).into(),
-        ),
+// Helpers for functions/methods/constructors which all have the same "throws" semantics.
+fn throws_name(throws: &Option<Type>) -> Option<&str> {
+    // Type has no `name()` method, just `canonical_name()` which isn't what we want.
+    match throws {
+        None => None,
+        Some(Type::Enum(name)) => Some(name),
+        _ => panic!("unknown throw type: {throws:?}"),
     }
 }
 
@@ -1112,9 +1055,34 @@ mod test {
         let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Conflicting type definition for `Testing`! \
-             existing definition: Enum(\"Testing\"), \
-             new definition: Error(\"Testing\")"
+            "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
+    name: \"Testing\",
+    variants: [
+        Variant {
+            name: \"one\",
+            fields: [],
+        },
+        Variant {
+            name: \"two\",
+            fields: [],
+        },
+    ],
+    flat: true,
+},
+new definition: Enum {
+    name: \"Testing\",
+    variants: [
+        Variant {
+            name: \"three\",
+            fields: [],
+        },
+        Variant {
+            name: \"four\",
+            fields: [],
+        },
+    ],
+    flat: true,
+}",
         );
 
         const UDL3: &str = r#"

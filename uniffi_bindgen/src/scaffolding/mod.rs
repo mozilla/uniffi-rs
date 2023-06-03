@@ -43,7 +43,7 @@ mod filters {
             Type::Bytes => "Vec<u8>".into(),
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{name}"),
+            Type::Enum(name) | Type::Record(name) => format!("r#{name}"),
             Type::Object { name, imp } => format!("std::sync::Arc<{}>", imp.rust_name_for(name)),
             Type::CallbackInterface(name) => format!("Box<dyn r#{name}>"),
             Type::ForeignExecutor => "::uniffi::ForeignExecutor".into(),

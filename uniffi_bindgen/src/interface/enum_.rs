@@ -75,6 +75,85 @@
 //! assert_eq!(e.variants()[1].fields()[0].name(), "first");
 //! # Ok::<(), anyhow::Error>(())
 //! ```
+//!
+//! # Enums are also used to represent error definitions for a `ComponentInterface`.
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
+//! # namespace example {};
+//! [Error]
+//! enum Example {
+//!   "one",
+//!   "two"
+//! };
+//! # "##)?;
+//! # Ok::<(), anyhow::Error>(())
+//! ```
+//!
+//! Will result in an [`Enum`] member with fieldless variants being added to the resulting [`ComponentInterface`]:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
+//! # namespace example {};
+//! # [Error]
+//! # enum Example {
+//! #   "one",
+//! #   "two"
+//! # };
+//! # "##)?;
+//! let err = ci.get_enum_definition("Example").unwrap();
+//! assert_eq!(err.name(), "Example");
+//! assert_eq!(err.variants().len(), 2);
+//! assert_eq!(err.variants()[0].name(), "one");
+//! assert_eq!(err.variants()[1].name(), "two");
+//! assert_eq!(err.is_flat(), true);
+//! assert!(ci.is_name_used_as_error(&err.name()));
+//! # Ok::<(), anyhow::Error>(())
+//! ```
+//!
+//! A declaration in the UDL like this:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
+//! # namespace example {};
+//! [Error]
+//! interface Example {
+//!   one(i16 code);
+//!   two(string reason);
+//!   three(i32 x, i32 y);
+//! };
+//! # "##)?;
+//! # Ok::<(), anyhow::Error>(())
+//! ```
+//!
+//! Will result in an [`Enum`] member with variants that have fields being added to the resulting [`ComponentInterface`]:
+//!
+//! ```
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
+//! # namespace example {};
+//! # [Error]
+//! # interface Example {
+//! #   one();
+//! #   two(string reason);
+//! #   three(i32 x, i32 y);
+//! # };
+//! # "##)?;
+//! let err = ci.get_enum_definition("Example").unwrap();
+//! assert_eq!(err.name(), "Example");
+//! assert_eq!(err.variants().len(), 3);
+//! assert_eq!(err.variants()[0].name(), "one");
+//! assert_eq!(err.variants()[1].name(), "two");
+//! assert_eq!(err.variants()[2].name(), "three");
+//! assert_eq!(err.variants()[0].fields().len(), 0);
+//! assert_eq!(err.variants()[1].fields().len(), 1);
+//! assert_eq!(err.variants()[1].fields()[0].name(), "reason");
+//! assert_eq!(err.variants()[2].fields().len(), 2);
+//! assert_eq!(err.variants()[2].fields()[0].name(), "x");
+//! assert_eq!(err.variants()[2].fields()[1].name(), "y");
+//! assert_eq!(err.is_flat(), false);
+//! assert!(ci.is_name_used_as_error(err.name()));
+//! # Ok::<(), anyhow::Error>(())
+//! ```
 
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
@@ -128,19 +207,14 @@ impl Enum {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.variants.iter().flat_map(Variant::iter_types))
     }
-}
 
-impl AsType for Enum {
-    fn as_type(&self) -> Type {
-        Type::Enum(self.name.clone())
-    }
-}
-
-impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
-    type Error = anyhow::Error;
-
-    fn try_from(meta: uniffi_meta::EnumMetadata) -> Result<Self> {
-        let flat = meta.variants.iter().all(|v| v.fields.is_empty());
+    // Sadly can't use TryFrom due to the 'is_flat' complication.
+    pub fn try_from_meta(meta: uniffi_meta::EnumMetadata, flat: bool) -> Result<Self> {
+        // This is messy - error enums are considered "flat" if the user
+        // opted in via a special attribute, regardless of whether the enum
+        // is actually flat.
+        // Real enums are considered flat iff they are actually flat.
+        // We don't have that context here, so this is handled by our caller.
         Ok(Self {
             name: meta.name,
             variants: meta
@@ -150,6 +224,12 @@ impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
                 .collect::<Result<_>>()?,
             flat,
         })
+    }
+}
+
+impl AsType for Enum {
+    fn as_type(&self) -> Type {
+        Type::Enum(self.name.clone())
     }
 }
 
@@ -441,7 +521,9 @@ mod test {
             FfiType::RustBuffer(None)
         );
         let fret = ci.get_function_definition("returns_an_enum").unwrap();
-        assert!(matches!(fret.return_type(), Some(Type::Enum(nm)) if nm == "TestEnum"));
+        assert!(
+            matches!(fret.return_type(), Some(Type::Enum(name)) if name == "TestEnum" && !ci.is_name_used_as_error(name))
+        );
         assert!(matches!(
             fret.ffi_func().return_type(),
             Some(FfiType::RustBuffer(None))
@@ -462,10 +544,78 @@ mod test {
         let fret = ci
             .get_function_definition("returns_an_enum_with_data")
             .unwrap();
-        assert!(matches!(fret.return_type(), Some(Type::Enum(nm)) if nm == "TestEnumWithData"));
+        assert!(
+            matches!(fret.return_type(), Some(Type::Enum(name)) if name == "TestEnumWithData" && !ci.is_name_used_as_error(name))
+        );
         assert!(matches!(
             fret.ffi_func().return_type(),
             Some(FfiType::RustBuffer(None))
         ));
+    }
+
+    // Tests for [Error], which are represented as `Enum`
+    #[test]
+    fn test_variants() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Error]
+            enum Testing { "one", "two", "three" };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(ci.enum_definitions().count(), 1);
+        let error = ci.get_enum_definition("Testing").unwrap();
+        assert_eq!(
+            error
+                .variants()
+                .iter()
+                .map(|v| v.name())
+                .collect::<Vec<&str>>(),
+            vec!("one", "two", "three")
+        );
+        assert!(error.is_flat());
+        assert!(ci.is_name_used_as_error(&error.name));
+    }
+
+    #[test]
+    fn test_duplicate_error_variants() {
+        const UDL: &str = r#"
+            namespace test{};
+            // Weird, but currently allowed!
+            // We should probably disallow this...
+            [Error]
+            enum Testing { "one", "two", "one" };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(ci.enum_definitions().count(), 1);
+        assert_eq!(
+            ci.get_enum_definition("Testing").unwrap().variants().len(),
+            3
+        );
+    }
+
+    #[test]
+    fn test_variant_data() {
+        const UDL: &str = r#"
+            namespace test{};
+
+            [Error]
+            interface Testing {
+                One(string reason);
+                Two(u8 code);
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(ci.enum_definitions().count(), 1);
+        let error: &Enum = ci.get_enum_definition("Testing").unwrap();
+        assert_eq!(
+            error
+                .variants()
+                .iter()
+                .map(|v| v.name())
+                .collect::<Vec<&str>>(),
+            vec!("One", "Two")
+        );
+        assert!(!error.is_flat());
+        assert!(ci.is_name_used_as_error(&error.name));
     }
 }

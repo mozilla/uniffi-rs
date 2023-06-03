@@ -220,9 +220,6 @@ pub enum Type {
         object_name: String,
         is_trait: bool,
     },
-    Error {
-        name: String,
-    },
     CallbackInterface {
         name: String,
     },
@@ -295,11 +292,22 @@ impl ObjectMetadata {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-pub struct ErrorMetadata {
-    pub module_path: String,
-    pub name: String,
-    pub variants: Vec<VariantMetadata>,
-    pub flat: bool,
+pub enum ErrorMetadata {
+    Enum { enum_: EnumMetadata, is_flat: bool },
+}
+
+impl ErrorMetadata {
+    pub fn name(&self) -> &String {
+        match self {
+            Self::Enum { enum_, .. } => &enum_.name,
+        }
+    }
+
+    pub fn module_path(&self) -> &String {
+        match self {
+            Self::Enum { enum_, .. } => &enum_.module_path,
+        }
+    }
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`SipHasher13`].
@@ -374,14 +382,14 @@ impl From<EnumMetadata> for Metadata {
     }
 }
 
-impl From<ObjectMetadata> for Metadata {
-    fn from(v: ObjectMetadata) -> Self {
-        Self::Object(v)
+impl From<ErrorMetadata> for Metadata {
+    fn from(e: ErrorMetadata) -> Self {
+        Self::Error(e)
     }
 }
 
-impl From<ErrorMetadata> for Metadata {
-    fn from(v: ErrorMetadata) -> Self {
-        Self::Error(v)
+impl From<ObjectMetadata> for Metadata {
+    fn from(v: ObjectMetadata) -> Self {
+        Self::Object(v)
     }
 }
