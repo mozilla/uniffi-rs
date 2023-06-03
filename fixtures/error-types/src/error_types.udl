@@ -1,0 +1,41 @@
+namespace error_types {
+    // Returns Err(anyhow::Error), which uniffi automagically turns into ErrorInterface.
+    [Throws=ErrorInterface]
+    void anyhow_bail(string message);
+
+    [Throws=ErrorInterface]
+    void anyhow_with_context(string message);
+
+    ErrorInterface get_error(string message);
+
+    [Throws=RichError]
+    void throw_rich(string message);
+
+    RichError get_rich_error(string message);
+};
+
+interface TestInterface {
+    constructor();
+
+    [Throws=ErrorInterface, Name="fallible_new"]
+    constructor();
+
+    [Throws=ErrorInterface]
+    void anyhow_bail(string message);
+};
+
+// A name that doesn't end in "Error" or "Exception" under the assumption
+// that some components might prefer a more natural name.
+// Bindings *may* still need to append "Error/Exception".
+[Traits=(Debug, Display)]
+interface ErrorInterface {
+    sequence<string> chain();
+    string? link(u64 index);
+};
+
+// A name that looks more like a traditional error.
+// Bindings may translate "Error" to "Exception".
+// Note also RichError is not an `anyhow` error (and doesn't even implement `std::result::Error`)
+[Traits=(Debug)]
+interface RichError {
+};

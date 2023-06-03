@@ -42,3 +42,85 @@ interface ArithmeticError {
   IntegerOverflow(u64 a, u64 b);
 };
 ```
+
+## Interfaces as errors
+
+** This is not avaiable in all bindings **
+
+It's possible to use an `interface` (ie, a rust struct impl) as an error;
+the thrown object will have methods instead of fields.
+This can be particularly useful when working with `anyhow` style errors, where
+an enumeration can't represent the various error states.
+
+In your UDL:
+```
+namespace error {
+  [Throws=MyError]
+  void bail(string message);
+}
+
+[Traits=(Debug)]
+interface MyError {
+  string message();
+};
+```
+and Rust:
+```rs
+#[derive(Debug)]
+pub struct MyError {
+    e: anyhow::Error,
+}
+
+impl MyError {
+    fn message(&self) -> String> { ... }
+}
+
+// anything using `anyhow::Error` can throw `MyError`.
+impl From<anyhow::Error> for MyError {
+    fn from(e: anyhow::Error) -> Self {
+        Self { e }
+    }
+}
+
+fn bail(message: String) -> anyhow::Result<()> {
+    anyhow::bail!("{message}");
+}
+```
+then Python might then do:
+```py
+try:
+  bail("oh no")
+except MyError as e:
+  print("oops", e.message())
+```
+
+This works for procmacros too, although without the builtin type coercion:
+
+```rs
+#[derive(Debug, uniffi::Error)]
+pub struct ProcErrorInterface {
+    e: String,
+}
+
+#[uniffi::export]
+impl ProcErrorInterface {
+    fn message(&self) -> String {
+        self.e.clone()
+    }
+}
+
+impl std::fmt::Display for ProcErrorInterface {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ProcErrorInterface {}", self.e)
+    }
+}
+
+#[uniffi::export]
+fn throw_proc_error(e: String) -> Result<(), Arc<ProcErrorInterface>> {
+    Err(Arc::new(ProcErrorInterface { e }))
+}
+```
+
+Note how `throw_proc_error` must return the concrete type and can't just use
+`anyhow::Error()` as the `Err`, so `throw_proc_error` would need to make
+any conversions explicit.

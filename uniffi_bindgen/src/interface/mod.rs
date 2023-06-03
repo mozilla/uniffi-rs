@@ -665,7 +665,10 @@ impl ComponentInterface {
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
     fn add_object_definition(&mut self, defn: Object) -> Result<()> {
         self.types.add_known_types(defn.iter_types())?;
-        self.objects.push(defn);
+        // add_known_types avoids dupes, we need to too.
+        if self.get_object_definition(defn.name()).is_none() {
+            self.objects.push(defn);
+        }
         Ok(())
     }
 
@@ -891,7 +894,7 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     // Type has no `name()` method, just `canonical_name()` which isn't what we want.
     match throws {
         None => None,
-        Some(Type::Enum { name, .. }) => Some(name),
+        Some(Type::Enum { name, .. }) | Some(Type::Object { name, .. }) => Some(name),
         _ => panic!("unknown throw type: {throws:?}"),
     }
 }

@@ -10,9 +10,35 @@ use crate::InterfaceCollector;
 use anyhow::{bail, Result};
 
 use uniffi_meta::{
-    ConstructorMetadata, FieldMetadata, FnMetadata, FnParamMetadata, MethodMetadata,
-    TraitMethodMetadata, Type,
+    ConstructorMetadata, ErrorMetadata, FieldMetadata, FnMetadata, FnParamMetadata, Metadata,
+    MethodMetadata, ObjectMetadata, TraitMethodMetadata, Type,
 };
+
+fn handle_error_metadata(ci: &mut InterfaceCollector, type_: Type) -> Result<Type> {
+    // This is a bit awkward, but oh well...
+    match &type_ {
+        Type::Object {
+            module_path,
+            name,
+            imp,
+        } => {
+            ci.items.insert(Metadata::Error(ErrorMetadata::Object {
+                ob: ObjectMetadata {
+                    module_path: module_path.to_owned(),
+                    name: name.to_owned(),
+                    imp: *imp,
+                    // traits shouldn't really be embedded in the metadata,
+                    // but we can avoid supplying it here as the "real" definition
+                    // for the interface is where they will be supplied.
+                    uniffi_traits: vec![],
+                },
+            }));
+        }
+        Type::Enum { .. } => {}
+        _ => bail!("Can not use type as error: \"{:?}\"", type_),
+    };
+    Ok(type_)
+}
 
 impl APIConverter<FieldMetadata> for weedle::argument::Argument<'_> {
     fn convert(&self, ci: &mut InterfaceCollector) -> Result<FieldMetadata> {
@@ -92,7 +118,7 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
         let throws = match attrs.get_throws_err() {
             None => None,
             Some(name) => match ci.get_type(name) {
-                Some(t) => Some(t),
+                Some(t) => Some(handle_error_metadata(ci, t)?),
                 None => bail!("unknown type for error: {name}"),
             },
         };

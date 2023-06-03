@@ -349,18 +349,21 @@ pub enum UniffiTraitMetadata {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ErrorMetadata {
     Enum { enum_: EnumMetadata, is_flat: bool },
+    Object { ob: ObjectMetadata },
 }
 
 impl ErrorMetadata {
     pub fn name(&self) -> &String {
         match self {
             Self::Enum { enum_, .. } => &enum_.name,
+            Self::Object { ob } => &ob.name,
         }
     }
 
     pub fn module_path(&self) -> &String {
         match self {
             Self::Enum { enum_, .. } => &enum_.module_path,
+            Self::Object { ob } => &ob.module_path,
         }
     }
 }

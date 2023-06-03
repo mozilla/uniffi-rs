@@ -7,6 +7,7 @@ use syn::{
 
 use crate::{
     enum_::{handle_callback_unexpected_error_fn, rich_error_ffi_converter_impl, variant_metadata},
+    object::expand_object,
     util::{
         chain, create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
         parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
@@ -20,14 +21,32 @@ pub fn expand_error(
     attr_from_udl_mode: Option<ErrorAttr>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
-    let enum_ = match input.data {
-        Data::Enum(e) => e,
-        _ => {
-            return Err(syn::Error::new(
-                Span::call_site(),
-                "This derive currently only supports enums",
-            ));
-        }
+    match &input.data {
+        Data::Enum(_) => expand_enum_error(input, attr_from_udl_mode, udl_mode),
+        Data::Struct(_) => expand_struct_error(input, udl_mode),
+        _ => Err(syn::Error::new(
+            Span::call_site(),
+            "This derive currently only supports enums or structs",
+        )),
+    }
+}
+
+pub fn expand_struct_error(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
+    let meta_static_var = error_object_meta_static_var(&input.ident)?;
+    let object_defn = expand_object(input, udl_mode)?;
+    Ok(quote! {
+        #object_defn
+        #meta_static_var
+    })
+}
+
+pub fn expand_enum_error(
+    input: DeriveInput,
+    attr_from_udl_mode: Option<ErrorAttr>,
+    udl_mode: bool,
+) -> syn::Result<TokenStream> {
+    let Data::Enum(enum_) = input.data else {
+        panic!("we've checked it's an enum");
     };
     let ident = &input.ident;
     let mut attr: ErrorAttr = input.attrs.parse_uniffi_attr_args()?;
@@ -36,7 +55,7 @@ pub fn expand_error(
     }
     let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr, udl_mode);
     let meta_static_var = (!udl_mode).then(|| {
-        error_meta_static_var(ident, &enum_, attr.flat.is_some())
+        error_enum_meta_static_var(ident, &enum_, attr.flat.is_some())
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -173,7 +192,22 @@ fn flat_error_ffi_converter_impl(
     }
 }
 
-pub(crate) fn error_meta_static_var(
+pub(crate) fn error_object_meta_static_var(ident: &Ident) -> syn::Result<TokenStream> {
+    let name = ident_to_string(ident);
+    let module_path = mod_path()?;
+
+    let metadata_expr = quote! {
+    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
+        // type code to say it's an interface
+        .concat_value(::uniffi::metadata::codes::TYPE_INTERFACE)
+        .concat_str(#module_path)
+        .concat_str(#name)
+        .concat_bool(false) // is_trait
+    };
+    Ok(create_metadata_items("error", &name, metadata_expr, None))
+}
+
+pub(crate) fn error_enum_meta_static_var(
     ident: &Ident,
     enum_: &DataEnum,
     flat: bool,
@@ -182,6 +216,8 @@ pub(crate) fn error_meta_static_var(
     let module_path = mod_path()?;
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
+                // type code to say it's an enum
+                .concat_value(::uniffi::metadata::codes::TYPE_ENUM)
                 // first our is-flat flag
                 .concat_bool(#flat)
                 // followed by an enum

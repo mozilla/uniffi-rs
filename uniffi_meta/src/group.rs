@@ -128,12 +128,6 @@ impl<'a> ExternalTypeConverter<'a> {
                 ..meta
             }),
             Metadata::Enum(meta) => Metadata::Enum(self.convert_enum(meta)),
-            Metadata::Error(meta) => Metadata::Error(match meta {
-                ErrorMetadata::Enum { enum_, is_flat } => ErrorMetadata::Enum {
-                    enum_: self.convert_enum(enum_),
-                    is_flat,
-                },
-            }),
             _ => item,
         }
     }

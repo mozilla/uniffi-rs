@@ -279,9 +279,19 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_error(&mut self) -> Result<ErrorMetadata> {
-        let is_flat = self.read_bool()?;
-        let enum_ = self.read_enum(is_flat)?;
-        Ok(ErrorMetadata::Enum { enum_, is_flat })
+        let err_type_code = self.read_u8()?;
+        Ok(match err_type_code {
+            codes::TYPE_ENUM => {
+                let is_flat = self.read_bool()?;
+                let enum_ = self.read_enum(is_flat)?;
+                ErrorMetadata::Enum { enum_, is_flat }
+            }
+            codes::TYPE_INTERFACE => {
+                let ob = self.read_object()?;
+                ErrorMetadata::Object { ob }
+            }
+            _ => bail!("Unsupported type code for error: {err_type_code}"),
+        })
     }
 
     fn read_object(&mut self) -> Result<ObjectMetadata> {

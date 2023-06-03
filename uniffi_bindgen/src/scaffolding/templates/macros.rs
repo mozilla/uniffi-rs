@@ -3,7 +3,23 @@
 #}
 
 {%- macro to_rs_call(func) -%}
+
+XXX - this is unused!
+
+
 r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
+{# Map errors to their type #}
+{%-  match func.throws_type() -%}
+{%-     when Some with (throws_type) -%}
+{%-         match throws_type -%}
+{%-             when Type::Object { module_path, name, imp } -%}
+    // error objects get wrapped in an Arc<>
+    .map_err(|e| ::std::sync::Arc::new(e.into()))
+{%-             else -%}
+    .map_err(Into::into)
+{%-         endmatch -%}
+{%-     when None -%}
+{%- endmatch -%}
 {%- endmacro -%}
 
 {%- macro _arg_list_rs_call(func) %}
@@ -66,7 +82,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 {%- macro method_decl_prelude(meth) %}
 #[doc(hidden)]
 #[no_mangle]
-#[allow(clippy::let_unit_value,clippy::unit_arg)] // The generated code uses the unit type like other types to keep things uniform
+#[allow(clippy::let_unit_value,clippy::unit_arg,clippy::useless_conversion)] // The generated code uses the unit type like other types to keep things uniform
 pub extern "C" fn r#{{ meth.ffi_func().name() }}(
     {%- call arg_list_ffi_decl(meth.ffi_func()) %}
 ) {% call return_signature(meth) %} {
@@ -76,7 +92,6 @@ pub extern "C" fn r#{{ meth.ffi_func().name() }}(
 {%- endmacro %}
 
 {%- macro method_decl_postscript(meth) %}
-            {% if meth.throws() %}.map_err(Into::into){% endif %}
         )
     })
 }

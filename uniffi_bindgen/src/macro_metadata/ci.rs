@@ -124,6 +124,9 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
                 ErrorMetadata::Enum { enum_, is_flat } => {
                     add_enum_to_ci(iface, enum_, is_flat)?;
                 }
+                ErrorMetadata::Object { ob } => {
+                    add_item_to_ci(iface, Metadata::Object(ob))?;
+                }
             };
         }
         Metadata::CustomType(meta) => {
