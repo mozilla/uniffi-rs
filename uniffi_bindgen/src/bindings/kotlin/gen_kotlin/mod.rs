@@ -11,7 +11,7 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, CodeTypeDispatch, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -212,7 +212,8 @@ impl<'a> KotlinWrapper<'a> {
     pub fn initialization_fns(&self) -> Vec<String> {
         self.ci
             .iter_types()
-            .filter_map(|t| t.initialization_fn(&KotlinCodeOracle))
+            .map(|t| t.code_type_impl(&KotlinCodeOracle))
+            .filter_map(|ct| ct.initialization_fn())
             .collect()
     }
 
@@ -342,39 +343,51 @@ pub mod filters {
         &KotlinCodeOracle
     }
 
-    pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.type_label(oracle()))
+    pub fn type_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(codetype.code_type_impl(oracle()).type_label())
     }
 
-    pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.canonical_name(oracle()))
+    pub fn canonical_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(codetype.code_type_impl(oracle()).canonical_name())
     }
 
-    pub fn ffi_converter_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.ffi_converter_name(oracle()))
+    pub fn ffi_converter_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(codetype.code_type_impl(oracle()).ffi_converter_name())
     }
 
-    pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", codetype.ffi_converter_name(oracle())))
-    }
-
-    pub fn allocation_size_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn lower_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
         Ok(format!(
-            "{}.allocationSize",
-            codetype.ffi_converter_name(oracle())
+            "{}.lower",
+            codetype.code_type_impl(oracle()).ffi_converter_name()
         ))
     }
 
-    pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", codetype.ffi_converter_name(oracle())))
+    pub fn allocation_size_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.allocationSize",
+            codetype.code_type_impl(oracle()).ffi_converter_name()
+        ))
     }
 
-    pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", codetype.ffi_converter_name(oracle())))
+    pub fn write_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.write",
+            codetype.code_type_impl(oracle()).ffi_converter_name()
+        ))
     }
 
-    pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", codetype.ffi_converter_name(oracle())))
+    pub fn lift_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.lift",
+            codetype.code_type_impl(oracle()).ffi_converter_name()
+        ))
+    }
+
+    pub fn read_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.read",
+            codetype.code_type_impl(oracle()).ffi_converter_name()
+        ))
     }
 
     pub fn error_handler(result_type: &ResultType) -> Result<String, askama::Error> {
@@ -408,9 +421,9 @@ pub mod filters {
 
     pub fn render_literal(
         literal: &Literal,
-        codetype: &impl CodeType,
+        codetype: &impl CodeTypeDispatch,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.literal(oracle(), literal))
+        Ok(codetype.code_type_impl(oracle()).literal(literal))
     }
 
     /// Get the Kotlin syntax for representing a given low-level `FfiType`.

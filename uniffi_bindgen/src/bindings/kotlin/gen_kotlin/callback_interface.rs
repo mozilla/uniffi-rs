@@ -4,6 +4,7 @@
 
 use crate::backend::{CodeOracle, CodeType, Literal};
 
+#[derive(Debug)]
 pub struct CallbackInterfaceCodeType {
     id: String,
 }
@@ -15,19 +16,19 @@ impl CallbackInterfaceCodeType {
 }
 
 impl CodeType for CallbackInterfaceCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+    fn type_label(&self) -> String {
+        super::KotlinCodeOracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+    fn canonical_name(&self) -> String {
         format!("Type{}", self.id)
     }
 
-    fn literal(&self, _oracle: &dyn CodeOracle, _literal: &Literal) -> String {
+    fn literal(&self, _literal: &Literal) -> String {
         unreachable!();
     }
 
-    fn initialization_fn(&self, oracle: &dyn CodeOracle) -> Option<String> {
-        Some(format!("{}.register", self.ffi_converter_name(oracle)))
+    fn initialization_fn(&self) -> Option<String> {
+        Some(format!("{}.register", self.ffi_converter_name()))
     }
 }

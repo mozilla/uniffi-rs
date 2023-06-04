@@ -11,7 +11,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, CodeTypeDispatch, TemplateExpression, TypeIdentifier};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -384,34 +384,31 @@ pub mod filters {
         &PythonCodeOracle
     }
 
-    pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.type_label(oracle))
+    pub fn type_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(codetype.code_type_impl(oracle()).type_label())
     }
 
-    pub fn ffi_converter_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.ffi_converter_name(oracle))
+    pub fn ffi_converter_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(codetype.code_type_impl(oracle()).ffi_converter_name())
     }
 
-    pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.canonical_name(oracle))
+    pub fn canonical_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
+        Ok(codetype.code_type_impl(oracle()).canonical_name())
     }
 
-    pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn lift_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
         Ok(format!("{}.lift", ffi_converter_name(codetype)?))
     }
 
-    pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn lower_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
         Ok(format!("{}.lower", ffi_converter_name(codetype)?))
     }
 
-    pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn read_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
         Ok(format!("{}.read", ffi_converter_name(codetype)?))
     }
 
-    pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn write_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
         Ok(format!("{}.write", ffi_converter_name(codetype)?))
     }
 
@@ -432,10 +429,9 @@ pub mod filters {
 
     pub fn literal_py(
         literal: &Literal,
-        codetype: &impl CodeType,
+        codetype: &impl CodeTypeDispatch,
     ) -> Result<String, askama::Error> {
-        let oracle = oracle();
-        Ok(codetype.literal(oracle, literal))
+        Ok(codetype.code_type_impl(oracle()).literal(literal))
     }
 
     /// Get the Python syntax for representing a given low-level `FfiType`.
