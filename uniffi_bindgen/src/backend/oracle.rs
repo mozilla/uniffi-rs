@@ -5,14 +5,8 @@
 use super::{CodeType, TypeIdentifier};
 use crate::interface::FfiType;
 
-/// An object to look up a foreign language code specific renderer for a given type used.
-/// Every `Type` referred to in the `ComponentInterface` should map to a corresponding
-/// `CodeType`.
-///
-/// The mapping may be opaque, but the oracle always knows the answer.
-///
-/// In adddition, the oracle knows how to render identifiers (function names,
-/// class names, variable names etc).
+/// An object to supply a foreign language specific CodeType for a given type. It also
+/// supplys the specific rendering of a given identifier when used in a specific context.
 pub trait CodeOracle {
     fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType>;
 

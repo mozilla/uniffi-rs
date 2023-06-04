@@ -2,23 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, CodeTypeDispatch, Literal, TypeIdentifier};
 use paste::paste;
 
-fn render_literal(oracle: &dyn CodeOracle, literal: &Literal, inner: &TypeIdentifier) -> String {
+fn render_literal(literal: &Literal, inner: &TypeIdentifier) -> String {
     match literal {
         Literal::Null => "null".into(),
         Literal::EmptySequence => "listOf()".into(),
         Literal::EmptyMap => "mapOf()".into(),
 
         // For optionals
-        _ => oracle.find(inner).literal(oracle, literal),
+        _ => super::KotlinCodeOracle.find(inner).literal(literal),
     }
 }
 
 macro_rules! impl_code_type_for_compound {
      ($T:ty, $type_label_pattern:literal, $canonical_name_pattern: literal) => {
         paste! {
+            #[derive(Debug)]
             pub struct $T {
                 inner: TypeIdentifier,
             }
@@ -33,16 +34,16 @@ macro_rules! impl_code_type_for_compound {
             }
 
             impl CodeType for $T  {
-                fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-                    format!($type_label_pattern, oracle.find(self.inner()).type_label(oracle))
+                fn type_label(&self) -> String {
+                    format!($type_label_pattern, super::KotlinCodeOracle.find(self.inner()).type_label())
                 }
 
-                fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
-                    format!($canonical_name_pattern, oracle.find(self.inner()).canonical_name(oracle))
+                fn canonical_name(&self) -> String {
+                    format!($canonical_name_pattern, super::KotlinCodeOracle.find(self.inner()).canonical_name())
                 }
 
-                fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
-                    render_literal(oracle, literal, self.inner())
+                fn literal(&self, literal: &Literal) -> String {
+                    render_literal(literal, self.inner())
                 }
             }
         }
@@ -52,6 +53,7 @@ macro_rules! impl_code_type_for_compound {
 impl_code_type_for_compound!(OptionalCodeType, "{}?", "Optional{}");
 impl_code_type_for_compound!(SequenceCodeType, "List<{}>", "Sequence{}");
 
+#[derive(Debug)]
 pub struct MapCodeType {
     key: TypeIdentifier,
     value: TypeIdentifier,
@@ -72,23 +74,31 @@ impl MapCodeType {
 }
 
 impl CodeType for MapCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
+    fn type_label(&self) -> String {
         format!(
             "Map<{}, {}>",
-            self.key().type_label(oracle),
-            self.value().type_label(oracle),
+            self.key()
+                .code_type_impl(&super::KotlinCodeOracle)
+                .type_label(),
+            self.value()
+                .code_type_impl(&super::KotlinCodeOracle)
+                .type_label(),
         )
     }
 
-    fn canonical_name(&self, oracle: &dyn CodeOracle) -> String {
+    fn canonical_name(&self) -> String {
         format!(
             "Map{}{}",
-            self.key().type_label(oracle),
-            self.value().type_label(oracle),
+            self.key()
+                .code_type_impl(&super::KotlinCodeOracle)
+                .canonical_name(),
+            self.value()
+                .code_type_impl(&super::KotlinCodeOracle)
+                .canonical_name(),
         )
     }
 
-    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
-        render_literal(oracle, literal, &self.value)
+    fn literal(&self, literal: &Literal) -> String {
+        render_literal(literal, &self.value)
     }
 }

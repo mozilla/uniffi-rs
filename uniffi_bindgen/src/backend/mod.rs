@@ -10,7 +10,7 @@ mod types;
 pub use config::TemplateExpression;
 pub use declarations::CodeDeclaration;
 pub use oracle::CodeOracle;
-pub use types::CodeType;
+pub use types::{CodeType, CodeTypeDispatch};
 
 pub type TypeIdentifier = crate::interface::Type;
 pub type Literal = crate::interface::Literal;

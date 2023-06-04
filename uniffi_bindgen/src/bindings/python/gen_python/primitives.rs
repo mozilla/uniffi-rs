@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeOracle, CodeType, Literal};
+use crate::backend::{CodeType, Literal};
 use crate::interface::Radix;
 use paste::paste;
 
-fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
+fn render_literal(literal: &Literal) -> String {
     match literal {
         Literal::Boolean(v) => {
             if *v {
@@ -36,15 +36,15 @@ fn render_literal(_oracle: &dyn CodeOracle, literal: &Literal) -> String {
 macro_rules! impl_code_type_for_primitive {
     ($T:ty, $class_name:literal) => {
         paste! {
+            #[derive(Debug)]
             pub struct $T;
-
             impl CodeType for $T  {
-                fn type_label(&self, _oracle: &dyn CodeOracle) -> String {
+                fn type_label(&self) -> String {
                     $class_name.into()
                 }
 
-                fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
-                    render_literal(oracle, &literal)
+                fn literal(&self, literal: &Literal) -> String {
+                    render_literal(&literal)
                 }
             }
         }

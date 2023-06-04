@@ -4,6 +4,7 @@
 
 use crate::backend::{CodeOracle, CodeType};
 
+#[derive(Debug)]
 pub struct ErrorCodeType {
     id: String,
 }
@@ -15,11 +16,11 @@ impl ErrorCodeType {
 }
 
 impl CodeType for ErrorCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+    fn type_label(&self) -> String {
+        super::SwiftCodeOracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+    fn canonical_name(&self) -> String {
         format!("Type{}", self.id)
     }
 }
