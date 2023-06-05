@@ -122,6 +122,7 @@
 <span id="122">122</span>
 <span id="123">123</span>
 <span id="124">124</span>
+<span id="125">125</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -150,6 +151,7 @@
 /// a few `TryFrom` implementations to help guess the correct target language from
 /// e.g. a file extension of command-line argument.
 </span><span class="attribute">#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = <span class="string">&quot;clap&quot;</span>, derive(clap::ValueEnum))]
 </span><span class="kw">pub enum </span>TargetLanguage {
     Kotlin,
     Swift,

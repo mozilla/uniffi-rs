@@ -196,11 +196,18 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use crate</span>::{bindings::RunScriptOptions, library_mode::generate_bindings};
+</span><span class="kw">use crate</span>::{
+    bindings::{RunScriptOptions, TargetLanguage},
+    library_mode::generate_bindings,
+};
 <span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
@@ -321,7 +328,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 <span class="kw">impl </span>GeneratedSources {
     <span class="kw">fn </span>new(crate_name: <span class="kw-2">&amp;</span>str, cdylib_path: <span class="kw-2">&amp;</span>Utf8Path, out_dir: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>sources = generate_bindings(cdylib_path, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="string">&quot;swift&quot;</span>.into()], out_dir, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>sources =
+            generate_bindings(cdylib_path, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[TargetLanguage::Swift], out_dir, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>main_source = sources
             .iter()
             .find(|s| s.package.name == crate_name)

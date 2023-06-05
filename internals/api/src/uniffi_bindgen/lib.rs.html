@@ -456,6 +456,7 @@
 <span id="456">456</span>
 <span id="457">457</span>
 <span id="458">458</span>
+<span id="459">459</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -567,6 +568,7 @@
 <span class="kw">pub mod </span>macro_metadata;
 <span class="kw">pub mod </span>scaffolding;
 
+<span class="kw">use </span>bindings::TargetLanguage;
 <span class="kw">pub use </span>interface::ComponentInterface;
 <span class="kw">use </span>scaffolding::RustScaffolding;
 
@@ -726,7 +728,7 @@
 </span><span class="kw">pub fn </span>generate_bindings(
     udl_file: <span class="kw-2">&amp;</span>Utf8Path,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
-    target_languages: Vec&lt;<span class="kw-2">&amp;</span>str&gt;,
+    target_languages: Vec&lt;TargetLanguage&gt;,
     out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     library_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     try_format_code: bool,
@@ -745,7 +747,7 @@
             <span class="kw-2">&amp;</span>config.bindings,
             <span class="kw-2">&amp;</span>component,
             <span class="kw-2">&amp;</span>out_dir,
-            language.try_into()<span class="question-mark">?</span>,
+            language,
             try_format_code,
         )<span class="question-mark">?</span>;
     }

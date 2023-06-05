@@ -120,11 +120,23 @@
 <span id="120">120</span>
 <span id="121">121</span>
 <span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use crate</span>::{bindings::RunScriptOptions, library_mode::generate_bindings};
+</span><span class="kw">use crate</span>::{
+    bindings::{RunScriptOptions, TargetLanguage},
+    library_mode::generate_bindings,
+};
 <span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>std::env;
@@ -156,7 +168,13 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     <span class="kw">let </span>test_helper = UniFFITestHelper::new(crate_name)<span class="question-mark">?</span>;
     <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>cdylib_path = test_helper.copy_cdylib_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
-    generate_bindings(<span class="kw-2">&amp;</span>cdylib_path, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[<span class="string">&quot;kotlin&quot;</span>.into()], <span class="kw-2">&amp;</span>out_dir, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+    generate_bindings(
+        <span class="kw-2">&amp;</span>cdylib_path,
+        <span class="prelude-val">None</span>,
+        <span class="kw-2">&amp;</span>[TargetLanguage::Kotlin],
+        <span class="kw-2">&amp;</span>out_dir,
+        <span class="bool-val">false</span>,
+    )<span class="question-mark">?</span>;
     <span class="kw">let </span>jar_file = build_jar(crate_name, <span class="kw-2">&amp;</span>out_dir, options)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>command = kotlinc_command(options);

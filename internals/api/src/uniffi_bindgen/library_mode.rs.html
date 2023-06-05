@@ -188,6 +188,8 @@
 <span id="188">188</span>
 <span id="189">189</span>
 <span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -205,7 +207,10 @@
 ///     all of them at once.
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
-</span><span class="kw">use crate</span>::{bindings, macro_metadata, parse_udl, ComponentInterface, Config, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use crate</span>::{
+    bindings::{<span class="self">self</span>, TargetLanguage},
+    macro_metadata, parse_udl, ComponentInterface, Config, <span class="prelude-ty">Result</span>,
+};
 <span class="kw">use </span>anyhow::{bail, Context};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>cargo_metadata::{MetadataCommand, Package};
@@ -221,7 +226,7 @@
 </span><span class="kw">pub fn </span>generate_bindings(
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     crate_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    target_languages: <span class="kw-2">&amp;</span>[String],
+    target_languages: <span class="kw-2">&amp;</span>[TargetLanguage],
     out_dir: <span class="kw-2">&amp;</span>Utf8Path,
     try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&gt;&gt; {
@@ -264,9 +269,8 @@
     }
 
     <span class="kw">for </span>source <span class="kw">in </span>sources.iter() {
-        <span class="kw">for </span>language <span class="kw">in </span>target_languages {
-            <span class="kw">let </span>language: bindings::TargetLanguage = language.as_str().try_into()<span class="question-mark">?</span>;
-            <span class="kw">if </span>cdylib_name.is_none() &amp;&amp; language != bindings::TargetLanguage::Swift {
+        <span class="kw">for </span><span class="kw-2">&amp;</span>language <span class="kw">in </span>target_languages {
+            <span class="kw">if </span>cdylib_name.is_none() &amp;&amp; language != TargetLanguage::Swift {
                 <span class="macro">bail!</span>(<span class="string">&quot;Generate bindings for {language} requires a cdylib, but {library_path} was given&quot;</span>);
             }
             bindings::write_bindings(
