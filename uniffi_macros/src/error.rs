@@ -79,7 +79,8 @@ fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -
 
 // FfiConverters for "flat errors"
 //
-// These are errors where we only expose the variants, not the data.
+// These are errors where we only lower the to_string() value, rather than any assocated data.
+// We lower the to_string() value unconditionally, whether the enum has associated data or not.
 fn flat_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,

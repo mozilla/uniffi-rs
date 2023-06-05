@@ -93,19 +93,57 @@ class TestCoverall(unittest.TestCase):
 
 
     def test_simple_errors(self):
+        # This is testing enums which have been described in UDL via `enum` or via
+        # procmacros with `#[uniffi(flat_error)]`. Whether the variants have fields or not
+        # in Rust, these are treated as though each variant uses a single string.
         coveralls = Coveralls("test_errors")
         self.assertEqual(coveralls.get_name(), "test_errors")
 
-        with self.assertRaisesRegex(CoverallError.TooManyHoles, "The coverall has too many holes"):
+        with self.assertRaisesRegex(CoverallError.TooManyHoles, "The coverall has too many holes") as cm:
             coveralls.maybe_throw(True)
+        self.assertEqual(len(cm.exception.args), 1)
+        self.assertEqual(type(cm.exception.args[0]), str)
+        self.assertEqual(str(cm.exception), "The coverall has too many holes")
+        self.assertEqual(repr(cm.exception), "CoverallError.TooManyHoles('The coverall has too many holes')")
 
-        with self.assertRaises(CoverallError.TooManyHoles):
+        with self.assertRaisesRegex(CoverallMacroError.TooManyMacros, "The coverall has too many macros") as cm:
+            throw_macro_error()
+        self.assertEqual(len(cm.exception.args), 1)
+        self.assertEqual(type(cm.exception.args[0]), str)
+        self.assertEqual(str(cm.exception), "The coverall has too many macros")
+        self.assertEqual(repr(cm.exception), "CoverallMacroError.TooManyMacros('The coverall has too many macros')")
+
+        with self.assertRaises(CoverallError.TooManyHoles) as cm:
             coveralls.maybe_throw_into(True)
+        self.assertEqual(len(cm.exception.args), 1)
+        self.assertEqual(type(cm.exception.args[0]), str)
 
         with self.assertRaisesRegex(InternalError, "expected panic: oh no"):
             coveralls.panic("expected panic: oh no")
 
+    def test_flat_errors(self):
+        # This is testing enums which have fields in Rust but are marked as "flat" for the ffi.
+        with self.assertRaisesRegex(CoverallFlatError.TooManyVariants, "Too many variants: 99") as cm:
+            throw_flat_error()
+        self.assertEqual(len(cm.exception.args), 1)
+        self.assertEqual(type(cm.exception.args[0]), str)
+
+        with self.assertRaisesRegex(CoverallFlatMacroError.TooManyVariants, "Too many variants: 88") as cm:
+            throw_flat_macro_error()
+        self.assertEqual(len(cm.exception.args), 1)
+        self.assertEqual(type(cm.exception.args[0]), str)
+
+        # CoverallRichErrorNoVariantData is "flat" on the Rust side, but because it was
+        # described in the UDL via `[Error]interface`, it doesn't get the "flat" (ie, lowered as though
+        # each variant had a simple string) semantics.
+        with self.assertRaises(CoverallRichErrorNoVariantData.TooManyPlainVariants) as cm:
+            throw_rich_error_no_variant_data()
+        self.assertEqual(len(cm.exception.args), 0)
+        self.assertEqual(str(cm.exception), "") # probably not ideal!
+        self.assertEqual(repr(cm.exception), "CoverallRichErrorNoVariantData.TooManyPlainVariants()")
+
     def test_complex_errors(self):
+        # This is testing fields with variants which are exposed via the FFI.
         coveralls = Coveralls("test_complex_errors")
 
         # Test success
@@ -118,6 +156,13 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(cm.exception.extended_code, 20)
         self.assertEqual(str(cm.exception), "code=10, extended_code=20")
         self.assertEqual(repr(cm.exception), "ComplexError.OsError(code=10, extended_code=20)")
+
+        with self.assertRaises(ComplexMacroError.OsError) as cm:
+            throw_complex_macro_error()
+        self.assertEqual(cm.exception.code, 1)
+        self.assertEqual(cm.exception.extended_code, 2)
+        self.assertEqual(str(cm.exception), "code=1, extended_code=2")
+        self.assertEqual(repr(cm.exception), "ComplexMacroError.OsError(code=1, extended_code=2)")
 
         with self.assertRaises(ComplexError.PermissionDenied) as cm:
             coveralls.maybe_throw_complex(2)
@@ -133,6 +178,10 @@ class TestCoverall(unittest.TestCase):
         # Test panics, which should cause InternalError to be raised
         with self.assertRaises(InternalError) as cm:
             coveralls.maybe_throw_complex(4)
+
+    def test_enums(self):
+        e = get_simple_flat_macro_enum(0)
+        self.assertTrue(isinstance(e, SimpleFlatMacroEnum.FIRST))
 
     def test_self_by_arc(self):
         coveralls = Coveralls("test_self_by_arc")
