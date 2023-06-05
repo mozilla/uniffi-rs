@@ -18,3 +18,9 @@ This .udl (UniFFI Definition Language) file, whose definitions must match with t
 - Swift
 - Python
 - Ruby
+
+## Third-party foreign language bindings
+
+* [Kotlin Multiplatform](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings)
+* [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
+* [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
