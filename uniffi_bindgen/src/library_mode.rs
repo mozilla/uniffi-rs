@@ -104,7 +104,8 @@ pub struct Source {
 // If `library_path` is a C dynamic library, return its name
 fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     let cdylib_extentions = [".so", ".dll", ".dylib"];
-    let filename = library_path.file_name()?.strip_prefix("lib")?;
+    let filename = library_path.file_name()?;
+    let filename = filename.strip_prefix("lib").unwrap_or(filename);
     for ext in cdylib_extentions {
         if let Some(f) = filename.strip_suffix(ext) {
             return Some(f);
@@ -186,5 +187,40 @@ fn load_component_interface(
         parse_udl(&ci_path)
     } else {
         bail!("{ci_path} not found");
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn calc_cdylib_name_is_correct() {
+        assert_eq!(
+            "uniffi",
+            calc_cdylib_name("/path/to/libuniffi.so".into()).unwrap()
+        );
+        assert_eq!(
+            "uniffi",
+            calc_cdylib_name("/path/to/libuniffi.dylib".into()).unwrap()
+        );
+        assert_eq!(
+            "uniffi",
+            calc_cdylib_name("/path/to/uniffi.dll".into()).unwrap()
+        );
+    }
+
+    /// Right now we unconditionally strip the `lib` prefix.
+    ///
+    /// Technically Windows DLLs do not start with a `lib` prefix,
+    /// but a library name could start with a `lib` prefix.
+    /// On Linux/macOS this would result in a `liblibuniffi.{so,dylib}` file.
+    #[test]
+    #[ignore] // Currently fails.
+    fn calc_cdylib_name_is_correct_on_windows() {
+        assert_eq!(
+            "libuniffi",
+            calc_cdylib_name("/path/to/libuniffi.dll".into()).unwrap()
+        );
     }
 }
