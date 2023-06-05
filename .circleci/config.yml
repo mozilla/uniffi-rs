@@ -22,7 +22,7 @@ commands:
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
-      - run: rustup override set 1.65.0
+      - run: rustup override set 1.66.0
       - run: rustup update
   build-api-docs:
     steps:
@@ -39,7 +39,7 @@ orbs:
 jobs:
   Check Rust formatting:
     docker:
-      - image: cimg/rust:1.66
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -49,7 +49,7 @@ jobs:
       - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
-      - image: cimg/rust:1.66
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -59,7 +59,7 @@ jobs:
       - run: cargo clippy --all --all-targets -- -D warnings
   Lint Rust Docs:
     docker:
-      - image: cimg/rust:1.66
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -107,7 +107,7 @@ jobs:
       - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
-      - image: cimg/rust:1.66
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
