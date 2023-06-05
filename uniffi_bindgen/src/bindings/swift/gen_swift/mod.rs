@@ -384,6 +384,7 @@ impl SwiftCodeOracle {
 
 pub mod filters {
     use super::*;
+    pub use crate::backend::filters::*;
 
     fn oracle() -> &'static SwiftCodeOracle {
         &SwiftCodeOracle

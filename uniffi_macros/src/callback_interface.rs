@@ -155,14 +155,20 @@ fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<To
         // Note: the callback index is 1-based, since 0 is reserved for the free function
         FnKind::CallbackInterfaceMethod { index, .. } => index + 1,
         k => {
-            return sig.syn_err(format!(
-                "Internal UniFFI error: Unexpected function kind for callback interface {k:?}"
-            ))
+            return Err(syn::Error::new(
+                sig.span,
+                format!(
+                    "Internal UniFFI error: Unexpected function kind for callback interface {k:?}"
+                ),
+            ));
         }
     };
 
     if receiver.is_none() {
-        return sig.syn_err("callback interface methods must take &self as their first argument");
+        return Err(syn::Error::new(
+            sig.span,
+            "callback interface methods must take &self as their first argument",
+        ));
     }
     let params = sig.params();
     let buf_ident = Ident::new("uniffi_args_buf", Span::call_site());

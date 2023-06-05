@@ -1,4 +1,4 @@
-{%- let obj = ci.get_object_definition_unchecked(name) %}
+{%- let obj = ci|get_object_definition(name) %}
 {%- if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
 {{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}

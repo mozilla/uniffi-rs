@@ -356,6 +356,7 @@ impl<T: AsType> AsCodeType for T {
 
 pub mod filters {
     use super::*;
+    pub use crate::backend::filters::*;
 
     pub fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().type_label())

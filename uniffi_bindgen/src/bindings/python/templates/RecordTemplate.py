@@ -1,4 +1,4 @@
-{%- let rec = ci.get_record_definition_unchecked(name) %}
+{%- let rec = ci|get_record_definition(name) %}
 class {{ type_name }}:
 
     def __init__(self, {% for field in rec.fields() %}

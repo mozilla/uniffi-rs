@@ -83,14 +83,12 @@ impl ExportItem {
 
                 let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
                 let item = if attrs.constructor {
-                    let sig = FnSignature::new_constructor(self_ident.clone(), impl_fn.sig)?;
-                    if sig.is_async {
-                        return sig.syn_err("Async constructors are not supported");
-                    }
-                    ImplItem::Constructor(sig)
+                    ImplItem::Constructor(FnSignature::new_constructor(
+                        self_ident.clone(),
+                        impl_fn.sig,
+                    )?)
                 } else {
-                    let sig = FnSignature::new_method(self_ident.clone(), impl_fn.sig)?;
-                    ImplItem::Method(sig)
+                    ImplItem::Method(FnSignature::new_method(self_ident.clone(), impl_fn.sig)?)
                 };
 
                 Ok(item)

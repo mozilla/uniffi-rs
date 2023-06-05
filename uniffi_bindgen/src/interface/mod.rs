@@ -209,36 +209,6 @@ impl ComponentInterface {
         self.callback_interfaces.iter().find(|o| o.name == name)
     }
 
-    /// Get an Enum definition by name or panic
-    pub fn get_enum_definition_unchecked(&self, name: &str) -> &Enum {
-        self.get_enum_definition(name)
-            .unwrap_or_else(|| panic!("enum {name} not found"))
-    }
-
-    /// Get a Record definition by name or panic
-    pub fn get_record_definition_unchecked(&self, name: &str) -> &Record {
-        self.get_record_definition(name)
-            .unwrap_or_else(|| panic!("record {name} not found"))
-    }
-
-    /// Get a Function definition by name or panic
-    pub fn get_function_definition_unchecked(&self, name: &str) -> &Function {
-        self.get_function_definition(name)
-            .unwrap_or_else(|| panic!("function {name} not found"))
-    }
-
-    /// Get an Object definition by name or panic
-    pub fn get_object_definition_unchecked(&self, name: &str) -> &Object {
-        self.get_object_definition(name)
-            .unwrap_or_else(|| panic!("object {name} not found"))
-    }
-
-    /// Get an Callback Interface definition by name or panic
-    pub fn get_callback_interface_definition_unchecked(&self, name: &str) -> &CallbackInterface {
-        self.get_callback_interface_definition(name)
-            .unwrap_or_else(|| panic!("callback interface {name} not found"))
-    }
-
     /// Get the definitions for every Method type in the interface.
     pub fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
         // Each of the `as &dyn Callable` casts is a trivial cast, but it seems like the clearest

@@ -1,4 +1,4 @@
-{%- let obj = ci.get_object_definition_unchecked(name) %}
+{%- let obj = ci|get_object_definition(name) %}
 
 class {{ type_name }}:
 {%- match obj.primary_constructor() %}

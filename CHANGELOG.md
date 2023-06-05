@@ -40,7 +40,7 @@
 - Shortened `str()` representations of errors in Python to align with other exceptions in Python. Use `repr()` or the `{!r}` format to get the old representation back.
 - Methods implemented by standard Rust traits, such as `Debug`, `Display`, `Eq` and `Hash` can now be exposed over the FFI and bindings may implement special methods for them.
   See [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#exposing-methods-from-standard-rust-traits).
-- Implemented proc-macro callback inteface support
+- Implemented proc-macro callback interface support
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 

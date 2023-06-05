@@ -14,7 +14,10 @@ pub(super) fn gen_fn_scaffolding(
     arguments: &ExportAttributeArguments,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
-        return sig.syn_err("Unexpected self param (Note: uniffi::export must be used on the impl block, not its containing fn's)");
+        return Err(syn::Error::new(
+            sig.span,
+            "Unexpected self param (Note: uniffi::export must be used on the impl block, not its containing fn's)"
+        ));
     }
     let metadata_items = sig.metadata_items()?;
     let scaffolding_func = gen_ffi_function(&sig, arguments)?;
@@ -29,7 +32,10 @@ pub(super) fn gen_constructor_scaffolding(
     arguments: &ExportAttributeArguments,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
-        return sig.syn_err("constructors must not have a self parameter");
+        return Err(syn::Error::new(
+            sig.span,
+            "constructors must not have a self parameter",
+        ));
     }
     let metadata_items = sig.metadata_items()?;
     let scaffolding_func = gen_ffi_function(&sig, arguments)?;
@@ -44,7 +50,10 @@ pub(super) fn gen_method_scaffolding(
     arguments: &ExportAttributeArguments,
 ) -> syn::Result<TokenStream> {
     let scaffolding_func = if sig.receiver.is_none() {
-        return sig.syn_err("associated functions are not currently supported");
+        return Err(syn::Error::new(
+            sig.span,
+            "associated functions are not currently supported",
+        ));
     } else {
         gen_ffi_function(&sig, arguments)?
     };
@@ -139,7 +148,10 @@ fn gen_ffi_function(
         }
         FnKind::Constructor { self_ident } => ScaffoldingBits::new_for_constructor(sig, self_ident),
         FnKind::CallbackInterfaceMethod { .. } => {
-            return sig.syn_err("UniFFI internal error: attempt to create scaffolding function for a callback interaface method");
+            return Err(syn::Error::new(
+                sig.span,
+                "UniFFI internal error: attempt to create scaffolding function for a callback interface method",
+            ))
         }
     };
 

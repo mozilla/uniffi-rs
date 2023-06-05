@@ -53,6 +53,14 @@ impl FnSignature {
             ReturnType::Default => quote! { () },
             ReturnType::Type(_, ty) => quote! { #ty },
         };
+        let is_async = sig.asyncness.is_some();
+
+        if is_async && matches!(kind, FnKind::Constructor { .. }) {
+            return Err(syn::Error::new(
+                span,
+                "Async constructors are not supported",
+            ));
+        }
 
         let mut input_iter = sig.inputs.into_iter().map(Arg::try_from).peekable();
 
@@ -82,15 +90,11 @@ impl FnSignature {
             mod_path: mod_path()?,
             name: ident_to_string(&ident),
             ident,
-            is_async: sig.asyncness.is_some(),
+            is_async,
             receiver,
             args,
             return_ty: output,
         })
-    }
-
-    pub(crate) fn syn_err<T>(&self, message: impl std::fmt::Display) -> syn::Result<T> {
-        Err(syn::Error::new(self.span, message))
     }
 
     /// Lift expressions for each of our arguments
@@ -124,7 +128,12 @@ impl FnSignature {
                 uniffi_meta::constructor_symbol_name(mod_path, &ident_to_string(self_ident), name)
             }
             FnKind::CallbackInterfaceMethod { .. } => {
-                return self.syn_err("UniFFI internal error: attempt to create scaffolding function for a callback interaface method");
+                return Err(
+                    syn::Error::new(
+                        self.span,
+                        "UniFFI internal error: attempt to create scaffolding function for a callback interaface method",
+                    )
+                );
             }
         };
         Ok(Ident::new(&name, Span::call_site()))

@@ -169,7 +169,7 @@ class RustBufferBuilder
 
   {% when Type::Enum with (enum_name) -%}
   {% if !ci.is_name_used_as_error(enum_name) %}
-  {%- let e = ci.get_enum_definition_unchecked(enum_name) -%}
+  {%- let e = ci|get_enum_definition(enum_name) -%}
   # The Enum type {{ enum_name }}.
 
   def write_{{ canonical_type_name }}(v)
@@ -189,7 +189,7 @@ class RustBufferBuilder
    {% endif %}
 
   {% when Type::Record with (record_name) -%}
-  {%- let rec = ci.get_record_definition_unchecked(record_name) -%}
+  {%- let rec = ci|get_record_definition(record_name) -%}
   # The Record type {{ record_name }}.
 
   def write_{{ canonical_type_name }}(v)
