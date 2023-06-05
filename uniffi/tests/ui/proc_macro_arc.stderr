@@ -8,13 +8,13 @@ error[E0277]: the trait bound `Foo: Interface<UniFfiTag>` is not satisfied
    = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0080]: evaluation of constant value failed
+note: erroneous constant used
   --> tests/ui/proc_macro_arc.rs:10:1
    |
 10 | #[uniffi::export]
-   | ^^^^^^^^^^^^^^^^^ referenced constant has errors
+   | ^^^^^^^^^^^^^^^^^
    |
-   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this note originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `child::Foo: Interface<UniFfiTag>` is not satisfied
   --> tests/ui/proc_macro_arc.rs:20:5
@@ -26,10 +26,10 @@ error[E0277]: the trait bound `child::Foo: Interface<UniFfiTag>` is not satisfie
    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0080]: evaluation of constant value failed
+note: erroneous constant used
   --> tests/ui/proc_macro_arc.rs:20:5
    |
 20 |     #[uniffi::export]
-   |     ^^^^^^^^^^^^^^^^^ referenced constant has errors
+   |     ^^^^^^^^^^^^^^^^^
    |
-   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this note originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)

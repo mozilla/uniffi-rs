@@ -188,7 +188,6 @@ impl Object {
                         | UniffiTrait::Hash { hash: m } => vec![m],
                         UniffiTrait::Eq { eq, ne } => vec![eq, ne],
                     })
-                    .into_iter()
                     .map(|m| &m.ffi_func),
             )
     }

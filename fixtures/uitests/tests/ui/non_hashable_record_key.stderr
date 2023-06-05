@@ -1,14 +1,8 @@
 error[E0277]: the trait bound `f32: Hash` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
-  | / pub extern "C" fn r#uniffi_uitests_fn_func_get_dict(
-  | |
-  | |     call_status: &mut uniffi::RustCallStatus
-  | | )  -> <std::collections::HashMap<f32, u64> as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
-... |
-  | |     )
-  | | }
-  | |_^ the trait `Hash` is not implemented for `f32`
+  | )  -> <std::collections::HashMap<f32, u64> as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Hash` is not implemented for `f32`
   |
   = help: the following other types implement trait `Hash`:
             i128
@@ -25,14 +19,8 @@ error[E0277]: the trait bound `f32: Hash` is not satisfied
 error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
-  | / pub extern "C" fn r#uniffi_uitests_fn_func_get_dict(
-  | |
-  | |     call_status: &mut uniffi::RustCallStatus
-  | | )  -> <std::collections::HashMap<f32, u64> as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
-... |
-  | |     )
-  | | }
-  | |_^ the trait `std::cmp::Eq` is not implemented for `f32`
+  | )  -> <std::collections::HashMap<f32, u64> as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f32`
   |
   = help: the following other types implement trait `std::cmp::Eq`:
             i128

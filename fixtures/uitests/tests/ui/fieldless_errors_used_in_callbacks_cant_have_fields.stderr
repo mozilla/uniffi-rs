@@ -1,4 +1,4 @@
-error[E0533]: expected unit struct, unit variant or constant, found struct variant `Self::DivisionByZero`
+error[E0533]: expected value, found struct variant `Self::DivisionByZero`
  --> $OUT_DIR[uniffi_uitests]/errors.uniffi.rs
   |
   | / #[::uniffi::ffi_converter_error(
@@ -6,6 +6,6 @@ error[E0533]: expected unit struct, unit variant or constant, found struct varia
   | |     flat_error,
   | |     with_try_read,
   | | )]
-  | |__^
+  | |__^ not a value
   |
   = note: this error originates in the attribute macro `::uniffi::ffi_converter_error` (in Nightly builds, run with -Z macro-backtrace for more info)
