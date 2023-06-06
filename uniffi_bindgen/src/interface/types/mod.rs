@@ -307,7 +307,7 @@ impl TypeUniverse {
         if resolve_builtin_type(name).is_some() {
             bail!("please don't shadow builtin types ({name}, {:?})", type_,);
         }
-        self.add_known_type(&type_)?;
+        self.add_known_type(&type_);
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(o) => {
                 let existing_def = o.get();
@@ -345,7 +345,7 @@ impl TypeUniverse {
     }
 
     /// Add a [Type] to the set of all types seen in the component interface.
-    pub fn add_known_type(&mut self, type_: &Type) -> Result<()> {
+    pub fn add_known_type(&mut self, type_: &Type) {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());
@@ -355,17 +355,15 @@ impl TypeUniverse {
             // this is important if the inner type isn't ever mentioned outside one of these
             // generic builtin types.
             match type_ {
-                Type::Optional(t) => self.add_known_type(t)?,
-                Type::Sequence(t) => self.add_known_type(t)?,
+                Type::Optional(t) => self.add_known_type(t),
+                Type::Sequence(t) => self.add_known_type(t),
                 Type::Map(k, v) => {
-                    self.add_known_type(k)?;
-                    self.add_known_type(v)?;
+                    self.add_known_type(k);
+                    self.add_known_type(v);
                 }
                 _ => {}
             }
         }
-
-        Ok(())
     }
 
     /// Check if a [Type] is present

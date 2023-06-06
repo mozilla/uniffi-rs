@@ -43,7 +43,7 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
                 format!("callback interface `{}`", meta.name),
                 &meta.module_path,
             ),
-            Metadata::CallbackInterfaceMethod(meta) => (
+            Metadata::TraitMethod(meta) => (
                 format!("callback interface method`{}`", meta.name),
                 &meta.module_path,
             ),

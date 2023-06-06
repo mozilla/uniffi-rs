@@ -34,16 +34,12 @@ impl FnSignature {
         Self::new(FnKind::Constructor { self_ident }, sig)
     }
 
-    pub(crate) fn new_trait_method(self_ident: Ident, sig: syn::Signature) -> syn::Result<Self> {
-        Self::new(FnKind::TraitMethod { self_ident }, sig)
-    }
-
-    pub(crate) fn new_callback_interface_method(
-        trait_ident: Ident,
-        index: u32,
+    pub(crate) fn new_trait_method(
+        self_ident: Ident,
         sig: syn::Signature,
+        index: u32,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::CallbackInterfaceMethod { trait_ident, index }, sig)
+        Self::new(FnKind::TraitMethod { self_ident, index }, sig)
     }
 
     pub(crate) fn new(kind: FnKind, sig: syn::Signature) -> syn::Result<Self> {
@@ -121,19 +117,11 @@ impl FnSignature {
         let name = &self.name;
         let name = match &self.kind {
             FnKind::Function => uniffi_meta::fn_symbol_name(mod_path, name),
-            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident } => {
+            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } => {
                 uniffi_meta::method_symbol_name(mod_path, &ident_to_string(self_ident), name)
             }
             FnKind::Constructor { self_ident } => {
                 uniffi_meta::constructor_symbol_name(mod_path, &ident_to_string(self_ident), name)
-            }
-            FnKind::CallbackInterfaceMethod { .. } => {
-                return Err(
-                    syn::Error::new(
-                        self.span,
-                        "UniFFI internal error: attempt to create scaffolding function for a callback interaface method",
-                    )
-                );
             }
         };
         Ok(Ident::new(&name, Span::call_site()))
@@ -177,9 +165,8 @@ impl FnSignature {
                 Some(self.checksum_symbol_name()),
             )),
 
-            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident } => {
+            FnKind::Method { self_ident } => {
                 let object_name = ident_to_string(self_ident);
-                let is_trait = matches!(self.kind, FnKind::TraitMethod { .. });
                 Ok(create_metadata_items(
                     "method",
                     &format!("{object_name}_{name}"),
@@ -187,7 +174,26 @@ impl FnSignature {
                         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                             .concat_str(#mod_path)
                             .concat_str(#object_name)
-                            .concat_bool(#is_trait)
+                            .concat_str(#name)
+                            .concat_bool(#is_async)
+                            .concat_value(#args_len)
+                            #(#arg_metadata_calls)*
+                            .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                    },
+                    Some(self.checksum_symbol_name()),
+                ))
+            }
+
+            FnKind::TraitMethod { self_ident, index } => {
+                let object_name = ident_to_string(self_ident);
+                Ok(create_metadata_items(
+                    "method",
+                    &format!("{object_name}_{name}"),
+                    quote! {
+                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
+                            .concat_str(#mod_path)
+                            .concat_str(#object_name)
+                            .concat_u32(#index)
                             .concat_str(#name)
                             .concat_bool(#is_async)
                             .concat_value(#args_len)
@@ -215,25 +221,6 @@ impl FnSignature {
                     Some(self.checksum_symbol_name()),
                 ))
             }
-
-            FnKind::CallbackInterfaceMethod { trait_ident, index } => {
-                let trait_name = ident_to_string(trait_ident);
-                Ok(create_metadata_items(
-                    "callback_interface_method",
-                    &format!("{trait_name}_{name}"),
-                    quote! {
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CALLBACK_INTERFACE_METHOD)
-                            .concat_str(#mod_path)
-                            .concat_str(#trait_name)
-                            .concat_u32(#index)
-                            .concat_str(#name)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(<#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
-                    },
-                    Some(self.checksum_symbol_name()),
-                ))
-            }
         }
     }
 
@@ -242,7 +229,7 @@ impl FnSignature {
         let name = &self.name;
         match &self.kind {
             FnKind::Function => uniffi_meta::fn_checksum_symbol_name(mod_path, name),
-            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident } => {
+            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } => {
                 uniffi_meta::method_checksum_symbol_name(
                     mod_path,
                     &ident_to_string(self_ident),
@@ -254,13 +241,6 @@ impl FnSignature {
                 &ident_to_string(self_ident),
                 name,
             ),
-            FnKind::CallbackInterfaceMethod { trait_ident, .. } => {
-                uniffi_meta::method_checksum_symbol_name(
-                    mod_path,
-                    &ident_to_string(trait_ident),
-                    name,
-                )
-            }
         }
     }
 }
@@ -384,6 +364,5 @@ pub(crate) enum FnKind {
     Function,
     Constructor { self_ident: Ident },
     Method { self_ident: Ident },
-    TraitMethod { self_ident: Ident },
-    CallbackInterfaceMethod { trait_ident: Ident, index: u32 },
+    TraitMethod { self_ident: Ident, index: u32 },
 }

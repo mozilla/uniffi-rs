@@ -50,7 +50,7 @@ use std::{
     iter,
 };
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{anyhow, bail, ensure, Result};
 
 pub mod types;
 pub use types::{AsType, ExternalKind, ObjectImpl, Type};
@@ -74,9 +74,7 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
-use uniffi_meta::{
-    CallbackInterfaceMethodMetadata, ConstructorMetadata, MethodMetadata, ObjectMetadata,
-};
+use uniffi_meta::{ConstructorMetadata, ObjectMetadata, TraitMethodMetadata};
 
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -123,7 +121,7 @@ impl ComponentInterface {
             bail!("parse error");
         }
         // Unconditionally add the String type, which is used by the panic handling
-        ci.types.add_known_type(&Type::String)?;
+        ci.types.add_known_type(&Type::String);
         // We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.
         ci.types.add_type_definitions_from(defns.as_slice())?;
@@ -605,7 +603,7 @@ impl ComponentInterface {
             Entry::Vacant(v) => {
                 for variant in defn.variants() {
                     for field in variant.fields() {
-                        self.types.add_known_type(&field.as_type())?;
+                        self.types.add_known_type(&field.as_type());
                     }
                 }
                 v.insert(defn);
@@ -631,7 +629,7 @@ impl ComponentInterface {
         match self.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
                 for field in defn.fields() {
-                    self.types.add_known_type(&field.as_type())?;
+                    self.types.add_known_type(&field.as_type());
                 }
                 v.insert(defn);
             }
@@ -654,10 +652,10 @@ impl ComponentInterface {
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
         for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_)?;
+            self.types.add_known_type(&arg.type_);
         }
         if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty)?;
+            self.types.add_known_type(ty);
         }
 
         // Since functions are not a first-class type, we have to check for duplicates here
@@ -670,7 +668,7 @@ impl ComponentInterface {
         }
         if defn.is_async() {
             // Async functions depend on the foreign executor
-            self.types.add_known_type(&Type::ForeignExecutor)?;
+            self.types.add_known_type(&Type::ForeignExecutor);
         }
         self.functions.push(defn);
 
@@ -678,46 +676,44 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name, ObjectImpl::Struct);
+        let object = get_object(&mut self.objects, &meta.self_name)
+            .ok_or_else(|| anyhow!("add_constructor_meta: object {} not found", &meta.self_name))?;
         let defn: Constructor = meta.into();
 
         for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_)?;
+            self.types.add_known_type(&arg.type_);
         }
         object.constructors.push(defn);
 
         Ok(())
     }
 
-    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
-        let imp = ObjectImpl::from_is_trait(meta.self_is_trait);
-        let object = get_or_insert_object(&mut self.objects, &meta.self_name, imp);
+    pub(super) fn add_method_meta(&mut self, meta: impl Into<Method>) -> Result<()> {
         let defn: Method = meta.into();
+        let object = get_object(&mut self.objects, &defn.object_name)
+            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &defn.object_name))?;
 
         for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_)?;
+            self.types.add_known_type(&arg.type_);
         }
         if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty)?;
+            self.types.add_known_type(ty);
         }
         if defn.is_async() {
             // Async functions depend on the foreign executor
-            self.types.add_known_type(&Type::ForeignExecutor)?;
+            self.types.add_known_type(&Type::ForeignExecutor);
         }
         object.methods.push(defn);
 
         Ok(())
     }
 
-    pub(super) fn add_object_free_fn(&mut self, meta: ObjectMetadata) -> Result<()> {
-        let imp = ObjectImpl::from_is_trait(meta.is_trait);
-        self.types.add_known_type(&Type::Object {
-            name: meta.name.clone(),
-            imp,
-        })?;
-        let object = get_or_insert_object(&mut self.objects, &meta.name, imp);
-        object.ffi_func_free.name = meta.free_ffi_symbol_name();
-        Ok(())
+    pub(super) fn add_object_meta(&mut self, meta: ObjectMetadata) {
+        let free_name = meta.free_ffi_symbol_name();
+        let mut obj = Object::new(meta.name, ObjectImpl::from_is_trait(meta.is_trait));
+        obj.ffi_func_free.name = free_name;
+        self.types.add_known_type(&obj.as_type());
+        self.add_object_definition(obj);
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
@@ -745,26 +741,23 @@ impl ComponentInterface {
         self.callback_interfaces.push(defn);
     }
 
-    pub(super) fn add_callback_interface_method_meta(
-        &mut self,
-        meta: CallbackInterfaceMethodMetadata,
-    ) -> Result<()> {
-        let cb = match get_callback_interface(&mut self.callback_interfaces, &meta.trait_name) {
-            Some(cb) => cb,
-            None => bail!("Callback interface not found: {}", meta.trait_name),
-        };
-        // uniffi_meta should ensure that we process callback interface methods in order, double
-        // check that here
-        if cb.methods.len() != meta.index as usize {
-            bail!(
-                "UniFFI internal error: callback interface method index mismatch for {}::{} (expected {}, saw {})",
-                meta.trait_name,
-                meta.name,
-                cb.methods.len(),
-                meta.index,
-            );
+    pub(super) fn add_trait_method_meta(&mut self, meta: TraitMethodMetadata) -> Result<()> {
+        if let Some(cbi) = get_callback_interface(&mut self.callback_interfaces, &meta.trait_name) {
+            // uniffi_meta should ensure that we process callback interface methods in order, double
+            // check that here
+            if cbi.methods.len() != meta.index as usize {
+                bail!(
+                    "UniFFI internal error: callback interface method index mismatch for {}::{} (expected {}, saw {})",
+                    meta.trait_name,
+                    meta.name,
+                    cbi.methods.len(),
+                    meta.index,
+                );
+            }
+            cbi.methods.push(meta.into());
+        } else {
+            self.add_method_meta(meta)?;
         }
-        cb.methods.push(meta.into());
         Ok(())
     }
 
@@ -840,36 +833,15 @@ impl ComponentInterface {
     }
 }
 
-fn get_or_insert_object<'a>(
-    objects: &'a mut Vec<Object>,
-    name: &str,
-    imp: ObjectImpl,
-) -> &'a mut Object {
-    // The find-based way of writing this currently runs into a borrow checker
-    // error, so we use position
-    match objects.iter_mut().position(|o| o.name == name) {
-        Some(idx) => {
-            // what we created before must match the implementation.
-            assert_eq!(objects[idx].imp, imp);
-            &mut objects[idx]
-        }
-        None => {
-            objects.push(Object::new(name.to_owned(), imp));
-            objects.last_mut().unwrap()
-        }
-    }
+fn get_object<'a>(objects: &'a mut[Object], name: &str) -> Option<&'a mut Object> {
+    objects.iter_mut().find(|o| o.name == name)
 }
 
 fn get_callback_interface<'a>(
     callback_interfaces: &'a mut [CallbackInterface],
     name: &str,
 ) -> Option<&'a mut CallbackInterface> {
-    // The find-based way of writing this currently runs into a borrow checker
-    // error, so we use position
-    callback_interfaces
-        .iter_mut()
-        .position(|o| o.name == name)
-        .map(|idx| &mut callback_interfaces[idx])
+    callback_interfaces.iter_mut().find(|o| o.name == name)
 }
 
 /// Stateful iterator for yielding all types contained in a given type.

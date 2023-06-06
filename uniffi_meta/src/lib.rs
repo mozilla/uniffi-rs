@@ -167,7 +167,6 @@ impl ConstructorMetadata {
 pub struct MethodMetadata {
     pub module_path: String,
     pub self_name: String,
-    pub self_is_trait: bool,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
@@ -187,20 +186,25 @@ impl MethodMetadata {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-pub struct CallbackInterfaceMethodMetadata {
+pub struct TraitMethodMetadata {
     pub module_path: String,
     pub trait_name: String,
     // Note: the position of `index` is important since it causes methods to be ordered correctly
     // in MetadataGroup.items
     pub index: u32,
     pub name: String,
+    pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
     pub checksum: u16,
 }
 
-impl CallbackInterfaceMethodMetadata {
+impl TraitMethodMetadata {
+    pub fn ffi_symbol_name(&self) -> String {
+        method_symbol_name(&self.module_path, &self.trait_name, &self.name)
+    }
+
     pub fn checksum_symbol_name(&self) -> String {
         method_checksum_symbol_name(&self.module_path, &self.trait_name, &self.name)
     }
@@ -352,14 +356,14 @@ pub enum Metadata {
     Namespace(NamespaceMetadata),
     UdlFile(UdlFile),
     Func(FnMetadata),
-    Constructor(ConstructorMetadata),
-    Method(MethodMetadata),
+    Object(ObjectMetadata),
     CallbackInterface(CallbackInterfaceMetadata),
-    CallbackInterfaceMethod(CallbackInterfaceMethodMetadata),
     Record(RecordMetadata),
     Enum(EnumMetadata),
-    Object(ObjectMetadata),
     Error(ErrorMetadata),
+    Constructor(ConstructorMetadata),
+    Method(MethodMetadata),
+    TraitMethod(TraitMethodMetadata),
 }
 
 impl Metadata {
@@ -428,8 +432,8 @@ impl From<CallbackInterfaceMetadata> for Metadata {
     }
 }
 
-impl From<CallbackInterfaceMethodMetadata> for Metadata {
-    fn from(v: CallbackInterfaceMethodMetadata) -> Self {
-        Self::CallbackInterfaceMethod(v)
+impl From<TraitMethodMetadata> for Metadata {
+    fn from(v: TraitMethodMetadata) -> Self {
+        Self::TraitMethod(v)
     }
 }

@@ -272,10 +272,10 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                 // need to add known types as they aren't explicitly referenced in
                 // the UDL
                 if let Some(ref return_type) = return_type {
-                    ci.types.add_known_type(return_type)?;
+                    ci.types.add_known_type(return_type);
                 }
                 for arg in &arguments {
-                    ci.types.add_known_type(&arg.type_)?;
+                    ci.types.add_known_type(&arg.type_);
                 }
                 Ok(Method {
                     // The name is used to create the ffi function for the method.
@@ -653,8 +653,8 @@ impl From<uniffi_meta::MethodMetadata> for Method {
     }
 }
 
-impl From<uniffi_meta::CallbackInterfaceMethodMetadata> for Method {
-    fn from(meta: uniffi_meta::CallbackInterfaceMethodMetadata) -> Self {
+impl From<uniffi_meta::TraitMethodMetadata> for Method {
+    fn from(meta: uniffi_meta::TraitMethodMetadata) -> Self {
         let checksum_fn_name = meta.checksum_symbol_name();
         let return_type = meta.return_type.map(Into::into);
         let arguments = meta.inputs.into_iter().map(Into::into).collect();

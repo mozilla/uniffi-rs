@@ -55,7 +55,7 @@ impl<'a> MetadataReader<'a> {
             codes::ERROR => self.read_error()?.into(),
             codes::INTERFACE => self.read_object()?.into(),
             codes::CALLBACK_INTERFACE => self.read_callback_interface()?.into(),
-            codes::CALLBACK_INTERFACE_METHOD => self.read_callback_interface_method()?.into(),
+            codes::TRAIT_METHOD => self.read_trait_method()?.into(),
             _ => bail!("Unexpected metadata code: {value:?}"),
         })
     }
@@ -224,7 +224,6 @@ impl<'a> MetadataReader<'a> {
     fn read_method(&mut self) -> Result<MethodMetadata> {
         let module_path = self.read_string()?;
         let self_name = self.read_string()?;
-        let self_is_trait = self.read_bool()?;
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
@@ -232,7 +231,6 @@ impl<'a> MetadataReader<'a> {
         Ok(MethodMetadata {
             module_path,
             self_name,
-            self_is_trait,
             name,
             is_async,
             inputs,
@@ -287,18 +285,20 @@ impl<'a> MetadataReader<'a> {
         })
     }
 
-    fn read_callback_interface_method(&mut self) -> Result<CallbackInterfaceMethodMetadata> {
+    fn read_trait_method(&mut self) -> Result<TraitMethodMetadata> {
         let module_path = self.read_string()?;
         let trait_name = self.read_string()?;
         let index = self.read_u32()?;
         let name = self.read_string()?;
+        let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
-        Ok(CallbackInterfaceMethodMetadata {
+        Ok(TraitMethodMetadata {
             module_path,
             trait_name,
             index,
             name,
+            is_async,
             inputs,
             return_type,
             throws,

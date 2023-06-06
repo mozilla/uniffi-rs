@@ -113,7 +113,8 @@ impl ExportItem {
         let items = item
             .items
             .into_iter()
-            .map(|item| {
+            .enumerate()
+            .map(|(i, item)| {
                 let tim = match item {
                     syn::TraitItem::Fn(tim) => tim,
                     _ => {
@@ -131,7 +132,11 @@ impl ExportItem {
                         "traits can not have constructors",
                     ));
                 } else {
-                    ImplItem::Method(FnSignature::new_trait_method(self_ident.clone(), tim.sig)?)
+                    ImplItem::Method(FnSignature::new_trait_method(
+                        self_ident.clone(),
+                        tim.sig,
+                        i as u32,
+                    )?)
                 };
 
                 Ok(item)

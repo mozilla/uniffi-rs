@@ -143,16 +143,10 @@ fn gen_ffi_function(
     } = match &sig.kind {
         FnKind::Function => ScaffoldingBits::new_for_function(sig),
         FnKind::Method { self_ident } => ScaffoldingBits::new_for_method(sig, self_ident, false),
-        FnKind::TraitMethod { self_ident } => {
+        FnKind::TraitMethod { self_ident, .. } => {
             ScaffoldingBits::new_for_method(sig, self_ident, true)
         }
         FnKind::Constructor { self_ident } => ScaffoldingBits::new_for_constructor(sig, self_ident),
-        FnKind::CallbackInterfaceMethod { .. } => {
-            return Err(syn::Error::new(
-                sig.span,
-                "UniFFI internal error: attempt to create scaffolding function for a callback interface method",
-            ))
-        }
     };
 
     let ffi_ident = sig.scaffolding_fn_ident()?;

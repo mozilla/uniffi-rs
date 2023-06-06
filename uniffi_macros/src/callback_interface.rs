@@ -69,10 +69,10 @@ impl CallbackInterfaceItem {
             .into_iter()
             .enumerate()
             .map(|(i, trait_item)| match trait_item {
-                TraitItem::Fn(method) => Ok(FnSignature::new_callback_interface_method(
+                TraitItem::Fn(method) => Ok(FnSignature::new_trait_method(
                     ident.clone(),
-                    i as u32,
                     method.sig,
+                    i as u32,
                 )?),
                 TraitItem::Const(_) => syn_err(
                     trait_item,
@@ -153,7 +153,7 @@ fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<To
     } = sig;
     let index = match kind {
         // Note: the callback index is 1-based, since 0 is reserved for the free function
-        FnKind::CallbackInterfaceMethod { index, .. } => index + 1,
+        FnKind::TraitMethod { index, .. } => index + 1,
         k => {
             return Err(syn::Error::new(
                 sig.span,

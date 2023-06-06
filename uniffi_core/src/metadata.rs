@@ -37,7 +37,7 @@ pub mod codes {
     pub const CONSTRUCTOR: u8 = 7;
     pub const UDL_FILE: u8 = 8;
     pub const CALLBACK_INTERFACE: u8 = 9;
-    pub const CALLBACK_INTERFACE_METHOD: u8 = 10;
+    pub const TRAIT_METHOD: u8 = 10;
     pub const UNKNOWN: u8 = 255;
 
     // Type codes

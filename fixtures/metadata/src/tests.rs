@@ -481,7 +481,6 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
-                self_is_trait: false,
                 name: "add".into(),
                 is_async: false,
                 inputs: vec![
@@ -560,7 +559,6 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
-                self_is_trait: false,
                 name: "async_sub".into(),
                 is_async: true,
                 inputs: vec![
@@ -588,7 +586,6 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
-                self_is_trait: false,
                 name: "get_display".into(),
                 is_async: false,
                 inputs: vec![],
@@ -607,10 +604,10 @@ mod test_function_metadata {
     fn test_trait_method() {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT,
-            MethodMetadata {
+            TraitMethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
-                self_name: "CalculatorDisplay".into(),
-                self_is_trait: true,
+                trait_name: "CalculatorDisplay".into(),
+                index: 0,
                 name: "display_result".into(),
                 is_async: false,
                 inputs: vec![
@@ -637,21 +634,20 @@ mod test_function_metadata {
             },
         );
         check_metadata(
-            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_METHOD_LOGGER_LOG,
-            CallbackInterfaceMethodMetadata {
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG,
+            TraitMethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 trait_name: "Logger".into(),
                 index: 0,
                 name: "log".into(),
+                is_async: false,
                 inputs: vec![FnParamMetadata {
                     name: "message".into(),
                     ty: Type::String,
                 }],
                 return_type: None,
                 throws: None,
-                checksum:
-                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_METHOD_LOGGER_LOG
-                        .checksum(),
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
             },
         );
     }
