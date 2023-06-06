@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["checksum_metadata",""]],"mod":[["codes","Metadata constants, make sure to keep this in sync with copy in `uniffi_meta::reader`"]],"struct":[["MetadataBuffer",""]]};
+window.SIDEBAR_ITEMS = {"fn":["checksum_metadata"],"mod":["codes"],"struct":["MetadataBuffer"]};

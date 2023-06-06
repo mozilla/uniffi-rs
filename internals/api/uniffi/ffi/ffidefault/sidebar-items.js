@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":[["FfiDefault",""]]};
+window.SIDEBAR_ITEMS = {"trait":["FfiDefault"]};

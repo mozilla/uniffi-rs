@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="SIMD and vendor intrinsics module."><meta name="keywords" content="rust, rustlang, rust-lang, arch"><title>uniffi::deps::static_assertions::_core::arch - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../normalize.css"><link rel="stylesheet" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../uniffi/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"><a href="#">Module arch</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Module <a href="../../../../index.html">uniffi</a>::<wbr><a href="../../../index.html">deps</a>::<wbr><a href="../../index.html">static_assertions</a>::<wbr><a href="../index.html">_core</a>::<wbr><a class="mod" href="#">arch</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.27.0">1.27.0</span> · <a class="srclink" href="https://doc.rust-lang.org/1.66.0/src/core/lib.rs.html#391">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>SIMD and vendor intrinsics module.</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="SIMD and vendor intrinsics module."><title>uniffi::deps::static_assertions::_core::arch - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-be46fdc453a55015.css"><script src="../../../../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../../../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../../uniffi/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../../../../../uniffi/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Module arch</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../../../../index.html">uniffi</a>::<wbr><a href="../../../index.html">deps</a>::<wbr><a href="../../index.html">static_assertions</a>::<wbr><a href="../index.html">_core</a>::<wbr><a class="mod" href="#">arch</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.27.0">1.27.0</span> · <a class="srclink" href="https://doc.rust-lang.org/1.69.0/src/core/lib.rs.html#410">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>SIMD and vendor intrinsics module.</p>
 <p>This module is intended to be the gateway to architecture-specific
 intrinsic functions, typically related to SIMD (but not always!). Each
 architecture that Rust compiles to may contain a submodule here, which
@@ -41,16 +41,16 @@ and (b) ensure that the CPU feature is available</p>
 <code>#[cfg]</code> attribute. CPU features correspond to the <code>target_feature</code> cfg
 available, and can be used like so:</p>
 
-<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="attribute">#[cfg(
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="attr">#[cfg(
     all(
         any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>),
         target_feature = <span class="string">&quot;avx2&quot;
     </span>)
 )]
 </span><span class="kw">fn </span>foo() {
-    <span class="attribute">#[cfg(target_arch = <span class="string">&quot;x86&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;x86&quot;</span>)]
     </span><span class="kw">use </span>std::arch::x86::_mm256_add_epi64;
-    <span class="attribute">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]
     </span><span class="kw">use </span>std::arch::x86_64::_mm256_add_epi64;
 
     <span class="kw">unsafe </span>{
@@ -83,8 +83,8 @@ sections more optimized for different CPUs.</p>
 <em>without</em> AVX2 support, but we’d like to enable it for just one function.
 We can do that in a manner like:</p>
 
-<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>foo() {
-    <span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>foo() {
+    <span class="attr">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
     </span>{
         <span class="kw">if </span><span class="macro">is_x86_feature_detected!</span>(<span class="string">&quot;avx2&quot;</span>) {
             <span class="kw">return unsafe </span>{ foo_avx2() };
@@ -94,12 +94,12 @@ We can do that in a manner like:</p>
     <span class="comment">// fallback implementation without using AVX2
 </span>}
 
-<span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
+<span class="attr">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
 #[target_feature(enable = <span class="string">&quot;avx2&quot;</span>)]
 </span><span class="kw">unsafe fn </span>foo_avx2() {
-    <span class="attribute">#[cfg(target_arch = <span class="string">&quot;x86&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;x86&quot;</span>)]
     </span><span class="kw">use </span>std::arch::x86::_mm256_add_epi64;
-    <span class="attribute">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]
     </span><span class="kw">use </span>std::arch::x86_64::_mm256_add_epi64;
 
     _mm256_add_epi64(...);
@@ -171,7 +171,7 @@ AVX2 and also for the default platform.</p>
 }
 
 <span class="kw">fn </span>add_quickly(a: <span class="kw-2">&amp;</span>[u8], b: <span class="kw-2">&amp;</span>[u8], c: <span class="kw-2">&amp;mut </span>[u8]) {
-    <span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
+    <span class="attr">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
     </span>{
         <span class="comment">// Note that this `unsafe` block is safe because we&#39;re testing
         // that the `avx2` feature is indeed available on our CPU.
@@ -183,7 +183,7 @@ AVX2 and also for the default platform.</p>
     add_quickly_fallback(a, b, c)
 }
 
-<span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
+<span class="attr">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
 #[target_feature(enable = <span class="string">&quot;avx2&quot;</span>)]
 </span><span class="kw">unsafe fn </span>add_quickly_avx2(a: <span class="kw-2">&amp;</span>[u8], b: <span class="kw-2">&amp;</span>[u8], c: <span class="kw-2">&amp;mut </span>[u8]) {
     add_quickly_fallback(a, b, c) <span class="comment">// the function below is inlined here
@@ -214,7 +214,7 @@ we’ll be using SSE4.1 features to implement hex encoding.</p>
     <span class="kw">let </span>len = src.len().checked_mul(<span class="number">2</span>).unwrap();
     <span class="macro">assert!</span>(dst.len() &gt;= len);
 
-    <span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
+    <span class="attr">#[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
     </span>{
         <span class="kw">if </span><span class="macro">is_x86_feature_detected!</span>(<span class="string">&quot;sse4.1&quot;</span>) {
             <span class="kw">return unsafe </span>{ hex_encode_sse41(src, dst) };
@@ -226,12 +226,12 @@ we’ll be using SSE4.1 features to implement hex encoding.</p>
 
 <span class="comment">// translated from
 // &lt;https://github.com/Matherunner/bin2hex-sse/blob/master/base16_sse4.cpp&gt;
-</span><span class="attribute">#[target_feature(enable = <span class="string">&quot;sse4.1&quot;</span>)]
+</span><span class="attr">#[target_feature(enable = <span class="string">&quot;sse4.1&quot;</span>)]
 #[cfg(any(target_arch = <span class="string">&quot;x86&quot;</span>, target_arch = <span class="string">&quot;x86_64&quot;</span>))]
 </span><span class="kw">unsafe fn </span>hex_encode_sse41(<span class="kw-2">mut </span>src: <span class="kw-2">&amp;</span>[u8], dst: <span class="kw-2">&amp;mut </span>[u8]) {
-    <span class="attribute">#[cfg(target_arch = <span class="string">&quot;x86&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;x86&quot;</span>)]
     </span><span class="kw">use </span>std::arch::x86::<span class="kw-2">*</span>;
-    <span class="attribute">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]
+    <span class="attr">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]
     </span><span class="kw">use </span>std::arch::x86_64::<span class="kw-2">*</span>;
 
     <span class="kw">let </span>ascii_zero = _mm_set1_epi8(<span class="string">b&#39;0&#39; </span><span class="kw">as </span>i8);
@@ -288,4 +288,4 @@ we’ll be using SSE4.1 features to implement hex encoding.</p>
         slots[<span class="number">1</span>] = hex(<span class="kw-2">*</span>byte &amp; <span class="number">0xf</span>);
     }
 }</code></pre></div>
-</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="x86_64/index.html" title="uniffi::deps::static_assertions::_core::arch::x86_64 mod">x86_64</a><span class="stab portability" title="Available on x86-64 only">x86-64</span></div><div class="item-right docblock-short">Platform-specific intrinsics for the <code>x86_64</code> platform.</div></div></div><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.asm.html" title="uniffi::deps::static_assertions::_core::arch::asm macro">asm</a></div><div class="item-right docblock-short">Inline assembly.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.global_asm.html" title="uniffi::deps::static_assertions::_core::arch::global_asm macro">global_asm</a></div><div class="item-right docblock-short">Module-level inline assembly.</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="uniffi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="x86_64/index.html" title="mod uniffi::deps::static_assertions::_core::arch::x86_64">x86_64</a><span class="stab portability" title="Available on x86-64 only">x86-64</span></div><div class="desc docblock-short">Platform-specific intrinsics for the <code>x86_64</code> platform.</div></li></ul><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><ul class="item-table"><li><div class="item-name"><a class="macro" href="macro.asm.html" title="macro uniffi::deps::static_assertions::_core::arch::asm">asm</a></div><div class="desc docblock-short">Inline assembly.</div></li><li><div class="item-name"><a class="macro" href="macro.global_asm.html" title="macro uniffi::deps::static_assertions::_core::arch::global_asm">global_asm</a></div><div class="desc docblock-short">Module-level inline assembly.</div></li></ul></section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

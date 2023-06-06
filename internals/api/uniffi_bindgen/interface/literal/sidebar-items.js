@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["Literal",""],["Radix",""]],"fn":[["convert_default_value",""]]};
+window.SIDEBAR_ITEMS = {"enum":["Literal","Radix"],"fn":["convert_default_value","convert_float","convert_integer"],"macro":["parse_int"]};

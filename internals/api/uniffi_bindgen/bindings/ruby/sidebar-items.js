@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["generate_ruby_bindings",""],["run_test","Run Ruby tests for a UniFFI test fixture"],["test_script_command","Create a `Command` instance that runs a test script"],["write_bindings",""]],"mod":[["gen_ruby",""],["test",""]]};
+window.SIDEBAR_ITEMS = {"fn":["generate_ruby_bindings","run_test","test_script_command","write_bindings"],"mod":["gen_ruby","test"]};

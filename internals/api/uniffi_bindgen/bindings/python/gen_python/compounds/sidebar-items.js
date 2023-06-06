@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["MapCodeType",""],["OptionalCodeType",""],["SequenceCodeType",""]]};
+window.SIDEBAR_ITEMS = {"struct":["MapCodeType","OptionalCodeType","SequenceCodeType"]};

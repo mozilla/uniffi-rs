@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["to_lower",""],["to_upper",""]]};
+window.SIDEBAR_ITEMS = {"fn":["to_lower","to_upper"]};

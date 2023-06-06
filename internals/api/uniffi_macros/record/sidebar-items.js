@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["default_value_concat_calls",""],["expand_record",""],["expand_record_ffi_converter",""],["record_ffi_converter_impl",""],["record_meta_static_var",""],["write_field",""]],"mod":[["kw",""]],"struct":[["FieldAttributeArguments",""]]};
+window.SIDEBAR_ITEMS = {"fn":["default_value_concat_calls","expand_record","expand_record_ffi_converter","record_ffi_converter_impl","record_meta_static_var","write_field"],"mod":["kw"],"struct":["FieldAttributeArguments"]};

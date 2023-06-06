@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["AssertUnwindSafe","A simple wrapper around a type to assert that it is unwind safe."],["Location","A struct containing information about the location of a panic."],["PanicInfo","A struct providing information about a panic."]],"trait":[["RefUnwindSafe","A marker trait representing types where a shared reference is considered unwind safe."],["UnwindSafe","A marker trait which represents “panic safe” types in Rust."]]};
+window.SIDEBAR_ITEMS = {"struct":["AssertUnwindSafe","Location","PanicInfo"],"trait":["RefUnwindSafe","UnwindSafe"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["run_script","Run a Python script"],["run_test","Run Python tests for a UniFFI test fixture"],["write_bindings",""]],"mod":[["gen_python",""],["test",""]]};
+window.SIDEBAR_ITEMS = {"fn":["run_script","run_test","write_bindings"],"mod":["gen_python","test"]};

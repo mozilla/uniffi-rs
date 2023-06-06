@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["RESERVED_WORDS",""]],"fn":[["is_reserved_word",""]],"mod":[["filters",""]],"struct":[["Config",""],["RubyWrapper",""]]};
+window.SIDEBAR_ITEMS = {"constant":["RESERVED_WORDS"],"fn":["is_reserved_word"],"mod":["filters"],"struct":["Config","RubyWrapper"]};

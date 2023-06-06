@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["RustFuture","Future that the foreign code is awaiting"]],"type":[["FutureCallback","Callback that we invoke when a `RustFuture` is ready."]]};
+window.SIDEBAR_ITEMS = {"struct":["RustFuture"],"type":["FutureCallback"]};

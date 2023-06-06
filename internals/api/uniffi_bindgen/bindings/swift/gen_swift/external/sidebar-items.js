@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ExternalCodeType",""]]};
+window.SIDEBAR_ITEMS = {"struct":["ExternalCodeType"]};

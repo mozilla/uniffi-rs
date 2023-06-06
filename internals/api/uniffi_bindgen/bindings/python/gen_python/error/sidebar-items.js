@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ErrorCodeType",""]]};
+window.SIDEBAR_ITEMS = {"struct":["ErrorCodeType"]};

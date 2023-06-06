@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ForeignExecutorCodeType",""]]};
+window.SIDEBAR_ITEMS = {"struct":["ForeignExecutorCodeType"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Field",""],["Record","Represents a “data class” style object, for passing around complex values."]]};
+window.SIDEBAR_ITEMS = {"struct":["Field","Record"]};

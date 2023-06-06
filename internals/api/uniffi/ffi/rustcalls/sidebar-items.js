@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["rust_call","Handle a scaffolding calls"]],"struct":[["RustCallStatus","Represents the success/error of a rust call"]]};
+window.SIDEBAR_ITEMS = {"fn":["rust_call"],"struct":["RustCallStatus"]};

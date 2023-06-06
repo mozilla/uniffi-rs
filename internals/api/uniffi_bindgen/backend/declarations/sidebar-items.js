@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":[["CodeDeclaration","A trait that is able to render a declaration about a particular member declared in the `ComponentInterface`. Like `CodeType`, it can render declaration code and imports. It also is able to render code at start-up of the FFI. All methods are optional, and there is no requirement that the trait be used for a particular `interface::` member. Thus, it can also be useful for conditionally rendering code."]]};
+window.SIDEBAR_ITEMS = {"trait":["CodeDeclaration"]};

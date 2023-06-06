@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["RecordCodeType",""]]};
+window.SIDEBAR_ITEMS = {"struct":["RecordCodeType"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["EnumCodeType",""]]};
+window.SIDEBAR_ITEMS = {"struct":["EnumCodeType"]};
