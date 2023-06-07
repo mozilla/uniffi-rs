@@ -53,7 +53,7 @@ use std::{
 use anyhow::{bail, ensure, Result};
 
 pub mod types;
-pub use types::{ExternalKind, ObjectImpl, Type};
+pub use types::{AsType, ExternalKind, ObjectImpl, Type};
 use types::{TypeIterator, TypeUniverse};
 
 mod attributes;
@@ -246,7 +246,7 @@ impl ComponentInterface {
             .callback_interface_definitions()
             .iter()
             .flat_map(|cb| cb.methods())
-            .any(|m| m.throws_type() == Some(error.type_()));
+            .any(|m| m.throws_type() == Some(error.as_type()));
 
         fielded || used_in_callback_interface
     }
@@ -597,7 +597,7 @@ impl ComponentInterface {
             Entry::Vacant(v) => {
                 for variant in defn.variants() {
                     for field in variant.fields() {
-                        self.types.add_known_type(field.type_())?;
+                        self.types.add_known_type(&field.as_type())?;
                     }
                 }
                 v.insert(defn);
@@ -623,7 +623,7 @@ impl ComponentInterface {
         match self.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
                 for field in defn.fields() {
-                    self.types.add_known_type(field.type_())?;
+                    self.types.add_known_type(&field.as_type())?;
                 }
                 v.insert(defn);
             }

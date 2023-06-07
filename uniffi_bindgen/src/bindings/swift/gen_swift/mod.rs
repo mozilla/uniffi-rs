@@ -12,7 +12,7 @@ use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
-use crate::backend::{CodeOracle, CodeType, CodeTypeDispatch, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -267,7 +267,7 @@ impl<'a> SwiftWrapper<'a> {
     pub fn initialization_fns(&self) -> Vec<String> {
         self.ci
             .iter_types()
-            .map(|t| t.code_type_impl(&SwiftCodeOracle))
+            .map(|t| SwiftCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
             .collect()
     }
@@ -284,7 +284,7 @@ impl SwiftCodeOracle {
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.swift` template.
     //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
-    fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+    fn create_code_type(&self, type_: Type) -> Box<dyn CodeType> {
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
             Type::Int8 => Box::new(primitives::Int8CodeType),
@@ -321,7 +321,7 @@ impl SwiftCodeOracle {
 }
 
 impl CodeOracle for SwiftCodeOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
+    fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }
 
@@ -384,39 +384,39 @@ pub mod filters {
         &SwiftCodeOracle
     }
 
-    pub fn type_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).type_label())
+    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).type_label())
     }
 
-    pub fn canonical_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).canonical_name())
+    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).canonical_name())
     }
 
-    pub fn ffi_converter_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).ffi_converter_name())
+    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
     }
 
-    pub fn lower_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).lower())
+    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).lower())
     }
 
-    pub fn write_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).write())
+    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).write())
     }
 
-    pub fn lift_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).lift())
+    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).lift())
     }
 
-    pub fn read_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).read())
+    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).read())
     }
 
     pub fn literal_swift(
         literal: &Literal,
-        codetype: &impl CodeTypeDispatch,
+        as_type: &impl AsType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).literal(literal))
+        Ok(oracle().find(&as_type.as_type()).literal(literal))
     }
 
     /// Get the Swift type for an FFIType

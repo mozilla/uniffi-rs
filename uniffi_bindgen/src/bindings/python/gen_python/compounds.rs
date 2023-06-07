@@ -2,15 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::backend::{CodeOracle, CodeType, Literal, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, Literal, Type};
 
 #[derive(Debug)]
 pub struct OptionalCodeType {
-    inner: TypeIdentifier,
+    inner: Type,
 }
 
 impl OptionalCodeType {
-    pub fn new(inner: TypeIdentifier) -> Self {
+    pub fn new(inner: Type) -> Self {
         Self { inner }
     }
 }
@@ -37,11 +37,11 @@ impl CodeType for OptionalCodeType {
 
 #[derive(Debug)]
 pub struct SequenceCodeType {
-    inner: TypeIdentifier,
+    inner: Type,
 }
 
 impl SequenceCodeType {
-    pub fn new(inner: TypeIdentifier) -> Self {
+    pub fn new(inner: Type) -> Self {
         Self { inner }
     }
 }
@@ -68,12 +68,12 @@ impl CodeType for SequenceCodeType {
 
 #[derive(Debug)]
 pub struct MapCodeType {
-    key: TypeIdentifier,
-    value: TypeIdentifier,
+    key: Type,
+    value: Type,
 }
 
 impl MapCodeType {
-    pub fn new(key: TypeIdentifier, value: TypeIdentifier) -> Self {
+    pub fn new(key: Type, value: Type) -> Self {
         Self { key, value }
     }
 }

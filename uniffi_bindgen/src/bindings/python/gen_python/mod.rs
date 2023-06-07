@@ -11,7 +11,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-use crate::backend::{CodeOracle, CodeType, CodeTypeDispatch, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -273,7 +273,7 @@ impl PythonCodeOracle {
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
     //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
-    fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+    fn create_code_type(&self, type_: Type) -> Box<dyn CodeType> {
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
             Type::Int8 => Box::new(primitives::Int8CodeType),
@@ -310,7 +310,7 @@ impl PythonCodeOracle {
 }
 
 impl CodeOracle for PythonCodeOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
+    fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }
 
@@ -384,32 +384,32 @@ pub mod filters {
         &PythonCodeOracle
     }
 
-    pub fn type_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).type_label())
+    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).type_label())
     }
 
-    pub fn ffi_converter_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).ffi_converter_name())
+    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
     }
 
-    pub fn canonical_name(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).canonical_name())
+    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).canonical_name())
     }
 
-    pub fn lift_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", ffi_converter_name(codetype)?))
+    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lift", ffi_converter_name(as_type)?))
     }
 
-    pub fn lower_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", ffi_converter_name(codetype)?))
+    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lower", ffi_converter_name(as_type)?))
     }
 
-    pub fn read_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", ffi_converter_name(codetype)?))
+    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!("{}.read", ffi_converter_name(as_type)?))
     }
 
-    pub fn write_fn(codetype: &impl CodeTypeDispatch) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", ffi_converter_name(codetype)?))
+    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!("{}.write", ffi_converter_name(as_type)?))
     }
 
     // Name of the callback function we pass to Rust to complete an async call
@@ -427,11 +427,8 @@ pub mod filters {
         ))
     }
 
-    pub fn literal_py(
-        literal: &Literal,
-        codetype: &impl CodeTypeDispatch,
-    ) -> Result<String, askama::Error> {
-        Ok(codetype.code_type_impl(oracle()).literal(literal))
+    pub fn literal_py(literal: &Literal, as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).literal(literal))
     }
 
     /// Get the Python syntax for representing a given low-level `FfiType`.

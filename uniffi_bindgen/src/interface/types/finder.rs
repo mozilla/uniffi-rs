@@ -22,7 +22,7 @@ use std::convert::TryFrom;
 use anyhow::{bail, Result};
 
 use super::super::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
-use super::{Type, TypeUniverse};
+use super::{AsType, Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
 ///
@@ -66,7 +66,7 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
             types.add_type_definition(self.identifier.0, Type::Error(name))
         } else {
             let obj = crate::interface::Object::new(name, attrs.object_impl());
-            types.add_type_definition(self.identifier.0, obj.type_())
+            types.add_type_definition(self.identifier.0, obj.as_type())
         }
     }
 }

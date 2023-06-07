@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{CodeType, TypeIdentifier};
-use crate::interface::FfiType;
+use super::CodeType;
+use crate::interface::{FfiType, Type};
 
 /// An object to supply a foreign language specific CodeType for a given type. It also
 /// supplys the specific rendering of a given identifier when used in a specific context.
 pub trait CodeOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType>;
+    fn find(&self, type_: &Type) -> Box<dyn CodeType>;
 
     /// Get the idiomatic rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String;

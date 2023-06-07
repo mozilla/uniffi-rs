@@ -40,7 +40,7 @@ use super::attributes::{ArgumentAttributes, Attribute, FunctionAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::literal::{convert_default_value, Literal};
 use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{convert_type, APIConverter, ComponentInterface};
+use super::{convert_type, APIConverter, AsType, ComponentInterface};
 
 /// Represents a standalone function.
 ///
@@ -224,10 +224,6 @@ impl Argument {
         &self.name
     }
 
-    pub fn type_(&self) -> &Type {
-        &self.type_
-    }
-
     pub fn by_ref(&self) -> bool {
         self.by_ref
     }
@@ -242,6 +238,12 @@ impl Argument {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
+    }
+}
+
+impl AsType for Argument {
+    fn as_type(&self) -> Type {
+        self.type_.clone()
     }
 }
 
@@ -376,10 +378,10 @@ mod test {
         assert!(matches!(func2.throws_type(), Some(Type::Error(s)) if s == "TestError"));
         assert_eq!(func2.arguments().len(), 2);
         assert_eq!(func2.arguments()[0].name(), "arg1");
-        assert_eq!(func2.arguments()[0].type_().canonical_name(), "u32");
+        assert_eq!(func2.arguments()[0].as_type().canonical_name(), "u32");
         assert_eq!(func2.arguments()[1].name(), "arg2");
         assert_eq!(
-            func2.arguments()[1].type_().canonical_name(),
+            func2.arguments()[1].as_type().canonical_name(),
             "TypeTestDict"
         );
         Ok(())

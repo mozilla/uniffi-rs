@@ -23,7 +23,6 @@
 
 use std::fmt::Debug;
 
-use super::{CodeOracle, Literal};
 use crate::interface::*;
 
 /// A Trait to help render types in a language specific format.
@@ -88,71 +87,5 @@ pub trait CodeType: Debug {
     /// Function to run at startup
     fn initialization_fn(&self) -> Option<String> {
         None
-    }
-}
-
-/// This trait is used to implement `CodeType` for `Type` and type-like structs (`Record`, `Enum`, `Field`,
-/// etc).  We forward all method calls to a `Box<dyn CodeType>`, which we get by calling
-/// `CodeOracle.find()`.
-pub trait CodeTypeDispatch: Debug {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType>;
-}
-
-impl CodeTypeDispatch for Type {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(self)
-    }
-}
-
-impl CodeTypeDispatch for Record {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(&self.type_())
-    }
-}
-
-impl CodeTypeDispatch for Enum {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(&self.type_())
-    }
-}
-
-impl CodeTypeDispatch for Error {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(&self.type_())
-    }
-}
-
-impl CodeTypeDispatch for Object {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(&self.type_())
-    }
-}
-
-impl CodeTypeDispatch for CallbackInterface {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(&self.type_())
-    }
-}
-
-impl CodeTypeDispatch for Field {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(self.type_())
-    }
-}
-
-impl CodeTypeDispatch for Argument {
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        oracle.find(self.type_())
-    }
-}
-
-// Needed to handle &&Type and &&&Type values, which we sometimes end up with in the template code
-impl<T, C> CodeTypeDispatch for T
-where
-    T: std::ops::Deref<Target = C> + Debug,
-    C: CodeTypeDispatch,
-{
-    fn code_type_impl(&self, oracle: &dyn CodeOracle) -> Box<dyn CodeType> {
-        self.deref().code_type_impl(oracle)
     }
 }

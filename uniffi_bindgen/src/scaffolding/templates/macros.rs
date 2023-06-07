@@ -8,7 +8,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
-        match {{- arg.type_().borrow()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
+        match {{- arg.as_type().borrow()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
         {%- if arg.by_ref() %}
         {#  args passed by reference get special treatment for traits and their Box<> #}
         {%-     if arg.is_trait_ref() %}
@@ -51,7 +51,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
     {{- prefix -}}
     {%- if meth.arguments().len() > 0 %}, {# whitespace #}
         {%- for arg in meth.arguments() %}
-            r#{{- arg.name() }}: {{ arg.type_().borrow()|type_rs -}}{% if loop.last %}{% else %},{% endif %}
+            r#{{- arg.name() }}: {{ arg.as_type().borrow()|type_rs -}}{% if loop.last %}{% else %},{% endif %}
         {%- endfor %}
     {%- endif %}
 {%- endmacro -%}

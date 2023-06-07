@@ -87,7 +87,7 @@ use uniffi_meta::Checksum;
 
 use super::enum_::{Enum, Variant};
 use super::types::{Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, AsType, ComponentInterface};
 
 /// Represents an Error that might be thrown by functions/methods in the component interface.
 ///
@@ -108,12 +108,6 @@ impl Error {
         }
     }
 
-    pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterface
-        // and its contained types could use a bit of a cleanup.
-        Type::Error(self.name.clone())
-    }
-
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -132,6 +126,12 @@ impl Error {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.wrapped_enum().iter_types()
+    }
+}
+
+impl AsType for Error {
+    fn as_type(&self) -> Type {
+        Type::Error(self.name.clone())
     }
 }
 

@@ -52,7 +52,7 @@ use super::{
     convert_type,
     literal::{convert_default_value, Literal},
 };
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, AsType, ComponentInterface};
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
@@ -70,18 +70,18 @@ impl Record {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterface
-        // and its contained types could use a bit of a cleanup.
-        Type::Record(self.name.clone())
-    }
-
     pub fn fields(&self) -> &[Field] {
         &self.fields
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
+    }
+}
+
+impl AsType for Record {
+    fn as_type(&self) -> Type {
+        Type::Record(self.name.clone())
     }
 }
 
@@ -128,16 +128,18 @@ impl Field {
         &self.name
     }
 
-    pub fn type_(&self) -> &Type {
-        &self.type_
-    }
-
     pub fn default_value(&self) -> Option<&Literal> {
         self.default.as_ref()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
+    }
+}
+
+impl AsType for Field {
+    fn as_type(&self) -> Type {
+        self.type_.clone()
     }
 }
 
@@ -207,7 +209,7 @@ mod test {
         assert_eq!(record.name(), "Simple");
         assert_eq!(record.fields().len(), 1);
         assert_eq!(record.fields()[0].name(), "field");
-        assert_eq!(record.fields()[0].type_().canonical_name(), "u32");
+        assert_eq!(record.fields()[0].as_type().canonical_name(), "u32");
         assert!(record.fields()[0].default_value().is_none());
 
         let record = ci.get_record_definition("Complex").unwrap();
@@ -215,18 +217,18 @@ mod test {
         assert_eq!(record.fields().len(), 3);
         assert_eq!(record.fields()[0].name(), "key");
         assert_eq!(
-            record.fields()[0].type_().canonical_name(),
+            record.fields()[0].as_type().canonical_name(),
             "Optionalstring"
         );
         assert!(record.fields()[0].default_value().is_none());
         assert_eq!(record.fields()[1].name(), "value");
-        assert_eq!(record.fields()[1].type_().canonical_name(), "u32");
+        assert_eq!(record.fields()[1].as_type().canonical_name(), "u32");
         assert!(matches!(
             record.fields()[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
-        assert_eq!(record.fields()[2].type_().canonical_name(), "bool");
+        assert_eq!(record.fields()[2].as_type().canonical_name(), "bool");
         assert!(record.fields()[2].default_value().is_none());
     }
 
