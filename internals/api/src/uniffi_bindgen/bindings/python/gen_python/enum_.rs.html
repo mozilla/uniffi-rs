@@ -35,13 +35,15 @@
 <a href="#35" id="35">35</a>
 <a href="#36" id="36">36</a>
 <a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, Literal};
 
-<span class="kw">pub struct </span>EnumCodeType {
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>EnumCodeType {
     id: String,
 }
 
@@ -52,20 +54,20 @@
 }
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>EnumCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
-        oracle.class_name(<span class="kw-2">&amp;</span><span class="self">self</span>.id)
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="kw">super</span>::PythonCodeOracle.class_name(<span class="kw-2">&amp;</span><span class="self">self</span>.id)
     }
 
-    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="self">self</span>.id)
     }
 
-    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
         <span class="kw">if let </span>Literal::Enum(v, <span class="kw">_</span>) = literal {
             <span class="macro">format!</span>(
                 <span class="string">&quot;{}.{}&quot;</span>,
-                <span class="self">self</span>.type_label(oracle),
-                oracle.enum_variant_name(v)
+                <span class="self">self</span>.type_label(),
+                <span class="kw">super</span>::PythonCodeOracle.enum_variant_name(v)
             )
         } <span class="kw">else </span>{
             <span class="macro">unreachable!</span>();

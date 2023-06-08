@@ -68,11 +68,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, Literal};
+</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, Literal};
 <span class="kw">use </span><span class="kw">crate</span>::interface::Radix;
 <span class="kw">use </span>paste::paste;
 
-<span class="kw">fn </span>render_literal(_oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+<span class="kw">fn </span>render_literal(literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
     <span class="kw">match </span>literal {
         Literal::Boolean(v) =&gt; {
             <span class="kw">if </span><span class="kw-2">*</span>v {
@@ -102,15 +102,15 @@
 <span class="macro">macro_rules! </span>impl_code_type_for_primitive {
     (<span class="macro-nonterminal">$T</span>:ty, <span class="macro-nonterminal">$class_name</span>:literal) =&gt; {
         <span class="macro">paste! </span>{
-            <span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
-
+            <span class="attr">#[derive(Debug)]
+            </span><span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
             <span class="kw">impl </span>CodeType <span class="kw">for </span><span class="macro-nonterminal">$T  </span>{
-                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
                     <span class="macro-nonterminal">$class_name</span>.into()
                 }
 
-                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-                    render_literal(oracle, <span class="kw-2">&amp;</span>literal)
+                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+                    render_literal(<span class="kw-2">&amp;</span>literal)
                 }
             }
         }

@@ -33,13 +33,15 @@
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType};
+</span><span class="kw">use </span><span class="kw">crate</span>::backend::CodeType;
 
-<span class="kw">pub struct </span>ExternalCodeType {
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>ExternalCodeType {
     name: String,
 }
 
@@ -50,22 +52,22 @@
 }
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>ExternalCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="self">self</span>.name.clone()
     }
 
-    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="self">self</span>.name)
     }
 
     <span class="comment">// lower and lift need to call public function which were generated for
     // the original types.
-    </span><span class="kw">fn </span>lower(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}_lower&quot;</span>, <span class="self">self</span>.ffi_converter_name(oracle))
+    </span><span class="kw">fn </span>lower(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}_lower&quot;</span>, <span class="self">self</span>.ffi_converter_name())
     }
 
-    <span class="kw">fn </span>lift(<span class="kw-2">&amp;</span><span class="self">self</span>, oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}_lift&quot;</span>, <span class="self">self</span>.ffi_converter_name(oracle))
+    <span class="kw">fn </span>lift(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}_lift&quot;</span>, <span class="self">self</span>.ffi_converter_name())
     }
 }
 </code></pre></div>

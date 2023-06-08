@@ -27,29 +27,17 @@
 <a href="#27" id="27">27</a>
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
-<a href="#30" id="30">30</a>
-<a href="#31" id="31">31</a>
-<a href="#32" id="32">32</a>
-<a href="#33" id="33">33</a>
-<a href="#34" id="34">34</a>
-<a href="#35" id="35">35</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use super</span>::{CodeType, TypeIdentifier};
-<span class="kw">use </span><span class="kw">crate</span>::interface::FfiType;
+</span><span class="kw">use </span><span class="kw">super</span>::CodeType;
+<span class="kw">use </span><span class="kw">crate</span>::interface::{FfiType, Type};
 
-<span class="doccomment">/// An object to look up a foreign language code specific renderer for a given type used.
-/// Every `Type` referred to in the `ComponentInterface` should map to a corresponding
-/// `CodeType`.
-///
-/// The mapping may be opaque, but the oracle always knows the answer.
-///
-/// In adddition, the oracle knows how to render identifiers (function names,
-/// class names, variable names etc).
+<span class="doccomment">/// An object to supply a foreign language specific CodeType for a given type. It also
+/// supplys the specific rendering of a given identifier when used in a specific context.
 </span><span class="kw">pub trait </span>CodeOracle {
-    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt;;
+    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt;;
 
     <span class="doccomment">/// Get the idiomatic rendering of a class name (for enums, records, errors, etc).
     </span><span class="kw">fn </span>class_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String;

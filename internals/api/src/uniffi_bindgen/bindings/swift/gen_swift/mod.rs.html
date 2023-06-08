@@ -504,8 +504,6 @@
 <a href="#504" id="504">504</a>
 <a href="#505" id="505">505</a>
 <a href="#506" id="506">506</a>
-<a href="#507" id="507">507</a>
-<a href="#508" id="508">508</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -520,7 +518,7 @@
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">super</span>::Bindings;
-<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression};
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
@@ -775,7 +773,8 @@
     <span class="kw">pub fn </span>initialization_fns(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
         <span class="self">self</span>.ci
             .iter_types()
-            .filter_map(|t| t.initialization_fn(<span class="kw-2">&amp;</span>SwiftCodeOracle))
+            .map(|t| SwiftCodeOracle.find(t))
+            .filter_map(|ct| ct.initialization_fn())
             .collect()
     }
 }
@@ -791,7 +790,7 @@
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.swift` template.
     //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
-    </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+    </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
         <span class="kw">match </span>type_ {
             Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
             Type::Int8 =&gt; Box::new(primitives::Int8CodeType),
@@ -828,7 +827,7 @@
 }
 
 <span class="kw">impl </span>CodeOracle <span class="kw">for </span>SwiftCodeOracle {
-    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
         <span class="self">self</span>.create_code_type(type_.clone())
     }
 
@@ -891,42 +890,39 @@
         <span class="kw-2">&amp;</span>SwiftCodeOracle
     }
 
-    <span class="kw">pub fn </span>type_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>oracle = oracle();
-        <span class="prelude-val">Ok</span>(codetype.type_label(oracle))
+    <span class="kw">pub fn </span>type_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).type_label())
     }
 
-    <span class="kw">pub fn </span>canonical_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>oracle = oracle();
-        <span class="prelude-val">Ok</span>(codetype.canonical_name(oracle))
+    <span class="kw">pub fn </span>canonical_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).canonical_name())
     }
 
-    <span class="kw">pub fn </span>ffi_converter_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.ffi_converter_name(oracle()))
+    <span class="kw">pub fn </span>ffi_converter_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name())
     }
 
-    <span class="kw">pub fn </span>lower_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.lower(oracle()))
+    <span class="kw">pub fn </span>lower_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).lower())
     }
 
-    <span class="kw">pub fn </span>write_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.write(oracle()))
+    <span class="kw">pub fn </span>write_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).write())
     }
 
-    <span class="kw">pub fn </span>lift_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.lift(oracle()))
+    <span class="kw">pub fn </span>lift_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).lift())
     }
 
-    <span class="kw">pub fn </span>read_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.read(oracle()))
+    <span class="kw">pub fn </span>read_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).read())
     }
 
     <span class="kw">pub fn </span>literal_swift(
         literal: <span class="kw-2">&amp;</span>Literal,
-        codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType,
+        as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>oracle = oracle();
-        <span class="prelude-val">Ok</span>(codetype.literal(oracle, literal))
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).literal(literal))
     }
 
     <span class="doccomment">/// Get the Swift type for an FFIType

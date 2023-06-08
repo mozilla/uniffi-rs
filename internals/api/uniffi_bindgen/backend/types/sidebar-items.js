@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["CodeType","CodeTypeDispatch"]};
+window.SIDEBAR_ITEMS = {"trait":["CodeType"]};

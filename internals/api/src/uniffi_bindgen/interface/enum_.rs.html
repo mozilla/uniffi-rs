@@ -552,7 +552,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::record::Field;
 <span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
-<span class="kw">use super</span>::{APIConverter, ComponentInterface};
+<span class="kw">use super</span>::{APIConverter, AsType, ComponentInterface};
 
 <span class="doccomment">/// Represents an enum with named variants, each of which may have named
 /// and typed fields.
@@ -588,12 +588,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface
-        // and its contained types could use a bit of a cleanup.
-        </span>Type::Enum(<span class="self">self</span>.name.clone())
-    }
-
     <span class="kw">pub fn </span>variants(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[Variant] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.variants
     }
@@ -604,6 +598,12 @@
 
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
         Box::new(<span class="self">self</span>.variants.iter().flat_map(Variant::iter_types))
+    }
+}
+
+<span class="kw">impl </span>AsType <span class="kw">for </span>Enum {
+    <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
+        Type::Enum(<span class="self">self</span>.name.clone())
     }
 }
 
@@ -870,9 +870,9 @@
             ed.variants()[<span class="number">1</span>]
                 .fields()
                 .iter()
-                .map(|f| f.type_())
+                .map(|f| f.as_type())
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span>Type::UInt32]
+            <span class="macro">vec!</span>[Type::UInt32]
         );
         <span class="macro">assert_eq!</span>(
             ed.variants()[<span class="number">2</span>]
@@ -886,9 +886,9 @@
             ed.variants()[<span class="number">2</span>]
                 .fields()
                 .iter()
-                .map(|f| f.type_())
+                .map(|f| f.as_type())
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-            <span class="macro">vec!</span>[<span class="kw-2">&amp;</span>Type::UInt32, <span class="kw-2">&amp;</span>Type::String]
+            <span class="macro">vec!</span>[Type::UInt32, Type::String]
         );
 
         <span class="comment">// The enum declared via interface, but with no associated data.
@@ -906,7 +906,7 @@
         // (It might be nice to optimize these to pass as plain integers, but that&#39;s
         // difficult atop the current factoring of `ComponentInterface` and friends).
         </span><span class="kw">let </span>farg = ci.get_function_definition(<span class="string">&quot;takes_an_enum&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="kw-2">*</span>farg.arguments()[<span class="number">0</span>].type_(), Type::Enum(<span class="string">&quot;TestEnum&quot;</span>.into()));
+        <span class="macro">assert_eq!</span>(farg.arguments()[<span class="number">0</span>].as_type(), Type::Enum(<span class="string">&quot;TestEnum&quot;</span>.into()));
         <span class="macro">assert_eq!</span>(
             farg.ffi_func().arguments()[<span class="number">0</span>].type_(),
             FfiType::RustBuffer(<span class="prelude-val">None</span>)
@@ -923,7 +923,7 @@
             .get_function_definition(<span class="string">&quot;takes_an_enum_with_data&quot;</span>)
             .unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="kw-2">*</span>farg.arguments()[<span class="number">0</span>].type_(),
+            farg.arguments()[<span class="number">0</span>].as_type(),
             Type::Enum(<span class="string">&quot;TestEnumWithData&quot;</span>.into())
         );
         <span class="macro">assert_eq!</span>(

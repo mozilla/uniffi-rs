@@ -322,7 +322,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::enum_::{Enum, Variant};
 <span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
-<span class="kw">use super</span>::{APIConverter, ComponentInterface};
+<span class="kw">use super</span>::{APIConverter, AsType, ComponentInterface};
 
 <span class="doccomment">/// Represents an Error that might be thrown by functions/methods in the component interface.
 ///
@@ -343,12 +343,6 @@
         }
     }
 
-    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        <span class="comment">// *sigh* at the clone here, the relationship between a ComponentInterface
-        // and its contained types could use a bit of a cleanup.
-        </span>Type::Error(<span class="self">self</span>.name.clone())
-    }
-
     <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
@@ -367,6 +361,12 @@
 
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
         <span class="self">self</span>.wrapped_enum().iter_types()
+    }
+}
+
+<span class="kw">impl </span>AsType <span class="kw">for </span>Error {
+    <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
+        Type::Error(<span class="self">self</span>.name.clone())
     }
 }
 

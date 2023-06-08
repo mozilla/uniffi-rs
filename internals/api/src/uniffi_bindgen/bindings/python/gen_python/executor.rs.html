@@ -15,20 +15,22 @@
 <a href="#15" id="15">15</a>
 <a href="#16" id="16">16</a>
 <a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType};
+</span><span class="kw">use </span><span class="kw">crate</span>::backend::CodeType;
 
-<span class="kw">pub struct </span>ForeignExecutorCodeType;
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>ForeignExecutorCodeType;
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>ForeignExecutorCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="string">&quot;asyncio.BaseEventLoop&quot;</span>.into()
     }
 
-    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="string">&quot;ForeignExecutor&quot;</span>.into()
     }
 }

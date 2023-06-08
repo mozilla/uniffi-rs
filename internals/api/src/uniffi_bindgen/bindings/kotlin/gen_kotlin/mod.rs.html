@@ -453,6 +453,19 @@
 <a href="#453" id="453">453</a>
 <a href="#454" id="454">454</a>
 <a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -466,7 +479,7 @@
 <span class="kw">use </span>heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression};
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
@@ -667,7 +680,8 @@
     <span class="kw">pub fn </span>initialization_fns(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
         <span class="self">self</span>.ci
             .iter_types()
-            .filter_map(|t| t.initialization_fn(<span class="kw-2">&amp;</span>KotlinCodeOracle))
+            .map(|t| KotlinCodeOracle.find(t))
+            .filter_map(|ct| ct.initialization_fn())
             .collect()
     }
 
@@ -680,14 +694,14 @@
 </span><span class="kw">pub struct </span>KotlinCodeOracle;
 
 <span class="kw">impl </span>KotlinCodeOracle {
-    <span class="comment">// Map `Type` instances to a `Box&lt;dyn CodeType&gt;` for that type.
+    <span class="comment">// Map `Type` instances to a `Box&lt;dyn as_type&gt;` for that type.
     //
     // There is a companion match in `templates/Types.kt` which performs a similar function for the
     // template code.
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.
     //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
-    </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+    </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
         <span class="kw">match </span>type_ {
             Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
             Type::Int8 =&gt; Box::new(primitives::Int8CodeType),
@@ -724,7 +738,7 @@
 }
 
 <span class="kw">impl </span>CodeOracle <span class="kw">for </span>KotlinCodeOracle {
-    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>TypeIdentifier) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
         <span class="self">self</span>.create_code_type(type_.clone())
     }
 
@@ -797,39 +811,51 @@
         <span class="kw-2">&amp;</span>KotlinCodeOracle
     }
 
-    <span class="kw">pub fn </span>type_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.type_label(oracle()))
+    <span class="kw">pub fn </span>type_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).type_label())
     }
 
-    <span class="kw">pub fn </span>canonical_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.canonical_name(oracle()))
+    <span class="kw">pub fn </span>canonical_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).canonical_name())
     }
 
-    <span class="kw">pub fn </span>ffi_converter_name(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.ffi_converter_name(oracle()))
+    <span class="kw">pub fn </span>ffi_converter_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name())
     }
 
-    <span class="kw">pub fn </span>lower_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, codetype.ffi_converter_name(oracle())))
-    }
-
-    <span class="kw">pub fn </span>allocation_size_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub fn </span>lower_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{}.allocationSize&quot;</span>,
-            codetype.ffi_converter_name(oracle())
+            <span class="string">&quot;{}.lower&quot;</span>,
+            oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name()
         ))
     }
 
-    <span class="kw">pub fn </span>write_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, codetype.ffi_converter_name(oracle())))
+    <span class="kw">pub fn </span>allocation_size_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;{}.allocationSize&quot;</span>,
+            oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name()
+        ))
     }
 
-    <span class="kw">pub fn </span>lift_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, codetype.ffi_converter_name(oracle())))
+    <span class="kw">pub fn </span>write_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;{}.write&quot;</span>,
+            oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name()
+        ))
     }
 
-    <span class="kw">pub fn </span>read_fn(codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, codetype.ffi_converter_name(oracle())))
+    <span class="kw">pub fn </span>lift_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;{}.lift&quot;</span>,
+            oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name()
+        ))
+    }
+
+    <span class="kw">pub fn </span>read_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
+            <span class="string">&quot;{}.read&quot;</span>,
+            oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name()
+        ))
     }
 
     <span class="kw">pub fn </span>error_handler(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
@@ -863,9 +889,9 @@
 
     <span class="kw">pub fn </span>render_literal(
         literal: <span class="kw-2">&amp;</span>Literal,
-        codetype: <span class="kw-2">&amp;</span><span class="kw">impl </span>CodeType,
+        as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(codetype.literal(oracle(), literal))
+        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).literal(literal))
     }
 
     <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.

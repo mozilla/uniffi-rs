@@ -385,6 +385,8 @@
 <a href="#385" id="385">385</a>
 <a href="#386" id="386">386</a>
 <a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -427,7 +429,7 @@
 <span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">use </span><span class="kw">super</span>::literal::{convert_default_value, Literal};
 <span class="kw">use </span><span class="kw">super</span>::types::{ObjectImpl, Type, TypeIterator};
-<span class="kw">use super</span>::{convert_type, APIConverter, ComponentInterface};
+<span class="kw">use super</span>::{convert_type, APIConverter, AsType, ComponentInterface};
 
 <span class="doccomment">/// Represents a standalone function.
 ///
@@ -611,10 +613,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Type {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.type_
-    }
-
     <span class="kw">pub fn </span>by_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.by_ref
     }
@@ -629,6 +627,12 @@
 
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
         <span class="self">self</span>.type_.iter_types()
+    }
+}
+
+<span class="kw">impl </span>AsType <span class="kw">for </span>Argument {
+    <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
+        <span class="self">self</span>.type_.clone()
     }
 }
 
@@ -763,10 +767,10 @@
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(func2.throws_type(), <span class="prelude-val">Some</span>(Type::Error(s)) <span class="kw">if </span>s == <span class="string">&quot;TestError&quot;</span>));
         <span class="macro">assert_eq!</span>(func2.arguments().len(), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].name(), <span class="string">&quot;arg1&quot;</span>);
-        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].type_().canonical_name(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].as_type().canonical_name(), <span class="string">&quot;u32&quot;</span>);
         <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">1</span>].name(), <span class="string">&quot;arg2&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            func2.arguments()[<span class="number">1</span>].type_().canonical_name(),
+            func2.arguments()[<span class="number">1</span>].as_type().canonical_name(),
             <span class="string">&quot;TypeTestDict&quot;
         </span>);
         <span class="prelude-val">Ok</span>(())

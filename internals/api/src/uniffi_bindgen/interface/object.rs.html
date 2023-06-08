@@ -926,6 +926,8 @@
 <a href="#926" id="926">926</a>
 <a href="#927" id="927">927</a>
 <a href="#928" id="928">928</a>
+<a href="#929" id="929">929</a>
+<a href="#930" id="930">930</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -995,7 +997,7 @@
 <span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">use </span><span class="kw">super</span>::function::{Argument, Callable};
 <span class="kw">use </span><span class="kw">super</span>::types::{ObjectImpl, Type, TypeIterator};
-<span class="kw">use super</span>::{convert_type, APIConverter, ComponentInterface};
+<span class="kw">use super</span>::{convert_type, APIConverter, AsType, ComponentInterface};
 
 <span class="doccomment">/// An &quot;object&quot; is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -1057,13 +1059,6 @@
 
     <span class="kw">pub fn </span>imp(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ObjectImpl {
         <span class="kw-2">&amp;</span><span class="self">self</span>.imp
-    }
-
-    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        Type::Object {
-            name: <span class="self">self</span>.name.clone(),
-            imp: <span class="self">self</span>.imp,
-        }
     }
 
     <span class="kw">pub fn </span>constructors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Constructor&gt; {
@@ -1273,6 +1268,15 @@
             object.uniffi_traits.push(trait_method);
         }
         <span class="prelude-val">Ok</span>(object)
+    }
+}
+
+<span class="kw">impl </span>AsType <span class="kw">for </span>Object {
+    <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
+        Type::Object {
+            name: <span class="self">self</span>.name.clone(),
+            imp: <span class="self">self</span>.imp,
+        }
     }
 }
 

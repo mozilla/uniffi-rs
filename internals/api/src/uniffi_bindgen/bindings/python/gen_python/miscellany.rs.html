@@ -30,28 +30,30 @@
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
 <a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, Literal};
+</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, Literal};
 <span class="kw">use </span>paste::paste;
 
 <span class="macro">macro_rules! </span>impl_code_type_for_miscellany {
     (<span class="macro-nonterminal">$T</span>:ty, <span class="macro-nonterminal">$canonical_name</span>:literal) =&gt; {
         <span class="macro">paste! </span>{
-            <span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
+            <span class="attr">#[derive(Debug)]
+            </span><span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
 
             <span class="kw">impl </span>CodeType <span class="kw">for </span><span class="macro-nonterminal">$T  </span>{
-                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
                     <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro-nonterminal">$canonical_name</span>)
                 }
 
-                <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+                <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
                     <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro-nonterminal">$canonical_name</span>)
                 }
 
-                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
                     <span class="macro">unreachable!</span>()
                 }
             }

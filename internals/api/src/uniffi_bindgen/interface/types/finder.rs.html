@@ -278,7 +278,7 @@
 <span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 
 <span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
-<span class="kw">use super</span>::{Type, TypeUniverse};
+<span class="kw">use super</span>::{AsType, Type, TypeUniverse};
 
 <span class="doccomment">/// Trait to help with an early &quot;type discovery&quot; phase when processing the UDL.
 ///
@@ -322,7 +322,7 @@
             types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Error(name))
         } <span class="kw">else </span>{
             <span class="kw">let </span>obj = <span class="kw">crate</span>::interface::Object::new(name, attrs.object_impl());
-            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, obj.type_())
+            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, obj.as_type())
         }
     }
 }

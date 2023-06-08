@@ -20,25 +20,27 @@
 <a href="#20" id="20">20</a>
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType};
+</span><span class="kw">use </span><span class="kw">crate</span>::backend::CodeType;
 
-<span class="kw">pub struct </span>ForeignExecutorCodeType;
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>ForeignExecutorCodeType;
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>ForeignExecutorCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="comment">// On Swift, we define a struct to represent a ForeignExecutor
         </span><span class="string">&quot;UniFfiForeignExecutor&quot;</span>.into()
     }
 
-    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; String {
+    <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="string">&quot;ForeignExecutor&quot;</span>.into()
     }
 
-    <span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>, _oracle: <span class="kw-2">&amp;</span><span class="kw">dyn </span>CodeOracle) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+    <span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">Some</span>(<span class="string">&quot;uniffiInitForeignExecutor&quot;</span>.into())
     }
 }
