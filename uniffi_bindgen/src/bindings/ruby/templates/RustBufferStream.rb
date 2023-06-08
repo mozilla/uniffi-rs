@@ -178,7 +178,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ enum_name|class_name_rb }}::{{ variant.name()|enum_name_rb }}.new(
             {%- for field in variant.fields() %}
-            self.read{{ field.type_().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            self.read{{ field.as_type().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -213,7 +213,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
             {%- for field in variant.fields() %}
-            read{{ field.type_().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            read{{ field.as_type().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -233,7 +233,7 @@ class RustBufferStream
   def read{{ canonical_type_name }}
     {{ rec.name()|class_name_rb }}.new(
       {%- for field in rec.fields() %}
-      read{{ field.type_().canonical_name().borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
+      read{{ field.as_type().canonical_name().borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}
     )
   end

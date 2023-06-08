@@ -20,7 +20,7 @@ enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}
     r#{{ variant.name() }} {
         {%- for field in variant.fields() %}
-        r#{{ field.name() }}: {{ field.type_()|type_rs }},
+        r#{{ field.name() }}: {{ field.as_type().borrow()|type_rs }},
         {%- endfor %}
     },
     {%- endfor %}

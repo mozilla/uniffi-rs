@@ -67,7 +67,7 @@ use super::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, M
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::function::{Argument, Callable};
 use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{convert_type, APIConverter, ComponentInterface};
+use super::{convert_type, APIConverter, AsType, ComponentInterface};
 
 /// An "object" is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -129,13 +129,6 @@ impl Object {
 
     pub fn imp(&self) -> &ObjectImpl {
         &self.imp
-    }
-
-    pub fn type_(&self) -> Type {
-        Type::Object {
-            name: self.name.clone(),
-            imp: self.imp,
-        }
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -345,6 +338,15 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
             object.uniffi_traits.push(trait_method);
         }
         Ok(object)
+    }
+}
+
+impl AsType for Object {
+    fn as_type(&self) -> Type {
+        Type::Object {
+            name: self.name.clone(),
+            imp: self.imp,
+        }
     }
 }
 

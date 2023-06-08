@@ -81,7 +81,7 @@ use uniffi_meta::Checksum;
 
 use super::record::Field;
 use super::types::{Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, AsType, ComponentInterface};
 
 /// Represents an enum with named variants, each of which may have named
 /// and typed fields.
@@ -117,12 +117,6 @@ impl Enum {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterface
-        // and its contained types could use a bit of a cleanup.
-        Type::Enum(self.name.clone())
-    }
-
     pub fn variants(&self) -> &[Variant] {
         &self.variants
     }
@@ -133,6 +127,12 @@ impl Enum {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.variants.iter().flat_map(Variant::iter_types))
+    }
+}
+
+impl AsType for Enum {
+    fn as_type(&self) -> Type {
+        Type::Enum(self.name.clone())
     }
 }
 
@@ -399,9 +399,9 @@ mod test {
             ed.variants()[1]
                 .fields()
                 .iter()
-                .map(|f| f.type_())
+                .map(|f| f.as_type())
                 .collect::<Vec<_>>(),
-            vec![&Type::UInt32]
+            vec![Type::UInt32]
         );
         assert_eq!(
             ed.variants()[2]
@@ -415,9 +415,9 @@ mod test {
             ed.variants()[2]
                 .fields()
                 .iter()
-                .map(|f| f.type_())
+                .map(|f| f.as_type())
                 .collect::<Vec<_>>(),
-            vec![&Type::UInt32, &Type::String]
+            vec![Type::UInt32, Type::String]
         );
 
         // The enum declared via interface, but with no associated data.
@@ -435,7 +435,7 @@ mod test {
         // (It might be nice to optimize these to pass as plain integers, but that's
         // difficult atop the current factoring of `ComponentInterface` and friends).
         let farg = ci.get_function_definition("takes_an_enum").unwrap();
-        assert_eq!(*farg.arguments()[0].type_(), Type::Enum("TestEnum".into()));
+        assert_eq!(farg.arguments()[0].as_type(), Type::Enum("TestEnum".into()));
         assert_eq!(
             farg.ffi_func().arguments()[0].type_(),
             FfiType::RustBuffer(None)
@@ -452,7 +452,7 @@ mod test {
             .get_function_definition("takes_an_enum_with_data")
             .unwrap();
         assert_eq!(
-            *farg.arguments()[0].type_(),
+            farg.arguments()[0].as_type(),
             Type::Enum("TestEnumWithData".into())
         );
         assert_eq!(

@@ -55,7 +55,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         {% if e.is_flat() %}
             return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant.name()|exception_name }}({{ TypeIdentifier::String.borrow()|read_fn }}(buf))
+            {{ loop.index }} -> {{ type_name }}.{{ variant.name()|exception_name }}({{ Type::String.borrow()|read_fn }}(buf))
             {%- endfor %}
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }

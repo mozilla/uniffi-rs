@@ -74,7 +74,7 @@ rust_call(
     {%- when None %}
     {%- when Some with(literal) %}
     if {{ arg.name()|var_name }} is DEFAULT:
-        {{ arg.name()|var_name }} = {{ literal|literal_py(arg.type_().borrow()) }}
+        {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
     {%- endmatch %}
     {% endfor -%}
 {%- endmacro -%}
@@ -89,7 +89,7 @@ rust_call(
         {%- when None %}
         {%- when Some with(literal) %}
         if {{ arg.name()|var_name }} is DEFAULT:
-            {{ arg.name()|var_name }} = {{ literal|literal_py(arg.type_().borrow()) }}
+            {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
         {%- endmatch %}
         {% endfor -%}
 {%- endmacro -%}

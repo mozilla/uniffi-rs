@@ -39,7 +39,7 @@ use uniffi_meta::Checksum;
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
 use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{APIConverter, ComponentInterface};
+use super::{APIConverter, AsType, ComponentInterface};
 
 #[derive(Debug, Clone, Checksum)]
 pub struct CallbackInterface {
@@ -68,10 +68,6 @@ impl CallbackInterface {
         &self.name
     }
 
-    pub fn type_(&self) -> Type {
-        Type::CallbackInterface(self.name.clone())
-    }
-
     pub fn methods(&self) -> Vec<&Method> {
         self.methods.iter().collect()
     }
@@ -92,6 +88,12 @@ impl CallbackInterface {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.methods.iter().flat_map(Method::iter_types))
+    }
+}
+
+impl AsType for CallbackInterface {
+    fn as_type(&self) -> Type {
+        Type::CallbackInterface(self.name.clone())
     }
 }
 

@@ -4,6 +4,7 @@
 
 use crate::backend::{CodeOracle, CodeType, Literal};
 
+#[derive(Debug)]
 pub struct EnumCodeType {
     id: String,
 }
@@ -15,20 +16,20 @@ impl EnumCodeType {
 }
 
 impl CodeType for EnumCodeType {
-    fn type_label(&self, oracle: &dyn CodeOracle) -> String {
-        oracle.class_name(&self.id)
+    fn type_label(&self) -> String {
+        super::PythonCodeOracle.class_name(&self.id)
     }
 
-    fn canonical_name(&self, _oracle: &dyn CodeOracle) -> String {
+    fn canonical_name(&self) -> String {
         format!("Type{}", self.id)
     }
 
-    fn literal(&self, oracle: &dyn CodeOracle, literal: &Literal) -> String {
+    fn literal(&self, literal: &Literal) -> String {
         if let Literal::Enum(v, _) = literal {
             format!(
                 "{}.{}",
-                self.type_label(oracle),
-                oracle.enum_variant_name(v)
+                self.type_label(),
+                super::PythonCodeOracle.enum_variant_name(v)
             )
         } else {
             unreachable!();

@@ -252,6 +252,28 @@ impl From<&&Type> for FfiType {
     }
 }
 
+// A trait so various things can turn into a type.
+pub trait AsType: core::fmt::Debug {
+    fn as_type(&self) -> Type;
+}
+
+impl AsType for Type {
+    fn as_type(&self) -> Type {
+        self.clone()
+    }
+}
+
+// Needed to handle &&Type and &&&Type values, which we sometimes end up with in the template code
+impl<T, C> AsType for T
+where
+    T: std::ops::Deref<Target = C> + std::fmt::Debug,
+    C: AsType,
+{
+    fn as_type(&self) -> Type {
+        self.deref().as_type()
+    }
+}
+
 /// The set of all possible types used in a particular component interface.
 ///
 /// Every component API uses a finite number of types, including primitive types, API-defined

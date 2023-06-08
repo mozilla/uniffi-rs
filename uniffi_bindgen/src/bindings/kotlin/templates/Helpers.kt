@@ -51,7 +51,7 @@ private fun<E: Exception> checkCallStatus(errorHandler: CallStatusErrorHandler<E
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
         if (status.error_buf.len > 0) {
-            throw InternalException({{ TypeIdentifier::String.borrow()|lift_fn }}(status.error_buf))
+            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.error_buf))
         } else {
             throw InternalException("Rust panic")
         }

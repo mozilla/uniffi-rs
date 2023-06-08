@@ -11,7 +11,7 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeOracle, CodeType, TemplateExpression, TypeIdentifier};
+use crate::backend::{CodeOracle, CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -212,7 +212,8 @@ impl<'a> KotlinWrapper<'a> {
     pub fn initialization_fns(&self) -> Vec<String> {
         self.ci
             .iter_types()
-            .filter_map(|t| t.initialization_fn(&KotlinCodeOracle))
+            .map(|t| KotlinCodeOracle.find(t))
+            .filter_map(|ct| ct.initialization_fn())
             .collect()
     }
 
@@ -225,14 +226,14 @@ impl<'a> KotlinWrapper<'a> {
 pub struct KotlinCodeOracle;
 
 impl KotlinCodeOracle {
-    // Map `Type` instances to a `Box<dyn CodeType>` for that type.
+    // Map `Type` instances to a `Box<dyn as_type>` for that type.
     //
     // There is a companion match in `templates/Types.kt` which performs a similar function for the
     // template code.
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.
     //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
-    fn create_code_type(&self, type_: TypeIdentifier) -> Box<dyn CodeType> {
+    fn create_code_type(&self, type_: Type) -> Box<dyn CodeType> {
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
             Type::Int8 => Box::new(primitives::Int8CodeType),
@@ -269,7 +270,7 @@ impl KotlinCodeOracle {
 }
 
 impl CodeOracle for KotlinCodeOracle {
-    fn find(&self, type_: &TypeIdentifier) -> Box<dyn CodeType> {
+    fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }
 
@@ -342,39 +343,51 @@ pub mod filters {
         &KotlinCodeOracle
     }
 
-    pub fn type_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.type_label(oracle()))
+    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).type_label())
     }
 
-    pub fn canonical_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.canonical_name(oracle()))
+    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).canonical_name())
     }
 
-    pub fn ffi_converter_name(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(codetype.ffi_converter_name(oracle()))
+    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
     }
 
-    pub fn lower_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", codetype.ffi_converter_name(oracle())))
-    }
-
-    pub fn allocation_size_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
+    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(format!(
-            "{}.allocationSize",
-            codetype.ffi_converter_name(oracle())
+            "{}.lower",
+            oracle().find(&as_type.as_type()).ffi_converter_name()
         ))
     }
 
-    pub fn write_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", codetype.ffi_converter_name(oracle())))
+    pub fn allocation_size_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.allocationSize",
+            oracle().find(&as_type.as_type()).ffi_converter_name()
+        ))
     }
 
-    pub fn lift_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", codetype.ffi_converter_name(oracle())))
+    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.write",
+            oracle().find(&as_type.as_type()).ffi_converter_name()
+        ))
     }
 
-    pub fn read_fn(codetype: &impl CodeType) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", codetype.ffi_converter_name(oracle())))
+    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.lift",
+            oracle().find(&as_type.as_type()).ffi_converter_name()
+        ))
+    }
+
+    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(format!(
+            "{}.read",
+            oracle().find(&as_type.as_type()).ffi_converter_name()
+        ))
     }
 
     pub fn error_handler(result_type: &ResultType) -> Result<String, askama::Error> {
@@ -408,9 +421,9 @@ pub mod filters {
 
     pub fn render_literal(
         literal: &Literal,
-        codetype: &impl CodeType,
+        as_type: &impl AsType,
     ) -> Result<String, askama::Error> {
-        Ok(codetype.literal(oracle(), literal))
+        Ok(oracle().find(&as_type.as_type()).literal(literal))
     }
 
     /// Get the Kotlin syntax for representing a given low-level `FfiType`.
