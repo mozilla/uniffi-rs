@@ -181,8 +181,8 @@ by the host operating system (e.g. the key chain).</p>
 }
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#why-send--sync" id="why-send--sync">Why Send + Sync?</a></h3>
-<p>The concrete types that UniFFI generates for callback interfaces implement <code>Send</code>, <code>Sync</code>, and <code>Debug</code>, so it's safe to
+<h3><a class="header" href="#send--sync" id="send--sync">Send + Sync?</a></h3>
+<p>The concrete types that UniFFI generates for callback interfaces implement <code>Send</code>, <code>Sync</code>, and <code>Debug</code>, so it's legal to
 include these as supertraits of your callback interface trait.  This isn't strictly necessary, but it's often useful.  In
 particular, <code>Send + Sync</code> is useful when:</p>
 <ul>
@@ -190,6 +190,11 @@ particular, <code>Send + Sync</code> is useful when:</p>
 interface type)</li>
 <li>Storing <code>Box&lt;dyn CallbackInterfaceTrait&gt;</code> inside a global <code>Mutex</code> or <code>RwLock</code></li>
 </ul>
+<p><strong>⚠ Warning ⚠</strong>: this comes with a caveat: the methods of the foreign class must be safe to call
+from multiple threads at once, for example because they are synchronized with a mutex, or use
+thread-safe data structures.  However, Rust can not enforce this in the foreign code.  If you add
+<code>Send + Sync</code> to your callback interface, you must make sure to inform your library consumers that
+their implementations must logically be Send + Sync.</p>
 <h2><a class="header" href="#2-setup-error-handling" id="2-setup-error-handling">2. Setup error handling</a></h2>
 <p>All methods of the Rust trait should return a Result.  The error half of that result must
 be an <a href="./errors.html">error type defined in the UDL</a>.</p>
