@@ -159,16 +159,16 @@ mod filters {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
-    pub fn coerce_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+    pub fn coerce_rb(nm: &str, ns: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
-            Type::Int8 => format!("uniffi_in_range({nm}, \"i8\", -2**7, 2**7)"),
-            Type::Int16 => format!("uniffi_in_range({nm}, \"i16\", -2**15, 2**15)"),
-            Type::Int32 => format!("uniffi_in_range({nm}, \"i32\", -2**31, 2**31)"),
-            Type::Int64 => format!("uniffi_in_range({nm}, \"i64\", -2**63, 2**63)"),
-            Type::UInt8 => format!("uniffi_in_range({nm}, \"u8\", 0, 2**8)"),
-            Type::UInt16 => format!("uniffi_in_range({nm}, \"u16\", 0, 2**16)"),
-            Type::UInt32 => format!("uniffi_in_range({nm}, \"u32\", 0, 2**32)"),
-            Type::UInt64 => format!("uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
+            Type::Int8 => format!("{ns}::uniffi_in_range({nm}, \"i8\", -2**7, 2**7)"),
+            Type::Int16 => format!("{ns}::uniffi_in_range({nm}, \"i16\", -2**15, 2**15)"),
+            Type::Int32 => format!("{ns}::uniffi_in_range({nm}, \"i32\", -2**31, 2**31)"),
+            Type::Int64 => format!("{ns}::uniffi_in_range({nm}, \"i64\", -2**63, 2**63)"),
+            Type::UInt8 => format!("{ns}::uniffi_in_range({nm}, \"u8\", 0, 2**8)"),
+            Type::UInt16 => format!("{ns}::uniffi_in_range({nm}, \"u16\", 0, 2**16)"),
+            Type::UInt32 => format!("{ns}::uniffi_in_range({nm}, \"u32\", 0, 2**32)"),
+            Type::UInt64 => format!("{ns}::uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
             Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
             Type::Boolean => format!("{nm} ? true : false"),
             Type::Object { .. } | Type::Enum(_) | Type::Error(_) | Type::Record(_) => {
@@ -177,9 +177,9 @@ mod filters {
             Type::String | Type::Bytes => format!("{nm}.to_s"),
             Type::Timestamp | Type::Duration => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
-            Type::Optional(t) => format!("({nm} ? {} : nil)", coerce_rb(nm, t)?),
+            Type::Optional(t) => format!("({nm} ? {} : nil)", coerce_rb(nm, ns, t)?),
             Type::Sequence(t) => {
-                let coerce_code = coerce_rb("v", t)?;
+                let coerce_code = coerce_rb("v", ns, t)?;
                 if coerce_code == "v" {
                     nm.to_string()
                 } else {
@@ -187,8 +187,8 @@ mod filters {
                 }
             }
             Type::Map(_k, t) => {
-                let k_coerce_code = coerce_rb("k", &Type::String)?;
-                let v_coerce_code = coerce_rb("v", t)?;
+                let k_coerce_code = coerce_rb("k", ns, &Type::String)?;
+                let v_coerce_code = coerce_rb("v", ns, t)?;
 
                 if k_coerce_code == "k" && v_coerce_code == "v" {
                     nm.to_string()
