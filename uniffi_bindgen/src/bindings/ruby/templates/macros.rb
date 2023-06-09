@@ -62,12 +62,12 @@
 
 {%- macro coerce_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_rb(arg.as_type().borrow()) -}}
+    {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow()) -}}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro coerce_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_rb(arg.as_type().borrow()) }}
+        {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow()) }}
         {%- endfor %}
 {%- endmacro -%}
