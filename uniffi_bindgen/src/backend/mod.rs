@@ -3,13 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 mod config;
-mod declarations;
-mod oracle;
 mod types;
 
-pub use config::TemplateExpression;
-pub use declarations::CodeDeclaration;
-pub use oracle::CodeOracle;
-pub use types::CodeType;
-
 pub use crate::interface::{Literal, Type};
+pub use config::TemplateExpression;
+pub use types::CodeType;

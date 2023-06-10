@@ -11,7 +11,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-use crate::backend::{CodeOracle, CodeType, TemplateExpression};
+use crate::backend::{CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -307,9 +307,7 @@ impl PythonCodeOracle {
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
-}
 
-impl CodeOracle for PythonCodeOracle {
     fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }
@@ -334,17 +332,7 @@ impl CodeOracle for PythonCodeOracle {
         fixup_keyword(nm.to_string().to_shouty_snake_case())
     }
 
-    /// Get the idiomatic Python rendering of an exception name
-    /// This replaces "Error" at the end of the name with "Exception".
-    fn error_name(&self, nm: &str) -> String {
-        let name = fixup_keyword(self.class_name(nm));
-        match name.strip_suffix("Error") {
-            None => name,
-            Some(stripped) => format!("{stripped}Exception"),
-        }
-    }
-
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label(ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8 => "ctypes.c_int8".to_string(),
             FfiType::UInt8 => "ctypes.c_uint8".to_string(),
@@ -369,7 +357,7 @@ impl CodeOracle for PythonCodeOracle {
             FfiType::FutureCallback { return_type } => {
                 format!(
                     "uniffi_future_callback_t({})",
-                    self.ffi_type_label(return_type),
+                    Self::ffi_type_label(return_type),
                 )
             }
             FfiType::FutureCallbackData => "ctypes.c_size_t".to_string(),
@@ -433,7 +421,7 @@ pub mod filters {
 
     /// Get the Python syntax for representing a given low-level `FfiType`.
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(oracle().ffi_type_label(type_))
+        Ok(PythonCodeOracle::ffi_type_label(type_))
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).

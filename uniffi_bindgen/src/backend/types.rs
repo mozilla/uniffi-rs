@@ -4,26 +4,11 @@
 
 //! # Backend traits
 //!
-//! This module provides a number of traits useful for implementing a backend for Uniffi.
+//! A trait to help format items.
 //!
-//! A `CodeType` is needed for each type that will cross the FFI. It should provide helper machinery
-//! in the target language to lift from and lower into a value of that type into a primitive type
-//! (the FfiType), and foreign language expressions that call into the machinery. This helper code
-//! can be provided by a template file.
-//!
-//! The `CodeOracle` provides methods to map the `Type` values found in the `ComponentInterface` to the `CodeType`s specified
-//! by the backend. It also provides methods for transforming identifiers into the coding standard for the target language.
-//!
-//! There's also a CodeTypeDispatch trait, implemented for every type, which allows a CodeType to be created
-//! by the specified `CodeOracle`. This means backends are able to provide a custom CodeType for each type
-//! via that backend's CodeOracle.
-//!
-//! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.
-//! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
-
+//! Each backend will have its own `filter` module, which is used by the askama templates.
+use super::Literal;
 use std::fmt::Debug;
-
-use crate::interface::*;
 
 /// A Trait to help render types in a language specific format.
 pub trait CodeType: Debug {
@@ -40,8 +25,6 @@ pub trait CodeType: Debug {
         self.type_label()
     }
 
-    /// A representation of the given literal for this type.
-    /// N.B. `Literal` is aliased from `interface::Literal`, so may not be whole suited to this task.
     fn literal(&self, _literal: &Literal) -> String {
         unimplemented!("Unimplemented for {}", self.type_label())
     }

@@ -11,7 +11,7 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::backend::{CodeOracle, CodeType, TemplateExpression};
+use crate::backend::{CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -267,9 +267,7 @@ impl KotlinCodeOracle {
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
-}
 
-impl CodeOracle for KotlinCodeOracle {
     fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }

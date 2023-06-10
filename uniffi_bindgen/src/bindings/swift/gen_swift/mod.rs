@@ -12,7 +12,7 @@ use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
-use crate::backend::{CodeOracle, CodeType, TemplateExpression};
+use crate::backend::{CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -318,9 +318,7 @@ impl SwiftCodeOracle {
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
-}
 
-impl CodeOracle for SwiftCodeOracle {
     fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         self.create_code_type(type_.clone())
     }
@@ -343,11 +341,6 @@ impl CodeOracle for SwiftCodeOracle {
     /// Get the idiomatic Swift rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &str) -> String {
         format!("`{}`", nm.to_string().to_lower_camel_case())
-    }
-
-    /// Get the idiomatic Swift rendering of an exception name.
-    fn error_name(&self, nm: &str) -> String {
-        format!("`{}`", self.class_name(nm))
     }
 
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
