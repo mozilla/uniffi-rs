@@ -266,50 +266,8 @@ fn fixup_keyword(name: String) -> String {
 pub struct PythonCodeOracle;
 
 impl PythonCodeOracle {
-    // Map `Type` instances to a `Box<dyn CodeType>` for that type.
-    //
-    // There is a companion match in `templates/Types.py` which performs a similar function for the
-    // template code.
-    //
-    //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
-    //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
-    fn create_code_type(&self, type_: Type) -> Box<dyn CodeType> {
-        match type_ {
-            Type::UInt8 => Box::new(primitives::UInt8CodeType),
-            Type::Int8 => Box::new(primitives::Int8CodeType),
-            Type::UInt16 => Box::new(primitives::UInt16CodeType),
-            Type::Int16 => Box::new(primitives::Int16CodeType),
-            Type::UInt32 => Box::new(primitives::UInt32CodeType),
-            Type::Int32 => Box::new(primitives::Int32CodeType),
-            Type::UInt64 => Box::new(primitives::UInt64CodeType),
-            Type::Int64 => Box::new(primitives::Int64CodeType),
-            Type::Float32 => Box::new(primitives::Float32CodeType),
-            Type::Float64 => Box::new(primitives::Float64CodeType),
-            Type::Boolean => Box::new(primitives::BooleanCodeType),
-            Type::String => Box::new(primitives::StringCodeType),
-            Type::Bytes => Box::new(primitives::BytesCodeType),
-
-            Type::Timestamp => Box::new(miscellany::TimestampCodeType),
-            Type::Duration => Box::new(miscellany::DurationCodeType),
-
-            Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
-            Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
-            Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
-            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
-            Type::CallbackInterface(id) => {
-                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
-            }
-            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
-            Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
-            Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
-            Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
-            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
-            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
-        }
-    }
-
     fn find(&self, type_: &Type) -> Box<dyn CodeType> {
-        self.create_code_type(type_.clone())
+        type_.clone().as_type().as_codetype()
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
@@ -365,39 +323,83 @@ impl PythonCodeOracle {
     }
 }
 
+pub trait AsCodeType {
+    fn as_codetype(&self) -> Box<dyn CodeType>;
+}
+
+impl<T: AsType> AsCodeType for T {
+    fn as_codetype(&self) -> Box<dyn CodeType> {
+        // Map `Type` instances to a `Box<dyn CodeType>` for that type.
+        //
+        // There is a companion match in `templates/Types.py` which performs a similar function for the
+        // template code.
+        //
+        //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
+        //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
+        match self.as_type() {
+            Type::UInt8 => Box::new(primitives::UInt8CodeType),
+            Type::Int8 => Box::new(primitives::Int8CodeType),
+            Type::UInt16 => Box::new(primitives::UInt16CodeType),
+            Type::Int16 => Box::new(primitives::Int16CodeType),
+            Type::UInt32 => Box::new(primitives::UInt32CodeType),
+            Type::Int32 => Box::new(primitives::Int32CodeType),
+            Type::UInt64 => Box::new(primitives::UInt64CodeType),
+            Type::Int64 => Box::new(primitives::Int64CodeType),
+            Type::Float32 => Box::new(primitives::Float32CodeType),
+            Type::Float64 => Box::new(primitives::Float64CodeType),
+            Type::Boolean => Box::new(primitives::BooleanCodeType),
+            Type::String => Box::new(primitives::StringCodeType),
+            Type::Bytes => Box::new(primitives::BytesCodeType),
+
+            Type::Timestamp => Box::new(miscellany::TimestampCodeType),
+            Type::Duration => Box::new(miscellany::DurationCodeType),
+
+            Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
+            Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
+            Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
+            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
+            Type::CallbackInterface(id) => {
+                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
+            }
+            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
+            Type::Optional(inner) => Box::new(compounds::OptionalCodeType::new(*inner)),
+            Type::Sequence(inner) => Box::new(compounds::SequenceCodeType::new(*inner)),
+            Type::Map(key, value) => Box::new(compounds::MapCodeType::new(*key, *value)),
+            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
+            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
+        }
+    }
+}
+
 pub mod filters {
     use super::*;
 
-    fn oracle() -> &'static PythonCodeOracle {
-        &PythonCodeOracle
+    pub fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().type_label())
     }
 
-    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).type_label())
+    pub fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().ffi_converter_name())
     }
 
-    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
+    pub fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().canonical_name())
     }
 
-    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).canonical_name())
+    pub fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lift", ffi_converter_name(as_ct)?))
     }
 
-    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", ffi_converter_name(as_type)?))
+    pub fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lower", ffi_converter_name(as_ct)?))
     }
 
-    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", ffi_converter_name(as_type)?))
+    pub fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.read", ffi_converter_name(as_ct)?))
     }
 
-    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", ffi_converter_name(as_type)?))
-    }
-
-    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", ffi_converter_name(as_type)?))
+    pub fn write_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
     // Name of the callback function we pass to Rust to complete an async call
@@ -415,8 +417,8 @@ pub mod filters {
         ))
     }
 
-    pub fn literal_py(literal: &Literal, as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).literal(literal))
+    pub fn literal_py(literal: &Literal, as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().literal(literal))
     }
 
     /// Get the Python syntax for representing a given low-level `FfiType`.
@@ -426,21 +428,21 @@ pub mod filters {
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().class_name(nm))
+        Ok(PythonCodeOracle.class_name(nm))
     }
 
     /// Get the idiomatic Python rendering of a function name.
     pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().fn_name(nm))
+        Ok(PythonCodeOracle.fn_name(nm))
     }
 
     /// Get the idiomatic Python rendering of a variable name.
     pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().var_name(nm))
+        Ok(PythonCodeOracle.var_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().enum_variant_name(nm))
+        Ok(PythonCodeOracle.enum_variant_name(nm))
     }
 }

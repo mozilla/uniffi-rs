@@ -60,7 +60,7 @@ mod attributes;
 mod callbacks;
 pub use callbacks::CallbackInterface;
 mod enum_;
-pub use enum_::Enum;
+pub use enum_::{Enum, Variant};
 mod error;
 pub use error::Error;
 mod function;
