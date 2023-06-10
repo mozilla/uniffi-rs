@@ -44,6 +44,19 @@
 - Methods implemented by standard Rust traits, such as `Debug`, `Display`, `Eq` and `Hash` can now be exposed over the FFI and bindings may implement special methods for them.
   See [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#exposing-methods-from-standard-rust-traits).
 
+### Guidance for external bindings
+
+There are many breaking changes for external bindings - we hope there will be fewer in
+later releases, but we are laying the groundwork for some nice improvements.
+Significant patches to uniffi's builtin bindings which you will need to port include:
+
+* https://github.com/mozilla/uniffi-rs/commit/b9821439876c4fda05910313dec20906563b9909
+* https://github.com/mozilla/uniffi-rs/commit/748f671bb1e88267522119ef6b9d98a8bcca1cc0
+* https://github.com/mozilla/uniffi-rs/commit/07dcf3fe218d61e72073da72ba60ccbcd990bfb8
+* https://github.com/mozilla/uniffi-rs/commit/45d572def4fd84120e9a8cdfcc75ff1eead00e81
+* https://github.com/mozilla/uniffi-rs/commit/5e3dea51f17ae59a695a40e23479d57262968bb6
+* https://github.com/mozilla/uniffi-rs/commit/2eb39753e060a28ee43eae90b996ff55f9b5e0bd
+
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
 [All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...v0.23.0).
