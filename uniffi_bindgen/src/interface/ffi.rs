@@ -64,35 +64,6 @@ pub enum FfiType {
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }
 
-impl FfiType {
-    pub fn canonical_name(&self) -> String {
-        match self {
-            Self::UInt8 => "UInt8".into(),
-            Self::Int8 => "Int8".into(),
-            Self::UInt16 => "UInt16".into(),
-            Self::Int16 => "Int16".into(),
-            Self::UInt32 => "UInt32".into(),
-            Self::Int32 => "Int32".into(),
-            Self::UInt64 => "UInt64".into(),
-            Self::Int64 => "Int64".into(),
-            Self::Float32 => "Float32".into(),
-            Self::Float64 => "Float64".into(),
-            Self::RustArcPtr(name) => format!("RustArcPtr{name}"),
-            Self::RustBuffer(maybe_suffix) => {
-                format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
-            }
-            Self::ForeignBytes => "ForeignBytes".into(),
-            Self::ForeignCallback => "ForeignCallback".into(),
-            Self::ForeignExecutorHandle => "ForeignExecutorHandle".into(),
-            Self::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
-            Self::FutureCallback { return_type } => {
-                format!("FutureCallback{}", return_type.canonical_name())
-            }
-            Self::FutureCallbackData => "FutureCallbackData".into(),
-        }
-    }
-}
-
 /// Represents an "extern C"-style function that will be part of the FFI.
 ///
 /// These can't be declared explicitly in the UDL, but rather, are derived automatically

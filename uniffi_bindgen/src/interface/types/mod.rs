@@ -24,7 +24,6 @@
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap, iter};
 
 use anyhow::{bail, Result};
-use heck::ToUpperCamelCase;
 use uniffi_meta::Checksum;
 
 use super::ffi::FfiType;
@@ -122,59 +121,6 @@ pub enum ExternalKind {
 }
 
 impl Type {
-    /// Get the canonical, unique-within-this-component name for a type.
-    ///
-    /// When generating helper code for foreign language bindings, it's sometimes useful to be
-    /// able to name a particular type in order to e.g. call a helper function that is specific
-    /// to that type. We support this by defining a naming convention where each type gets a
-    /// unique canonical name, constructed recursively from the names of its component types (if any).
-    pub fn canonical_name(&self) -> String {
-        match self {
-            // Builtin primitive types, with plain old names.
-            Type::Int8 => "i8".into(),
-            Type::UInt8 => "u8".into(),
-            Type::Int16 => "i16".into(),
-            Type::UInt16 => "u16".into(),
-            Type::Int32 => "i32".into(),
-            Type::UInt32 => "u32".into(),
-            Type::Int64 => "i64".into(),
-            Type::UInt64 => "u64".into(),
-            Type::Float32 => "f32".into(),
-            Type::Float64 => "f64".into(),
-            Type::String => "string".into(),
-            Type::Bytes => "bytes".into(),
-            Type::Boolean => "bool".into(),
-            // API defined types.
-            // Note that these all get unique names, and the parser ensures that the names do not
-            // conflict with a builtin type. We add a prefix to the name to guard against pathological
-            // cases like a record named `SequenceRecord` interfering with `sequence<Record>`.
-            // However, types that support importing all end up with the same prefix of "Type", so
-            // that the import handling code knows how to find the remote reference.
-            Type::Object { name, .. } => format!("Type{name}"),
-            Type::Error(nm) => format!("Type{nm}"),
-            Type::Enum(nm) => format!("Type{nm}"),
-            Type::Record(nm) => format!("Type{nm}"),
-            Type::CallbackInterface(nm) => format!("CallbackInterface{nm}"),
-            Type::Timestamp => "Timestamp".into(),
-            Type::Duration => "Duration".into(),
-            Type::ForeignExecutor => "ForeignExecutor".into(),
-            // Recursive types.
-            // These add a prefix to the name of the underlying type.
-            // The component API definition cannot give names to recursive types, so as long as the
-            // prefixes we add here are all unique amongst themselves, then we have no chance of
-            // acccidentally generating name collisions.
-            Type::Optional(t) => format!("Optional{}", t.canonical_name()),
-            Type::Sequence(t) => format!("Sequence{}", t.canonical_name()),
-            Type::Map(k, v) => format!(
-                "Map{}{}",
-                k.canonical_name().to_upper_camel_case(),
-                v.canonical_name().to_upper_camel_case()
-            ),
-            // A type that exists externally.
-            Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{name}"),
-        }
-    }
-
     pub fn ffi_type(&self) -> FfiType {
         self.into()
     }
@@ -305,10 +251,7 @@ impl TypeUniverse {
     /// This will fail if you try to add a name for which an existing type definition exists.
     pub fn add_type_definition(&mut self, name: &str, type_: Type) -> Result<()> {
         if resolve_builtin_type(name).is_some() {
-            bail!(
-                "please don't shadow builtin types ({name}, {})",
-                type_.canonical_name(),
-            );
+            bail!("please don't shadow builtin types ({name}, {:?})", type_,);
         }
         self.add_known_type(&type_)?;
         match self.type_definitions.entry(name.to_string()) {
@@ -389,27 +332,6 @@ impl TypeUniverse {
 /// Ideally we would not need to name this type explicitly, and could just
 /// use an `impl Iterator<Item = &Type>` on any method that yields types.
 pub type TypeIterator<'a> = Box<dyn Iterator<Item = &'a Type> + 'a>;
-
-#[cfg(test)]
-mod test_type {
-    use super::*;
-
-    #[test]
-    fn test_canonical_names() {
-        // Non-exhaustive, but gives a bit of a flavour of what we want.
-        assert_eq!(Type::UInt8.canonical_name(), "u8");
-        assert_eq!(Type::String.canonical_name(), "string");
-        assert_eq!(Type::Bytes.canonical_name(), "bytes");
-        assert_eq!(
-            Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object {
-                name: "Example".into(),
-                imp: ObjectImpl::Struct,
-            }))))
-            .canonical_name(),
-            "OptionalSequenceTypeExample"
-        );
-    }
-}
 
 #[cfg(test)]
 mod test_type_universe {
