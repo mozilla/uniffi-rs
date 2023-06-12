@@ -833,7 +833,7 @@ impl ComponentInterface {
     }
 }
 
-fn get_object<'a>(objects: &'a mut[Object], name: &str) -> Option<&'a mut Object> {
+fn get_object<'a>(objects: &'a mut [Object], name: &str) -> Option<&'a mut Object> {
     objects.iter_mut().find(|o| o.name == name)
 }
 

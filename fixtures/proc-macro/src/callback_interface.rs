@@ -4,7 +4,7 @@
 
 use crate::BasicError;
 
-#[uniffi::callback_interface]
+#[uniffi::export(callback_interface)]
 pub trait TestCallbackInterface {
     fn do_nothing(&self);
     fn add(&self, a: u32, b: u32) -> u32;

@@ -189,8 +189,8 @@ impl MethodMetadata {
 pub struct TraitMethodMetadata {
     pub module_path: String,
     pub trait_name: String,
-    // Note: the position of `index` is important since it causes methods to be ordered correctly
-    // in MetadataGroup.items
+    // Note: the position of `index` is important since it causes callback interface methods to be
+    // ordered correctly in MetadataGroup.items
     pub index: u32,
     pub name: String,
     pub is_async: bool,

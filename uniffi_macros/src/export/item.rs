@@ -6,7 +6,7 @@ use crate::fnsig::FnSignature;
 use proc_macro2::{Ident, Span};
 use quote::ToTokens;
 
-use super::attributes::ExportedImplFnAttributes;
+use super::attributes::{ExportAttributeArguments, ExportedImplFnAttributes};
 
 pub(super) enum ExportItem {
     Function {
@@ -19,18 +19,19 @@ pub(super) enum ExportItem {
     Trait {
         self_ident: Ident,
         items: Vec<syn::Result<ImplItem>>,
+        callback_interface: bool,
     },
 }
 
 impl ExportItem {
-    pub fn new(item: syn::Item) -> syn::Result<Self> {
+    pub fn new(item: syn::Item, args: &ExportAttributeArguments) -> syn::Result<Self> {
         match item {
             syn::Item::Fn(item) => {
                 let sig = FnSignature::new_function(item.sig)?;
                 Ok(Self::Function { sig })
             }
             syn::Item::Impl(item) => Self::from_impl(item),
-            syn::Item::Trait(item) => Self::from_trait(item),
+            syn::Item::Trait(item) => Self::from_trait(item, args.callback_interface.is_some()),
             // FIXME: Support const / static?
             _ => Err(syn::Error::new(
                 Span::call_site(),
@@ -101,7 +102,7 @@ impl ExportItem {
         })
     }
 
-    fn from_trait(item: syn::ItemTrait) -> syn::Result<Self> {
+    fn from_trait(item: syn::ItemTrait, callback_interface: bool) -> syn::Result<Self> {
         if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             return Err(syn::Error::new_spanned(
                 &item.generics,
@@ -129,7 +130,7 @@ impl ExportItem {
                 let item = if attrs.constructor {
                     return Err(syn::Error::new_spanned(
                         tim,
-                        "traits can not have constructors",
+                        "exported traits can not have constructors",
                     ));
                 } else {
                     ImplItem::Method(FnSignature::new_trait_method(
@@ -143,7 +144,11 @@ impl ExportItem {
             })
             .collect();
 
-        Ok(Self::Trait { items, self_ident })
+        Ok(Self::Trait {
+            items,
+            self_ident,
+            callback_interface,
+        })
     }
 }
 

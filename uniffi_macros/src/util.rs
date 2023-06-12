@@ -267,11 +267,3 @@ impl Parse for CommonAttr {
         parse_comma_separated(input)
     }
 }
-
-// Utility function for creating syn errors
-pub(crate) fn syn_err<T, U: ToTokens, V: std::fmt::Display>(
-    tokens: U,
-    message: V,
-) -> syn::Result<T> {
-    Err(syn::Error::new_spanned(tokens, message))
-}

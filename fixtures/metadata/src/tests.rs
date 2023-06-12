@@ -85,7 +85,7 @@ mod calc {
     pub struct Calculator {}
 }
 
-#[uniffi::callback_interface]
+#[uniffi::export(callback_interface)]
 pub trait Logger {
     fn log(&self, message: String);
 }

@@ -228,13 +228,13 @@ fn do_http_request() -> Result<(), MyApiError> {
 }
 ```
 
-## The `#[uniffi::callback_interface]` attribute
+## The `#[uniffi::export(callback_interface)]` attribute
 
-`#[uniffi::callback_interface]` can be used to export a [callback interface](../udl/callback_interfaces.html) definition.
+`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.html) definition.
 This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
 
 ```rust
-#[uniffi::callback_interface]
+#[uniffi::export(callback_interface)]
 pub trait Person {
     fn name() -> String;
     fn age() -> u32;
