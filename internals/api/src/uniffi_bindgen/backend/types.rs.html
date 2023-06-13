@@ -72,49 +72,17 @@
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
 <a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="doccomment">//! # Backend traits
 //!
-//! This module provides a number of traits useful for implementing a backend for Uniffi.
+//! A trait to help format items.
 //!
-//! A `CodeType` is needed for each type that will cross the FFI. It should provide helper machinery
-//! in the target language to lift from and lower into a value of that type into a primitive type
-//! (the FfiType), and foreign language expressions that call into the machinery. This helper code
-//! can be provided by a template file.
-//!
-//! The `CodeOracle` provides methods to map the `Type` values found in the `ComponentInterface` to the `CodeType`s specified
-//! by the backend. It also provides methods for transforming identifiers into the coding standard for the target language.
-//!
-//! There&#39;s also a CodeTypeDispatch trait, implemented for every type, which allows a CodeType to be created
-//! by the specified `CodeOracle`. This means backends are able to provide a custom CodeType for each type
-//! via that backend&#39;s CodeOracle.
-//!
-//! Each backend will have its own `filter` module, which is used by the askama templates used in all `CodeType`s and `CodeDeclaration`s.
-//! This filter provides methods to generate expressions and identifiers in the target language. These are all forwarded to the oracle.
-
-</span><span class="kw">use </span>std::fmt::Debug;
-
-<span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
+//! Each backend will have its own `filter` module, which is used by the askama templates.
+</span><span class="kw">use </span><span class="kw">super</span>::Literal;
+<span class="kw">use </span>std::fmt::Debug;
 
 <span class="doccomment">/// A Trait to help render types in a language specific format.
 </span><span class="kw">pub trait </span>CodeType: Debug {
@@ -131,9 +99,7 @@
         <span class="self">self</span>.type_label()
     }
 
-    <span class="doccomment">/// A representation of the given literal for this type.
-    /// N.B. `Literal` is aliased from `interface::Literal`, so may not be whole suited to this task.
-    </span><span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
         <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label())
     }
 

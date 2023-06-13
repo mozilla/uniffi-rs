@@ -446,16 +446,6 @@
 <a href="#446" id="446">446</a>
 <a href="#447" id="447">447</a>
 <a href="#448" id="448">448</a>
-<a href="#449" id="449">449</a>
-<a href="#450" id="450">450</a>
-<a href="#451" id="451">451</a>
-<a href="#452" id="452">452</a>
-<a href="#453" id="453">453</a>
-<a href="#454" id="454">454</a>
-<a href="#455" id="455">455</a>
-<a href="#456" id="456">456</a>
-<a href="#457" id="457">457</a>
-<a href="#458" id="458">458</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -469,7 +459,7 @@
 <span class="kw">use </span>std::cell::RefCell;
 <span class="kw">use </span>std::collections::{BTreeSet, HashMap, HashSet};
 
-<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeOracle, CodeType, TemplateExpression};
+<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, TemplateExpression};
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
@@ -724,15 +714,77 @@
 </span><span class="kw">pub struct </span>PythonCodeOracle;
 
 <span class="kw">impl </span>PythonCodeOracle {
-    <span class="comment">// Map `Type` instances to a `Box&lt;dyn CodeType&gt;` for that type.
-    //
-    // There is a companion match in `templates/Types.py` which performs a similar function for the
-    // template code.
-    //
-    //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
-    //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
-    </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
-        <span class="kw">match </span>type_ {
+    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        type_.clone().as_type().as_codetype()
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
+    </span><span class="kw">fn </span>class_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        fixup_keyword(nm.to_string().to_upper_camel_case())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of a function name.
+    </span><span class="kw">fn </span>fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        fixup_keyword(nm.to_string().to_snake_case())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of a variable name.
+    </span><span class="kw">fn </span>var_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        fixup_keyword(nm.to_string().to_snake_case())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.
+    </span><span class="kw">fn </span>enum_variant_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        fixup_keyword(nm.to_string().to_shouty_snake_case())
+    }
+
+    <span class="kw">fn </span>ffi_type_label(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+        <span class="kw">match </span>ffi_type {
+            FfiType::Int8 =&gt; <span class="string">&quot;ctypes.c_int8&quot;</span>.to_string(),
+            FfiType::UInt8 =&gt; <span class="string">&quot;ctypes.c_uint8&quot;</span>.to_string(),
+            FfiType::Int16 =&gt; <span class="string">&quot;ctypes.c_int16&quot;</span>.to_string(),
+            FfiType::UInt16 =&gt; <span class="string">&quot;ctypes.c_uint16&quot;</span>.to_string(),
+            FfiType::Int32 =&gt; <span class="string">&quot;ctypes.c_int32&quot;</span>.to_string(),
+            FfiType::UInt32 =&gt; <span class="string">&quot;ctypes.c_uint32&quot;</span>.to_string(),
+            FfiType::Int64 =&gt; <span class="string">&quot;ctypes.c_int64&quot;</span>.to_string(),
+            FfiType::UInt64 =&gt; <span class="string">&quot;ctypes.c_uint64&quot;</span>.to_string(),
+            FfiType::Float32 =&gt; <span class="string">&quot;ctypes.c_float&quot;</span>.to_string(),
+            FfiType::Float64 =&gt; <span class="string">&quot;ctypes.c_double&quot;</span>.to_string(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
+            FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
+                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}&quot;</span>),
+                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer&quot;</span>.to_string(),
+            },
+            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;FOREIGN_CALLBACK_T&quot;</span>.to_string(),
+            <span class="comment">// Pointer to an `asyncio.EventLoop` instance
+            </span>FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T&quot;</span>.to_string(),
+            FfiType::FutureCallback { return_type } =&gt; {
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;uniffi_future_callback_t({})&quot;</span>,
+                    <span class="self">Self</span>::ffi_type_label(return_type),
+                )
+            }
+            FfiType::FutureCallbackData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
+        }
+    }
+}
+
+<span class="kw">pub trait </span>AsCodeType {
+    <span class="kw">fn </span>as_codetype(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt;;
+}
+
+<span class="kw">impl</span>&lt;T: AsType&gt; AsCodeType <span class="kw">for </span>T {
+    <span class="kw">fn </span>as_codetype(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
+        <span class="comment">// Map `Type` instances to a `Box&lt;dyn CodeType&gt;` for that type.
+        //
+        // There is a companion match in `templates/Types.py` which performs a similar function for the
+        // template code.
+        //
+        //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
+        //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
+        </span><span class="kw">match </span><span class="self">self</span>.as_type() {
             Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
             Type::Int8 =&gt; Box::new(primitives::Int8CodeType),
             Type::UInt16 =&gt; Box::new(primitives::UInt16CodeType),
@@ -767,107 +819,35 @@
     }
 }
 
-<span class="kw">impl </span>CodeOracle <span class="kw">for </span>PythonCodeOracle {
-    <span class="kw">fn </span>find(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
-        <span class="self">self</span>.create_code_type(type_.clone())
-    }
-
-    <span class="doccomment">/// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    </span><span class="kw">fn </span>class_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        fixup_keyword(nm.to_string().to_upper_camel_case())
-    }
-
-    <span class="doccomment">/// Get the idiomatic Python rendering of a function name.
-    </span><span class="kw">fn </span>fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        fixup_keyword(nm.to_string().to_snake_case())
-    }
-
-    <span class="doccomment">/// Get the idiomatic Python rendering of a variable name.
-    </span><span class="kw">fn </span>var_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        fixup_keyword(nm.to_string().to_snake_case())
-    }
-
-    <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.
-    </span><span class="kw">fn </span>enum_variant_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        fixup_keyword(nm.to_string().to_shouty_snake_case())
-    }
-
-    <span class="doccomment">/// Get the idiomatic Python rendering of an exception name
-    /// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.
-    </span><span class="kw">fn </span>error_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="kw">let </span>name = fixup_keyword(<span class="self">self</span>.class_name(nm));
-        <span class="kw">match </span>name.strip_suffix(<span class="string">&quot;Error&quot;</span>) {
-            <span class="prelude-val">None </span>=&gt; name,
-            <span class="prelude-val">Some</span>(stripped) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{stripped}Exception&quot;</span>),
-        }
-    }
-
-    <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
-        <span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;ctypes.c_int8&quot;</span>.to_string(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;ctypes.c_uint8&quot;</span>.to_string(),
-            FfiType::Int16 =&gt; <span class="string">&quot;ctypes.c_int16&quot;</span>.to_string(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;ctypes.c_uint16&quot;</span>.to_string(),
-            FfiType::Int32 =&gt; <span class="string">&quot;ctypes.c_int32&quot;</span>.to_string(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;ctypes.c_uint32&quot;</span>.to_string(),
-            FfiType::Int64 =&gt; <span class="string">&quot;ctypes.c_int64&quot;</span>.to_string(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;ctypes.c_uint64&quot;</span>.to_string(),
-            FfiType::Float32 =&gt; <span class="string">&quot;ctypes.c_float&quot;</span>.to_string(),
-            FfiType::Float64 =&gt; <span class="string">&quot;ctypes.c_double&quot;</span>.to_string(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
-            FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}&quot;</span>),
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer&quot;</span>.to_string(),
-            },
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;FOREIGN_CALLBACK_T&quot;</span>.to_string(),
-            <span class="comment">// Pointer to an `asyncio.EventLoop` instance
-            </span>FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T&quot;</span>.to_string(),
-            FfiType::FutureCallback { return_type } =&gt; {
-                <span class="macro">format!</span>(
-                    <span class="string">&quot;uniffi_future_callback_t({})&quot;</span>,
-                    <span class="self">self</span>.ffi_type_label(return_type),
-                )
-            }
-            FfiType::FutureCallbackData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
-        }
-    }
-}
-
 <span class="kw">pub mod </span>filters {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn </span>oracle() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>PythonCodeOracle {
-        <span class="kw-2">&amp;</span>PythonCodeOracle
+    <span class="kw">pub fn </span>type_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(as_ct.as_codetype().type_label())
     }
 
-    <span class="kw">pub fn </span>type_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).type_label())
+    <span class="kw">pub fn </span>ffi_converter_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(as_ct.as_codetype().ffi_converter_name())
     }
 
-    <span class="kw">pub fn </span>ffi_converter_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name())
+    <span class="kw">pub fn </span>canonical_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(as_ct.as_codetype().canonical_name())
     }
 
-    <span class="kw">pub fn </span>canonical_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).canonical_name())
+    <span class="kw">pub fn </span>lift_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
-    <span class="kw">pub fn </span>lift_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, ffi_converter_name(as_type)<span class="question-mark">?</span>))
+    <span class="kw">pub fn </span>lower_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
-    <span class="kw">pub fn </span>lower_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, ffi_converter_name(as_type)<span class="question-mark">?</span>))
+    <span class="kw">pub fn </span>read_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
-    <span class="kw">pub fn </span>read_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, ffi_converter_name(as_type)<span class="question-mark">?</span>))
-    }
-
-    <span class="kw">pub fn </span>write_fn(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, ffi_converter_name(as_type)<span class="question-mark">?</span>))
+    <span class="kw">pub fn </span>write_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
     <span class="comment">// Name of the callback function we pass to Rust to complete an async call
@@ -885,33 +865,33 @@
         </span>))
     }
 
-    <span class="kw">pub fn </span>literal_py(literal: <span class="kw-2">&amp;</span>Literal, as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).literal(literal))
+    <span class="kw">pub fn </span>literal_py(literal: <span class="kw-2">&amp;</span>Literal, as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(as_ct.as_codetype().literal(literal))
     }
 
     <span class="doccomment">/// Get the Python syntax for representing a given low-level `FfiType`.
     </span><span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().ffi_type_label(type_))
+        <span class="prelude-val">Ok</span>(PythonCodeOracle::ffi_type_label(type_))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     </span><span class="kw">pub fn </span>class_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().class_name(nm))
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.class_name(nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a function name.
     </span><span class="kw">pub fn </span>fn_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().fn_name(nm))
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.fn_name(nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a variable name.
     </span><span class="kw">pub fn </span>var_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().var_name(nm))
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.var_name(nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.
     </span><span class="kw">pub fn </span>enum_variant_py(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(oracle().enum_variant_name(nm))
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.enum_variant_name(nm))
     }
 }
 </code></pre></div>
