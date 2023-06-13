@@ -11,7 +11,7 @@ use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
-use crate::backend::{CodeOracle, CodeType, TemplateExpression};
+use crate::backend::{CodeType, TemplateExpression};
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -266,15 +266,77 @@ fn fixup_keyword(name: String) -> String {
 pub struct PythonCodeOracle;
 
 impl PythonCodeOracle {
-    // Map `Type` instances to a `Box<dyn CodeType>` for that type.
-    //
-    // There is a companion match in `templates/Types.py` which performs a similar function for the
-    // template code.
-    //
-    //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
-    //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
-    fn create_code_type(&self, type_: Type) -> Box<dyn CodeType> {
-        match type_ {
+    fn find(&self, type_: &Type) -> Box<dyn CodeType> {
+        type_.clone().as_type().as_codetype()
+    }
+
+    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
+    fn class_name(&self, nm: &str) -> String {
+        fixup_keyword(nm.to_string().to_upper_camel_case())
+    }
+
+    /// Get the idiomatic Python rendering of a function name.
+    fn fn_name(&self, nm: &str) -> String {
+        fixup_keyword(nm.to_string().to_snake_case())
+    }
+
+    /// Get the idiomatic Python rendering of a variable name.
+    fn var_name(&self, nm: &str) -> String {
+        fixup_keyword(nm.to_string().to_snake_case())
+    }
+
+    /// Get the idiomatic Python rendering of an individual enum variant.
+    fn enum_variant_name(&self, nm: &str) -> String {
+        fixup_keyword(nm.to_string().to_shouty_snake_case())
+    }
+
+    fn ffi_type_label(ffi_type: &FfiType) -> String {
+        match ffi_type {
+            FfiType::Int8 => "ctypes.c_int8".to_string(),
+            FfiType::UInt8 => "ctypes.c_uint8".to_string(),
+            FfiType::Int16 => "ctypes.c_int16".to_string(),
+            FfiType::UInt16 => "ctypes.c_uint16".to_string(),
+            FfiType::Int32 => "ctypes.c_int32".to_string(),
+            FfiType::UInt32 => "ctypes.c_uint32".to_string(),
+            FfiType::Int64 => "ctypes.c_int64".to_string(),
+            FfiType::UInt64 => "ctypes.c_uint64".to_string(),
+            FfiType::Float32 => "ctypes.c_float".to_string(),
+            FfiType::Float64 => "ctypes.c_double".to_string(),
+            FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
+            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
+                Some(suffix) => format!("RustBuffer{suffix}"),
+                None => "RustBuffer".to_string(),
+            },
+            FfiType::ForeignBytes => "ForeignBytes".to_string(),
+            FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            // Pointer to an `asyncio.EventLoop` instance
+            FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
+            FfiType::ForeignExecutorCallback => "UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
+            FfiType::FutureCallback { return_type } => {
+                format!(
+                    "uniffi_future_callback_t({})",
+                    Self::ffi_type_label(return_type),
+                )
+            }
+            FfiType::FutureCallbackData => "ctypes.c_size_t".to_string(),
+        }
+    }
+}
+
+pub trait AsCodeType {
+    fn as_codetype(&self) -> Box<dyn CodeType>;
+}
+
+impl<T: AsType> AsCodeType for T {
+    fn as_codetype(&self) -> Box<dyn CodeType> {
+        // Map `Type` instances to a `Box<dyn CodeType>` for that type.
+        //
+        // There is a companion match in `templates/Types.py` which performs a similar function for the
+        // template code.
+        //
+        //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
+        //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
+        match self.as_type() {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
             Type::Int8 => Box::new(primitives::Int8CodeType),
             Type::UInt16 => Box::new(primitives::UInt16CodeType),
@@ -309,107 +371,35 @@ impl PythonCodeOracle {
     }
 }
 
-impl CodeOracle for PythonCodeOracle {
-    fn find(&self, type_: &Type) -> Box<dyn CodeType> {
-        self.create_code_type(type_.clone())
-    }
-
-    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    fn class_name(&self, nm: &str) -> String {
-        fixup_keyword(nm.to_string().to_upper_camel_case())
-    }
-
-    /// Get the idiomatic Python rendering of a function name.
-    fn fn_name(&self, nm: &str) -> String {
-        fixup_keyword(nm.to_string().to_snake_case())
-    }
-
-    /// Get the idiomatic Python rendering of a variable name.
-    fn var_name(&self, nm: &str) -> String {
-        fixup_keyword(nm.to_string().to_snake_case())
-    }
-
-    /// Get the idiomatic Python rendering of an individual enum variant.
-    fn enum_variant_name(&self, nm: &str) -> String {
-        fixup_keyword(nm.to_string().to_shouty_snake_case())
-    }
-
-    /// Get the idiomatic Python rendering of an exception name
-    /// This replaces "Error" at the end of the name with "Exception".
-    fn error_name(&self, nm: &str) -> String {
-        let name = fixup_keyword(self.class_name(nm));
-        match name.strip_suffix("Error") {
-            None => name,
-            Some(stripped) => format!("{stripped}Exception"),
-        }
-    }
-
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
-        match ffi_type {
-            FfiType::Int8 => "ctypes.c_int8".to_string(),
-            FfiType::UInt8 => "ctypes.c_uint8".to_string(),
-            FfiType::Int16 => "ctypes.c_int16".to_string(),
-            FfiType::UInt16 => "ctypes.c_uint16".to_string(),
-            FfiType::Int32 => "ctypes.c_int32".to_string(),
-            FfiType::UInt32 => "ctypes.c_uint32".to_string(),
-            FfiType::Int64 => "ctypes.c_int64".to_string(),
-            FfiType::UInt64 => "ctypes.c_uint64".to_string(),
-            FfiType::Float32 => "ctypes.c_float".to_string(),
-            FfiType::Float64 => "ctypes.c_double".to_string(),
-            FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
-            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("RustBuffer{suffix}"),
-                None => "RustBuffer".to_string(),
-            },
-            FfiType::ForeignBytes => "ForeignBytes".to_string(),
-            FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
-            // Pointer to an `asyncio.EventLoop` instance
-            FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
-            FfiType::ForeignExecutorCallback => "UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
-            FfiType::FutureCallback { return_type } => {
-                format!(
-                    "uniffi_future_callback_t({})",
-                    self.ffi_type_label(return_type),
-                )
-            }
-            FfiType::FutureCallbackData => "ctypes.c_size_t".to_string(),
-        }
-    }
-}
-
 pub mod filters {
     use super::*;
 
-    fn oracle() -> &'static PythonCodeOracle {
-        &PythonCodeOracle
+    pub fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().type_label())
     }
 
-    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).type_label())
+    pub fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().ffi_converter_name())
     }
 
-    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
+    pub fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().canonical_name())
     }
 
-    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).canonical_name())
+    pub fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lift", ffi_converter_name(as_ct)?))
     }
 
-    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lift", ffi_converter_name(as_type)?))
+    pub fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.lower", ffi_converter_name(as_ct)?))
     }
 
-    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.lower", ffi_converter_name(as_type)?))
+    pub fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.read", ffi_converter_name(as_ct)?))
     }
 
-    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.read", ffi_converter_name(as_type)?))
-    }
-
-    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(format!("{}.write", ffi_converter_name(as_type)?))
+    pub fn write_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
     // Name of the callback function we pass to Rust to complete an async call
@@ -427,32 +417,32 @@ pub mod filters {
         ))
     }
 
-    pub fn literal_py(literal: &Literal, as_type: &impl AsType) -> Result<String, askama::Error> {
-        Ok(oracle().find(&as_type.as_type()).literal(literal))
+    pub fn literal_py(literal: &Literal, as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(as_ct.as_codetype().literal(literal))
     }
 
     /// Get the Python syntax for representing a given low-level `FfiType`.
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(oracle().ffi_type_label(type_))
+        Ok(PythonCodeOracle::ffi_type_label(type_))
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().class_name(nm))
+        Ok(PythonCodeOracle.class_name(nm))
     }
 
     /// Get the idiomatic Python rendering of a function name.
     pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().fn_name(nm))
+        Ok(PythonCodeOracle.fn_name(nm))
     }
 
     /// Get the idiomatic Python rendering of a variable name.
     pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().var_name(nm))
+        Ok(PythonCodeOracle.var_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().enum_variant_name(nm))
+        Ok(PythonCodeOracle.enum_variant_name(nm))
     }
 }
