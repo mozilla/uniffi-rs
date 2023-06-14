@@ -853,11 +853,11 @@
     <span class="comment">// Name of the callback function we pass to Rust to complete an async call
     </span><span class="kw">pub fn </span>async_callback_fn(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>return_string = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.return_type {
-            <span class="prelude-val">Some</span>(t) =&gt; t.canonical_name().to_snake_case(),
+            <span class="prelude-val">Some</span>(t) =&gt; PythonCodeOracle.find(t).canonical_name().to_snake_case(),
             <span class="prelude-val">None </span>=&gt; <span class="string">&quot;void&quot;</span>.into(),
         };
         <span class="kw">let </span>throws_string = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.throws_type {
-            <span class="prelude-val">Some</span>(t) =&gt; t.canonical_name().to_snake_case(),
+            <span class="prelude-val">Some</span>(t) =&gt; PythonCodeOracle.find(t).canonical_name().to_snake_case(),
             <span class="prelude-val">None </span>=&gt; <span class="string">&quot;void&quot;</span>.into(),
         };
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
