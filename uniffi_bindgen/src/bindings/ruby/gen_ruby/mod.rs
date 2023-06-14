@@ -224,7 +224,7 @@ mod filters {
             Type::UInt16 => format!("{ns}::uniffi_in_range({nm}, \"u16\", 0, 2**16)"),
             Type::UInt32 => format!("{ns}::uniffi_in_range({nm}, \"u32\", 0, 2**32)"),
             Type::UInt64 => format!("{ns}::uniffi_in_range({nm}, \"u64\", 0, 2**64)"),
-            Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
+            Type::Float32 | Type::Float64 => nm.to_string(),
             Type::Boolean => format!("{nm} ? true : false"),
             Type::Object { .. } | Type::Enum(_) | Type::Record(_) => nm.to_string(),
             Type::String | Type::Bytes => format!("{ns}::uniffi_utf8({nm})"),
