@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["gen_method_impl","metadata_items","trait_impl"]};

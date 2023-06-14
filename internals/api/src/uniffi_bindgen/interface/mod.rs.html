@@ -1213,6 +1213,37 @@
 <a href="#1213" id="1213">1213</a>
 <a href="#1214" id="1214">1214</a>
 <a href="#1215" id="1215">1215</a>
+<a href="#1216" id="1216">1216</a>
+<a href="#1217" id="1217">1217</a>
+<a href="#1218" id="1218">1218</a>
+<a href="#1219" id="1219">1219</a>
+<a href="#1220" id="1220">1220</a>
+<a href="#1221" id="1221">1221</a>
+<a href="#1222" id="1222">1222</a>
+<a href="#1223" id="1223">1223</a>
+<a href="#1224" id="1224">1224</a>
+<a href="#1225" id="1225">1225</a>
+<a href="#1226" id="1226">1226</a>
+<a href="#1227" id="1227">1227</a>
+<a href="#1228" id="1228">1228</a>
+<a href="#1229" id="1229">1229</a>
+<a href="#1230" id="1230">1230</a>
+<a href="#1231" id="1231">1231</a>
+<a href="#1232" id="1232">1232</a>
+<a href="#1233" id="1233">1233</a>
+<a href="#1234" id="1234">1234</a>
+<a href="#1235" id="1235">1235</a>
+<a href="#1236" id="1236">1236</a>
+<a href="#1237" id="1237">1237</a>
+<a href="#1238" id="1238">1238</a>
+<a href="#1239" id="1239">1239</a>
+<a href="#1240" id="1240">1240</a>
+<a href="#1241" id="1241">1241</a>
+<a href="#1242" id="1242">1242</a>
+<a href="#1243" id="1243">1243</a>
+<a href="#1244" id="1244">1244</a>
+<a href="#1245" id="1245">1245</a>
+<a href="#1246" id="1246">1246</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1265,7 +1296,7 @@
     iter,
 };
 
-<span class="kw">use </span>anyhow::{bail, ensure, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>anyhow::{anyhow, bail, ensure, <span class="prelude-ty">Result</span>};
 
 <span class="kw">pub mod </span>types;
 <span class="kw">pub use </span>types::{AsType, ExternalKind, ObjectImpl, Type};
@@ -1289,7 +1320,7 @@
 
 <span class="kw">pub mod </span>ffi;
 <span class="kw">pub use </span>ffi::{FfiArgument, FfiFunction, FfiType};
-<span class="kw">use </span>uniffi_meta::{ConstructorMetadata, MethodMetadata, ObjectMetadata};
+<span class="kw">use </span>uniffi_meta::{ConstructorMetadata, ObjectMetadata, TraitMethodMetadata};
 
 <span class="comment">// This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
@@ -1315,6 +1346,8 @@
     callback_interfaces: Vec&lt;CallbackInterface&gt;,
     <span class="comment">// Type names which were seen used as an error.
     </span>errors: HashSet&lt;String&gt;,
+    <span class="comment">// Types which were seen used as callback interface error.
+    </span>callback_interface_throws_types: BTreeSet&lt;Type&gt;,
 }
 
 <span class="kw">impl </span>ComponentInterface {
@@ -1334,7 +1367,7 @@
             <span class="macro">bail!</span>(<span class="string">&quot;parse error&quot;</span>);
         }
         <span class="comment">// Unconditionally add the String type, which is used by the panic handling
-        </span>ci.types.add_known_type(<span class="kw-2">&amp;</span>Type::String)<span class="question-mark">?</span>;
+        </span>ci.types.add_known_type(<span class="kw-2">&amp;</span>Type::String);
         <span class="comment">// We process the WebIDL definitions in two passes.
         // First, go through and look for all the named types.
         </span>ci.types.add_type_definitions_from(defns.as_slice())<span class="question-mark">?</span>;
@@ -1483,6 +1516,10 @@
     <span class="doccomment">/// Get a specific type
     </span><span class="kw">pub fn </span>get_type(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
         <span class="self">self</span>.types.get_type_definition(name)
+    }
+
+    <span class="kw">pub fn </span>is_callback_interface_throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: Type) -&gt; bool {
+        <span class="self">self</span>.callback_interface_throws_types.contains(<span class="kw-2">&amp;</span>type_)
     }
 
     <span class="doccomment">/// Iterate over all types contained in the given item.
@@ -1733,9 +1770,20 @@
                 .into_iter()
                 .map(|c| (c.checksum_fn_name(), c.checksum()))
         });
+        <span class="kw">let </span>callback_method_checksums = <span class="self">self</span>.callback_interfaces.iter().flat_map(|cbi| {
+            cbi.methods().into_iter().filter_map(|m| {
+                <span class="kw">if </span>m.checksum_fn_name().is_empty() {
+                    <span class="comment">// UDL-based callbacks don&#39;t have checksum functions, skip these
+                    </span><span class="prelude-val">None
+                </span>} <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>((m.checksum_fn_name(), m.checksum()))
+                }
+            })
+        });
         func_checksums
             .chain(method_checksums)
             .chain(constructor_checksums)
+            .chain(callback_method_checksums)
             .map(|(fn_name, checksum)| (fn_name.to_string(), checksum))
     }
 
@@ -1801,7 +1849,7 @@
             Entry::Vacant(v) =&gt; {
                 <span class="kw">for </span>variant <span class="kw">in </span>defn.variants() {
                     <span class="kw">for </span>field <span class="kw">in </span>variant.fields() {
-                        <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>field.as_type())<span class="question-mark">?</span>;
+                        <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>field.as_type());
                     }
                 }
                 v.insert(defn);
@@ -1827,7 +1875,7 @@
         <span class="kw">match </span><span class="self">self</span>.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) =&gt; {
                 <span class="kw">for </span>field <span class="kw">in </span>defn.fields() {
-                    <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>field.as_type())<span class="question-mark">?</span>;
+                    <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>field.as_type());
                 }
                 v.insert(defn);
             }
@@ -1850,10 +1898,10 @@
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_function_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, defn: Function) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>defn.arguments {
-            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_)<span class="question-mark">?</span>;
+            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_);
         }
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ty) = <span class="kw-2">&amp;</span>defn.return_type {
-            <span class="self">self</span>.types.add_known_type(ty)<span class="question-mark">?</span>;
+            <span class="self">self</span>.types.add_known_type(ty);
         }
 
         <span class="comment">// Since functions are not a first-class type, we have to check for duplicates here
@@ -1866,7 +1914,7 @@
         }
         <span class="kw">if </span>defn.is_async() {
             <span class="comment">// Async functions depend on the foreign executor
-            </span><span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::ForeignExecutor)<span class="question-mark">?</span>;
+            </span><span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::ForeignExecutor);
         }
         <span class="self">self</span>.functions.push(defn);
 
@@ -1874,46 +1922,44 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_constructor_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ConstructorMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name, ObjectImpl::Struct);
+        <span class="kw">let </span>object = get_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name)
+            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_constructor_meta: object {} not found&quot;</span>, <span class="kw-2">&amp;</span>meta.self_name))<span class="question-mark">?</span>;
         <span class="kw">let </span>defn: Constructor = meta.into();
 
         <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>defn.arguments {
-            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_)<span class="question-mark">?</span>;
+            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_);
         }
         object.constructors.push(defn);
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_method_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: MethodMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>imp = ObjectImpl::from_is_trait(meta.self_is_trait);
-        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name, imp);
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_method_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: <span class="kw">impl </span>Into&lt;Method&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>defn: Method = meta.into();
+        <span class="kw">let </span>object = get_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>defn.object_name)
+            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_method_meta: object {} not found&quot;</span>, <span class="kw-2">&amp;</span>defn.object_name))<span class="question-mark">?</span>;
 
         <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>defn.arguments {
-            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_)<span class="question-mark">?</span>;
+            <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_);
         }
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ty) = <span class="kw-2">&amp;</span>defn.return_type {
-            <span class="self">self</span>.types.add_known_type(ty)<span class="question-mark">?</span>;
+            <span class="self">self</span>.types.add_known_type(ty);
         }
         <span class="kw">if </span>defn.is_async() {
             <span class="comment">// Async functions depend on the foreign executor
-            </span><span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::ForeignExecutor)<span class="question-mark">?</span>;
+            </span><span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::ForeignExecutor);
         }
         object.methods.push(defn);
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_object_free_fn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ObjectMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>imp = ObjectImpl::from_is_trait(meta.is_trait);
-        <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>Type::Object {
-            name: meta.name.clone(),
-            imp,
-        })<span class="question-mark">?</span>;
-        <span class="kw">let </span>object = get_or_insert_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.name, imp);
-        object.ffi_func_free.name = meta.free_ffi_symbol_name();
-        <span class="prelude-val">Ok</span>(())
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_object_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ObjectMetadata) {
+        <span class="kw">let </span>free_name = meta.free_ffi_symbol_name();
+        <span class="kw">let </span><span class="kw-2">mut </span>obj = Object::new(meta.name, ObjectImpl::from_is_trait(meta.is_trait));
+        obj.ffi_func_free.name = free_name;
+        <span class="self">self</span>.types.add_known_type(<span class="kw-2">&amp;</span>obj.as_type());
+        <span class="self">self</span>.add_object_definition(obj);
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
@@ -1931,9 +1977,34 @@
     }
 
     <span class="doccomment">/// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
-    </span><span class="kw">fn </span>add_callback_interface_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, defn: CallbackInterface) {
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_callback_interface_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, defn: CallbackInterface) {
         <span class="comment">// Note that there will be no duplicates thanks to the previous type-finding pass.
-        </span><span class="self">self</span>.callback_interfaces.push(defn);
+        </span><span class="kw">for </span>method <span class="kw">in </span>defn.methods() {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(error) = method.throws_type() {
+                <span class="self">self</span>.callback_interface_throws_types.insert(error.clone());
+            }
+        }
+        <span class="self">self</span>.callback_interfaces.push(defn);
+    }
+
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_trait_method_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: TraitMethodMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(cbi) = get_callback_interface(<span class="kw-2">&amp;mut </span><span class="self">self</span>.callback_interfaces, <span class="kw-2">&amp;</span>meta.trait_name) {
+            <span class="comment">// uniffi_meta should ensure that we process callback interface methods in order, double
+            // check that here
+            </span><span class="kw">if </span>cbi.methods.len() != meta.index <span class="kw">as </span>usize {
+                <span class="macro">bail!</span>(
+                    <span class="string">&quot;UniFFI internal error: callback interface method index mismatch for {}::{} (expected {}, saw {})&quot;</span>,
+                    meta.trait_name,
+                    meta.name,
+                    cbi.methods.len(),
+                    meta.index,
+                );
+            }
+            cbi.methods.push(meta.into());
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.add_method_meta(meta)<span class="question-mark">?</span>;
+        }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Perform global consistency checks on the declared interface.
@@ -2008,24 +2079,15 @@
     }
 }
 
-<span class="kw">fn </span>get_or_insert_object&lt;<span class="lifetime">&#39;a</span>&gt;(
-    objects: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Vec&lt;Object&gt;,
+<span class="kw">fn </span>get_object&lt;<span class="lifetime">&#39;a</span>&gt;(objects: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>[Object], name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Object&gt; {
+    objects.iter_mut().find(|o| o.name == name)
+}
+
+<span class="kw">fn </span>get_callback_interface&lt;<span class="lifetime">&#39;a</span>&gt;(
+    callback_interfaces: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>[CallbackInterface],
     name: <span class="kw-2">&amp;</span>str,
-    imp: ObjectImpl,
-) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Object {
-    <span class="comment">// The find-based way of writing this currently runs into a borrow checker
-    // error, so we use position
-    </span><span class="kw">match </span>objects.iter_mut().position(|o| o.name == name) {
-        <span class="prelude-val">Some</span>(idx) =&gt; {
-            <span class="comment">// what we created before must match the implementation.
-            </span><span class="macro">assert_eq!</span>(objects[idx].imp, imp);
-            <span class="kw-2">&amp;mut </span>objects[idx]
-        }
-        <span class="prelude-val">None </span>=&gt; {
-            objects.push(Object::new(name.to_owned(), imp));
-            objects.last_mut().unwrap()
-        }
-    }
+) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>CallbackInterface&gt; {
+    callback_interfaces.iter_mut().find(|o| o.name == name)
 }
 
 <span class="doccomment">/// Stateful iterator for yielding all types contained in a given type.

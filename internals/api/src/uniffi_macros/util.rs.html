@@ -261,6 +261,12 @@
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -411,6 +417,12 @@
 
 <span class="attr">#[derive(Default)]
 </span><span class="kw">pub struct </span>ArgumentNotAllowedHere;
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>ArgumentNotAllowedHere {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        parse_comma_separated(input)
+    }
+}
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ArgumentNotAllowedHere {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {

@@ -251,7 +251,7 @@
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>cargo_metadata::{MetadataCommand, Package};
 <span class="kw">use </span>std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap, HashSet},
     fs,
 };
 <span class="kw">use </span>uniffi_meta::group_metadata;
@@ -398,7 +398,7 @@
 <span class="kw">fn </span>load_component_interface(
     crate_name: <span class="kw-2">&amp;</span>str,
     crate_root: <span class="kw-2">&amp;</span>Utf8Path,
-    metadata: <span class="kw-2">&amp;</span>[uniffi_meta::Metadata],
+    metadata: <span class="kw-2">&amp;</span>BTreeSet&lt;uniffi_meta::Metadata&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;ComponentInterface&gt; {
     <span class="kw">let </span>udl_items = metadata
         .iter()

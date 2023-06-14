@@ -236,7 +236,7 @@
 }
 
 <span class="kw">impl </span>CallbackInterface {
-    <span class="kw">fn </span>new(name: String) -&gt; CallbackInterface {
+    <span class="kw">pub fn </span>new(name: String) -&gt; CallbackInterface {
         CallbackInterface {
             name,
             methods: Default::default(),

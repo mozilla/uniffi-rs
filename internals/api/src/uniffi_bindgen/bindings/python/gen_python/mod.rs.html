@@ -444,6 +444,7 @@
 <a href="#444" id="444">444</a>
 <a href="#445" id="445">445</a>
 <a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -817,6 +818,7 @@
 
 <span class="kw">pub mod </span>filters {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">pub use </span><span class="kw">crate</span>::backend::filters::<span class="kw-2">*</span>;
 
     <span class="kw">pub fn </span>type_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(as_ct.as_codetype().type_label())

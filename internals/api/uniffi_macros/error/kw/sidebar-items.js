@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["flat_error","tag","with_try_read"]};
+window.SIDEBAR_ITEMS = {"struct":["flat_error","handle_unknown_callback_error","tag","with_try_read"]};

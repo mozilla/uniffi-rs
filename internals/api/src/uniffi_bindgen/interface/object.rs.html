@@ -932,6 +932,29 @@
 <a href="#932" id="932">932</a>
 <a href="#933" id="933">933</a>
 <a href="#934" id="934">934</a>
+<a href="#935" id="935">935</a>
+<a href="#936" id="936">936</a>
+<a href="#937" id="937">937</a>
+<a href="#938" id="938">938</a>
+<a href="#939" id="939">939</a>
+<a href="#940" id="940">940</a>
+<a href="#941" id="941">941</a>
+<a href="#942" id="942">942</a>
+<a href="#943" id="943">943</a>
+<a href="#944" id="944">944</a>
+<a href="#945" id="945">945</a>
+<a href="#946" id="946">946</a>
+<a href="#947" id="947">947</a>
+<a href="#948" id="948">948</a>
+<a href="#949" id="949">949</a>
+<a href="#950" id="950">950</a>
+<a href="#951" id="951">951</a>
+<a href="#952" id="952">952</a>
+<a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1206,10 +1229,10 @@
                 <span class="comment">// need to add known types as they aren&#39;t explicitly referenced in
                 // the UDL
                 </span><span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>return_type) = return_type {
-                    ci.types.add_known_type(return_type)<span class="question-mark">?</span>;
+                    ci.types.add_known_type(return_type);
                 }
                 <span class="kw">for </span>arg <span class="kw">in </span><span class="kw-2">&amp;</span>arguments {
-                    ci.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_)<span class="question-mark">?</span>;
+                    ci.types.add_known_type(<span class="kw-2">&amp;</span>arg.type_);
                 }
                 <span class="prelude-val">Ok</span>(Method {
                     <span class="comment">// The name is used to create the ffi function for the method.
@@ -1583,6 +1606,29 @@
             takes_self_by_arc: <span class="bool-val">false</span>, <span class="comment">// not yet supported by procmacros?
             </span>checksum_fn_name,
             checksum_override: <span class="prelude-val">Some</span>(meta.checksum),
+        }
+    }
+}
+
+<span class="kw">impl </span>From&lt;uniffi_meta::TraitMethodMetadata&gt; <span class="kw">for </span>Method {
+    <span class="kw">fn </span>from(meta: uniffi_meta::TraitMethodMetadata) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>checksum_fn_name = meta.checksum_symbol_name();
+        <span class="kw">let </span>return_type = meta.return_type.map(Into::into);
+        <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
+        <span class="self">Self </span>{
+            name: meta.name,
+            object_name: meta.trait_name,
+            is_async: <span class="bool-val">false</span>,
+            arguments,
+            return_type,
+            throws: meta.throws.map(Into::into),
+            takes_self_by_arc: <span class="bool-val">false</span>, <span class="comment">// not yet supported by procmacros?
+            </span>checksum_fn_name,
+            checksum_override: <span class="prelude-val">Some</span>(meta.checksum),
+            <span class="comment">// These are placeholder values that don&#39;t affect any behavior since we don&#39;t create
+            // scaffolding functions for callback interface methods
+            </span>ffi_func: FfiFunction::default(),
+            object_impl: ObjectImpl::Struct,
         }
     }
 }

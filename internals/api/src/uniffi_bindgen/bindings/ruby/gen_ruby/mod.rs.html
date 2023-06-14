@@ -353,6 +353,7 @@
 <a href="#353" id="353">353</a>
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -487,6 +488,7 @@
 
 <span class="kw">mod </span>filters {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">pub use </span><span class="kw">crate</span>::backend::filters::<span class="kw-2">*</span>;
 
     <span class="kw">pub fn </span>type_ffi(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {

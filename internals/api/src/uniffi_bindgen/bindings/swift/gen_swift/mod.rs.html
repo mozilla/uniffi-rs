@@ -513,6 +513,7 @@
 <a href="#513" id="513">513</a>
 <a href="#514" id="514">514</a>
 <a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -899,6 +900,7 @@
 
 <span class="kw">pub mod </span>filters {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">pub use </span><span class="kw">crate</span>::backend::filters::<span class="kw-2">*</span>;
 
     <span class="kw">fn </span>oracle() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>SwiftCodeOracle {
         <span class="kw-2">&amp;</span>SwiftCodeOracle

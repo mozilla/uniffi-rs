@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ArgKind","FnKind"],"struct":["Arg","FnSignature","NamedArg","ReceiverArg"]};

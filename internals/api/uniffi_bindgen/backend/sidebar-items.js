@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Literal"],"mod":["config","types"],"struct":["TemplateExpression"],"trait":["CodeType"]};
+window.SIDEBAR_ITEMS = {"enum":["Literal"],"mod":["config","filters","types"],"struct":["TemplateExpression"],"trait":["CodeType"]};

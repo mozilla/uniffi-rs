@@ -460,7 +460,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(type_),
             <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; {
                 <span class="kw">let </span>ty = Type::Optional(Box::new(type_));
-                types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+                types.add_known_type(<span class="kw-2">&amp;</span>ty);
                 <span class="prelude-val">Ok</span>(ty)
             }
         }
@@ -489,7 +489,7 @@
     <span class="kw">fn </span>resolve_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;Type&gt; {
         <span class="kw">let </span>t = <span class="self">self</span>.generics.body.as_ref().resolve_type_expression(types)<span class="question-mark">?</span>;
         <span class="kw">let </span>ty = Type::Sequence(Box::new(t));
-        types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        types.add_known_type(<span class="kw-2">&amp;</span>ty);
         <span class="prelude-val">Ok</span>(ty)
     }
 }
@@ -503,7 +503,7 @@
                  consider using DOMString or string&quot;</span>,
             ),
             DOM(<span class="kw">_</span>) =&gt; {
-                types.add_known_type(<span class="kw-2">&amp;</span>Type::String)<span class="question-mark">?</span>;
+                types.add_known_type(<span class="kw-2">&amp;</span>Type::String);
                 <span class="prelude-val">Ok</span>(Type::String)
             }
             NonAny(t) =&gt; t.resolve_type_expression(types),
@@ -516,7 +516,7 @@
         <span class="kw">let </span>key_type = <span class="self">self</span>.generics.body.<span class="number">0</span>.resolve_type_expression(types)<span class="question-mark">?</span>;
         <span class="kw">let </span>value_type = <span class="self">self</span>.generics.body.<span class="number">2</span>.resolve_type_expression(types)<span class="question-mark">?</span>;
         <span class="kw">let </span>map = Type::Map(Box::new(key_type), Box::new(value_type));
-        types.add_known_type(<span class="kw-2">&amp;</span>map)<span class="question-mark">?</span>;
+        types.add_known_type(<span class="kw-2">&amp;</span>map);
         <span class="prelude-val">Ok</span>(map)
     }
 }
@@ -525,12 +525,12 @@
     <span class="kw">fn </span>resolve_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;Type&gt; {
         <span class="kw">match </span>resolve_builtin_type(<span class="self">self</span>.<span class="number">0</span>) {
             <span class="prelude-val">Some</span>(type_) =&gt; {
-                types.add_known_type(<span class="kw-2">&amp;</span>type_)<span class="question-mark">?</span>;
+                types.add_known_type(<span class="kw-2">&amp;</span>type_);
                 <span class="prelude-val">Ok</span>(type_)
             }
             <span class="prelude-val">None </span>=&gt; <span class="kw">match </span>types.get_type_definition(<span class="self">self</span>.<span class="number">0</span>) {
                 <span class="prelude-val">Some</span>(type_) =&gt; {
-                    types.add_known_type(<span class="kw-2">&amp;</span>type_)<span class="question-mark">?</span>;
+                    types.add_known_type(<span class="kw-2">&amp;</span>type_);
                     <span class="prelude-val">Ok</span>(type_)
                 }
                 <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;unknown type reference: {}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>),
@@ -541,7 +541,7 @@
 
 <span class="kw">impl </span>TypeResolver <span class="kw">for </span>weedle::term::Boolean {
     <span class="kw">fn </span>resolve_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;Type&gt; {
-        types.add_known_type(<span class="kw-2">&amp;</span>Type::Boolean)<span class="question-mark">?</span>;
+        types.add_known_type(<span class="kw-2">&amp;</span>Type::Boolean);
         <span class="prelude-val">Ok</span>(Type::Boolean)
     }
 }
@@ -551,7 +551,7 @@
         <span class="kw">if </span><span class="self">self</span>.unrestricted.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;we don&#39;t support `unrestricted float`&quot;</span>);
         }
-        types.add_known_type(<span class="kw-2">&amp;</span>Type::Float32)<span class="question-mark">?</span>;
+        types.add_known_type(<span class="kw-2">&amp;</span>Type::Float32);
         <span class="prelude-val">Ok</span>(Type::Float32)
     }
 }
@@ -561,7 +561,7 @@
         <span class="kw">if </span><span class="self">self</span>.unrestricted.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;we don&#39;t support `unrestricted double`&quot;</span>);
         }
-        types.add_known_type(<span class="kw-2">&amp;</span>Type::Float64)<span class="question-mark">?</span>;
+        types.add_known_type(<span class="kw-2">&amp;</span>Type::Float64);
         <span class="prelude-val">Ok</span>(Type::Float64)
     }
 }

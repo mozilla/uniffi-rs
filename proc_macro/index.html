@@ -376,6 +376,53 @@ fn do_http_request() -&gt; Result&lt;(), MyApiError&gt; {
 }
 <span class="boring">}
 </span></code></pre></pre>
+<h2><a class="header" href="#the-uniffiexportcallback_interface-attribute" id="the-uniffiexportcallback_interface-attribute">The <code>#[uniffi::export(callback_interface)]</code> attribute</a></h2>
+<p><code>#[uniffi::export(callback_interface)]</code> can be used to export a <a href="../udl/callback_interfaces.html">callback interface</a> definition.
+This allows the foreign bindings to implement the interface and pass an instance to the Rust code.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[uniffi::export(callback_interface)]
+pub trait Person {
+    fn name() -&gt; String;
+    fn age() -&gt; u32;
+}
+
+// Corresponding UDL:
+// callback interface Person {
+//     string name();
+//     u32 age();
+// }
+<span class="boring">}
+</span></code></pre></pre>
+<h3><a class="header" href="#exception-handling-in-callback-interfaces" id="exception-handling-in-callback-interfaces">Exception handling in callback interfaces</a></h3>
+<p>Most languages allow arbitrary exceptions to be thrown, which presents issues for callback
+interfaces.  If a callback interface function returns a non-Result type, then any exception will
+result in a panic on the Rust side.</p>
+<p>To avoid panics, callback interfaces can use <code>Result&lt;T, E&gt;</code> types for all return values.  If the callback
+interface implementation throws the exception that corresponds to the <code>E</code> parameter, <code>Err(E)</code> will
+be returned to the Rust code.  However, in most languages it's still possible for the implementation
+to throw other exceptions.  To avoid panics in those cases, the error type must be wrapped
+with the <code>#[uniffi(handle_unknown_callback_error)]</code> attribute and
+<code>From&lt;UnexpectedUniFFICallbackError&gt;</code> must be implemented:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(uniffi::Error)]
+#[uniffi(handle_unknown_callback_error)]
+pub enum MyApiError {
+    IOError,
+    ValueError,
+    UnexpectedError { reason: String },
+}
+
+impl From&lt;UnexpectedUniFFICallbackError&gt; for MyApiError {
+    fn from(e: UnexpectedUniFFICallbackError) -&gt; Self {
+        Self::UnexpectedError { reason: e.reason }
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
 <h2><a class="header" href="#other-limitations" id="other-limitations">Other limitations</a></h2>
 <p>In addition to the per-item limitations of the macros presented above, there is also currently a
 global restriction: You can only use the proc-macros inside a crate whose name is the same as the
