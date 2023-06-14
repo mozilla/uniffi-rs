@@ -343,7 +343,7 @@ impl SwiftCodeOracle {
         format!("`{}`", nm.to_string().to_lower_camel_case())
     }
 
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label_raw(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8 => "Int8".into(),
             FfiType::UInt8 => "UInt8".into(),
@@ -358,15 +358,29 @@ impl SwiftCodeOracle {
             FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
-            FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
+            FfiType::ForeignCallback => "ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
-            FfiType::ForeignExecutorCallback => "ForeignExecutorCallback _Nonnull".into(),
-            FfiType::FutureCallback { return_type } => format!(
-                "UniFfiFutureCallback{} _Nonnull",
-                return_type.canonical_name()
-            ),
+            FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
+            FfiType::FutureCallback { return_type } => {
+                format!("UniFfiFutureCallback{}", self.ffi_type_label(return_type))
+            }
             FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
         }
+    }
+
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
+        match ffi_type {
+            FfiType::ForeignCallback
+            | FfiType::ForeignExecutorCallback
+            | FfiType::FutureCallback { .. } => {
+                format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
+            }
+            _ => self.ffi_type_label_raw(ffi_type),
+        }
+    }
+
+    fn ffi_canonical_name(&self, ffi_type: &FfiType) -> String {
+        self.ffi_type_label_raw(ffi_type)
     }
 }
 
@@ -417,6 +431,10 @@ pub mod filters {
         Ok(oracle().ffi_type_label(ffi_type))
     }
 
+    pub fn ffi_canonical_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
+        Ok(oracle().ffi_canonical_name(ffi_type))
+    }
+
     /// Like `ffi_type_name`, but used in `BridgingHeaderTemplate.h` which uses a slightly different
     /// names.
     pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
@@ -439,7 +457,7 @@ pub mod filters {
             FfiType::ForeignExecutorHandle => "size_t".into(),
             FfiType::FutureCallback { return_type } => format!(
                 "UniFfiFutureCallback{} _Nonnull",
-                return_type.canonical_name()
+                SwiftCodeOracle.ffi_type_label_raw(return_type)
             ),
             FfiType::FutureCallbackData => "void* _Nonnull".into(),
         })
@@ -477,11 +495,11 @@ pub mod filters {
         Ok(format!(
             "uniffiFutureCallbackHandler{}{}",
             match &result.return_type {
-                Some(t) => t.canonical_name(),
+                Some(t) => SwiftCodeOracle.find(t).canonical_name(),
                 None => "Void".into(),
             },
             match &result.throws_type {
-                Some(t) => t.canonical_name(),
+                Some(t) => SwiftCodeOracle.find(t).canonical_name(),
                 None => "".into(),
             }
         ))

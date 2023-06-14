@@ -265,7 +265,14 @@ impl KotlinCodeOracle {
         }
     }
 
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label_by_value(ffi_type: &FfiType) -> String {
+        match ffi_type {
+            FfiType::RustBuffer(_) => format!("{}.ByValue", Self::ffi_type_label(ffi_type)),
+            _ => Self::ffi_type_label(ffi_type),
+        }
+    }
+
+    fn ffi_type_label(ffi_type: &FfiType) -> String {
         match ffi_type {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
@@ -277,16 +284,15 @@ impl KotlinCodeOracle {
             FfiType::Float32 => "Float".to_string(),
             FfiType::Float64 => "Double".to_string(),
             FfiType::RustArcPtr(_) => "Pointer".to_string(),
-            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("RustBuffer{suffix}.ByValue"),
-                None => "RustBuffer.ByValue".to_string(),
-            },
+            FfiType::RustBuffer(maybe_suffix) => {
+                format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
+            }
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
             FfiType::ForeignExecutorHandle => "USize".to_string(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
             FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", return_type.canonical_name())
+                format!("UniFfiFutureCallback{}", Self::ffi_type_label(return_type))
             }
             FfiType::FutureCallbackData => "USize".to_string(),
         }
@@ -394,11 +400,13 @@ pub mod filters {
 
     pub fn future_callback_handler(result_type: &ResultType) -> Result<String, askama::Error> {
         let return_component = match &result_type.return_type {
-            Some(return_type) => return_type.canonical_name(),
+            Some(return_type) => KotlinCodeOracle.find(return_type).canonical_name(),
             None => "Void".into(),
         };
         let throws_component = match &result_type.throws_type {
-            Some(throws_type) => format!("_{}", throws_type.canonical_name()),
+            Some(throws_type) => {
+                format!("_{}", KotlinCodeOracle.find(throws_type).canonical_name())
+            }
             None => "".into(),
         };
         Ok(format!(
@@ -423,7 +431,25 @@ pub mod filters {
 
     /// Get the Kotlin syntax for representing a given low-level `FfiType`.
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label(type_))
+        Ok(KotlinCodeOracle::ffi_type_label(type_))
+    }
+
+    pub fn ffi_type_name_by_value(type_: &FfiType) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle::ffi_type_label_by_value(type_))
+    }
+
+    // Some FfiTypes have the same ffi_type_label - this makes a vec of them unique.
+    pub fn unique_ffi_types(
+        types: impl Iterator<Item = FfiType>,
+    ) -> Result<impl Iterator<Item = FfiType>, askama::Error> {
+        let mut seen = HashSet::new();
+        let mut result = Vec::new();
+        for t in types {
+            if seen.insert(KotlinCodeOracle::ffi_type_label(&t)) {
+                result.push(t)
+            }
+        }
+        Ok(result.into_iter())
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.

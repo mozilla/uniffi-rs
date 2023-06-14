@@ -63,7 +63,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name -}},
+        {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value -}},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}_uniffi_out_err: RustCallStatus, {% endif %}
 {%- endmacro -%}
@@ -75,9 +75,3 @@
         this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
     {% endfor -%})
 {%- endmacro -%}
-
-{%- macro ffi_function_definition(func) %}
-fun {{ func.name()|fn_name }}(
-    {%- call arg_list_ffi_decl(func) %}
-){%- match func.return_type() -%}{%- when Some with (type_) %}: {{ type_|ffi_type_name }}{% when None %}: Unit{% endmatch %}
-{% endmacro %}

@@ -61,7 +61,7 @@ typedef struct RustCallStatus {
 
 // Callbacks for UniFFI Futures
 {%- for ffi_type in ci.iter_future_callback_params() %}
-typedef void (*UniFfiFutureCallback{{ ffi_type.canonical_name() }})(const void * _Nonnull, {{ ffi_type|header_ffi_type_name }}, RustCallStatus);
+typedef void (*UniFfiFutureCallback{{ ffi_type|ffi_canonical_name }})(const void * _Nonnull, {{ ffi_type|header_ffi_type_name }}, RustCallStatus);
 {%- endfor %}
 
 // Scaffolding functions

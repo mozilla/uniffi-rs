@@ -405,11 +405,11 @@ pub mod filters {
     // Name of the callback function we pass to Rust to complete an async call
     pub fn async_callback_fn(result_type: &ResultType) -> Result<String, askama::Error> {
         let return_string = match &result_type.return_type {
-            Some(t) => t.canonical_name().to_snake_case(),
+            Some(t) => PythonCodeOracle.find(t).canonical_name().to_snake_case(),
             None => "void".into(),
         };
         let throws_string = match &result_type.throws_type {
-            Some(t) => t.canonical_name().to_snake_case(),
+            Some(t) => PythonCodeOracle.find(t).canonical_name().to_snake_case(),
             None => "void".into(),
         };
         Ok(format!(
