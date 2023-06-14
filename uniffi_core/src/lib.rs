@@ -219,16 +219,29 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// values of type Self::FfiType, this method is fallible.
     fn try_lift(v: Self::FfiType) -> Result<Self>;
 
-    /// Lift a Rust value based on a callback interface method result
+    /// Lift a Rust value for a callback interface method result
     fn lift_callback_return(buf: RustBuffer) -> Self {
         try_lift_from_rust_buffer(buf).expect("Error reading callback interface result")
     }
 
-    /// Lift a Rust value based on a callback interface method error result
+    /// Lift a Rust value for a callback interface method error result
     ///
     /// This is called for "expected errors" -- the callback method returns a Result<> type and the
     /// foreign code throws an exception that corresponds to the error type.
     fn lift_callback_error(_buf: RustBuffer) -> Self {
+        panic!("Callback interface method returned unexpected error")
+    }
+
+    /// Lift a Rust value for an unexpected callback interface error
+    ///
+    /// The main reason this is called is when the callback interface throws an error type that
+    /// doesn't match the Rust trait definition.  It's also called for corner cases, like when the
+    /// foreign code doesn't follow the FFI contract.
+    ///
+    /// The default implementation panics unconditionally.  Errors used in callback interfaces
+    /// handle this using the `From<UnexpectedUniFFICallbackError>` impl that the library author
+    /// must provide.
+    fn handle_callback_unexpected_error(_e: UnexpectedUniFFICallbackError) -> Self {
         panic!("Callback interface method returned unexpected error")
     }
 
@@ -456,6 +469,50 @@ macro_rules! ffi_converter_trait_decl {
             const TYPE_ID_META: $crate::MetadataBuffer = $crate::MetadataBuffer::from_code($crate::metadata::codes::TYPE_INTERFACE).concat_str($name).concat_bool(true);
         }
     }
+}
+
+/// Macro to implement `FfiConverter<T>` for a callback interface
+#[macro_export]
+macro_rules! ffi_converter_callback_interface {
+    ($trait:ident, $T:ty, $name:expr, $uniffi_tag:ty) => {
+        unsafe impl ::uniffi::FfiConverter<$uniffi_tag> for Box<dyn $trait> {
+            type FfiType = u64;
+
+            // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
+            // probably a way to, but this carries lots of thread safety risks, down to impedance
+            // mismatches between Rust and foreign languages, and our uncertainty around implementations of
+            // concurrent handlemaps.
+            //
+            // The use case for them is also quite exotic: it's passing a foreign callback back to the foreign
+            // language.
+            //
+            // Until we have some certainty, and use cases, we shouldn't use them.
+            fn lower(_obj: Box<dyn $trait>) -> Self::FfiType {
+                panic!("Lowering CallbackInterface not supported")
+            }
+
+            fn write(_obj: Box<dyn $trait>, _buf: &mut std::vec::Vec<u8>) {
+                panic!("Writing CallbackInterface not supported")
+            }
+
+            fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Box<dyn $trait>> {
+                Ok(Box::new(<$T>::new(v)))
+            }
+
+            fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Box<dyn $trait>> {
+                use uniffi::deps::bytes::Buf;
+                uniffi::check_remaining(buf, 8)?;
+                Self::try_lift(buf.get_u64())
+            }
+
+            ::uniffi::ffi_converter_default_return!($uniffi_tag);
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
+                ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
+            )
+            .concat_str($name);
+        }
+    };
 }
 
 #[cfg(test)]

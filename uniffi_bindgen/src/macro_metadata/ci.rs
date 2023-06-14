@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::interface::{ComponentInterface, Enum, Record, Type};
+use crate::interface::{CallbackInterface, ComponentInterface, Enum, Record, Type};
 use anyhow::{bail, Context};
 use uniffi_meta::{group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup};
 
@@ -61,7 +61,7 @@ fn add_enum_to_ci(
     is_flat: bool,
 ) -> anyhow::Result<()> {
     let ty = Type::Enum(meta.name.clone());
-    iface.types.add_known_type(&ty)?;
+    iface.types.add_known_type(&ty);
     iface.types.add_type_definition(&meta.name, ty)?;
 
     let enum_ = Enum::try_from_meta(meta, is_flat)?;
@@ -84,7 +84,7 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
         }
         Metadata::Record(meta) => {
             let ty = Type::Record(meta.name.clone());
-            iface.types.add_known_type(&ty)?;
+            iface.types.add_known_type(&ty);
             iface.types.add_type_definition(&meta.name, ty)?;
 
             let record: Record = meta.try_into()?;
@@ -95,7 +95,13 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             add_enum_to_ci(iface, meta, flat)?;
         }
         Metadata::Object(meta) => {
-            iface.add_object_free_fn(meta)?;
+            iface.add_object_meta(meta);
+        }
+        Metadata::CallbackInterface(meta) => {
+            iface.add_callback_interface_definition(CallbackInterface::new(meta.name));
+        }
+        Metadata::TraitMethod(meta) => {
+            iface.add_trait_method_meta(meta)?;
         }
         Metadata::Error(meta) => {
             iface.note_name_used_as_error(meta.name());

@@ -9,11 +9,13 @@ use syn::{
 
 pub(crate) mod kw {
     syn::custom_keyword!(async_runtime);
+    syn::custom_keyword!(callback_interface);
 }
 
 #[derive(Default)]
 pub struct ExportAttributeArguments {
     pub(crate) async_runtime: Option<AsyncRuntime>,
+    pub(crate) callback_interface: Option<kw::callback_interface>,
 }
 
 impl Parse for ExportAttributeArguments {
@@ -24,17 +26,31 @@ impl Parse for ExportAttributeArguments {
 
 impl UniffiAttributeArgs for ExportAttributeArguments {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
-        let _: kw::async_runtime = input.parse()?;
-        let _: Token![=] = input.parse()?;
-        let async_runtime = input.parse()?;
-        Ok(Self {
-            async_runtime: Some(async_runtime),
-        })
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::async_runtime) {
+            let _: kw::async_runtime = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                async_runtime: Some(input.parse()?),
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::callback_interface) {
+            Ok(Self {
+                callback_interface: input.parse()?,
+                ..Self::default()
+            })
+        } else {
+            Ok(Self::default())
+        }
     }
 
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
+            callback_interface: either_attribute_arg(
+                self.callback_interface,
+                other.callback_interface,
+            )?,
         })
     }
 }

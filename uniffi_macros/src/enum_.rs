@@ -55,6 +55,7 @@ pub(crate) fn enum_ffi_converter_impl(
         ident,
         enum_,
         tag,
+        false,
         quote! { ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
@@ -63,11 +64,13 @@ pub(crate) fn rich_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     tag: Option<&Path>,
+    handle_unknown_callback_error: bool,
 ) -> TokenStream {
     enum_or_error_ffi_converter_impl(
         ident,
         enum_,
         tag,
+        handle_unknown_callback_error,
         quote! { ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
@@ -76,6 +79,7 @@ fn enum_or_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     tag: Option<&Path>,
+    handle_unknown_callback_error: bool,
     metadata_type_code: TokenStream,
 ) -> TokenStream {
     let name = ident_to_string(ident);
@@ -116,6 +120,9 @@ fn enum_or_error_ffi_converter_impl(
         })
     };
 
+    let handle_callback_unexpected_error =
+        handle_callback_unexpected_error_fn(handle_unknown_callback_error);
+
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
@@ -129,6 +136,8 @@ fn enum_or_error_ffi_converter_impl(
             fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 #try_read_impl
             }
+
+            #handle_callback_unexpected_error
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
                 .concat_str(#name);
@@ -201,4 +210,21 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                 })
         )
         .collect()
+}
+
+/// Generate the `handle_callback_unexpected_error()` implementation
+///
+/// If handle_unknown_callback_error is true, this will use the `From<UnexpectedUniFFICallbackError>`
+/// implementation that the library author must provide.
+///
+/// If handle_unknown_callback_error is false, then we won't generate any code, falling back to the default
+/// implementation which panics.
+pub(crate) fn handle_callback_unexpected_error_fn(
+    handle_unknown_callback_error: bool,
+) -> Option<TokenStream> {
+    handle_unknown_callback_error.then(|| quote! {
+        fn handle_callback_unexpected_error(e: ::uniffi::UnexpectedUniFFICallbackError) -> Self {
+            <Self as ::std::convert::From<::uniffi::UnexpectedUniFFICallbackError>>::from(e)
+        }
+    })
 }

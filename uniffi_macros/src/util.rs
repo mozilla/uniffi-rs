@@ -149,6 +149,12 @@ pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> 
 #[derive(Default)]
 pub struct ArgumentNotAllowedHere;
 
+impl Parse for ArgumentNotAllowedHere {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
 impl UniffiAttributeArgs for ArgumentNotAllowedHere {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         Err(syn::Error::new(

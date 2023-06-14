@@ -85,6 +85,11 @@ mod calc {
     pub struct Calculator {}
 }
 
+#[uniffi::export(callback_interface)]
+pub trait Logger {
+    fn log(&self, message: String);
+}
+
 pub use calc::Calculator;
 pub use error::{ComplexError, FlatError};
 pub use person::Person;
@@ -476,7 +481,6 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
-                self_is_trait: false,
                 name: "add".into(),
                 is_async: false,
                 inputs: vec![
@@ -555,7 +559,6 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
-                self_is_trait: false,
                 name: "async_sub".into(),
                 is_async: true,
                 inputs: vec![
@@ -583,7 +586,6 @@ mod test_function_metadata {
             MethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 self_name: "Calculator".into(),
-                self_is_trait: false,
                 name: "get_display".into(),
                 is_async: false,
                 inputs: vec![],
@@ -602,10 +604,10 @@ mod test_function_metadata {
     fn test_trait_method() {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT,
-            MethodMetadata {
+            TraitMethodMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
-                self_name: "CalculatorDisplay".into(),
-                self_is_trait: true,
+                trait_name: "CalculatorDisplay".into(),
+                index: 0,
                 name: "display_result".into(),
                 is_async: false,
                 inputs: vec![
@@ -618,6 +620,34 @@ mod test_function_metadata {
                 throws: None,
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
                     .checksum(),
+            },
+        );
+    }
+
+    #[test]
+    fn test_callback_interface() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_LOGGER,
+            CallbackInterfaceMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "Logger".into(),
+            },
+        );
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG,
+            TraitMethodMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                trait_name: "Logger".into(),
+                index: 0,
+                name: "log".into(),
+                is_async: false,
+                inputs: vec![FnParamMetadata {
+                    name: "message".into(),
+                    ty: Type::String,
+                }],
+                return_type: None,
+                throws: None,
+                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
             },
         );
     }

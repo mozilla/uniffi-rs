@@ -228,6 +228,55 @@ fn do_http_request() -> Result<(), MyApiError> {
 }
 ```
 
+## The `#[uniffi::export(callback_interface)]` attribute
+
+`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.html) definition.
+This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
+
+```rust
+#[uniffi::export(callback_interface)]
+pub trait Person {
+    fn name() -> String;
+    fn age() -> u32;
+}
+
+// Corresponding UDL:
+// callback interface Person {
+//     string name();
+//     u32 age();
+// }
+```
+
+### Exception handling in callback interfaces
+
+Most languages allow arbitrary exceptions to be thrown, which presents issues for callback
+interfaces.  If a callback interface function returns a non-Result type, then any exception will
+result in a panic on the Rust side.
+
+To avoid panics, callback interfaces can use `Result<T, E>` types for all return values.  If the callback
+interface implementation throws the exception that corresponds to the `E` parameter, `Err(E)` will
+be returned to the Rust code.  However, in most languages it's still possible for the implementation
+to throw other exceptions.  To avoid panics in those cases, the error type must be wrapped
+with the `#[uniffi(handle_unknown_callback_error)]` attribute and
+`From<UnexpectedUniFFICallbackError>` must be implemented:
+
+```rust
+#[derive(uniffi::Error)]
+#[uniffi(handle_unknown_callback_error)]
+pub enum MyApiError {
+    IOError,
+    ValueError,
+    UnexpectedError { reason: String },
+}
+
+impl From<UnexpectedUniFFICallbackError> for MyApiError {
+    fn from(e: UnexpectedUniFFICallbackError) -> Self {
+        Self::UnexpectedError { reason: e.reason }
+    }
+}
+```
+
+
 ## Other limitations
 
 In addition to the per-item limitations of the macros presented above, there is also currently a

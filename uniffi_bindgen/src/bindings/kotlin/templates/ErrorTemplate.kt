@@ -1,6 +1,7 @@
 {%- let type_name = type_|error_type_name %}
 {%- let ffi_converter_name = type_|error_ffi_converter_name %}
 {%- let canonical_type_name = type_|error_canonical_name %}
+
 {% if e.is_flat() %}
 sealed class {{ type_name }}(message: String): Exception(message){% if contains_object_references %}, Disposable {% endif %} {
         // Each variant is a nested class

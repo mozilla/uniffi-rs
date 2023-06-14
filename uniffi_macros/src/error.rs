@@ -6,7 +6,7 @@ use syn::{
 };
 
 use crate::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata},
+    enum_::{handle_callback_unexpected_error_fn, rich_error_ffi_converter_impl, variant_metadata},
     util::{
         chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
         parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
@@ -71,9 +71,15 @@ fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -
             enum_,
             attr.tag.as_ref(),
             attr.with_try_read.is_some(),
+            attr.handle_unknown_callback_error.is_some(),
         )
     } else {
-        rich_error_ffi_converter_impl(ident, enum_, attr.tag.as_ref())
+        rich_error_ffi_converter_impl(
+            ident,
+            enum_,
+            attr.tag.as_ref(),
+            attr.handle_unknown_callback_error.is_some(),
+        )
     }
 }
 
@@ -86,6 +92,7 @@ fn flat_error_ffi_converter_impl(
     enum_: &DataEnum,
     tag: Option<&Path>,
     implement_try_read: bool,
+    handle_unknown_callback_error: bool,
 ) -> TokenStream {
     let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
@@ -128,6 +135,9 @@ fn flat_error_ffi_converter_impl(
         quote! { ::std::panic!("try_read not supported for flat errors") }
     };
 
+    let handle_callback_unexpected_error =
+        handle_callback_unexpected_error_fn(handle_unknown_callback_error);
+
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
@@ -141,6 +151,8 @@ fn flat_error_ffi_converter_impl(
             fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 #try_read_impl
             }
+
+            #handle_callback_unexpected_error
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
                 .concat_str(#name);
@@ -186,6 +198,7 @@ mod kw {
     syn::custom_keyword!(tag);
     syn::custom_keyword!(flat_error);
     syn::custom_keyword!(with_try_read);
+    syn::custom_keyword!(handle_unknown_callback_error);
 }
 
 #[derive(Default)]
@@ -193,6 +206,8 @@ pub(crate) struct ErrorAttr {
     tag: Option<Path>,
     flat: Option<kw::flat_error>,
     with_try_read: Option<kw::with_try_read>,
+    /// Can this error be used in a callback interface?
+    handle_unknown_callback_error: Option<kw::handle_unknown_callback_error>,
 }
 
 impl UniffiAttributeArgs for ErrorAttr {
@@ -215,6 +230,11 @@ impl UniffiAttributeArgs for ErrorAttr {
                 with_try_read: input.parse()?,
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::handle_unknown_callback_error) {
+            Ok(Self {
+                handle_unknown_callback_error: input.parse()?,
+                ..Self::default()
+            })
         } else {
             Err(lookahead.error())
         }
@@ -225,6 +245,10 @@ impl UniffiAttributeArgs for ErrorAttr {
             tag: either_attribute_arg(self.tag, other.tag)?,
             flat: either_attribute_arg(self.flat, other.flat)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
+            handle_unknown_callback_error: either_attribute_arg(
+                self.handle_unknown_callback_error,
+                other.handle_unknown_callback_error,
+            )?,
         })
     }
 }

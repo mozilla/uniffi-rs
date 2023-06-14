@@ -36,6 +36,8 @@ pub mod codes {
     pub const NAMESPACE: u8 = 6;
     pub const CONSTRUCTOR: u8 = 7;
     pub const UDL_FILE: u8 = 8;
+    pub const CALLBACK_INTERFACE: u8 = 9;
+    pub const TRAIT_METHOD: u8 = 10;
     pub const UNKNOWN: u8 = 255;
 
     // Type codes
@@ -137,6 +139,21 @@ impl MetadataBuffer {
         assert!(self.size < BUF_SIZE);
         self.bytes[self.size] = value;
         self.size += 1;
+        self
+    }
+
+    // Concatenate a `u32` value to this buffer
+    //
+    // This consumes self, which is convenient for the proc-macro code and also allows us to avoid
+    // allocated an extra buffer.
+    pub const fn concat_u32(mut self, value: u32) -> Self {
+        assert!(self.size + 4 <= BUF_SIZE);
+        // store the value as little-endian
+        self.bytes[self.size] = value as u8;
+        self.bytes[self.size + 1] = (value >> 8) as u8;
+        self.bytes[self.size + 2] = (value >> 16) as u8;
+        self.bytes[self.size + 3] = (value >> 24) as u8;
+        self.size += 4;
         self
     }
 

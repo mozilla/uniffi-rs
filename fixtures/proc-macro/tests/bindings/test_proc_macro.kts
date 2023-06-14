@@ -34,3 +34,24 @@ try {
     throw RuntimeException("doStuff should throw if its argument is 0")
 } catch (e: FlatException) {
 }
+
+
+class KtTestCallbackInterface : TestCallbackInterface {
+    override fun doNothing() { }
+
+    override fun add(a: UInt, b: UInt) = a + b
+
+    override fun tryParseInt(value: String): UInt {
+        if (value == "force-unexpected-error") {
+            // raise an error that's not expected
+            throw RuntimeException(value)
+        }
+        try {
+            return value.toUInt()
+        } catch(e: NumberFormatException) {
+            throw BasicException.InvalidInput()
+        }
+    }
+}
+
+testCallbackInterface(KtTestCallbackInterface())

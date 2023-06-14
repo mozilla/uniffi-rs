@@ -1,4 +1,4 @@
-{%- let cbi = ci.get_callback_interface_definition(name).unwrap() %}
+{%- let cbi = ci|get_callback_interface_definition(name) %}
 {%- let foreign_callback = format!("foreignCallback{}", canonical_type_name) %}
 {%- if self.include_once_check("CallbackInterfaceRuntime.swift") %}{%- include "CallbackInterfaceRuntime.swift" %}{%- endif %}
 

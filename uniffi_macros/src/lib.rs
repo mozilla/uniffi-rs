@@ -17,6 +17,7 @@ use syn::{parse_macro_input, LitStr};
 mod enum_;
 mod error;
 mod export;
+mod fnsig;
 mod object;
 mod record;
 mod test;
