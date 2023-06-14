@@ -40,7 +40,7 @@ pub(super) fn trait_impl(
             }
         }
 
-        impl ::std::mem::Drop for #ident {
+        impl ::std::ops::Drop for #ident {
             fn drop(&mut self) {
                 #internals_ident.invoke_callback::<(), crate::UniFfiTag>(
                     self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
@@ -87,7 +87,7 @@ fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<To
     }
     let params = sig.params();
     let buf_ident = Ident::new("uniffi_args_buf", Span::call_site());
-    let mut write_exprs = sig.write_exprs(&buf_ident);
+    let write_exprs = sig.write_exprs(&buf_ident);
 
     Ok(quote! {
         fn #ident(&self, #(#params),*) -> #return_ty {

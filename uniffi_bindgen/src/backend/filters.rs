@@ -4,9 +4,7 @@
 
 //! Backend-agnostic askama filters
 
-use crate::interface::{
-    CallbackInterface, ComponentInterface, Enum, Function, Object, Record,
-};
+use crate::interface::{CallbackInterface, ComponentInterface, Enum, Function, Object, Record};
 use askama::Result;
 use std::fmt;
 

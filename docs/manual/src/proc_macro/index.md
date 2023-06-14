@@ -245,7 +245,6 @@ pub trait Person {
 //     string name();
 //     u32 age();
 // }
-}
 ```
 
 ### Exception handling in callback interfaces
