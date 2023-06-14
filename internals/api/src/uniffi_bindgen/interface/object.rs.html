@@ -928,6 +928,10 @@
 <a href="#928" id="928">928</a>
 <a href="#929" id="929">929</a>
 <a href="#930" id="930">930</a>
+<a href="#931" id="931">931</a>
+<a href="#932" id="932">932</a>
+<a href="#933" id="933">933</a>
+<a href="#934" id="934">934</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -993,11 +997,11 @@
 <span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use </span><span class="kw">super</span>::attributes::{Attribute, ConstructorAttributes, InterfaceAttributes, MethodAttributes};
+<span class="kw">use </span><span class="kw">super</span>::attributes::{ConstructorAttributes, InterfaceAttributes, MethodAttributes};
 <span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">use </span><span class="kw">super</span>::function::{Argument, Callable};
 <span class="kw">use </span><span class="kw">super</span>::types::{ObjectImpl, Type, TypeIterator};
-<span class="kw">use super</span>::{convert_type, APIConverter, AsType, ComponentInterface};
+<span class="kw">use super</span>::{APIConverter, AsType, ComponentInterface};
 
 <span class="doccomment">/// An &quot;object&quot; is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
@@ -1217,7 +1221,8 @@
                     arguments,
                     return_type,
                     ffi_func: Default::default(),
-                    attributes: Default::default(),
+                    throws: <span class="prelude-val">None</span>,
+                    takes_self_by_arc: <span class="bool-val">false</span>,
                     checksum_override: <span class="prelude-val">None</span>,
                 })
             };
@@ -1297,7 +1302,7 @@
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
-    <span class="kw">pub</span>(<span class="kw">super</span>) attributes: ConstructorAttributes,
+    <span class="kw">pub</span>(<span class="kw">super</span>) throws: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) checksum_fn_name: String,
     <span class="comment">// Force a checksum value.  This is used for functions from the proc-macro code, which uses a
     // different checksum method.
@@ -1332,17 +1337,15 @@
     }
 
     <span class="kw">pub fn </span>throws(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.attributes.get_throws_err().is_some()
+        <span class="self">self</span>.throws.is_some()
     }
 
     <span class="kw">pub fn </span>throws_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
-        <span class="self">self</span>.attributes.get_throws_err()
+        <span class="kw">super</span>::throws_name(<span class="kw-2">&amp;</span><span class="self">self</span>.throws)
     }
 
-    <span class="kw">pub fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
-        <span class="self">self</span>.attributes
-            .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+    <span class="kw">pub fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Type&gt; {
+        <span class="self">self</span>.throws.as_ref()
     }
 
     <span class="kw">pub fn </span>is_primary_constructor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
@@ -1389,19 +1392,12 @@
             name: ffi_name,
             ..FfiFunction::default()
         };
-
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.self_name,
             arguments,
             ffi_func,
-            attributes: <span class="kw">match </span>meta.throws {
-                <span class="prelude-val">None </span>=&gt; ConstructorAttributes::from_iter(<span class="macro">vec!</span>[]),
-                <span class="prelude-val">Some</span>(uniffi_meta::Type::Error { name }) =&gt; {
-                    ConstructorAttributes::from_iter(<span class="macro">vec!</span>[Attribute::Throws(name)])
-                }
-                <span class="prelude-val">Some</span>(ty) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Invalid throws type: {ty:?}&quot;</span>),
-            },
+            throws: meta.throws.map(Into::into),
             checksum_fn_name,
             checksum_override: <span class="prelude-val">Some</span>(meta.checksum),
         }
@@ -1414,6 +1410,9 @@
             <span class="prelude-val">Some</span>(attr) =&gt; ConstructorAttributes::try_from(attr)<span class="question-mark">?</span>,
             <span class="prelude-val">None </span>=&gt; Default::default(),
         };
+        <span class="kw">let </span>throws = attributes
+            .get_throws_err()
+            .map(|name| ci.get_type(name).expect(<span class="string">&quot;invalid throws type&quot;</span>));
         <span class="prelude-val">Ok</span>(Constructor {
             name: String::from(attributes.get_name().unwrap_or(<span class="string">&quot;new&quot;</span>)),
             <span class="comment">// We don&#39;t know the name of the containing `Object` at this point, fill it in later.
@@ -1422,7 +1421,7 @@
             </span>checksum_fn_name: Default::default(),
             arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
             ffi_func: Default::default(),
-            attributes,
+            throws,
             checksum_override: <span class="prelude-val">None</span>,
         })
     }
@@ -1448,7 +1447,8 @@
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
-    <span class="kw">pub</span>(<span class="kw">super</span>) attributes: MethodAttributes,
+    <span class="kw">pub</span>(<span class="kw">super</span>) throws: <span class="prelude-ty">Option</span>&lt;Type&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) takes_self_by_arc: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) checksum_fn_name: String,
     <span class="comment">// Force a checksum value.  This is used for functions from the proc-macro code, which uses a
     // different checksum method.
@@ -1480,7 +1480,7 @@
                 name: <span class="self">self</span>.object_name.clone(),
                 imp: <span class="self">self</span>.object_impl,
             },
-            by_ref: !<span class="self">self</span>.attributes.get_self_by_arc(),
+            by_ref: !<span class="self">self</span>.takes_self_by_arc,
             optional: <span class="bool-val">false</span>,
             default: <span class="prelude-val">None</span>,
         }]
@@ -1507,21 +1507,19 @@
     }
 
     <span class="kw">pub fn </span>throws(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.attributes.get_throws_err().is_some()
+        <span class="self">self</span>.throws.is_some()
     }
 
     <span class="kw">pub fn </span>throws_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
-        <span class="self">self</span>.attributes.get_throws_err()
+        <span class="kw">super</span>::throws_name(<span class="kw-2">&amp;</span><span class="self">self</span>.throws)
     }
 
-    <span class="kw">pub fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
-        <span class="self">self</span>.attributes
-            .get_throws_err()
-            .map(|name| Type::Error(name.to_owned()))
+    <span class="kw">pub fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Type&gt; {
+        <span class="self">self</span>.throws.as_ref()
     }
 
     <span class="kw">pub fn </span>takes_self_by_arc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.attributes.get_self_by_arc()
+        <span class="self">self</span>.takes_self_by_arc
     }
 
     <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, obj_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -1564,7 +1562,7 @@
         <span class="kw">let </span>ffi_name = meta.ffi_symbol_name();
         <span class="kw">let </span>checksum_fn_name = meta.checksum_symbol_name();
         <span class="kw">let </span>is_async = meta.is_async;
-        <span class="kw">let </span>return_type = meta.return_type.map(|out| convert_type(<span class="kw-2">&amp;</span>out));
+        <span class="kw">let </span>return_type = meta.return_type.map(Into::into);
         <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         <span class="kw">let </span>ffi_func = FfiFunction {
@@ -1581,14 +1579,9 @@
             arguments,
             return_type,
             ffi_func,
-            attributes: <span class="kw">match </span>meta.throws {
-                <span class="prelude-val">None </span>=&gt; MethodAttributes::from_iter(<span class="macro">vec!</span>[]),
-                <span class="prelude-val">Some</span>(uniffi_meta::Type::Error { name }) =&gt; {
-                    MethodAttributes::from_iter(<span class="macro">vec!</span>[Attribute::Throws(name)])
-                }
-                <span class="prelude-val">Some</span>(ty) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Invalid throws type: {ty:?}&quot;</span>),
-            },
-            checksum_fn_name,
+            throws: meta.throws.map(Into::into),
+            takes_self_by_arc: <span class="bool-val">false</span>, <span class="comment">// not yet supported by procmacros?
+            </span>checksum_fn_name,
             checksum_override: <span class="prelude-val">Some</span>(meta.checksum),
         }
     }
@@ -1603,6 +1596,20 @@
             <span class="macro">bail!</span>(<span class="string">&quot;method modifiers are not supported&quot;</span>)
         }
         <span class="kw">let </span>return_type = ci.resolve_return_type_expression(<span class="kw-2">&amp;</span><span class="self">self</span>.return_type)<span class="question-mark">?</span>;
+        <span class="kw">let </span>attributes = MethodAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>throws = <span class="kw">match </span>attributes.get_throws_err() {
+            <span class="prelude-val">Some</span>(name) =&gt; <span class="kw">match </span>ci.get_type(name) {
+                <span class="prelude-val">Some</span>(t) =&gt; {
+                    ci.note_name_used_as_error(name);
+                    <span class="prelude-val">Some</span>(t)
+                }
+                <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;unknown type for error: {name}&quot;</span>),
+            },
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let </span>takes_self_by_arc = attributes.get_self_by_arc();
         <span class="prelude-val">Ok</span>(Method {
             name: <span class="kw">match </span><span class="self">self</span>.identifier {
                 <span class="prelude-val">None </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;anonymous methods are not supported {:?}&quot;</span>, <span class="self">self</span>),
@@ -1623,7 +1630,8 @@
             </span>arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
             return_type,
             ffi_func: Default::default(),
-            attributes: MethodAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>,
+            throws,
+            takes_self_by_arc,
             checksum_override: <span class="prelude-val">None</span>,
         })
     }
@@ -1681,7 +1689,7 @@
     }
 
     <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
-        <span class="self">self</span>.throws_type()
+        <span class="self">self</span>.throws_type().cloned()
     }
 }
 
@@ -1695,7 +1703,7 @@
     }
 
     <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
-        <span class="self">self</span>.throws_type()
+        <span class="self">self</span>.throws_type().cloned()
     }
 }
 

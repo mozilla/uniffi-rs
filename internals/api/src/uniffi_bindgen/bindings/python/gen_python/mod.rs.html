@@ -444,8 +444,6 @@
 <a href="#444" id="444">444</a>
 <a href="#445" id="445">445</a>
 <a href="#446" id="446">446</a>
-<a href="#447" id="447">447</a>
-<a href="#448" id="448">448</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -467,7 +465,6 @@
 <span class="kw">mod </span>compounds;
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
-<span class="kw">mod </span>error;
 <span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
@@ -805,7 +802,6 @@
             Type::Enum(id) =&gt; Box::new(enum_::EnumCodeType::new(id)),
             Type::Object { name, .. } =&gt; Box::new(object::ObjectCodeType::new(name)),
             Type::Record(id) =&gt; Box::new(record::RecordCodeType::new(id)),
-            Type::Error(id) =&gt; Box::new(error::ErrorCodeType::new(id)),
             Type::CallbackInterface(id) =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }

@@ -248,12 +248,6 @@
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
-<a href="#251" id="251">251</a>
-<a href="#252" id="252">252</a>
-<a href="#253" id="253">253</a>
-<a href="#254" id="254">254</a>
-<a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -277,7 +271,7 @@
 
 <span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 
-<span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
+<span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::attributes::{InterfaceAttributes, TypedefAttributes};
 <span class="kw">use super</span>::{AsType, Type, TypeUniverse};
 
 <span class="doccomment">/// Trait to help with an early &quot;type discovery&quot; phase when processing the UDL.
@@ -316,10 +310,8 @@
         <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>.to_string();
         <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>;
         <span class="comment">// Some enum types are defined using an `interface` with a special attribute.
-        </span><span class="kw">if </span>attrs.contains_enum_attr() {
+        </span><span class="kw">if </span>attrs.contains_enum_attr() || attrs.contains_error_attr() {
             types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Enum(name))
-        } <span class="kw">else if </span>attrs.contains_error_attr() {
-            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Error(name))
         } <span class="kw">else </span>{
             <span class="kw">let </span>obj = <span class="kw">crate</span>::interface::Object::new(name, attrs.object_impl());
             types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, obj.as_type())
@@ -338,11 +330,7 @@
     <span class="kw">fn </span>add_type_definitions_to(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>.to_string();
         <span class="comment">// Our error types are defined using an `enum` with a special attribute.
-        </span><span class="kw">if </span>EnumAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>.contains_error_attr() {
-            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Error(name))
-        } <span class="kw">else </span>{
-            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Enum(name))
-        }
+        </span>types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Enum(name))
     }
 }
 
@@ -448,7 +436,7 @@
                     <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestItems&quot;</span>).unwrap(), Type::Enum(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestItems&quot;</span>)
                 );
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestError&quot;</span>).unwrap(), Type::Error(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestError&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestError&quot;</span>).unwrap(), Type::Enum(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestError&quot;</span>)
                 );
             },
         );

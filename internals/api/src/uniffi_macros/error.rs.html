@@ -234,6 +234,7 @@
 <a href="#234" id="234">234</a>
 <a href="#235" id="235">235</a>
 <a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -378,7 +379,7 @@
                 #try_read_impl
             }
 
-            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ERROR)
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
                 .concat_str(#name);
         }
     }
@@ -391,15 +392,16 @@
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
-    <span class="kw">let </span>flat_code = u8::from(flat);
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
-                .concat_str(#module_path)
+                <span class="comment">// first our is-flat flag
+                </span>.concat_bool(#flat)
+                <span class="comment">// followed by an enum
+                </span>.concat_str(#module_path)
                 .concat_str(#name)
-                .concat_value(#flat_code)
     };
     <span class="kw">if </span>flat {
-        metadata_expr.extend(flat_error_variant_metadata(enum_)<span class="question-mark">?</span>);
+        metadata_expr.extend(flat_error_variant_metadata(enum_)<span class="question-mark">?</span>)
     } <span class="kw">else </span>{
         metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     }

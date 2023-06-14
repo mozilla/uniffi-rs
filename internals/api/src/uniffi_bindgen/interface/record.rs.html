@@ -254,9 +254,6 @@
 <a href="#254" id="254">254</a>
 <a href="#255" id="255">255</a>
 <a href="#256" id="256">256</a>
-<a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -306,11 +303,8 @@
 </span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>uniffi_meta::Checksum;
 
+<span class="kw">use </span><span class="kw">super</span>::literal::{convert_default_value, Literal};
 <span class="kw">use </span><span class="kw">super</span>::types::{Type, TypeIterator};
-<span class="kw">use super</span>::{
-    convert_type,
-    literal::{convert_default_value, Literal},
-};
 <span class="kw">use super</span>::{APIConverter, AsType, ComponentInterface};
 
 <span class="doccomment">/// Represents a &quot;data class&quot; style object, for passing around complex values.
@@ -407,7 +401,7 @@
 
     <span class="kw">fn </span>try_from(meta: uniffi_meta::FieldMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>name = meta.name;
-        <span class="kw">let </span>type_ = convert_type(<span class="kw-2">&amp;</span>meta.ty);
+        <span class="kw">let </span>type_ = meta.ty.into();
         <span class="kw">let </span>default = meta
             .default
             .map(|d| Literal::from_metadata(<span class="kw-2">&amp;</span>name, <span class="kw-2">&amp;</span>type_, d))

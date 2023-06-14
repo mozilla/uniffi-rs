@@ -28,13 +28,15 @@
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, Literal};
 
-<span class="attr">#[derive(Debug)]
+<span class="comment">// When a type is used as an error it gets a special CodeType.
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ErrorCodeType {
     id: String,
 }

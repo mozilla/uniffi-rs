@@ -93,13 +93,28 @@
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::interface::{ComponentInterface, Enum, Error, Record, Type};
+</span><span class="kw">use </span><span class="kw">crate</span>::interface::{ComponentInterface, Enum, Record, Type};
 <span class="kw">use </span>anyhow::{bail, Context};
-<span class="kw">use </span>uniffi_meta::{group_metadata, Metadata, MetadataGroup};
+<span class="kw">use </span>uniffi_meta::{group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup};
 
 <span class="doccomment">/// Add Metadata items to the ComponentInterface
 ///
@@ -136,48 +151,10 @@
             iface.namespace()
         );
     }
+
     <span class="kw">for </span>item <span class="kw">in </span>group.items {
-        <span class="kw">match </span>item {
-            Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(),
-            Metadata::UdlFile(<span class="kw">_</span>) =&gt; (),
-            Metadata::Func(meta) =&gt; {
-                iface.add_function_definition(meta.into())<span class="question-mark">?</span>;
-            }
-            Metadata::Constructor(meta) =&gt; {
-                iface.add_constructor_meta(meta)<span class="question-mark">?</span>;
-            }
-            Metadata::Method(meta) =&gt; {
-                iface.add_method_meta(meta)<span class="question-mark">?</span>;
-            }
-            Metadata::Record(meta) =&gt; {
-                <span class="kw">let </span>ty = Type::Record(meta.name.clone());
-                iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
-                iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
-
-                <span class="kw">let </span>record: Record = meta.try_into()<span class="question-mark">?</span>;
-                iface.add_record_definition(record)<span class="question-mark">?</span>;
-            }
-            Metadata::Enum(meta) =&gt; {
-                <span class="kw">let </span>ty = Type::Enum(meta.name.clone());
-                iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
-                iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
-
-                <span class="kw">let </span>enum_: Enum = meta.try_into()<span class="question-mark">?</span>;
-                iface.add_enum_definition(enum_)<span class="question-mark">?</span>;
-            }
-            Metadata::Object(meta) =&gt; {
-                iface.add_object_free_fn(meta)<span class="question-mark">?</span>;
-            }
-            Metadata::Error(meta) =&gt; {
-                <span class="kw">let </span>ty = Type::Error(meta.name.clone());
-                iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
-                iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
-
-                <span class="kw">let </span>error: Error = meta.try_into()<span class="question-mark">?</span>;
-                iface.add_error_definition(error)<span class="question-mark">?</span>;
-            }
-        }
-    }
+        add_item_to_ci(iface, item)<span class="question-mark">?
+    </span>}
 
     iface
         .derive_ffi_funcs()
@@ -185,7 +162,60 @@
     iface
         .check_consistency()
         .context(<span class="string">&quot;ComponentInterface consistency error&quot;</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
+}
 
+<span class="kw">fn </span>add_enum_to_ci(
+    iface: <span class="kw-2">&amp;mut </span>ComponentInterface,
+    meta: EnumMetadata,
+    is_flat: bool,
+) -&gt; anyhow::Result&lt;()&gt; {
+    <span class="kw">let </span>ty = Type::Enum(meta.name.clone());
+    iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+    iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>enum_ = Enum::try_from_meta(meta, is_flat)<span class="question-mark">?</span>;
+    iface.add_enum_definition(enum_)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="kw">fn </span>add_item_to_ci(iface: <span class="kw-2">&amp;mut </span>ComponentInterface, item: Metadata) -&gt; anyhow::Result&lt;()&gt; {
+    <span class="kw">match </span>item {
+        Metadata::Namespace(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(),
+        Metadata::UdlFile(<span class="kw">_</span>) =&gt; (),
+        Metadata::Func(meta) =&gt; {
+            iface.add_function_definition(meta.into())<span class="question-mark">?</span>;
+        }
+        Metadata::Constructor(meta) =&gt; {
+            iface.add_constructor_meta(meta)<span class="question-mark">?</span>;
+        }
+        Metadata::Method(meta) =&gt; {
+            iface.add_method_meta(meta)<span class="question-mark">?</span>;
+        }
+        Metadata::Record(meta) =&gt; {
+            <span class="kw">let </span>ty = Type::Record(meta.name.clone());
+            iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+            iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
+
+            <span class="kw">let </span>record: Record = meta.try_into()<span class="question-mark">?</span>;
+            iface.add_record_definition(record)<span class="question-mark">?</span>;
+        }
+        Metadata::Enum(meta) =&gt; {
+            <span class="kw">let </span>flat = meta.variants.iter().all(|v| v.fields.is_empty());
+            add_enum_to_ci(iface, meta, flat)<span class="question-mark">?</span>;
+        }
+        Metadata::Object(meta) =&gt; {
+            iface.add_object_free_fn(meta)<span class="question-mark">?</span>;
+        }
+        Metadata::Error(meta) =&gt; {
+            iface.note_name_used_as_error(meta.name());
+            <span class="kw">match </span>meta {
+                ErrorMetadata::Enum { enum_, is_flat } =&gt; {
+                    add_enum_to_ci(iface, enum_, is_flat)<span class="question-mark">?</span>;
+                }
+            };
+        }
+    }
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>

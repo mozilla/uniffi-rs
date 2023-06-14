@@ -352,6 +352,7 @@
 <a href="#352" id="352">352</a>
 <a href="#353" id="353">353</a>
 <a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -407,7 +408,6 @@
             // However, types that support importing all end up with the same prefix of &quot;Type&quot;, so
             // that the import handling code knows how to find the remote reference.
             </span>Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
-            Type::Error(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
             Type::Enum(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
             Type::Record(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
             Type::CallbackInterface(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{nm}&quot;</span>),
@@ -580,9 +580,7 @@
             Type::UInt64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;u64\&quot;, 0, 2**64)&quot;</span>),
             Type::Float32 | Type::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_f&quot;</span>),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm} ? true : false&quot;</span>),
-            Type::Object { .. } | Type::Enum(<span class="kw">_</span>) | Type::Error(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; {
-                nm.to_string()
-            }
+            Type::Object { .. } | Type::Enum(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; nm.to_string(),
             Type::String | Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_s&quot;</span>),
             Type::Timestamp | Type::Duration =&gt; nm.to_string(),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
@@ -630,7 +628,6 @@
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromBytes({nm})&quot;</span>),
             Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>),
-            Type::Error(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
             Type::Enum(<span class="kw">_</span>)
             | Type::Record(<span class="kw">_</span>)
             | Type::Optional(<span class="kw">_</span>)
@@ -664,9 +661,14 @@
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.consumeIntoBytes&quot;</span>),
             Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>),
-            Type::Error(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering errors, yet&quot;</span>),
-            Type::Enum(<span class="kw">_</span>)
-            | Type::Record(<span class="kw">_</span>)
+            Type::Enum(<span class="kw">_</span>) =&gt; {
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;{}.consumeInto{}&quot;</span>,
+                    nm,
+                    class_name_rb(<span class="kw-2">&amp;</span>type_.canonical_name())<span class="question-mark">?
+                </span>)
+            }
+            Type::Record(<span class="kw">_</span>)
             | Type::Optional(<span class="kw">_</span>)
             | Type::Sequence(<span class="kw">_</span>)
             | Type::Timestamp
