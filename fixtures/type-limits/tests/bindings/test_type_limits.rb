@@ -65,4 +65,11 @@ class TestTypeLimits < Test::Unit::TestCase
     assert_equal(UniffiTypeLimits.take_u32(10**9), 10**9)
     assert_equal(UniffiTypeLimits.take_u64(10**19), 10**19)
   end
+  def test_strings
+    assert_raise Encoding::InvalidByteSequenceError do UniffiTypeLimits.take_string("\xff") end # invalid byte
+    assert_raise Encoding::InvalidByteSequenceError do UniffiTypeLimits.take_string("\xed\xa0\x80") end # surrogate
+    assert_equal(UniffiTypeLimits.take_string(""), "")
+    assert_equal(UniffiTypeLimits.take_string("愛"), "愛")
+    assert_equal(UniffiTypeLimits.take_string("💖"), "💖")
+  end
 end
