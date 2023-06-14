@@ -4,7 +4,6 @@
 // So, we switch here, using `enum class` for enums with no associated data
 // and `sealed class` for the general case.
 #}
-{%- let e = ci.get_enum_definition(name).unwrap() %}
 
 {%- if e.is_flat() %}
 

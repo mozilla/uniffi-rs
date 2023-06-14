@@ -1,7 +1,7 @@
 {%- if func.is_async() %}
 {%- match func.throws_type() -%}
 {%- when Some with (throwable) %}
-@Throws({{ throwable|type_name }}::class)
+@Throws({{ throwable|error_type_name }}::class)
 {%- else -%}
 {%- endmatch %}
 
@@ -38,7 +38,7 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
 {%- else %}
 {%- match func.throws_type() -%}
 {%- when Some with (throwable) %}
-@Throws({{ throwable|type_name }}::class)
+@Throws({{ throwable|error_type_name }}::class)
 {%- else -%}
 {%- endmatch -%}
 

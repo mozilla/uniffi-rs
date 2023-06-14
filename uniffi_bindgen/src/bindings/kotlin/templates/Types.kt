@@ -57,10 +57,12 @@
 {%- include "ByteArrayHelper.kt" %}
 
 {%- when Type::Enum(name) %}
+{%- let e = ci.get_enum_definition(name).unwrap() %}
+{%- if !ci.is_name_used_as_error(name) %}
 {% include "EnumTemplate.kt" %}
-
-{%- when Type::Error(name) %}
+{%- else %}
 {% include "ErrorTemplate.kt" %}
+{%- endif -%}
 
 {%- when Type::Object { name, imp } %}
 {% include "ObjectTemplate.kt" %}

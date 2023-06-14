@@ -56,10 +56,13 @@
 {%- include "BytesHelper.py" %}
 
 {%- when Type::Enum(name) %}
-{%- include "EnumTemplate.py" %}
-
-{%- when Type::Error(name) %}
+{%- let e = ci.get_enum_definition(name).unwrap() %}
+{# For enums, there are either an error *or* an enum, they can't be both. #}
+{%- if ci.is_name_used_as_error(name) %}
 {%- include "ErrorTemplate.py" %}
+{%- else %}
+{%- include "EnumTemplate.py" %}
+{% endif %}
 
 {%- when Type::Record(name) %}
 {%- include "RecordTemplate.py" %}

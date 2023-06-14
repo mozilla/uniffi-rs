@@ -1,4 +1,3 @@
-{%- let e = ci.get_error_definition(name).unwrap() %}
 public enum {{ type_name }} {
 
     {% if e.is_flat() %}

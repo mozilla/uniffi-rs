@@ -1,5 +1,3 @@
-{%- let e = ci.get_error_definition(name).unwrap() %}
-
 # {{ type_name }}
 # We want to define each variant as a nested class that's also a subclass,
 # which is tricky in Python.  To accomplish this we're going to create each

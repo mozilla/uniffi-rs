@@ -47,11 +47,8 @@
 use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
+use super::literal::{convert_default_value, Literal};
 use super::types::{Type, TypeIterator};
-use super::{
-    convert_type,
-    literal::{convert_default_value, Literal},
-};
 use super::{APIConverter, AsType, ComponentInterface};
 
 /// Represents a "data class" style object, for passing around complex values.
@@ -148,7 +145,7 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
 
     fn try_from(meta: uniffi_meta::FieldMetadata) -> Result<Self> {
         let name = meta.name;
-        let type_ = convert_type(&meta.ty);
+        let type_ = meta.ty.into();
         let default = meta
             .default
             .map(|d| Literal::from_metadata(&name, &type_, d))

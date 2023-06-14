@@ -21,7 +21,7 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
-use super::super::attributes::{EnumAttributes, InterfaceAttributes, TypedefAttributes};
+use super::super::attributes::{InterfaceAttributes, TypedefAttributes};
 use super::{AsType, Type, TypeUniverse};
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
@@ -60,10 +60,8 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
         let name = self.identifier.0.to_string();
         let attrs = InterfaceAttributes::try_from(self.attributes.as_ref())?;
         // Some enum types are defined using an `interface` with a special attribute.
-        if attrs.contains_enum_attr() {
+        if attrs.contains_enum_attr() || attrs.contains_error_attr() {
             types.add_type_definition(self.identifier.0, Type::Enum(name))
-        } else if attrs.contains_error_attr() {
-            types.add_type_definition(self.identifier.0, Type::Error(name))
         } else {
             let obj = crate::interface::Object::new(name, attrs.object_impl());
             types.add_type_definition(self.identifier.0, obj.as_type())
@@ -82,11 +80,7 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
-        if EnumAttributes::try_from(self.attributes.as_ref())?.contains_error_attr() {
-            types.add_type_definition(self.identifier.0, Type::Error(name))
-        } else {
-            types.add_type_definition(self.identifier.0, Type::Enum(name))
-        }
+        types.add_type_definition(self.identifier.0, Type::Enum(name))
     }
 }
 
@@ -192,7 +186,7 @@ mod test {
                     matches!(types.get_type_definition("TestItems").unwrap(), Type::Enum(nm) if nm == "TestItems")
                 );
                 assert!(
-                    matches!(types.get_type_definition("TestError").unwrap(), Type::Error(nm) if nm == "TestError")
+                    matches!(types.get_type_definition("TestError").unwrap(), Type::Enum(nm) if nm == "TestError")
                 );
             },
         );

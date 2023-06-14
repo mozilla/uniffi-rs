@@ -54,7 +54,7 @@ pub mod codes {
     pub const TYPE_OPTION: u8 = 12;
     pub const TYPE_RECORD: u8 = 13;
     pub const TYPE_ENUM: u8 = 14;
-    pub const TYPE_ERROR: u8 = 15;
+    // 15 no longer used.
     pub const TYPE_INTERFACE: u8 = 16;
     pub const TYPE_VEC: u8 = 17;
     pub const TYPE_HASH_MAP: u8 = 18;

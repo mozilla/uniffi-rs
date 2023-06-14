@@ -142,6 +142,7 @@ class RustBuffer < FFI::Struct
   end
 
   {% when Type::Enum with (enum_name) -%}
+  {% if !ci.is_name_used_as_error(enum_name) %}
   {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
   # The Enum type {{ enum_name }}.
 
@@ -157,6 +158,7 @@ class RustBuffer < FFI::Struct
       return stream.read{{ canonical_type_name }}
     end
   end
+  {% endif %}
 
   {% when Type::Optional with (inner_type) -%}
   # The Optional<T> type for {{ inner_type.canonical_name() }}.

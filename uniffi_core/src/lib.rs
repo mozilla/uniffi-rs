@@ -295,15 +295,12 @@ pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
 }
 
 /// Helper function to lower an `anyhow::Error` that's wrapping an error type
-pub fn lower_anyhow_error_or_panic<UT, E>(
-    err: anyhow::Error,
-    arg_name: &str,
-) -> <E as FfiConverter<UT>>::FfiType
+pub fn lower_anyhow_error_or_panic<UT, E>(err: anyhow::Error, arg_name: &str) -> RustBuffer
 where
     E: 'static + FfiConverter<UT> + Sync + Send + std::fmt::Debug + std::fmt::Display,
 {
     match err.downcast::<E>() {
-        Ok(actual_error) => E::lower(actual_error),
+        Ok(actual_error) => lower_into_rust_buffer(actual_error),
         Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
     }
 }

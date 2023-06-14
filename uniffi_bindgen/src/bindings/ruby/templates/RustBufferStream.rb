@@ -158,8 +158,10 @@ class RustBufferStream
     return {{ object_name|class_name_rb }}._uniffi_allocate(pointer)
   end
 
-  {% when Type::Enum with (enum_name) -%}
-  {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
+  {% when Type::Enum with (name) -%}
+  {%- let e = ci.get_enum_definition(name).unwrap() -%}
+  {% if !ci.is_name_used_as_error(name) %}
+  {% let enum_name = name %}
   # The Enum type {{ enum_name }}.
 
   def read{{ canonical_type_name }}
@@ -190,8 +192,9 @@ class RustBufferStream
     {%- endif %}
   end
 
-  {% when Type::Error with (error_name) -%}
-  {%- let e = ci.get_error_definition(error_name).unwrap().wrapped_enum() %}
+  {% else %}
+
+  {% let error_name = name %}
 
   # The Error type {{ error_name }}
 
@@ -225,6 +228,7 @@ class RustBufferStream
     raise InternalError, 'Unexpected variant tag for {{ canonical_type_name }}'
     {%- endif %}
   end
+  {% endif %}
 
   {% when Type::Record with (record_name) -%}
   {%- let rec = ci.get_record_definition(record_name).unwrap() -%}

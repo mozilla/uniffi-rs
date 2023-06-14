@@ -38,14 +38,14 @@ uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::E
 
 {% include "RustBuffer.rs" %}
 
-// Error definitions, corresponding to `error` in the UDL.
-{% for e in ci.error_definitions() %}
-{% include "ErrorTemplate.rs" %}
-{% endfor %}
-
-// Enum definitions, corresponding to `enum` in UDL.
 {% for e in ci.enum_definitions() %}
+{% if ci.is_name_used_as_error(e.name()) %}
+// Error definitions, corresponding to `error` in the UDL.
+{% include "ErrorTemplate.rs" %}
+{% else %}
+// Enum definitions, corresponding to `enum` in UDL.
 {% include "EnumTemplate.rs" %}
+{% endif %}
 {% endfor %}
 
 // Record definitions, implemented as method-less structs, corresponding to `dictionary` objects.

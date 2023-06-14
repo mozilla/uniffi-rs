@@ -142,7 +142,7 @@ fn flat_error_ffi_converter_impl(
                 #try_read_impl
             }
 
-            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ERROR)
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
                 .concat_str(#name);
         }
     }
@@ -155,15 +155,16 @@ pub(crate) fn error_meta_static_var(
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
     let module_path = mod_path()?;
-    let flat_code = u8::from(flat);
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
+                // first our is-flat flag
+                .concat_bool(#flat)
+                // followed by an enum
                 .concat_str(#module_path)
                 .concat_str(#name)
-                .concat_value(#flat_code)
     };
     if flat {
-        metadata_expr.extend(flat_error_variant_metadata(enum_)?);
+        metadata_expr.extend(flat_error_variant_metadata(enum_)?)
     } else {
         metadata_expr.extend(variant_metadata(enum_)?);
     }

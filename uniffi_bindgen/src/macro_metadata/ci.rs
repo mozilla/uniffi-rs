@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::interface::{ComponentInterface, Enum, Error, Record, Type};
+use crate::interface::{ComponentInterface, Enum, Record, Type};
 use anyhow::{bail, Context};
-use uniffi_meta::{group_metadata, Metadata, MetadataGroup};
+use uniffi_meta::{group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup};
 
 /// Add Metadata items to the ComponentInterface
 ///
@@ -41,47 +41,9 @@ pub fn add_group_to_ci(iface: &mut ComponentInterface, group: MetadataGroup) -> 
             iface.namespace()
         );
     }
+
     for item in group.items {
-        match item {
-            Metadata::Namespace(_) => unreachable!(),
-            Metadata::UdlFile(_) => (),
-            Metadata::Func(meta) => {
-                iface.add_function_definition(meta.into())?;
-            }
-            Metadata::Constructor(meta) => {
-                iface.add_constructor_meta(meta)?;
-            }
-            Metadata::Method(meta) => {
-                iface.add_method_meta(meta)?;
-            }
-            Metadata::Record(meta) => {
-                let ty = Type::Record(meta.name.clone());
-                iface.types.add_known_type(&ty)?;
-                iface.types.add_type_definition(&meta.name, ty)?;
-
-                let record: Record = meta.try_into()?;
-                iface.add_record_definition(record)?;
-            }
-            Metadata::Enum(meta) => {
-                let ty = Type::Enum(meta.name.clone());
-                iface.types.add_known_type(&ty)?;
-                iface.types.add_type_definition(&meta.name, ty)?;
-
-                let enum_: Enum = meta.try_into()?;
-                iface.add_enum_definition(enum_)?;
-            }
-            Metadata::Object(meta) => {
-                iface.add_object_free_fn(meta)?;
-            }
-            Metadata::Error(meta) => {
-                let ty = Type::Error(meta.name.clone());
-                iface.types.add_known_type(&ty)?;
-                iface.types.add_type_definition(&meta.name, ty)?;
-
-                let error: Error = meta.try_into()?;
-                iface.add_error_definition(error)?;
-            }
-        }
+        add_item_to_ci(iface, item)?
     }
 
     iface
@@ -90,6 +52,59 @@ pub fn add_group_to_ci(iface: &mut ComponentInterface, group: MetadataGroup) -> 
     iface
         .check_consistency()
         .context("ComponentInterface consistency error")?;
+    Ok(())
+}
 
+fn add_enum_to_ci(
+    iface: &mut ComponentInterface,
+    meta: EnumMetadata,
+    is_flat: bool,
+) -> anyhow::Result<()> {
+    let ty = Type::Enum(meta.name.clone());
+    iface.types.add_known_type(&ty)?;
+    iface.types.add_type_definition(&meta.name, ty)?;
+
+    let enum_ = Enum::try_from_meta(meta, is_flat)?;
+    iface.add_enum_definition(enum_)?;
+    Ok(())
+}
+
+fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Result<()> {
+    match item {
+        Metadata::Namespace(_) => unreachable!(),
+        Metadata::UdlFile(_) => (),
+        Metadata::Func(meta) => {
+            iface.add_function_definition(meta.into())?;
+        }
+        Metadata::Constructor(meta) => {
+            iface.add_constructor_meta(meta)?;
+        }
+        Metadata::Method(meta) => {
+            iface.add_method_meta(meta)?;
+        }
+        Metadata::Record(meta) => {
+            let ty = Type::Record(meta.name.clone());
+            iface.types.add_known_type(&ty)?;
+            iface.types.add_type_definition(&meta.name, ty)?;
+
+            let record: Record = meta.try_into()?;
+            iface.add_record_definition(record)?;
+        }
+        Metadata::Enum(meta) => {
+            let flat = meta.variants.iter().all(|v| v.fields.is_empty());
+            add_enum_to_ci(iface, meta, flat)?;
+        }
+        Metadata::Object(meta) => {
+            iface.add_object_free_fn(meta)?;
+        }
+        Metadata::Error(meta) => {
+            iface.note_name_used_as_error(meta.name());
+            match meta {
+                ErrorMetadata::Enum { enum_, is_flat } => {
+                    add_enum_to_ci(iface, enum_, is_flat)?;
+                }
+            };
+        }
+    }
     Ok(())
 }

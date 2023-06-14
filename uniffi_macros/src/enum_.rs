@@ -68,7 +68,7 @@ pub(crate) fn rich_error_ffi_converter_impl(
         ident,
         enum_,
         tag,
-        quote! { ::uniffi::metadata::codes::TYPE_ERROR },
+        quote! { ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
 

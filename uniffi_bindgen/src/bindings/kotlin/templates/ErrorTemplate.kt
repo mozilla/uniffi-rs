@@ -1,5 +1,6 @@
-{%- let e = ci.get_error_definition(name).unwrap() %}
-
+{%- let type_name = type_|error_type_name %}
+{%- let ffi_converter_name = type_|error_ffi_converter_name %}
+{%- let canonical_type_name = type_|error_canonical_name %}
 {% if e.is_flat() %}
 sealed class {{ type_name }}(message: String): Exception(message){% if contains_object_references %}, Disposable {% endif %} {
         // Each variant is a nested class
@@ -9,7 +10,7 @@ sealed class {{ type_name }}(message: String): Exception(message){% if contains_
         {% endfor %}
 
     companion object ErrorHandler : CallStatusErrorHandler<{{ type_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ e|lift_fn }}(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
     }
 }
 {%- else %}
@@ -28,7 +29,7 @@ sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Di
     {% endfor %}
 
     companion object ErrorHandler : CallStatusErrorHandler<{{ type_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ e|lift_fn }}(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
     }
 
     {% if contains_object_references %}

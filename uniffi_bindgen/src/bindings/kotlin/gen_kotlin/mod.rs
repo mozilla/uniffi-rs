@@ -231,6 +231,14 @@ impl KotlinCodeOracle {
         type_.clone().as_type().as_codetype()
     }
 
+    fn find_as_error(&self, type_: &Type) -> Box<dyn CodeType> {
+        match type_ {
+            Type::Enum(id) => Box::new(error::ErrorCodeType::new(id.clone())),
+            // XXX - not sure how we are supposed to return askama::Error?
+            _ => panic!("unsupported type for error: {type_:?}"),
+        }
+    }
+
     /// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
         nm.to_string().to_upper_camel_case()
@@ -333,7 +341,6 @@ impl<T: AsType> AsCodeType for T {
             Type::Enum(id) => Box::new(enum_::EnumCodeType::new(id)),
             Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
             Type::Record(id) => Box::new(record::RecordCodeType::new(id)),
-            Type::Error(id) => Box::new(error::ErrorCodeType::new(id)),
             Type::CallbackInterface(id) => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
             }
@@ -393,7 +400,7 @@ pub mod filters {
 
     pub fn error_handler(result_type: &ResultType) -> Result<String, askama::Error> {
         match &result_type.throws_type {
-            Some(error_type) => type_name(error_type),
+            Some(error_type) => Ok(KotlinCodeOracle.error_name(&type_name(error_type)?)),
             None => Ok("NullCallStatusErrorHandler".into()),
         }
     }
@@ -475,6 +482,26 @@ pub mod filters {
     /// when used in an error.
     pub fn error_variant(v: &Variant) -> Result<impl AsCodeType, askama::Error> {
         Ok(variant::ErrorVariantCodeTypeProvider { v: v.clone() })
+    }
+
+    /// Some of the above filters have different versions to help when the type
+    /// is used as an error.
+    pub fn error_type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle
+            .find_as_error(&as_type.as_type())
+            .type_label())
+    }
+
+    pub fn error_canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle
+            .find_as_error(&as_type.as_type())
+            .canonical_name())
+    }
+
+    pub fn error_ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle
+            .find_as_error(&as_type.as_type())
+            .ffi_converter_name())
     }
 
     /// Remove the "`" chars we put around function/variable names
