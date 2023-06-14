@@ -437,17 +437,17 @@
         <span class="prelude-val">Ok</span>(nm.to_string().to_shouty_snake_case())
     }
 
-    <span class="kw">pub fn </span>coerce_rb(nm: <span class="kw-2">&amp;</span>str, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub fn </span>coerce_rb(nm: <span class="kw-2">&amp;</span>str, ns: <span class="kw-2">&amp;</span>str, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
-            Type::Int8
-            | Type::UInt8
-            | Type::Int16
-            | Type::UInt16
-            | Type::Int32
-            | Type::UInt32
-            | Type::Int64
-            | Type::UInt64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_i&quot;</span>), <span class="comment">// TODO: check max/min value
-            </span>Type::Float32 | Type::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_f&quot;</span>),
+            Type::Int8 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;i8\&quot;, -2**7, 2**7)&quot;</span>),
+            Type::Int16 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;i16\&quot;, -2**15, 2**15)&quot;</span>),
+            Type::Int32 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;i32\&quot;, -2**31, 2**31)&quot;</span>),
+            Type::Int64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;i64\&quot;, -2**63, 2**63)&quot;</span>),
+            Type::UInt8 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;u8\&quot;, 0, 2**8)&quot;</span>),
+            Type::UInt16 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;u16\&quot;, 0, 2**16)&quot;</span>),
+            Type::UInt32 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;u32\&quot;, 0, 2**32)&quot;</span>),
+            Type::UInt64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;u64\&quot;, 0, 2**64)&quot;</span>),
+            Type::Float32 | Type::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_f&quot;</span>),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm} ? true : false&quot;</span>),
             Type::Object { .. } | Type::Enum(<span class="kw">_</span>) | Type::Error(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; {
                 nm.to_string()
@@ -455,9 +455,9 @@
             Type::String | Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.to_s&quot;</span>),
             Type::Timestamp | Type::Duration =&gt; nm.to_string(),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
-            Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? {} : nil)&quot;</span>, coerce_rb(nm, t)<span class="question-mark">?</span>),
+            Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? {} : nil)&quot;</span>, coerce_rb(nm, ns, t)<span class="question-mark">?</span>),
             Type::Sequence(t) =&gt; {
-                <span class="kw">let </span>coerce_code = coerce_rb(<span class="string">&quot;v&quot;</span>, t)<span class="question-mark">?</span>;
+                <span class="kw">let </span>coerce_code = coerce_rb(<span class="string">&quot;v&quot;</span>, ns, t)<span class="question-mark">?</span>;
                 <span class="kw">if </span>coerce_code == <span class="string">&quot;v&quot; </span>{
                     nm.to_string()
                 } <span class="kw">else </span>{
@@ -465,8 +465,8 @@
                 }
             }
             Type::Map(_k, t) =&gt; {
-                <span class="kw">let </span>k_coerce_code = coerce_rb(<span class="string">&quot;k&quot;</span>, <span class="kw-2">&amp;</span>Type::String)<span class="question-mark">?</span>;
-                <span class="kw">let </span>v_coerce_code = coerce_rb(<span class="string">&quot;v&quot;</span>, t)<span class="question-mark">?</span>;
+                <span class="kw">let </span>k_coerce_code = coerce_rb(<span class="string">&quot;k&quot;</span>, ns, <span class="kw-2">&amp;</span>Type::String)<span class="question-mark">?</span>;
+                <span class="kw">let </span>v_coerce_code = coerce_rb(<span class="string">&quot;v&quot;</span>, ns, t)<span class="question-mark">?</span>;
 
                 <span class="kw">if </span>k_coerce_code == <span class="string">&quot;k&quot; </span>&amp;&amp; v_coerce_code == <span class="string">&quot;v&quot; </span>{
                     nm.to_string()
