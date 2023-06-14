@@ -66,6 +66,15 @@ class TestTypeLimits(unittest.TestCase):
         self.assertEqual(take_u64(10**19), 10**19)
 
     def test_non_integer(self):
+        self.assertRaises(TypeError, lambda: take_i8(None))
+        self.assertRaises(TypeError, lambda: take_i16(None))
+        self.assertRaises(TypeError, lambda: take_i32(None))
+        self.assertRaises(TypeError, lambda: take_i64(None))
+        self.assertRaises(TypeError, lambda: take_u8(None))
+        self.assertRaises(TypeError, lambda: take_u16(None))
+        self.assertRaises(TypeError, lambda: take_u32(None))
+        self.assertRaises(TypeError, lambda: take_u64(None))
+
         self.assertRaises(TypeError, lambda: take_i8("0"))
         self.assertRaises(TypeError, lambda: take_i16("0"))
         self.assertRaises(TypeError, lambda: take_i32("0"))
@@ -97,6 +106,15 @@ class TestTypeLimits(unittest.TestCase):
         self.assertRaises(TypeError, lambda: take_u64(A()))
 
     def test_integer_like(self):
+        self.assertEqual(take_i8(123), 123.0)
+        self.assertEqual(take_i16(123), 123.0)
+        self.assertEqual(take_i32(123), 123.0)
+        self.assertEqual(take_i64(123), 123.0)
+        self.assertEqual(take_u8(123), 123.0)
+        self.assertEqual(take_u16(123), 123.0)
+        self.assertEqual(take_u32(123), 123.0)
+        self.assertEqual(take_u64(123), 123.0)
+
         self.assertEqual(take_i8(False), 0)
         self.assertEqual(take_i16(False), 0)
         self.assertEqual(take_i32(False), 0)
@@ -129,6 +147,9 @@ class TestTypeLimits(unittest.TestCase):
         self.assertEqual(take_u64(A()), 123)
 
     def test_non_float(self):
+        self.assertRaises(TypeError, lambda: take_f32(None))
+        self.assertRaises(TypeError, lambda: take_f64(None))
+
         self.assertRaises(TypeError, lambda: take_f32("0"))
         self.assertRaises(TypeError, lambda: take_f64("0"))
 

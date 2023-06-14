@@ -64,6 +64,155 @@ class TestTypeLimits < Test::Unit::TestCase
     assert_equal(UniffiTypeLimits.take_u16(10**4), 10**4)
     assert_equal(UniffiTypeLimits.take_u32(10**9), 10**9)
     assert_equal(UniffiTypeLimits.take_u64(10**19), 10**19)
+
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i8(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i16(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i32(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i64(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u8(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u16(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u32(-Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u64(-Float::INFINITY) end
+
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i8(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i16(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i32(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i64(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u8(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u16(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u32(Float::INFINITY) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u64(Float::INFINITY) end
+
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i8(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i16(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i32(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_i64(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u8(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u16(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u32(Float::NAN) end
+    assert_raise FloatDomainError do UniffiTypeLimits.take_u64(Float::NAN) end
+  end
+  class NonInteger
+  end
+  def test_non_integer
+    assert_raise TypeError do UniffiTypeLimits.take_i8(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_i16(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_i32(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_i64(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_u8(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_u16(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_u32(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_u64(nil) end
+
+    assert_raise TypeError do UniffiTypeLimits.take_i8("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_i16("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_i32("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_i64("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_u8("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_u16("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_u32("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_u64("0") end
+
+    assert_raise TypeError do UniffiTypeLimits.take_i8(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_i16(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_i32(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_i64(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_u8(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_u16(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_u32(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_u64(false) end
+
+    assert_raise TypeError do UniffiTypeLimits.take_i8(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_i16(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_i32(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_i64(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_u8(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_u16(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_u32(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_u64(true) end
+
+    assert_raise TypeError do UniffiTypeLimits.take_i8(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_i16(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_i32(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_i64(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_u8(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_u16(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_u32(NonInteger.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_u64(NonInteger.new) end
+  end
+  class IntegerLike
+    def to_int
+      123
+    end
+  end
+  def test_integer_like
+    assert_equal(UniffiTypeLimits.take_i8(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_i16(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_i32(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_i64(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_u8(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_u16(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_u32(123.0), 123)
+    assert_equal(UniffiTypeLimits.take_u64(123.0), 123)
+
+    assert_equal(UniffiTypeLimits.take_i8(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_i16(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_i32(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_i64(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_u8(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_u16(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_u32(-0.5), 0)
+    assert_equal(UniffiTypeLimits.take_u64(-0.5), 0)
+
+    assert_equal(UniffiTypeLimits.take_i8(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_i16(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_i32(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_i64(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_u8(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_u16(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_u32(IntegerLike.new), 123)
+    assert_equal(UniffiTypeLimits.take_u64(IntegerLike.new), 123)
+  end
+  class NonFloat
+  end
+  def test_non_float
+    assert_raise TypeError do UniffiTypeLimits.take_f32(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_f64(nil) end
+
+    assert_raise TypeError do UniffiTypeLimits.take_f32("0") end
+    assert_raise TypeError do UniffiTypeLimits.take_f64("0") end
+
+    assert_raise TypeError do UniffiTypeLimits.take_f32(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_f64(false) end
+
+    assert_raise TypeError do UniffiTypeLimits.take_f32(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_f64(true) end
+
+    assert_raise RangeError do UniffiTypeLimits.take_f32(1i) end
+    assert_raise RangeError do UniffiTypeLimits.take_f64(1i) end
+
+    assert_raise TypeError do UniffiTypeLimits.take_f32(NonFloat.new) end
+    assert_raise TypeError do UniffiTypeLimits.take_f64(NonFloat.new) end
+  end
+  def test_float_like
+    assert_equal(UniffiTypeLimits.take_f32(456), 456.0)
+    assert_equal(UniffiTypeLimits.take_f64(456), 456.0)
+  end
+  def test_special_floats
+    assert_equal(UniffiTypeLimits.take_f32(Float::INFINITY), Float::INFINITY)
+    assert_equal(UniffiTypeLimits.take_f64(Float::INFINITY), Float::INFINITY)
+
+    assert_equal(UniffiTypeLimits.take_f32(-Float::INFINITY), -Float::INFINITY)
+    assert_equal(UniffiTypeLimits.take_f64(-Float::INFINITY), -Float::INFINITY)
+
+    assert_equal(UniffiTypeLimits.take_f32(0.0).to_s, "0.0")
+    assert_equal(UniffiTypeLimits.take_f64(0.0).to_s, "0.0")
+
+    assert_equal(UniffiTypeLimits.take_f32(-0.0).to_s, "-0.0")
+    assert_equal(UniffiTypeLimits.take_f64(-0.0).to_s, "-0.0")
+
+    assert(UniffiTypeLimits.take_f32(Float::NAN).nan?)
+    assert(UniffiTypeLimits.take_f64(Float::NAN).nan?)
   end
   def test_strings
     assert_raise Encoding::InvalidByteSequenceError do UniffiTypeLimits.take_string("\xff") end # invalid byte
