@@ -108,7 +108,7 @@ class RustBufferBuilder
   {% when Type::String -%}
 
   def write_String(v)
-    v = v.to_s
+    v = {{ ci.namespace()|class_name_rb }}::uniffi_utf8(v)
     pack_into 4, 'l>', v.bytes.size
     write v
   end

@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::str;
+
 fn take_i8(v: i8) -> i8 {
     v
 }
@@ -32,6 +34,11 @@ fn take_f32(v: f32) -> f32 {
     v
 }
 fn take_f64(v: f64) -> f64 {
+    v
+}
+
+fn take_string(v: String) -> String {
+    assert!(str::from_utf8(v.as_bytes()).is_ok());
     v
 }
 

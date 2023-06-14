@@ -174,5 +174,11 @@ class TestTypeLimits(unittest.TestCase):
         self.assertTrue(math.isnan(take_f32(math.nan)))
         self.assertTrue(math.isnan(take_f64(math.nan)))
 
+    def test_strings(self):
+        self.assertRaises(ValueError, lambda: take_string("\ud800")) # surrogate
+        self.assertEqual(take_string(""), "")
+        self.assertEqual(take_string("愛"), "愛")
+        self.assertEqual(take_string("💖"), "💖")
+
 if __name__ == "__main__":
     unittest.main()

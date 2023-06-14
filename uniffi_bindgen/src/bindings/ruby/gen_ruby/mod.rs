@@ -227,7 +227,7 @@ mod filters {
             Type::Float32 | Type::Float64 => format!("{nm}.to_f"),
             Type::Boolean => format!("{nm} ? true : false"),
             Type::Object { .. } | Type::Enum(_) | Type::Record(_) => nm.to_string(),
-            Type::String | Type::Bytes => format!("{nm}.to_s"),
+            Type::String | Type::Bytes => format!("{ns}::uniffi_utf8({nm})"),
             Type::Timestamp | Type::Duration => nm.to_string(),
             Type::CallbackInterface(_) => panic!("No support for coercing callback interfaces yet"),
             Type::Optional(t) => format!("({nm} ? {} : nil)", coerce_rb(nm, ns, t)?),
