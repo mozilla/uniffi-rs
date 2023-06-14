@@ -242,8 +242,8 @@ pub trait Person {
 
 // Corresponding UDL:
 // callback interface Person {
-//   string name();
-//   u32 age();
+//     string name();
+//     u32 age();
 // }
 }
 ```

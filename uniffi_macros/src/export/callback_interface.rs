@@ -25,7 +25,7 @@ pub(super) fn trait_impl(
             ImplItem::Method(sig) => gen_method_impl(sig, internals_ident),
             _ => unreachable!("traits have no constructors"),
         })
-        .collect::<syn::Result<Vec<_>>>()?;
+        .collect::<syn::Result<TokenStream>>()?;
 
     Ok(quote! {
         #[doc(hidden)]
@@ -40,7 +40,7 @@ pub(super) fn trait_impl(
             }
         }
 
-        impl Drop for #ident {
+        impl ::std::mem::Drop for #ident {
             fn drop(&mut self) {
                 #internals_ident.invoke_callback::<(), crate::UniFfiTag>(
                     self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
@@ -51,7 +51,7 @@ pub(super) fn trait_impl(
         ::uniffi::deps::static_assertions::assert_impl_all!(#ident: Send);
 
         impl #trait_ident for #ident {
-            #(#trait_impl_methods)*
+            #trait_impl_methods
         }
 
         ::uniffi::ffi_converter_callback_interface!(#trait_ident, #ident, #trait_name, crate::UniFfiTag);
@@ -87,20 +87,13 @@ fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<To
     }
     let params = sig.params();
     let buf_ident = Ident::new("uniffi_args_buf", Span::call_site());
-    let mut write_exprs = sig.write_exprs(&buf_ident).peekable();
-
-    let construct_args_buf = if write_exprs.peek().is_some() {
-        quote! {
-            let mut #buf_ident = ::std::vec::Vec::new();
-            #(#write_exprs;)*
-        }
-    } else {
-        quote! { let #buf_ident = ::std::vec::Vec::new(); }
-    };
+    let mut write_exprs = sig.write_exprs(&buf_ident);
 
     Ok(quote! {
         fn #ident(&self, #(#params),*) -> #return_ty {
-            #construct_args_buf
+            #[allow(unused_mut)]
+            let mut #buf_ident = ::std::vec::Vec::new();
+            #(#write_exprs;)*
             let uniffi_args_rbuf = uniffi::RustBuffer::from_vec(#buf_ident);
 
             #internals_ident.invoke_callback::<#return_ty, crate::UniFfiTag>(self.handle, #index, uniffi_args_rbuf)

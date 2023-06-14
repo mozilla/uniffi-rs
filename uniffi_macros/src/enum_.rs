@@ -221,15 +221,10 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
 /// implementation which panics.
 pub(crate) fn handle_callback_unexpected_error_fn(
     handle_unknown_callback_error: bool,
-) -> TokenStream {
-    if handle_unknown_callback_error {
-        quote! {
-            fn handle_callback_unexpected_error(e: ::uniffi::UnexpectedUniFFICallbackError) -> Self {
-                <Self as ::std::convert::From<::uniffi::UnexpectedUniFFICallbackError>>::from(e)
-            }
+) -> Option<TokenStream> {
+    handle_unknown_callback_error.then(|| quote! {
+        fn handle_callback_unexpected_error(e: ::uniffi::UnexpectedUniFFICallbackError) -> Self {
+            <Self as ::std::convert::From<::uniffi::UnexpectedUniFFICallbackError>>::from(e)
         }
-    } else {
-        // Use the default function
-        quote! {}
-    }
+    })
 }
