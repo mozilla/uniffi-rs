@@ -47,13 +47,13 @@ class {{ type_name }}:
 {%-         when UniffiTrait::Display { fmt } %}
             {%- call py::method_decl("__str__", fmt) %}
 {%-         when UniffiTrait::Eq { eq, ne } %}
-    def __eq__(self, other: object):
+    def __eq__(self, other: object) -> {{ eq.return_type().unwrap()|type_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
         return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", eq) %})
 
-    def __ne__(self, other: object):
+    def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
