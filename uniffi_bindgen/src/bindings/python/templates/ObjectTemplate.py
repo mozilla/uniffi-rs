@@ -45,8 +45,17 @@ class {{ type_name }}:
 {%-         when UniffiTrait::Display { fmt } %}
             {%- call py::method_decl("__str__", fmt) %}
 {%-         when UniffiTrait::Eq { eq, ne } %}
-            {%- call py::method_decl("__eq__", eq) %}
-            {%- call py::method_decl("__ne__", ne) %}
+    def __eq__(self, other: object):
+        if not isinstance(other, {{ type_name }}):
+            return NotImplemented
+
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", eq) %})
+
+    def __ne__(self, other: object):
+        if not isinstance(other, {{ type_name }}):
+            return NotImplemented
+
+        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", ne) %})
 {%-         when UniffiTrait::Hash { hash } %}
             {%- call py::method_decl("__hash__", hash) %}
 {%      endmatch %}

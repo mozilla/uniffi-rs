@@ -19,6 +19,10 @@ class TestTraitMethods(unittest.TestCase):
         self.assertEqual(m, TraitMethods("yo"))
         self.assertNotEqual(m, TraitMethods("yoyo"))
 
+    def test_eq(self):
+        m = TraitMethods("yo")
+        self.assertNotEqual(m, 17)
+
     def test_hash(self):
         d = {}
         m = TraitMethods("m")
