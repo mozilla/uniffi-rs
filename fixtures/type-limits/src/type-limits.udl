@@ -13,4 +13,5 @@ namespace uniffi_type_limits {
   f64 take_f64(f64 v);
 
   string take_string(string v);
+  bytes take_bytes(bytes v);
 };

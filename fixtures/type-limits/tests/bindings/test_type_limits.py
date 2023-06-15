@@ -195,11 +195,48 @@ class TestTypeLimits(unittest.TestCase):
         self.assertTrue(math.isnan(take_f32(math.nan)))
         self.assertTrue(math.isnan(take_f64(math.nan)))
 
+    def test_non_string(self):
+        self.assertRaises(TypeError, lambda: take_string(None))
+        self.assertRaises(TypeError, lambda: take_string(False))
+        self.assertRaises(TypeError, lambda: take_string(True))
+        self.assertRaises(TypeError, lambda: take_string(0))
+        self.assertRaises(TypeError, lambda: take_string(0.0))
+        self.assertRaises(TypeError, lambda: take_string(b""))
+
+        class A:
+            def __str__(self):
+                return ""
+
+        self.assertRaises(TypeError, lambda: take_string(A()))
+
     def test_strings(self):
         self.assertRaises(ValueError, lambda: take_string("\ud800")) # surrogate
         self.assertEqual(take_string(""), "")
         self.assertEqual(take_string("愛"), "愛")
         self.assertEqual(take_string("💖"), "💖")
+
+    def test_non_bytes(self):
+        self.assertRaises(TypeError, lambda: take_bytes(None))
+        self.assertRaises(TypeError, lambda: take_bytes(False))
+        self.assertRaises(TypeError, lambda: take_bytes(True))
+        self.assertRaises(TypeError, lambda: take_bytes(0))
+        self.assertRaises(TypeError, lambda: take_bytes(0.0))
+        self.assertRaises(TypeError, lambda: take_bytes(""))
+
+        class A:
+            def __str__(self):
+                return ""
+
+        self.assertRaises(TypeError, lambda: take_bytes(A()))
+
+    def test_bytes(self):
+        self.assertEqual(take_bytes(b""), b"")
+        self.assertEqual(take_bytes(b"\xff"), b"\xff") # invalid utf-8 byte
+        self.assertEqual(take_bytes(b"\xed\xa0\x80"), b"\xed\xa0\x80") # surrogate
+        self.assertEqual(take_bytes("愛".encode()), "愛".encode())
+        self.assertEqual(take_bytes("💖".encode()), "💖".encode())
+        self.assertEqual(take_bytes("愛".encode("utf-16-le")), b"\x1b\x61")
+        self.assertEqual(take_bytes("💖".encode("utf-16-le")), b"\x3d\xd8\x96\xdc")
 
 if __name__ == "__main__":
     unittest.main()

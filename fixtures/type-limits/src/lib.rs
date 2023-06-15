@@ -41,5 +41,8 @@ fn take_string(v: String) -> String {
     assert!(str::from_utf8(v.as_bytes()).is_ok());
     v
 }
+fn take_bytes(v: Vec<u8>) -> Vec<u8> {
+    v
+}
 
 uniffi::include_scaffolding!("type-limits");
