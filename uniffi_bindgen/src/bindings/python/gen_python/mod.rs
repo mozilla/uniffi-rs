@@ -303,17 +303,17 @@ impl PythonCodeOracle {
             FfiType::Float64 => "ctypes.c_double".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("RustBuffer{suffix}"),
-                None => "RustBuffer".to_string(),
+                Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
+                None => "_UniffiRustBuffer".to_string(),
             },
-            FfiType::ForeignBytes => "ForeignBytes".to_string(),
-            FfiType::ForeignCallback => "FOREIGN_CALLBACK_T".to_string(),
+            FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
+            FfiType::ForeignCallback => "_UNIFFI_FOREIGN_CALLBACK_T".to_string(),
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
-            FfiType::ForeignExecutorCallback => "UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
+            FfiType::ForeignExecutorCallback => "_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
             FfiType::FutureCallback { return_type } => {
                 format!(
-                    "uniffi_future_callback_t({})",
+                    "_uniffi_future_callback_t({})",
                     Self::ffi_type_label(return_type),
                 )
             }
@@ -385,7 +385,7 @@ pub mod filters {
     }
 
     pub fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
-        Ok(as_ct.as_codetype().ffi_converter_name())
+        Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }
 
     pub fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -419,7 +419,7 @@ pub mod filters {
             None => "void".into(),
         };
         Ok(format!(
-            "uniffi_async_callback_{return_string}__{throws_string}"
+            "_uniffi_async_callback_{return_string}__{throws_string}"
         ))
     }
 

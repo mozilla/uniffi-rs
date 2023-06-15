@@ -7,11 +7,11 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-rust_call_with_error({{ e|ffi_converter_name }},
+_rust_call_with_error({{ e|ffi_converter_name }},
     {%- else -%}
-rust_call(
+_rust_call(
     {%- endmatch -%}
-    _UniFFILib.{{ func.ffi_func().name() }},
+    _UniffiLib.{{ func.ffi_func().name() }},
     {%- call arg_list_lowered(func) -%}
 )
 {%- endmacro -%}
@@ -19,12 +19,12 @@ rust_call(
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
     {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-rust_call_with_error(
+_rust_call_with_error(
     {{ e|ffi_converter_name }},
     {%- else -%}
-rust_call(
+_rust_call(
     {%- endmatch -%}
-    _UniFFILib.{{ func.ffi_func().name() }},
+    _UniffiLib.{{ func.ffi_func().name() }},
     {{- prefix }},
     {%- call arg_list_lowered(func) -%}
 )
@@ -46,7 +46,7 @@ rust_call(
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name -}}]" = DEFAULT
+        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name -}}]" = _DEFAULT
         {%- else %}: "{{ arg|type_name -}}"
         {%- endmatch %}
         {%- if !loop.last %},{% endif -%}
@@ -54,7 +54,7 @@ rust_call(
 {%- endmacro %}
 
 {#-
-// Arglist as used in the _UniFFILib function declarations.
+// Arglist as used in the _UniffiLib function declarations.
 // Note unfiltered name but ffi_type_name filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
@@ -62,7 +62,7 @@ rust_call(
     {{ arg.type_().borrow()|ffi_type_name }},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}
-    ctypes.POINTER(RustCallStatus),{% endif %}
+    ctypes.POINTER(_UniffiRustCallStatus),{% endif %}
 {% endmacro -%}
 
 {#
@@ -73,7 +73,7 @@ rust_call(
     {%- match arg.default_value() %}
     {%- when None %}
     {%- when Some with(literal) %}
-    if {{ arg.name()|var_name }} is DEFAULT:
+    if {{ arg.name()|var_name }} is _DEFAULT:
         {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
     {%- endmatch %}
     {% endfor -%}
@@ -88,7 +88,7 @@ rust_call(
         {%- match arg.default_value() %}
         {%- when None %}
         {%- when Some with(literal) %}
-        if {{ arg.name()|var_name }} is DEFAULT:
+        if {{ arg.name()|var_name }} is _DEFAULT:
             {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
         {%- endmatch %}
         {% endfor -%}
@@ -102,8 +102,8 @@ rust_call(
 
     async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
         {%- call setup_args_extra_indent(meth) %}
-        return await rust_call_async(
-            _UniFFILib.{{ func.ffi_func().name() }},
+        return await _rust_call_async(
+            _UniffiLib.{{ func.ffi_func().name() }},
             {{ func.result_type().borrow()|async_callback_fn }},
             self._pointer,
             {% call arg_list_lowered(func) %}

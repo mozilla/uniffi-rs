@@ -30,7 +30,7 @@ import platform
 {%- endfor %}
 
 # Used for default argument values
-DEFAULT = object()
+_DEFAULT = object()
 
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}
