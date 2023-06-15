@@ -132,12 +132,15 @@ mod test_type_ids {
     #[test]
     fn test_user_types() {
         check_type_id::<Person>(Type::Record {
+            module_path: "uniffi_fixture_metadata".into(),
             name: "Person".into(),
         });
         check_type_id::<Weapon>(Type::Enum {
+            module_path: "uniffi_fixture_metadata".into(),
             name: "Weapon".into(),
         });
         check_type_id::<Arc<Calculator>>(Type::ArcObject {
+            module_path: "uniffi_fixture_metadata".into(),
             object_name: "Calculator".into(),
             is_trait: false,
         });
@@ -243,6 +246,7 @@ mod test_metadata {
                         fields: vec![FieldMetadata {
                             name: "result".into(),
                             ty: Type::Record {
+                                module_path: "uniffi_fixture_metadata".into(),
                                 name: "Person".into(),
                             },
                             default: None,
@@ -303,6 +307,7 @@ mod test_metadata {
                             fields: vec![FieldMetadata {
                                 name: "weapon".into(),
                                 ty: Type::Enum {
+                                    module_path: "uniffi_fixture_metadata".into(),
                                     name: "Weapon".into(),
                                 },
                                 default: None,
@@ -399,12 +404,14 @@ mod test_function_metadata {
                     FnParamMetadata {
                         name: "person".into(),
                         ty: Type::Record {
+                            module_path: "uniffi_fixture_metadata".into(),
                             name: "Person".into(),
                         },
                     },
                     FnParamMetadata {
                         name: "weapon".into(),
                         ty: Type::Enum {
+                            module_path: "uniffi_fixture_metadata".into(),
                             name: "Weapon".into(),
                         },
                     },
@@ -443,9 +450,11 @@ mod test_function_metadata {
                 is_async: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
+                    module_path: "uniffi_fixture_metadata".into(),
                     name: "State".into(),
                 }),
                 throws: Some(Type::Enum {
+                    module_path: "uniffi_fixture_metadata".into(),
                     name: "FlatError".into(),
                 }),
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS
@@ -465,6 +474,7 @@ mod test_function_metadata {
                 inputs: vec![],
                 return_type: None,
                 throws: Some(Type::Enum {
+                    module_path: "uniffi_fixture_metadata".into(),
                     name: "FlatError".into(),
                 }),
                 checksum:
@@ -513,12 +523,14 @@ mod test_function_metadata {
                     FnParamMetadata {
                         name: "person".into(),
                         ty: Type::Record {
+                            module_path: "uniffi_fixture_metadata".into(),
                             name: "Person".into(),
                         },
                     },
                     FnParamMetadata {
                         name: "weapon".into(),
                         ty: Type::Enum {
+                            module_path: "uniffi_fixture_metadata".into(),
                             name: "Weapon".into(),
                         },
                     },
@@ -540,9 +552,11 @@ mod test_function_metadata {
                 is_async: true,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
+                    module_path: "uniffi_fixture_metadata".into(),
                     name: "State".into(),
                 }),
                 throws: Some(Type::Enum {
+                    module_path: "uniffi_fixture_metadata".into(),
                     name: "FlatError".into(),
                 }),
                 checksum:
@@ -590,6 +604,7 @@ mod test_function_metadata {
                 is_async: false,
                 inputs: vec![],
                 return_type: Some(Type::ArcObject {
+                    module_path: "uniffi_fixture_metadata".into(),
                     object_name: "CalculatorDisplay".into(),
                     is_trait: true,
                 }),

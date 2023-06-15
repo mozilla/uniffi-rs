@@ -24,7 +24,7 @@
 use crate::{
     check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
     lower_into_rust_buffer, metadata, try_lift_from_rust_buffer, FfiConverter, FutureCallback,
-    Interface, MetadataBuffer, Result, RustBuffer, RustCallStatus, UnexpectedUniFFICallbackError,
+    MetadataBuffer, Result, RustBuffer, RustCallStatus, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -425,72 +425,6 @@ where
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_HASH_MAP)
         .concat(K::TYPE_ID_META)
         .concat(V::TYPE_ID_META);
-}
-
-/// Support for passing reference-counted shared objects via the FFI.
-///
-/// To avoid dealing with complex lifetime semantics over the FFI, any data passed
-/// by reference must be encapsulated in an `Arc`, and must be safe to share
-/// across threads.
-unsafe impl<UT, T: Interface<UT>> FfiConverter<UT> for std::sync::Arc<T> {
-    // Don't use a pointer to <T> as that requires a `pub <T>`
-    type FfiType = *const std::os::raw::c_void;
-
-    /// When lowering, we have an owned `Arc<T>` and we transfer that ownership
-    /// to the foreign-language code, "leaking" it out of Rust's ownership system
-    /// as a raw pointer. This works safely because we have unique ownership of `self`.
-    /// The foreign-language code is responsible for freeing this by calling the
-    /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
-    ///
-    /// Safety: when freeing the resulting pointer, the foreign-language code must
-    /// call the destructor function specific to the type `T`. Calling the destructor
-    /// function for other types may lead to undefined behaviour.
-    fn lower(obj: std::sync::Arc<T>) -> Self::FfiType {
-        std::sync::Arc::into_raw(obj) as Self::FfiType
-    }
-
-    /// When lifting, we receive a "borrow" of the `Arc<T>` that is owned by
-    /// the foreign-language code, and make a clone of it for our own use.
-    ///
-    /// Safety: the provided value must be a pointer previously obtained by calling
-    /// the `lower()` or `write()` method of this impl.
-    fn try_lift(v: Self::FfiType) -> Result<std::sync::Arc<T>> {
-        let v = v as *const T;
-        // We musn't drop the `Arc<T>` that is owned by the foreign-language code.
-        let foreign_arc = std::mem::ManuallyDrop::new(unsafe { std::sync::Arc::<T>::from_raw(v) });
-        // Take a clone for our own use.
-        Ok(std::sync::Arc::clone(&*foreign_arc))
-    }
-
-    /// When writing as a field of a complex structure, make a clone and transfer ownership
-    /// of it to the foreign-language code by writing its pointer into the buffer.
-    /// The foreign-language code is responsible for freeing this by calling the
-    /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
-    ///
-    /// Safety: when freeing the resulting pointer, the foreign-language code must
-    /// call the destructor function specific to the type `T`. Calling the destructor
-    /// function for other types may lead to undefined behaviour.
-    fn write(obj: std::sync::Arc<T>, buf: &mut Vec<u8>) {
-        static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
-        buf.put_u64(<Self as FfiConverter<UT>>::lower(obj) as u64);
-    }
-
-    /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc<T>`
-    /// that is owned by the foreign-language code, and make a clone for our own use.
-    ///
-    /// Safety: the buffer must contain a pointer previously obtained by calling
-    /// the `lower()` or `write()` method of this impl.
-    fn try_read(buf: &mut &[u8]) -> Result<std::sync::Arc<T>> {
-        static_assertions::const_assert!(std::mem::size_of::<*const std::ffi::c_void>() <= 8);
-        check_remaining(buf, 8)?;
-        <Self as FfiConverter<UT>>::try_lift(buf.get_u64() as Self::FfiType)
-    }
-
-    ffi_converter_default_return!(UT);
-
-    const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_INTERFACE)
-        .concat_str(T::NAME)
-        .concat_bool(false);
 }
 
 /// FFI support for ForeignSchedulers

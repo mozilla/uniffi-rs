@@ -12,7 +12,7 @@
 
 {%- match obj.imp() -%}
 {%- when ObjectImpl::Trait %}
-::uniffi::ffi_converter_trait_decl!({{ obj.rust_name() }}, "{{ obj.name() }}", crate::UniFfiTag);
+::uniffi::scaffolding_ffi_converter_trait_interface!(r#{{ obj.name() }});
 {% else %}
 #[::uniffi::ffi_converter_interface(tag = crate::UniFfiTag)]
 struct {{ obj.rust_name() }} { }

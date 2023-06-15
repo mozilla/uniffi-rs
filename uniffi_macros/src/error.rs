@@ -96,6 +96,10 @@ fn flat_error_ffi_converter_impl(
 ) -> TokenStream {
     let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
+    let mod_path = match mod_path() {
+        Ok(p) => p,
+        Err(e) => return e.into_compile_error(),
+    };
 
     let write_impl = {
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
@@ -155,6 +159,7 @@ fn flat_error_ffi_converter_impl(
             #handle_callback_unexpected_error
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
+                .concat_str(#mod_path)
                 .concat_str(#name);
         }
     }

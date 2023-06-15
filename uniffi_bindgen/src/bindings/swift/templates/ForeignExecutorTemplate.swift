@@ -19,17 +19,17 @@ fileprivate struct FfiConverterForeignExecutor: FfiConverter {
     // let's use `Int`, which is equivalent to `size_t`
     typealias FfiType = Int
 
-    static func lift(_ value: FfiType) throws -> SwiftType {
+    public static func lift(_ value: FfiType) throws -> SwiftType {
         UniFfiForeignExecutor(priority: TaskPriority(rawValue: numericCast(value)))
     }
-    static func lower(_ value: SwiftType) -> FfiType {
+    public static func lower(_ value: SwiftType) -> FfiType {
         numericCast(value.priority.rawValue)
     }
 
-    static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         fatalError("FfiConverterForeignExecutor.read not implemented yet")
     }
-    static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
         fatalError("FfiConverterForeignExecutor.read not implemented yet")
     }
 }

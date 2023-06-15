@@ -201,7 +201,7 @@ pub fn either_attribute_arg<T: ToTokens>(a: Option<T>, b: Option<T>) -> syn::Res
 
 pub(crate) fn tagged_impl_header(
     trait_name: &str,
-    ident: &Ident,
+    ident: &impl ToTokens,
     tag: Option<&Path>,
 ) -> TokenStream {
     let trait_name = Ident::new(trait_name, Span::call_site());
@@ -265,5 +265,22 @@ impl UniffiAttributeArgs for CommonAttr {
 impl Parse for CommonAttr {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         parse_comma_separated(input)
+    }
+}
+
+/// Specifies a type from a dependent crate
+pub struct ExternalTypeItem {
+    pub crate_ident: Ident,
+    pub sep: Token![,],
+    pub type_ident: Ident,
+}
+
+impl Parse for ExternalTypeItem {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        Ok(Self {
+            crate_ident: input.parse()?,
+            sep: input.parse()?,
+            type_ident: input.parse()?,
+        })
     }
 }

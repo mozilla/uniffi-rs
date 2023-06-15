@@ -79,4 +79,4 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
     {%- endfor %}
 }
 
-::uniffi::ffi_converter_callback_interface!(r#{{ trait_name }}, {{ trait_impl }}, "{{ cbi.name() }}", crate::UniFfiTag);
+::uniffi::scaffolding_ffi_converter_callback_interface!(r#{{ trait_name }}, {{ trait_impl }});

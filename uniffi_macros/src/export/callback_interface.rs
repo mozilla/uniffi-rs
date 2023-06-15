@@ -5,12 +5,12 @@
 use crate::{
     export::ImplItem,
     fnsig::{FnKind, FnSignature},
-    util::{create_metadata_items, ident_to_string},
+    util::{create_metadata_items, ident_to_string, mod_path, tagged_impl_header},
 };
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::iter;
-use syn::Ident;
+use syn::{Ident, Path};
 
 pub(super) fn trait_impl(
     ident: &Ident,
@@ -18,7 +18,6 @@ pub(super) fn trait_impl(
     internals_ident: &Ident,
     items: &[ImplItem],
 ) -> syn::Result<TokenStream> {
-    let trait_name = ident_to_string(trait_ident);
     let trait_impl_methods = items
         .iter()
         .map(|item| match item {
@@ -26,6 +25,7 @@ pub(super) fn trait_impl(
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<TokenStream>>()?;
+    let ffi_converter_tokens = ffi_converter_callback_interface_impl(trait_ident, ident, None);
 
     Ok(quote! {
         #[doc(hidden)]
@@ -54,8 +54,68 @@ pub(super) fn trait_impl(
             #trait_impl_methods
         }
 
-        ::uniffi::ffi_converter_callback_interface!(#trait_ident, #ident, #trait_name, crate::UniFfiTag);
+        #ffi_converter_tokens
     })
+}
+
+pub fn ffi_converter_callback_interface_impl(
+    trait_ident: &Ident,
+    trait_impl_ident: &Ident,
+    tag: Option<&Path>,
+) -> TokenStream {
+    let name = ident_to_string(trait_ident);
+    let impl_spec = tagged_impl_header("FfiConverter", &quote! { Box<dyn #trait_ident> }, tag);
+    let tag = match tag {
+        Some(t) => quote! { #t },
+        None => quote! { T },
+    };
+    let mod_path = match mod_path() {
+        Ok(p) => p,
+        Err(e) => return e.into_compile_error(),
+    };
+
+    quote! {
+        #[doc(hidden)]
+        #[automatically_derived]
+        unsafe #impl_spec {
+            type FfiType = u64;
+
+            // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
+            // probably a way to, but this carries lots of thread safety risks, down to impedance
+            // mismatches between Rust and foreign languages, and our uncertainty around implementations of
+            // concurrent handlemaps.
+            //
+            // The use case for them is also quite exotic: it's passing a foreign callback back to the foreign
+            // language.
+            //
+            // Until we have some certainty, and use cases, we shouldn't use them.
+            fn lower(_obj: Self) -> Self::FfiType {
+                panic!("Lowering CallbackInterface not supported")
+            }
+
+            fn write(_obj: Self, _buf: &mut std::vec::Vec<u8>) {
+                panic!("Writing CallbackInterface not supported")
+            }
+
+            fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
+                Ok(Box::new(<#trait_impl_ident>::new(v)))
+            }
+
+            fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+                use uniffi::deps::bytes::Buf;
+                uniffi::check_remaining(buf, 8)?;
+                <Self as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(buf.get_u64())
+            }
+
+            ::uniffi::ffi_converter_default_return!(#tag);
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
+                ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
+            )
+            .concat_str(#mod_path)
+            .concat_str(#name);
+        }
+    }
 }
 
 fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<TokenStream> {

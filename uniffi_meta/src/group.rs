@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{Metadata, NamespaceMetadata};
-use anyhow::{bail, Result};
 use std::collections::{BTreeSet, HashMap};
+
+use crate::*;
+use anyhow::{bail, Result};
 
 /// Group metadata by namespace
 pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
@@ -49,7 +50,7 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
             Metadata::Error(meta) => (format!("error `{}`", meta.name()), meta.module_path()),
         };
 
-        let crate_name = module_path.split("::").next().unwrap();
+        let crate_name = calc_crate_name(module_path);
         let group = match group_map.get_mut(crate_name) {
             Some(ns) => ns,
             None => bail!("Unknown namespace for {item_desc} ({crate_name})"),
@@ -57,7 +58,7 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
         if group.items.contains(&item) {
             bail!("Duplicate metadata item: {item:?}");
         }
-        group.items.insert(item);
+        group.add_item(item);
     }
     Ok(group_map.into_values().collect())
 }
@@ -66,4 +67,172 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
 pub struct MetadataGroup {
     pub namespace: NamespaceMetadata,
     pub items: BTreeSet<Metadata>,
+}
+
+impl MetadataGroup {
+    pub fn add_item(&mut self, item: Metadata) {
+        let converter = ExternalTypeConverter {
+            crate_name: &self.namespace.crate_name,
+        };
+        self.items.insert(converter.convert_item(item));
+    }
+}
+
+/// Convert metadata items by replacing types from external crates with Type::External
+struct ExternalTypeConverter<'a> {
+    crate_name: &'a str,
+}
+
+impl<'a> ExternalTypeConverter<'a> {
+    fn convert_item(&self, item: Metadata) -> Metadata {
+        match item {
+            Metadata::Func(meta) => Metadata::Func(FnMetadata {
+                inputs: self.convert_params(meta.inputs),
+                return_type: self.convert_optional(meta.return_type),
+                throws: self.convert_optional(meta.throws),
+                ..meta
+            }),
+            Metadata::Method(meta) => Metadata::Method(MethodMetadata {
+                inputs: self.convert_params(meta.inputs),
+                return_type: self.convert_optional(meta.return_type),
+                throws: self.convert_optional(meta.throws),
+                ..meta
+            }),
+            Metadata::TraitMethod(meta) => Metadata::TraitMethod(TraitMethodMetadata {
+                inputs: self.convert_params(meta.inputs),
+                return_type: self.convert_optional(meta.return_type),
+                throws: self.convert_optional(meta.throws),
+                ..meta
+            }),
+            Metadata::Constructor(meta) => Metadata::Constructor(ConstructorMetadata {
+                inputs: self.convert_params(meta.inputs),
+                throws: self.convert_optional(meta.throws),
+                ..meta
+            }),
+            Metadata::Record(meta) => Metadata::Record(RecordMetadata {
+                fields: self.convert_fields(meta.fields),
+                ..meta
+            }),
+            Metadata::Enum(meta) => Metadata::Enum(self.convert_enum(meta)),
+            Metadata::Error(meta) => Metadata::Error(match meta {
+                ErrorMetadata::Enum { enum_, is_flat } => ErrorMetadata::Enum {
+                    enum_: self.convert_enum(enum_),
+                    is_flat,
+                },
+            }),
+            _ => item,
+        }
+    }
+
+    fn convert_params(&self, params: Vec<FnParamMetadata>) -> Vec<FnParamMetadata> {
+        params
+            .into_iter()
+            .map(|param| FnParamMetadata {
+                ty: self.convert_type(param.ty),
+                ..param
+            })
+            .collect()
+    }
+
+    fn convert_fields(&self, fields: Vec<FieldMetadata>) -> Vec<FieldMetadata> {
+        fields
+            .into_iter()
+            .map(|field| FieldMetadata {
+                ty: self.convert_type(field.ty),
+                ..field
+            })
+            .collect()
+    }
+
+    fn convert_enum(&self, enum_: EnumMetadata) -> EnumMetadata {
+        EnumMetadata {
+            variants: enum_
+                .variants
+                .into_iter()
+                .map(|variant| VariantMetadata {
+                    fields: self.convert_fields(variant.fields),
+                    ..variant
+                })
+                .collect(),
+            ..enum_
+        }
+    }
+
+    fn convert_optional(&self, ty: Option<Type>) -> Option<Type> {
+        ty.map(|ty| self.convert_type(ty))
+    }
+
+    fn convert_type(&self, ty: Type) -> Type {
+        match ty {
+            // Convert `ty` if it's external
+            Type::Enum { module_path, name } | Type::Record { module_path, name }
+                if self.is_module_path_external(&module_path) =>
+            {
+                Type::External {
+                    module_path,
+                    name,
+                    kind: ExternalKind::DataClass,
+                }
+            }
+            Type::Custom {
+                module_path, name, ..
+            } if self.is_module_path_external(&module_path) => {
+                // For now, it's safe to assume that all custom types are data classes.
+                // There's no reason to use a custom type with an interface.
+                Type::External {
+                    module_path,
+                    name,
+                    kind: ExternalKind::DataClass,
+                }
+            }
+            Type::ArcObject {
+                module_path,
+                object_name,
+                ..
+            } if self.is_module_path_external(&module_path) => Type::External {
+                module_path,
+                name: object_name,
+                kind: ExternalKind::Interface,
+            },
+            Type::CallbackInterface { module_path, name }
+                if self.is_module_path_external(&module_path) =>
+            {
+                panic!("External callback interfaces not supported ({name})")
+            }
+            // Convert child types
+            Type::Custom {
+                module_path,
+                name,
+                builtin,
+                ..
+            } => Type::Custom {
+                module_path,
+                name,
+                builtin: Box::new(self.convert_type(*builtin)),
+            },
+            Type::Option { inner_type } => Type::Option {
+                inner_type: Box::new(self.convert_type(*inner_type)),
+            },
+            Type::Vec { inner_type } => Type::Vec {
+                inner_type: Box::new(self.convert_type(*inner_type)),
+            },
+            Type::HashMap {
+                key_type,
+                value_type,
+            } => Type::HashMap {
+                key_type: Box::new(self.convert_type(*key_type)),
+                value_type: Box::new(self.convert_type(*value_type)),
+            },
+            // Otherwise, just return the type unchanged
+            _ => ty,
+        }
+    }
+
+    fn is_module_path_external(&self, module_path: &str) -> bool {
+        calc_crate_name(module_path) != self.crate_name
+    }
+}
+
+fn calc_crate_name(module_path: &str) -> &str {
+    module_path.split("::").next().unwrap()
 }

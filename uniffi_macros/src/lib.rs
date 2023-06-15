@@ -12,7 +12,10 @@
 use camino::Utf8Path;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, LitStr};
+use syn::{
+    parse::{Parse, ParseStream},
+    parse_macro_input, Ident, LitStr, Token,
+};
 
 mod enum_;
 mod error;
@@ -150,6 +153,46 @@ pub fn ffi_converter_interface(attrs: TokenStream, input: TokenStream) -> TokenS
     .into()
 }
 
+/// Generate the FfiConverter implementation for an trait interface for the scaffolding code
+#[doc(hidden)]
+#[proc_macro]
+pub fn scaffolding_ffi_converter_trait_interface(tokens: TokenStream) -> TokenStream {
+    export::ffi_converter_trait_impl(
+        &syn::parse_macro_input!(tokens),
+        Some(&syn::parse_quote!(crate::UniFfiTag)),
+    )
+    .into()
+}
+
+/// Generate the FfiConverter implementation for an trait interface for the scaffolding code
+#[doc(hidden)]
+#[proc_macro]
+pub fn scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -> TokenStream {
+    struct Input {
+        trait_ident: Ident,
+        impl_ident: Ident,
+    }
+
+    impl Parse for Input {
+        fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+            let trait_ident = input.parse()?;
+            input.parse::<Token![,]>()?;
+            let impl_ident = input.parse()?;
+            Ok(Self {
+                trait_ident,
+                impl_ident,
+            })
+        }
+    }
+    let input: Input = syn::parse_macro_input!(tokens);
+    export::ffi_converter_callback_interface_impl(
+        &input.trait_ident,
+        &input.impl_ident,
+        Some(&syn::parse_quote!(crate::UniFfiTag)),
+    )
+    .into()
+}
+
 /// A helper macro to include generated component scaffolding.
 ///
 /// This is a simple convenience macro to include the UniFFI component
@@ -191,6 +234,49 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
 
             include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
         }
+    }.into()
+}
+
+// Use a UniFFI types from dependent crates that uses UDL files
+//
+// See [util::CommonAttr] for a discussion of why this is needed.
+
+#[proc_macro]
+pub fn use_udl_record(tokens: TokenStream) -> TokenStream {
+    use_udl_simple_type(tokens)
+}
+
+#[proc_macro]
+pub fn use_udl_enum(tokens: TokenStream) -> TokenStream {
+    use_udl_simple_type(tokens)
+}
+
+#[proc_macro]
+pub fn use_udl_error(tokens: TokenStream) -> TokenStream {
+    use_udl_simple_type(tokens)
+}
+
+fn use_udl_simple_type(tokens: TokenStream) -> TokenStream {
+    let util::ExternalTypeItem {
+        crate_ident,
+        type_ident,
+        ..
+    } = parse_macro_input!(tokens);
+    quote! {
+        ::uniffi::ffi_converter_forward!(#type_ident, #crate_ident::UniFfiTag, crate::UniFfiTag);
+    }
+    .into()
+}
+
+#[proc_macro]
+pub fn use_udl_object(tokens: TokenStream) -> TokenStream {
+    let util::ExternalTypeItem {
+        crate_ident,
+        type_ident,
+        ..
+    } = parse_macro_input!(tokens);
+    quote! {
+        ::uniffi::ffi_converter_arc_forward!(#type_ident, #crate_ident::UniFfiTag, crate::UniFfiTag);
     }.into()
 }
 

@@ -238,17 +238,18 @@ impl From<uniffi_meta::Type> for Type {
             Ty::SystemTime => Type::Timestamp,
             Ty::Duration => Type::Duration,
             Ty::ForeignExecutor => Type::ForeignExecutor,
-            Ty::Record { name } => Type::Record(name),
+            Ty::Record { name, .. } => Type::Record(name),
             Ty::Enum { name, .. } => Type::Enum(name),
             Ty::ArcObject {
                 object_name,
                 is_trait,
+                ..
             } => Type::Object {
                 name: object_name,
                 imp: ObjectImpl::from_is_trait(is_trait),
             },
-            Ty::CallbackInterface { name } => Type::CallbackInterface(name),
-            Ty::Custom { name, builtin } => Type::Custom {
+            Ty::CallbackInterface { name, .. } => Type::CallbackInterface(name),
+            Ty::Custom { name, builtin, .. } => Type::Custom {
                 name,
                 builtin: builtin.into(),
             },
@@ -258,6 +259,15 @@ impl From<uniffi_meta::Type> for Type {
                 key_type,
                 value_type,
             } => Type::Map(key_type.into(), value_type.into()),
+            Ty::External {
+                module_path,
+                name,
+                kind,
+            } => Type::External {
+                crate_name: module_path.split(':').next().unwrap().to_string(),
+                name,
+                kind: kind.into(),
+            },
         }
     }
 }
@@ -271,6 +281,15 @@ impl From<uniffi_meta::Type> for Box<Type> {
 impl From<Box<uniffi_meta::Type>> for Box<Type> {
     fn from(ty: Box<uniffi_meta::Type>) -> Self {
         Box::new((*ty).into())
+    }
+}
+
+impl From<uniffi_meta::ExternalKind> for ExternalKind {
+    fn from(kind: uniffi_meta::ExternalKind) -> Self {
+        match kind {
+            uniffi_meta::ExternalKind::DataClass => Self::DataClass,
+            uniffi_meta::ExternalKind::Interface => Self::Interface,
+        }
     }
 }
 

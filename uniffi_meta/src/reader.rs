@@ -122,19 +122,24 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_SYSTEM_TIME => Type::SystemTime,
             codes::TYPE_FOREIGN_EXECUTOR => Type::ForeignExecutor,
             codes::TYPE_RECORD => Type::Record {
+                module_path: self.read_string()?,
                 name: self.read_string()?,
             },
             codes::TYPE_ENUM => Type::Enum {
+                module_path: self.read_string()?,
                 name: self.read_string()?,
             },
             codes::TYPE_INTERFACE => Type::ArcObject {
+                module_path: self.read_string()?,
                 object_name: self.read_string()?,
                 is_trait: self.read_bool()?,
             },
             codes::TYPE_CALLBACK_INTERFACE => Type::CallbackInterface {
+                module_path: self.read_string()?,
                 name: self.read_string()?,
             },
             codes::TYPE_CUSTOM => Type::Custom {
+                module_path: self.read_string()?,
                 name: self.read_string()?,
                 builtin: Box::new(self.read_type()?),
             },
@@ -204,10 +209,10 @@ impl<'a> MetadataReader<'a> {
 
         return_type
             .filter(|t| {
-                *t == Type::ArcObject {
-                    object_name: self_name.clone(),
-                    is_trait: false,
-                }
+                matches!(
+                    t,
+                    Type::ArcObject { object_name, is_trait: false, .. } if object_name == &self_name
+                )
             })
             .context("Constructor return type must be Arc<Self>")?;
 

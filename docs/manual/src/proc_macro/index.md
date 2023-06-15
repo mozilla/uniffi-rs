@@ -276,6 +276,29 @@ impl From<UnexpectedUniFFICallbackError> for MyApiError {
 }
 ```
 
+## Types from dependent crates
+
+When using proc-macros, you can use types from dependent crates in your exported library, as long as
+the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
+exceptions:
+
+### Types from UDL-based dependent crates
+
+If the dependent crate uses a UDL file to define their types, then you must invoke one of the
+`uniffi::use_udl_*!` macros, for example:
+
+```rust
+uniffi::use_udl_record!(dependent_crate, RecordType);
+uniffi::use_udl_enum!(dependent_crate, EnumType);
+uniffi::use_udl_error!(dependent_crate, ErrorType);
+uniffi::use_udl_object!(dependent_crate, ObjectType);
+```
+
+### Non-UniFFI types from dependent crates
+
+If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
+then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
+to fix this limitation soon.
 
 ## Other limitations
 

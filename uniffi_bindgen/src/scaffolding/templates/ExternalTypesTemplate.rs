@@ -50,6 +50,7 @@ unsafe impl uniffi::FfiConverter<crate::UniFfiTag> for r#{{ name }} {
     ::uniffi::ffi_converter_default_return!(crate::UniFfiTag);
 
     const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
+        .concat_str("{{ ci.namespace() }}")
         .concat_str("{{ name }}")
         .concat({{ builtin|ffi_converter }}::TYPE_ID_META);
 }

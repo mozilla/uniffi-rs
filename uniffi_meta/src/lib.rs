@@ -235,19 +235,24 @@ pub enum Type {
     ForeignExecutor,
     SystemTime,
     Enum {
+        module_path: String,
         name: String,
     },
     Record {
+        module_path: String,
         name: String,
     },
     ArcObject {
+        module_path: String,
         object_name: String,
         is_trait: bool,
     },
     CallbackInterface {
+        module_path: String,
         name: String,
     },
     Custom {
+        module_path: String,
         name: String,
         builtin: Box<Type>,
     },
@@ -261,6 +266,17 @@ pub enum Type {
         key_type: Box<Type>,
         value_type: Box<Type>,
     },
+    External {
+        module_path: String,
+        name: String,
+        kind: ExternalKind,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub enum ExternalKind {
+    DataClass,
+    Interface,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]

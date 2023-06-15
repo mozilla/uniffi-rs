@@ -4,7 +4,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::{visit_mut::VisitMut, Item, Type};
+use syn::{visit_mut::VisitMut, Item, Path, Type};
 
 mod attributes;
 mod callback_interface;
@@ -16,7 +16,11 @@ use self::{
     item::{ExportItem, ImplItem},
     scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
 };
-use crate::{object::interface_meta_static_var, util::ident_to_string};
+use crate::{
+    object::interface_meta_static_var,
+    util::{ident_to_string, mod_path, tagged_impl_header},
+};
+pub use callback_interface::ffi_converter_callback_interface_impl;
 use uniffi_meta::free_fn_symbol_name;
 
 // TODO(jplatte): Ensure no generics, …
@@ -81,14 +85,12 @@ pub(crate) fn expand_export(
 
             let meta_static_var = interface_meta_static_var(&self_ident, true, &mod_path)
                 .unwrap_or_else(syn::Error::into_compile_error);
-            let macro_tokens = quote! {
-                ::uniffi::ffi_converter_trait_decl!(dyn #self_ident, stringify!(#self_ident), crate::UniFfiTag);
-            };
+            let ffi_converter_tokens = ffi_converter_trait_impl(&self_ident, None);
 
             Ok(quote_spanned! { self_ident.span() =>
                 #meta_static_var
                 #free_tokens
-                #macro_tokens
+                #ffi_converter_tokens
                 #impl_tokens
             })
         }
@@ -150,6 +152,66 @@ pub(crate) fn expand_export(
 
                 #trait_impl_and_metadata_tokens
             })
+        }
+    }
+}
+
+pub(crate) fn ffi_converter_trait_impl(trait_ident: &Ident, tag: Option<&Path>) -> TokenStream {
+    let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, tag);
+    let name = ident_to_string(trait_ident);
+    let mod_path = match mod_path() {
+        Ok(p) => p,
+        Err(e) => return e.into_compile_error(),
+    };
+
+    quote! {
+        unsafe #impl_spec {
+            type FfiType = *const ::std::os::raw::c_void;
+            type ReturnType = Self::FfiType;
+            type FutureCallback = ::uniffi::FutureCallback<Self::ReturnType>;
+
+            fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
+                ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) as *const ::std::os::raw::c_void
+            }
+
+            fn try_lift(v: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
+                let foreign_arc = ::std::boxed::Box::leak(unsafe { Box::from_raw(v as *mut ::std::sync::Arc<Self>) });
+                // Take a clone for our own use.
+                Ok(::std::sync::Arc::clone(foreign_arc))
+            }
+
+            fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
+                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
+                ::uniffi::deps::bytes::BufMut::put_u64(
+                    buf,
+                    <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64,
+                );
+            }
+
+            fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
+                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
+                ::uniffi::check_remaining(buf, 8)?;
+                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(
+                    ::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+            }
+
+            fn lower_return(v: ::std::sync::Arc<Self>) -> ::std::result::Result<Self::FfiType, ::uniffi::RustBuffer> {
+                Ok(<Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(v))
+            }
+
+            fn invoke_future_callback(
+                callback: Self::FutureCallback,
+                callback_data: *const (),
+                return_value: Self::ReturnType,
+                call_status: ::uniffi::RustCallStatus,
+            ) {
+                callback(callback_data, return_value, call_status);
+            }
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
+                .concat_str(#mod_path)
+                .concat_str(#name)
+                .concat_bool(true);
         }
     }
 }

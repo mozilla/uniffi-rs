@@ -26,7 +26,8 @@ pub fn expand_record(input: DeriveInput) -> TokenStream {
         .parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
         .err()
         .map(syn::Error::into_compile_error);
-    let ffi_converter = record_ffi_converter_impl(ident, &record, None);
+    let ffi_converter = record_ffi_converter_impl(ident, &record, None)
+        .unwrap_or_else(syn::Error::into_compile_error);
     let meta_static_var =
         record_meta_static_var(ident, &record).unwrap_or_else(syn::Error::into_compile_error);
 
@@ -39,7 +40,8 @@ pub fn expand_record(input: DeriveInput) -> TokenStream {
 
 pub(crate) fn expand_record_ffi_converter(attr: CommonAttr, input: DeriveInput) -> TokenStream {
     match input.data {
-        Data::Struct(s) => record_ffi_converter_impl(&input.ident, &s, attr.tag.as_ref()),
+        Data::Struct(s) => record_ffi_converter_impl(&input.ident, &s, attr.tag.as_ref())
+            .unwrap_or_else(syn::Error::into_compile_error),
         _ => syn::Error::new(
             proc_macro2::Span::call_site(),
             "This attribute must only be used on structs",
@@ -52,13 +54,14 @@ pub(crate) fn record_ffi_converter_impl(
     ident: &Ident,
     record: &DataStruct,
     tag: Option<&Path>,
-) -> TokenStream {
+) -> syn::Result<TokenStream> {
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
     let name = ident_to_string(ident);
+    let mod_path = mod_path()?;
     let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
     let try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
-    quote! {
+    Ok(quote! {
         #[automatically_derived]
         unsafe #impl_spec {
             ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
@@ -73,9 +76,10 @@ pub(crate) fn record_ffi_converter_impl(
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
+                .concat_str(#mod_path)
                 .concat_str(#name);
         }
-    }
+    })
 }
 
 fn write_field(f: &Field) -> TokenStream {

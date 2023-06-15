@@ -66,6 +66,7 @@
 - No more implicit conversion to integers/floats in Ruby ([#1596](https://github.com/mozilla/uniffi-rs/pull/1596))
 - Updated Rust dependencies ([#1495](https://github.com/mozilla/uniffi-rs/pull/1495), [#1583](https://github.com/mozilla/uniffi-rs/pull/1583), [#1569](https://github.com/mozilla/uniffi-rs/pull/1569))
 - Added type checking to strings/bytes for Python/Ruby ([#1597](https://github.com/mozilla/uniffi-rs/pull/1597#))
+- Implemented proc-macro external type support.  This allows proc-macros to use types defined in UDL files from other crates, [#1600](https://github.com/mozilla/uniffi-rs/pull/1600)
 
 ### Guidance for external bindings
 
