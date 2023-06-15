@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -214,11 +212,48 @@ class TestTypeLimits < Test::Unit::TestCase
     assert(UniffiTypeLimits.take_f32(Float::NAN).nan?)
     assert(UniffiTypeLimits.take_f64(Float::NAN).nan?)
   end
+  class NonString
+  end
+  def test_non_string
+    assert_raise TypeError do UniffiTypeLimits.take_string(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_string(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_string(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_string(0) end
+    assert_raise TypeError do UniffiTypeLimits.take_string(0.0) end
+    assert_raise TypeError do UniffiTypeLimits.take_string(NonString.new) end
+  end
+  class StringLike
+    def to_str
+      "💕"
+    end
+  end
   def test_strings
     assert_raise Encoding::InvalidByteSequenceError do UniffiTypeLimits.take_string("\xff") end # invalid byte
     assert_raise Encoding::InvalidByteSequenceError do UniffiTypeLimits.take_string("\xed\xa0\x80") end # surrogate
     assert_equal(UniffiTypeLimits.take_string(""), "")
     assert_equal(UniffiTypeLimits.take_string("愛"), "愛")
     assert_equal(UniffiTypeLimits.take_string("💖"), "💖")
+    assert_equal(UniffiTypeLimits.take_string("愛".encode(Encoding::UTF_16LE)), "愛")
+    assert_equal(UniffiTypeLimits.take_string("💖".encode(Encoding::UTF_16LE)), "💖")
+    assert_equal(UniffiTypeLimits.take_string("💖"), "💖")
+    assert_equal(UniffiTypeLimits.take_string(StringLike.new), "💕")
+  end
+  def test_non_bytes
+    assert_raise TypeError do UniffiTypeLimits.take_bytes(nil) end
+    assert_raise TypeError do UniffiTypeLimits.take_bytes(false) end
+    assert_raise TypeError do UniffiTypeLimits.take_bytes(true) end
+    assert_raise TypeError do UniffiTypeLimits.take_bytes(0) end
+    assert_raise TypeError do UniffiTypeLimits.take_bytes(0.0) end
+    assert_raise TypeError do UniffiTypeLimits.take_string(NonString.new) end
+  end
+  def test_bytes
+    assert_equal(UniffiTypeLimits.take_bytes(""), "".force_encoding(Encoding::BINARY))
+    assert_equal(UniffiTypeLimits.take_bytes("\xff"), "\xff".force_encoding(Encoding::BINARY)) # invalid utf-8 byte
+    assert_equal(UniffiTypeLimits.take_bytes("\xed\xa0\x80"), "\xed\xa0\x80".force_encoding(Encoding::BINARY)) # surrogate
+    assert_equal(UniffiTypeLimits.take_bytes("愛"), "愛".force_encoding(Encoding::BINARY))
+    assert_equal(UniffiTypeLimits.take_bytes("💖"), "💖".force_encoding(Encoding::BINARY))
+    assert_equal(UniffiTypeLimits.take_bytes("愛".encode(Encoding::UTF_16LE)), "\x1b\x61".force_encoding(Encoding::BINARY))
+    assert_equal(UniffiTypeLimits.take_bytes("💖".encode(Encoding::UTF_16LE)), "\x3d\xd8\x96\xdc".force_encoding(Encoding::BINARY))
+    assert_equal(UniffiTypeLimits.take_bytes(StringLike.new), "\xf0\x9f\x92\x95".force_encoding(Encoding::BINARY))
   end
 end

@@ -116,7 +116,7 @@ class RustBufferBuilder
   {% when Type::Bytes -%}
 
   def write_Bytes(v)
-    v = v.to_s
+    v = {{ ci.namespace()|class_name_rb }}::uniffi_bytes(v)
     pack_into 4, 'l>', v.bytes.size
     write v
   end
