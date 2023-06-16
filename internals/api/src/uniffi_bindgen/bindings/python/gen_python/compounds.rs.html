@@ -98,6 +98,13 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -117,7 +124,10 @@
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>OptionalCodeType {
     <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">super</span>::PythonCodeOracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.inner).type_label()
+        <span class="macro">format!</span>(
+            <span class="string">&quot;typing.Optional[{}]&quot;</span>,
+            <span class="kw">super</span>::PythonCodeOracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.inner).type_label()
+        )
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
@@ -148,7 +158,11 @@
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>SequenceCodeType {
     <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="string">&quot;list&quot;</span>.to_string()
+        <span class="comment">// Python 3.8 and below do not support `list[T]`
+        </span><span class="macro">format!</span>(
+            <span class="string">&quot;typing.List[{}]&quot;</span>,
+            <span class="kw">super</span>::PythonCodeOracle.find(<span class="kw-2">&amp;</span><span class="self">self</span>.inner).type_label()
+        )
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {

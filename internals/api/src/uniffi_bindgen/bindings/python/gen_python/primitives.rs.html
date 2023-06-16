@@ -64,6 +64,10 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -100,13 +104,17 @@
 }
 
 <span class="macro">macro_rules! </span>impl_code_type_for_primitive {
-    (<span class="macro-nonterminal">$T</span>:ty, <span class="macro-nonterminal">$class_name</span>:literal) =&gt; {
+    (<span class="macro-nonterminal">$T</span>:ty, <span class="macro-nonterminal">$python_name</span>:literal, <span class="macro-nonterminal">$canonical_name</span>:literal) =&gt; {
         <span class="macro">paste! </span>{
             <span class="attr">#[derive(Debug)]
             </span><span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
             <span class="kw">impl </span>CodeType <span class="kw">for </span><span class="macro-nonterminal">$T  </span>{
                 <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-                    <span class="macro-nonterminal">$class_name</span>.into()
+                    <span class="macro-nonterminal">$python_name</span>.into()
+                }
+
+                <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+                    <span class="macro-nonterminal">$canonical_name</span>.into()
                 }
 
                 <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
@@ -117,18 +125,18 @@
     };
 }
 
-<span class="macro">impl_code_type_for_primitive!</span>(BooleanCodeType, <span class="string">&quot;Bool&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(StringCodeType, <span class="string">&quot;String&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(BytesCodeType, <span class="string">&quot;Bytes&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int8CodeType, <span class="string">&quot;Int8&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int16CodeType, <span class="string">&quot;Int16&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int32CodeType, <span class="string">&quot;Int32&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Int64CodeType, <span class="string">&quot;Int64&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt8CodeType, <span class="string">&quot;UInt8&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt16CodeType, <span class="string">&quot;UInt16&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt32CodeType, <span class="string">&quot;UInt32&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(UInt64CodeType, <span class="string">&quot;UInt64&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Float32CodeType, <span class="string">&quot;Float&quot;</span>);
-<span class="macro">impl_code_type_for_primitive!</span>(Float64CodeType, <span class="string">&quot;Double&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(BooleanCodeType, <span class="string">&quot;bool&quot;</span>, <span class="string">&quot;Bool&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(StringCodeType, <span class="string">&quot;str&quot;</span>, <span class="string">&quot;String&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(BytesCodeType, <span class="string">&quot;bytes&quot;</span>, <span class="string">&quot;Bytes&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int8CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;Int8&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int16CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;Int16&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int32CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;Int32&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Int64CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;Int64&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt8CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;UInt8&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt16CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;UInt16&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt32CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;UInt32&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(UInt64CodeType, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;UInt64&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Float32CodeType, <span class="string">&quot;float&quot;</span>, <span class="string">&quot;Float&quot;</span>);
+<span class="macro">impl_code_type_for_primitive!</span>(Float64CodeType, <span class="string">&quot;float&quot;</span>, <span class="string">&quot;Double&quot;</span>);
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
