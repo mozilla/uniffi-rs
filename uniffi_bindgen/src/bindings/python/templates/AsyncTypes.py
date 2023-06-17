@@ -8,7 +8,7 @@ UniFfiPyFuturePointerManager = UniFfiPointerManager()
 @uniffi_future_callback_t(
         {%- match result_type.return_type -%}
         {%- when Some(return_type) -%}
-        {{ return_type.ffi_type().borrow()|ffi_type_name }}
+        {{ return_type|ffi_type|ffi_type_name }}
         {%- when None -%}
         ctypes.c_uint8
         {%- endmatch -%}

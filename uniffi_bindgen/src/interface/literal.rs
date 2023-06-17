@@ -38,17 +38,17 @@ impl Literal {
     pub(crate) fn from_metadata(
         name: &str,
         ty: &Type,
-        default: uniffi_meta::Literal,
+        default: uniffi_meta::LiteralMetadata,
     ) -> Result<Self> {
         Ok(match default {
-            uniffi_meta::Literal::Str { value } => {
+            uniffi_meta::LiteralMetadata::Str { value } => {
                 ensure!(
                     matches!(ty, Type::String),
                     "field {name} of type {ty:?} can't have a default value of type string"
                 );
                 Self::String(value)
             }
-            uniffi_meta::Literal::Int { base10_digits } => {
+            uniffi_meta::LiteralMetadata::Int { base10_digits } => {
                 macro_rules! parse_int {
                     ($ty:ident, $variant:ident) => {
                         Self::$variant(
@@ -76,14 +76,14 @@ impl Literal {
                     }
                 }
             }
-            uniffi_meta::Literal::Float { base10_digits } => match ty {
+            uniffi_meta::LiteralMetadata::Float { base10_digits } => match ty {
                 Type::Float32 => Self::Float(base10_digits, Type::Float32),
                 Type::Float64 => Self::Float(base10_digits, Type::Float64),
                 _ => {
                     bail!("field {name} of type {ty:?} can't have a default value of type float");
                 }
             },
-            uniffi_meta::Literal::Bool { value } => {
+            uniffi_meta::LiteralMetadata::Bool { value } => {
                 ensure!(
                     matches!(ty, Type::String),
                     "field {name} of type {ty:?} can't have a default value of type boolean"
@@ -172,12 +172,14 @@ pub(super) fn convert_default_value(
             // trying to break default values with weird escapes and quotes.
             Literal::String(s.0.to_string())
         }
-        (weedle::literal::DefaultValue::EmptyArray(_), Type::Sequence(_)) => Literal::EmptySequence,
-        (weedle::literal::DefaultValue::String(s), Type::Enum(_)) => {
+        (weedle::literal::DefaultValue::EmptyArray(_), Type::Sequence { .. }) => {
+            Literal::EmptySequence
+        }
+        (weedle::literal::DefaultValue::String(s), Type::Enum { .. }) => {
             Literal::Enum(s.0.to_string(), type_.clone())
         }
-        (weedle::literal::DefaultValue::Null(_), Type::Optional(_)) => Literal::Null,
-        (_, Type::Optional(inner_type)) => convert_default_value(default_value, inner_type)?,
+        (weedle::literal::DefaultValue::Null(_), Type::Optional { .. }) => Literal::Null,
+        (_, Type::Optional { inner_type, .. }) => convert_default_value(default_value, inner_type)?,
 
         // We'll ensure the type safety in the convert_* number methods.
         (weedle::literal::DefaultValue::Integer(i), _) => convert_integer(i, type_)?,
@@ -218,14 +220,24 @@ mod test {
             matches!(parse_and_convert("\"TEST\"", Type::String)?, Literal::String(v) if v == "TEST")
         );
         assert!(
-            matches!(parse_and_convert("\"one\"", Type::Enum("E".into()))?, Literal::Enum(v, Type::Enum(e)) if v == "one" && e == "E")
+            matches!(parse_and_convert("\"one\"", Type::Enum { name: "E".into(), module_path: "".into() })?, Literal::Enum(v, Type::Enum { name, .. }) if v == "one" && name == "E")
         );
         assert!(matches!(
-            parse_and_convert("[]", Type::Sequence(Box::new(Type::String)))?,
+            parse_and_convert(
+                "[]",
+                Type::Sequence {
+                    inner_type: Box::new(Type::String)
+                }
+            )?,
             Literal::EmptySequence
         ));
         assert!(matches!(
-            parse_and_convert("null", Type::Optional(Box::new(Type::String)))?,
+            parse_and_convert(
+                "null",
+                Type::Optional {
+                    inner_type: Box::new(Type::String)
+                }
+            )?,
             Literal::Null
         ));
         Ok(())

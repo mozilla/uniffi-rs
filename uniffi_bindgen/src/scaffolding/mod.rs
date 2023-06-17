@@ -43,16 +43,23 @@ mod filters {
             Type::Bytes => "Vec<u8>".into(),
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
-            Type::Enum(name) | Type::Record(name) => format!("r#{name}"),
-            Type::Object { name, imp } => format!("std::sync::Arc<{}>", imp.rust_name_for(name)),
-            Type::CallbackInterface(name) => format!("Box<dyn r#{name}>"),
+            Type::Enum { name, .. } | Type::Record { name, .. } => format!("r#{name}"),
+            Type::Object { name, imp, .. } => {
+                format!("std::sync::Arc<{}>", imp.rust_name_for(name))
+            }
+            Type::CallbackInterface { name, .. } => format!("Box<dyn r#{name}>"),
             Type::ForeignExecutor => "::uniffi::ForeignExecutor".into(),
-            Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
-            Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
-            Type::Map(k, v) => format!(
+            Type::Optional { inner_type } => {
+                format!("std::option::Option<{}>", type_rs(inner_type)?)
+            }
+            Type::Sequence { inner_type } => format!("std::vec::Vec<{}>", type_rs(inner_type)?),
+            Type::Map {
+                key_type,
+                value_type,
+            } => format!(
                 "std::collections::HashMap<{}, {}>",
-                type_rs(k)?,
-                type_rs(v)?
+                type_rs(key_type)?,
+                type_rs(value_type)?
             ),
             Type::Custom { name, .. } => format!("r#{name}"),
             Type::External {
@@ -134,5 +141,9 @@ mod filters {
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
     pub fn crate_name_rs(nm: &str) -> Result<String, askama::Error> {
         Ok(format!("r#{}", nm.to_string().to_snake_case()))
+    }
+
+    pub fn debug(d: &impl std::fmt::Debug) -> Result<String, askama::Error> {
+        Ok(format!("{d:?}"))
     }
 }

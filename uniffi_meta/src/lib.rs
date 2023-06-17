@@ -16,6 +16,8 @@ pub use group::{group_metadata, MetadataGroup};
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
 
+mod types;
+pub use types::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
 /// Similar to std::hash::Hash.
 ///
 /// Implementations of this trait are expected to update the hasher state in
@@ -218,69 +220,7 @@ pub struct FnParamMetadata {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-pub enum Type {
-    U8,
-    U16,
-    U32,
-    U64,
-    I8,
-    I16,
-    I32,
-    I64,
-    F32,
-    F64,
-    Bool,
-    String,
-    Duration,
-    ForeignExecutor,
-    SystemTime,
-    Enum {
-        module_path: String,
-        name: String,
-    },
-    Record {
-        module_path: String,
-        name: String,
-    },
-    ArcObject {
-        module_path: String,
-        object_name: String,
-        is_trait: bool,
-    },
-    CallbackInterface {
-        module_path: String,
-        name: String,
-    },
-    Custom {
-        module_path: String,
-        name: String,
-        builtin: Box<Type>,
-    },
-    Option {
-        inner_type: Box<Type>,
-    },
-    Vec {
-        inner_type: Box<Type>,
-    },
-    HashMap {
-        key_type: Box<Type>,
-        value_type: Box<Type>,
-    },
-    External {
-        module_path: String,
-        name: String,
-        kind: ExternalKind,
-    },
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-pub enum ExternalKind {
-    DataClass,
-    Interface,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-pub enum Literal {
+pub enum LiteralMetadata {
     Str { value: String },
     Int { base10_digits: String },
     Float { base10_digits: String },
@@ -299,7 +239,7 @@ pub struct FieldMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
-    pub default: Option<Literal>,
+    pub default: Option<LiteralMetadata>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -319,7 +259,7 @@ pub struct VariantMetadata {
 pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
-    pub is_trait: bool,
+    pub imp: types::ObjectImpl,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]

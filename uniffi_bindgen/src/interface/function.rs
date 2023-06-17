@@ -134,7 +134,7 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
     fn from(meta: uniffi_meta::FnParamMetadata) -> Self {
         Argument {
             name: meta.name,
-            type_: meta.ty.into(),
+            type_: meta.ty,
             by_ref: false,
             optional: false,
             default: None,
@@ -156,19 +156,13 @@ impl From<uniffi_meta::FnMetadata> for Function {
             ..FfiFunction::default()
         };
 
-        let throws = match meta.throws {
-            None => None,
-            Some(uniffi_meta::Type::Enum { name, .. }) => Some(Type::Enum(name)),
-            _ => panic!("unsupported error type {:?}", meta.throws),
-        };
-
         Self {
             name: meta.name,
             is_async,
             arguments,
             return_type,
             ffi_func,
-            throws,
+            throws: meta.throws,
             checksum_fn_name,
             checksum_override: Some(meta.checksum),
         }
@@ -303,7 +297,7 @@ impl ResultType {
     /// Get the `T` parameters for the `FutureCallback<T>` for this ResultType
     pub fn future_callback_param(&self) -> FfiType {
         match &self.return_type {
-            Some(t) => t.ffi_type(),
+            Some(t) => t.into(),
             None => FfiType::UInt8,
         }
     }
@@ -381,19 +375,22 @@ mod test {
         let func2 = ci.get_function_definition("rich").unwrap();
         assert_eq!(func2.name(), "rich");
         assert_eq!(
-            func2.return_type().unwrap().canonical_name(),
-            "SequenceOptionalstring"
+            func2.return_type().unwrap(),
+            &Type::Sequence {
+                inner_type: Box::new(Type::Optional {
+                    inner_type: Box::new(Type::String)
+                })
+            }
         );
         assert!(
-            matches!(func2.throws_type(), Some(Type::Enum(name)) if name == "TestError" && ci.is_name_used_as_error(name))
+            matches!(func2.throws_type(), Some(Type::Enum { name, .. }) if name == "TestError" && ci.is_name_used_as_error(name))
         );
         assert_eq!(func2.arguments().len(), 2);
         assert_eq!(func2.arguments()[0].name(), "arg1");
-        assert_eq!(func2.arguments()[0].as_type().canonical_name(), "u32");
+        assert_eq!(func2.arguments()[0].as_type(), Type::UInt32);
         assert_eq!(func2.arguments()[1].name(), "arg2");
-        assert_eq!(
-            func2.arguments()[1].as_type().canonical_name(),
-            "TypeTestDict"
+        assert!(
+            matches!(func2.arguments()[1].as_type(), Type::Record { name, .. } if name == "TestDict")
         );
         Ok(())
     }

@@ -61,9 +61,16 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
         let attrs = InterfaceAttributes::try_from(self.attributes.as_ref())?;
         // Some enum types are defined using an `interface` with a special attribute.
         if attrs.contains_enum_attr() || attrs.contains_error_attr() {
-            types.add_type_definition(self.identifier.0, Type::Enum(name))
+            types.add_type_definition(
+                self.identifier.0,
+                Type::Enum {
+                    name,
+                    module_path: types.namespace.clone(),
+                },
+            )
         } else {
-            let obj = crate::interface::Object::new(name, attrs.object_impl());
+            let mut obj = crate::interface::Object::new(name, attrs.object_impl());
+            obj.module_path = types.namespace.clone();
             types.add_type_definition(self.identifier.0, obj.as_type())
         }
     }
@@ -72,7 +79,13 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
 impl TypeFinder for weedle::DictionaryDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
-        types.add_type_definition(self.identifier.0, Type::Record(name))
+        types.add_type_definition(
+            self.identifier.0,
+            Type::Record {
+                name,
+                module_path: types.namespace.clone(),
+            },
+        )
     }
 }
 
@@ -80,7 +93,13 @@ impl TypeFinder for weedle::EnumDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
-        types.add_type_definition(self.identifier.0, Type::Enum(name))
+        types.add_type_definition(
+            self.identifier.0,
+            Type::Enum {
+                name,
+                module_path: types.namespace.clone(),
+            },
+        )
     }
 }
 
@@ -99,6 +118,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
             types.add_type_definition(
                 name,
                 Type::Custom {
+                    module_path: types.namespace.clone(),
                     name: name.to_string(),
                     builtin: builtin.into(),
                 },
@@ -112,7 +132,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 name,
                 Type::External {
                     name: name.to_string(),
-                    crate_name: attrs.get_crate_name(),
+                    module_path: format!("{}::", attrs.get_crate_name()),
                     kind,
                 },
             )
@@ -126,7 +146,13 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
             bail!("no typedef attributes are currently supported");
         }
         let name = self.identifier.0.to_string();
-        types.add_type_definition(self.identifier.0, Type::CallbackInterface(name))
+        types.add_type_definition(
+            self.identifier.0,
+            Type::CallbackInterface {
+                name,
+                module_path: types.namespace.clone(),
+            },
+        )
     }
 }
 
@@ -156,7 +182,7 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface(nm) if nm == "TestCallbacks")
+                    matches!(types.get_type_definition("TestCallbacks").unwrap(), Type::CallbackInterface { name, .. } if name == "TestCallbacks")
                 );
             },
         );
@@ -169,7 +195,7 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("TestRecord").unwrap(), Type::Record(nm) if nm == "TestRecord")
+                    matches!(types.get_type_definition("TestRecord").unwrap(), Type::Record { name, .. } if name == "TestRecord")
                 );
             },
         );
@@ -183,10 +209,10 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("TestItems").unwrap(), Type::Enum(nm) if nm == "TestItems")
+                    matches!(types.get_type_definition("TestItems").unwrap(), Type::Enum { name, .. } if name == "TestItems")
                 );
                 assert!(
-                    matches!(types.get_type_definition("TestError").unwrap(), Type::Enum(nm) if nm == "TestError")
+                    matches!(types.get_type_definition("TestError").unwrap(), Type::Enum { name, .. } if name == "TestError")
                 );
             },
         );
@@ -217,15 +243,15 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, crate_name, kind: ExternalKind::DataClass }
-                                                                                 if name == "ExternalType" && crate_name == "crate-name")
+                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass }
+                                                                                 if name == "ExternalType" && module_path == "crate-name::")
                 );
                 assert!(
-                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, crate_name, kind: ExternalKind::Interface }
-                                                                                 if name == "ExternalInterfaceType" && crate_name == "crate-name")
+                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface }
+                                                                                 if name == "ExternalInterfaceType" && module_path == "crate-name::")
                 );
                 assert!(
-                    matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin }
+                    matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin, ..}
                                                                                      if name == "CustomType" && builtin == Box::new(Type::String))
                 );
             },
