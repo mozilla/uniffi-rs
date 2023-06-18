@@ -61,10 +61,6 @@
 //! Yeah, it's a bit of an awkward fit syntactically, but it's enough
 //! to get us up and running for a first version of this tool.
 
-use anyhow::{bail, Result};
-
-use super::{APIBuilder, APIConverter, ComponentInterface};
-
 /// A namespace is currently just a name, but might hold more metadata about
 /// the component in future.
 ///
@@ -73,24 +69,9 @@ pub struct Namespace {
     pub(super) name: String,
 }
 
-impl APIBuilder for weedle::NamespaceDefinition<'_> {
-    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
-        if self.attributes.is_some() {
-            bail!("namespace attributes are not supported yet");
-        }
-        if self.identifier.0 != ci.types.namespace {
-            bail!("duplicate namespace definition");
-        }
-        for func in self.members.body.convert(ci)? {
-            ci.add_function_definition(func)?;
-        }
-        Ok(())
-    }
-}
-
 #[cfg(test)]
 mod test {
-    use super::*;
+    use super::super::ComponentInterface;
 
     #[test]
     fn test_empty_namespace() {

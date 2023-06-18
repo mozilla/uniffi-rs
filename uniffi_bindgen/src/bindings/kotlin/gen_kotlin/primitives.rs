@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::backend::{CodeType, Literal};
-use crate::interface::{types::Type, Radix};
+use crate::interface::{Radix, Type};
 use paste::paste;
 
 fn render_literal(literal: &Literal) -> String {

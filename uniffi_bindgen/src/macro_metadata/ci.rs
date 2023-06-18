@@ -64,8 +64,7 @@ fn add_enum_to_ci(
         name: meta.name.clone(),
         module_path: meta.module_path.clone(),
     };
-    iface.types.add_known_type(&ty);
-    iface.types.add_type_definition(&meta.name, ty)?;
+    iface.types.add_known_type(&ty)?;
 
     let enum_ = Enum::try_from_meta(meta, is_flat)?;
     iface.add_enum_definition(enum_)?;
@@ -90,9 +89,7 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
                 name: meta.name.clone(),
                 module_path: meta.module_path.clone(),
             };
-            iface.types.add_known_type(&ty);
-            iface.types.add_type_definition(&meta.name, ty)?;
-
+            iface.types.add_known_type(&ty)?;
             let record: Record = meta.try_into()?;
             iface.add_record_definition(record)?;
         }
@@ -101,9 +98,18 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             add_enum_to_ci(iface, meta, flat)?;
         }
         Metadata::Object(meta) => {
-            iface.add_object_meta(meta);
+            iface.types.add_known_type(&Type::Object {
+                module_path: meta.module_path.clone(),
+                name: meta.name.clone(),
+                imp: meta.imp,
+            })?;
+            iface.add_object_meta(meta)?;
         }
         Metadata::CallbackInterface(meta) => {
+            iface.types.add_known_type(&Type::CallbackInterface {
+                module_path: meta.module_path.clone(),
+                name: meta.name.clone(),
+            })?;
             iface.add_callback_interface_definition(CallbackInterface::new(meta.name));
         }
         Metadata::TraitMethod(meta) => {
@@ -116,6 +122,13 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
                     add_enum_to_ci(iface, enum_, is_flat)?;
                 }
             };
+        }
+        Metadata::CustomType(meta) => {
+            iface.types.add_known_type(&Type::Custom {
+                module_path: meta.module_path.clone(),
+                name: meta.name,
+                builtin: Box::new(meta.builtin),
+            })?;
         }
     }
     Ok(())

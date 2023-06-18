@@ -69,7 +69,8 @@ pub mod codes {
     pub const TYPE_FOREIGN_EXECUTOR: u8 = 25;
     pub const TYPE_UNIT: u8 = 255;
 
-    // Literal codes
+    // Literal codes for LiteralMetadata - note that we don't support
+    // all variants in the "emit/reader" context.
     pub const LIT_STR: u8 = 0;
     pub const LIT_INT: u8 = 1;
     pub const LIT_FLOAT: u8 = 2;

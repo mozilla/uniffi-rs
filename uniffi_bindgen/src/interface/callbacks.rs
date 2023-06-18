@@ -18,7 +18,7 @@
 //! ```
 //!
 //! Will result in a [`CallbackInterface`] member being added to the resulting
-//! [`ComponentInterface`]:
+//! [`crate::ComponentInterface`]:
 //!
 //! ```
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
@@ -33,13 +33,11 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use anyhow::{bail, Result};
 use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::object::Method;
-use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{APIConverter, AsType, ComponentInterface};
+use super::{AsType, Type, TypeIterator};
 
 #[derive(Debug, Clone, Checksum)]
 pub struct CallbackInterface {
@@ -102,43 +100,9 @@ impl AsType for CallbackInterface {
     }
 }
 
-impl APIConverter<CallbackInterface> for weedle::CallbackInterfaceDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<CallbackInterface> {
-        if self.attributes.is_some() {
-            bail!("callback interface attributes are not supported yet");
-        }
-        if self.inheritance.is_some() {
-            bail!("callback interface inheritance is not supported");
-        }
-        let mut object = CallbackInterface::new(self.identifier.0.to_string());
-        for member in &self.members.body {
-            match member {
-                weedle::interface::InterfaceMember::Operation(t) => {
-                    let mut method: Method = t.convert(ci)?;
-                    // A CallbackInterface is described in Rust as a trait, but uniffi
-                    // generates a struct implementing the trait and passes the concrete version
-                    // of that.
-                    // This really just reflects the fact that CallbackInterface and Object
-                    // should be merged; we'd still need a way to ask for a struct delegating to
-                    // foreign implementations be done.
-                    // But currently they are passed as a concrete type with no associated types.
-                    method.object_name = object.name.clone();
-                    method.object_impl = ObjectImpl::Struct;
-                    object.methods.push(method);
-                }
-                _ => bail!(
-                    "no support for callback interface member type {:?} yet",
-                    member
-                ),
-            }
-        }
-        Ok(object)
-    }
-}
-
 #[cfg(test)]
 mod test {
-    use super::*;
+    use super::super::ComponentInterface;
 
     #[test]
     fn test_empty_interface() {

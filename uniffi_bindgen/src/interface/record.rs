@@ -27,7 +27,7 @@
 //! ```
 //!
 //! Will result in a [`Record`] member with two [`Field`]s being added to the resulting
-//! [`ComponentInterface`]:
+//! [`crate::ComponentInterface`]:
 //!
 //! ```
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
@@ -44,12 +44,11 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use uniffi_meta::Checksum;
 
-use super::literal::{convert_default_value, Literal};
-use super::types::{Type, TypeIterator};
-use super::{APIConverter, AsType, ComponentInterface};
+use super::Literal;
+use super::{AsType, Type, TypeIterator};
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
@@ -102,22 +101,6 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
     }
 }
 
-impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
-        if self.attributes.is_some() {
-            bail!("dictionary attributes are not supported yet");
-        }
-        if self.inheritance.is_some() {
-            bail!("dictionary inheritance is not supported");
-        }
-        Ok(Record {
-            name: self.identifier.0.to_string(),
-            module_path: Default::default(),
-            fields: self.members.body.convert(ci)?,
-        })
-    }
-}
-
 // Represents an individual field on a Record.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
 pub struct Field {
@@ -152,10 +135,7 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
     fn try_from(meta: uniffi_meta::FieldMetadata) -> Result<Self> {
         let name = meta.name;
         let type_ = meta.ty;
-        let default = meta
-            .default
-            .map(|d| Literal::from_metadata(&name, &type_, d))
-            .transpose()?;
+        let default = meta.default;
         Ok(Self {
             name,
             type_,
@@ -164,28 +144,11 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
     }
 }
 
-impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
-        if self.attributes.is_some() {
-            bail!("dictionary member attributes are not supported yet");
-        }
-        let type_ = ci.resolve_type_expression(&self.type_)?;
-        let default = match self.default {
-            None => None,
-            Some(v) => Some(convert_default_value(&v.value, &type_)?),
-        };
-        Ok(Field {
-            name: self.identifier.0.to_string(),
-            type_,
-            default,
-        })
-    }
-}
-
 #[cfg(test)]
 mod test {
-    use super::super::literal::Radix;
+    use super::super::ComponentInterface;
     use super::*;
+    use uniffi_meta::Radix;
 
     #[test]
     fn test_multiple_record_types() {

@@ -182,9 +182,7 @@ mod test_metadata {
                     FieldMetadata {
                         name: "name".into(),
                         ty: Type::String,
-                        default: Some(LiteralMetadata::Str {
-                            value: "test".to_owned(),
-                        }),
+                        default: Some(LiteralMetadata::String("test".to_owned())),
                     },
                     FieldMetadata {
                         name: "age".into(),
@@ -328,6 +326,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
                 imp: ObjectImpl::Struct,
+                uniffi_traits: vec![],
             },
         );
     }
@@ -401,24 +400,24 @@ mod test_function_metadata {
                 name: "test_func".into(),
                 is_async: false,
                 inputs: vec![
-                    FnParamMetadata {
-                        name: "person".into(),
-                        ty: Type::Record {
+                    FnParamMetadata::simple(
+                        "person",
+                        Type::Record {
                             module_path: "uniffi_fixture_metadata".into(),
                             name: "Person".into(),
                         },
-                    },
-                    FnParamMetadata {
-                        name: "weapon".into(),
-                        ty: Type::Enum {
+                    ),
+                    FnParamMetadata::simple(
+                        "weapon",
+                        Type::Enum {
                             module_path: "uniffi_fixture_metadata".into(),
                             name: "Weapon".into(),
                         },
-                    },
+                    ),
                 ],
                 return_type: Some(Type::String),
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC.checksum(),
+                checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC.checksum()),
             },
         );
     }
@@ -434,8 +433,9 @@ mod test_function_metadata {
                 inputs: vec![],
                 return_type: None,
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN
-                    .checksum(),
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN.checksum(),
+                ),
             },
         );
     }
@@ -457,8 +457,9 @@ mod test_function_metadata {
                     module_path: "uniffi_fixture_metadata".into(),
                     name: "FlatError".into(),
                 }),
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS
-                    .checksum(),
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS.checksum(),
+                ),
             },
         );
     }
@@ -477,9 +478,10 @@ mod test_function_metadata {
                     module_path: "uniffi_fixture_metadata".into(),
                     name: "FlatError".into(),
                 }),
-                checksum:
+                checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN_THAT_THROWS
                         .checksum(),
+                ),
             },
         );
     }
@@ -494,19 +496,15 @@ mod test_function_metadata {
                 name: "add".into(),
                 is_async: false,
                 inputs: vec![
-                    FnParamMetadata {
-                        name: "a".into(),
-                        ty: Type::UInt8,
-                    },
-                    FnParamMetadata {
-                        name: "b".into(),
-                        ty: Type::UInt8,
-                    },
+                    FnParamMetadata::simple("a", Type::UInt8),
+                    FnParamMetadata::simple("b", Type::UInt8),
                 ],
                 return_type: Some(Type::UInt8),
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD
-                    .checksum(),
+                takes_self_by_arc: false,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD.checksum(),
+                ),
             },
         );
     }
@@ -520,24 +518,26 @@ mod test_function_metadata {
                 name: "test_async_func".into(),
                 is_async: true,
                 inputs: vec![
-                    FnParamMetadata {
-                        name: "person".into(),
-                        ty: Type::Record {
+                    FnParamMetadata::simple(
+                        "person",
+                        Type::Record {
                             module_path: "uniffi_fixture_metadata".into(),
                             name: "Person".into(),
                         },
-                    },
-                    FnParamMetadata {
-                        name: "weapon".into(),
-                        ty: Type::Enum {
+                    ),
+                    FnParamMetadata::simple(
+                        "weapon",
+                        Type::Enum {
                             module_path: "uniffi_fixture_metadata".into(),
                             name: "Weapon".into(),
                         },
-                    },
+                    ),
                 ],
                 return_type: Some(Type::String),
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC.checksum(),
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC.checksum(),
+                ),
             },
         );
     }
@@ -559,9 +559,10 @@ mod test_function_metadata {
                     module_path: "uniffi_fixture_metadata".into(),
                     name: "FlatError".into(),
                 }),
-                checksum:
+                checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC_THAT_THROWS
                         .checksum(),
+                ),
             },
         );
     }
@@ -576,19 +577,16 @@ mod test_function_metadata {
                 name: "async_sub".into(),
                 is_async: true,
                 inputs: vec![
-                    FnParamMetadata {
-                        name: "a".into(),
-                        ty: Type::UInt8,
-                    },
-                    FnParamMetadata {
-                        name: "b".into(),
-                        ty: Type::UInt8,
-                    },
+                    FnParamMetadata::simple("a", Type::UInt8),
+                    FnParamMetadata::simple("b", Type::UInt8),
                 ],
                 return_type: Some(Type::UInt8),
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
-                    .checksum(),
+                takes_self_by_arc: false,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
+                        .checksum(),
+                ),
             },
         );
     }
@@ -609,8 +607,11 @@ mod test_function_metadata {
                     imp: ObjectImpl::Trait,
                 }),
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY
-                    .checksum(),
+                takes_self_by_arc: false,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY
+                        .checksum(),
+                ),
             },
         );
     }
@@ -626,15 +627,13 @@ mod test_function_metadata {
                 name: "display_result".into(),
                 is_async: false,
                 inputs: vec![
-                    FnParamMetadata {
-                        name: "val".into(),
-                        ty: Type::String,
-                    },
+                    FnParamMetadata::simple("val", Type::String),
                 ],
                 return_type: None,
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
-                    .checksum(),
+                takes_self_by_arc: false,
+                checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
+                    .checksum()),
             },
         );
     }
@@ -656,13 +655,13 @@ mod test_function_metadata {
                 index: 0,
                 name: "log".into(),
                 is_async: false,
-                inputs: vec![FnParamMetadata {
-                    name: "message".into(),
-                    ty: Type::String,
-                }],
+                inputs: vec![FnParamMetadata::simple("message", Type::String)],
                 return_type: None,
                 throws: None,
-                checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
+                takes_self_by_arc: false,
+                checksum: Some(
+                    UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
+                ),
             },
         );
     }

@@ -11,7 +11,7 @@
 //! These types are purely an implementation detail of UniFFI, so consumers shouldn't
 //! need to know about them. But as a developer working on UniFFI itself, you're likely
 //! to spend a lot of time thinking about how these low-level types are used to represent
-//! the higher-level "interface types" from the [`super::types::Type`] enum.
+//! the higher-level "interface types" from the [`Type`] enum.
 /// Represents the restricted set of low-level types that can be used to construct
 /// the C-style FFI layer between a rust component and its foreign language bindings.
 ///

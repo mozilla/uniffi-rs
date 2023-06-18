@@ -48,6 +48,7 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
                 (format!("trait method`{}`", meta.name), &meta.module_path)
             }
             Metadata::Error(meta) => (format!("error `{}`", meta.name()), meta.module_path()),
+            Metadata::CustomType(meta) => (format!("custom `{}`", meta.name), &meta.module_path),
         };
 
         let crate_name = calc_crate_name(module_path);

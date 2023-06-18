@@ -16,7 +16,7 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
-//! Will result in a [`Function`] member being added to the resulting [`ComponentInterface`]:
+//! Will result in a [`Function`] member being added to the resulting [`crate::ComponentInterface`]:
 //!
 //! ```
 //! # use uniffi_bindgen::interface::Type;
@@ -31,16 +31,13 @@
 //! assert_eq!(func.arguments().len(), 0);
 //! # Ok::<(), anyhow::Error>(())
 //! ```
-use std::convert::TryFrom;
 
-use anyhow::{bail, Result};
-use uniffi_meta::Checksum;
+use anyhow::Result;
 
-use super::attributes::{ArgumentAttributes, FunctionAttributes};
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::literal::{convert_default_value, Literal};
-use super::types::{ObjectImpl, Type, TypeIterator};
-use super::{APIConverter, AsType, ComponentInterface};
+use super::Literal;
+use super::{AsType, ObjectImpl, Type, TypeIterator};
+use uniffi_meta::Checksum;
 
 /// Represents a standalone function.
 ///
@@ -64,10 +61,9 @@ pub struct Function {
     pub(super) ffi_func: FfiFunction,
     pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
-    // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
-    // different checksum method.
+    // Force a checksum value, or we'll fallback to the trait.
     #[checksum_ignore]
-    pub(super) checksum_override: Option<u16>,
+    pub(super) checksum: Option<u16>,
 }
 
 impl Function {
@@ -100,8 +96,7 @@ impl Function {
     }
 
     pub fn checksum(&self) -> u16 {
-        self.checksum_override
-            .unwrap_or_else(|| uniffi_meta::checksum(self))
+        self.checksum.unwrap_or_else(|| uniffi_meta::checksum(self))
     }
 
     pub fn throws(&self) -> bool {
@@ -128,6 +123,15 @@ impl Function {
         );
         Ok(())
     }
+
+    pub fn iter_types(&self) -> TypeIterator<'_> {
+        Box::new(
+            self.arguments
+                .iter()
+                .flat_map(Argument::iter_types)
+                .chain(self.return_type.iter().flat_map(Type::iter_types)),
+        )
+    }
 }
 
 impl From<uniffi_meta::FnParamMetadata> for Argument {
@@ -135,9 +139,9 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
         Argument {
             name: meta.name,
             type_: meta.ty,
-            by_ref: false,
-            optional: false,
-            default: None,
+            by_ref: meta.by_ref,
+            optional: meta.optional,
+            default: meta.default,
         }
     }
 }
@@ -164,49 +168,8 @@ impl From<uniffi_meta::FnMetadata> for Function {
             ffi_func,
             throws: meta.throws,
             checksum_fn_name,
-            checksum_override: Some(meta.checksum),
+            checksum: meta.checksum,
         }
-    }
-}
-
-impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
-        match self {
-            weedle::namespace::NamespaceMember::Operation(f) => f.convert(ci),
-            _ => bail!("no support for namespace member type {:?} yet", self),
-        }
-    }
-}
-
-impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
-        let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        let name = match self.identifier {
-            None => bail!("anonymous functions are not supported {:?}", self),
-            Some(id) => id.0.to_string(),
-        };
-        let checksum_fn_name = uniffi_meta::fn_checksum_symbol_name(ci.namespace(), &name);
-        let attrs = FunctionAttributes::try_from(self.attributes.as_ref())?;
-        let throws = match attrs.get_throws_err() {
-            None => None,
-            Some(name) => match ci.get_type(name) {
-                Some(t) => {
-                    ci.note_name_used_as_error(name);
-                    Some(t)
-                }
-                None => bail!("unknown type for error: {name}"),
-            },
-        };
-        Ok(Function {
-            name,
-            is_async: false,
-            return_type,
-            arguments: self.args.body.list.convert(ci)?,
-            ffi_func: Default::default(),
-            throws,
-            checksum_fn_name,
-            checksum_override: None,
-        })
     }
 }
 
@@ -256,33 +219,6 @@ impl From<&Argument> for FfiArgument {
             name: a.name.clone(),
             type_: (&a.type_).into(),
         }
-    }
-}
-
-impl APIConverter<Argument> for weedle::argument::Argument<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
-        match self {
-            weedle::argument::Argument::Single(t) => t.convert(ci),
-            weedle::argument::Argument::Variadic(_) => bail!("variadic arguments not supported"),
-        }
-    }
-}
-
-impl APIConverter<Argument> for weedle::argument::SingleArgument<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Argument> {
-        let type_ = ci.resolve_type_expression(&self.type_)?;
-        let default = match self.default {
-            None => None,
-            Some(v) => Some(convert_default_value(&v.value, &type_)?),
-        };
-        let by_ref = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_ref();
-        Ok(Argument {
-            name: self.identifier.0.to_string(),
-            type_,
-            by_ref,
-            optional: self.optional.is_some(),
-            default,
-        })
     }
 }
 
@@ -347,6 +283,7 @@ impl<T: Callable> Callable for &T {
 
 #[cfg(test)]
 mod test {
+    use super::super::ComponentInterface;
     use super::*;
 
     #[test]

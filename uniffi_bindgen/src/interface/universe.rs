@@ -6,13 +6,8 @@
 //! which can be used by the bindings generator code to determine what type-related helper
 //! functions to emit for a given component.
 //!
-use anyhow::{bail, Result};
+use anyhow::Result;
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
-
-mod finder;
-pub(super) use finder::TypeFinder;
-mod resolver;
-pub(super) use resolver::{resolve_builtin_type, TypeResolver};
 
 pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
 
@@ -30,6 +25,7 @@ pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
 pub(crate) struct TypeUniverse {
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     pub namespace: String,
+
     // Named type definitions (including aliases).
     type_definitions: HashMap<String, Type>,
     // All the types in the universe, by canonical type name, in a well-defined order.
@@ -37,41 +33,17 @@ pub(crate) struct TypeUniverse {
 }
 
 impl TypeUniverse {
-    /// Add the definitions of all named [Type]s from a given WebIDL definition.
-    ///
-    /// This will fail if you try to add a name for which an existing type definition exists.
-    pub(super) fn add_type_definitions_from<T: TypeFinder>(&mut self, defn: T) -> Result<()> {
-        defn.add_type_definitions_to(self)
-    }
-
     /// Add the definition of a named [Type].
-    ///
-    /// This will fail if you try to add a name for which an existing type definition exists.
-    pub fn add_type_definition(&mut self, name: &str, type_: Type) -> Result<()> {
-        if resolve_builtin_type(name).is_some() {
-            bail!("please don't shadow builtin types ({name}, {:?})", type_,);
-        }
-        self.add_known_type(&type_);
+    fn add_type_definition(&mut self, name: &str, type_: &Type) -> Result<()> {
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(o) => {
-                let existing_def = o.get();
-                if type_ == *existing_def
-                    && matches!(type_, Type::Record { .. } | Type::Enum { .. })
-                {
-                    // UDL and proc-macro metadata are allowed to define the same record, enum and
-                    // error types, if the definitions match (fields and variants are checked in
-                    // add_{record,enum,error}_definition)
-                    Ok(())
-                } else {
-                    bail!(
-                        "Conflicting type definition for `{name}`! \
-                         existing definition: {existing_def:?}, \
-                         new definition: {type_:?}"
-                    );
-                }
+                // all conflicts have been resolved by now in udl.
+                // I doubt procmacros could cause this?
+                assert_eq!(type_, o.get());
+                Ok(())
             }
             Entry::Vacant(e) => {
-                e.insert(type_);
+                e.insert(type_.clone());
                 Ok(())
             }
         }
@@ -82,37 +54,61 @@ impl TypeUniverse {
         self.type_definitions.get(name).cloned()
     }
 
-    /// Get the [Type] corresponding to a given WebIDL type node.
-    ///
-    /// If the node is a structural type (e.g. a sequence) then this will also add
-    /// it to the set of all types seen in the component interface.
-    pub(crate) fn resolve_type_expression<T: TypeResolver>(&mut self, expr: T) -> Result<Type> {
-        expr.resolve_type_expression(self)
-    }
-
     /// Add a [Type] to the set of all types seen in the component interface.
-    pub fn add_known_type(&mut self, type_: &Type) {
+    pub fn add_known_type(&mut self, type_: &Type) -> Result<()> {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());
-
-            // Add inner types. For UDL, this is actually pointless extra work (as is calling
-            // add_known_type from add_function_definition), but for the proc-macro frontend
-            // this is important if the inner type isn't ever mentioned outside one of these
-            // generic builtin types.
-            match type_ {
-                Type::Optional { inner_type } => self.add_known_type(inner_type),
-                Type::Sequence { inner_type } => self.add_known_type(inner_type),
-                Type::Map {
-                    key_type,
-                    value_type,
-                } => {
-                    self.add_known_type(key_type);
-                    self.add_known_type(value_type);
-                }
-                _ => {}
+        }
+        match type_ {
+            Type::UInt8 => self.add_type_definition("u8", type_)?,
+            Type::Int8 => self.add_type_definition("i8", type_)?,
+            Type::UInt16 => self.add_type_definition("u16", type_)?,
+            Type::Int16 => self.add_type_definition("i16", type_)?,
+            Type::UInt32 => self.add_type_definition("i32", type_)?,
+            Type::Int32 => self.add_type_definition("u32", type_)?,
+            Type::UInt64 => self.add_type_definition("u64", type_)?,
+            Type::Int64 => self.add_type_definition("i64", type_)?,
+            Type::Float32 => self.add_type_definition("f32", type_)?,
+            Type::Float64 => self.add_type_definition("f64", type_)?,
+            Type::Boolean => self.add_type_definition("bool", type_)?,
+            Type::String => self.add_type_definition("string", type_)?,
+            Type::Bytes => self.add_type_definition("bytes", type_)?,
+            Type::Timestamp => self.add_type_definition("timestamp", type_)?,
+            Type::Duration => self.add_type_definition("duration", type_)?,
+            Type::ForeignExecutor => {
+                self.add_type_definition("ForeignExecutor", type_)?;
+            }
+            Type::Object { name, .. }
+            | Type::Record { name, .. }
+            | Type::Enum { name, .. }
+            | Type::CallbackInterface { name, .. }
+            | Type::External { name, .. } => self.add_type_definition(name, type_)?,
+            Type::Custom { name, builtin, .. } => {
+                self.add_type_definition(name, type_)?;
+                self.add_known_type(builtin)?;
+            }
+            // Structurally recursive types.
+            Type::Optional { inner_type, .. } | Type::Sequence { inner_type, .. } => {
+                self.add_known_type(inner_type)?;
+            }
+            Type::Map {
+                key_type,
+                value_type,
+            } => {
+                self.add_known_type(key_type)?;
+                self.add_known_type(value_type)?;
             }
         }
+        Ok(())
+    }
+
+    /// Add many [`Type`]s...
+    pub fn add_known_types(&mut self, types: TypeIterator<'_>) -> Result<()> {
+        for t in types {
+            self.add_known_type(t)?
+        }
+        Ok(())
     }
 
     /// Check if a [Type] is present

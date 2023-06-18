@@ -46,25 +46,21 @@
 
 use std::{
     collections::{btree_map::Entry, BTreeMap, BTreeSet, HashSet},
-    convert::TryFrom,
     iter,
 };
 
 use anyhow::{anyhow, bail, ensure, Result};
 
-pub mod types;
-pub use types::{AsType, ExternalKind, ObjectImpl, Type};
-use types::{TypeIterator, TypeUniverse};
+pub mod universe;
+pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type};
+use universe::{TypeIterator, TypeUniverse};
 
-mod attributes;
 mod callbacks;
 pub use callbacks::CallbackInterface;
 mod enum_;
 pub use enum_::{Enum, Variant};
 mod function;
 pub use function::{Argument, Callable, Function, ResultType};
-mod literal;
-pub use literal::{Literal, Radix};
 mod namespace;
 pub use namespace::Namespace;
 mod object;
@@ -74,8 +70,9 @@ pub use record::{Field, Record};
 
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
-use uniffi_meta::{ConstructorMetadata, ObjectMetadata, TraitMethodMetadata};
-
+pub use uniffi_meta::Radix;
+use uniffi_meta::{ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata};
+pub type Literal = LiteralMetadata;
 // This needs to match the minor version of the `uniffi` crate.  See
 // `docs/uniffi-versioning.md` for details.
 //
@@ -105,36 +102,32 @@ pub struct ComponentInterface {
 impl ComponentInterface {
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
     pub fn from_webidl(idl: &str) -> Result<Self> {
-        let mut ci = Self::default();
-        // There's some lifetime thing with the errors returned from weedle::Definitions::parse
-        // that my own lifetime is too short to worry about figuring out; unwrap and move on.
+        let group = uniffi_udl::parse_udl(idl)?;
+        Self::from_metadata(group)
+    }
 
-        // Note we use `weedle::Definitions::parse` instead of `weedle::parse` so
-        // on parse errors we can see how far weedle got, which helps locate the problem.
-        use weedle::Parse; // this trait must be in scope for parse to work.
-        let (remaining, defns) = weedle::Definitions::parse(idl.trim()).unwrap();
-        if !remaining.is_empty() {
-            println!("Error parsing the IDL. Text remaining to be parsed is:");
-            println!("{remaining}");
-            bail!("parse error");
+    /// Create a `ComponentInterface` from a `MetadataGroup`
+    pub fn from_metadata(group: uniffi_meta::MetadataGroup) -> Result<Self> {
+        let mut ci = Self::default();
+        ci.add_metadata(group)?;
+        Ok(ci)
+    }
+
+    /// Add a metadata group to a `ComponentInterface`.
+    pub fn add_metadata(&mut self, group: uniffi_meta::MetadataGroup) -> Result<()> {
+        if self.types.namespace.is_empty() {
+            self.types.namespace = group.namespace.name.clone();
+        } else if self.types.namespace != group.namespace.name {
+            bail!(
+                "Namespace mismatch: {} - {}",
+                group.namespace.name,
+                self.types.namespace
+            );
         }
         // Unconditionally add the String type, which is used by the panic handling
-        ci.types.add_known_type(&Type::String);
-        // We process the WebIDL definitions in three passes.
-        // First, find the namespace.
-        ci.types.namespace = ci.find_namespace(&defns)?;
-        // First, go through and look for all the named types.
-        ci.types.add_type_definitions_from(defns.as_slice())?;
-        // With those names resolved, we can build a complete representation of the API.
-        APIBuilder::process(&defns, &mut ci)?;
-
-        // The following two methods will be called later anyways, but we call them here because
-        // it's convenient for UDL-only tests.
-        ci.check_consistency()?;
-        // Now that the high-level API is settled, we can derive the low-level FFI.
-        ci.derive_ffi_funcs()?;
-
-        Ok(ci)
+        self.types.add_known_type(&uniffi_meta::Type::String)?;
+        crate::macro_metadata::add_group_to_ci(self, group)?;
+        Ok(())
     }
 
     /// The string namespace within which this API should be presented to the caller.
@@ -143,15 +136,6 @@ impl ComponentInterface {
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
         self.types.namespace.as_str()
-    }
-
-    fn find_namespace(&mut self, defns: &Vec<weedle::Definition<'_>>) -> Result<String> {
-        for defn in defns {
-            if let weedle::Definition::Namespace(n) = defn {
-                return Ok(n.identifier.0.to_string());
-            }
-        }
-        bail!("Failed to find the namespace");
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -568,49 +552,11 @@ impl ComponentInterface {
 
     // Private methods for building a ComponentInterface.
     //
-
-    /// Resolve a weedle type expression into a `Type`.
-    ///
-    /// This method uses the current state of our `TypeUniverse` to turn a weedle type expression
-    /// into a concrete `Type` (or error if the type expression is not well defined). It abstracts
-    /// away the complexity of walking weedle's type struct hierarchy by dispatching to the `TypeResolver`
-    /// trait.
-    fn resolve_type_expression<T: types::TypeResolver>(&mut self, expr: T) -> Result<Type> {
-        self.types.resolve_type_expression(expr)
-    }
-
-    /// Resolve a weedle `ReturnType` expression into an optional `Type`.
-    ///
-    /// This method is similar to `resolve_type_expression`, but tailored specifically for return types.
-    /// It can return `None` to represent a non-existent return value.
-    fn resolve_return_type_expression(
-        &mut self,
-        expr: &weedle::types::ReturnType<'_>,
-    ) -> Result<Option<Type>> {
-        Ok(match expr {
-            weedle::types::ReturnType::Undefined(_) => None,
-            weedle::types::ReturnType::Type(t) => {
-                // Older versions of WebIDL used `void` for functions that don't return a value,
-                // while newer versions have replaced it with `undefined`. Special-case this for
-                // backwards compatibility for our consumers.
-                use weedle::types::{NonAnyType::Identifier, SingleType::NonAny, Type::Single};
-                match t {
-                    Single(NonAny(Identifier(id))) if id.type_.0 == "void" => None,
-                    _ => Some(self.resolve_type_expression(t)?),
-                }
-            }
-        })
-    }
-
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
     pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
         match self.enums.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
-                for variant in defn.variants() {
-                    for field in variant.fields() {
-                        self.types.add_known_type(&field.as_type());
-                    }
-                }
+                self.types.add_known_types(defn.iter_types())?;
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -629,13 +575,11 @@ impl ComponentInterface {
         Ok(())
     }
 
-    /// Called by `APIBuilder` impls to add a newly-parsed record definition to the `ComponentInterface`.
+    /// Adds a newly-parsed record definition to the `ComponentInterface`.
     pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
         match self.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
-                for field in defn.fields() {
-                    self.types.add_known_type(&field.as_type());
-                }
+                self.types.add_known_types(defn.iter_types())?;
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -656,13 +600,6 @@ impl ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
     pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
-        for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_);
-        }
-        if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty);
-        }
-
         // Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
         if self.functions.iter().any(|f| f.name == defn.name) {
@@ -671,9 +608,10 @@ impl ComponentInterface {
         if !matches!(self.types.get_type_definition(defn.name()), None) {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
+        self.types.add_known_types(defn.iter_types())?;
         if defn.is_async() {
             // Async functions depend on the foreign executor
-            self.types.add_known_type(&Type::ForeignExecutor);
+            self.types.add_known_type(&Type::ForeignExecutor)?;
         }
         self.functions.push(defn);
 
@@ -685,47 +623,37 @@ impl ComponentInterface {
             .ok_or_else(|| anyhow!("add_constructor_meta: object {} not found", &meta.self_name))?;
         let defn: Constructor = meta.into();
 
-        for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_);
-        }
+        self.types.add_known_types(defn.iter_types())?;
         object.constructors.push(defn);
 
         Ok(())
     }
 
     pub(super) fn add_method_meta(&mut self, meta: impl Into<Method>) -> Result<()> {
-        let defn: Method = meta.into();
-        let object = get_object(&mut self.objects, &defn.object_name)
-            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &defn.object_name))?;
+        let mut method: Method = meta.into();
+        let object = get_object(&mut self.objects, &method.object_name)
+            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &method.object_name))?;
 
-        for arg in &defn.arguments {
-            self.types.add_known_type(&arg.type_);
-        }
-        if let Some(ty) = &defn.return_type {
-            self.types.add_known_type(ty);
-        }
-        if defn.is_async() {
+        self.types.add_known_types(method.iter_types())?;
+        if method.is_async() {
             // Async functions depend on the foreign executor
-            self.types.add_known_type(&Type::ForeignExecutor);
+            self.types.add_known_type(&Type::ForeignExecutor)?;
         }
-        object.methods.push(defn);
+        method.object_impl = object.imp;
+        object.methods.push(method);
 
         Ok(())
     }
 
-    pub(super) fn add_object_meta(&mut self, meta: ObjectMetadata) {
-        let free_name = meta.free_ffi_symbol_name();
-        let mut obj = Object::new(meta.name, meta.imp);
-        obj.module_path = meta.module_path;
-        obj.ffi_func_free.name = free_name;
-        self.types.add_known_type(&obj.as_type());
-        self.add_object_definition(obj);
+    pub(super) fn add_object_meta(&mut self, meta: ObjectMetadata) -> Result<()> {
+        self.add_object_definition(meta.into())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
-    fn add_object_definition(&mut self, defn: Object) {
-        // Note that there will be no duplicates thanks to the previous type-finding pass.
+    fn add_object_definition(&mut self, defn: Object) -> Result<()> {
+        self.types.add_known_types(defn.iter_types())?;
         self.objects.push(defn);
+        Ok(())
     }
 
     pub(super) fn note_name_used_as_error(&mut self, name: &str) {
@@ -738,12 +666,6 @@ impl ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
     pub(super) fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
-        // Note that there will be no duplicates thanks to the previous type-finding pass.
-        for method in defn.methods() {
-            if let Some(error) = method.throws_type() {
-                self.callback_interface_throws_types.insert(error.clone());
-            }
-        }
         self.callback_interfaces.push(defn);
     }
 
@@ -760,12 +682,12 @@ impl ComponentInterface {
                     meta.index,
                 );
             }
-            let defn: Method = meta.into();
-            for arg in defn.iter_types() {
-                self.types.add_known_type(arg);
+            let method: Method = meta.into();
+            if let Some(error) = method.throws_type() {
+                self.callback_interface_throws_types.insert(error.clone());
             }
-
-            cbi.methods.push(defn);
+            self.types.add_known_types(method.iter_types())?;
+            cbi.methods.push(method);
         } else {
             self.add_method_meta(meta)?;
         }
@@ -780,6 +702,14 @@ impl ComponentInterface {
     pub fn check_consistency(&self) -> Result<()> {
         if self.namespace().is_empty() {
             bail!("missing namespace definition");
+        }
+
+        // Because functions aren't first class types, we need to check here that
+        // a function name hasn't already been used as a type name.
+        for f in self.functions.iter() {
+            if !matches!(self.types.get_type_definition(f.name()), None) {
+                bail!("Conflicting type definition for \"{}\"", f.name());
+            }
         }
 
         // To keep codegen tractable, enum variant names must not shadow type names.
@@ -960,98 +890,6 @@ impl<'a> Iterator for RecursiveTypeIterator<'a> {
     }
 }
 
-/// Trait to help build a `ComponentInterface` from WedIDL syntax nodes.
-///
-/// This trait does structural matching on the various weedle AST nodes and
-/// uses them to build up the records, enums, objects etc in the provided
-/// `ComponentInterface`.
-trait APIBuilder {
-    fn process(&self, ci: &mut ComponentInterface) -> Result<()>;
-}
-
-/// Add to a `ComponentInterface` from a list of weedle definitions,
-/// by processing each in turn.
-impl<T: APIBuilder> APIBuilder for Vec<T> {
-    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
-        for item in self {
-            item.process(ci)?;
-        }
-        Ok(())
-    }
-}
-
-/// Add to a `ComponentInterface` from a weedle definition.
-/// This is conceptually the root of the parser, and dispatches to implementations
-/// for the various specific WebIDL types that we support.
-impl APIBuilder for weedle::Definition<'_> {
-    fn process(&self, ci: &mut ComponentInterface) -> Result<()> {
-        match self {
-            weedle::Definition::Namespace(d) => d.process(ci)?,
-            weedle::Definition::Enum(d) => {
-                // We check if the enum represents an error...
-                let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
-                if attrs.contains_error_attr() {
-                    let e = d.convert(ci)?;
-                    ci.note_name_used_as_error(&e.name);
-                    ci.add_enum_definition(e)?;
-                } else {
-                    let e = d.convert(ci)?;
-                    ci.add_enum_definition(e)?;
-                }
-            }
-            weedle::Definition::Dictionary(d) => {
-                let rec = d.convert(ci)?;
-                ci.add_record_definition(rec)?;
-            }
-            weedle::Definition::Interface(d) => {
-                let attrs = attributes::InterfaceAttributes::try_from(d.attributes.as_ref())?;
-                if attrs.contains_enum_attr() {
-                    let e = d.convert(ci)?;
-                    ci.add_enum_definition(e)?;
-                } else if attrs.contains_error_attr() {
-                    let e: Enum = d.convert(ci)?;
-                    ci.note_name_used_as_error(&e.name);
-                    ci.add_enum_definition(e)?;
-                } else {
-                    let obj = d.convert(ci)?;
-                    ci.add_object_definition(obj);
-                }
-            }
-            weedle::Definition::CallbackInterface(d) => {
-                let obj = d.convert(ci)?;
-                ci.add_callback_interface_definition(obj);
-            }
-            // everything needed for typedefs is done in finder.rs.
-            weedle::Definition::Typedef(_) => {}
-            _ => bail!("don't know how to deal with {:?}", self),
-        }
-        Ok(())
-    }
-}
-
-/// Trait to help convert WedIDL syntax nodes into `ComponentInterface` objects.
-///
-/// This trait does structural matching on the various weedle AST nodes and converts
-/// them into appropriate structs that we can use to build up the contents of a
-/// `ComponentInterface`. It is basically the `TryFrom` trait except that the conversion
-/// always happens in the context of a given `ComponentInterface`, which is used for
-/// resolving e.g. type definitions.
-///
-/// The difference between this trait and `APIBuilder` is that `APIConverter` treats the
-/// `ComponentInterface` as a read-only data source for resolving types, while `APIBuilder`
-/// actually mutates the `ComponentInterface` to add new definitions.
-trait APIConverter<T> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<T>;
-}
-
-/// Convert a list of weedle items into a list of `ComponentInterface` items,
-/// by doing a direct item-by-item mapping.
-impl<U, T: APIConverter<U>> APIConverter<Vec<U>> for Vec<T> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Vec<U>> {
-        self.iter().map(|v| v.convert(ci)).collect::<Result<_>>()
-    }
-}
-
 // Helpers for functions/methods/constructors which all have the same "throws" semantics.
 fn throws_name(throws: &Option<Type>) -> Option<&str> {
     // Type has no `name()` method, just `canonical_name()` which isn't what we want.
@@ -1140,10 +978,7 @@ new definition: Enum {
             };
         "#;
         let err = ComponentInterface::from_webidl(UDL3).unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "Conflicting type definition for \"Testing\""
-        );
+        assert!(format!("{err:#}").contains("Conflicting type definition for \"Testing\""));
     }
 
     #[test]
@@ -1163,10 +998,8 @@ new definition: Enum {
             };
         "#;
         let err = ComponentInterface::from_webidl(UDL).unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "Enum variant names must not shadow type names: \"Testing\""
-        );
+        assert!(format!("{err:#}")
+            .contains("Enum variant names must not shadow type names: \"Testing\""));
     }
 
     #[test]
@@ -1181,12 +1014,9 @@ new definition: Enum {
         // check that `contains_optional_types` returns true when there is an Optional type in the interface
         assert!(ci
             .types
-            .add_type_definition(
-                "TestOptional{}",
-                Type::Optional {
-                    inner_type: Box::new(Type::String)
-                }
-            )
+            .add_known_type(&Type::Optional {
+                inner_type: Box::new(Type::String)
+            })
             .is_ok());
         assert!(ci.contains_optional_types());
     }
@@ -1203,14 +1033,12 @@ new definition: Enum {
         // check that `contains_sequence_types` returns true when there is a Sequence type in the interface
         assert!(ci
             .types
-            .add_type_definition(
-                "TestSequence{}",
-                Type::Sequence {
-                    inner_type: Box::new(Type::UInt64)
-                }
-            )
+            .add_known_type(&Type::Sequence {
+                inner_type: Box::new(Type::UInt64)
+            })
             .is_ok());
         assert!(ci.contains_sequence_types());
+        assert!(ci.types.contains(&Type::UInt64));
     }
 
     #[test]
@@ -1225,15 +1053,14 @@ new definition: Enum {
         // check that `contains_map_types` returns true when there is a Map type in the interface
         assert!(ci
             .types
-            .add_type_definition(
-                "Map{}",
-                Type::Map {
-                    key_type: Box::new(Type::String),
-                    value_type: Box::new(Type::Boolean)
-                }
-            )
+            .add_known_type(&Type::Map {
+                key_type: Box::new(Type::String),
+                value_type: Box::new(Type::Boolean)
+            })
             .is_ok());
         assert!(ci.contains_map_types());
+        assert!(ci.types.contains(&Type::String));
+        assert!(ci.types.contains(&Type::Boolean));
     }
 
     #[test]

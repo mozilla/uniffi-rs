@@ -132,7 +132,7 @@ pub struct FnMetadata {
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
-    pub checksum: u16,
+    pub checksum: Option<u16>,
 }
 
 impl FnMetadata {
@@ -152,7 +152,7 @@ pub struct ConstructorMetadata {
     pub name: String,
     pub inputs: Vec<FnParamMetadata>,
     pub throws: Option<Type>,
-    pub checksum: u16,
+    pub checksum: Option<u16>,
 }
 
 impl ConstructorMetadata {
@@ -162,6 +162,10 @@ impl ConstructorMetadata {
 
     pub fn checksum_symbol_name(&self) -> String {
         constructor_checksum_symbol_name(&self.module_path, &self.self_name, &self.name)
+    }
+
+    pub fn is_primary(&self) -> bool {
+        self.name == "new"
     }
 }
 
@@ -174,7 +178,8 @@ pub struct MethodMetadata {
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
-    pub checksum: u16,
+    pub takes_self_by_arc: bool, // unused except by rust udl bindgen.
+    pub checksum: Option<u16>,
 }
 
 impl MethodMetadata {
@@ -199,7 +204,8 @@ pub struct TraitMethodMetadata {
     pub inputs: Vec<FnParamMetadata>,
     pub return_type: Option<Type>,
     pub throws: Option<Type>,
-    pub checksum: u16,
+    pub takes_self_by_arc: bool, // unused except by rust udl bindgen.
+    pub checksum: Option<u16>,
 }
 
 impl TraitMethodMetadata {
@@ -217,14 +223,50 @@ pub struct FnParamMetadata {
     pub name: String,
     #[serde(rename = "type")]
     pub ty: Type,
+    pub by_ref: bool,
+    pub optional: bool,
+    pub default: Option<LiteralMetadata>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+impl FnParamMetadata {
+    pub fn simple(name: &str, ty: Type) -> Self {
+        Self {
+            name: name.to_string(),
+            ty,
+            by_ref: false,
+            optional: false,
+            default: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Checksum)]
 pub enum LiteralMetadata {
-    Str { value: String },
-    Int { base10_digits: String },
-    Float { base10_digits: String },
-    Bool { value: bool },
+    Boolean(bool),
+    String(String),
+    // Integers are represented as the widest representation we can.
+    // Number formatting vary with language and radix, so we avoid a lot of parsing and
+    // formatting duplication by using only signed and unsigned variants.
+    UInt(u64, Radix, Type),
+    Int(i64, Radix, Type),
+    // Pass the string representation through as typed in the UDL.
+    // This avoids a lot of uncertainty around precision and accuracy,
+    // though bindings for languages less sophisticated number parsing than WebIDL
+    // will have to do extra work.
+    Float(String, Type),
+    Enum(String, Type),
+    EmptySequence,
+    EmptyMap,
+    Null,
+}
+
+// Represent the radix of integer literal values.
+// We preserve the radix into the generated bindings for readability reasons.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Checksum)]
+pub enum Radix {
+    Decimal = 10,
+    Octal = 8,
+    Hexadecimal = 16,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -260,6 +302,7 @@ pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
     pub imp: types::ObjectImpl,
+    pub uniffi_traits: Vec<UniffiTraitMetadata>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -275,6 +318,24 @@ impl ObjectMetadata {
     pub fn free_ffi_symbol_name(&self) -> String {
         free_fn_symbol_name(&self.module_path, &self.name)
     }
+}
+
+/// The list of traits we support generating helper methods for.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub enum UniffiTraitMetadata {
+    Debug {
+        fmt: MethodMetadata,
+    },
+    Display {
+        fmt: MethodMetadata,
+    },
+    Eq {
+        eq: MethodMetadata,
+        ne: MethodMetadata,
+    },
+    Hash {
+        hash: MethodMetadata,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
@@ -294,6 +355,13 @@ impl ErrorMetadata {
             Self::Enum { enum_, .. } => &enum_.module_path,
         }
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub struct CustomTypeMetadata {
+    pub module_path: String,
+    pub name: String,
+    pub builtin: Type,
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`SipHasher13`].
@@ -320,6 +388,7 @@ pub enum Metadata {
     Constructor(ConstructorMetadata),
     Method(MethodMetadata),
     TraitMethod(TraitMethodMetadata),
+    CustomType(CustomTypeMetadata),
 }
 
 impl Metadata {
@@ -391,5 +460,11 @@ impl From<CallbackInterfaceMetadata> for Metadata {
 impl From<TraitMethodMetadata> for Metadata {
     fn from(v: TraitMethodMetadata) -> Self {
         Self::TraitMethod(v)
+    }
+}
+
+impl From<CustomTypeMetadata> for Metadata {
+    fn from(v: CustomTypeMetadata) -> Self {
+        Self::CustomType(v)
     }
 }
