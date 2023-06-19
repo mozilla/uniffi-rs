@@ -17,8 +17,8 @@
 ### ⚠️ Breaking Changes ⚠️
 - ABI: Implemented a new callback-interface ABI that significantly improves performance on Python and Kotlin.
   - UniFFI users will automatically get the benefits of this without any code changes.
-  - External bindings authors will need to update their bindings code.  See PR #1494 for details.
-- ABI: Changed API checksum handling.  This affects external bindings authors who will need to update their code to work with the new system.  See PR #1469 for details.
+  - External bindings authors will need to update their bindings code. Please see [Guidance for external bindings](#guidance-for-external-bindings) below for details.
+- ABI: Changed API checksum handling.  This affects external bindings authors who will need to update their code to work with the new system.  See [PR #1469](https://github.com/mozilla/uniffi-rs/pull/1469) for details.
 - Removed the long deprecated `ThreadSafe` attribute.
 - `External` types now require a valid crate name.  Before the docs said it must be a crate name,
   but any string could be used as long as it was consistent with the external type map in
@@ -30,30 +30,42 @@
 
 ### What's changed
 
-- Added "library mode" bindings generation using `generate --library [path-to-cdylib]`.  This mode simplifes bindings generation, especially when you have dependencies between multiple UniFFIed crates.  See the tutoral for a description.
+- Added "library mode" bindings generation using `generate --library [path-to-cdylib]`.  This mode simplifies bindings generation, especially when you have dependencies between multiple UniFFIed crates.  See the tutorial for a description.
 - The `include_scaffolding!()` macro must now either be called from your crate root or you must have `use the_mod_that_calls_include_scaffolding::*` in your crate root.  This was always the expectation, but wasn't required before.  This will now start failing with errors that say `crate::UniFfiTag` does not exist.
 - proc-macros now work with many more types including type aliases, type paths, etc.
 - The `uniffi_types` module is no longer needed when using proc-macros.
 - Traits can be exposed as a UniFFI `interface` by using a `[Trait]` attribute in the UDL.
   See [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#exposing-traits-as-interfaces).
-- The `bytes` primitive type was added, it represents an array of bytes. It maps to `ByteArray` in Kotlin, `bytes` in Python, `String` with `Encoding::BINARY` in Ruby and `Data` in Swift.
-- Shortened `str()` representations of errors in Python to align with other exceptions in Python. Use `repr()` or the `{!r}` format to get the old representation back.
+- The `bytes` primitive type was added, it represents an array of bytes. It maps to `ByteArray` in Kotlin, `bytes` in Python, `String` with `Encoding::BINARY` in Ruby and `Data` in Swift. ([#1543](https://github.com/mozilla/uniffi-rs/pull/1543))
+- Shortened `str()` representations of errors in Python to align with other exceptions in Python. Use `repr()` or the `{!r}` format to get the old representation back ([#1556](https://github.com/mozilla/uniffi-rs/pull/1556))
 - Methods implemented by standard Rust traits, such as `Debug`, `Display`, `Eq` and `Hash` can now be exposed over the FFI and bindings may implement special methods for them.
   See [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#exposing-methods-from-standard-rust-traits).
-- Implemented proc-macro callback interface support
+- Added support for async/futures ([#1409](https://github.com/mozilla/uniffi-rs/pull/1409), [#1515](https://github.com/mozilla/uniffi-rs/pull/1515))
+- Added constructor support to proc-macro frontend ([#1518](https://github.com/mozilla/uniffi-rs/pull/1518))
+- Added support for field defaults to proc-macro frontend ([#1560](https://github.com/mozilla/uniffi-rs/pull/1560))
+- Implemented proc-macro callback interface support ([#1573](https://github.com/mozilla/uniffi-rs/pull/1573))
+- Python bindings now generate type stubs for all functions and types ([#1506](https://github.com/mozilla/uniffi-rs/pull/1506))
+- Enforced checks for integer overflows in Python bindings ([#1546](https://github.com/mozilla/uniffi-rs/pull/1546))
+- No more implicit conversion to integers/floats in Python ([#1554](https://github.com/mozilla/uniffi-rs/pull/1554))
+- Enforced checks for integer overflows in Ruby bindings ([#1572](https://github.com/mozilla/uniffi-rs/pull/1572))
+- Only UTF-8 valid strings are passed from Ruby to Rust ([#1595](https://github.com/mozilla/uniffi-rs/pull/1595))
+- No more implicit conversion to integers/floats in Ruby ([#1596](https://github.com/mozilla/uniffi-rs/pull/1596))
+- Updated Rust dependencies ([#1495](https://github.com/mozilla/uniffi-rs/pull/1495), [#1583](https://github.com/mozilla/uniffi-rs/pull/1583), [#1569](https://github.com/mozilla/uniffi-rs/pull/1569))
+- Added type checking to strings/bytes for Python/Ruby ([#1597](https://github.com/mozilla/uniffi-rs/pull/1597#))
 
 ### Guidance for external bindings
 
 There are many breaking changes for external bindings - we hope there will be fewer in
 later releases, but we are laying the groundwork for some nice improvements.
-Significant patches to uniffi's builtin bindings which you will need to port include:
+Significant patches to UniFFI's builtin bindings which you will need to port include:
 
-* https://github.com/mozilla/uniffi-rs/commit/b9821439876c4fda05910313dec20906563b9909
-* https://github.com/mozilla/uniffi-rs/commit/748f671bb1e88267522119ef6b9d98a8bcca1cc0
-* https://github.com/mozilla/uniffi-rs/commit/07dcf3fe218d61e72073da72ba60ccbcd990bfb8
-* https://github.com/mozilla/uniffi-rs/commit/45d572def4fd84120e9a8cdfcc75ff1eead00e81
-* https://github.com/mozilla/uniffi-rs/commit/5e3dea51f17ae59a695a40e23479d57262968bb6
-* https://github.com/mozilla/uniffi-rs/commit/2eb39753e060a28ee43eae90b996ff55f9b5e0bd
+* <https://github.com/mozilla/uniffi-rs/commit/b9821439876c4fda05910313dec20906563b9909>
+* <https://github.com/mozilla/uniffi-rs/commit/748f671bb1e88267522119ef6b9d98a8bcca1cc0>
+* <https://github.com/mozilla/uniffi-rs/commit/07dcf3fe218d61e72073da72ba60ccbcd990bfb8>
+* <https://github.com/mozilla/uniffi-rs/commit/45d572def4fd84120e9a8cdfcc75ff1eead00e81>
+* <https://github.com/mozilla/uniffi-rs/commit/5e3dea51f17ae59a695a40e23479d57262968bb6>
+* <https://github.com/mozilla/uniffi-rs/commit/2eb39753e060a28ee43eae90b996ff55f9b5e0bd>
+* <https://github.com/mozilla/uniffi-rs/commit/323a4976992aff207db7946fc1f1cea614838f46>
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
