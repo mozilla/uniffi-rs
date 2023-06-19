@@ -354,6 +354,7 @@
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
 <a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -583,7 +584,8 @@
             Type::Float32 | Type::Float64 =&gt; nm.to_string(),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm} ? true : false&quot;</span>),
             Type::Object { .. } | Type::Enum(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; nm.to_string(),
-            Type::String | Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_utf8({nm})&quot;</span>),
+            Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_utf8({nm})&quot;</span>),
+            Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_bytes({nm})&quot;</span>),
             Type::Timestamp | Type::Duration =&gt; nm.to_string(),
             Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
             Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? {} : nil)&quot;</span>, coerce_rb(nm, ns, t)<span class="question-mark">?</span>),
