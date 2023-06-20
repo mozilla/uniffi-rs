@@ -166,6 +166,14 @@ runBlocking {
 
     print("fallible method (with exception): ${time4}ms")
     assert(time4 < 100)
+
+    fallibleStruct(false)
+    try {
+        fallibleStruct(true)
+        assert(false) // should never be reached
+    } catch (exception: MyException) {
+        assert(true)
+    }
     println(" ... ok")
 }
 

@@ -15,7 +15,7 @@
 internal interface UniFfiFutureCallback{{ callback_param|ffi_type_name }} : com.sun.jna.Callback {
     // Note: callbackData is always 0.  We could pass Rust a pointer/usize to represent the
     // continuation, but with JNA it's easier to just store it in the callback handler.
-    fun invoke(_callbackData: USize, returnValue: {{ callback_param|ffi_type_name_by_value }}, callStatus: RustCallStatus.ByValue);
+    fun invoke(_callbackData: USize, returnValue: {{ callback_param|ffi_type_name_by_value }}?, callStatus: RustCallStatus.ByValue);
 }
 {%- endfor %}
 
@@ -26,12 +26,12 @@ internal interface UniFfiFutureCallback{{ callback_param|ffi_type_name }} : com.
 
 internal class {{ result_type|future_callback_handler }}(val continuation: {{ result_type|future_continuation_type }})
     : UniFfiFutureCallback{{ callback_param|ffi_type_name }} {
-    override fun invoke(_callbackData: USize, returnValue: {{ callback_param|ffi_type_name_by_value }}, callStatus: RustCallStatus.ByValue) {
+    override fun invoke(_callbackData: USize, returnValue: {{ callback_param|ffi_type_name_by_value }}?, callStatus: RustCallStatus.ByValue) {
         try {
             checkCallStatus({{ result_type|error_handler }}, callStatus)
             {%- match result_type.return_type %}
             {%- when Some(return_type) %}
-            continuation.resume({{ return_type|lift_fn }}(returnValue))
+            continuation.resume({{ return_type|lift_fn }}(returnValue!!))
             {%- when None %}
             continuation.resume(Unit)
             {%- endmatch %}

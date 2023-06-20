@@ -116,6 +116,16 @@ pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
     }
 }
 
+// An async function returning a struct that can throw.
+#[uniffi::export]
+pub async fn fallible_struct(do_fail: bool) -> Result<Arc<Megaphone>, MyError> {
+    if do_fail {
+        Err(MyError::Foo)
+    } else {
+        Ok(new_megaphone())
+    }
+}
+
 /// Sync function that generates a new `Megaphone`.
 ///
 /// It builds a `Megaphone` which has async methods on it.
