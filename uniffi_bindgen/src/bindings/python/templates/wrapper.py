@@ -24,7 +24,6 @@ import typing
 {%- if ci.has_async_fns() %}
 import asyncio
 {%- endif %}
-import contextvars
 import platform
 {%- for req in self.imports() %}
 {{ req.render() }}
