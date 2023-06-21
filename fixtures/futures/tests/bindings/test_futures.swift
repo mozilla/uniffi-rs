@@ -155,6 +155,12 @@ Task {
 	counter.leave()
 }
 
+Task {
+	let m = try await fallibleStruct(doFail: false)
+	let result = try await m.fallibleMe(doFail: false)
+	assert(result == 42)
+}
+
 counter.enter()
 
 Task {
@@ -191,6 +197,16 @@ Task {
 	assert(tDelta.duration > 0 && tDelta.duration < 0.1)
 
 	counter.leave()
+}
+
+Task {
+	do {
+		let _ = try await fallibleStruct(doFail: true)
+	} catch MyError.Foo {
+		assert(true)
+	} catch {
+		assert(false)
+	}
 }
 
 counter.enter()
