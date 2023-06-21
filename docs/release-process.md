@@ -21,13 +21,6 @@ Steps:
    * Anything that affects any UniFFI consumers should be listed, this includes consumers that
      use UniFFI to generate their scaffolding/bindings, external bindings generators, etc.
 
-1. Take a look over `uniffi/CHANGELOG.md` and make sure the "unreleased" section lists changes for
-   the release that affect users of the top-level `uniffi` crate.
-   * This should be a copy of the items from the top-level `CHANGELOG.md` that affects
-     scaffolding/bindings generation.
-   * Note that breaking changes for a particular `uniffi_*` crate are not necessarily breaking for
-     the `uniffi` crate.  See `./uniffi-versioning.md` for a discussion of this.
-
 1. Decide on a new version number for `uniffi` crate.  Since we are pre-`1.0`, if there are breaking
    changes then this should be a minor version bump, otherwise a patch version bump.
 
