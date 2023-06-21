@@ -51,7 +51,7 @@ Steps:
          worthwhile anyway!.
    * Release the crates: `cargo release-backend-crates -x {MAJOR}.{MINOR}.{PATCH}`.
        * **This will publish the new releases on crates.io**
-   This will create a local git tag, but does not push it to github.
+       * This will **NOT** create a local git tag.
 
 1. Release `uniffi`
    * **Do not execute this before the previous step.**  It depends on the published crates from that step
