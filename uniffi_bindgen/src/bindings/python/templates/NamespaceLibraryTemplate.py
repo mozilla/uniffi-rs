@@ -52,8 +52,6 @@ def loadIndirect():
     libname = libname.format("{{ config.cdylib_name() }}")
     path = str(Path(__file__).parent / libname)
     lib = ctypes.cdll.LoadLibrary(path)
-    uniffi_check_contract_api_version(lib)
-    uniffi_check_api_checksums(lib)
     return lib
 
 def uniffi_check_contract_api_version(lib):
@@ -82,3 +80,6 @@ _UniFFILib.{{ func.name() }}.argtypes = (
 )
 _UniFFILib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
 {%- endfor %}
+{# Ensure to call the contract verification only after we defined all functions. -#}
+uniffi_check_contract_api_version(_UniFFILib)
+uniffi_check_api_checksums(_UniFFILib)
