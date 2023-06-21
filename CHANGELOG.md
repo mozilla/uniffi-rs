@@ -12,7 +12,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.23.0...HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.0...HEAD).
+
+## v0.24.0 (backend crates: v0.24.0) - (_2023-06-21_)
+
+[All changes in v0.24.0](https://github.com/mozilla/uniffi-rs/compare/v0.23.0...v0.24.0).
 
 ### ⚠️ Breaking Changes ⚠️
 - ABI: Implemented a new callback-interface ABI that significantly improves performance on Python and Kotlin.
