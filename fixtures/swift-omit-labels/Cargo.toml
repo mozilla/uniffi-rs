@@ -11,10 +11,10 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_omit_argument_labels"
 
 [dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", version = "0.24" }
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.24", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", version = "0.24", features = ["bindgen-tests"] }

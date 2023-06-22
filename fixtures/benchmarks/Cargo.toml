@@ -12,12 +12,12 @@ name = "uniffi_benchmarks"
 bench = false
 
 [dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", version = "0.24" }
 clap = { version = "4", features = ["cargo", "std", "derive"] }
 criterion = "0.5.1"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.24", features = ["build"] }
 
 [dev-dependencies]
 uniffi_bindgen = {path = "../../uniffi_bindgen"}

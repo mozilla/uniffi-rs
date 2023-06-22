@@ -10,7 +10,7 @@ publish = false
 name = "uniffi_uitests"
 
 [dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", version = "0.24" }
 uniffi_macros = {path = "../../uniffi_macros"}
 
 [dev-dependencies]
