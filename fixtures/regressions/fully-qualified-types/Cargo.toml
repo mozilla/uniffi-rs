@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_regression_test_i1015"
 
 [dependencies]
-uniffi = {path = "../../../uniffi"}
+uniffi = {path = "../../../uniffi", version = "0.24" }
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", features = ["build"] }
+uniffi = {path = "../../../uniffi", version = "0.24", features = ["build"] }

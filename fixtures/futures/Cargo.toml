@@ -15,11 +15,11 @@ name = "uniffi-fixtures-futures"
 path = "src/bin.rs"
 
 [dependencies]
-uniffi = { path = "../../uniffi", features = ["tokio", "cli"] }
+uniffi = { path = "../../uniffi", version = "0.24", features = ["tokio", "cli"] }
 tokio = { version = "1.24.1", features = ["time"] }
 
 [build-dependencies]
-uniffi = { path = "../../uniffi", features = ["build"] }
+uniffi = { path = "../../uniffi", version = "0.24", features = ["build"] }
 
 [dev-dependencies]
-uniffi = { path = "../../uniffi", features = ["bindgen-tests"] }
+uniffi = { path = "../../uniffi", version = "0.24", features = ["bindgen-tests"] }
