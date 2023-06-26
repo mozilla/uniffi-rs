@@ -12,7 +12,17 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.0...HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.1...HEAD).
+
+## v0.24.1 (backend crates: v0.24.1) - (_2023-06-23_)
+
+[All changes in v0.24.1](https://github.com/mozilla/uniffi-rs/compare/v0.24.0...v0.24.1).
+
+### What's changed
+
+- Python: remove unused import (and unbreak Python 3.6 compatibility) ([#1618](https://github.com/mozilla/uniffi-rs/pull/1618))
+- Python: Delay contract checks until after all functions are defined to avoid wrong ABI use ([#1619](https://github.com/mozilla/uniffi-rs/pull/1619))
+- Kotlin: Fix error handling in async functions ([#1614](https://github.com/mozilla/uniffi-rs/pull/1614))
 
 ## v0.24.0 (backend crates: v0.24.0) - (_2023-06-21_)
 
