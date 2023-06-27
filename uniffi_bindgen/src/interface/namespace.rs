@@ -70,7 +70,7 @@ use super::{APIBuilder, APIConverter, ComponentInterface};
 /// A namespace is currently just a name, but might hold more metadata about
 /// the component in future.
 ///
-#[derive(Debug, Clone, Hash, Checksum)]
+#[derive(Debug, Default, Clone, Hash, Checksum)]
 pub struct Namespace {
     pub(super) name: String,
     #[checksum_ignore]
@@ -153,7 +153,7 @@ mod test {
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert_eq!(
-            ci.namespace_definition().unwrap().docstring().unwrap(),
+            ci.namespace_definition().docstring().unwrap(),
             "informative docstring"
         );
     }
