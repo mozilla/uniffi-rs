@@ -94,6 +94,7 @@ pub struct Enum {
     pub(super) variants: Vec<Variant>,
     // "Flat" enums do not have variants with associated data.
     pub(super) flat: bool,
+    #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
 
@@ -199,6 +200,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
 

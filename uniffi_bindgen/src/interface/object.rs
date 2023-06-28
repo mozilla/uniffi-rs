@@ -248,6 +248,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
 pub struct Constructor {
     pub(super) name: String,
     pub(super) arguments: Vec<Argument>,
+    #[checksum_ignore]
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,

@@ -1,0 +1,152 @@
+namespace coverall_upstream_compatibility {
+    SimpleDict create_some_dict();
+    SimpleDict create_none_dict();
+
+    u64 get_num_alive();
+
+    // void returning error throwing namespace function to catch clippy warnings (eg, #1330)
+    [Throws=CoverallError]
+    void println(string text);
+};
+
+dictionary SimpleDict {
+    string text;
+    string? maybe_text;
+    boolean	a_bool;
+    boolean? maybe_a_bool;
+    u8 unsigned8;
+    u8? maybe_unsigned8;
+    u16 unsigned16;
+    u16? maybe_unsigned16;
+    u64 unsigned64;
+    u64? maybe_unsigned64;
+    i8 signed8;
+    i8? maybe_signed8;
+    i64 signed64;
+    i64? maybe_signed64;
+    float float32;
+    float? maybe_float32;
+    double float64;
+    double? maybe_float64;
+    Coveralls? coveralls;
+};
+
+dictionary DictWithDefaults {
+    string name = "default-value";
+    string? category = null;
+    u64 integer = 31;
+};
+
+[Enum]
+interface MaybeSimpleDict {
+    Yeah(SimpleDict d);
+    Nah();
+};
+
+[Error]
+enum CoverallError {
+    "TooManyHoles"
+};
+
+[Error]
+interface ComplexError {
+   OsError(i16 code, i16 extended_code);
+   PermissionDenied(string reason);
+};
+
+interface Coveralls {
+    constructor(string name);
+
+    // Either constructs a new object or throws an error.
+    [Throws=CoverallError, Name="fallible_new"]
+    constructor(string name, boolean should_fail);
+
+    // Always panics, just to test panics in ctors are handled.
+    [Name="panicking_new"]
+    constructor(string message);
+
+    string get_name();
+
+    [Throws=CoverallError]
+    boolean maybe_throw(boolean should_throw);
+
+    /// Throws something that impls `Into<CoverallError>`,
+    /// rather than directly throwing `CoverallError`.
+    [Throws=CoverallError]
+    boolean maybe_throw_into(boolean should_throw);
+
+    [Throws=ComplexError]
+    boolean maybe_throw_complex(i8 input);
+
+    void panic(string message);
+
+    [Throws=CoverallError]
+    void fallible_panic(string message);
+
+    // *** Test functions which take either `self` or other params as `Arc<Self>` ***
+
+    /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
+    [Self=ByArc]
+    u64 strong_count();
+
+    /// Takes an `Arc<Self>` and stores it in `self`, dropping the existing
+    /// reference. Note you can create circular references by passing `self`.
+    void take_other(Coveralls? other);
+
+    /// Returns what was previously set via `take_other()`, or null.
+    Coveralls? get_other();
+
+    /// Same signature as `take_other` but always fails.
+    [Self=ByArc, Throws=CoverallError]
+    void take_other_fallible();
+
+    /// Same signature as `take_other` but with an extra string arg - always
+    /// panics with that message..
+    [Self=ByArc]
+    void take_other_panic(string message);
+
+    // can't name it `clone` as it conflicts with the Clone trait and ours has a different signature
+    Coveralls clone_me();
+
+    // regression test: using a parameter name that was also used by UniFFI runtime code
+    string get_status(string status);
+
+    /// Simple string->integer dictionary, using the legacy `DOMString` type.
+    record<DOMString, u64> get_dict(string key, u64 value);
+
+    /// Simple string->integer dictionary, using the classic string type
+    record<string, u64> get_dict2(string key, u64 value);
+
+    /// integer->integer dictionary
+    record<u32, u64> get_dict3(u32 key, u64 value);
+
+    /// Adds a new repair at the current time.
+    void add_patch(Patch patch);
+
+    /// Adds a new repair at the specified time.
+    void add_repair(Repair repair);
+
+    /// Returns all repairs made.
+    sequence<Repair> get_repairs();
+};
+
+// coveralls keep track of their repairs (an interface in a dict)
+dictionary Repair {
+    timestamp when;
+    Patch patch;
+};
+
+// All coveralls end up with a patch.
+enum Color {"Red", "Blue", "Green"};
+
+interface Patch {
+    constructor(Color color);
+
+    Color get_color();
+};
+
+interface ThreadsafeCounter {
+  constructor();
+  void busy_wait(i32 ms);
+  i32 increment_if_busy();
+};
