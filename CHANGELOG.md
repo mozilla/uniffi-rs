@@ -80,6 +80,7 @@ Significant patches to UniFFI's builtin bindings which you will need to port inc
 * <https://github.com/mozilla/uniffi-rs/commit/5e3dea51f17ae59a695a40e23479d57262968bb6>
 * <https://github.com/mozilla/uniffi-rs/commit/2eb39753e060a28ee43eae90b996ff55f9b5e0bd>
 * <https://github.com/mozilla/uniffi-rs/commit/323a4976992aff207db7946fc1f1cea614838f46>
+* <https://github.com/mozilla/uniffi-rs/pull/1497>
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
 
