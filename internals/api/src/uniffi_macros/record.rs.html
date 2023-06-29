@@ -205,6 +205,10 @@
 <a href="#205" id="205">205</a>
 <a href="#206" id="206">206</a>
 <a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Lit, Path, Token};
@@ -233,7 +237,8 @@
         .parse_uniffi_attr_args::&lt;ArgumentNotAllowedHere&gt;()
         .err()
         .map(syn::Error::into_compile_error);
-    <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, <span class="prelude-val">None</span>);
+    <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, <span class="prelude-val">None</span>)
+        .unwrap_or_else(syn::Error::into_compile_error);
     <span class="kw">let </span>meta_static_var =
         record_meta_static_var(ident, <span class="kw-2">&amp;</span>record).unwrap_or_else(syn::Error::into_compile_error);
 
@@ -246,7 +251,8 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_record_ffi_converter(attr: CommonAttr, input: DeriveInput) -&gt; TokenStream {
     <span class="kw">match </span>input.data {
-        Data::Struct(s) =&gt; record_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>s, attr.tag.as_ref()),
+        Data::Struct(s) =&gt; record_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>s, attr.tag.as_ref())
+            .unwrap_or_else(syn::Error::into_compile_error),
         <span class="kw">_ </span>=&gt; syn::Error::new(
             proc_macro2::Span::call_site(),
             <span class="string">&quot;This attribute must only be used on structs&quot;</span>,
@@ -259,13 +265,14 @@
     ident: <span class="kw-2">&amp;</span>Ident,
     record: <span class="kw-2">&amp;</span>DataStruct,
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
-) -&gt; TokenStream {
+) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
     <span class="kw">let </span>name = ident_to_string(ident);
+    <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(write_field).collect();
     <span class="kw">let </span>try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
 
-    <span class="macro">quote! </span>{
+    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
@@ -280,9 +287,10 @@
             }
 
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
+                .concat_str(#mod_path)
                 .concat_str(#name);
         }
-    }
+    })
 }
 
 <span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {

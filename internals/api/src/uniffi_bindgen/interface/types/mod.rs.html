@@ -388,6 +388,25 @@
 <a href="#388" id="388">388</a>
 <a href="#389" id="389">389</a>
 <a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -628,17 +647,18 @@
             Ty::SystemTime =&gt; Type::Timestamp,
             Ty::Duration =&gt; Type::Duration,
             Ty::ForeignExecutor =&gt; Type::ForeignExecutor,
-            Ty::Record { name } =&gt; Type::Record(name),
+            Ty::Record { name, .. } =&gt; Type::Record(name),
             Ty::Enum { name, .. } =&gt; Type::Enum(name),
             Ty::ArcObject {
                 object_name,
                 is_trait,
+                ..
             } =&gt; Type::Object {
                 name: object_name,
                 imp: ObjectImpl::from_is_trait(is_trait),
             },
-            Ty::CallbackInterface { name } =&gt; Type::CallbackInterface(name),
-            Ty::Custom { name, builtin } =&gt; Type::Custom {
+            Ty::CallbackInterface { name, .. } =&gt; Type::CallbackInterface(name),
+            Ty::Custom { name, builtin, .. } =&gt; Type::Custom {
                 name,
                 builtin: builtin.into(),
             },
@@ -648,6 +668,15 @@
                 key_type,
                 value_type,
             } =&gt; Type::Map(key_type.into(), value_type.into()),
+            Ty::External {
+                module_path,
+                name,
+                kind,
+            } =&gt; Type::External {
+                crate_name: module_path.split(<span class="string">&#39;:&#39;</span>).next().unwrap().to_string(),
+                name,
+                kind: kind.into(),
+            },
         }
     }
 }
@@ -661,6 +690,15 @@
 <span class="kw">impl </span>From&lt;Box&lt;uniffi_meta::Type&gt;&gt; <span class="kw">for </span>Box&lt;Type&gt; {
     <span class="kw">fn </span>from(ty: Box&lt;uniffi_meta::Type&gt;) -&gt; <span class="self">Self </span>{
         Box::new((<span class="kw-2">*</span>ty).into())
+    }
+}
+
+<span class="kw">impl </span>From&lt;uniffi_meta::ExternalKind&gt; <span class="kw">for </span>ExternalKind {
+    <span class="kw">fn </span>from(kind: uniffi_meta::ExternalKind) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>kind {
+            uniffi_meta::ExternalKind::DataClass =&gt; <span class="self">Self</span>::DataClass,
+            uniffi_meta::ExternalKind::Interface =&gt; <span class="self">Self</span>::Interface,
+        }
     }
 }
 

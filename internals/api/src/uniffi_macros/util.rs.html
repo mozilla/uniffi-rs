@@ -267,6 +267,23 @@
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
 <a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -470,7 +487,7 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tagged_impl_header(
     trait_name: <span class="kw-2">&amp;</span>str,
-    ident: <span class="kw-2">&amp;</span>Ident,
+    ident: <span class="kw-2">&amp;</span><span class="kw">impl </span>ToTokens,
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; TokenStream {
     <span class="kw">let </span>trait_name = Ident::new(trait_name, Span::call_site());
@@ -534,6 +551,23 @@
 </span><span class="kw">impl </span>Parse <span class="kw">for </span>CommonAttr {
     <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         parse_comma_separated(input)
+    }
+}
+
+<span class="doccomment">/// Specifies a type from a dependent crate
+</span><span class="kw">pub struct </span>ExternalTypeItem {
+    <span class="kw">pub </span>crate_ident: Ident,
+    <span class="kw">pub </span>sep: <span class="macro">Token!</span>[,],
+    <span class="kw">pub </span>type_ident: Ident,
+}
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>ExternalTypeItem {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            crate_ident: input.parse()<span class="question-mark">?</span>,
+            sep: input.parse()<span class="question-mark">?</span>,
+            type_ident: input.parse()<span class="question-mark">?</span>,
+        })
     }
 }
 </code></pre></div>

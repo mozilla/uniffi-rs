@@ -125,6 +125,66 @@
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -132,12 +192,12 @@
 </span><span class="kw">use crate</span>::{
     export::ImplItem,
     fnsig::{FnKind, FnSignature},
-    util::{create_metadata_items, ident_to_string},
+    util::{create_metadata_items, ident_to_string, mod_path, tagged_impl_header},
 };
 <span class="kw">use </span>proc_macro2::{Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>std::iter;
-<span class="kw">use </span>syn::Ident;
+<span class="kw">use </span>syn::{Ident, Path};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>trait_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
@@ -145,7 +205,6 @@
     internals_ident: <span class="kw-2">&amp;</span>Ident,
     items: <span class="kw-2">&amp;</span>[ImplItem],
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>trait_name = ident_to_string(trait_ident);
     <span class="kw">let </span>trait_impl_methods = items
         .iter()
         .map(|item| <span class="kw">match </span>item {
@@ -153,6 +212,7 @@
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
         })
         .collect::&lt;syn::Result&lt;TokenStream&gt;&gt;()<span class="question-mark">?</span>;
+    <span class="kw">let </span>ffi_converter_tokens = ffi_converter_callback_interface_impl(trait_ident, ident, <span class="prelude-val">None</span>);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
@@ -181,8 +241,68 @@
             #trait_impl_methods
         }
 
-        <span class="macro">::uniffi::ffi_converter_callback_interface!</span>(#trait_ident, #ident, #trait_name, <span class="kw">crate</span>::UniFfiTag);
+        #ffi_converter_tokens
     })
+}
+
+<span class="kw">pub fn </span>ffi_converter_callback_interface_impl(
+    trait_ident: <span class="kw-2">&amp;</span>Ident,
+    trait_impl_ident: <span class="kw-2">&amp;</span>Ident,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+) -&gt; TokenStream {
+    <span class="kw">let </span>name = ident_to_string(trait_ident);
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, <span class="kw-2">&amp;</span><span class="macro">quote! </span>{ Box&lt;<span class="kw">dyn </span>#trait_ident&gt; }, tag);
+    <span class="kw">let </span>tag = <span class="kw">match </span>tag {
+        <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">quote! </span>{ #t },
+        <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ T },
+    };
+    <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
+        <span class="prelude-val">Ok</span>(p) =&gt; p,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
+    };
+
+    <span class="macro">quote! </span>{
+        <span class="attr">#[doc(hidden)]
+        #[automatically_derived]
+        </span><span class="kw">unsafe </span>#impl_spec {
+            <span class="kw">type </span>FfiType = u64;
+
+            <span class="comment">// Lower and write are tricky to implement because we have a dyn trait as our type.  There&#39;s
+            // probably a way to, but this carries lots of thread safety risks, down to impedance
+            // mismatches between Rust and foreign languages, and our uncertainty around implementations of
+            // concurrent handlemaps.
+            //
+            // The use case for them is also quite exotic: it&#39;s passing a foreign callback back to the foreign
+            // language.
+            //
+            // Until we have some certainty, and use cases, we shouldn&#39;t use them.
+            </span><span class="kw">fn </span>lower(_obj: <span class="self">Self</span>) -&gt; <span class="self">Self</span>::FfiType {
+                <span class="macro">panic!</span>(<span class="string">&quot;Lowering CallbackInterface not supported&quot;</span>)
+            }
+
+            <span class="kw">fn </span>write(_obj: <span class="self">Self</span>, _buf: <span class="kw-2">&amp;mut </span>std::vec::Vec&lt;u8&gt;) {
+                <span class="macro">panic!</span>(<span class="string">&quot;Writing CallbackInterface not supported&quot;</span>)
+            }
+
+            <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
+                <span class="prelude-val">Ok</span>(Box::new(&lt;#trait_impl_ident&gt;::new(v)))
+            }
+
+            <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
+                <span class="kw">use </span>uniffi::deps::bytes::Buf;
+                uniffi::check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
+                &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(buf.get_u64())
+            }
+
+            <span class="macro">::uniffi::ffi_converter_default_return!</span>(#tag);
+
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
+                ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
+            )
+            .concat_str(#mod_path)
+            .concat_str(#name);
+        }
+    }
 }
 
 <span class="kw">fn </span>gen_method_impl(sig: <span class="kw-2">&amp;</span>FnSignature, internals_ident: <span class="kw-2">&amp;</span>Ident) -&gt; syn::Result&lt;TokenStream&gt; {
