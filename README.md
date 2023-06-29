@@ -41,6 +41,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 
 * [Diplomat](https://github.com/rust-diplomat/diplomat/) - see our [writeup of
   the different approach taken by that tool](docs/diplomat-and-macros.md)
+* [Interoptopus](https://github.com/ralfbiedert/interoptopus/)
 
 (Please open a PR if you think other tools should be listed!)
 
