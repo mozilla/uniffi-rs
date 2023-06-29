@@ -41,7 +41,7 @@ class KtTestCallbackInterface : TestCallbackInterface {
 
     override fun add(a: UInt, b: UInt) = a + b
 
-    override fun optional(a: UInt?) = a ?: 0
+    override fun optional(a: UInt?) = a ?: 0u
 
     override fun tryParseInt(value: String): UInt {
         if (value == "force-unexpected-error") {
