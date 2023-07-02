@@ -29,3 +29,12 @@ pub fn generate_scaffolding(udl_file: impl AsRef<Utf8Path>) -> Result<()> {
     let out_dir = env::var("OUT_DIR").context("$OUT_DIR missing?!")?;
     uniffi_bindgen::generate_component_scaffolding(udl_file, Some(out_dir.as_ref()), false)
 }
+
+/// Like [generate_scaffolding] for when you don't have a UDL but still need `RustBuffer` etc.
+pub fn generate_namespaced_scaffolding(namespace: &str) -> Result<()> {
+    // The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated
+    // at *build* time, so we need to rebuild when it changes.
+    println!("cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS");
+    let out_dir = env::var("OUT_DIR").context("$OUT_DIR missing?!")?;
+    uniffi_bindgen::generate_namespaced_scaffolding(namespace, out_dir.as_ref(), false)
+}

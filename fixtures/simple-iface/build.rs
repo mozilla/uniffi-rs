@@ -3,5 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    uniffi::generate_scaffolding("src/simple-iface.udl").unwrap();
+    // We previously had a UDL with content `namespace uniffi_simple_iface {};`
+    uniffi::generate_namespaced_scaffolding("uniffi_simple_iface").unwrap();
 }

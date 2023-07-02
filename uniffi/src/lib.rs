@@ -20,7 +20,7 @@ pub use uniffi_bindgen::{
     bindings::TargetLanguage, generate_bindings, generate_component_scaffolding, print_json,
 };
 #[cfg(feature = "build")]
-pub use uniffi_build::generate_scaffolding;
+pub use uniffi_build::{generate_namespaced_scaffolding, generate_scaffolding};
 #[cfg(feature = "bindgen-tests")]
 pub use uniffi_macros::build_foreign_language_testcases;
 

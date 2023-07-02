@@ -17,7 +17,7 @@
 ///     package maps.
 use crate::{
     bindings::{self, TargetLanguage},
-    macro_metadata, parse_udl, ComponentInterface, Config, Result,
+    macro_metadata, ComponentInterface, Config, Result,
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
@@ -26,7 +26,7 @@ use std::{
     collections::{BTreeSet, HashMap, HashSet},
     fs,
 };
-use uniffi_meta::group_metadata;
+use uniffi_meta::{group_metadata, Metadata, MetadataGroup};
 
 /// Generate foreign bindings
 ///
@@ -129,10 +129,14 @@ fn find_sources(
                 .manifest_path
                 .parent()
                 .context("manifest path has no parent")?;
-            let mut ci =
-                load_component_interface(&group.namespace.crate_name, crate_root, &group.items)?;
             let crate_name = group.namespace.crate_name.clone();
-            macro_metadata::add_group_to_ci(&mut ci, group)?;
+            let mut ci = ComponentInterface::default();
+            if let Some(udl_group) =
+                load_udl_metadata(&group.namespace.crate_name, crate_root, &group.items)?
+            {
+                ci.add_metadata(udl_group)?;
+            }
+            ci.add_metadata(group)?;
             let mut config = Config::load_initial(crate_root, None)?;
             if let Some(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
@@ -167,26 +171,27 @@ fn find_package_by_crate_name(
     }
 }
 
-fn load_component_interface(
+fn load_udl_metadata(
     crate_name: &str,
     crate_root: &Utf8Path,
-    metadata: &BTreeSet<uniffi_meta::Metadata>,
-) -> Result<ComponentInterface> {
+    metadata: &BTreeSet<Metadata>,
+) -> Result<Option<MetadataGroup>> {
     let udl_items = metadata
         .iter()
         .filter_map(|i| match i {
-            uniffi_meta::Metadata::UdlFile(meta) => Some(meta),
+            Metadata::UdlFile(meta) => Some(meta),
             _ => None,
         })
         .collect::<Vec<_>>();
     let ci_name = match udl_items.len() {
-        0 => bail!("No UDL files found for {crate_name}"),
+        0 => return Ok(None),
         1 => &udl_items[0].name,
         n => bail!("{n} UDL files found for {crate_name}"),
     };
     let ci_path = crate_root.join("src").join(format!("{ci_name}.udl"));
     if ci_path.exists() {
-        parse_udl(&ci_path)
+        let udl = fs::read_to_string(ci_path)?;
+        Ok(Some(uniffi_udl::parse_udl(&udl)?))
     } else {
         bail!("{ci_path} not found");
     }

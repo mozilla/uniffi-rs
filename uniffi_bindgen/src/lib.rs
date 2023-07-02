@@ -239,7 +239,8 @@ pub fn generate_external_bindings(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     let crate_root = guess_crate_root(udl_file.as_ref())?;
-    let out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)?;
+    let out_dir =
+        prepare_out_dir(out_dir_override.unwrap_or_else(|| get_udl_dir(udl_file.as_ref())))?;
     let component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
     let bindings_config = load_bindings_config(&component, crate_root, config_file_override)?;
     binding_generator.write_bindings(component, bindings_config, &out_dir)
@@ -254,10 +255,38 @@ pub fn generate_component_scaffolding(
 ) -> Result<()> {
     let component = parse_udl(udl_file)?;
     let file_stem = udl_file.file_stem().context("not a file")?;
-    let filename = format!("{file_stem}.uniffi.rs");
-    let out_path = get_out_dir(udl_file, out_dir_override)?.join(filename);
+    let out_dir = prepare_out_dir(out_dir_override.unwrap_or_else(|| get_udl_dir(udl_file)))?;
+    write_scaffolding(&component, file_stem, &out_dir, format_code)
+}
+
+// Generate the infrastructural Rust code for implementing the UniFFI interface
+// in the given namespace when there's no UDL required.
+pub fn generate_namespaced_scaffolding(
+    namespace: &str,
+    out_dir: &Utf8Path,
+    format_code: bool,
+) -> Result<()> {
+    // create a new ComponentInterface with just namespace info.
+    let component = ComponentInterface::from_metadata(uniffi_meta::MetadataGroup {
+        namespace: uniffi_meta::NamespaceMetadata {
+            crate_name: namespace.to_string(),
+            name: namespace.to_string(),
+        },
+        items: Default::default(),
+    })?;
+    write_scaffolding(&component, namespace, out_dir, format_code)
+}
+
+fn write_scaffolding(
+    component: &ComponentInterface,
+    base_name: &str,
+    out_dir: &Utf8Path,
+    format_code: bool,
+) -> Result<()> {
+    let filename = format!("{base_name}.uniffi.rs");
+    let out_path = prepare_out_dir(out_dir)?.join(filename);
     let mut f = File::create(&out_path)?;
-    write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
+    write!(f, "{}", RustScaffolding::new(component)).context("Failed to write output file")?;
     if format_code {
         format_code_with_rustfmt(&out_path)?;
     }
@@ -282,7 +311,7 @@ pub fn generate_bindings(
 
     let mut config = Config::load_initial(crate_root, config_file_override)?;
     config.update_from_ci(&component);
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
+    let out_dir = prepare_out_dir(out_dir_override.unwrap_or_else(|| get_udl_dir(udl_file)))?;
     for language in target_languages {
         bindings::write_bindings(
             &config.bindings,
@@ -323,18 +352,16 @@ pub fn guess_crate_root(udl_file: &Utf8Path) -> Result<&Utf8Path> {
     Ok(path_guess)
 }
 
-fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Result<Utf8PathBuf> {
-    Ok(match out_dir_override {
-        Some(s) => {
-            // Create the directory if it doesn't exist yet.
-            fs::create_dir_all(s)?;
-            s.canonicalize_utf8().context("Unable to find out-dir")?
-        }
-        None => udl_file
-            .parent()
-            .context("File has no parent directory")?
-            .to_owned(),
-    })
+fn get_udl_dir(udl_file: &Utf8Path) -> &Utf8Path {
+    udl_file.parent().expect("File has no parent directory")
+}
+
+fn prepare_out_dir(out_dir: &Utf8Path) -> Result<Utf8PathBuf> {
+    // Create the directory if it doesn't exist yet.
+    fs::create_dir_all(out_dir)?;
+    out_dir
+        .canonicalize_utf8()
+        .context("Unable to find out-dir")
 }
 
 fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
