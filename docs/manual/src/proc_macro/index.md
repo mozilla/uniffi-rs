@@ -19,7 +19,7 @@ instead of in UDL.
 [Procedural Macros]: https://doc.rust-lang.org/reference/procedural-macros.html
 
 **⚠ Warning ⚠** This facility is relatively new, so things may change often. However, this remains
-true for all of UniFFI, so proceed with caution and the knowledge things may break in the future.
+true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.
 
 ## Build workflow
 
