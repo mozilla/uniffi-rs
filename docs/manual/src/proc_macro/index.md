@@ -1,7 +1,7 @@
 # Procedural Macros: Attributes and Derives
 
 UniFFI allows you to define your function signatures and type definitions directly in your Rust
-code, avoiding the need to duplcate them in a UDL file and so avoiding the possibility for the two to get out of sync.
+code, avoiding the need to duplicate them in a UDL file and so avoiding the possibility for the two to get out of sync.
 This  mechanism is based on [Procedural Macros][] (proc-macros), specifically the attribute and derive macros.
 
 You can have this mechanism extract some kinds of definitions out of your Rust code,
