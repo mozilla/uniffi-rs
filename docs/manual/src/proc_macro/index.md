@@ -1,20 +1,25 @@
-# Experimental: Attributes and Derives
+# Procedural Macros: Attributes and Derives
 
-UniFFI is in the process of having its interface definition mechanism rewritten to avoid the
-duplication of function signatures and type definitions between Rust code and the UDL file (and the
-possibility for the two to go out of sync). The new interface definition mechanism is based on
-[Procedural Macros][] (proc-macros), specifically the attribute and derive macros.
+UniFFI allows you to define your function signatures and type definitions directly in your Rust
+code, avoiding the need to duplicate them in a UDL file and so avoiding the possibility for the two to get out of sync.
+This  mechanism is based on [Procedural Macros][] (proc-macros), specifically the attribute and derive macros.
 
-This rewrite is not yet complete, but can already have UniFFI extract some kinds of definitions out
-of your Rust code, in addition to what is declared in the UDL file. However, you have to make sure
+You can have this mechanism extract some kinds of definitions out of your Rust code,
+in addition to what is declared in the UDL file. However, you have to make sure
 that the UDL file is still valid on its own: All types referenced in fields, parameter and return
 types in UDL must also be declared in UDL.
 
+Further, using this capability probably means you still need to refer to the UDL documentation,
+because at this time, that documentation tends to conflate the UniFFI type model and the
+description of how foreign bindings use that type model. For example, the documentation for
+a UDL interface describes both how it is defined in UDL and how Swift and Kotlin might use
+that interface. The latter is relevent even if you define the interface using proc-macros
+instead of in UDL.
+
 [Procedural Macros]: https://doc.rust-lang.org/reference/procedural-macros.html
 
-**⚠ Warning ⚠** As the page title says, this is experimental. Bugs are expected and if you want to
-try it is recommended that you use `uniffi` as a git dependency so you don't run into issues that
-are already fixed.
+**⚠ Warning ⚠** This facility is relatively new, so things may change often. However, this remains
+true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.
 
 ## Build workflow
 
