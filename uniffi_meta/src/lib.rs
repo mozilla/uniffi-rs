@@ -18,6 +18,13 @@ pub use reader::{read_metadata, read_metadata_type};
 
 mod types;
 pub use types::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
+
+// This needs to match the minor version of the `uniffi` crate.  See
+// `docs/uniffi-versioning.md` for details.
+//
+// Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
+pub const UNIFFI_CONTRACT_VERSION: u32 = 22;
+
 /// Similar to std::hash::Hash.
 ///
 /// Implementations of this trait are expected to update the hasher state in

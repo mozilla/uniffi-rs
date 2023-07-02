@@ -23,6 +23,7 @@ mod export;
 mod fnsig;
 mod object;
 mod record;
+mod setup_scaffolding;
 mod test;
 mod util;
 
@@ -48,6 +49,24 @@ use self::{
 #[proc_macro]
 pub fn build_foreign_language_testcases(tokens: TokenStream) -> TokenStream {
     test::build_foreign_language_testcases(tokens)
+}
+
+/// Top-level initialization macro
+///
+/// The optional namespace argument is only used by the scaffolding templates to pass in the
+/// CI namespace.
+#[proc_macro]
+pub fn setup_scaffolding(tokens: TokenStream) -> TokenStream {
+    let namespace = match syn::parse_macro_input!(tokens as Option<LitStr>) {
+        Some(lit_str) => lit_str.value(),
+        None => match util::mod_path() {
+            Ok(v) => v,
+            Err(e) => return e.into_compile_error().into(),
+        },
+    };
+    setup_scaffolding::setup_scaffolding(namespace)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 #[proc_macro_attribute]

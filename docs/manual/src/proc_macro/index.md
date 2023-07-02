@@ -23,10 +23,15 @@ true for all of UniFFI, so proceed with caution and the knowledge that things ma
 
 ## Build workflow
 
-Before any of the things discussed below work, make sure to update your bindings generation steps
-to start with a build of your library and add
-`--lib-file <CARGO WORKSPACE>/target/<TARGET>/<BUILT CDYLIB OR STATICLIB>` to your `uniffi-bindgen`
-command line invocation.
+Library mode is recommended when using UniFFI proc-macros (See the [Foreign language bindings docs](../tutorial/foreign_language_bindings.md) for more info).
+
+If your crate's API is declared using only proc-macros and not UDL files, call the `uniffi::setup_scaffolding` macro at the top of your source code:
+
+```rust
+uniffi::setup_scaffolding!();
+```
+
+**⚠ Warning ⚠** Do not call both `uniffi::setup_scaffolding!()` and `uniffi::include_scaffolding!!()` in the same crate.
 
 ## The `#[uniffi::export]` attribute
 

@@ -7,20 +7,16 @@ use askama::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
-use heck::{ToShoutySnakeCase, ToSnakeCase};
+use heck::ToSnakeCase;
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
 pub struct RustScaffolding<'a> {
     ci: &'a ComponentInterface,
-    uniffi_version: &'static str,
 }
 impl<'a> RustScaffolding<'a> {
     pub fn new(ci: &'a ComponentInterface) -> Self {
-        Self {
-            ci,
-            uniffi_version: crate::BINDGEN_VERSION,
-        }
+        Self { ci }
     }
 }
 mod filters {

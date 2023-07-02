@@ -92,15 +92,13 @@
 #![warn(rust_2018_idioms, unused_qualifications)]
 #![allow(unknown_lints)]
 
-const BINDGEN_VERSION: &str = env!("CARGO_PKG_VERSION");
-
 use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::io::prelude::*;
 use std::io::ErrorKind;
-use std::{collections::HashMap, env, process::Command, str::FromStr};
+use std::{collections::HashMap, process::Command, str::FromStr};
 
 pub mod backend;
 pub mod bindings;

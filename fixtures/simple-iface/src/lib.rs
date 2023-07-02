@@ -26,4 +26,4 @@ impl Object {
     }
 }
 
-uniffi::include_scaffolding!("simple-iface");
+uniffi::setup_scaffolding!();
