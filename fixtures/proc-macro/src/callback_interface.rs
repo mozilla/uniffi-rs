@@ -8,5 +8,6 @@ use crate::BasicError;
 pub trait TestCallbackInterface {
     fn do_nothing(&self);
     fn add(&self, a: u32, b: u32) -> u32;
+    fn optional(&self, a: Option<u32>) -> u32;
     fn try_parse_int(&self, value: String) -> Result<u32, BasicError>;
 }

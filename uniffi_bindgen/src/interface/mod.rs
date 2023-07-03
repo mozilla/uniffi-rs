@@ -760,7 +760,12 @@ impl ComponentInterface {
                     meta.index,
                 );
             }
-            cbi.methods.push(meta.into());
+            let defn: Method = meta.into();
+            for arg in defn.iter_types() {
+                self.types.add_known_type(arg);
+            }
+
+            cbi.methods.push(defn);
         } else {
             self.add_method_meta(meta)?;
         }

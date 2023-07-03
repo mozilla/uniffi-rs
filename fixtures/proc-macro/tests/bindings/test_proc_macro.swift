@@ -44,6 +44,10 @@ class SwiftTestCallbackInterface : TestCallbackInterface {
         return a + b;
     }
 
+    func `optional`(a: Optional<UInt32>) -> UInt32 {
+        return a ?? 0;
+    }
+
     func tryParseInt(value: String) throws -> UInt32 {
         if (value == "force-unexpected-error") {
             // raise an error that's not expected

@@ -48,6 +48,11 @@ class PyTestCallbackInterface(TestCallbackInterface):
     def add(self, a, b):
         return a + b
 
+    def optional(self, a):
+        if a is None:
+            return 0
+        return a
+
     def try_parse_int(self, value):
         if value == "force-unexpected-error":
             # raise an error that's not expected
