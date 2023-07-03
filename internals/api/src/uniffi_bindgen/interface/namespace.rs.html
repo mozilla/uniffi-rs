@@ -111,25 +111,6 @@
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -193,11 +174,7 @@
 //! Yeah, it&#39;s a bit of an awkward fit syntactically, but it&#39;s enough
 //! to get us up and running for a first version of this tool.
 
-</span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
-
-<span class="kw">use super</span>::{APIBuilder, APIConverter, ComponentInterface};
-
-<span class="doccomment">/// A namespace is currently just a name, but might hold more metadata about
+/// A namespace is currently just a name, but might hold more metadata about
 /// the component in future.
 ///
 </span><span class="attr">#[derive(Debug, Clone, Hash)]
@@ -205,24 +182,9 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
 }
 
-<span class="kw">impl </span>APIBuilder <span class="kw">for </span>weedle::NamespaceDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
-    <span class="kw">fn </span>process(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if </span><span class="self">self</span>.attributes.is_some() {
-            <span class="macro">bail!</span>(<span class="string">&quot;namespace attributes are not supported yet&quot;</span>);
-        }
-        <span class="kw">if </span><span class="self">self</span>.identifier.<span class="number">0 </span>!= ci.types.namespace {
-            <span class="macro">bail!</span>(<span class="string">&quot;duplicate namespace definition&quot;</span>);
-        }
-        <span class="kw">for </span>func <span class="kw">in </span><span class="self">self</span>.members.body.convert(ci)<span class="question-mark">? </span>{
-            ci.add_function_definition(func)<span class="question-mark">?</span>;
-        }
-        <span class="prelude-val">Ok</span>(())
-    }
-}
-
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
-    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::ComponentInterface;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_empty_namespace() {

@@ -457,6 +457,7 @@
 <a href="#457" id="457">457</a>
 <a href="#458" id="458">458</a>
 <a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -799,7 +800,8 @@
 <span class="kw">fn </span>parse_udl(udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;ComponentInterface&gt; {
     <span class="kw">let </span>udl = fs::read_to_string(udl_file)
         .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {udl_file}&quot;</span>))<span class="question-mark">?</span>;
-    ComponentInterface::from_webidl(<span class="kw-2">&amp;</span>udl).context(<span class="string">&quot;Failed to parse UDL&quot;</span>)
+    <span class="kw">let </span>group = uniffi_udl::parse_udl(<span class="kw-2">&amp;</span>udl)<span class="question-mark">?</span>;
+    ComponentInterface::from_metadata(group)
 }
 
 <span class="kw">fn </span>format_code_with_rustfmt(path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {

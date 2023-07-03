@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Attribute","SelfType"],"fn":["name_from_id_or_string","parse_attributes"],"struct":["ArgumentAttributes","ConstructorAttributes","EnumAttributes","FunctionAttributes","InterfaceAttributes","MethodAttributes","TypedefAttributes"]};

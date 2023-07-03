@@ -120,6 +120,19 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -186,8 +199,7 @@
         name: meta.name.clone(),
         module_path: meta.module_path.clone(),
     };
-    iface.types.add_known_type(<span class="kw-2">&amp;</span>ty);
-    iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
+    iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>enum_ = Enum::try_from_meta(meta, is_flat)<span class="question-mark">?</span>;
     iface.add_enum_definition(enum_)<span class="question-mark">?</span>;
@@ -212,9 +224,7 @@
                 name: meta.name.clone(),
                 module_path: meta.module_path.clone(),
             };
-            iface.types.add_known_type(<span class="kw-2">&amp;</span>ty);
-            iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
-
+            iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
             <span class="kw">let </span>record: Record = meta.try_into()<span class="question-mark">?</span>;
             iface.add_record_definition(record)<span class="question-mark">?</span>;
         }
@@ -223,9 +233,18 @@
             add_enum_to_ci(iface, meta, flat)<span class="question-mark">?</span>;
         }
         Metadata::Object(meta) =&gt; {
-            iface.add_object_meta(meta);
+            iface.types.add_known_type(<span class="kw-2">&amp;</span>Type::Object {
+                module_path: meta.module_path.clone(),
+                name: meta.name.clone(),
+                imp: meta.imp,
+            })<span class="question-mark">?</span>;
+            iface.add_object_meta(meta)<span class="question-mark">?</span>;
         }
         Metadata::CallbackInterface(meta) =&gt; {
+            iface.types.add_known_type(<span class="kw-2">&amp;</span>Type::CallbackInterface {
+                module_path: meta.module_path.clone(),
+                name: meta.name.clone(),
+            })<span class="question-mark">?</span>;
             iface.add_callback_interface_definition(CallbackInterface::new(meta.name));
         }
         Metadata::TraitMethod(meta) =&gt; {
@@ -238,6 +257,13 @@
                     add_enum_to_ci(iface, enum_, is_flat)<span class="question-mark">?</span>;
                 }
             };
+        }
+        Metadata::CustomType(meta) =&gt; {
+            iface.types.add_known_type(<span class="kw-2">&amp;</span>Type::Custom {
+                module_path: meta.module_path.clone(),
+                name: meta.name,
+                builtin: Box::new(meta.builtin),
+            })<span class="question-mark">?</span>;
         }
     }
     <span class="prelude-val">Ok</span>(())

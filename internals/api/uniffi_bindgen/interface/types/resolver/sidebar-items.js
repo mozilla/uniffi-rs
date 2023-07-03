@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["resolve_builtin_type"],"trait":["TypeResolver"]};

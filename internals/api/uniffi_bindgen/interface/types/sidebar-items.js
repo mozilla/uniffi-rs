@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ExternalKind","ObjectImpl","Type"],"mod":["finder","resolver"],"struct":["TypeUniverse"],"trait":["AsType"],"type":["TypeIterator"]};
