@@ -254,6 +254,17 @@
 <a href="#254" id="254">254</a>
 <a href="#255" id="255">255</a>
 <a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -315,6 +326,7 @@
 </span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 </span><span class="kw">pub struct </span>Record {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) fields: Vec&lt;Field&gt;,
 }
 
@@ -334,7 +346,10 @@
 
 <span class="kw">impl </span>AsType <span class="kw">for </span>Record {
     <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        Type::Record(<span class="self">self</span>.name.clone())
+        Type::Record {
+            name: <span class="self">self</span>.name.clone(),
+            module_path: <span class="self">self</span>.module_path.clone(),
+        }
     }
 }
 
@@ -344,6 +359,7 @@
     <span class="kw">fn </span>try_from(meta: uniffi_meta::RecordMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             name: meta.name,
+            module_path: meta.module_path,
             fields: meta
                 .fields
                 .into_iter()
@@ -363,6 +379,7 @@
         }
         <span class="prelude-val">Ok</span>(Record {
             name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            module_path: Default::default(),
             fields: <span class="self">self</span>.members.body.convert(ci)<span class="question-mark">?</span>,
         })
     }
@@ -401,7 +418,7 @@
 
     <span class="kw">fn </span>try_from(meta: uniffi_meta::FieldMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>name = meta.name;
-        <span class="kw">let </span>type_ = meta.ty.into();
+        <span class="kw">let </span>type_ = meta.ty;
         <span class="kw">let </span>default = meta
             .default
             .map(|d| Literal::from_metadata(<span class="kw-2">&amp;</span>name, <span class="kw-2">&amp;</span>type_, d))
@@ -462,7 +479,7 @@
         <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Simple&quot;</span>);
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;field&quot;</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].as_type().canonical_name(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].as_type(), Type::UInt32);
         <span class="macro">assert!</span>(record.fields()[<span class="number">0</span>].default_value().is_none());
 
         <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Complex&quot;</span>).unwrap();
@@ -470,18 +487,20 @@
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;key&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            record.fields()[<span class="number">0</span>].as_type().canonical_name(),
-            <span class="string">&quot;Optionalstring&quot;
-        </span>);
+            record.fields()[<span class="number">0</span>].as_type(),
+            Type::Optional {
+                inner_type: Box::new(Type::String)
+            },
+        );
         <span class="macro">assert!</span>(record.fields()[<span class="number">0</span>].default_value().is_none());
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">&quot;value&quot;</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].as_type().canonical_name(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].as_type(), Type::UInt32);
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             record.fields()[<span class="number">1</span>].default_value(),
             <span class="prelude-val">Some</span>(Literal::UInt(<span class="number">0</span>, Radix::Decimal, Type::UInt32))
         ));
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].name(), <span class="string">&quot;spin&quot;</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].as_type().canonical_name(), <span class="string">&quot;bool&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].as_type(), Type::Boolean);
         <span class="macro">assert!</span>(record.fields()[<span class="number">2</span>].default_value().is_none());
     }
 
@@ -502,12 +521,15 @@
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">&quot;value&quot;</span>);
 
         <span class="macro">assert_eq!</span>(ci.iter_types().count(), <span class="number">4</span>);
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;u32&quot;</span>));
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;string&quot;</span>));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::UInt32));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::String));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t
+            == <span class="kw-2">&amp;</span>Type::Optional {
+                inner_type: Box::new(Type::String)
+            }));
         <span class="macro">assert!</span>(ci
             .iter_types()
-            .any(|t| t.canonical_name() == <span class="string">&quot;Optionalstring&quot;</span>));
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;TypeTesting&quot;</span>));
+            .any(|t| <span class="macro">matches!</span>(t, Type::Record { name, .. } <span class="kw">if </span>name == <span class="string">&quot;Testing&quot;</span>)));
     }
 }
 </code></pre></div>

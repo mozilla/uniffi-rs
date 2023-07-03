@@ -210,9 +210,9 @@
         <span class="kw">if </span><span class="self">self</span>.attributes.is_some() {
             <span class="macro">bail!</span>(<span class="string">&quot;namespace attributes are not supported yet&quot;</span>);
         }
-        ci.add_namespace_definition(Namespace {
-            name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
-        })<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.identifier.<span class="number">0 </span>!= ci.types.namespace {
+            <span class="macro">bail!</span>(<span class="string">&quot;duplicate namespace definition&quot;</span>);
+        }
         <span class="kw">for </span>func <span class="kw">in </span><span class="self">self</span>.members.body.convert(ci)<span class="question-mark">? </span>{
             ci.add_function_definition(func)<span class="question-mark">?</span>;
         }

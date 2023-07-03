@@ -514,6 +514,13 @@
 <a href="#514" id="514">514</a>
 <a href="#515" id="515">515</a>
 <a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -818,16 +825,23 @@
             Type::Timestamp =&gt; Box::new(miscellany::TimestampCodeType),
             Type::Duration =&gt; Box::new(miscellany::DurationCodeType),
 
-            Type::Enum(id) =&gt; Box::new(enum_::EnumCodeType::new(id)),
+            Type::Enum { name, .. } =&gt; Box::new(enum_::EnumCodeType::new(name)),
             Type::Object { name, .. } =&gt; Box::new(object::ObjectCodeType::new(name)),
-            Type::Record(id) =&gt; Box::new(record::RecordCodeType::new(id)),
-            Type::CallbackInterface(id) =&gt; {
-                Box::new(callback_interface::CallbackInterfaceCodeType::new(id))
+            Type::Record { name, .. } =&gt; Box::new(record::RecordCodeType::new(name)),
+            Type::CallbackInterface { name, .. } =&gt; {
+                Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
             }
             Type::ForeignExecutor =&gt; Box::new(executor::ForeignExecutorCodeType),
-            Type::Optional(inner) =&gt; Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner)),
-            Type::Sequence(inner) =&gt; Box::new(compounds::SequenceCodeType::new(<span class="kw-2">*</span>inner)),
-            Type::Map(key, value) =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key, <span class="kw-2">*</span>value)),
+            Type::Optional { inner_type } =&gt; {
+                Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner_type))
+            }
+            Type::Sequence { inner_type } =&gt; {
+                Box::new(compounds::SequenceCodeType::new(<span class="kw-2">*</span>inner_type))
+            }
+            Type::Map {
+                key_type,
+                value_type,
+            } =&gt; Box::new(compounds::MapCodeType::new(<span class="kw-2">*</span>key_type, <span class="kw-2">*</span>value_type)),
             Type::External { name, .. } =&gt; Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } =&gt; Box::new(custom::CustomCodeType::new(name)),
         }

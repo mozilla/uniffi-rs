@@ -395,9 +395,6 @@
 <a href="#395" id="395">395</a>
 <a href="#396" id="396">396</a>
 <a href="#397" id="397">397</a>
-<a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -534,7 +531,7 @@
     <span class="kw">fn </span>from(meta: uniffi_meta::FnParamMetadata) -&gt; <span class="self">Self </span>{
         Argument {
             name: meta.name,
-            type_: meta.ty.into(),
+            type_: meta.ty,
             by_ref: <span class="bool-val">false</span>,
             optional: <span class="bool-val">false</span>,
             default: <span class="prelude-val">None</span>,
@@ -556,19 +553,13 @@
             ..FfiFunction::default()
         };
 
-        <span class="kw">let </span>throws = <span class="kw">match </span>meta.throws {
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
-            <span class="prelude-val">Some</span>(uniffi_meta::Type::Enum { name, .. }) =&gt; <span class="prelude-val">Some</span>(Type::Enum(name)),
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unsupported error type {:?}&quot;</span>, meta.throws),
-        };
-
         <span class="self">Self </span>{
             name: meta.name,
             is_async,
             arguments,
             return_type,
             ffi_func,
-            throws,
+            throws: meta.throws,
             checksum_fn_name,
             checksum_override: <span class="prelude-val">Some</span>(meta.checksum),
         }
@@ -703,7 +694,7 @@
     <span class="doccomment">/// Get the `T` parameters for the `FutureCallback&lt;T&gt;` for this ResultType
     </span><span class="kw">pub fn </span>future_callback_param(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiType {
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.return_type {
-            <span class="prelude-val">Some</span>(t) =&gt; t.ffi_type(),
+            <span class="prelude-val">Some</span>(t) =&gt; t.into(),
             <span class="prelude-val">None </span>=&gt; FfiType::UInt8,
         }
     }
@@ -781,20 +772,23 @@
         <span class="kw">let </span>func2 = ci.get_function_definition(<span class="string">&quot;rich&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(func2.name(), <span class="string">&quot;rich&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            func2.return_type().unwrap().canonical_name(),
-            <span class="string">&quot;SequenceOptionalstring&quot;
-        </span>);
+            func2.return_type().unwrap(),
+            <span class="kw-2">&amp;</span>Type::Sequence {
+                inner_type: Box::new(Type::Optional {
+                    inner_type: Box::new(Type::String)
+                })
+            }
+        );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(func2.throws_type(), <span class="prelude-val">Some</span>(Type::Enum(name)) <span class="kw">if </span>name == <span class="string">&quot;TestError&quot; </span>&amp;&amp; ci.is_name_used_as_error(name))
+            <span class="macro">matches!</span>(func2.throws_type(), <span class="prelude-val">Some</span>(Type::Enum { name, .. }) <span class="kw">if </span>name == <span class="string">&quot;TestError&quot; </span>&amp;&amp; ci.is_name_used_as_error(name))
         );
         <span class="macro">assert_eq!</span>(func2.arguments().len(), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].name(), <span class="string">&quot;arg1&quot;</span>);
-        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].as_type().canonical_name(), <span class="string">&quot;u32&quot;</span>);
+        <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">0</span>].as_type(), Type::UInt32);
         <span class="macro">assert_eq!</span>(func2.arguments()[<span class="number">1</span>].name(), <span class="string">&quot;arg2&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            func2.arguments()[<span class="number">1</span>].as_type().canonical_name(),
-            <span class="string">&quot;TypeTestDict&quot;
-        </span>);
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(func2.arguments()[<span class="number">1</span>].as_type(), Type::Record { name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestDict&quot;</span>)
+        );
         <span class="prelude-val">Ok</span>(())
     }
 }

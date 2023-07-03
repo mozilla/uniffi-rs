@@ -619,6 +619,22 @@
 <a href="#619" id="619">619</a>
 <a href="#620" id="620">620</a>
 <a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -791,6 +807,7 @@
 </span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 </span><span class="kw">pub struct </span>Enum {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) variants: Vec&lt;Variant&gt;,
     <span class="comment">// NOTE: `flat` is a misleading name and to make matters worse, has 2 different
     // meanings depending on the context :(
@@ -838,6 +855,7 @@
         // We don&#39;t have that context here, so this is handled by our caller.
         </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             name: meta.name,
+            module_path: meta.module_path,
             variants: meta
                 .variants
                 .into_iter()
@@ -850,7 +868,10 @@
 
 <span class="kw">impl </span>AsType <span class="kw">for </span>Enum {
     <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        Type::Enum(<span class="self">self</span>.name.clone())
+        Type::Enum {
+            name: <span class="self">self</span>.name.clone(),
+            module_path: <span class="self">self</span>.module_path.clone(),
+        }
     }
 }
 
@@ -858,9 +879,10 @@
 // and one for the `[Enum] interface` case.
 
 </span><span class="kw">impl </span>APIConverter&lt;Enum&gt; <span class="kw">for </span>weedle::EnumDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
-    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, _ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Enum&gt; {
+    <span class="kw">fn </span>convert(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;mut </span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Enum&gt; {
         <span class="prelude-val">Ok</span>(Enum {
             name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            module_path: ci.types.namespace.clone(),
             variants: <span class="self">self
                 </span>.values
                 .body
@@ -890,6 +912,7 @@
         // to this impl then we already know there was an `[Enum]` attribute.
         </span><span class="prelude-val">Ok</span>(Enum {
             name: <span class="self">self</span>.identifier.<span class="number">0</span>.to_string(),
+            module_path: ci.types.namespace.clone(),
             variants: <span class="self">self
                 </span>.members
                 .body
@@ -1136,14 +1159,20 @@
         // (It might be nice to optimize these to pass as plain integers, but that&#39;s
         // difficult atop the current factoring of `ComponentInterface` and friends).
         </span><span class="kw">let </span>farg = ci.get_function_definition(<span class="string">&quot;takes_an_enum&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(farg.arguments()[<span class="number">0</span>].as_type(), Type::Enum(<span class="string">&quot;TestEnum&quot;</span>.into()));
+        <span class="macro">assert_eq!</span>(
+            farg.arguments()[<span class="number">0</span>].as_type(),
+            Type::Enum {
+                name: <span class="string">&quot;TestEnum&quot;</span>.into(),
+                module_path: <span class="string">&quot;test&quot;</span>.into()
+            }
+        );
         <span class="macro">assert_eq!</span>(
             farg.ffi_func().arguments()[<span class="number">0</span>].type_(),
             FfiType::RustBuffer(<span class="prelude-val">None</span>)
         );
         <span class="kw">let </span>fret = ci.get_function_definition(<span class="string">&quot;returns_an_enum&quot;</span>).unwrap();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum(name)) <span class="kw">if </span>name == <span class="string">&quot;TestEnum&quot; </span>&amp;&amp; !ci.is_name_used_as_error(name))
+            <span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum { name, .. }) <span class="kw">if </span>name == <span class="string">&quot;TestEnum&quot; </span>&amp;&amp; !ci.is_name_used_as_error(name))
         );
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             fret.ffi_func().return_type(),
@@ -1156,7 +1185,10 @@
             .unwrap();
         <span class="macro">assert_eq!</span>(
             farg.arguments()[<span class="number">0</span>].as_type(),
-            Type::Enum(<span class="string">&quot;TestEnumWithData&quot;</span>.into())
+            Type::Enum {
+                name: <span class="string">&quot;TestEnumWithData&quot;</span>.into(),
+                module_path: <span class="string">&quot;test&quot;</span>.into()
+            }
         );
         <span class="macro">assert_eq!</span>(
             farg.ffi_func().arguments()[<span class="number">0</span>].type_(),
@@ -1166,7 +1198,7 @@
             .get_function_definition(<span class="string">&quot;returns_an_enum_with_data&quot;</span>)
             .unwrap();
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum(name)) <span class="kw">if </span>name == <span class="string">&quot;TestEnumWithData&quot; </span>&amp;&amp; !ci.is_name_used_as_error(name))
+            <span class="macro">matches!</span>(fret.return_type(), <span class="prelude-val">Some</span>(Type::Enum { name, .. }) <span class="kw">if </span>name == <span class="string">&quot;TestEnumWithData&quot; </span>&amp;&amp; !ci.is_name_used_as_error(name))
         );
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             fret.ffi_func().return_type(),

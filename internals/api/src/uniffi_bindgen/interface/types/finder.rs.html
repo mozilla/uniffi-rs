@@ -248,6 +248,32 @@
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -311,9 +337,16 @@
         <span class="kw">let </span>attrs = InterfaceAttributes::try_from(<span class="self">self</span>.attributes.as_ref())<span class="question-mark">?</span>;
         <span class="comment">// Some enum types are defined using an `interface` with a special attribute.
         </span><span class="kw">if </span>attrs.contains_enum_attr() || attrs.contains_error_attr() {
-            types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Enum(name))
+            types.add_type_definition(
+                <span class="self">self</span>.identifier.<span class="number">0</span>,
+                Type::Enum {
+                    name,
+                    module_path: types.namespace.clone(),
+                },
+            )
         } <span class="kw">else </span>{
-            <span class="kw">let </span>obj = <span class="kw">crate</span>::interface::Object::new(name, attrs.object_impl());
+            <span class="kw">let </span><span class="kw-2">mut </span>obj = <span class="kw">crate</span>::interface::Object::new(name, attrs.object_impl());
+            obj.module_path = types.namespace.clone();
             types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, obj.as_type())
         }
     }
@@ -322,7 +355,13 @@
 <span class="kw">impl </span>TypeFinder <span class="kw">for </span>weedle::DictionaryDefinition&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">fn </span>add_type_definitions_to(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>.to_string();
-        types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Record(name))
+        types.add_type_definition(
+            <span class="self">self</span>.identifier.<span class="number">0</span>,
+            Type::Record {
+                name,
+                module_path: types.namespace.clone(),
+            },
+        )
     }
 }
 
@@ -330,7 +369,13 @@
     <span class="kw">fn </span>add_type_definitions_to(<span class="kw-2">&amp;</span><span class="self">self</span>, types: <span class="kw-2">&amp;mut </span>TypeUniverse) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>.to_string();
         <span class="comment">// Our error types are defined using an `enum` with a special attribute.
-        </span>types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::Enum(name))
+        </span>types.add_type_definition(
+            <span class="self">self</span>.identifier.<span class="number">0</span>,
+            Type::Enum {
+                name,
+                module_path: types.namespace.clone(),
+            },
+        )
     }
 }
 
@@ -349,6 +394,7 @@
             types.add_type_definition(
                 name,
                 Type::Custom {
+                    module_path: types.namespace.clone(),
                     name: name.to_string(),
                     builtin: builtin.into(),
                 },
@@ -362,7 +408,7 @@
                 name,
                 Type::External {
                     name: name.to_string(),
-                    crate_name: attrs.get_crate_name(),
+                    module_path: <span class="macro">format!</span>(<span class="string">&quot;{}::&quot;</span>, attrs.get_crate_name()),
                     kind,
                 },
             )
@@ -376,7 +422,13 @@
             <span class="macro">bail!</span>(<span class="string">&quot;no typedef attributes are currently supported&quot;</span>);
         }
         <span class="kw">let </span>name = <span class="self">self</span>.identifier.<span class="number">0</span>.to_string();
-        types.add_type_definition(<span class="self">self</span>.identifier.<span class="number">0</span>, Type::CallbackInterface(name))
+        types.add_type_definition(
+            <span class="self">self</span>.identifier.<span class="number">0</span>,
+            Type::CallbackInterface {
+                name,
+                module_path: types.namespace.clone(),
+            },
+        )
     }
 }
 
@@ -406,7 +458,7 @@
         &quot;#</span>,
             |types| {
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestCallbacks&quot;</span>).unwrap(), Type::CallbackInterface(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestCallbacks&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestCallbacks&quot;</span>).unwrap(), Type::CallbackInterface { name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestCallbacks&quot;</span>)
                 );
             },
         );
@@ -419,7 +471,7 @@
         &quot;#</span>,
             |types| {
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestRecord&quot;</span>).unwrap(), Type::Record(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestRecord&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestRecord&quot;</span>).unwrap(), Type::Record { name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestRecord&quot;</span>)
                 );
             },
         );
@@ -433,10 +485,10 @@
         &quot;#</span>,
             |types| {
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestItems&quot;</span>).unwrap(), Type::Enum(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestItems&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestItems&quot;</span>).unwrap(), Type::Enum { name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestItems&quot;</span>)
                 );
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestError&quot;</span>).unwrap(), Type::Enum(nm) <span class="kw">if </span>nm == <span class="string">&quot;TestError&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;TestError&quot;</span>).unwrap(), Type::Enum { name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestError&quot;</span>)
                 );
             },
         );
@@ -467,15 +519,15 @@
         &quot;#</span>,
             |types| {
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalType&quot;</span>).unwrap(), Type::External { name, crate_name, kind: ExternalKind::DataClass }
-                                                                                 <span class="kw">if </span>name == <span class="string">&quot;ExternalType&quot; </span>&amp;&amp; crate_name == <span class="string">&quot;crate-name&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalType&quot;</span>).unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass }
+                                                                                 <span class="kw">if </span>name == <span class="string">&quot;ExternalType&quot; </span>&amp;&amp; module_path == <span class="string">&quot;crate-name::&quot;</span>)
                 );
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalInterfaceType&quot;</span>).unwrap(), Type::External { name, crate_name, kind: ExternalKind::Interface }
-                                                                                 <span class="kw">if </span>name == <span class="string">&quot;ExternalInterfaceType&quot; </span>&amp;&amp; crate_name == <span class="string">&quot;crate-name&quot;</span>)
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;ExternalInterfaceType&quot;</span>).unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface }
+                                                                                 <span class="kw">if </span>name == <span class="string">&quot;ExternalInterfaceType&quot; </span>&amp;&amp; module_path == <span class="string">&quot;crate-name::&quot;</span>)
                 );
                 <span class="macro">assert!</span>(
-                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;CustomType&quot;</span>).unwrap(), Type::Custom { name, builtin }
+                    <span class="macro">matches!</span>(types.get_type_definition(<span class="string">&quot;CustomType&quot;</span>).unwrap(), Type::Custom { name, builtin, ..}
                                                                                      <span class="kw">if </span>name == <span class="string">&quot;CustomType&quot; </span>&amp;&amp; builtin == Box::new(Type::String))
                 );
             },

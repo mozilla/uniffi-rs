@@ -955,6 +955,28 @@
 <a href="#955" id="955">955</a>
 <a href="#956" id="956">956</a>
 <a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1045,6 +1067,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="doccomment">/// How this object is implemented in Rust
     </span><span class="kw">pub</span>(<span class="kw">super</span>) imp: ObjectImpl,
+    <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) constructors: Vec&lt;Constructor&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
     <span class="comment">// The &quot;trait&quot; methods - they have a (presumably &quot;well known&quot;) name, and
@@ -1066,6 +1089,7 @@
         <span class="self">Self </span>{
             name,
             imp,
+            module_path: Default::default(),
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
@@ -1194,6 +1218,7 @@
         <span class="kw">let </span>object_impl = attributes.object_impl();
 
         <span class="kw">let </span><span class="kw-2">mut </span>object = Object::new(name.to_string(), object_impl);
+        object.module_path = ci.types.namespace.clone();
         <span class="comment">// Convert each member into a constructor or method, guarding against duplicate names.
         </span><span class="kw">let </span><span class="kw-2">mut </span>member_names = HashSet::new();
         <span class="kw">for </span>member <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.members.body {
@@ -1238,6 +1263,7 @@
                     <span class="comment">// The name is used to create the ffi function for the method.
                     </span>name: name.to_string(),
                     object_name: object.name.clone(),
+                    object_module_path: object.module_path.clone(),
                     checksum_fn_name: Default::default(), <span class="comment">// gets filled in later.
                     </span>is_async: <span class="bool-val">false</span>,
                     object_impl,
@@ -1265,6 +1291,7 @@
                             name: <span class="string">&quot;other&quot;</span>.to_string(),
                             type_: Type::Object {
                                 name: object.name().to_string(),
+                                module_path: object.module_path.clone(),
                                 imp: object_impl,
                             },
                             by_ref: <span class="bool-val">true</span>,
@@ -1279,6 +1306,7 @@
                             name: <span class="string">&quot;other&quot;</span>.to_string(),
                             type_: Type::Object {
                                 name: object.name().to_string(),
+                                module_path: object.module_path.clone(),
                                 imp: object_impl,
                             },
                             by_ref: <span class="bool-val">true</span>,
@@ -1303,6 +1331,7 @@
     <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
         Type::Object {
             name: <span class="self">self</span>.name.clone(),
+            module_path: <span class="self">self</span>.module_path.clone(),
             imp: <span class="self">self</span>.imp,
         }
     }
@@ -1316,6 +1345,7 @@
 </span><span class="kw">pub struct </span>Constructor {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) object_module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
     <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -1418,6 +1448,7 @@
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.self_name,
+            object_module_path: meta.module_path,
             arguments,
             ffi_func,
             throws: meta.throws.map(Into::into),
@@ -1440,6 +1471,7 @@
             name: String::from(attributes.get_name().unwrap_or(<span class="string">&quot;new&quot;</span>)),
             <span class="comment">// We don&#39;t know the name of the containing `Object` at this point, fill it in later.
             </span>object_name: Default::default(),
+            object_module_path: ci.types.namespace.clone(),
             <span class="comment">// Also fill in checksum_fn_name later, since it depends on object_name
             </span>checksum_fn_name: Default::default(),
             arguments: <span class="self">self</span>.args.body.list.convert(ci)<span class="question-mark">?</span>,
@@ -1458,6 +1490,7 @@
 </span><span class="kw">pub struct </span>Method {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) object_module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_impl: ObjectImpl,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
@@ -1501,6 +1534,7 @@
             // is contained in the proper `TypeUniverse`, but this works for now.
             </span>type_: Type::Object {
                 name: <span class="self">self</span>.object_name.clone(),
+                module_path: <span class="self">self</span>.object_module_path.clone(),
                 imp: <span class="self">self</span>.object_impl,
             },
             by_ref: !<span class="self">self</span>.takes_self_by_arc,
@@ -1597,6 +1631,7 @@
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.self_name,
+            object_module_path: meta.module_path,
             is_async,
             object_impl: ObjectImpl::Struct,
             arguments,
@@ -1618,6 +1653,7 @@
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.trait_name,
+            object_module_path: meta.module_path,
             is_async: <span class="bool-val">false</span>,
             arguments,
             return_type,
@@ -1667,8 +1703,9 @@
                     name
                 }
             },
-            <span class="comment">// We don&#39;t know the name of the containing `Object` at this point, fill it in later.
+            <span class="comment">// We don&#39;t know the name/path of the containing `Object` at this point, fill it in later.
             </span>object_name: Default::default(),
+            object_module_path: Default::default(),
             <span class="comment">// Also fill in checksum_fn_name later, since it depends on the object name
             </span>checksum_fn_name: Default::default(),
             is_async: <span class="bool-val">false</span>,
@@ -1730,6 +1767,7 @@
     <span class="kw">fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
         <span class="prelude-val">Some</span>(Type::Object {
             name: <span class="self">self</span>.object_name.clone(),
+            module_path: <span class="self">self</span>.object_module_path.clone(),
             imp: ObjectImpl::Struct,
         })
     }
@@ -1771,14 +1809,20 @@
         ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
 
         <span class="macro">assert_eq!</span>(ci.iter_types().count(), <span class="number">6</span>);
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;u16&quot;</span>));
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;u32&quot;</span>));
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;Sequenceu32&quot;</span>));
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;string&quot;</span>));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::UInt16));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::UInt32));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t
+            == <span class="kw-2">&amp;</span>Type::Sequence {
+                inner_type: Box::new(Type::UInt32)
+            }));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::String));
+        <span class="macro">assert!</span>(ci.iter_types().any(|t| t
+            == <span class="kw-2">&amp;</span>Type::Optional {
+                inner_type: Box::new(Type::String)
+            }));
         <span class="macro">assert!</span>(ci
             .iter_types()
-            .any(|t| t.canonical_name() == <span class="string">&quot;Optionalstring&quot;</span>));
-        <span class="macro">assert!</span>(ci.iter_types().any(|t| t.canonical_name() == <span class="string">&quot;TypeTesting&quot;</span>));
+            .any(|t| <span class="macro">matches!</span>(t, Type::Object { name, ..} <span class="kw">if </span>name == <span class="string">&quot;Testing&quot;</span>)));
     }
 
     <span class="attr">#[test]

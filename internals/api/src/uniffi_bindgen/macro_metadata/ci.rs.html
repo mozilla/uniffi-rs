@@ -114,6 +114,12 @@
 <a href="#114" id="114">114</a>
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -176,7 +182,10 @@
     meta: EnumMetadata,
     is_flat: bool,
 ) -&gt; anyhow::Result&lt;()&gt; {
-    <span class="kw">let </span>ty = Type::Enum(meta.name.clone());
+    <span class="kw">let </span>ty = Type::Enum {
+        name: meta.name.clone(),
+        module_path: meta.module_path.clone(),
+    };
     iface.types.add_known_type(<span class="kw-2">&amp;</span>ty);
     iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
 
@@ -199,7 +208,10 @@
             iface.add_method_meta(meta)<span class="question-mark">?</span>;
         }
         Metadata::Record(meta) =&gt; {
-            <span class="kw">let </span>ty = Type::Record(meta.name.clone());
+            <span class="kw">let </span>ty = Type::Record {
+                name: meta.name.clone(),
+                module_path: meta.module_path.clone(),
+            };
             iface.types.add_known_type(<span class="kw-2">&amp;</span>ty);
             iface.types.add_type_definition(<span class="kw-2">&amp;</span>meta.name, ty)<span class="question-mark">?</span>;
 

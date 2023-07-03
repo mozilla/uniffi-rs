@@ -355,6 +355,24 @@
 <a href="#355" id="355">355</a>
 <a href="#356" id="356">356</a>
 <a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -380,57 +398,58 @@
     RESERVED_WORDS.contains(<span class="kw-2">&amp;</span>word)
 }
 
-<span class="kw">impl </span>Type {
-    <span class="doccomment">/// Get the canonical, unique-within-this-component name for a type.
-    ///
-    /// When generating helper code for foreign language bindings, it&#39;s sometimes useful to be
-    /// able to name a particular type in order to e.g. call a helper function that is specific
-    /// to that type. We support this by defining a naming convention where each type gets a
-    /// unique canonical name, constructed recursively from the names of its component types (if any).
-    </span><span class="kw">pub fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">match </span><span class="self">self </span>{
-            <span class="comment">// Builtin primitive types, with plain old names.
-            </span>Type::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
-            Type::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
-            Type::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
-            Type::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
-            Type::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
-            Type::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
-            Type::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
-            Type::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
-            Type::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
-            Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
-            Type::String =&gt; <span class="string">&quot;string&quot;</span>.into(),
-            Type::Bytes =&gt; <span class="string">&quot;bytes&quot;</span>.into(),
-            Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
-            <span class="comment">// API defined types.
-            // Note that these all get unique names, and the parser ensures that the names do not
-            // conflict with a builtin type. We add a prefix to the name to guard against pathological
-            // cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`.
-            // However, types that support importing all end up with the same prefix of &quot;Type&quot;, so
-            // that the import handling code knows how to find the remote reference.
-            </span>Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
-            Type::Enum(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
-            Type::Record(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{nm}&quot;</span>),
-            Type::CallbackInterface(nm) =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{nm}&quot;</span>),
-            Type::Timestamp =&gt; <span class="string">&quot;Timestamp&quot;</span>.into(),
-            Type::Duration =&gt; <span class="string">&quot;Duration&quot;</span>.into(),
-            Type::ForeignExecutor =&gt; <span class="string">&quot;ForeignExecutor&quot;</span>.into(),
-            <span class="comment">// Recursive types.
-            // These add a prefix to the name of the underlying type.
-            // The component API definition cannot give names to recursive types, so as long as the
-            // prefixes we add here are all unique amongst themselves, then we have no chance of
-            // acccidentally generating name collisions.
-            </span>Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Optional{}&quot;</span>, t.canonical_name()),
-            Type::Sequence(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, t.canonical_name()),
-            Type::Map(k, v) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;Map{}{}&quot;</span>,
-                k.canonical_name().to_upper_camel_case(),
-                v.canonical_name().to_upper_camel_case()
-            ),
-            <span class="comment">// A type that exists externally.
-            </span>Type::External { name, .. } | Type::Custom { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
-        }
+<span class="doccomment">/// Get the canonical, unique-within-this-component name for a type.
+///
+/// When generating helper code for foreign language bindings, it&#39;s sometimes useful to be
+/// able to name a particular type in order to e.g. call a helper function that is specific
+/// to that type. We support this by defining a naming convention where each type gets a
+/// unique canonical name, constructed recursively from the names of its component types (if any).
+</span><span class="kw">pub fn </span>canonical_name(t: <span class="kw-2">&amp;</span>Type) -&gt; String {
+    <span class="kw">match </span>t {
+        <span class="comment">// Builtin primitive types, with plain old names.
+        </span>Type::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
+        Type::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
+        Type::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
+        Type::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
+        Type::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
+        Type::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
+        Type::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
+        Type::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
+        Type::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
+        Type::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
+        Type::String =&gt; <span class="string">&quot;string&quot;</span>.into(),
+        Type::Bytes =&gt; <span class="string">&quot;bytes&quot;</span>.into(),
+        Type::Boolean =&gt; <span class="string">&quot;bool&quot;</span>.into(),
+        <span class="comment">// API defined types.
+        // Note that these all get unique names, and the parser ensures that the names do not
+        // conflict with a builtin type. We add a prefix to the name to guard against pathological
+        // cases like a record named `SequenceRecord` interfering with `sequence&lt;Record&gt;`.
+        // However, types that support importing all end up with the same prefix of &quot;Type&quot;, so
+        // that the import handling code knows how to find the remote reference.
+        </span>Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
+        Type::Enum { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
+        Type::Record { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
+        Type::CallbackInterface { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{name}&quot;</span>),
+        Type::Timestamp =&gt; <span class="string">&quot;Timestamp&quot;</span>.into(),
+        Type::Duration =&gt; <span class="string">&quot;Duration&quot;</span>.into(),
+        Type::ForeignExecutor =&gt; <span class="string">&quot;ForeignExecutor&quot;</span>.into(),
+        <span class="comment">// Recursive types.
+        // These add a prefix to the name of the underlying type.
+        // The component API definition cannot give names to recursive types, so as long as the
+        // prefixes we add here are all unique amongst themselves, then we have no chance of
+        // acccidentally generating name collisions.
+        </span>Type::Optional { inner_type } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Optional{}&quot;</span>, canonical_name(inner_type)),
+        Type::Sequence { inner_type } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Sequence{}&quot;</span>, canonical_name(inner_type)),
+        Type::Map {
+            key_type,
+            value_type,
+        } =&gt; <span class="macro">format!</span>(
+            <span class="string">&quot;Map{}{}&quot;</span>,
+            canonical_name(key_type).to_upper_camel_case(),
+            canonical_name(value_type).to_upper_camel_case()
+        ),
+        <span class="comment">// A type that exists externally.
+        </span>Type::External { name, .. } | Type::Custom { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Type{name}&quot;</span>),
     }
 }
 
@@ -480,10 +499,15 @@
 </span><span class="kw">pub struct </span>RubyWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
     config: Config,
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    canonical_name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw">dyn </span>Fn(<span class="kw-2">&amp;</span>Type) -&gt; String,
 }
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RubyWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{ config, ci }
+        <span class="self">Self </span>{
+            config,
+            ci,
+            canonical_name: <span class="kw-2">&amp;</span>canonical_name,
+        }
     }
 }
 
@@ -534,7 +558,9 @@
             Literal::EmptySequence =&gt; <span class="string">&quot;[]&quot;</span>.into(),
             Literal::EmptyMap =&gt; <span class="string">&quot;{}&quot;</span>.into(),
             Literal::Enum(v, type_) =&gt; <span class="kw">match </span>type_ {
-                Type::Enum(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}::{}&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>, enum_name_rb(v)<span class="question-mark">?</span>),
+                Type::Enum { name, .. } =&gt; {
+                    <span class="macro">format!</span>(<span class="string">&quot;{}::{}&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>, enum_name_rb(v)<span class="question-mark">?</span>)
+                }
                 <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected type in enum literal: {type_:?}&quot;</span>),
             },
             <span class="comment">// https://docs.ruby-lang.org/en/2.0.0/syntax/literals_rdoc.html
@@ -583,13 +609,15 @@
             Type::UInt64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_in_range({nm}, \&quot;u64\&quot;, 0, 2**64)&quot;</span>),
             Type::Float32 | Type::Float64 =&gt; nm.to_string(),
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm} ? true : false&quot;</span>),
-            Type::Object { .. } | Type::Enum(<span class="kw">_</span>) | Type::Record(<span class="kw">_</span>) =&gt; nm.to_string(),
+            Type::Object { .. } | Type::Enum { .. } | Type::Record { .. } =&gt; nm.to_string(),
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_utf8({nm})&quot;</span>),
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{ns}::uniffi_bytes({nm})&quot;</span>),
             Type::Timestamp | Type::Duration =&gt; nm.to_string(),
-            Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>),
-            Type::Optional(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? {} : nil)&quot;</span>, coerce_rb(nm, ns, t)<span class="question-mark">?</span>),
-            Type::Sequence(t) =&gt; {
+            Type::CallbackInterface { .. } =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;No support for coercing callback interfaces yet&quot;</span>)
+            }
+            Type::Optional { inner_type: t } =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? {} : nil)&quot;</span>, coerce_rb(nm, ns, t)<span class="question-mark">?</span>),
+            Type::Sequence { inner_type: t } =&gt; {
                 <span class="kw">let </span>coerce_code = coerce_rb(<span class="string">&quot;v&quot;</span>, ns, t)<span class="question-mark">?</span>;
                 <span class="kw">if </span>coerce_code == <span class="string">&quot;v&quot; </span>{
                     nm.to_string()
@@ -597,7 +625,7 @@
                     <span class="macro">format!</span>(<span class="string">&quot;{nm}.map {{ |v| {coerce_code} }}&quot;</span>)
                 }
             }
-            Type::Map(_k, t) =&gt; {
+            Type::Map { value_type: t, .. } =&gt; {
                 <span class="kw">let </span>k_coerce_code = coerce_rb(<span class="string">&quot;k&quot;</span>, ns, <span class="kw-2">&amp;</span>Type::String)<span class="question-mark">?</span>;
                 <span class="kw">let </span>v_coerce_code = coerce_rb(<span class="string">&quot;v&quot;</span>, ns, t)<span class="question-mark">?</span>;
 
@@ -631,16 +659,18 @@
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromString({nm})&quot;</span>),
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromBytes({nm})&quot;</span>),
             Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
-            Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>),
-            Type::Enum(<span class="kw">_</span>)
-            | Type::Record(<span class="kw">_</span>)
-            | Type::Optional(<span class="kw">_</span>)
-            | Type::Sequence(<span class="kw">_</span>)
+            Type::CallbackInterface { .. } =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>)
+            }
+            Type::Enum { .. }
+            | Type::Record { .. }
+            | Type::Optional { .. }
+            | Type::Sequence { .. }
             | Type::Timestamp
             | Type::Duration
-            | Type::Map(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="macro">format!</span>(
+            | Type::Map { .. } =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;RustBuffer.alloc_from_{}({})&quot;</span>,
-                class_name_rb(<span class="kw-2">&amp;</span>type_.canonical_name())<span class="question-mark">?</span>,
+                class_name_rb(<span class="kw-2">&amp;</span>canonical_name(type_))<span class="question-mark">?</span>,
                 nm
             ),
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
@@ -664,23 +694,25 @@
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.consumeIntoString&quot;</span>),
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.consumeIntoBytes&quot;</span>),
             Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
-            Type::CallbackInterface(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>),
-            Type::Enum(<span class="kw">_</span>) =&gt; {
+            Type::CallbackInterface { .. } =&gt; {
+                <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>)
+            }
+            Type::Enum { .. } =&gt; {
                 <span class="macro">format!</span>(
                     <span class="string">&quot;{}.consumeInto{}&quot;</span>,
                     nm,
-                    class_name_rb(<span class="kw-2">&amp;</span>type_.canonical_name())<span class="question-mark">?
+                    class_name_rb(<span class="kw-2">&amp;</span>canonical_name(type_))<span class="question-mark">?
                 </span>)
             }
-            Type::Record(<span class="kw">_</span>)
-            | Type::Optional(<span class="kw">_</span>)
-            | Type::Sequence(<span class="kw">_</span>)
+            Type::Record { .. }
+            | Type::Optional { .. }
+            | Type::Sequence { .. }
             | Type::Timestamp
             | Type::Duration
-            | Type::Map(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="macro">format!</span>(
+            | Type::Map { .. } =&gt; <span class="macro">format!</span>(
                 <span class="string">&quot;{}.consumeInto{}&quot;</span>,
                 nm,
-                class_name_rb(<span class="kw-2">&amp;</span>type_.canonical_name())<span class="question-mark">?
+                class_name_rb(<span class="kw-2">&amp;</span>canonical_name(type_))<span class="question-mark">?
             </span>),
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting custom types, yet&quot;</span>),
@@ -696,15 +728,19 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_canonical_names() {
         <span class="comment">// Non-exhaustive, but gives a bit of a flavour of what we want.
-        </span><span class="macro">assert_eq!</span>(Type::UInt8.canonical_name(), <span class="string">&quot;u8&quot;</span>);
-        <span class="macro">assert_eq!</span>(Type::String.canonical_name(), <span class="string">&quot;string&quot;</span>);
-        <span class="macro">assert_eq!</span>(Type::Bytes.canonical_name(), <span class="string">&quot;bytes&quot;</span>);
+        </span><span class="macro">assert_eq!</span>(canonical_name(<span class="kw-2">&amp;</span>Type::UInt8), <span class="string">&quot;u8&quot;</span>);
+        <span class="macro">assert_eq!</span>(canonical_name(<span class="kw-2">&amp;</span>Type::String), <span class="string">&quot;string&quot;</span>);
+        <span class="macro">assert_eq!</span>(canonical_name(<span class="kw-2">&amp;</span>Type::Bytes), <span class="string">&quot;bytes&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            Type::Optional(Box::new(Type::Sequence(Box::new(Type::Object {
-                name: <span class="string">&quot;Example&quot;</span>.into(),
-                imp: ObjectImpl::Struct,
-            }))))
-            .canonical_name(),
+            canonical_name(<span class="kw-2">&amp;</span>Type::Optional {
+                inner_type: Box::new(Type::Sequence {
+                    inner_type: Box::new(Type::Object {
+                        module_path: <span class="string">&quot;anything&quot;</span>.to_string(),
+                        name: <span class="string">&quot;Example&quot;</span>.into(),
+                        imp: ObjectImpl::Struct,
+                    })
+                })
+            }),
             <span class="string">&quot;OptionalSequenceTypeExample&quot;
         </span>);
     }

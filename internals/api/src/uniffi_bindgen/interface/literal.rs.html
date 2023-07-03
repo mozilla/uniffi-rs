@@ -244,6 +244,18 @@
 <a href="#244" id="244">244</a>
 <a href="#245" id="245">245</a>
 <a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -284,17 +296,17 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_metadata(
         name: <span class="kw-2">&amp;</span>str,
         ty: <span class="kw-2">&amp;</span>Type,
-        default: uniffi_meta::Literal,
+        default: uniffi_meta::LiteralMetadata,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>default {
-            uniffi_meta::Literal::Str { value } =&gt; {
+            uniffi_meta::LiteralMetadata::Str { value } =&gt; {
                 <span class="macro">ensure!</span>(
                     <span class="macro">matches!</span>(ty, Type::String),
                     <span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type string&quot;
                 </span>);
                 <span class="self">Self</span>::String(value)
             }
-            uniffi_meta::Literal::Int { base10_digits } =&gt; {
+            uniffi_meta::LiteralMetadata::Int { base10_digits } =&gt; {
                 <span class="macro">macro_rules! </span>parse_int {
                     (<span class="macro-nonterminal">$ty</span>:ident, <span class="macro-nonterminal">$variant</span>:ident) =&gt; {
                         <span class="self">Self</span>::<span class="macro-nonterminal">$variant</span>(
@@ -322,14 +334,14 @@
                     }
                 }
             }
-            uniffi_meta::Literal::Float { base10_digits } =&gt; <span class="kw">match </span>ty {
+            uniffi_meta::LiteralMetadata::Float { base10_digits } =&gt; <span class="kw">match </span>ty {
                 Type::Float32 =&gt; <span class="self">Self</span>::Float(base10_digits, Type::Float32),
                 Type::Float64 =&gt; <span class="self">Self</span>::Float(base10_digits, Type::Float64),
                 <span class="kw">_ </span>=&gt; {
                     <span class="macro">bail!</span>(<span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type float&quot;</span>);
                 }
             },
-            uniffi_meta::Literal::Bool { value } =&gt; {
+            uniffi_meta::LiteralMetadata::Bool { value } =&gt; {
                 <span class="macro">ensure!</span>(
                     <span class="macro">matches!</span>(ty, Type::String),
                     <span class="string">&quot;field {name} of type {ty:?} can&#39;t have a default value of type boolean&quot;
@@ -418,12 +430,14 @@
             // trying to break default values with weird escapes and quotes.
             </span>Literal::String(s.<span class="number">0</span>.to_string())
         }
-        (weedle::literal::DefaultValue::EmptyArray(<span class="kw">_</span>), Type::Sequence(<span class="kw">_</span>)) =&gt; Literal::EmptySequence,
-        (weedle::literal::DefaultValue::String(s), Type::Enum(<span class="kw">_</span>)) =&gt; {
+        (weedle::literal::DefaultValue::EmptyArray(<span class="kw">_</span>), Type::Sequence { .. }) =&gt; {
+            Literal::EmptySequence
+        }
+        (weedle::literal::DefaultValue::String(s), Type::Enum { .. }) =&gt; {
             Literal::Enum(s.<span class="number">0</span>.to_string(), type_.clone())
         }
-        (weedle::literal::DefaultValue::Null(<span class="kw">_</span>), Type::Optional(<span class="kw">_</span>)) =&gt; Literal::Null,
-        (<span class="kw">_</span>, Type::Optional(inner_type)) =&gt; convert_default_value(default_value, inner_type)<span class="question-mark">?</span>,
+        (weedle::literal::DefaultValue::Null(<span class="kw">_</span>), Type::Optional { .. }) =&gt; Literal::Null,
+        (<span class="kw">_</span>, Type::Optional { inner_type, .. }) =&gt; convert_default_value(default_value, inner_type)<span class="question-mark">?</span>,
 
         <span class="comment">// We&#39;ll ensure the type safety in the convert_* number methods.
         </span>(weedle::literal::DefaultValue::Integer(i), <span class="kw">_</span>) =&gt; convert_integer(i, type_)<span class="question-mark">?</span>,
@@ -464,14 +478,24 @@
             <span class="macro">matches!</span>(parse_and_convert(<span class="string">&quot;\&quot;TEST\&quot;&quot;</span>, Type::String)<span class="question-mark">?</span>, Literal::String(v) <span class="kw">if </span>v == <span class="string">&quot;TEST&quot;</span>)
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(parse_and_convert(<span class="string">&quot;\&quot;one\&quot;&quot;</span>, Type::Enum(<span class="string">&quot;E&quot;</span>.into()))<span class="question-mark">?</span>, Literal::Enum(v, Type::Enum(e)) <span class="kw">if </span>v == <span class="string">&quot;one&quot; </span>&amp;&amp; e == <span class="string">&quot;E&quot;</span>)
+            <span class="macro">matches!</span>(parse_and_convert(<span class="string">&quot;\&quot;one\&quot;&quot;</span>, Type::Enum { name: <span class="string">&quot;E&quot;</span>.into(), module_path: <span class="string">&quot;&quot;</span>.into() })<span class="question-mark">?</span>, Literal::Enum(v, Type::Enum { name, .. }) <span class="kw">if </span>v == <span class="string">&quot;one&quot; </span>&amp;&amp; name == <span class="string">&quot;E&quot;</span>)
         );
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            parse_and_convert(<span class="string">&quot;[]&quot;</span>, Type::Sequence(Box::new(Type::String)))<span class="question-mark">?</span>,
+            parse_and_convert(
+                <span class="string">&quot;[]&quot;</span>,
+                Type::Sequence {
+                    inner_type: Box::new(Type::String)
+                }
+            )<span class="question-mark">?</span>,
             Literal::EmptySequence
         ));
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            parse_and_convert(<span class="string">&quot;null&quot;</span>, Type::Optional(Box::new(Type::String)))<span class="question-mark">?</span>,
+            parse_and_convert(
+                <span class="string">&quot;null&quot;</span>,
+                Type::Optional {
+                    inner_type: Box::new(Type::String)
+                }
+            )<span class="question-mark">?</span>,
             Literal::Null
         ));
         <span class="prelude-val">Ok</span>(())

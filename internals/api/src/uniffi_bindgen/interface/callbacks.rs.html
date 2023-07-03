@@ -178,6 +178,11 @@
 <a href="#178" id="178">178</a>
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -224,6 +229,7 @@
 <span class="attr">#[derive(Debug, Clone, Checksum)]
 </span><span class="kw">pub struct </span>CallbackInterface {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
     <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -239,6 +245,7 @@
     <span class="kw">pub fn </span>new(name: String) -&gt; CallbackInterface {
         CallbackInterface {
             name,
+            module_path: Default::default(),
             methods: Default::default(),
             ffi_init_callback: Default::default(),
         }
@@ -273,7 +280,10 @@
 
 <span class="kw">impl </span>AsType <span class="kw">for </span>CallbackInterface {
     <span class="kw">fn </span>as_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Type {
-        Type::CallbackInterface(<span class="self">self</span>.name.clone())
+        Type::CallbackInterface {
+            name: <span class="self">self</span>.name.clone(),
+            module_path: <span class="self">self</span>.module_path.clone(),
+        }
     }
 }
 
