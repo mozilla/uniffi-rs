@@ -340,7 +340,8 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
 fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
         .with_context(|| format!("Failed to read UDL from {udl_file}"))?;
-    ComponentInterface::from_webidl(&udl).context("Failed to parse UDL")
+    let group = uniffi_udl::parse_udl(&udl)?;
+    ComponentInterface::from_metadata(group)
 }
 
 fn format_code_with_rustfmt(path: &Utf8Path) -> Result<()> {

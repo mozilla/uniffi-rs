@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! # Attribute definitions for a `ComponentInterface`.
+//! # Attribute definitions for a `InterfaceCollector`.
 //!
 //! This module provides some conveniences for working with attribute definitions
 //! from WebIDL. When encountering a weedle `ExtendedAttribute` node, use `TryFrom`
@@ -14,16 +14,13 @@
 //! all handled by a single abstraction. This might need to be refactored in future
 //! if we grow significantly more complicated attribute handling.
 
-use crate::interface::types::ExternalKind;
 use anyhow::{bail, Result};
-use uniffi_meta::Checksum;
-
-use super::types::ObjectImpl;
+use uniffi_meta::{Checksum, ExternalKind, ObjectImpl};
 
 /// Represents an attribute parsed from UDL, like `[ByRef]` or `[Throws]`.
 ///
 /// This is a convenience enum for parsing UDL attributes and erroring out if we encounter
-/// any unsupported ones. These don't convert directly into parts of a `ComponentInterface`, but
+/// any unsupported ones. These don't convert directly into parts of a `InterfaceCollector`, but
 /// may influence the properties of things like functions and arguments.
 #[derive(Debug, Clone, Checksum)]
 pub(super) enum Attribute {
@@ -54,7 +51,7 @@ impl Attribute {
     }
 }
 
-/// Convert a weedle `ExtendedAttribute` into an `Attribute` for a `ComponentInterface` member,
+/// Convert a weedle `ExtendedAttribute` into an `Attribute` for a `InterfaceCollector` member,
 /// or error out if the attribute is not supported.
 impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
     type Error = anyhow::Error;

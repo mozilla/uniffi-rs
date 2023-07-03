@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::*;
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use uniffi_core::metadata::{checksum_metadata, codes};
 
 pub fn read_metadata(data: &[u8]) -> Result<Metadata> {
@@ -241,6 +241,7 @@ impl<'a> MetadataReader<'a> {
             inputs,
             return_type,
             throws,
+            takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
         })
     }
@@ -280,6 +281,7 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             imp: ObjectImpl::from_is_trait(self.read_bool()?),
+            uniffi_traits: vec![], // TODO: not yet emitted
         })
     }
 
@@ -307,6 +309,7 @@ impl<'a> MetadataReader<'a> {
             inputs,
             return_type,
             throws,
+            takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
         })
     }
@@ -317,7 +320,7 @@ impl<'a> MetadataReader<'a> {
             .map(|_| {
                 let name = self.read_string()?;
                 let ty = self.read_type()?;
-                let default = self.read_default()?;
+                let default = self.read_default(&name, &ty)?;
                 Ok(FieldMetadata { name, ty, default })
             })
             .collect()
@@ -354,18 +357,22 @@ impl<'a> MetadataReader<'a> {
                 Ok(FnParamMetadata {
                     name: self.read_string()?,
                     ty: self.read_type()?,
+                    // not emitted by macros
+                    by_ref: false,
+                    optional: false,
+                    default: None,
                 })
             })
             .collect()
     }
 
-    fn calc_checksum(&self) -> u16 {
+    fn calc_checksum(&self) -> Option<u16> {
         let bytes_read = self.initial_data.len() - self.buf.len();
         let metadata_buf = &self.initial_data[..bytes_read];
-        checksum_metadata(metadata_buf)
+        Some(checksum_metadata(metadata_buf))
     }
 
-    fn read_default(&mut self) -> Result<Option<LiteralMetadata>> {
+    fn read_default(&mut self, name: &str, ty: &Type) -> Result<Option<LiteralMetadata>> {
         let has_default = self.read_bool()?;
         if !has_default {
             return Ok(None);
@@ -373,18 +380,52 @@ impl<'a> MetadataReader<'a> {
 
         let literal_kind = self.read_u8()?;
         Ok(Some(match literal_kind {
-            codes::LIT_STR => LiteralMetadata::Str {
-                value: self.read_string()?,
+            codes::LIT_STR => {
+                ensure!(
+                    matches!(ty, Type::String),
+                    "field {name} of type {ty:?} can't have a default value of type string"
+                );
+                LiteralMetadata::String(self.read_string()?)
+            }
+            codes::LIT_INT => {
+                let base10_digits = self.read_string()?;
+                macro_rules! parse_int {
+                    ($ty:ident, $variant:ident) => {
+                        LiteralMetadata::$variant(
+                            base10_digits
+                                .parse::<$ty>()
+                                .with_context(|| format!("parsing default for field {name}"))?
+                                .into(),
+                            Radix::Decimal,
+                            ty.to_owned(),
+                        )
+                    };
+                }
+
+                match ty {
+                    Type::UInt8 => parse_int!(u8, UInt),
+                    Type::Int8 => parse_int!(i8, Int),
+                    Type::UInt16 => parse_int!(u16, UInt),
+                    Type::Int16 => parse_int!(i16, Int),
+                    Type::UInt32 => parse_int!(u32, UInt),
+                    Type::Int32 => parse_int!(i32, Int),
+                    Type::UInt64 => parse_int!(u64, UInt),
+                    Type::Int64 => parse_int!(i64, Int),
+                    _ => {
+                        bail!("field {name} of type {ty:?} can't have a default value of type integer");
+                    }
+                }
+            }
+
+            codes::LIT_FLOAT => match ty {
+                Type::Float32 | Type::Float64 => {
+                    LiteralMetadata::Float(self.read_string()?, ty.to_owned())
+                }
+                _ => {
+                    bail!("field {name} of type {ty:?} can't have a default value of type float");
+                }
             },
-            codes::LIT_INT => LiteralMetadata::Int {
-                base10_digits: self.read_string()?,
-            },
-            codes::LIT_FLOAT => LiteralMetadata::Float {
-                base10_digits: self.read_string()?,
-            },
-            codes::LIT_BOOL => LiteralMetadata::Bool {
-                value: self.read_bool()?,
-            },
+            codes::LIT_BOOL => LiteralMetadata::Boolean(self.read_bool()?),
             _ => bail!("Unexpected literal kind code: {literal_kind:?}"),
         }))
     }

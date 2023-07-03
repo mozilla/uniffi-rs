@@ -6,7 +6,7 @@
 //!
 //! This module provides the [`TypeFinder`] trait, an abstraction for walking
 //! the weedle parse tree, looking for type definitions, and accumulating them
-//! in a [`TypeUniverse`].
+//! in a [`TypeCollector`].
 //!
 //! The type-finding process only discovers very basic information about names
 //! and their corresponding types. For example, it can discover that "Foobar"
@@ -21,20 +21,21 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, Result};
 
-use super::super::attributes::{InterfaceAttributes, TypedefAttributes};
-use super::{AsType, Type, TypeUniverse};
+use super::TypeCollector;
+use crate::attributes::{InterfaceAttributes, TypedefAttributes};
+use uniffi_meta::Type;
 
 /// Trait to help with an early "type discovery" phase when processing the UDL.
 ///
 /// This trait does structural matching against weedle AST nodes from a parsed
 /// UDL file, looking for all the newly-defined types in the file and accumulating
-/// them in the given `TypeUniverse`.
-pub(in super::super) trait TypeFinder {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()>;
+/// them in the given `TypeCollector`.
+pub(crate) trait TypeFinder {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()>;
 }
 
 impl<T: TypeFinder> TypeFinder for &[T] {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         for item in *self {
             item.add_type_definitions_to(types)?;
         }
@@ -43,7 +44,7 @@ impl<T: TypeFinder> TypeFinder for &[T] {
 }
 
 impl TypeFinder for weedle::Definition<'_> {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         match self {
             weedle::Definition::Interface(d) => d.add_type_definitions_to(types),
             weedle::Definition::Dictionary(d) => d.add_type_definitions_to(types),
@@ -56,7 +57,7 @@ impl TypeFinder for weedle::Definition<'_> {
 }
 
 impl TypeFinder for weedle::InterfaceDefinition<'_> {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         let name = self.identifier.0.to_string();
         let attrs = InterfaceAttributes::try_from(self.attributes.as_ref())?;
         // Some enum types are defined using an `interface` with a special attribute.
@@ -65,46 +66,51 @@ impl TypeFinder for weedle::InterfaceDefinition<'_> {
                 self.identifier.0,
                 Type::Enum {
                     name,
-                    module_path: types.namespace.clone(),
+                    module_path: types.module_path(),
                 },
             )
         } else {
-            let mut obj = crate::interface::Object::new(name, attrs.object_impl());
-            obj.module_path = types.namespace.clone();
-            types.add_type_definition(self.identifier.0, obj.as_type())
+            types.add_type_definition(
+                self.identifier.0,
+                Type::Object {
+                    name,
+                    module_path: types.module_path(),
+                    imp: attrs.object_impl(),
+                },
+            )
         }
     }
 }
 
 impl TypeFinder for weedle::DictionaryDefinition<'_> {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         let name = self.identifier.0.to_string();
         types.add_type_definition(
             self.identifier.0,
             Type::Record {
                 name,
-                module_path: types.namespace.clone(),
+                module_path: types.module_path(),
             },
         )
     }
 }
 
 impl TypeFinder for weedle::EnumDefinition<'_> {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         let name = self.identifier.0.to_string();
         // Our error types are defined using an `enum` with a special attribute.
         types.add_type_definition(
             self.identifier.0,
             Type::Enum {
                 name,
-                module_path: types.namespace.clone(),
+                module_path: types.module_path(),
             },
         )
     }
 }
 
 impl TypeFinder for weedle::TypedefDefinition<'_> {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         let name = self.identifier.0;
         let attrs = TypedefAttributes::try_from(self.attributes.as_ref())?;
         // If we wanted simple `typedef`s, it would be as easy as:
@@ -118,7 +124,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
             types.add_type_definition(
                 name,
                 Type::Custom {
-                    module_path: types.namespace.clone(),
+                    module_path: types.module_path(),
                     name: name.to_string(),
                     builtin: builtin.into(),
                 },
@@ -132,7 +138,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 name,
                 Type::External {
                     name: name.to_string(),
-                    module_path: format!("{}::", attrs.get_crate_name()),
+                    module_path: attrs.get_crate_name(),
                     kind,
                 },
             )
@@ -141,7 +147,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
 }
 
 impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
-    fn add_type_definitions_to(&self, types: &mut TypeUniverse) -> Result<()> {
+    fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         if self.attributes.is_some() {
             bail!("no typedef attributes are currently supported");
         }
@@ -150,7 +156,7 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
             self.identifier.0,
             Type::CallbackInterface {
                 name,
-                module_path: types.namespace.clone(),
+                module_path: types.module_path(),
             },
         )
     }
@@ -159,15 +165,15 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::interface::ExternalKind;
+    use uniffi_meta::ExternalKind;
 
     // A helper to take valid UDL and a closure to check what's in it.
     fn test_a_finding<F>(udl: &str, tester: F)
     where
-        F: FnOnce(TypeUniverse),
+        F: FnOnce(TypeCollector),
     {
         let idl = weedle::parse(udl).unwrap();
-        let mut types = TypeUniverse::default();
+        let mut types = TypeCollector::default();
         types.add_type_definitions_from(idl.as_ref()).unwrap();
         tester(types);
     }
@@ -244,11 +250,11 @@ mod test {
             |types| {
                 assert!(
                     matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass }
-                                                                                 if name == "ExternalType" && module_path == "crate-name::")
+                                                                                 if name == "ExternalType" && module_path == "crate-name")
                 );
                 assert!(
                     matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface }
-                                                                                 if name == "ExternalInterfaceType" && module_path == "crate-name::")
+                                                                                 if name == "ExternalInterfaceType" && module_path == "crate-name")
                 );
                 assert!(
                     matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin, ..}
@@ -260,7 +266,7 @@ mod test {
 
     fn get_err(udl: &str) -> String {
         let parsed = weedle::parse(udl).unwrap();
-        let mut types = TypeUniverse::default();
+        let mut types = TypeCollector::default();
         let err = types
             .add_type_definitions_from(parsed.as_ref())
             .unwrap_err();
