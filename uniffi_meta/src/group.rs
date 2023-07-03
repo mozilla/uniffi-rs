@@ -185,13 +185,11 @@ impl<'a> ExternalTypeConverter<'a> {
                     kind: ExternalKind::DataClass,
                 }
             }
-            Type::ArcObject {
-                module_path,
-                object_name,
-                ..
+            Type::Object {
+                module_path, name, ..
             } if self.is_module_path_external(&module_path) => Type::External {
                 module_path,
-                name: object_name,
+                name,
                 kind: ExternalKind::Interface,
             },
             Type::CallbackInterface { module_path, name }
@@ -210,16 +208,16 @@ impl<'a> ExternalTypeConverter<'a> {
                 name,
                 builtin: Box::new(self.convert_type(*builtin)),
             },
-            Type::Option { inner_type } => Type::Option {
+            Type::Optional { inner_type } => Type::Optional {
                 inner_type: Box::new(self.convert_type(*inner_type)),
             },
-            Type::Vec { inner_type } => Type::Vec {
+            Type::Sequence { inner_type } => Type::Sequence {
                 inner_type: Box::new(self.convert_type(*inner_type)),
             },
-            Type::HashMap {
+            Type::Map {
                 key_type,
                 value_type,
-            } => Type::HashMap {
+            } => Type::Map {
                 key_type: Box::new(self.convert_type(*key_type)),
                 value_type: Box::new(self.convert_type(*value_type)),
             },

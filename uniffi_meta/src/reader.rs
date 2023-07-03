@@ -106,20 +106,20 @@ impl<'a> MetadataReader<'a> {
     fn read_type(&mut self) -> Result<Type> {
         let value = self.read_u8()?;
         Ok(match value {
-            codes::TYPE_U8 => Type::U8,
-            codes::TYPE_I8 => Type::I8,
-            codes::TYPE_U16 => Type::U16,
-            codes::TYPE_I16 => Type::I16,
-            codes::TYPE_U32 => Type::U32,
-            codes::TYPE_I32 => Type::I32,
-            codes::TYPE_U64 => Type::U64,
-            codes::TYPE_I64 => Type::I64,
-            codes::TYPE_F32 => Type::F32,
-            codes::TYPE_F64 => Type::F64,
-            codes::TYPE_BOOL => Type::Bool,
+            codes::TYPE_U8 => Type::UInt8,
+            codes::TYPE_I8 => Type::Int8,
+            codes::TYPE_U16 => Type::UInt16,
+            codes::TYPE_I16 => Type::Int16,
+            codes::TYPE_U32 => Type::UInt32,
+            codes::TYPE_I32 => Type::Int32,
+            codes::TYPE_U64 => Type::UInt64,
+            codes::TYPE_I64 => Type::Int64,
+            codes::TYPE_F32 => Type::Float32,
+            codes::TYPE_F64 => Type::Float64,
+            codes::TYPE_BOOL => Type::Boolean,
             codes::TYPE_STRING => Type::String,
             codes::TYPE_DURATION => Type::Duration,
-            codes::TYPE_SYSTEM_TIME => Type::SystemTime,
+            codes::TYPE_SYSTEM_TIME => Type::Timestamp,
             codes::TYPE_FOREIGN_EXECUTOR => Type::ForeignExecutor,
             codes::TYPE_RECORD => Type::Record {
                 module_path: self.read_string()?,
@@ -129,10 +129,10 @@ impl<'a> MetadataReader<'a> {
                 module_path: self.read_string()?,
                 name: self.read_string()?,
             },
-            codes::TYPE_INTERFACE => Type::ArcObject {
+            codes::TYPE_INTERFACE => Type::Object {
                 module_path: self.read_string()?,
-                object_name: self.read_string()?,
-                is_trait: self.read_bool()?,
+                name: self.read_string()?,
+                imp: ObjectImpl::from_is_trait(self.read_bool()?),
             },
             codes::TYPE_CALLBACK_INTERFACE => Type::CallbackInterface {
                 module_path: self.read_string()?,
@@ -143,13 +143,13 @@ impl<'a> MetadataReader<'a> {
                 name: self.read_string()?,
                 builtin: Box::new(self.read_type()?),
             },
-            codes::TYPE_OPTION => Type::Option {
+            codes::TYPE_OPTION => Type::Optional {
                 inner_type: Box::new(self.read_type()?),
             },
-            codes::TYPE_VEC => Type::Vec {
+            codes::TYPE_VEC => Type::Sequence {
                 inner_type: Box::new(self.read_type()?),
             },
-            codes::TYPE_HASH_MAP => Type::HashMap {
+            codes::TYPE_HASH_MAP => Type::Map {
                 key_type: Box::new(self.read_type()?),
                 value_type: Box::new(self.read_type()?),
             },
@@ -211,7 +211,7 @@ impl<'a> MetadataReader<'a> {
             .filter(|t| {
                 matches!(
                     t,
-                    Type::ArcObject { object_name, is_trait: false, .. } if object_name == &self_name
+                    Type::Object { name, imp: ObjectImpl::Struct, .. } if name == &self_name
                 )
             })
             .context("Constructor return type must be Arc<Self>")?;
@@ -279,7 +279,7 @@ impl<'a> MetadataReader<'a> {
         Ok(ObjectMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
-            is_trait: self.read_bool()?,
+            imp: ObjectImpl::from_is_trait(self.read_bool()?),
         })
     }
 
@@ -365,7 +365,7 @@ impl<'a> MetadataReader<'a> {
         checksum_metadata(metadata_buf)
     }
 
-    fn read_default(&mut self) -> Result<Option<Literal>> {
+    fn read_default(&mut self) -> Result<Option<LiteralMetadata>> {
         let has_default = self.read_bool()?;
         if !has_default {
             return Ok(None);
@@ -373,16 +373,16 @@ impl<'a> MetadataReader<'a> {
 
         let literal_kind = self.read_u8()?;
         Ok(Some(match literal_kind {
-            codes::LIT_STR => Literal::Str {
+            codes::LIT_STR => LiteralMetadata::Str {
                 value: self.read_string()?,
             },
-            codes::LIT_INT => Literal::Int {
+            codes::LIT_INT => LiteralMetadata::Int {
                 base10_digits: self.read_string()?,
             },
-            codes::LIT_FLOAT => Literal::Float {
+            codes::LIT_FLOAT => LiteralMetadata::Float {
                 base10_digits: self.read_string()?,
             },
-            codes::LIT_BOOL => Literal::Bool {
+            codes::LIT_BOOL => LiteralMetadata::Bool {
                 value: self.read_bool()?,
             },
             _ => bail!("Unexpected literal kind code: {literal_kind:?}"),

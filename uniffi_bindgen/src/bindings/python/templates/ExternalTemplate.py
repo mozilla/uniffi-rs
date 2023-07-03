@@ -1,4 +1,4 @@
-{%- let mod_name = crate_name|fn_name %}
+{%- let mod_name = module_path|fn_name %}
 
 {%- let ffi_converter_name = "FfiConverterType{}"|format(name) %}
 {{ self.add_import_of(mod_name, ffi_converter_name) }}

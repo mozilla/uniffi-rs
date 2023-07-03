@@ -26,7 +26,7 @@ trait UniffiCustomTypeConverter {
 
 {%- endif -%}
 
-// Type `{{ name }}` wraps a `{{ builtin.canonical_name() }}`
+// Type `{{ name }}` wraps a `{{ builtin|debug }}`
 
 unsafe impl uniffi::FfiConverter<crate::UniFfiTag> for r#{{ name }} {
     type FfiType = {{ FfiType::from(builtin).borrow()|type_ffi }};

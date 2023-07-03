@@ -59,6 +59,7 @@ use super::{APIConverter, AsType, ComponentInterface};
 #[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Record {
     pub(super) name: String,
+    pub(super) module_path: String,
     pub(super) fields: Vec<Field>,
 }
 
@@ -78,7 +79,10 @@ impl Record {
 
 impl AsType for Record {
     fn as_type(&self) -> Type {
-        Type::Record(self.name.clone())
+        Type::Record {
+            name: self.name.clone(),
+            module_path: self.module_path.clone(),
+        }
     }
 }
 
@@ -88,6 +92,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
     fn try_from(meta: uniffi_meta::RecordMetadata) -> Result<Self> {
         Ok(Self {
             name: meta.name,
+            module_path: meta.module_path,
             fields: meta
                 .fields
                 .into_iter()
@@ -107,6 +112,7 @@ impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
         }
         Ok(Record {
             name: self.identifier.0.to_string(),
+            module_path: Default::default(),
             fields: self.members.body.convert(ci)?,
         })
     }
@@ -145,7 +151,7 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
 
     fn try_from(meta: uniffi_meta::FieldMetadata) -> Result<Self> {
         let name = meta.name;
-        let type_ = meta.ty.into();
+        let type_ = meta.ty;
         let default = meta
             .default
             .map(|d| Literal::from_metadata(&name, &type_, d))
@@ -206,7 +212,7 @@ mod test {
         assert_eq!(record.name(), "Simple");
         assert_eq!(record.fields().len(), 1);
         assert_eq!(record.fields()[0].name(), "field");
-        assert_eq!(record.fields()[0].as_type().canonical_name(), "u32");
+        assert_eq!(record.fields()[0].as_type(), Type::UInt32);
         assert!(record.fields()[0].default_value().is_none());
 
         let record = ci.get_record_definition("Complex").unwrap();
@@ -214,18 +220,20 @@ mod test {
         assert_eq!(record.fields().len(), 3);
         assert_eq!(record.fields()[0].name(), "key");
         assert_eq!(
-            record.fields()[0].as_type().canonical_name(),
-            "Optionalstring"
+            record.fields()[0].as_type(),
+            Type::Optional {
+                inner_type: Box::new(Type::String)
+            },
         );
         assert!(record.fields()[0].default_value().is_none());
         assert_eq!(record.fields()[1].name(), "value");
-        assert_eq!(record.fields()[1].as_type().canonical_name(), "u32");
+        assert_eq!(record.fields()[1].as_type(), Type::UInt32);
         assert!(matches!(
             record.fields()[1].default_value(),
             Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
-        assert_eq!(record.fields()[2].as_type().canonical_name(), "bool");
+        assert_eq!(record.fields()[2].as_type(), Type::Boolean);
         assert!(record.fields()[2].default_value().is_none());
     }
 
@@ -246,11 +254,14 @@ mod test {
         assert_eq!(record.fields()[1].name(), "value");
 
         assert_eq!(ci.iter_types().count(), 4);
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "u32"));
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "string"));
+        assert!(ci.iter_types().any(|t| t == &Type::UInt32));
+        assert!(ci.iter_types().any(|t| t == &Type::String));
+        assert!(ci.iter_types().any(|t| t
+            == &Type::Optional {
+                inner_type: Box::new(Type::String)
+            }));
         assert!(ci
             .iter_types()
-            .any(|t| t.canonical_name() == "Optionalstring"));
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "TypeTesting"));
+            .any(|t| matches!(t, Type::Record { name, .. } if name == "Testing")));
     }
 }

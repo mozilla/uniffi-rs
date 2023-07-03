@@ -60,7 +60,10 @@ fn add_enum_to_ci(
     meta: EnumMetadata,
     is_flat: bool,
 ) -> anyhow::Result<()> {
-    let ty = Type::Enum(meta.name.clone());
+    let ty = Type::Enum {
+        name: meta.name.clone(),
+        module_path: meta.module_path.clone(),
+    };
     iface.types.add_known_type(&ty);
     iface.types.add_type_definition(&meta.name, ty)?;
 
@@ -83,7 +86,10 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             iface.add_method_meta(meta)?;
         }
         Metadata::Record(meta) => {
-            let ty = Type::Record(meta.name.clone());
+            let ty = Type::Record {
+                name: meta.name.clone(),
+                module_path: meta.module_path.clone(),
+            };
             iface.types.add_known_type(&ty);
             iface.types.add_type_definition(&meta.name, ty)?;
 

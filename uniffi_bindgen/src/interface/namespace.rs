@@ -78,9 +78,9 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
         if self.attributes.is_some() {
             bail!("namespace attributes are not supported yet");
         }
-        ci.add_namespace_definition(Namespace {
-            name: self.identifier.0.to_string(),
-        })?;
+        if self.identifier.0 != ci.types.namespace {
+            bail!("duplicate namespace definition");
+        }
         for func in self.members.body.convert(ci)? {
             ci.add_function_definition(func)?;
         }

@@ -114,17 +114,17 @@ mod test_type_ids {
 
     #[test]
     fn simple_types() {
-        check_type_id::<u8>(Type::U8);
-        check_type_id::<u16>(Type::U16);
-        check_type_id::<u32>(Type::U32);
-        check_type_id::<u64>(Type::U64);
-        check_type_id::<i8>(Type::I8);
-        check_type_id::<i16>(Type::I16);
-        check_type_id::<i32>(Type::I32);
-        check_type_id::<i64>(Type::I64);
-        check_type_id::<f32>(Type::F32);
-        check_type_id::<f64>(Type::F64);
-        check_type_id::<bool>(Type::Bool);
+        check_type_id::<u8>(Type::UInt8);
+        check_type_id::<u16>(Type::UInt16);
+        check_type_id::<u32>(Type::UInt32);
+        check_type_id::<u64>(Type::UInt64);
+        check_type_id::<i8>(Type::Int8);
+        check_type_id::<i16>(Type::Int16);
+        check_type_id::<i32>(Type::Int32);
+        check_type_id::<i64>(Type::Int64);
+        check_type_id::<f32>(Type::Float32);
+        check_type_id::<f64>(Type::Float64);
+        check_type_id::<bool>(Type::Boolean);
         check_type_id::<String>(Type::String);
         check_type_id::<uniffi::ForeignExecutor>(Type::ForeignExecutor);
     }
@@ -139,24 +139,24 @@ mod test_type_ids {
             module_path: "uniffi_fixture_metadata".into(),
             name: "Weapon".into(),
         });
-        check_type_id::<Arc<Calculator>>(Type::ArcObject {
+        check_type_id::<Arc<Calculator>>(Type::Object {
             module_path: "uniffi_fixture_metadata".into(),
-            object_name: "Calculator".into(),
-            is_trait: false,
+            name: "Calculator".into(),
+            imp: ObjectImpl::Struct,
         });
     }
 
     #[test]
     fn test_generics() {
-        check_type_id::<Option<u8>>(Type::Option {
-            inner_type: Box::new(Type::U8),
+        check_type_id::<Option<u8>>(Type::Optional {
+            inner_type: Box::new(Type::UInt8),
         });
-        check_type_id::<Vec<u8>>(Type::Vec {
-            inner_type: Box::new(Type::U8),
+        check_type_id::<Vec<u8>>(Type::Sequence {
+            inner_type: Box::new(Type::UInt8),
         });
-        check_type_id::<HashMap<String, u8>>(Type::HashMap {
+        check_type_id::<HashMap<String, u8>>(Type::Map {
             key_type: Box::new(Type::String),
-            value_type: Box::new(Type::U8),
+            value_type: Box::new(Type::UInt8),
         });
     }
 }
@@ -182,13 +182,13 @@ mod test_metadata {
                     FieldMetadata {
                         name: "name".into(),
                         ty: Type::String,
-                        default: Some(Literal::Str {
+                        default: Some(LiteralMetadata::Str {
                             value: "test".to_owned(),
                         }),
                     },
                     FieldMetadata {
                         name: "age".into(),
-                        ty: Type::U16,
+                        ty: Type::UInt16,
                         default: None,
                     },
                 ],
@@ -327,7 +327,7 @@ mod test_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
-                is_trait: false,
+                imp: ObjectImpl::Struct,
             },
         );
     }
@@ -496,14 +496,14 @@ mod test_function_metadata {
                 inputs: vec![
                     FnParamMetadata {
                         name: "a".into(),
-                        ty: Type::U8,
+                        ty: Type::UInt8,
                     },
                     FnParamMetadata {
                         name: "b".into(),
-                        ty: Type::U8,
+                        ty: Type::UInt8,
                     },
                 ],
-                return_type: Some(Type::U8),
+                return_type: Some(Type::UInt8),
                 throws: None,
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD
                     .checksum(),
@@ -578,14 +578,14 @@ mod test_function_metadata {
                 inputs: vec![
                     FnParamMetadata {
                         name: "a".into(),
-                        ty: Type::U8,
+                        ty: Type::UInt8,
                     },
                     FnParamMetadata {
                         name: "b".into(),
-                        ty: Type::U8,
+                        ty: Type::UInt8,
                     },
                 ],
-                return_type: Some(Type::U8),
+                return_type: Some(Type::UInt8),
                 throws: None,
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
                     .checksum(),
@@ -603,10 +603,10 @@ mod test_function_metadata {
                 name: "get_display".into(),
                 is_async: false,
                 inputs: vec![],
-                return_type: Some(Type::ArcObject {
+                return_type: Some(Type::Object {
                     module_path: "uniffi_fixture_metadata".into(),
-                    object_name: "CalculatorDisplay".into(),
-                    is_trait: true,
+                    name: "CalculatorDisplay".into(),
+                    imp: ObjectImpl::Trait,
                 }),
                 throws: None,
                 checksum: UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY

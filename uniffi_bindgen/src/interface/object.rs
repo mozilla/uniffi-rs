@@ -88,6 +88,7 @@ pub struct Object {
     pub(super) name: String,
     /// How this object is implemented in Rust
     pub(super) imp: ObjectImpl,
+    pub(super) module_path: String,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     // The "trait" methods - they have a (presumably "well known") name, and
@@ -109,6 +110,7 @@ impl Object {
         Self {
             name,
             imp,
+            module_path: Default::default(),
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
@@ -237,6 +239,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         let object_impl = attributes.object_impl();
 
         let mut object = Object::new(name.to_string(), object_impl);
+        object.module_path = ci.types.namespace.clone();
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {
@@ -281,6 +284,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     // The name is used to create the ffi function for the method.
                     name: name.to_string(),
                     object_name: object.name.clone(),
+                    object_module_path: object.module_path.clone(),
                     checksum_fn_name: Default::default(), // gets filled in later.
                     is_async: false,
                     object_impl,
@@ -308,6 +312,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                             name: "other".to_string(),
                             type_: Type::Object {
                                 name: object.name().to_string(),
+                                module_path: object.module_path.clone(),
                                 imp: object_impl,
                             },
                             by_ref: true,
@@ -322,6 +327,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                             name: "other".to_string(),
                             type_: Type::Object {
                                 name: object.name().to_string(),
+                                module_path: object.module_path.clone(),
                                 imp: object_impl,
                             },
                             by_ref: true,
@@ -346,6 +352,7 @@ impl AsType for Object {
     fn as_type(&self) -> Type {
         Type::Object {
             name: self.name.clone(),
+            module_path: self.module_path.clone(),
             imp: self.imp,
         }
     }
@@ -359,6 +366,7 @@ impl AsType for Object {
 pub struct Constructor {
     pub(super) name: String,
     pub(super) object_name: String,
+    pub(super) object_module_path: String,
     pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -461,6 +469,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
         Self {
             name: meta.name,
             object_name: meta.self_name,
+            object_module_path: meta.module_path,
             arguments,
             ffi_func,
             throws: meta.throws.map(Into::into),
@@ -483,6 +492,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             name: String::from(attributes.get_name().unwrap_or("new")),
             // We don't know the name of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
+            object_module_path: ci.types.namespace.clone(),
             // Also fill in checksum_fn_name later, since it depends on object_name
             checksum_fn_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
@@ -501,6 +511,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
 pub struct Method {
     pub(super) name: String,
     pub(super) object_name: String,
+    pub(super) object_module_path: String,
     pub(super) is_async: bool,
     pub(super) object_impl: ObjectImpl,
     pub(super) arguments: Vec<Argument>,
@@ -544,6 +555,7 @@ impl Method {
             // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object {
                 name: self.object_name.clone(),
+                module_path: self.object_module_path.clone(),
                 imp: self.object_impl,
             },
             by_ref: !self.takes_self_by_arc,
@@ -640,6 +652,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
         Self {
             name: meta.name,
             object_name: meta.self_name,
+            object_module_path: meta.module_path,
             is_async,
             object_impl: ObjectImpl::Struct,
             arguments,
@@ -661,6 +674,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
         Self {
             name: meta.name,
             object_name: meta.trait_name,
+            object_module_path: meta.module_path,
             is_async: false,
             arguments,
             return_type,
@@ -710,8 +724,9 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
                     name
                 }
             },
-            // We don't know the name of the containing `Object` at this point, fill it in later.
+            // We don't know the name/path of the containing `Object` at this point, fill it in later.
             object_name: Default::default(),
+            object_module_path: Default::default(),
             // Also fill in checksum_fn_name later, since it depends on the object name
             checksum_fn_name: Default::default(),
             is_async: false,
@@ -773,6 +788,7 @@ impl Callable for Constructor {
     fn return_type(&self) -> Option<Type> {
         Some(Type::Object {
             name: self.object_name.clone(),
+            module_path: self.object_module_path.clone(),
             imp: ObjectImpl::Struct,
         })
     }
@@ -814,14 +830,20 @@ mod test {
         ci.get_object_definition("Testing").unwrap();
 
         assert_eq!(ci.iter_types().count(), 6);
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "u16"));
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "u32"));
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "Sequenceu32"));
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "string"));
+        assert!(ci.iter_types().any(|t| t == &Type::UInt16));
+        assert!(ci.iter_types().any(|t| t == &Type::UInt32));
+        assert!(ci.iter_types().any(|t| t
+            == &Type::Sequence {
+                inner_type: Box::new(Type::UInt32)
+            }));
+        assert!(ci.iter_types().any(|t| t == &Type::String));
+        assert!(ci.iter_types().any(|t| t
+            == &Type::Optional {
+                inner_type: Box::new(Type::String)
+            }));
         assert!(ci
             .iter_types()
-            .any(|t| t.canonical_name() == "Optionalstring"));
-        assert!(ci.iter_types().any(|t| t.canonical_name() == "TypeTesting"));
+            .any(|t| matches!(t, Type::Object { name, ..} if name == "Testing")));
     }
 
     #[test]

@@ -90,8 +90,6 @@ pub struct ComponentInterface {
     // We can't checksum `self.types`, but its contents are implied by the other fields
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
-    /// The unique prefix that we'll use for namespacing when exposing this component's API.
-    namespace: String,
     /// The high-level API provided by the component.
     enums: BTreeMap<String, Enum>,
     records: BTreeMap<String, Record>,
@@ -122,7 +120,9 @@ impl ComponentInterface {
         }
         // Unconditionally add the String type, which is used by the panic handling
         ci.types.add_known_type(&Type::String);
-        // We process the WebIDL definitions in two passes.
+        // We process the WebIDL definitions in three passes.
+        // First, find the namespace.
+        ci.types.namespace = ci.find_namespace(&defns)?;
         // First, go through and look for all the named types.
         ci.types.add_type_definitions_from(defns.as_slice())?;
         // With those names resolved, we can build a complete representation of the API.
@@ -142,7 +142,16 @@ impl ComponentInterface {
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
-        self.namespace.as_str()
+        self.types.namespace.as_str()
+    }
+
+    fn find_namespace(&mut self, defns: &Vec<weedle::Definition<'_>>) -> Result<String> {
+        for defn in defns {
+            if let weedle::Definition::Namespace(n) = defn {
+                return Ok(n.identifier.0.to_string());
+            }
+        }
+        bail!("Failed to find the namespace");
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -242,14 +251,19 @@ impl ComponentInterface {
         self.is_name_used_as_error(&e.name) && (fielded || used_in_callback_interface)
     }
 
-    /// Get details about all `Type::External` types
-    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, &String, ExternalKind)> {
+    /// Get details about all `Type::External` types.
+    /// Returns an iterator of (name, crate_name, kind)
+    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, String, ExternalKind)> {
         self.types.iter_known_types().filter_map(|t| match t {
             Type::External {
                 name,
-                crate_name,
+                module_path,
                 kind,
-            } => Some((name, crate_name, *kind)),
+            } => Some((
+                name,
+                module_path.split("::").next().unwrap().to_string(),
+                *kind,
+            )),
             _ => None,
         })
     }
@@ -257,7 +271,7 @@ impl ComponentInterface {
     /// Get details about all `Type::Custom` types
     pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
         self.types.iter_known_types().filter_map(|t| match t {
-            Type::Custom { name, builtin } => Some((name, &**builtin)),
+            Type::Custom { name, builtin, .. } => Some((name, &**builtin)),
             _ => None,
         })
     }
@@ -304,21 +318,21 @@ impl ComponentInterface {
     pub fn contains_optional_types(&self) -> bool {
         self.types
             .iter_known_types()
-            .any(|t| matches!(t, Type::Optional(_)))
+            .any(|t| matches!(t, Type::Optional { .. }))
     }
 
     /// Check whether the interface contains any sequence types
     pub fn contains_sequence_types(&self) -> bool {
         self.types
             .iter_known_types()
-            .any(|t| matches!(t, Type::Sequence(_)))
+            .any(|t| matches!(t, Type::Sequence { .. }))
     }
 
     /// Check whether the interface contains any map types
     pub fn contains_map_types(&self) -> bool {
         self.types
             .iter_known_types()
-            .any(|t| matches!(t, Type::Map(_, _)))
+            .any(|t| matches!(t, Type::Map { .. }))
     }
 
     /// The namespace to use in FFI-level function definitions.
@@ -326,7 +340,7 @@ impl ComponentInterface {
     /// The value returned by this method is used as a prefix to namespace all UDL-defined FFI
     /// functions used in this ComponentInterface.
     pub fn ffi_namespace(&self) -> &str {
-        &self.namespace
+        &self.types.namespace
     }
 
     /// Builtin FFI function to get the current contract version
@@ -588,15 +602,6 @@ impl ComponentInterface {
         })
     }
 
-    /// Called by `APIBuilder` impls to add a newly-parsed namespace definition to the `ComponentInterface`.
-    fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
-        if !self.namespace.is_empty() {
-            bail!("duplicate namespace definition");
-        }
-        self.namespace = defn.name;
-        Ok(())
-    }
-
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
     pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
         match self.enums.entry(defn.name().to_owned()) {
@@ -710,7 +715,8 @@ impl ComponentInterface {
 
     pub(super) fn add_object_meta(&mut self, meta: ObjectMetadata) {
         let free_name = meta.free_ffi_symbol_name();
-        let mut obj = Object::new(meta.name, ObjectImpl::from_is_trait(meta.is_trait));
+        let mut obj = Object::new(meta.name, meta.imp);
+        obj.module_path = meta.module_path;
         obj.ffi_func_free.name = free_name;
         self.types.add_known_type(&obj.as_type());
         self.add_object_definition(obj);
@@ -767,7 +773,7 @@ impl ComponentInterface {
     /// as a whole, and which can only be detected after we've finished defining
     /// the entire interface.
     pub fn check_consistency(&self) -> Result<()> {
-        if self.namespace.is_empty() {
+        if self.namespace().is_empty() {
             bail!("missing namespace definition");
         }
 
@@ -795,13 +801,13 @@ impl ComponentInterface {
                         "Object `{name}` has no definition"
                     );
                 }
-                Type::Record(name) => {
+                Type::Record { name, .. } => {
                     ensure!(
                         self.records.contains_key(name),
                         "Record `{name}` has no definition",
                     );
                 }
-                Type::Enum(name) => {
+                Type::Enum { name, .. } => {
                     ensure!(
                         self.enums.contains_key(name),
                         "Enum `{name}` has no definition",
@@ -886,13 +892,13 @@ impl<'a> RecursiveTypeIterator<'a> {
     /// Add a new type to the queue of pending types, if not previously seen.
     fn add_pending_type(&mut self, type_: &'a Type) {
         match type_ {
-            Type::Record(nm)
-            | Type::Enum(nm)
-            | Type::Object { name: nm, .. }
-            | Type::CallbackInterface(nm) => {
-                if !self.seen.contains(nm.as_str()) {
+            Type::Record { name, .. }
+            | Type::Enum { name, .. }
+            | Type::Object { name, .. }
+            | Type::CallbackInterface { name, .. } => {
+                if !self.seen.contains(name.as_str()) {
                     self.pending.push(type_);
-                    self.seen.insert(nm.as_str());
+                    self.seen.insert(name.as_str());
                 }
             }
             _ => (),
@@ -911,14 +917,16 @@ impl<'a> RecursiveTypeIterator<'a> {
             // to a non-existent type, we just leave the existing iterator in place and allow the recursive
             // call to `next()` to try again with the next pending type.
             let next_iter = match next_type {
-                Type::Record(nm) => self.ci.get_record_definition(nm).map(Record::iter_types),
-                Type::Enum(name) => self.ci.get_enum_definition(name).map(Enum::iter_types),
-                Type::Object { name: nm, .. } => {
-                    self.ci.get_object_definition(nm).map(Object::iter_types)
+                Type::Record { name, .. } => {
+                    self.ci.get_record_definition(name).map(Record::iter_types)
                 }
-                Type::CallbackInterface(nm) => self
+                Type::Enum { name, .. } => self.ci.get_enum_definition(name).map(Enum::iter_types),
+                Type::Object { name, .. } => {
+                    self.ci.get_object_definition(name).map(Object::iter_types)
+                }
+                Type::CallbackInterface { name, .. } => self
                     .ci
-                    .get_callback_interface_definition(nm)
+                    .get_callback_interface_definition(name)
                     .map(CallbackInterface::iter_types),
                 _ => None,
             };
@@ -1044,7 +1052,7 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     // Type has no `name()` method, just `canonical_name()` which isn't what we want.
     match throws {
         None => None,
-        Some(Type::Enum(name)) => Some(name),
+        Some(Type::Enum { name, .. }) => Some(name),
         _ => panic!("unknown throw type: {throws:?}"),
     }
 }
@@ -1071,8 +1079,8 @@ mod test {
         assert_eq!(
             err.to_string(),
             "Conflicting type definition for `Testing`! \
-             existing definition: Object { name: \"Testing\", imp: Struct }, \
-             new definition: Record(\"Testing\")"
+             existing definition: Object { module_path: \"test\", name: \"Testing\", imp: Struct }, \
+             new definition: Record { module_path: \"test\", name: \"Testing\" }"
         );
 
         const UDL2: &str = r#"
@@ -1088,6 +1096,7 @@ mod test {
             err.to_string(),
             "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
     name: \"Testing\",
+    module_path: \"test\",
     variants: [
         Variant {
             name: \"one\",
@@ -1102,6 +1111,7 @@ mod test {
 },
 new definition: Enum {
     name: \"Testing\",
+    module_path: \"test\",
     variants: [
         Variant {
             name: \"three\",
@@ -1166,7 +1176,12 @@ new definition: Enum {
         // check that `contains_optional_types` returns true when there is an Optional type in the interface
         assert!(ci
             .types
-            .add_type_definition("TestOptional{}", Type::Optional(Box::new(Type::String)))
+            .add_type_definition(
+                "TestOptional{}",
+                Type::Optional {
+                    inner_type: Box::new(Type::String)
+                }
+            )
             .is_ok());
         assert!(ci.contains_optional_types());
     }
@@ -1183,7 +1198,12 @@ new definition: Enum {
         // check that `contains_sequence_types` returns true when there is a Sequence type in the interface
         assert!(ci
             .types
-            .add_type_definition("TestSequence{}", Type::Sequence(Box::new(Type::UInt64)))
+            .add_type_definition(
+                "TestSequence{}",
+                Type::Sequence {
+                    inner_type: Box::new(Type::UInt64)
+                }
+            )
             .is_ok());
         assert!(ci.contains_sequence_types());
     }
@@ -1202,7 +1222,10 @@ new definition: Enum {
             .types
             .add_type_definition(
                 "Map{}",
-                Type::Map(Box::new(Type::String), Box::new(Type::Boolean))
+                Type::Map {
+                    key_type: Box::new(Type::String),
+                    value_type: Box::new(Type::Boolean)
+                }
             )
             .is_ok());
         assert!(ci.contains_map_types());
@@ -1219,6 +1242,7 @@ new definition: Enum {
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert!(!ci.item_contains_unsigned_types(&Type::Object {
             name: "Testing".into(),
+            module_path: "".into(),
             imp: ObjectImpl::Struct,
         }));
     }
@@ -1240,6 +1264,7 @@ new definition: Enum {
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert!(ci.item_contains_unsigned_types(&Type::Object {
             name: "TestObj".into(),
+            module_path: "".into(),
             imp: ObjectImpl::Struct,
         }));
     }

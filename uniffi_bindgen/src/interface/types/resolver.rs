@@ -90,7 +90,9 @@ impl<T: TypeResolver> TypeResolver for weedle::types::MayBeNull<T> {
         match self.q_mark {
             None => Ok(type_),
             Some(_) => {
-                let ty = Type::Optional(Box::new(type_));
+                let ty = Type::Optional {
+                    inner_type: Box::new(type_),
+                };
                 types.add_known_type(&ty);
                 Ok(ty)
             }
@@ -119,7 +121,9 @@ impl TypeResolver for weedle::types::FloatingPointType {
 impl TypeResolver for weedle::types::SequenceType<'_> {
     fn resolve_type_expression(&self, types: &mut TypeUniverse) -> Result<Type> {
         let t = self.generics.body.as_ref().resolve_type_expression(types)?;
-        let ty = Type::Sequence(Box::new(t));
+        let ty = Type::Sequence {
+            inner_type: Box::new(t),
+        };
         types.add_known_type(&ty);
         Ok(ty)
     }
@@ -146,7 +150,10 @@ impl TypeResolver for weedle::types::RecordType<'_> {
     fn resolve_type_expression(&self, types: &mut TypeUniverse) -> Result<Type> {
         let key_type = self.generics.body.0.resolve_type_expression(types)?;
         let value_type = self.generics.body.2.resolve_type_expression(types)?;
-        let map = Type::Map(Box::new(key_type), Box::new(value_type));
+        let map = Type::Map {
+            key_type: Box::new(key_type),
+            value_type: Box::new(value_type),
+        };
         types.add_known_type(&map);
         Ok(map)
     }
@@ -230,19 +237,28 @@ mod test {
     #[test]
     fn test_named_type_resolution() -> Result<()> {
         let mut types = TypeUniverse::default();
-        types.add_type_definition("TestRecord", Type::Record("TestRecord".into()))?;
+        types.add_type_definition(
+            "TestRecord",
+            Type::Record {
+                name: "TestRecord".into(),
+                module_path: "".into(),
+            },
+        )?;
         assert_eq!(types.iter_known_types().count(), 1);
 
         let (_, expr) = weedle::types::Type::parse("TestRecord").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert!(matches!(t, Type::Record(nm) if nm == "TestRecord"));
+        assert!(matches!(t, Type::Record { name, .. } if name == "TestRecord"));
         assert_eq!(types.iter_known_types().count(), 1);
 
         let (_, expr) = weedle::types::Type::parse("TestRecord?").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert!(matches!(t, Type::Optional(_)));
-        // Matching the Box<T> is hard, use names as a convenient workaround.
-        assert_eq!(t.canonical_name(), "OptionalTypeTestRecord");
+        assert!(matches!(t, Type::Optional { .. }));
+        assert!(match t {
+            Type::Optional { inner_type } =>
+                matches!(*inner_type, Type::Record { name, .. } if name == "TestRecord"),
+            _ => false,
+        });
         assert_eq!(types.iter_known_types().count(), 2);
 
         Ok(())
@@ -254,14 +270,18 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("u32?").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Optionalu32");
+        assert_eq!(
+            t,
+            Type::Optional {
+                inner_type: Box::new(Type::UInt32)
+            }
+        );
         assert_eq!(types.iter_known_types().count(), 2);
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "u32"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "Optionalu32"));
+        assert!(types.iter_known_types().any(|t| t == &Type::UInt32));
+        assert!(types.iter_known_types().any(|t| t
+            == &Type::Optional {
+                inner_type: Box::new(Type::UInt32)
+            }));
     }
 
     #[test]
@@ -270,14 +290,18 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("sequence<string>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "Sequencestring");
+        assert_eq!(
+            t,
+            Type::Sequence {
+                inner_type: Box::new(Type::String)
+            }
+        );
         assert_eq!(types.iter_known_types().count(), 2);
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "Sequencestring"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "string"));
+        assert!(types.iter_known_types().any(|t| t
+            == &Type::Sequence {
+                inner_type: Box::new(Type::String)
+            }));
+        assert!(types.iter_known_types().any(|t| t == &Type::String));
     }
 
     #[test]
@@ -286,17 +310,21 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<DOMString, float>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "MapStringF32");
+        assert_eq!(
+            t,
+            Type::Map {
+                key_type: Box::new(Type::String),
+                value_type: Box::new(Type::Float32)
+            }
+        );
         assert_eq!(types.iter_known_types().count(), 3);
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "MapStringF32"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "string"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "f32"));
+        assert!(types.iter_known_types().any(|t| t
+            == &Type::Map {
+                key_type: Box::new(Type::String),
+                value_type: Box::new(Type::Float32)
+            }));
+        assert!(types.iter_known_types().any(|t| t == &Type::String));
+        assert!(types.iter_known_types().any(|t| t == &Type::Float32));
     }
 
     #[test]
@@ -305,23 +333,33 @@ mod test {
         assert_eq!(types.iter_known_types().count(), 0);
         let (_, expr) = weedle::types::Type::parse("record<u64, float>").unwrap();
         let t = types.resolve_type_expression(expr).unwrap();
-        assert_eq!(t.canonical_name(), "MapU64F32");
+        assert_eq!(
+            t,
+            Type::Map {
+                key_type: Box::new(Type::UInt64),
+                value_type: Box::new(Type::Float32)
+            }
+        );
         assert_eq!(types.iter_known_types().count(), 3);
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "MapU64F32"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "u64"));
-        assert!(types
-            .iter_known_types()
-            .any(|t| t.canonical_name() == "f32"));
+        assert!(types.iter_known_types().any(|t| t
+            == &Type::Map {
+                key_type: Box::new(Type::UInt64),
+                value_type: Box::new(Type::Float32)
+            }));
+        assert!(types.iter_known_types().any(|t| t == &Type::UInt64));
+        assert!(types.iter_known_types().any(|t| t == &Type::Float32));
     }
 
     #[test]
     fn test_error_on_unknown_type() -> Result<()> {
         let mut types = TypeUniverse::default();
-        types.add_type_definition("TestRecord", Type::Record("TestRecord".into()))?;
+        types.add_type_definition(
+            "TestRecord",
+            Type::Record {
+                name: "TestRecord".into(),
+                module_path: "".into(),
+            },
+        )?;
         // Oh no, someone made a typo in the type-o...
         let (_, expr) = weedle::types::Type::parse("TestRecrd").unwrap();
         let err = types.resolve_type_expression(expr).unwrap_err();
@@ -332,7 +370,13 @@ mod test {
     #[test]
     fn test_error_on_union_type() -> Result<()> {
         let mut types = TypeUniverse::default();
-        types.add_type_definition("TestRecord", Type::Record("TestRecord".into()))?;
+        types.add_type_definition(
+            "TestRecord",
+            Type::Record {
+                name: "TestRecord".into(),
+                module_path: "".into(),
+            },
+        )?;
         let (_, expr) = weedle::types::Type::parse("(TestRecord or u32)").unwrap();
         let err = types.resolve_type_expression(expr).unwrap_err();
         assert_eq!(err.to_string(), "no support for union types yet");
@@ -348,9 +392,21 @@ mod test {
         // avoid this issue by using an implementation that defines the order of its
         // elements. This test verifies that the elements are sorted as expected.
         let mut types = TypeUniverse::default();
-        types.add_type_definition("TestRecord", Type::Record("TestRecord".into()))?;
+        types.add_type_definition(
+            "TestRecord",
+            Type::Record {
+                name: "TestRecord".into(),
+                module_path: "".into(),
+            },
+        )?;
         assert_eq!(types.iter_known_types().count(), 1);
-        types.add_type_definition("TestRecord2", Type::Record("TestRecord2".into()))?;
+        types.add_type_definition(
+            "TestRecord2",
+            Type::Record {
+                name: "TestRecord2".into(),
+                module_path: "".into(),
+            },
+        )?;
         assert_eq!(types.iter_known_types().count(), 2);
         types.add_type_definition("TestInt64", Type::Int64)?;
         types.add_type_definition("TestInt8", Type::Int8)?;
@@ -362,8 +418,20 @@ mod test {
         assert_eq!(Some(&Type::Int8), iter.next());
         assert_eq!(Some(&Type::Int64), iter.next());
         assert_eq!(Some(&Type::Boolean), iter.next());
-        assert_eq!(Some(&Type::Record("TestRecord".into())), iter.next());
-        assert_eq!(Some(&Type::Record("TestRecord2".into())), iter.next());
+        assert_eq!(
+            Some(&Type::Record {
+                name: "TestRecord".into(),
+                module_path: "".into()
+            }),
+            iter.next()
+        );
+        assert_eq!(
+            Some(&Type::Record {
+                name: "TestRecord2".into(),
+                module_path: "".into()
+            }),
+            iter.next()
+        );
         Ok(())
     }
 }

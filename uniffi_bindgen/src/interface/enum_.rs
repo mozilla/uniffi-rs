@@ -170,6 +170,7 @@ use super::{APIConverter, AsType, ComponentInterface};
 #[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Enum {
     pub(super) name: String,
+    pub(super) module_path: String,
     pub(super) variants: Vec<Variant>,
     // NOTE: `flat` is a misleading name and to make matters worse, has 2 different
     // meanings depending on the context :(
@@ -217,6 +218,7 @@ impl Enum {
         // We don't have that context here, so this is handled by our caller.
         Ok(Self {
             name: meta.name,
+            module_path: meta.module_path,
             variants: meta
                 .variants
                 .into_iter()
@@ -229,7 +231,10 @@ impl Enum {
 
 impl AsType for Enum {
     fn as_type(&self) -> Type {
-        Type::Enum(self.name.clone())
+        Type::Enum {
+            name: self.name.clone(),
+            module_path: self.module_path.clone(),
+        }
     }
 }
 
@@ -237,9 +242,10 @@ impl AsType for Enum {
 // and one for the `[Enum] interface` case.
 
 impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
-    fn convert(&self, _ci: &mut ComponentInterface) -> Result<Enum> {
+    fn convert(&self, ci: &mut ComponentInterface) -> Result<Enum> {
         Ok(Enum {
             name: self.identifier.0.to_string(),
+            module_path: ci.types.namespace.clone(),
             variants: self
                 .values
                 .body
@@ -269,6 +275,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
         // to this impl then we already know there was an `[Enum]` attribute.
         Ok(Enum {
             name: self.identifier.0.to_string(),
+            module_path: ci.types.namespace.clone(),
             variants: self
                 .members
                 .body
@@ -515,14 +522,20 @@ mod test {
         // (It might be nice to optimize these to pass as plain integers, but that's
         // difficult atop the current factoring of `ComponentInterface` and friends).
         let farg = ci.get_function_definition("takes_an_enum").unwrap();
-        assert_eq!(farg.arguments()[0].as_type(), Type::Enum("TestEnum".into()));
+        assert_eq!(
+            farg.arguments()[0].as_type(),
+            Type::Enum {
+                name: "TestEnum".into(),
+                module_path: "test".into()
+            }
+        );
         assert_eq!(
             farg.ffi_func().arguments()[0].type_(),
             FfiType::RustBuffer(None)
         );
         let fret = ci.get_function_definition("returns_an_enum").unwrap();
         assert!(
-            matches!(fret.return_type(), Some(Type::Enum(name)) if name == "TestEnum" && !ci.is_name_used_as_error(name))
+            matches!(fret.return_type(), Some(Type::Enum { name, .. }) if name == "TestEnum" && !ci.is_name_used_as_error(name))
         );
         assert!(matches!(
             fret.ffi_func().return_type(),
@@ -535,7 +548,10 @@ mod test {
             .unwrap();
         assert_eq!(
             farg.arguments()[0].as_type(),
-            Type::Enum("TestEnumWithData".into())
+            Type::Enum {
+                name: "TestEnumWithData".into(),
+                module_path: "test".into()
+            }
         );
         assert_eq!(
             farg.ffi_func().arguments()[0].type_(),
@@ -545,7 +561,7 @@ mod test {
             .get_function_definition("returns_an_enum_with_data")
             .unwrap();
         assert!(
-            matches!(fret.return_type(), Some(Type::Enum(name)) if name == "TestEnumWithData" && !ci.is_name_used_as_error(name))
+            matches!(fret.return_type(), Some(Type::Enum { name, .. }) if name == "TestEnumWithData" && !ci.is_name_used_as_error(name))
         );
         assert!(matches!(
             fret.ffi_func().return_type(),

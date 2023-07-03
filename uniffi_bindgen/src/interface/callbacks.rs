@@ -44,6 +44,7 @@ use super::{APIConverter, AsType, ComponentInterface};
 #[derive(Debug, Clone, Checksum)]
 pub struct CallbackInterface {
     pub(super) name: String,
+    pub(super) module_path: String,
     pub(super) methods: Vec<Method>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -59,6 +60,7 @@ impl CallbackInterface {
     pub fn new(name: String) -> CallbackInterface {
         CallbackInterface {
             name,
+            module_path: Default::default(),
             methods: Default::default(),
             ffi_init_callback: Default::default(),
         }
@@ -93,7 +95,10 @@ impl CallbackInterface {
 
 impl AsType for CallbackInterface {
     fn as_type(&self) -> Type {
-        Type::CallbackInterface(self.name.clone())
+        Type::CallbackInterface {
+            name: self.name.clone(),
+            module_path: self.module_path.clone(),
+        }
     }
 }
 

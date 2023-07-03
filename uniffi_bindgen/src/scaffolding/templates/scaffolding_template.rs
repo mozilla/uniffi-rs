@@ -29,7 +29,7 @@ uniffi::assert_compatible_version!("{{ uniffi_version }}"); // Please check that
 
 {% for ty in ci.iter_types() %}
 {%- match ty %}
-{%- when Type::Map with (k, v) -%}
+{%- when Type::Map { key_type: k, value_type: v } -%}
 {# Next comment MUST be after the line to be in the compiler output #}
 uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::Eq, ::std::hash::Hash); // record<{{ k|type_rs }}, {{ v|type_rs }}>
 {%- else %}
