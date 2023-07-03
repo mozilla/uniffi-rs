@@ -1269,6 +1269,11 @@
 <a href="#1269" id="1269">1269</a>
 <a href="#1270" id="1270">1270</a>
 <a href="#1271" id="1271">1271</a>
+<a href="#1272" id="1272">1272</a>
+<a href="#1273" id="1273">1273</a>
+<a href="#1274" id="1274">1274</a>
+<a href="#1275" id="1275">1275</a>
+<a href="#1276" id="1276">1276</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -2031,7 +2036,12 @@
                     meta.index,
                 );
             }
-            cbi.methods.push(meta.into());
+            <span class="kw">let </span>defn: Method = meta.into();
+            <span class="kw">for </span>arg <span class="kw">in </span>defn.iter_types() {
+                <span class="self">self</span>.types.add_known_type(arg);
+            }
+
+            cbi.methods.push(defn);
         } <span class="kw">else </span>{
             <span class="self">self</span>.add_method_meta(meta)<span class="question-mark">?</span>;
         }
