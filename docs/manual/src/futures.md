@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
 This code uses `asyncio` to drive the future to completion, while our exposed function is used with `await`.
 
-In Rust `Future<>` terminology, this means the foreign bindings supply the "executor" - think event-loop. In this example it's `asyncio`. There's no requirement for a Rust event loop.
+In Rust `Future` terminology, this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's `asyncio`. There's no requirement for a Rust event loop.
 
 See the [foreign-executor fixture](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor) for more implementation details.
 
