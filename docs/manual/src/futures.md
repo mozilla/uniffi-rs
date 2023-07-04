@@ -1,6 +1,6 @@
 # Async/Future support
 
-UniFFI supports exposing async rust functions over the FFI. It can convert a Rust `Future<>/async fn` to and from foreign native futures (`async/await` in Python/Swift, `suspend fun` in Kotlin etc.)
+UniFFI supports exposing async rust functions over the FFI. It can convert a Rust `Future`/`async fn` to and from foreign native futures (`async`/`await` in Python/Swift, `suspend fun` in Kotlin etc.)
 
 Check out the [example](https://github.com/mozilla/uniffi-rs/tree/main/examples/futures) or the more terse and thorough [fixture](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures)
 
