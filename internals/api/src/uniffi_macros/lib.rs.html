@@ -326,6 +326,25 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -351,6 +370,7 @@
 <span class="kw">mod </span>fnsig;
 <span class="kw">mod </span>object;
 <span class="kw">mod </span>record;
+<span class="kw">mod </span>setup_scaffolding;
 <span class="kw">mod </span>test;
 <span class="kw">mod </span>util;
 
@@ -376,6 +396,24 @@
 </span><span class="attr">#[proc_macro]
 </span><span class="kw">pub fn </span>build_foreign_language_testcases(tokens: TokenStream) -&gt; TokenStream {
     test::build_foreign_language_testcases(tokens)
+}
+
+<span class="doccomment">/// Top-level initialization macro
+///
+/// The optional namespace argument is only used by the scaffolding templates to pass in the
+/// CI namespace.
+</span><span class="attr">#[proc_macro]
+</span><span class="kw">pub fn </span>setup_scaffolding(tokens: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>namespace = <span class="kw">match </span><span class="macro">syn::parse_macro_input!</span>(tokens <span class="kw">as </span><span class="prelude-ty">Option</span>&lt;LitStr&gt;) {
+        <span class="prelude-val">Some</span>(lit_str) =&gt; lit_str.value(),
+        <span class="prelude-val">None </span>=&gt; <span class="kw">match </span>util::mod_path() {
+            <span class="prelude-val">Ok</span>(v) =&gt; v,
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
+        },
+    };
+    setup_scaffolding::setup_scaffolding(namespace)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attr">#[proc_macro_attribute]

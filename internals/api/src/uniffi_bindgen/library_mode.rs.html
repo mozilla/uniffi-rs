@@ -226,6 +226,14 @@
 <a href="#226" id="226">226</a>
 <a href="#227" id="227">227</a>
 <a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -245,16 +253,16 @@
 ///     package maps.
 </span><span class="kw">use crate</span>::{
     bindings::{<span class="self">self</span>, TargetLanguage},
-    macro_metadata, parse_udl, ComponentInterface, Config, <span class="prelude-ty">Result</span>,
+    macro_metadata, ComponentInterface, Config, <span class="prelude-ty">Result</span>,
 };
 <span class="kw">use </span>anyhow::{bail, Context};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>cargo_metadata::{MetadataCommand, Package};
 <span class="kw">use </span>std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     fs,
 };
-<span class="kw">use </span>uniffi_meta::group_metadata;
+<span class="kw">use </span>uniffi_meta::{group_metadata, MetadataGroup};
 
 <span class="doccomment">/// Generate foreign bindings
 ///
@@ -357,10 +365,12 @@
                 .manifest_path
                 .parent()
                 .context(<span class="string">&quot;manifest path has no parent&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>ci =
-                load_component_interface(<span class="kw-2">&amp;</span>group.namespace.crate_name, crate_root, <span class="kw-2">&amp;</span>group.items)<span class="question-mark">?</span>;
             <span class="kw">let </span>crate_name = group.namespace.crate_name.clone();
-            macro_metadata::add_group_to_ci(<span class="kw-2">&amp;mut </span>ci, group)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>ci = ComponentInterface::default();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(metadata) = load_udl_metadata(<span class="kw-2">&amp;</span>group, crate_root, <span class="kw-2">&amp;</span>crate_name)<span class="question-mark">? </span>{
+                ci.add_metadata(metadata)<span class="question-mark">?</span>;
+            };
+            ci.add_metadata(group)<span class="question-mark">?</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>config = Config::load_initial(crate_root, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
             <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
@@ -395,28 +405,34 @@
     }
 }
 
-<span class="kw">fn </span>load_component_interface(
-    crate_name: <span class="kw-2">&amp;</span>str,
+<span class="kw">fn </span>load_udl_metadata(
+    group: <span class="kw-2">&amp;</span>MetadataGroup,
     crate_root: <span class="kw-2">&amp;</span>Utf8Path,
-    metadata: <span class="kw-2">&amp;</span>BTreeSet&lt;uniffi_meta::Metadata&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;ComponentInterface&gt; {
-    <span class="kw">let </span>udl_items = metadata
+    crate_name: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;MetadataGroup&gt;&gt; {
+    <span class="kw">let </span>udl_items = group
+        .items
         .iter()
         .filter_map(|i| <span class="kw">match </span>i {
             uniffi_meta::Metadata::UdlFile(meta) =&gt; <span class="prelude-val">Some</span>(meta),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         })
         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-    <span class="kw">let </span>ci_name = <span class="kw">match </span>udl_items.len() {
-        <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;No UDL files found for {crate_name}&quot;</span>),
-        <span class="number">1 </span>=&gt; <span class="kw-2">&amp;</span>udl_items[<span class="number">0</span>].name,
+    <span class="kw">match </span>udl_items.len() {
+        <span class="comment">// No UDL files, load directly from the group
+        </span><span class="number">0 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        <span class="comment">// Found a UDL file, use it to load the CI, then add the MetadataGroup
+        </span><span class="number">1 </span>=&gt; {
+            <span class="kw">let </span>ci_name = <span class="kw-2">&amp;</span>udl_items[<span class="number">0</span>].name;
+            <span class="kw">let </span>ci_path = crate_root.join(<span class="string">&quot;src&quot;</span>).join(<span class="macro">format!</span>(<span class="string">&quot;{ci_name}.udl&quot;</span>));
+            <span class="kw">if </span>ci_path.exists() {
+                <span class="kw">let </span>udl = fs::read_to_string(ci_path)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(uniffi_udl::parse_udl(<span class="kw-2">&amp;</span>udl)<span class="question-mark">?</span>))
+            } <span class="kw">else </span>{
+                <span class="macro">bail!</span>(<span class="string">&quot;{ci_path} not found&quot;</span>);
+            }
+        }
         n =&gt; <span class="macro">bail!</span>(<span class="string">&quot;{n} UDL files found for {crate_name}&quot;</span>),
-    };
-    <span class="kw">let </span>ci_path = crate_root.join(<span class="string">&quot;src&quot;</span>).join(<span class="macro">format!</span>(<span class="string">&quot;{ci_name}.udl&quot;</span>));
-    <span class="kw">if </span>ci_path.exists() {
-        parse_udl(<span class="kw-2">&amp;</span>ci_path)
-    } <span class="kw">else </span>{
-        <span class="macro">bail!</span>(<span class="string">&quot;{ci_path} not found&quot;</span>);
     }
 }
 

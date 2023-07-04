@@ -1391,10 +1391,15 @@ instead of in UDL.</p>
 <p><strong>⚠ Warning ⚠</strong> This facility is relatively new, so things may change often. However, this remains
 true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.</p>
 <h2><a class="header" href="#build-workflow" id="build-workflow">Build workflow</a></h2>
-<p>Before any of the things discussed below work, make sure to update your bindings generation steps
-to start with a build of your library and add
-<code>--lib-file &lt;CARGO WORKSPACE&gt;/target/&lt;TARGET&gt;/&lt;BUILT CDYLIB OR STATICLIB&gt;</code> to your <code>uniffi-bindgen</code>
-command line invocation.</p>
+<p>Library mode is recommended when using UniFFI proc-macros (See the <a href="proc_macro/../tutorial/foreign_language_bindings.html">Foreign language bindings docs</a> for more info).</p>
+<p>If your crate's API is declared using only proc-macros and not UDL files, call the <code>uniffi::setup_scaffolding</code> macro at the top of your source code:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>uniffi::setup_scaffolding!();
+<span class="boring">}
+</span></code></pre></pre>
+<p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>
 <h2><a class="header" href="#the-uniffiexport-attribute" id="the-uniffiexport-attribute">The <code>#[uniffi::export]</code> attribute</a></h2>
 <p>The most important proc-macro is the <code>export</code> attribute. It can be used on functions, <code>impl</code>
 blocks, and <code>trait</code> definitions to make UniFFI aware of them.</p>

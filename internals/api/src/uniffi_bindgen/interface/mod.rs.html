@@ -1099,8 +1099,6 @@
 <a href="#1099" id="1099">1099</a>
 <a href="#1100" id="1100">1100</a>
 <a href="#1101" id="1101">1101</a>
-<a href="#1102" id="1102">1102</a>
-<a href="#1103" id="1103">1103</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1174,13 +1172,11 @@
 <span class="kw">pub mod </span>ffi;
 <span class="kw">pub use </span>ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">pub use </span>uniffi_meta::Radix;
-<span class="kw">use </span>uniffi_meta::{ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata};
+<span class="kw">use </span>uniffi_meta::{
+    ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata,
+    UNIFFI_CONTRACT_VERSION,
+};
 <span class="kw">pub type </span>Literal = LiteralMetadata;
-<span class="comment">// This needs to match the minor version of the `uniffi` crate.  See
-// `docs/uniffi-versioning.md` for details.
-//
-// Once we get to 1.0, then we&#39;ll need to update the scheme to something like 100 + major_version
-</span><span class="kw">const </span>UNIFFI_CONTRACT_VERSION: u32 = <span class="number">22</span>;
 
 <span class="doccomment">/// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.

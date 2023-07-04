@@ -456,8 +456,6 @@
 <a href="#456" id="456">456</a>
 <a href="#457" id="457">457</a>
 <a href="#458" id="458">458</a>
-<a href="#459" id="459">459</a>
-<a href="#460" id="460">460</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -552,15 +550,13 @@
 </span><span class="attr">#![warn(rust_2018_idioms, unused_qualifications)]
 #![allow(unknown_lints)]
 
-</span><span class="kw">const </span>BINDGEN_VERSION: <span class="kw-2">&amp;</span>str = <span class="macro">env!</span>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>);
-
-<span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>fs_err::{<span class="self">self </span><span class="kw">as </span>fs, File};
 <span class="kw">use </span>serde::{de::DeserializeOwned, Deserialize, Serialize};
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::io::ErrorKind;
-<span class="kw">use </span>std::{collections::HashMap, env, process::Command, str::FromStr};
+<span class="kw">use </span>std::{collections::HashMap, process::Command, str::FromStr};
 
 <span class="kw">pub mod </span>backend;
 <span class="kw">pub mod </span>bindings;
