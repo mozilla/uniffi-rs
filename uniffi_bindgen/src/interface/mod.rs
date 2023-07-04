@@ -71,13 +71,11 @@ pub use record::{Field, Record};
 pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
 pub use uniffi_meta::Radix;
-use uniffi_meta::{ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata};
+use uniffi_meta::{
+    ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata,
+    UNIFFI_CONTRACT_VERSION,
+};
 pub type Literal = LiteralMetadata;
-// This needs to match the minor version of the `uniffi` crate.  See
-// `docs/uniffi-versioning.md` for details.
-//
-// Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-const UNIFFI_CONTRACT_VERSION: u32 = 22;
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.

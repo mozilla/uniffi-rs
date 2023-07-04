@@ -17,16 +17,16 @@
 ///     package maps.
 use crate::{
     bindings::{self, TargetLanguage},
-    macro_metadata, parse_udl, ComponentInterface, Config, Result,
+    macro_metadata, ComponentInterface, Config, Result,
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
 use cargo_metadata::{MetadataCommand, Package};
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     fs,
 };
-use uniffi_meta::group_metadata;
+use uniffi_meta::{group_metadata, MetadataGroup};
 
 /// Generate foreign bindings
 ///
@@ -129,10 +129,12 @@ fn find_sources(
                 .manifest_path
                 .parent()
                 .context("manifest path has no parent")?;
-            let mut ci =
-                load_component_interface(&group.namespace.crate_name, crate_root, &group.items)?;
             let crate_name = group.namespace.crate_name.clone();
-            macro_metadata::add_group_to_ci(&mut ci, group)?;
+            let mut ci = ComponentInterface::default();
+            if let Some(metadata) = load_udl_metadata(&group, crate_root, &crate_name)? {
+                ci.add_metadata(metadata)?;
+            };
+            ci.add_metadata(group)?;
             let mut config = Config::load_initial(crate_root, None)?;
             if let Some(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
@@ -167,28 +169,34 @@ fn find_package_by_crate_name(
     }
 }
 
-fn load_component_interface(
-    crate_name: &str,
+fn load_udl_metadata(
+    group: &MetadataGroup,
     crate_root: &Utf8Path,
-    metadata: &BTreeSet<uniffi_meta::Metadata>,
-) -> Result<ComponentInterface> {
-    let udl_items = metadata
+    crate_name: &str,
+) -> Result<Option<MetadataGroup>> {
+    let udl_items = group
+        .items
         .iter()
         .filter_map(|i| match i {
             uniffi_meta::Metadata::UdlFile(meta) => Some(meta),
             _ => None,
         })
         .collect::<Vec<_>>();
-    let ci_name = match udl_items.len() {
-        0 => bail!("No UDL files found for {crate_name}"),
-        1 => &udl_items[0].name,
+    match udl_items.len() {
+        // No UDL files, load directly from the group
+        0 => Ok(None),
+        // Found a UDL file, use it to load the CI, then add the MetadataGroup
+        1 => {
+            let ci_name = &udl_items[0].name;
+            let ci_path = crate_root.join("src").join(format!("{ci_name}.udl"));
+            if ci_path.exists() {
+                let udl = fs::read_to_string(ci_path)?;
+                Ok(Some(uniffi_udl::parse_udl(&udl)?))
+            } else {
+                bail!("{ci_path} not found");
+            }
+        }
         n => bail!("{n} UDL files found for {crate_name}"),
-    };
-    let ci_path = crate_root.join("src").join(format!("{ci_name}.udl"));
-    if ci_path.exists() {
-        parse_udl(&ci_path)
-    } else {
-        bail!("{ci_path} not found");
     }
 }
 

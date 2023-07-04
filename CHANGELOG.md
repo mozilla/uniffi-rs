@@ -14,6 +14,10 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.1...HEAD).
 
+### What's new
+
+- Crates can now use proc-macros without UDL files to export their interface.  See the "Procedural Macros: Attributes and Derives" manual section for details.
+
 ## v0.24.1 (backend crates: v0.24.1) - (_2023-06-23_)
 
 [All changes in v0.24.1](https://github.com/mozilla/uniffi-rs/compare/v0.24.0...v0.24.1).
