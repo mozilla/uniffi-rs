@@ -757,17 +757,17 @@
             FfiType::Float64 =&gt; <span class="string">&quot;ctypes.c_double&quot;</span>.to_string(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
             FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{suffix}&quot;</span>),
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;RustBuffer&quot;</span>.to_string(),
+                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_UniffiRustBuffer{suffix}&quot;</span>),
+                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;_UniffiRustBuffer&quot;</span>.to_string(),
             },
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;FOREIGN_CALLBACK_T&quot;</span>.to_string(),
+            FfiType::ForeignBytes =&gt; <span class="string">&quot;_UniffiForeignBytes&quot;</span>.to_string(),
+            FfiType::ForeignCallback =&gt; <span class="string">&quot;_UNIFFI_FOREIGN_CALLBACK_T&quot;</span>.to_string(),
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
             </span>FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T&quot;</span>.to_string(),
+            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T&quot;</span>.to_string(),
             FfiType::FutureCallback { return_type } =&gt; {
                 <span class="macro">format!</span>(
-                    <span class="string">&quot;uniffi_future_callback_t({})&quot;</span>,
+                    <span class="string">&quot;_uniffi_future_callback_t({})&quot;</span>,
                     <span class="self">Self</span>::ffi_type_label(return_type),
                 )
             }
@@ -839,7 +839,7 @@
     }
 
     <span class="kw">pub fn </span>ffi_converter_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(as_ct.as_codetype().ffi_converter_name())
+        <span class="prelude-val">Ok</span>(String::from(<span class="string">&quot;_Uniffi&quot;</span>) + <span class="kw-2">&amp;</span>as_ct.as_codetype().ffi_converter_name()[<span class="number">3</span>..])
     }
 
     <span class="kw">pub fn </span>canonical_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
@@ -873,7 +873,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="string">&quot;void&quot;</span>.into(),
         };
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;uniffi_async_callback_{return_string}__{throws_string}&quot;
+            <span class="string">&quot;_uniffi_async_callback_{return_string}__{throws_string}&quot;
         </span>))
     }
 
