@@ -2,8 +2,8 @@
 
 async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::setup_args(func) %}
-    return await rust_call_async(
-        _UniFFILib.{{ func.ffi_func().name() }},
+    return await _rust_call_async(
+        _UniffiLib.{{ func.ffi_func().name() }},
         {{ func.result_type().borrow()|async_callback_fn }},
         {% call py::arg_list_lowered(func) %}
     )

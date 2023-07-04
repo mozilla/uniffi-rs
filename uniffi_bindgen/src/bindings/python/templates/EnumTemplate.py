@@ -57,10 +57,10 @@ class {{ type_name }}:
 
 {% endif %}
 
-class {{ ffi_converter_name }}(FfiConverterRustBuffer):
+class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
     @staticmethod
     def read(buf):
-        variant = buf.readI32()
+        variant = buf.read_i32()
 
         {%- for variant in e.variants() %}
         if variant == {{ loop.index }}:
@@ -80,10 +80,10 @@ class {{ ffi_converter_name }}(FfiConverterRustBuffer):
         {%- for variant in e.variants() %}
         {%- if e.is_flat() %}
         if value == {{ type_name }}.{{ variant.name()|enum_variant_py }}:
-            buf.writeI32({{ loop.index }})
+            buf.write_i32({{ loop.index }})
         {%- else %}
         if value.is_{{ variant.name()|var_name }}():
-            buf.writeI32({{ loop.index }})
+            buf.write_i32({{ loop.index }})
             {%- for field in variant.fields() %}
             {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
             {%- endfor %}
