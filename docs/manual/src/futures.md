@@ -38,10 +38,13 @@ This code uses `asyncio` to drive the future to completion, while our exposed fu
 
 In Rust `Future` terminology, this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's `asyncio`. There's no requirement for a Rust event loop.
 
+There are [some great rustdoc docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that's well worth a read.
+
 See the [foreign-executor fixture](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor) for more implementation details.
 
 ## How it works
 
+As [described in the documentation](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html),
 UniFFI generates code which uses callbacks from Rust futures back into that foreign "executor" to drive them to completion.
 Fortunately, each of the bindings and Rust have consistent models, so the discussion below is Python, but it's almost exactly the same in Kotlin and Swift.
 
@@ -128,7 +131,7 @@ pub extern "C" fn _uniffi_call_say_after(
         uniffi_callback,
         uniffi_future_handle,
     );
-    uniffi_rust_future.wake();
+    helper.wake();
     Ok(())
 };
 
