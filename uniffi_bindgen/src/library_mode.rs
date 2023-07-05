@@ -104,7 +104,7 @@ pub struct Source {
 }
 
 // If `library_path` is a C dynamic library, return its name
-fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
+pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     let cdylib_extentions = [".so", ".dll", ".dylib"];
     let filename = library_path.file_name()?;
     let filename = filename.strip_prefix("lib").unwrap_or(filename);
