@@ -227,20 +227,43 @@ pub trait BindingGenerator: Sized {
 /// - `udl_file`: The path to the UDL file
 /// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate's root.
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
-pub fn generate_external_bindings(
-    binding_generator: impl BindingGenerator,
+/// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
+pub fn generate_external_bindings<T: BindingGenerator>(
+    binding_generator: T,
     udl_file: impl AsRef<Utf8Path>,
     config_file_override: Option<impl AsRef<Utf8Path>>,
     out_dir_override: Option<impl AsRef<Utf8Path>>,
+    library_file: Option<impl AsRef<Utf8Path>>,
 ) -> Result<()> {
-    let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
-    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    let mut component = parse_udl(udl_file.as_ref())?;
+    if let Some(ref library_file) = library_file {
+        macro_metadata::add_to_ci_from_library(&mut component, library_file.as_ref())?;
+    }
+    let crate_root = &guess_crate_root(udl_file.as_ref()).context("Failed to guess crate root")?;
 
-    let crate_root = guess_crate_root(udl_file.as_ref())?;
-    let out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)?;
-    let component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
-    let bindings_config = load_bindings_config(&component, crate_root, config_file_override)?;
-    binding_generator.write_bindings(component, bindings_config, &out_dir)
+    let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    let mut config =
+        load_bindings_config::<T::Config>(&component, crate_root, config_file_override)?;
+    config.update_from_ci(&component);
+
+    let config = {
+        let mut config =
+            load_bindings_config::<T::Config>(&component, crate_root, config_file_override)?;
+        config.update_from_ci(&component);
+        if let Some(ref library_file) = library_file {
+            if let Some(cdylib_name) = crate::library_mode::calc_cdylib_name(library_file.as_ref())
+            {
+                config.update_from_cdylib_name(cdylib_name)
+            }
+        };
+        config
+    };
+
+    let out_dir = get_out_dir(
+        udl_file.as_ref(),
+        out_dir_override.as_ref().map(|p| p.as_ref()),
+    )?;
+    binding_generator.write_bindings(component, config, &out_dir)
 }
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
