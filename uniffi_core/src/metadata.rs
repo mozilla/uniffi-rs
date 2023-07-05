@@ -77,7 +77,7 @@ pub mod codes {
     pub const LIT_BOOL: u8 = 3;
 }
 
-const BUF_SIZE: usize = 2048;
+const BUF_SIZE: usize = 4096;
 
 // This struct is a kludge around the fact that Rust const generic support doesn't quite handle our
 // needs.
