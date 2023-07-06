@@ -1062,43 +1062,6 @@
 <a href="#1062" id="1062">1062</a>
 <a href="#1063" id="1063">1063</a>
 <a href="#1064" id="1064">1064</a>
-<a href="#1065" id="1065">1065</a>
-<a href="#1066" id="1066">1066</a>
-<a href="#1067" id="1067">1067</a>
-<a href="#1068" id="1068">1068</a>
-<a href="#1069" id="1069">1069</a>
-<a href="#1070" id="1070">1070</a>
-<a href="#1071" id="1071">1071</a>
-<a href="#1072" id="1072">1072</a>
-<a href="#1073" id="1073">1073</a>
-<a href="#1074" id="1074">1074</a>
-<a href="#1075" id="1075">1075</a>
-<a href="#1076" id="1076">1076</a>
-<a href="#1077" id="1077">1077</a>
-<a href="#1078" id="1078">1078</a>
-<a href="#1079" id="1079">1079</a>
-<a href="#1080" id="1080">1080</a>
-<a href="#1081" id="1081">1081</a>
-<a href="#1082" id="1082">1082</a>
-<a href="#1083" id="1083">1083</a>
-<a href="#1084" id="1084">1084</a>
-<a href="#1085" id="1085">1085</a>
-<a href="#1086" id="1086">1086</a>
-<a href="#1087" id="1087">1087</a>
-<a href="#1088" id="1088">1088</a>
-<a href="#1089" id="1089">1089</a>
-<a href="#1090" id="1090">1090</a>
-<a href="#1091" id="1091">1091</a>
-<a href="#1092" id="1092">1092</a>
-<a href="#1093" id="1093">1093</a>
-<a href="#1094" id="1094">1094</a>
-<a href="#1095" id="1095">1095</a>
-<a href="#1096" id="1096">1096</a>
-<a href="#1097" id="1097">1097</a>
-<a href="#1098" id="1098">1098</a>
-<a href="#1099" id="1099">1099</a>
-<a href="#1100" id="1100">1100</a>
-<a href="#1101" id="1101">1101</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1811,22 +1774,6 @@
             }
         }
 
-        <span class="comment">// To keep codegen tractable, enum variant names must not shadow type names.
-        </span><span class="kw">for </span>e <span class="kw">in </span><span class="self">self</span>.enums.values() {
-            <span class="comment">// Not sure why this was deemed important for &quot;normal&quot; enums but
-            // not those used as errors, but this is what we&#39;ve always done.
-            </span><span class="kw">if </span>!<span class="self">self</span>.is_name_used_as_error(<span class="kw-2">&amp;</span>e.name) {
-                <span class="kw">for </span>variant <span class="kw">in </span><span class="kw-2">&amp;</span>e.variants {
-                    <span class="kw">if </span><span class="self">self</span>.types.get_type_definition(variant.name()).is_some() {
-                        <span class="macro">bail!</span>(
-                            <span class="string">&quot;Enum variant names must not shadow type names: \&quot;{}\&quot;&quot;</span>,
-                            variant.name()
-                        )
-                    }
-                }
-            }
-        }
-
         <span class="kw">for </span>ty <span class="kw">in </span><span class="self">self</span>.iter_types() {
             <span class="kw">match </span>ty {
                 Type::Object { name, .. } =&gt; {
@@ -2078,27 +2025,6 @@ new definition: Enum {
         &quot;#</span>;
         <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL3).unwrap_err();
         <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">&quot;{err:#}&quot;</span>).contains(<span class="string">&quot;Conflicting type definition for \&quot;Testing\&quot;&quot;</span>));
-    }
-
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_enum_variant_names_dont_shadow_types() {
-        <span class="comment">// There are some edge-cases during codegen where we don&#39;t know how to disambiguate
-        // between an enum variant reference and a top-level type reference, so we
-        // disallow it in order to give a more scrutable error to the consumer.
-        </span><span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
-            namespace test{};
-            interface Testing {
-                constructor();
-            };
-            [Enum]
-            interface HardToCodegenFor {
-                Testing();
-                OtherVariant(u32 field);
-            };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
-        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">&quot;{err:#}&quot;</span>)
-            .contains(<span class="string">&quot;Enum variant names must not shadow type names: \&quot;Testing\&quot;&quot;</span>));
     }
 
     <span class="attr">#[test]
