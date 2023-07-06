@@ -710,22 +710,6 @@ impl ComponentInterface {
             }
         }
 
-        // To keep codegen tractable, enum variant names must not shadow type names.
-        for e in self.enums.values() {
-            // Not sure why this was deemed important for "normal" enums but
-            // not those used as errors, but this is what we've always done.
-            if !self.is_name_used_as_error(&e.name) {
-                for variant in &e.variants {
-                    if self.types.get_type_definition(variant.name()).is_some() {
-                        bail!(
-                            "Enum variant names must not shadow type names: \"{}\"",
-                            variant.name()
-                        )
-                    }
-                }
-            }
-        }
-
         for ty in self.iter_types() {
             match ty {
                 Type::Object { name, .. } => {
@@ -977,27 +961,6 @@ new definition: Enum {
         "#;
         let err = ComponentInterface::from_webidl(UDL3).unwrap_err();
         assert!(format!("{err:#}").contains("Conflicting type definition for \"Testing\""));
-    }
-
-    #[test]
-    fn test_enum_variant_names_dont_shadow_types() {
-        // There are some edge-cases during codegen where we don't know how to disambiguate
-        // between an enum variant reference and a top-level type reference, so we
-        // disallow it in order to give a more scrutable error to the consumer.
-        const UDL: &str = r#"
-            namespace test{};
-            interface Testing {
-                constructor();
-            };
-            [Enum]
-            interface HardToCodegenFor {
-                Testing();
-                OtherVariant(u32 field);
-            };
-        "#;
-        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
-        assert!(format!("{err:#}")
-            .contains("Enum variant names must not shadow type names: \"Testing\""));
     }
 
     #[test]
