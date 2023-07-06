@@ -62,4 +62,8 @@ class PyTestCallbackInterface(TestCallbackInterface):
         except BaseException:
             raise BasicError.InvalidInput()
 
+    def callback_handler(self, h):
+        v = h.take_error(BasicError.InvalidInput())
+        return v
+
 test_callback_interface(PyTestCallbackInterface())
