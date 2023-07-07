@@ -171,6 +171,23 @@ impl Megaphone {
     }
 }
 
+// The async_runtime attribute used to error when *any* function in the impl block was not async,
+// now it should work as long as at least one function *is* async.
+#[uniffi::export(async_runtime = "tokio")]
+impl Megaphone {
+    /// A sync method that yells something immediately.
+    pub fn say_now(&self, who: String) -> String {
+        format!("Hello, {who}!").to_uppercase()
+    }
+
+    /// An async method that yells something after a certain time.
+    ///
+    /// Uses tokio's timer functionality.
+    pub async fn say_after_with_tokio(self: Arc<Self>, ms: u16, who: String) -> String {
+        say_after_with_tokio(ms, who).await.to_uppercase()
+    }
+}
+
 // Say something after a certain amount of time, by using `tokio::time::sleep`
 // instead of our own `TimerFuture`.
 #[uniffi::export(async_runtime = "tokio")]
