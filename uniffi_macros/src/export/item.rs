@@ -14,11 +14,11 @@ pub(super) enum ExportItem {
     },
     Impl {
         self_ident: Ident,
-        items: Vec<syn::Result<ImplItem>>,
+        items: Vec<ImplItem>,
     },
     Trait {
         self_ident: Ident,
-        items: Vec<syn::Result<ImplItem>>,
+        items: Vec<ImplItem>,
         callback_interface: bool,
     },
 }
@@ -94,7 +94,7 @@ impl ExportItem {
 
                 Ok(item)
             })
-            .collect();
+            .collect::<syn::Result<_>>()?;
 
         Ok(Self::Impl {
             items,
@@ -142,7 +142,7 @@ impl ExportItem {
 
                 Ok(item)
             })
-            .collect();
+            .collect::<syn::Result<_>>()?;
 
         Ok(Self::Trait {
             items,
