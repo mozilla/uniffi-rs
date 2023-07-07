@@ -56,6 +56,10 @@ pub(crate) fn expand_export(
             self_ident,
             callback_interface: false,
         } => {
+            if let Some(rt) = args.async_runtime {
+                return Err(syn::Error::new_spanned(rt, "not supported for traits"));
+            }
+
             let name = ident_to_string(&self_ident);
             let free_fn_ident =
                 Ident::new(&free_fn_symbol_name(&mod_path, &name), Span::call_site());
@@ -78,7 +82,15 @@ pub(crate) fn expand_export(
             let impl_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| match item {
-                    ImplItem::Method(sig) => gen_method_scaffolding(sig, &args),
+                    ImplItem::Method(sig) => {
+                        if sig.is_async {
+                            return Err(syn::Error::new(
+                                sig.span,
+                                "async trait methods are not supported",
+                            ));
+                        }
+                        gen_method_scaffolding(sig, &args)
+                    }
                     _ => unreachable!("traits have no constructors"),
                 })
                 .collect::<syn::Result<_>>()?;
