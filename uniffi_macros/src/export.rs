@@ -42,6 +42,18 @@ pub(crate) fn expand_export(
     match metadata {
         ExportItem::Function { sig } => gen_fn_scaffolding(sig, &args),
         ExportItem::Impl { items, self_ident } => {
+            if let Some(rt) = &args.async_runtime {
+                if items
+                    .iter()
+                    .all(|item| !matches!(item, ImplItem::Method(sig) if sig.is_async))
+                {
+                    return Err(syn::Error::new_spanned(
+                        rt,
+                        "no async methods in this impl block",
+                    ));
+                }
+            }
+
             let item_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| match item {

@@ -19,6 +19,14 @@ pub(super) fn gen_fn_scaffolding(
             "Unexpected self param (Note: uniffi::export must be used on the impl block, not its containing fn's)"
         ));
     }
+    if !sig.is_async {
+        if let Some(async_runtime) = &arguments.async_runtime {
+            return Err(syn::Error::new_spanned(
+                async_runtime,
+                "this attribute is only allowed on async functions",
+            ));
+        }
+    }
     let metadata_items = sig.metadata_items()?;
     let scaffolding_func = gen_ffi_function(&sig, arguments)?;
     Ok(quote! {
@@ -157,13 +165,6 @@ fn gen_ffi_function(
     let return_ty = &sig.return_ty;
 
     Ok(if !sig.is_async {
-        if let Some(async_runtime) = &arguments.async_runtime {
-            return Err(syn::Error::new_spanned(
-                async_runtime,
-                "this attribute is only allowed on async functions",
-            ));
-        }
-
         quote! {
             #[doc(hidden)]
             #[no_mangle]
