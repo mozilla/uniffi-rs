@@ -44,7 +44,7 @@ pub(crate) fn expand_export(
         ExportItem::Impl { items, self_ident } => {
             let item_tokens: TokenStream = items
                 .into_iter()
-                .map(|item| match item? {
+                .map(|item| match item {
                     ImplItem::Constructor(sig) => gen_constructor_scaffolding(sig, &args),
                     ImplItem::Method(sig) => gen_method_scaffolding(sig, &args),
                 })
@@ -77,7 +77,7 @@ pub(crate) fn expand_export(
 
             let impl_tokens: TokenStream = items
                 .into_iter()
-                .map(|item| match item? {
+                .map(|item| match item {
                     ImplItem::Method(sig) => gen_method_scaffolding(sig, &args),
                     _ => unreachable!("traits have no constructors"),
                 })
@@ -112,28 +112,15 @@ pub(crate) fn expand_export(
                 Span::call_site(),
             );
 
-            let items = items.into_iter().collect::<syn::Result<Vec<_>>>();
-            let trait_impl_and_metadata_tokens = match items {
-                Ok(items) => {
-                    let trait_impl = callback_interface::trait_impl(
-                        &trait_impl_ident,
-                        &self_ident,
-                        &internals_ident,
-                        &items,
-                    )
-                    .unwrap_or_else(|e| e.into_compile_error());
-                    let metadata_items =
-                        callback_interface::metadata_items(&self_ident, &items, &mod_path)
-                            .unwrap_or_else(|e| vec![e.into_compile_error()]);
-
-                    quote! {
-                        #trait_impl
-
-                        #(#metadata_items)*
-                    }
-                }
-                Err(e) => e.into_compile_error(),
-            };
+            let trait_impl = callback_interface::trait_impl(
+                &trait_impl_ident,
+                &self_ident,
+                &internals_ident,
+                &items,
+            )
+            .unwrap_or_else(|e| e.into_compile_error());
+            let metadata_items = callback_interface::metadata_items(&self_ident, &items, &mod_path)
+                .unwrap_or_else(|e| vec![e.into_compile_error()]);
 
             let init_ident = Ident::new(
                 &uniffi_meta::init_callback_fn_symbol_name(&mod_path, &trait_name),
@@ -150,7 +137,9 @@ pub(crate) fn expand_export(
                     #internals_ident.set_callback(callback);
                 }
 
-                #trait_impl_and_metadata_tokens
+                #trait_impl
+
+                        #(#metadata_items)*
             })
         }
     }
