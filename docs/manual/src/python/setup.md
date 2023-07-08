@@ -9,8 +9,7 @@ pip3 install $wheelFile --force-reinstall ;
 Then you must create a setup.py file. This file will include the command to generate python .py bindings, link .dll and then build to pipy. Requires python version greater than 3.6.
 
 
-The full example is avaible at this [address](https://github.com/gogo2464/minimal-uniffi-rs-setuptools-python-example/tree/master). In order to reproduce the issue, let's see some points about the 
-
+The full example is available at this [address](https://github.com/mozilla/uniffi-rs/tree/main/examples/uniffi-rust-to-python-library/src/setup.py). In order to reproduce the issue, let's see some points about the setup.py file.
 
 
 # Create setup.py file.
