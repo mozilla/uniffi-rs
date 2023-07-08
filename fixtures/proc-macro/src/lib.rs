@@ -81,6 +81,22 @@ impl Object {
     }
 }
 
+#[derive(uniffi::Object)]
+pub struct StructWithData {
+    id: usize,
+}
+
+#[uniffi::export]
+impl StructWithData {
+    #[uniffi::constructor]
+    fn new(id: usize) -> Arc<Self> {
+        Arc::new(Self { id })
+    }
+    fn id(&self) -> usize {
+        self.id
+    }
+}
+
 #[uniffi::export]
 fn make_one(inner: i32) -> One {
     One { inner }

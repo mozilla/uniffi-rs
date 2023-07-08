@@ -14,6 +14,8 @@ obj = Object()
 obj = Object.named_ctor(1)
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
 
+assert StructWithData(42).id() == 42
+
 trait_impl = obj.get_trait(None)
 assert trait_impl.name() == "TraitImpl"
 assert obj.get_trait(trait_impl).name() == "TraitImpl"
