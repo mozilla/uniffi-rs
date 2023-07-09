@@ -12,7 +12,7 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 
-def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
+def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
     {%- call py::setup_args(func) %}
     return {{ return_type|lift_fn }}({% call py::to_ffi_call(func) %})
 {% when None %}
