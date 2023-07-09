@@ -1,5 +1,8 @@
 {%- let rec = ci|get_record_definition(name) %}
 class {{ type_name }}:
+    {% for field in rec.fields() %}
+        {{- field.name()|var_name }}: "{{- field|type_name }}";
+    {%- endfor %}
 
     def __init__(self, {% for field in rec.fields() %}
     {{- field.name()|var_name }}
