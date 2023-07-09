@@ -1,0 +1,517 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		747ACF642A5AC33C00CA052E /* iOS_UniFFI_Framework.h in Headers */ = {isa = PBXBuildFile; fileRef = 747ACF632A5AC33C00CA052E /* iOS_UniFFI_Framework.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		747ACF8D2A5AC4BE00CA052E /* libarithmetical_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 747ACF7C2A5AC49700CA052E /* libarithmetical_static.a */; };
+		74B460692A5AC4D8008F222C /* libuniffi_todolist_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 747ACF852A5AC49F00CA052E /* libuniffi_todolist_static.a */; };
+		74B4606B2A5AC4E3008F222C /* todolist.udl in Sources */ = {isa = PBXBuildFile; fileRef = 747ACF872A5AC4AE00CA052E /* todolist.udl */; };
+		74B4606C2A5AC4E3008F222C /* arithmetic.udl in Sources */ = {isa = PBXBuildFile; fileRef = 747ACF862A5AC4A600CA052E /* arithmetic.udl */; };
+		74B4607D2A5AC5C4008F222C /* arithmeticFFI.h in Headers */ = {isa = PBXBuildFile; fileRef = 74B4607B2A5AC59B008F222C /* arithmeticFFI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		74B4607E2A5AC5C4008F222C /* todolistFFI.h in Headers */ = {isa = PBXBuildFile; fileRef = 74B4607C2A5AC59B008F222C /* todolistFFI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		747ACF732A5AC48100CA052E /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.udl";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE)FFI.h",
+				"$(SRCROOT)/Generated/$(INPUT_FILE_BASE).swift",
+			);
+			script = "# Generate swift bindings for the todolist rust library.\necho \"Generating files for $INPUT_FILE_PATH\"\n$HOME/.cargo/bin/uniffi-bindgen-cli \\\n    generate \"$INPUT_FILE_PATH\" \\\n    --language swift \\\n    --out-dir \"$SRCROOT/Generated\"\necho \"Generated files for $INPUT_FILE_BASE in $SRCROOT/Generated\"\n";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		747ACF792A5AC49700CA052E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 747ACF742A5AC49700CA052E /* uniffi-example-arithmetic.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = CA60788175FB47D27A557773;
+			remoteInfo = "arithmetical-cdylib";
+		};
+		747ACF7B2A5AC49700CA052E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 747ACF742A5AC49700CA052E /* uniffi-example-arithmetic.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = CA60EB84DE7515CCAA24E439;
+			remoteInfo = "arithmetical-staticlib";
+		};
+		747ACF822A5AC49F00CA052E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 747ACF7D2A5AC49E00CA052E /* uniffi-example-todolist.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = CA60F5EB3FD0506C70C304D9;
+			remoteInfo = "uniffi_todolist-cdylib";
+		};
+		747ACF842A5AC49F00CA052E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 747ACF7D2A5AC49E00CA052E /* uniffi-example-todolist.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = CA60B2A5E9A3ECFD86E21069;
+			remoteInfo = "uniffi_todolist-staticlib";
+		};
+		747ACF882A5AC4B900CA052E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 747ACF7D2A5AC49E00CA052E /* uniffi-example-todolist.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = CA60B2A5E9A3FAD84444A21C;
+			remoteInfo = "uniffi_todolist-staticlib";
+		};
+		747ACF8A2A5AC4B900CA052E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 747ACF742A5AC49700CA052E /* uniffi-example-arithmetic.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = CA60EB84DE75DFF35BF96DEC;
+			remoteInfo = "arithmetical-staticlib";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		747ACF602A5AC33C00CA052E /* iOS_UniFFI_Framework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = iOS_UniFFI_Framework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		747ACF632A5AC33C00CA052E /* iOS_UniFFI_Framework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iOS_UniFFI_Framework.h; sourceTree = "<group>"; };
+		747ACF742A5AC49700CA052E /* uniffi-example-arithmetic.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "uniffi-example-arithmetic.xcodeproj"; path = "../../../arithmetic/uniffi-example-arithmetic.xcodeproj"; sourceTree = "<group>"; };
+		747ACF7D2A5AC49E00CA052E /* uniffi-example-todolist.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "uniffi-example-todolist.xcodeproj"; path = "../../../todolist/uniffi-example-todolist.xcodeproj"; sourceTree = "<group>"; };
+		747ACF862A5AC4A600CA052E /* arithmetic.udl */ = {isa = PBXFileReference; lastKnownFileType = text; name = arithmetic.udl; path = ../../../arithmetic/src/arithmetic.udl; sourceTree = "<group>"; };
+		747ACF872A5AC4AE00CA052E /* todolist.udl */ = {isa = PBXFileReference; lastKnownFileType = text; name = todolist.udl; path = ../../../todolist/src/todolist.udl; sourceTree = "<group>"; };
+		74B4607B2A5AC59B008F222C /* arithmeticFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = arithmeticFFI.h; path = Generated/arithmeticFFI.h; sourceTree = "<group>"; };
+		74B4607C2A5AC59B008F222C /* todolistFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = todolistFFI.h; path = Generated/todolistFFI.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		747ACF5D2A5AC33C00CA052E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74B460692A5AC4D8008F222C /* libuniffi_todolist_static.a in Frameworks */,
+				747ACF8D2A5AC4BE00CA052E /* libarithmetical_static.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		747ACF562A5AC33C00CA052E = {
+			isa = PBXGroup;
+			children = (
+				74B4607B2A5AC59B008F222C /* arithmeticFFI.h */,
+				74B4607C2A5AC59B008F222C /* todolistFFI.h */,
+				747ACF872A5AC4AE00CA052E /* todolist.udl */,
+				747ACF862A5AC4A600CA052E /* arithmetic.udl */,
+				747ACF7D2A5AC49E00CA052E /* uniffi-example-todolist.xcodeproj */,
+				747ACF742A5AC49700CA052E /* uniffi-example-arithmetic.xcodeproj */,
+				747ACF622A5AC33C00CA052E /* iOS-UniFFI-Framework */,
+				747ACF612A5AC33C00CA052E /* Products */,
+				747ACF8C2A5AC4BE00CA052E /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		747ACF612A5AC33C00CA052E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				747ACF602A5AC33C00CA052E /* iOS_UniFFI_Framework.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		747ACF622A5AC33C00CA052E /* iOS-UniFFI-Framework */ = {
+			isa = PBXGroup;
+			children = (
+				747ACF632A5AC33C00CA052E /* iOS_UniFFI_Framework.h */,
+			);
+			path = "iOS-UniFFI-Framework";
+			sourceTree = "<group>";
+		};
+		747ACF752A5AC49700CA052E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				747ACF7A2A5AC49700CA052E /* arithmetical.dylib */,
+				747ACF7C2A5AC49700CA052E /* libarithmetical_static.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		747ACF7E2A5AC49E00CA052E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				747ACF832A5AC49F00CA052E /* uniffi_todolist.dylib */,
+				747ACF852A5AC49F00CA052E /* libuniffi_todolist_static.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		747ACF8C2A5AC4BE00CA052E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		747ACF5B2A5AC33C00CA052E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				747ACF642A5AC33C00CA052E /* iOS_UniFFI_Framework.h in Headers */,
+				74B4607D2A5AC5C4008F222C /* arithmeticFFI.h in Headers */,
+				74B4607E2A5AC5C4008F222C /* todolistFFI.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		747ACF5F2A5AC33C00CA052E /* iOS-UniFFI-Framework */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 747ACF672A5AC33C00CA052E /* Build configuration list for PBXNativeTarget "iOS-UniFFI-Framework" */;
+			buildPhases = (
+				747ACF5C2A5AC33C00CA052E /* Sources */,
+				747ACF5D2A5AC33C00CA052E /* Frameworks */,
+				747ACF5B2A5AC33C00CA052E /* Headers */,
+				747ACF5E2A5AC33C00CA052E /* Resources */,
+			);
+			buildRules = (
+				747ACF732A5AC48100CA052E /* PBXBuildRule */,
+			);
+			dependencies = (
+				747ACF892A5AC4B900CA052E /* PBXTargetDependency */,
+				747ACF8B2A5AC4B900CA052E /* PBXTargetDependency */,
+			);
+			name = "iOS-UniFFI-Framework";
+			productName = "iOS-UniFFI-Framework";
+			productReference = 747ACF602A5AC33C00CA052E /* iOS_UniFFI_Framework.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		747ACF572A5AC33C00CA052E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					747ACF5F2A5AC33C00CA052E = {
+						CreatedOnToolsVersion = 14.2;
+					};
+				};
+			};
+			buildConfigurationList = 747ACF5A2A5AC33C00CA052E /* Build configuration list for PBXProject "iOS-UniFFI-Framework" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 747ACF562A5AC33C00CA052E;
+			productRefGroup = 747ACF612A5AC33C00CA052E /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 747ACF752A5AC49700CA052E /* Products */;
+					ProjectRef = 747ACF742A5AC49700CA052E /* uniffi-example-arithmetic.xcodeproj */;
+				},
+				{
+					ProductGroup = 747ACF7E2A5AC49E00CA052E /* Products */;
+					ProjectRef = 747ACF7D2A5AC49E00CA052E /* uniffi-example-todolist.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				747ACF5F2A5AC33C00CA052E /* iOS-UniFFI-Framework */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		747ACF7A2A5AC49700CA052E /* arithmetical.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = arithmetical.dylib;
+			remoteRef = 747ACF792A5AC49700CA052E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		747ACF7C2A5AC49700CA052E /* libarithmetical_static.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libarithmetical_static.a;
+			remoteRef = 747ACF7B2A5AC49700CA052E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		747ACF832A5AC49F00CA052E /* uniffi_todolist.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = uniffi_todolist.dylib;
+			remoteRef = 747ACF822A5AC49F00CA052E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		747ACF852A5AC49F00CA052E /* libuniffi_todolist_static.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libuniffi_todolist_static.a;
+			remoteRef = 747ACF842A5AC49F00CA052E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		747ACF5E2A5AC33C00CA052E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		747ACF5C2A5AC33C00CA052E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74B4606B2A5AC4E3008F222C /* todolist.udl in Sources */,
+				74B4606C2A5AC4E3008F222C /* arithmetic.udl in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		747ACF892A5AC4B900CA052E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "uniffi_todolist-staticlib";
+			targetProxy = 747ACF882A5AC4B900CA052E /* PBXContainerItemProxy */;
+		};
+		747ACF8B2A5AC4B900CA052E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "arithmetical-staticlib";
+			targetProxy = 747ACF8A2A5AC4B900CA052E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		747ACF652A5AC33C00CA052E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		747ACF662A5AC33C00CA052E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		747ACF682A5AC33C00CA052E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.mozilla.example.uniffi.iOS-UniFFI-Framework";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		747ACF692A5AC33C00CA052E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.mozilla.example.uniffi.iOS-UniFFI-Framework";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		747ACF5A2A5AC33C00CA052E /* Build configuration list for PBXProject "iOS-UniFFI-Framework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				747ACF652A5AC33C00CA052E /* Debug */,
+				747ACF662A5AC33C00CA052E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		747ACF672A5AC33C00CA052E /* Build configuration list for PBXNativeTarget "iOS-UniFFI-Framework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				747ACF682A5AC33C00CA052E /* Debug */,
+				747ACF692A5AC33C00CA052E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 747ACF572A5AC33C00CA052E /* Project object */;
+}
