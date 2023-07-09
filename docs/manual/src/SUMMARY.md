@@ -32,7 +32,7 @@
 - [Configuration](./swift/configuration.md)
 - [Building a Swift module](./swift/module.md)
 - [Integrating with Xcode](./swift/xcode.md)
-- [Framework](./swift/framework.md)
+- [Wrapped in Framework](./swift/framework.md)
 
 # Internals
 - [Design Principles](./internals/design_principles.md)
