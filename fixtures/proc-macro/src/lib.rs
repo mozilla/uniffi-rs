@@ -16,6 +16,7 @@ pub struct One {
 #[derive(uniffi::Record)]
 pub struct Two {
     a: String,
+    #[uniffi(default = None)]
     b: Option<Vec<bool>>,
 }
 

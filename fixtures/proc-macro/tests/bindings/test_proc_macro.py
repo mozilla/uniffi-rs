@@ -7,7 +7,7 @@ from uniffi_proc_macro import *
 one = make_one(123)
 assert one.inner == 123
 
-two = Two("a", None)
+two = Two("a")
 assert take_two(two) == "a"
 
 obj = Object()

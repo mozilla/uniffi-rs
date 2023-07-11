@@ -416,7 +416,6 @@ impl<'a> MetadataReader<'a> {
                     }
                 }
             }
-
             codes::LIT_FLOAT => match ty {
                 Type::Float32 | Type::Float64 => {
                     LiteralMetadata::Float(self.read_string()?, ty.to_owned())
@@ -426,6 +425,7 @@ impl<'a> MetadataReader<'a> {
                 }
             },
             codes::LIT_BOOL => LiteralMetadata::Boolean(self.read_bool()?),
+            codes::LIT_NULL => LiteralMetadata::Null,
             _ => bail!("Unexpected literal kind code: {literal_kind:?}"),
         }))
     }
