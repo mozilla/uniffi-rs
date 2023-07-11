@@ -267,6 +267,19 @@
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
 <a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -311,9 +324,21 @@
     <span class="kw">match </span>metadata {
         ExportItem::Function { sig } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args),
         ExportItem::Impl { items, self_ident } =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(rt) = <span class="kw-2">&amp;</span>args.async_runtime {
+                <span class="kw">if </span>items
+                    .iter()
+                    .all(|item| !<span class="macro">matches!</span>(item, ImplItem::Method(sig) <span class="kw">if </span>sig.is_async))
+                {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                        rt,
+                        <span class="string">&quot;no async methods in this impl block&quot;</span>,
+                    ));
+                }
+            }
+
             <span class="kw">let </span>item_tokens: TokenStream = items
                 .into_iter()
-                .map(|item| <span class="kw">match </span>item<span class="question-mark">? </span>{
+                .map(|item| <span class="kw">match </span>item {
                     ImplItem::Constructor(sig) =&gt; gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>args),
                     ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args),
                 })
@@ -325,6 +350,10 @@
             self_ident,
             callback_interface: <span class="bool-val">false</span>,
         } =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(rt) = args.async_runtime {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(rt, <span class="string">&quot;not supported for traits&quot;</span>));
+            }
+
             <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>self_ident);
             <span class="kw">let </span>free_fn_ident =
                 Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>name), Span::call_site());
@@ -346,8 +375,16 @@
 
             <span class="kw">let </span>impl_tokens: TokenStream = items
                 .into_iter()
-                .map(|item| <span class="kw">match </span>item<span class="question-mark">? </span>{
-                    ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args),
+                .map(|item| <span class="kw">match </span>item {
+                    ImplItem::Method(sig) =&gt; {
+                        <span class="kw">if </span>sig.is_async {
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                                sig.span,
+                                <span class="string">&quot;async trait methods are not supported&quot;</span>,
+                            ));
+                        }
+                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args)
+                    }
                     <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
                 })
                 .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
@@ -381,28 +418,15 @@
                 Span::call_site(),
             );
 
-            <span class="kw">let </span>items = items.into_iter().collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;();
-            <span class="kw">let </span>trait_impl_and_metadata_tokens = <span class="kw">match </span>items {
-                <span class="prelude-val">Ok</span>(items) =&gt; {
-                    <span class="kw">let </span>trait_impl = callback_interface::trait_impl(
-                        <span class="kw-2">&amp;</span>trait_impl_ident,
-                        <span class="kw-2">&amp;</span>self_ident,
-                        <span class="kw-2">&amp;</span>internals_ident,
-                        <span class="kw-2">&amp;</span>items,
-                    )
-                    .unwrap_or_else(|e| e.into_compile_error());
-                    <span class="kw">let </span>metadata_items =
-                        callback_interface::metadata_items(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>mod_path)
-                            .unwrap_or_else(|e| <span class="macro">vec!</span>[e.into_compile_error()]);
-
-                    <span class="macro">quote! </span>{
-                        #trait_impl
-
-                        #(#metadata_items)*
-                    }
-                }
-                <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error(),
-            };
+            <span class="kw">let </span>trait_impl = callback_interface::trait_impl(
+                <span class="kw-2">&amp;</span>trait_impl_ident,
+                <span class="kw-2">&amp;</span>self_ident,
+                <span class="kw-2">&amp;</span>internals_ident,
+                <span class="kw-2">&amp;</span>items,
+            )
+            .unwrap_or_else(|e| e.into_compile_error());
+            <span class="kw">let </span>metadata_items = callback_interface::metadata_items(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>mod_path)
+                .unwrap_or_else(|e| <span class="macro">vec!</span>[e.into_compile_error()]);
 
             <span class="kw">let </span>init_ident = Ident::new(
                 <span class="kw-2">&amp;</span>uniffi_meta::init_callback_fn_symbol_name(<span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>trait_name),
@@ -419,7 +443,9 @@
                     #internals_ident.set_callback(callback);
                 }
 
-                #trait_impl_and_metadata_tokens
+                #trait_impl
+
+                        #(#metadata_items)*
             })
         }
     }

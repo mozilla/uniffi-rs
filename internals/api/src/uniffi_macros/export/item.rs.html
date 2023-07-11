@@ -188,11 +188,11 @@
     },
     Impl {
         self_ident: Ident,
-        items: Vec&lt;syn::Result&lt;ImplItem&gt;&gt;,
+        items: Vec&lt;ImplItem&gt;,
     },
     Trait {
         self_ident: Ident,
-        items: Vec&lt;syn::Result&lt;ImplItem&gt;&gt;,
+        items: Vec&lt;ImplItem&gt;,
         callback_interface: bool,
     },
 }
@@ -268,7 +268,7 @@
 
                 <span class="prelude-val">Ok</span>(item)
             })
-            .collect();
+            .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Impl {
             items,
@@ -316,7 +316,7 @@
 
                 <span class="prelude-val">Ok</span>(item)
             })
-            .collect();
+            .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Trait {
             items,

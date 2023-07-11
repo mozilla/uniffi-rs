@@ -207,6 +207,10 @@
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -228,6 +232,14 @@
             <span class="string">&quot;Unexpected self param (Note: uniffi::export must be used on the impl block, not its containing fn&#39;s)&quot;
         </span>));
     }
+    <span class="kw">if </span>!sig.is_async {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(async_runtime) = <span class="kw-2">&amp;</span>arguments.async_runtime {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                async_runtime,
+                <span class="string">&quot;this attribute is only allowed on async functions&quot;</span>,
+            ));
+        }
+    }
     <span class="kw">let </span>metadata_items = sig.metadata_items()<span class="question-mark">?</span>;
     <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
@@ -245,6 +257,9 @@
             sig.span,
             <span class="string">&quot;constructors must not have a self parameter&quot;</span>,
         ));
+    }
+    <span class="kw">if </span>sig.is_async {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(sig.span, <span class="string">&quot;constructors can&#39;t be async&quot;</span>));
     }
     <span class="kw">let </span>metadata_items = sig.metadata_items()<span class="question-mark">?</span>;
     <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments)<span class="question-mark">?</span>;
@@ -363,13 +378,6 @@
     <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.return_ty;
 
     <span class="prelude-val">Ok</span>(<span class="kw">if </span>!sig.is_async {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(async_runtime) = <span class="kw-2">&amp;</span>arguments.async_runtime {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
-                async_runtime,
-                <span class="string">&quot;this attribute is only allowed on async functions&quot;</span>,
-            ));
-        }
-
         <span class="macro">quote! </span>{
             <span class="attr">#[doc(hidden)]
             #[no_mangle]
