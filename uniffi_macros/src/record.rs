@@ -1,6 +1,9 @@
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::quote;
-use syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Lit, Path, Token};
+use quote::{quote, ToTokens};
+use syn::{
+    parse::{Parse, ParseStream},
+    Data, DataStruct, DeriveInput, Field, Lit, Path, Token,
+};
 
 use crate::util::{
     create_metadata_items, either_attribute_arg, ident_to_string, mod_path, tagged_impl_header,
@@ -93,11 +96,38 @@ fn write_field(f: &Field) -> TokenStream {
 
 mod kw {
     syn::custom_keyword!(default);
+    syn::custom_keyword!(None);
+}
+
+pub enum FieldDefault {
+    Literal(Lit),
+    Null(kw::None),
+}
+
+impl ToTokens for FieldDefault {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            FieldDefault::Literal(lit) => lit.to_tokens(tokens),
+            FieldDefault::Null(kw) => kw.to_tokens(tokens),
+        }
+    }
+}
+
+impl Parse for FieldDefault {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::None) {
+            let none_kw: kw::None = input.parse()?;
+            Ok(Self::Null(none_kw))
+        } else {
+            Ok(Self::Literal(input.parse()?))
+        }
+    }
 }
 
 #[derive(Default)]
 pub struct FieldAttributeArguments {
-    pub(crate) default: Option<Lit>,
+    pub(crate) default: Option<FieldDefault>,
 }
 
 impl UniffiAttributeArgs for FieldAttributeArguments {
@@ -169,43 +199,45 @@ pub(crate) fn record_meta_static_var(
     ))
 }
 
-fn default_value_concat_calls(default: Lit) -> syn::Result<TokenStream> {
+fn default_value_concat_calls(default: FieldDefault) -> syn::Result<TokenStream> {
     match default {
-        Lit::Int(i) if !i.suffix().is_empty() => Err(syn::Error::new_spanned(
-            i,
-            "integer literals with suffix not supported here",
-        )),
-        Lit::Float(f) if !f.suffix().is_empty() => Err(syn::Error::new_spanned(
-            f,
-            "float literals with suffix not supported here",
-        )),
+        FieldDefault::Literal(Lit::Int(i)) if !i.suffix().is_empty() => Err(
+            syn::Error::new_spanned(i, "integer literals with suffix not supported here"),
+        ),
+        FieldDefault::Literal(Lit::Float(f)) if !f.suffix().is_empty() => Err(
+            syn::Error::new_spanned(f, "float literals with suffix not supported here"),
+        ),
 
-        Lit::Str(s) => Ok(quote! {
+        FieldDefault::Literal(Lit::Str(s)) => Ok(quote! {
             .concat_value(::uniffi::metadata::codes::LIT_STR)
             .concat_str(#s)
         }),
-        Lit::Int(i) => {
+        FieldDefault::Literal(Lit::Int(i)) => {
             let digits = i.base10_digits();
             Ok(quote! {
                 .concat_value(::uniffi::metadata::codes::LIT_INT)
                 .concat_str(#digits)
             })
         }
-        Lit::Float(f) => {
+        FieldDefault::Literal(Lit::Float(f)) => {
             let digits = f.base10_digits();
             Ok(quote! {
                 .concat_value(::uniffi::metadata::codes::LIT_FLOAT)
                 .concat_str(#digits)
             })
         }
-        Lit::Bool(b) => Ok(quote! {
+        FieldDefault::Literal(Lit::Bool(b)) => Ok(quote! {
             .concat_value(::uniffi::metadata::codes::LIT_BOOL)
             .concat_bool(#b)
         }),
 
-        _ => Err(syn::Error::new_spanned(
+        FieldDefault::Literal(_) => Err(syn::Error::new_spanned(
             default,
             "this type of literal is not currently supported as a default",
         )),
+
+        FieldDefault::Null(_) => Ok(quote! {
+            .concat_value(::uniffi::metadata::codes::LIT_NULL)
+        }),
     }
 }

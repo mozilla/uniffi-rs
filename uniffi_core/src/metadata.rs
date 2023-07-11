@@ -75,6 +75,7 @@ pub mod codes {
     pub const LIT_INT: u8 = 1;
     pub const LIT_FLOAT: u8 = 2;
     pub const LIT_BOOL: u8 = 3;
+    pub const LIT_NULL: u8 = 4;
 }
 
 const BUF_SIZE: usize = 4096;

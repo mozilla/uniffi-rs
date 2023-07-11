@@ -7,7 +7,7 @@ import uniffi_proc_macro
 let one = makeOne(inner: 123)
 assert(one.inner == 123)
 
-let two = Two(a: "a", b: nil)
+let two = Two(a: "a")
 assert(takeTwo(two: two) == "a")
 
 var obj = Object()
