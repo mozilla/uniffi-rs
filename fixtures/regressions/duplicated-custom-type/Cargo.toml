@@ -1,0 +1,20 @@
+[package]
+name = "uniffi-fixture-regression-duplicated-custom-type"
+edition = "2021"
+version = "0.22.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_regression_test_duplicated_custom_type"
+
+[dependencies]
+uniffi = {path = "../../../uniffi", version = "0.24" }
+
+[build-dependencies]
+uniffi = {path = "../../../uniffi", version = "0.24", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../../uniffi", version = "0.24", features = ["bindgen-tests"] }

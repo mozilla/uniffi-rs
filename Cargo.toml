@@ -51,6 +51,7 @@ members = [
   "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/regressions/swift-dictionary-nesting",
   "fixtures/regressions/unary-result-alias",
+  "fixtures/regressions/duplicated-custom-type",
   "fixtures/trait-methods",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",

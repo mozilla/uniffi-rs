@@ -1,0 +1,4 @@
+[Custom]
+typedef bytes CustomType;
+
+namespace UniffiCustomBug {};
