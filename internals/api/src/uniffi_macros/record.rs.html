@@ -209,9 +209,44 @@
 <a href="#209" id="209">209</a>
 <a href="#210" id="210">210</a>
 <a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
-<span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Lit, Path, Token};
+<span class="kw">use </span>quote::{quote, ToTokens};
+<span class="kw">use </span>syn::{
+    parse::{Parse, ParseStream},
+    Data, DataStruct, DeriveInput, Field, Lit, Path, Token,
+};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
     create_metadata_items, either_attribute_arg, ident_to_string, mod_path, tagged_impl_header,
@@ -304,11 +339,38 @@
 
 <span class="kw">mod </span>kw {
     <span class="macro">syn::custom_keyword!</span>(default);
+    <span class="macro">syn::custom_keyword!</span>(<span class="prelude-val">None</span>);
+}
+
+<span class="kw">pub enum </span>FieldDefault {
+    Literal(Lit),
+    Null(kw::None),
+}
+
+<span class="kw">impl </span>ToTokens <span class="kw">for </span>FieldDefault {
+    <span class="kw">fn </span>to_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, tokens: <span class="kw-2">&amp;mut </span>TokenStream) {
+        <span class="kw">match </span><span class="self">self </span>{
+            FieldDefault::Literal(lit) =&gt; lit.to_tokens(tokens),
+            FieldDefault::Null(kw) =&gt; kw.to_tokens(tokens),
+        }
+    }
+}
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>FieldDefault {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>lookahead = input.lookahead1();
+        <span class="kw">if </span>lookahead.peek(kw::None) {
+            <span class="kw">let </span>none_kw: kw::None = input.parse()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Null(none_kw))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Literal(input.parse()<span class="question-mark">?</span>))
+        }
+    }
 }
 
 <span class="attr">#[derive(Default)]
 </span><span class="kw">pub struct </span>FieldAttributeArguments {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) default: <span class="prelude-ty">Option</span>&lt;Lit&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) default: <span class="prelude-ty">Option</span>&lt;FieldDefault&gt;,
 }
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>FieldAttributeArguments {
@@ -380,44 +442,46 @@
     ))
 }
 
-<span class="kw">fn </span>default_value_concat_calls(default: Lit) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">fn </span>default_value_concat_calls(default: FieldDefault) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">match </span>default {
-        Lit::Int(i) <span class="kw">if </span>!i.suffix().is_empty() =&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
-            i,
-            <span class="string">&quot;integer literals with suffix not supported here&quot;</span>,
-        )),
-        Lit::Float(f) <span class="kw">if </span>!f.suffix().is_empty() =&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
-            f,
-            <span class="string">&quot;float literals with suffix not supported here&quot;</span>,
-        )),
+        FieldDefault::Literal(Lit::Int(i)) <span class="kw">if </span>!i.suffix().is_empty() =&gt; <span class="prelude-val">Err</span>(
+            syn::Error::new_spanned(i, <span class="string">&quot;integer literals with suffix not supported here&quot;</span>),
+        ),
+        FieldDefault::Literal(Lit::Float(f)) <span class="kw">if </span>!f.suffix().is_empty() =&gt; <span class="prelude-val">Err</span>(
+            syn::Error::new_spanned(f, <span class="string">&quot;float literals with suffix not supported here&quot;</span>),
+        ),
 
-        Lit::Str(s) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+        FieldDefault::Literal(Lit::Str(s)) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
             .concat_value(::uniffi::metadata::codes::LIT_STR)
             .concat_str(#s)
         }),
-        Lit::Int(i) =&gt; {
+        FieldDefault::Literal(Lit::Int(i)) =&gt; {
             <span class="kw">let </span>digits = i.base10_digits();
             <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                 .concat_value(::uniffi::metadata::codes::LIT_INT)
                 .concat_str(#digits)
             })
         }
-        Lit::Float(f) =&gt; {
+        FieldDefault::Literal(Lit::Float(f)) =&gt; {
             <span class="kw">let </span>digits = f.base10_digits();
             <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                 .concat_value(::uniffi::metadata::codes::LIT_FLOAT)
                 .concat_str(#digits)
             })
         }
-        Lit::Bool(b) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+        FieldDefault::Literal(Lit::Bool(b)) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
             .concat_value(::uniffi::metadata::codes::LIT_BOOL)
             .concat_bool(#b)
         }),
 
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
+        FieldDefault::Literal(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(
             default,
             <span class="string">&quot;this type of literal is not currently supported as a default&quot;</span>,
         )),
+
+        FieldDefault::Null(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+            .concat_value(::uniffi::metadata::codes::LIT_NULL)
+        }),
     }
 }
 </code></pre></div>
