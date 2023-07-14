@@ -5,7 +5,12 @@
 import uniffi.uniffi_type_limits.*;
 
 // test_strings
-assert(takeString("\ud800") == "?") // surrogate
+try {
+    takeString("\ud800")
+    throw RuntimeException("Should have thrown an CharacterCodingException exception!")
+} catch (e: java.nio.charset.CharacterCodingException) {
+    // It's okay!
+}
 assert(takeString("") == "")
 assert(takeString("愛") == "愛")
 assert(takeString("💖") == "💖")
