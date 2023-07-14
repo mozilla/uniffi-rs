@@ -4,6 +4,7 @@ class {{ type_name }}:
         {{- field.name()|var_name }}: "{{- field|type_name }}";
     {%- endfor %}
 
+    @typing.no_type_check
     def __init__(self, {% for field in rec.fields() %}
     {{- field.name()|var_name }}: "{{- field|type_name }}"
     {%- if field.default_value().is_some() %} = _DEFAULT{% endif %}
