@@ -22,7 +22,7 @@
 //!   string name;
 //!   u32 value;
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -36,7 +36,7 @@
 //! #   string name;
 //! #   u32 value;
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let record = ci.get_record_definition("Example").unwrap();
 //! assert_eq!(record.name(), "Example");
 //! assert_eq!(record.fields()[0].name(), "name");
@@ -164,7 +164,7 @@ mod test {
                 required boolean spin;
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.record_definitions().count(), 3);
 
         let record = ci.get_record_definition("Empty").unwrap();
@@ -209,7 +209,7 @@ mod test {
                 u32 value;
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.record_definitions().count(), 1);
         let record = ci.get_record_definition("Testing").unwrap();
         assert_eq!(record.fields().len(), 2);

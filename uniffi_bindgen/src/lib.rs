@@ -235,7 +235,8 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     out_dir_override: Option<impl AsRef<Utf8Path>>,
     library_file: Option<impl AsRef<Utf8Path>>,
 ) -> Result<()> {
-    let mut component = parse_udl(udl_file.as_ref())?;
+    let crate_name = crate_name_from_cargo_toml(udl_file.as_ref())?;
+    let mut component = parse_udl(udl_file.as_ref(), &crate_name)?;
     if let Some(ref library_file) = library_file {
         macro_metadata::add_to_ci_from_library(&mut component, library_file.as_ref())?;
     }
@@ -268,17 +269,41 @@ pub fn generate_external_bindings<T: BindingGenerator>(
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
 // such as the `extern "C"` function definitions and record data types.
+// Locates and parses Cargo.toml to determine the name of the crate.
 pub fn generate_component_scaffolding(
     udl_file: &Utf8Path,
     out_dir_override: Option<&Utf8Path>,
     format_code: bool,
 ) -> Result<()> {
-    let component = parse_udl(udl_file)?;
+    let component = parse_udl(udl_file, &crate_name_from_cargo_toml(udl_file)?)?;
+    generate_component_scaffolding_inner(component, udl_file, out_dir_override, format_code)
+}
+
+// Generate the infrastructural Rust code for implementing the UDL interface,
+// such as the `extern "C"` function definitions and record data types, using
+// the specified crate name.
+pub fn generate_component_scaffolding_for_crate(
+    udl_file: &Utf8Path,
+    crate_name: &str,
+    out_dir_override: Option<&Utf8Path>,
+    format_code: bool,
+) -> Result<()> {
+    let component = parse_udl(udl_file, crate_name)?;
+    generate_component_scaffolding_inner(component, udl_file, out_dir_override, format_code)
+}
+
+fn generate_component_scaffolding_inner(
+    component: ComponentInterface,
+    udl_file: &Utf8Path,
+    out_dir_override: Option<&Utf8Path>,
+    format_code: bool,
+) -> Result<()> {
     let file_stem = udl_file.file_stem().context("not a file")?;
     let filename = format!("{file_stem}.uniffi.rs");
     let out_path = get_out_dir(udl_file, out_dir_override)?.join(filename);
     let mut f = File::create(&out_path)?;
-    write!(f, "{}", RustScaffolding::new(&component)).context("Failed to write output file")?;
+    write!(f, "{}", RustScaffolding::new(&component, file_stem))
+        .context("Failed to write output file")?;
     if format_code {
         format_code_with_rustfmt(&out_path)?;
     }
@@ -293,9 +318,13 @@ pub fn generate_bindings(
     target_languages: Vec<TargetLanguage>,
     out_dir_override: Option<&Utf8Path>,
     library_file: Option<&Utf8Path>,
+    crate_name: Option<&str>,
     try_format_code: bool,
 ) -> Result<()> {
-    let mut component = parse_udl(udl_file)?;
+    let crate_name = crate_name
+        .map(|c| Ok(c.to_string()))
+        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file))?;
+    let mut component = parse_udl(udl_file, &crate_name)?;
     if let Some(library_file) = library_file {
         macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
     }
@@ -321,6 +350,42 @@ pub fn print_repr(library_path: &Utf8Path) -> Result<()> {
     let metadata = macro_metadata::extract_from_library(library_path)?;
     println!("{metadata:#?}");
     Ok(())
+}
+
+// Given the path to a UDL file, locate and parse the corresponding Cargo.toml to determine
+// the library crate name.
+// Note that this is largely a copy of code in uniffi_macros/src/util.rs, but sharing it
+// isn't trivial and it's not particularly complicated so we've just copied it.
+fn crate_name_from_cargo_toml(udl_file: &Utf8Path) -> Result<String> {
+    #[derive(Deserialize)]
+    struct CargoToml {
+        package: Package,
+        #[serde(default)]
+        lib: Lib,
+    }
+
+    #[derive(Deserialize)]
+    struct Package {
+        name: String,
+    }
+
+    #[derive(Default, Deserialize)]
+    struct Lib {
+        name: Option<String>,
+    }
+
+    let file = guess_crate_root(udl_file)?.join("Cargo.toml");
+    let cargo_toml_bytes =
+        fs::read(file).context("Can't find Cargo.toml to determine the crate name")?;
+
+    let cargo_toml = toml::from_slice::<CargoToml>(&cargo_toml_bytes)?;
+
+    let lib_crate_name = cargo_toml
+        .lib
+        .name
+        .unwrap_or_else(|| cargo_toml.package.name.replace('-', "_"));
+
+    Ok(lib_crate_name)
 }
 
 /// Guess the root directory of the crate from the path of its UDL file.
@@ -354,10 +419,10 @@ fn get_out_dir(udl_file: &Utf8Path, out_dir_override: Option<&Utf8Path>) -> Resu
     })
 }
 
-fn parse_udl(udl_file: &Utf8Path) -> Result<ComponentInterface> {
+fn parse_udl(udl_file: &Utf8Path, crate_name: &str) -> Result<ComponentInterface> {
     let udl = fs::read_to_string(udl_file)
         .with_context(|| format!("Failed to read UDL from {udl_file}"))?;
-    let group = uniffi_udl::parse_udl(&udl)?;
+    let group = uniffi_udl::parse_udl(&udl, crate_name)?;
     ComponentInterface::from_metadata(group)
 }
 

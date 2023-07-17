@@ -3,5 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    uniffi::generate_scaffolding("src/proc-macro.udl").unwrap();
+    // generate_scaffolding would work here, but we use the _for_crate version for
+    // test coverage.
+    uniffi::generate_scaffolding_for_crate("src/proc-macro.udl", "uniffi_proc_macro").unwrap();
 }

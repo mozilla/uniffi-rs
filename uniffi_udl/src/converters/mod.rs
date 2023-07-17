@@ -164,7 +164,7 @@ mod test {
                 required boolean spin;
             };
         "#;
-        let mut ci = InterfaceCollector::from_webidl(UDL).unwrap();
+        let mut ci = InterfaceCollector::from_webidl(UDL, "crate-name").unwrap();
         assert_eq!(ci.items.len(), 3);
         match &ci.items.pop_first().unwrap() {
             Metadata::Record(record) => {

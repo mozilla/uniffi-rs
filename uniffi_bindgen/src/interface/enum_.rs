@@ -14,7 +14,7 @@
 //!   "one",
 //!   "two"
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -27,7 +27,7 @@
 //! #   "one",
 //! #   "two"
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let e = ci.get_enum_definition("Example").unwrap();
 //! assert_eq!(e.name(), "Example");
 //! assert_eq!(e.variants().len(), 2);
@@ -49,7 +49,7 @@
 //!   One(u32 first);
 //!   Two(u32 first, string second);
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -64,7 +64,7 @@
 //! #   One(u32 first);
 //! #   Two(u32 first, string second);
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let e = ci.get_enum_definition("ExampleWithData").unwrap();
 //! assert_eq!(e.name(), "ExampleWithData");
 //! assert_eq!(e.variants().len(), 3);
@@ -86,7 +86,7 @@
 //!   "one",
 //!   "two"
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -100,7 +100,7 @@
 //! #   "one",
 //! #   "two"
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let err = ci.get_enum_definition("Example").unwrap();
 //! assert_eq!(err.name(), "Example");
 //! assert_eq!(err.variants().len(), 2);
@@ -122,7 +122,7 @@
 //!   two(string reason);
 //!   three(i32 x, i32 y);
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -137,7 +137,7 @@
 //! #   two(string reason);
 //! #   three(i32 x, i32 y);
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let err = ci.get_enum_definition("Example").unwrap();
 //! assert_eq!(err.name(), "Example");
 //! assert_eq!(err.variants().len(), 3);
@@ -292,7 +292,7 @@ mod test {
             // We should probably disallow this...
             enum Testing { "one", "two", "one" };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 1);
         assert_eq!(
             ci.get_enum_definition("Testing").unwrap().variants().len(),
@@ -325,7 +325,7 @@ mod test {
                 Two();
             };
         "##;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 3);
         assert_eq!(ci.function_definitions().len(), 4);
 
@@ -400,7 +400,7 @@ mod test {
             farg.arguments()[0].as_type(),
             Type::Enum {
                 name: "TestEnum".into(),
-                module_path: "test".into()
+                module_path: "crate_name".into()
             }
         );
         assert_eq!(
@@ -424,7 +424,7 @@ mod test {
             farg.arguments()[0].as_type(),
             Type::Enum {
                 name: "TestEnumWithData".into(),
-                module_path: "test".into()
+                module_path: "crate_name".into()
             }
         );
         assert_eq!(
@@ -451,7 +451,7 @@ mod test {
             [Error]
             enum Testing { "one", "two", "three" };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 1);
         let error = ci.get_enum_definition("Testing").unwrap();
         assert_eq!(
@@ -475,7 +475,7 @@ mod test {
             [Error]
             enum Testing { "one", "two", "one" };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 1);
         assert_eq!(
             ci.get_enum_definition("Testing").unwrap().variants().len(),
@@ -494,7 +494,7 @@ mod test {
                 Two(u8 code);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 1);
         let error: &Enum = ci.get_enum_definition("Testing").unwrap();
         assert_eq!(

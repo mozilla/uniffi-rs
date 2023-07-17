@@ -17,6 +17,7 @@ fn clang() -> Result<(), anyhow::Error> {
         vec![TargetLanguage::Swift],
         Some(&out_dir),
         None,
+        None,
         false,
     )?;
 

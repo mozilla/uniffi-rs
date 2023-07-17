@@ -12,7 +12,7 @@
 //! namespace example {
 //!     string hello();
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -24,7 +24,7 @@
 //! # namespace example {
 //! #     string hello();
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let func = ci.get_function_definition("hello").unwrap();
 //! assert_eq!(func.name(), "hello");
 //! assert!(matches!(func.return_type(), Some(Type::String)));
@@ -48,6 +48,7 @@ use uniffi_meta::Checksum;
 #[derive(Debug, Clone, Checksum)]
 pub struct Function {
     pub(super) name: String,
+    pub(super) module_path: String,
     pub(super) is_async: bool,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
@@ -111,12 +112,8 @@ impl Function {
         self.throws.as_ref()
     }
 
-    pub fn derive_ffi_func(&mut self, ci_namespace: &str) -> Result<()> {
-        // The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don't overwrite it in that case.
-        if self.ffi_func.name.is_empty() {
-            self.ffi_func.name = uniffi_meta::fn_symbol_name(ci_namespace, &self.name);
-        }
+    pub fn derive_ffi_func(&mut self) -> Result<()> {
+        assert!(!self.ffi_func.name.is_empty());
         self.ffi_func.init(
             self.return_type.as_ref().map(Into::into),
             self.arguments.iter().map(Into::into),
@@ -162,6 +159,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
 
         Self {
             name: meta.name,
+            module_path: meta.module_path,
             is_async,
             arguments,
             return_type,
@@ -301,6 +299,7 @@ mod test {
                 u32 field;
             };
         "##,
+            "crate_name",
         )?;
 
         let func1 = ci.get_function_definition("minimal").unwrap();

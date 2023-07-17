@@ -22,8 +22,8 @@ use collectors::{InterfaceCollector, TypeCollector};
 use uniffi_meta::Type;
 
 /// The single entry-point to this module.
-pub fn parse_udl(udl: &str) -> Result<uniffi_meta::MetadataGroup> {
-    Ok(InterfaceCollector::from_webidl(udl)?.into())
+pub fn parse_udl(udl: &str, crate_name: &str) -> Result<uniffi_meta::MetadataGroup> {
+    Ok(InterfaceCollector::from_webidl(udl, crate_name)?.into())
 }
 
 #[cfg(test)]
@@ -36,12 +36,12 @@ mod test {
             namespace test{};
             dictionary Empty {};
         "#;
-        let group = parse_udl(UDL).unwrap();
+        let group = parse_udl(UDL, "crate_name").unwrap();
         assert_eq!(group.namespace.name, "test");
         assert_eq!(group.items.len(), 1);
         assert!(matches!(
             group.items.into_iter().next().unwrap(),
-            uniffi_meta::Metadata::Record(r) if r.name == "Empty" && r.fields.is_empty()
+            uniffi_meta::Metadata::Record(r) if r.module_path == "crate_name" && r.name == "Empty" && r.fields.is_empty()
         ));
     }
 }

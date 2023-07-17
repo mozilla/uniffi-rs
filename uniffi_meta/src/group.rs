@@ -20,6 +20,17 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
                 };
                 Some((namespace.crate_name.clone(), group))
             }
+            Metadata::UdlFile(udl) => {
+                let namespace = NamespaceMetadata {
+                    crate_name: udl.module_path.clone(),
+                    name: udl.namespace.clone(),
+                };
+                let group = MetadataGroup {
+                    namespace,
+                    items: BTreeSet::new(),
+                };
+                Some((udl.module_path.clone(), group))
+            }
             _ => None,
         })
         .collect::<HashMap<_, _>>();
@@ -27,7 +38,9 @@ pub fn group_metadata(items: Vec<Metadata>) -> Result<Vec<MetadataGroup>> {
     for item in items {
         let (item_desc, module_path) = match &item {
             Metadata::Namespace(_) => continue,
-            Metadata::UdlFile(meta) => (format!("udl_file `{}`", meta.name), &meta.module_path),
+            Metadata::UdlFile(meta) => {
+                (format!("udl_file `{}`", meta.namespace), &meta.module_path)
+            }
             Metadata::Func(meta) => (format!("function `{}`", meta.name), &meta.module_path),
             Metadata::Constructor(meta) => (
                 format!("constructor `{}.{}`", meta.self_name, meta.name),

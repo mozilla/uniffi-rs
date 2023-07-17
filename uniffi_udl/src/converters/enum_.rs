@@ -126,8 +126,9 @@ mod test {
             // We should probably disallow this...
             enum Testing { "one", "two", "one" };
         "#;
-        let mut ci = InterfaceCollector::from_webidl(UDL).unwrap();
+        let mut ci = InterfaceCollector::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.types.namespace, "test");
+        assert_eq!(ci.types.module_path(), "crate_name");
         assert_eq!(ci.items.len(), 1);
         let e = &ci.items.pop_first().unwrap();
         match e {

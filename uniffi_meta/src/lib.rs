@@ -116,7 +116,7 @@ impl Checksum for &str {
 // The namespace of a Component interface.
 //
 // This is used to match up the macro metadata with the UDL items.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NamespaceMetadata {
     pub crate_name: String,
     pub name: String,
@@ -127,8 +127,11 @@ pub struct NamespaceMetadata {
 // This is to find the UDL files in library mode generation
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UdlFile {
+    // The module path specified when the UDL file was parsed.
     pub module_path: String,
-    pub name: String,
+    pub namespace: String,
+    // the base filename of the udl file - no path, no extension.
+    pub file_stub: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]

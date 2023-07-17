@@ -4,6 +4,8 @@
 
 ::uniffi::setup_scaffolding!("{{ ci.namespace() }}");
 
+{% include "UdlMetadata.rs" %}
+
 {% for ty in ci.iter_types() %}
 {%- match ty %}
 {%- when Type::Map { key_type: k, value_type: v } -%}

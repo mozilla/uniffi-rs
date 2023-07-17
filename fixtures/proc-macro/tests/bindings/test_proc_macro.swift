@@ -3,8 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
-
-import uniffi_proc_macro
+import proc_macro
 
 let one = makeOne(inner: 123)
 assert(one.inner == 123)

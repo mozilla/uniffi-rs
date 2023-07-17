@@ -44,7 +44,8 @@ impl<'a> MetadataReader<'a> {
             .into(),
             codes::UDL_FILE => UdlFile {
                 module_path: self.read_string()?,
-                name: self.read_string()?,
+                namespace: self.read_string()?,
+                file_stub: self.read_string()?,
             }
             .into(),
             codes::FUNC => self.read_func()?.into(),

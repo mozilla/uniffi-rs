@@ -9,7 +9,7 @@
 use anyhow::Result;
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
-pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
+pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
 
 /// The set of all possible types used in a particular component interface.
 ///
@@ -23,8 +23,8 @@ pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
 /// lot of cloning.
 #[derive(Debug, Default)]
 pub(crate) struct TypeUniverse {
-    /// The unique prefix that we'll use for namespacing when exposing this component's API.
-    pub namespace: String,
+    /// The unique prefixes that we'll use for namespacing when exposing this component's API.
+    pub namespace: NamespaceMetadata,
 
     // Named type definitions (including aliases).
     type_definitions: HashMap<String, Type>,
@@ -33,6 +33,13 @@ pub(crate) struct TypeUniverse {
 }
 
 impl TypeUniverse {
+    pub fn new(namespace: NamespaceMetadata) -> Self {
+        Self {
+            namespace,
+            ..Default::default()
+        }
+    }
+
     /// Add the definition of a named [Type].
     fn add_type_definition(&mut self, name: &str, type_: &Type) -> Result<()> {
         match self.type_definitions.entry(name.to_string()) {
