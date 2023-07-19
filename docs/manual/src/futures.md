@@ -1,14 +1,14 @@
 # Async/Future support
 
-UniFFI supports exposing async rust functions over the FFI. It can convert a Rust `Future`/`async fn` to and from foreign native futures (`async`/`await` in Python/Swift, `suspend fun` in Kotlin etc.)
+UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust `Future`/`async fn` to and from foreign native futures (`async`/`await` in Python/Swift, `suspend fun` in Kotlin etc.)
 
 Check out the [examples](https://github.com/mozilla/uniffi-rs/tree/main/examples/futures) or the more terse and thorough [fixtures](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures).
 
-Note that currently async functions are only supported by proc-macros, but UDL would be fairly simple enhancement.
+Note that currently async functions are only supported by proc-macros, if you require UDL support please file a bug.
 
 ## Example
 
-This is the shortest "async sleep()" I could come up with!
+This is a short "async sleep()" example:
 ```Rust
 use std::time::Duration;
 use async_std::future::{timeout, pending};
@@ -36,9 +36,9 @@ if __name__ == '__main__':
 
 This code uses `asyncio` to drive the future to completion, while our exposed function is used with `await`.
 
-In Rust `Future` terminology, this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's `asyncio`. There's no requirement for a Rust event loop.
+In Rust `Future` terminology this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's `asyncio`. There's no requirement for a Rust event loop.
 
-There are [some great rustdoc docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that's well worth a read.
+There are [some great API docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that are well worth a read.
 
 See the [foreign-executor fixture](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor) for more implementation details.
 
@@ -46,7 +46,7 @@ See the [foreign-executor fixture](https://github.com/mozilla/uniffi-rs/tree/mai
 
 As [described in the documentation](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html),
 UniFFI generates code which uses callbacks from Rust futures back into that foreign "executor" to drive them to completion.
-Fortunately, each of the bindings and Rust have consistent models, so the discussion below is Python, but it's almost exactly the same in Kotlin and Swift.
+Fortunately, each of the bindings and Rust have similar models, so the discussion below is Python, but it's almost exactly the same in Kotlin and Swift.
 
 In the above example, the generated `say_after` function looks something like:
 
@@ -133,6 +133,5 @@ pub extern "C" fn _uniffi_call_say_after(
     );
     helper.wake();
     Ok(())
-};
-
+}
 ```
