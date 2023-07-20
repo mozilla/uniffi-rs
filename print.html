@@ -679,7 +679,7 @@ impl TodoList {
         }
     }
 
-    fn add_item(&amp;mut self, todo: String) {
+    fn add_item(&amp;self, todo: String) {
         self.items.write().unwrap().push(todo);
     }
 
