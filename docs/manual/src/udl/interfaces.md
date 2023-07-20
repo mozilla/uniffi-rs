@@ -18,7 +18,7 @@ impl TodoList {
         }
     }
 
-    fn add_item(&mut self, todo: String) {
+    fn add_item(&self, todo: String) {
         self.items.write().unwrap().push(todo);
     }
 
