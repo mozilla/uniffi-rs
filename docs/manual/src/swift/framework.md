@@ -11,7 +11,8 @@ Overall, you need:
 
 ## Compile Rust crate using `cargo-xcode`
 
-First, we need to install `cargo-xcode`. This tool can help us generate Xcode project files and compile them into static libraries.
+First, you need to install `cargo-xcode`. This tool generates Xcode project files to compile your 
+Rust porject into a static library.
 
 Run the command `cargo install cargo-xcode` to install.
 
