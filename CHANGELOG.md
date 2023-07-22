@@ -18,6 +18,9 @@
 
 - Crates can now use proc-macros without UDL files to export their interface.  See the "Procedural Macros: Attributes and Derives" manual section for details.
 
+- [Custom Types](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-unifficustomtype-derive) are now supported for proc-macros, including a very
+  low-friction way of exposing types implementing the new-type idiom.
+
 ## v0.24.2 (backend crates: v0.24.2) - (_2023-07-25_)
 
 [All changes in v0.24.2](https://github.com/mozilla/uniffi-rs/compare/v0.24.1...v0.24.2).

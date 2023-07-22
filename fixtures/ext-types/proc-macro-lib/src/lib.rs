@@ -136,6 +136,54 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
 }
 
+// Some custom types via macros.
+// Another guid - here we use a regular struct.
+#[derive(uniffi::CustomType)]
+#[uniffi(builtin=String)]
+pub struct Uuid {
+    val: String,
+}
+
+impl UniffiCustomTypeConverter for Uuid {
+    type Builtin = String;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(Uuid { val })
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.val
+    }
+}
+
+// A custom type using the "newtype" idiom.
+// Uniffi can generate the UniffiCustomTypeConverter for us.
+#[derive(uniffi::CustomType)]
+#[uniffi(newtype=i64)]
+pub struct NewtypeHandle(i64);
+
+#[uniffi::export]
+fn get_uuid(u: Option<Uuid>) -> Uuid {
+    u.unwrap_or_else(|| Uuid {
+        val: "new".to_string(),
+    })
+}
+
+#[uniffi::export]
+fn get_uuid_value(u: Uuid) -> String {
+    u.val
+}
+
+#[uniffi::export]
+fn get_newtype_handle(u: Option<NewtypeHandle>) -> NewtypeHandle {
+    u.unwrap_or(NewtypeHandle(42))
+}
+
+#[uniffi::export]
+fn get_newtype_handle_value(u: NewtypeHandle) -> i64 {
+    u.0
+}
+
 #[uniffi::export]
 fn get_guid_procmacro(g: Option<Guid>) -> Guid {
     ext_types_guid::get_guid(g)

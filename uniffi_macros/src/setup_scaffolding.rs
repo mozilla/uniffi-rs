@@ -113,5 +113,12 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             };
         }
 
+        // A trait that's in our crate for our external wrapped types to implement.
+        #[allow(unused)]
+        trait UniffiCustomTypeConverter {
+            type Builtin;
+            fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> where Self: Sized;
+            fn from_custom(obj: Self) -> Self::Builtin;
+        }
     })
 }

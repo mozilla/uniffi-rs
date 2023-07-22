@@ -17,6 +17,7 @@ use syn::{
     parse_macro_input, Ident, LitStr, Token,
 };
 
+mod custom;
 mod enum_;
 mod error;
 mod export;
@@ -28,8 +29,8 @@ mod test;
 mod util;
 
 use self::{
-    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
-    record::expand_record,
+    custom::expand_custom, enum_::expand_enum, error::expand_error, export::expand_export,
+    object::expand_object, record::expand_record,
 };
 
 /// A macro to build testcases for a component's generated bindings.
@@ -114,6 +115,28 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
     expand_error(parse_macro_input!(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
+}
+
+#[proc_macro_derive(CustomType, attributes(uniffi))]
+pub fn derive_custom_type(input: TokenStream) -> TokenStream {
+    expand_custom(parse_macro_input!(input))
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// Generate the FfiConverter implementation for an Custom Type
+///
+/// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
+/// only outputs the `FfiConverter` implementation, not the item.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn ffi_converter_custom_type(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    custom::expand_ffi_converter_custom_type(
+        syn::parse_macro_input!(attrs),
+        syn::parse_macro_input!(input),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
 }
 
 /// Generate the FfiConverter implementation for a Record

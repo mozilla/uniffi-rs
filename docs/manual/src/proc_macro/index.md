@@ -185,6 +185,45 @@ impl Foo {
 }
 ```
 
+## The `uniffi::CustomType` derive
+
+The `CustomType` derive registers a type as a custom type and can be used on any struct that wants to be exposed
+as a builtin type. You must specify the builtin type using either the `builtin` or `newtype` attribute.
+
+If you specify the `builtin` attribute, you must manually implement the `UniffiCustomTypeConverter` for your
+type as described in the [UDL documentation for Custom Types](../udl/custom_types.md). However, if you
+specify the `newtype` attribute UniFFI will generate the implementation of this trait assuming the type
+implements the "new type" idiom (ie, a tuple struct with the builtin as the only element).
+
+For example, this type does not use the "new type" idiom, so must specify the complete implementation.
+```rust
+#[derive(uniffi::CustomType)]
+#[uniffi(builtin=String)]
+pub struct Uuid {
+    val: String,
+}
+
+impl UniffiCustomTypeConverter for Uuid {
+    type Builtin = String;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(Uuid { val })
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.val
+    }
+}
+```
+
+Whereas this type uses the "new type" idiom, so `UniffiCustomTypeConverter` is automatically derived
+
+```rust
+#[derive(uniffi::CustomType)]
+#[uniffi(newtype=i64)]
+pub struct NewtypeHandle(i64);
+```
+
 ## The `uniffi::Error` derive
 
 The `Error` derive registers a type as an error and can be used on any enum that the `Enum` derive also accepts.
