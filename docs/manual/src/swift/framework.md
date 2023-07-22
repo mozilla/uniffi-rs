@@ -48,7 +48,7 @@ In the iOS Framework's `Build Rules`, add a `Run Script` to handle `*.udl` and g
   * Use something like the following as the custom script:
     * `$HOME/.cargo/bin/uniffi-bindgen-cli generate $INPUT_FILE_PATH --language swift --out-dir $INPUT_FILE_DIR/Generated`
 
-  * Add both the .swift file and the generated bridging header as output files:
+  * Add both the Swift file and the generated bridging header as output files:
     * `$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE).swift`
     * `$(INPUT_FILE_DIR)/Generated/$(INPUT_FILE_BASE)FFI.h`
 
