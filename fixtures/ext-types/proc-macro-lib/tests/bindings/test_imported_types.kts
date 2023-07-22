@@ -36,3 +36,6 @@ assert(getMaybeUniffiOneEnum(uoe)!! == uoe)
 assert(getMaybeUniffiOneEnum(null) == null)
 assert(getUniffiOneEnums(listOf(uoe)) == listOf(uoe))
 assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
+
+val g = getGuidProcmacro(null)
+assert(g == getGuidProcmacro(g))

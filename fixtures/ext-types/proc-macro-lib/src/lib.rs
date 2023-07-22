@@ -136,4 +136,9 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
 }
 
+#[uniffi::export]
+fn get_guid_procmacro(g: Option<Guid>) -> Guid {
+    ext_types_guid::get_guid(g)
+}
+
 uniffi::include_scaffolding!("ext-types-lib");
