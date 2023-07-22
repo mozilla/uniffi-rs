@@ -64,7 +64,7 @@ Calling this function from foreign language code involves the following steps:
 | `duration` | `RustBuffer` struct pointing to a u64 representing seconds and a u32 representing nanoseconds |
 | `T?` | `RustBuffer` struct pointing to serialized bytes |
 | `sequence<T>` | `RustBuffer` struct pointing to serialized bytes |
-| `record<DOMString, T>` | `RustBuffer` struct pointing to serialized bytes |
+| `record<string, T>` | `RustBuffer` struct pointing to serialized bytes |
 | `enum` and `[Enum] interface` | `RustBuffer` struct pointing to serialized bytes |
 | `dictionary` | `RustBuffer` struct pointing to serialized bytes |
 | `interface` | `void*` opaque pointer to object on the heap |
@@ -86,7 +86,7 @@ The details of this format are internal only and may change between versions of 
 | `string` | Serialized `i32` length followed by utf-8 string bytes; no trailing null |
 | `T?` | If null, serialized `boolean` false; if non-null, serialized `boolean` true followed by serialized `T` |
 | `sequence<T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `T` |
-| `record<DOMString, T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `string` followed by a serialized `T` |
+| `record<string, T>` | Serialized `i32` item count followed by serialized items; each item is a serialized `string` followed by a serialized `T` |
 | `enum` and `[Enum] interface` | Serialized `i32` indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order |
 | `dictionary` | The serialized value of each field, in declaration order |
 | `interface` | Fixed-width 8-byte unsigned integer encoding a pointer to the object on the heap |
