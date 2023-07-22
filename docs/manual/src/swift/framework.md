@@ -25,7 +25,13 @@ We need to modify the `Cargo.toml` file and add crate-type = ["lib", "staticlib"
 crate-type = ["lib", "staticlib"]
 ```
 
-Then run `cargo xcode`, which will generate `<rust-project-name>.xcodeproj` file.
+To generate the project run:
+
+```
+cargo xcode
+```
+
+This will generate a `<rust-project-name>.xcodeproj` file.
 
 ## Create a Framework and add dependencies
 
