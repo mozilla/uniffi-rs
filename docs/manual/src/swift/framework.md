@@ -35,11 +35,9 @@ This will generate a `<rust-project-name>.xcodeproj` file.
 
 ## Create a Framework and add dependencies
 
-Create a new iOS Framework project and drag the `<rust-project-name>.xcodeproj` mentioned above into it.
-
-Add `<rust-project-name>-staticlib` to `Build Phases`-`Target Dependencies` in the iOS Framework.
-
-Add `lib<rust-project-name>_static.a` to the `Link Binary With Libraries` in iOS Framework.
+* Create a new iOS Framework project and drag the `<rust-project-name>.xcodeproj` mentioned above into it.
+* Add `<rust-project-name>-staticlib` to `Build Phases - Target Dependencies` in the iOS Framework.
+* Add `lib<rust-project-name>_static.a` to the `Link Binary With Libraries` in your iOS Framework project.
 
 ## Generate bindings
 
