@@ -77,9 +77,9 @@ FOUNDATION_EXPORT const unsigned char <framework-name>VersionString[];
 
 For this to work without complaint from Xcode, you also need to add the generated header file as a Public header in the "Headers" build phase of your project (which is why it's useful to generate this file somewhere in your source tree, rather than in a temporary build directory).
 
-## Examples
+## Use the framework in an application
 
-After completing the above steps, you can use your Framework by dragging it into your project and importing `<framework-name>`.
+After completing the above steps, you can now use your Framework by dragging it into your project and importing `<framework-name>`.
 
 It also provides an [ios-with-framework](examples/app/ios-with-framework/) that you can check out under examples/app/ios-with-framework/.
 
