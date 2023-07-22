@@ -20,11 +20,6 @@ cargo install cargo-xcode
 
 We need to modify the `Cargo.toml` file and add crate-type = ["lib", "staticlib"] in the [lib] section. Here you can add other types according to your needs, but only `staticlib` and `cdylib` can be recognized by `cargo-xcode`.
 
-```toml
-[lib]
-crate-type = ["lib", "staticlib"]
-```
-
 To generate the project run:
 
 ```
