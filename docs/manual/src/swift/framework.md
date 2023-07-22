@@ -1,4 +1,4 @@
-# Wrapped in Framework
+# Rust project as individual iOS framework
 
 Wrap the Rust crate into an iOS Framework, allowing separate modifications to the related Rust code and UniFFI-generated program configurations for easier integration management and usage in the future.
 
