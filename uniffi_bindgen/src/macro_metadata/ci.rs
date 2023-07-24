@@ -24,7 +24,7 @@ pub fn add_to_ci(
         }
         if group.namespace.name != iface.namespace() {
             let crate_name = group.namespace.crate_name;
-            bail!("Found metadata items from crate `{crate_name}`.  Use the `--crate` to generate bindings for multiple crates")
+            bail!("Found metadata items from crate `{crate_name}`.  Use the `--library` to generate bindings for multiple crates")
         }
         add_group_to_ci(iface, group)?;
     }
