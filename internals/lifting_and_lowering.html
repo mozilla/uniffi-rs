@@ -216,7 +216,7 @@ from the returned byte buffer into a language-native list of integers.</li>
 <tr><td><code>duration</code></td><td><code>RustBuffer</code> struct pointing to a u64 representing seconds and a u32 representing nanoseconds</td></tr>
 <tr><td><code>T?</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
-<tr><td><code>record&lt;DOMString, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
+<tr><td><code>record&lt;string, T&gt;</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>enum</code> and <code>[Enum] interface</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>dictionary</code></td><td><code>RustBuffer</code> struct pointing to serialized bytes</td></tr>
 <tr><td><code>interface</code></td><td><code>void*</code> opaque pointer to object on the heap</td></tr>
@@ -234,7 +234,7 @@ The details of this format are internal only and may change between versions of 
 <tr><td><code>string</code></td><td>Serialized <code>i32</code> length followed by utf-8 string bytes; no trailing null</td></tr>
 <tr><td><code>T?</code></td><td>If null, serialized <code>boolean</code> false; if non-null, serialized <code>boolean</code> true followed by serialized <code>T</code></td></tr>
 <tr><td><code>sequence&lt;T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>T</code></td></tr>
-<tr><td><code>record&lt;DOMString, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
+<tr><td><code>record&lt;string, T&gt;</code></td><td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td></tr>
 <tr><td><code>enum</code> and <code>[Enum] interface</code></td><td>Serialized <code>i32</code> indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order</td></tr>
 <tr><td><code>dictionary</code></td><td>The serialized value of each field, in declaration order</td></tr>
 <tr><td><code>interface</code></td><td>Fixed-width 8-byte unsigned integer encoding a pointer to the object on the heap</td></tr>
