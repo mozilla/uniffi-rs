@@ -68,31 +68,7 @@ mod filters {
         })
     }
 
-    pub fn type_ffi(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(match type_ {
-            FfiType::Int8 => "i8".into(),
-            FfiType::UInt8 => "u8".into(),
-            FfiType::Int16 => "i16".into(),
-            FfiType::UInt16 => "u16".into(),
-            FfiType::Int32 => "i32".into(),
-            FfiType::UInt32 => "u32".into(),
-            FfiType::Int64 => "i64".into(),
-            FfiType::UInt64 => "u64".into(),
-            FfiType::Float32 => "f32".into(),
-            FfiType::Float64 => "f64".into(),
-            FfiType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
-            FfiType::RustBuffer(_) => "::uniffi::RustBuffer".into(),
-            FfiType::ForeignBytes => "::uniffi::ForeignBytes".into(),
-            FfiType::ForeignCallback => "::uniffi::ForeignCallback".into(),
-            FfiType::RustFutureHandle => "::uniffi::RustFutureHandle".into(),
-            FfiType::RustFutureContinuationCallback => "::uniffi::RustFutureContinuation".into(),
-            FfiType::RustFutureContinuationData => "*const ()".into(),
-            FfiType::ForeignExecutorHandle => "::uniffi::ForeignExecutorHandle".into(),
-            FfiType::ForeignExecutorCallback => "::uniffi::ForeignExecutorCallback".into(),
-        })
-    }
-
-    // Map a type a ffi converter trait impl
+    // Map a type to Rust code that specifies the FfiConverter implementation.
     //
     // This outputs something like `<MyStruct as Lift<crate::UniFfiTag>>`
     pub fn ffi_trait(type_: &Type, trait_name: &str) -> Result<String, askama::Error> {

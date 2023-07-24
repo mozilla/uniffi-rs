@@ -38,6 +38,7 @@ pub mod codes {
     pub const UDL_FILE: u8 = 8;
     pub const CALLBACK_INTERFACE: u8 = 9;
     pub const TRAIT_METHOD: u8 = 10;
+    pub const UNIFFI_TRAIT: u8 = 11;
     pub const UNKNOWN: u8 = 255;
 
     // Type codes

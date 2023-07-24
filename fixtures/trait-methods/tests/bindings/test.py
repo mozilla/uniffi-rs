@@ -29,5 +29,29 @@ class TestTraitMethods(unittest.TestCase):
         d[m] = "m"
         self.assertTrue(m in d)
 
+class TestProcmacroTraitMethods(unittest.TestCase):
+    def test_str(self):
+        m = ProcTraitMethods("yo")
+        self.assertEqual(str(m), "ProcTraitMethods(yo)")
+
+    def test_repr(self):
+        m = ProcTraitMethods("yo")
+        self.assertEqual(repr(m), 'ProcTraitMethods { val: "yo" }')
+
+    def test_eq(self):
+        m = ProcTraitMethods("yo")
+        self.assertEqual(m, ProcTraitMethods("yo"))
+        self.assertNotEqual(m, ProcTraitMethods("yoyo"))
+
+    def test_eq(self):
+        m = ProcTraitMethods("yo")
+        self.assertNotEqual(m, 17)
+
+    def test_hash(self):
+        d = {}
+        m = ProcTraitMethods("m")
+        d[m] = "m"
+        self.assertTrue(m in d)
+
 if __name__=='__main__':
     unittest.main()

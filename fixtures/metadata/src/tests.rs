@@ -66,6 +66,12 @@ mod calc {
     pub struct Calculator {}
 }
 
+mod uniffi_traits {
+    #[derive(Debug, PartialEq, Eq, uniffi::Object)]
+    #[uniffi::export(Debug, Eq)]
+    pub struct Special {}
+}
+
 #[uniffi::export(callback_interface)]
 pub trait Logger {
     fn log(&self, message: String);
@@ -75,6 +81,7 @@ pub use calc::Calculator;
 pub use error::{ComplexError, FlatError};
 pub use person::Person;
 pub use state::State;
+pub use uniffi_traits::Special;
 pub use weapon::Weapon;
 
 mod test_type_ids {
@@ -308,9 +315,26 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
                 imp: ObjectImpl::Struct,
-                uniffi_traits: vec![],
             },
         );
+    }
+
+    #[test]
+    fn test_uniffi_traits() {
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_DEBUG).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
+                if fmt.module_path == "uniffi_fixture_metadata"
+                   && fmt.self_name == "Special"
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_EQ).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
+                if eq.module_path == "uniffi_fixture_metadata"
+                   && ne.module_path == "uniffi_fixture_metadata"
+                   && eq.self_name == "Special"
+                   && ne.self_name == "Special"
+        ));
     }
 }
 

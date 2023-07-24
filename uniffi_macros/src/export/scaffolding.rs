@@ -186,7 +186,7 @@ impl ScaffoldingBits {
 ///
 /// `pre_fn_call` is the statements that we should execute before the rust call
 /// `rust_fn` is the Rust function to call.
-fn gen_ffi_function(
+pub(super) fn gen_ffi_function(
     sig: &FnSignature,
     arguments: &ExportAttributeArguments,
     udl_mode: bool,

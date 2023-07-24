@@ -187,7 +187,7 @@ impl FnSignature {
     }
 
     /// Generate metadata items for this function
-    pub(crate) fn metadata_items(&self) -> syn::Result<TokenStream> {
+    pub(crate) fn metadata_expr(&self) -> syn::Result<TokenStream> {
         let Self {
             name,
             return_ty,
@@ -204,18 +204,67 @@ impl FnSignature {
         let arg_metadata_calls = self.args.iter().map(NamedArg::arg_metadata);
 
         match &self.kind {
-            FnKind::Function => Ok(create_metadata_items(
-                "func",
-                name,
-                quote! {
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
+            FnKind::Function => Ok(quote! {
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
+                    .concat_str(#mod_path)
+                    .concat_str(#name)
+                    .concat_bool(#is_async)
+                    .concat_value(#args_len)
+                    #(#arg_metadata_calls)*
+                    .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+            }),
+
+            FnKind::Method { self_ident } => {
+                let object_name = ident_to_string(self_ident);
+                Ok(quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
+                        .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                },
+                })
+            }
+
+            FnKind::TraitMethod { self_ident, index } => {
+                let object_name = ident_to_string(self_ident);
+                Ok(quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_u32(#index)
+                        .concat_str(#name)
+                        .concat_bool(#is_async)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                })
+            }
+
+            FnKind::Constructor { self_ident } => {
+                let object_name = ident_to_string(self_ident);
+                Ok(quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_str(#name)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                })
+            }
+        }
+    }
+
+    pub(crate) fn metadata_items(&self) -> syn::Result<TokenStream> {
+        let Self { name, .. } = &self;
+        match &self.kind {
+            FnKind::Function => Ok(create_metadata_items(
+                "func",
+                name,
+                self.metadata_expr()?,
                 Some(self.checksum_symbol_name()),
             )),
 
@@ -224,36 +273,17 @@ impl FnSignature {
                 Ok(create_metadata_items(
                     "method",
                     &format!("{object_name}_{name}"),
-                    quote! {
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
-                            .concat_str(#mod_path)
-                            .concat_str(#object_name)
-                            .concat_str(#name)
-                            .concat_bool(#is_async)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                    },
+                    self.metadata_expr()?,
                     Some(self.checksum_symbol_name()),
                 ))
             }
 
-            FnKind::TraitMethod { self_ident, index } => {
+            FnKind::TraitMethod { self_ident, .. } => {
                 let object_name = ident_to_string(self_ident);
                 Ok(create_metadata_items(
                     "method",
                     &format!("{object_name}_{name}"),
-                    quote! {
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
-                            .concat_str(#mod_path)
-                            .concat_str(#object_name)
-                            .concat_u32(#index)
-                            .concat_str(#name)
-                            .concat_bool(#is_async)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                    },
+                    self.metadata_expr()?,
                     Some(self.checksum_symbol_name()),
                 ))
             }
@@ -263,15 +293,7 @@ impl FnSignature {
                 Ok(create_metadata_items(
                     "constructor",
                     &format!("{object_name}_{name}"),
-                    quote! {
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
-                            .concat_str(#mod_path)
-                            .concat_str(#object_name)
-                            .concat_str(#name)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                    },
+                    self.metadata_expr()?,
                     Some(self.checksum_symbol_name()),
                 ))
             }

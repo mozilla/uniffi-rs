@@ -15,6 +15,7 @@
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.3...HEAD).
 
 ### What's new
+- Proc-macros can now expose standard Rust traits (eg, `Display`, `Eq`, etc)
 - Fixed issues when trying to combine UDL and procmacros in the same crate when the "namespace" is
   different from the crate name. This meant that the "ffi namespace" has changed to consistently be
   the crate name, rather than either the crate name or the namespace name depending on whether the

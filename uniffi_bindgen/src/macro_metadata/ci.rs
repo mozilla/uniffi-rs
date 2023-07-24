@@ -109,6 +109,9 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             })?;
             iface.add_object_meta(meta)?;
         }
+        Metadata::UniffiTrait(meta) => {
+            iface.add_uniffitrait_meta(meta)?;
+        }
         Metadata::CallbackInterface(meta) => {
             iface.types.add_known_type(&Type::CallbackInterface {
                 module_path: meta.module_path.clone(),

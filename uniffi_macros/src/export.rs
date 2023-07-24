@@ -10,10 +10,13 @@ mod attributes;
 mod callback_interface;
 mod item;
 mod scaffolding;
+mod utrait;
 
 use self::{
     item::{ExportItem, ImplItem},
-    scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
+    scaffolding::{
+        gen_constructor_scaffolding, gen_ffi_function, gen_fn_scaffolding, gen_method_scaffolding,
+    },
 };
 use crate::{
     object::interface_meta_static_var,
@@ -168,6 +171,13 @@ pub(crate) fn expand_export(
 
                 #(#metadata_items)*
             })
+        }
+        ExportItem::Struct {
+            self_ident,
+            uniffi_traits,
+        } => {
+            assert!(!udl_mode);
+            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits)
         }
     }
 }

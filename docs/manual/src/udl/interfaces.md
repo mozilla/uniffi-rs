@@ -169,6 +169,14 @@ struct TodoList {
    ...
 }
 ```
+(or using proc-macros)
+```rust
+#[derive(Debug, uniffi::Object)]
+#[uniffi::export(Debug)]
+struct TodoList {
+   ...
+}
+```
 
 This will cause the Python bindings to generate a `__repr__` method that returns the value implemented by the `Debug` trait.
 Not all bindings support generating special methods, so they may be ignored.
