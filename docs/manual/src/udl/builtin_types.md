@@ -15,7 +15,7 @@ The following built-in types can be passed as arguments/returned by Rust methods
 | `&T`                 | `[ByRef] T`            | This works for `&str` and `&[T]`                                |
 | `Option<T>`          | `T?`                   |                                                                 |
 | `Vec<T>`             | `sequence<T>`          |                                                                 |
-| `HashMap<String, T>` | `record<DOMString, T>` | Only string keys are supported                                  |
+| `HashMap<String, T>` | `record<string, T>`    | Only string keys are supported                                  |
 | `()`                 | `void`                 | Empty return                                                    |
 | `Result<T, E>`       | N/A                    | See [Errors](./errors.md) section                               |
 

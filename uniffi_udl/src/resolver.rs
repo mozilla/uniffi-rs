@@ -133,7 +133,7 @@ impl TypeResolver for weedle::types::RecordKeyType<'_> {
         match self {
             Byte(_) | USV(_) => bail!(
                 "WebIDL Byte or USV string type not implemented ({self:?}); \
-                 consider using DOMString or string",
+                 consider using a string",
             ),
             DOM(_) => Ok(Type::String),
             NonAny(t) => t.resolve_type_expression(types),

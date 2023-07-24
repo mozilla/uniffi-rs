@@ -9,5 +9,5 @@ dictionary Values {
 };
 
 namespace regression_test_i1015 {
-  record<DOMString, sequence<Values>>? test();
+  record<string, sequence<Values>>? test();
 };
