@@ -16,6 +16,8 @@ pub use group::{group_metadata, MetadataGroup};
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
 
+mod metadata;
+
 /// Similar to std::hash::Hash.
 ///
 /// Implementations of this trait are expected to update the hasher state in
