@@ -18,6 +18,14 @@
 
 - Crates can now use proc-macros without UDL files to export their interface.  See the "Procedural Macros: Attributes and Derives" manual section for details.
 
+## v0.24.2 (backend crates: v0.24.2) - (_2023-07-25_)
+
+[All changes in v0.24.2](https://github.com/mozilla/uniffi-rs/compare/v0.24.1...v0.24.2).
+
+### What's changed?
+
+- Inline the metadata module in `uniffi_meta` to avoid a dependency of `uniffi_core` to avoid hitting an upstream bug during link time ([#1666](https://github.com/mozilla/uniffi-rs/pull/1666))
+
 ## v0.24.1 (backend crates: v0.24.1) - (_2023-06-23_)
 
 [All changes in v0.24.1](https://github.com/mozilla/uniffi-rs/compare/v0.24.0...v0.24.1).
