@@ -16,7 +16,8 @@ path = "src/bin.rs"
 
 [dependencies]
 uniffi = { path = "../../uniffi", version = "0.24", features = ["tokio", "cli"] }
-tokio = { version = "1.24.1", features = ["time"] }
+tokio = { version = "1.24.1", features = ["sync", "time"] }
+once_cell = "1.18.0"
 
 [build-dependencies]
 uniffi = { path = "../../uniffi", version = "0.24", features = ["build"] }

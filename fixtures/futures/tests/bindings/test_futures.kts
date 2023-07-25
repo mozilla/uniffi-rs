@@ -203,3 +203,17 @@ runBlocking {
 
     assertApproximateTime(time, 500, "broken sleep")
 }
+
+// Test cancellation - broken!
+runBlocking {
+    val job = launch {
+        useSharedResource()
+    }
+
+    delay(50L)
+    job.cancel()
+
+    withTimeout(1.seconds) {
+        useSharedResource()
+    }
+}

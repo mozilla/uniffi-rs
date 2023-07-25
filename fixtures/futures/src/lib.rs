@@ -276,4 +276,16 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
     .await;
 }
 
+use once_cell::sync::Lazy;
+use tokio::sync::Mutex as TokioMutex;
+
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn use_shared_resource() {
+    static MUTEX: Lazy<TokioMutex<()>> = Lazy::new(|| TokioMutex::new(()));
+    let guard = dbg!(&*MUTEX).lock().await;
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    drop(guard);
+    dbg!();
+}
+
 uniffi::include_scaffolding!("uniffi_futures");
