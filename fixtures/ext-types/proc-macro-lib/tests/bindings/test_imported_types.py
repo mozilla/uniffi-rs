@@ -47,6 +47,9 @@ class TestIt(unittest.TestCase):
         self.assertEqual([e], get_uniffi_one_enums([e]))
         self.assertEqual([e, None], get_maybe_uniffi_one_enums([e, None]))
 
+    def test_get_guid_procmacro(self):
+        g = get_guid_procmacro(None)
+        self.assertEqual(g, get_guid_procmacro(g))
 
 if __name__=='__main__':
     unittest.main()

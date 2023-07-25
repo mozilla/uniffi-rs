@@ -34,3 +34,6 @@ assert(getMaybeUniffiOneEnum(e: UniffiOneEnum.one)! == UniffiOneEnum.one)
 assert(getMaybeUniffiOneEnum(e: nil) == nil)
 assert(getUniffiOneEnums(es: [UniffiOneEnum.one]) == [UniffiOneEnum.one])
 assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.one, nil])
+
+let g = getGuidProcmacro(g: nil)
+assert(g == getGuidProcmacro(g: g))
