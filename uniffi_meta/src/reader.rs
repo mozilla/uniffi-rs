@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::metadata::{checksum_metadata, codes};
 use crate::*;
 use anyhow::{bail, ensure, Context, Result};
-use uniffi_core::metadata::{checksum_metadata, codes};
 
 pub fn read_metadata(data: &[u8]) -> Result<Metadata> {
     MetadataReader::new(data).read_metadata()
