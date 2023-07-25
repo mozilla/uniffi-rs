@@ -67,7 +67,7 @@ FOUNDATION_EXPORT const unsigned char <framework-name>VersionString[];
 #import "Generated/<rust-project-name>FFI.h"
 ```
 
-For this to work without complaint from Xcode, you also need to add the generated header file as a Public header in the "Headers" build phase of your project (which is why it's useful to generate this file somewhere in your source tree, rather than in a temporary build directory).
+As a last step add the generated header file as a Public header in the "Headers" build phase of your project.
 
 ## Use the framework in an application
 
