@@ -159,7 +159,7 @@
         }
         <span class="kw">if </span>group.namespace.name != iface.namespace() {
             <span class="kw">let </span>crate_name = group.namespace.crate_name;
-            <span class="macro">bail!</span>(<span class="string">&quot;Found metadata items from crate `{crate_name}`.  Use the `--crate` to generate bindings for multiple crates&quot;</span>)
+            <span class="macro">bail!</span>(<span class="string">&quot;Found metadata items from crate `{crate_name}`.  Use the `--library` to generate bindings for multiple crates&quot;</span>)
         }
         add_group_to_ci(iface, group)<span class="question-mark">?</span>;
     }
