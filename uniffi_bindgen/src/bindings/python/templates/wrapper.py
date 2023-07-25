@@ -37,8 +37,7 @@ _DEFAULT = object()
 {% include "PointerManager.py" %}
 {% include "RustBufferHelper.py" %}
 
-# Contains loading, initialization code,
-# and the FFI Function declarations in a com.sun.jna.Library.
+# Contains loading, initialization code, and the FFI Function declarations.
 {% include "NamespaceLibraryTemplate.py" %}
 
 # Public interface members begin here.
