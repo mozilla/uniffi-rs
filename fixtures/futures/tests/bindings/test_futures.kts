@@ -210,10 +210,10 @@ runBlocking {
         useSharedResource()
     }
 
-    delay(50L)
+    delay(50)
     job.cancel()
 
-    withTimeout(1.seconds) {
+    withTimeout(1000) {
         useSharedResource()
     }
 }
