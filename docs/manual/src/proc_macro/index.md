@@ -55,9 +55,9 @@ struct MyObject {
 #[uniffi::export]
 impl MyObject {
     // Constructors need to be annotated as such.
-    // As of right now, they must return `Arc<Self>`, this might change.
-    // If the constructor is named `new`, it is treated as the primary
-    // constructor, so in most languages this is invoked with `MyObject()`.
+    // The return value can be either `Self` or `Arc<Self>`
+    // It is treated as the primary constructor, so in most languages this is invoked with
+    `MyObject()`.
     #[uniffi::constructor]
     fn new(argument: String) -> Arc<Self> {
         // ...
@@ -75,7 +75,7 @@ impl MyObject {
         // ...
     }
 
-    // `Arc<Self>` is also supported
+    // Returning objects is also supported, either as `Self` or `Arc<Self>`
     fn method_b(self: Arc<Self>) {
         // ...
     }
