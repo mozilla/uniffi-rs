@@ -232,4 +232,17 @@ Task {
 	counter.leave()
 }
 
+// Test scheduling
+counter.enter()
+Task {
+	let tester = SchedulingTester(backgroundExecutor: UniFfiForeignExecutor(priority: TaskPriority.background))
+	let result = await tester.runCalculation()
+	assert(result == 42)
+	assert(tester.getCounterValue() == 0)
+	tester.scheduleIncrement()
+	let _ = await sleep(ms: 100)
+	assert(tester.getCounterValue() == 1)
+	counter.leave()
+}
+
 counter.wait()

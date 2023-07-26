@@ -5,7 +5,10 @@
 use std::{
     future::Future,
     pin::Pin,
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{
+        atomic::{AtomicI32, Ordering},
+        Arc, Mutex, MutexGuard,
+    },
     task::{Context, Poll, Waker},
     thread,
     time::Duration,
@@ -274,6 +277,53 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
         Duration::from_millis(fail_after.into()),
     )
     .await;
+}
+
+#[derive(uniffi::Object)]
+/// Test scheduling with a foreign executor
+pub struct SchedulingTester {
+    background_executor: uniffi::ForeignExecutor,
+    counter: AtomicI32,
+}
+
+#[uniffi::export]
+impl SchedulingTester {
+    #[uniffi::constructor]
+    pub fn new(background_executor: uniffi::ForeignExecutor) -> Arc<Self> {
+        Arc::new(Self {
+            background_executor,
+            counter: AtomicI32::new(0),
+        })
+    }
+
+    /// Simulate a long-running calculation that's scheduled on a background thread via the foreign
+    /// executor.
+    ///
+    /// This tests the run() method which schedules a task to run "fire-and-forget" style and
+    /// returns a Future for the result
+    pub async fn run_calculation(self: Arc<Self>) -> i32 {
+        uniffi::run!(self.background_executor, move || self.do_calculation()).await
+    }
+
+    fn do_calculation(&self) -> i32 {
+        // Pretend this is code that would take a long time to execute and should be scheduled on a
+        // background thread
+        42
+    }
+
+    /// Schedule incrementing a counter value using the foreign executor
+    ///
+    /// This tests the schedule() method which schedules a task to run "fire-and-forget" style,
+    /// where we don't get the result back
+    pub fn schedule_increment(self: Arc<Self>) {
+        uniffi::schedule!(&self.background_executor, move || {
+            self.counter.fetch_add(1, Ordering::Relaxed);
+        })
+    }
+
+    pub fn get_counter_value(self: Arc<Self>) -> i32 {
+        self.counter.load(Ordering::Relaxed)
+    }
 }
 
 uniffi::include_scaffolding!("uniffi_futures");

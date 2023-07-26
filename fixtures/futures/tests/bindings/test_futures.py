@@ -1,4 +1,4 @@
-from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio, fallible_me, fallible_struct, MyError, MyRecord, new_my_record
+from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio, fallible_me, fallible_struct, MyError, MyRecord, new_my_record, SchedulingTester
 import unittest
 from datetime import datetime
 import asyncio
@@ -145,6 +145,18 @@ class TestFutures(unittest.TestCase):
             # Awaiting the task should result in a CancelledError.
             with self.assertRaises(asyncio.CancelledError):
                 await task
+
+        asyncio.run(test())
+
+    def test_scheduling(self):
+        async def test():
+            tester = SchedulingTester(asyncio.get_running_loop())
+            self.assertEqual(await tester.run_calculation(), 42)
+
+            self.assertEqual(tester.get_counter_value(), 0)
+            tester.schedule_increment()
+            await asyncio.sleep(0.1)
+            self.assertEqual(tester.get_counter_value(), 1)
 
         asyncio.run(test())
 

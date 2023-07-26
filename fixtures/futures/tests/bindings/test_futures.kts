@@ -203,3 +203,14 @@ runBlocking {
 
     assertApproximateTime(time, 500, "broken sleep")
 }
+
+// Test scheduling
+runBlocking {
+    val tester = SchedulingTester(CoroutineScope(Dispatchers.IO))
+    assert(tester.runCalculation() == 42)
+
+    assert(tester.getCounterValue() == 0)
+    tester.scheduleIncrement()
+    sleep(100U)
+    assert(tester.getCounterValue() == 1)
+}

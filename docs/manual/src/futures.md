@@ -36,11 +36,62 @@ if __name__ == '__main__':
 
 This code uses `asyncio` to drive the future to completion, while our exposed function is used with `await`.
 
-In Rust `Future` terminology this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's `asyncio`. There's no requirement for a Rust event loop.
-
 There are [some great API docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that are well worth a read.
 
-See the [foreign-executor fixture](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor) for more implementation details.
+## Foreign executors
+
+UniFFI futures are normally usually driven by a foreign executor - think event-loop, or async runtime.
+In the example above it's `asyncio`.
+There's no requirement for a Rust executor like tokio, although you can manually start one and use it alongside the foreign executor.
+Rust code can also use foreign executors to schedule tasks, for example to schedule work in a background thread.
+
+### Constructing ForeignExecutor instances in foreign languages
+
+- Kotlin uses a `CoroutineScope` (for example: `CoroutineScope(Dispatchers.IO)`)
+- Python uses an `EventLoop` (for example: `asyncio.get_running_loop()`)
+- Swift uses the UniFFI-defined class `UniFfiForeignExecutor` (for example: `UniFfiForeignExecutor(priority: TaskPriority.background)`)
+
+### Using ForeignExecutor instances in Rust
+
+Use the `uniffi::run!()` and `uniffi::schedule!()` macros to schedule closures to be run using a
+`ForeignExecutor`.
+
+  - `run()` schedules a closure to be run, returing a Future.
+  - `schedule()` does the same, without returning a Future -- useful for "fire-and-forget" style tasks.
+
+```rust
+/// UniFFI-exposed interface that loads data from a database
+#[derive(uniffi::Object)]
+struct DataStore {
+    background_executor: uniffi::ForeignExecutor,
+    db: MyDatabase,
+}
+
+#[uniffi::export]
+impl DataStore {
+    /// Construct a DataStore.
+    ///
+    /// background_executor is a ForeignExecutor that runs tasks in a background thread.
+    pub fn new(background_executor: uniffi::ForeignExecutor, db_path: String) -> Arc<Self> {
+        Arc::new(Self {
+            background_executor,
+            db: MyDatabase::new(db_path),
+        })
+    }
+
+    /// Load the entry using the background executor 
+    pub async fn load_entry(self: Arc<Self>) -> DataEntry {
+        // use run! to schedule the task
+        // Use a move closure to move the Arc<Self> to the background thread.
+        uniffi::run!(self.background_executor, move || self.db.load_entry())
+    }
+}
+
+```
+
+### Further reading
+
+For more info see the [foreignexecutor module documentation](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/foreignexecutor/index.html) and the [futures example crate](https://github.com/mozilla/uniffi-rs/tree/main/examples/futures).
 
 ## How it works
 

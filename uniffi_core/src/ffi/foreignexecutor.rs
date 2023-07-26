@@ -20,6 +20,7 @@ use std::{
 ///
 /// Foreign code can either use an actual pointer, or use an integer value casted to it.
 #[repr(transparent)]
+#[doc(hidden)]
 #[derive(Clone, Copy, Debug)]
 pub struct ForeignExecutorHandle(pub(crate) *const ());
 
@@ -39,6 +40,7 @@ unsafe impl Sync for ForeignExecutorHandle {}
 /// bindings should release the reference to the executor that was reserved for Rust.
 ///
 /// This callback can be invoked from any thread, including threads created by Rust.
+#[doc(hidden)]
 pub type ForeignExecutorCallback = extern "C" fn(
     executor: ForeignExecutorHandle,
     delay: u32,
@@ -51,6 +53,7 @@ pub type ForeignExecutorCallback = extern "C" fn(
 static_assertions::assert_eq_size!(usize, Option<RustTaskCallback>);
 
 /// Callback for a Rust task, this is what the foreign executor invokes
+#[doc(hidden)]
 pub type RustTaskCallback = extern "C" fn(*const ());
 
 static FOREIGN_EXECUTOR_CALLBACK: AtomicUsize = AtomicUsize::new(0);
@@ -58,6 +61,7 @@ static FOREIGN_EXECUTOR_CALLBACK: AtomicUsize = AtomicUsize::new(0);
 /// Set the global ForeignExecutorCallback.  This is called by the foreign bindings, normally
 /// during initialization.
 #[no_mangle]
+#[doc(hidden)]
 pub extern "C" fn uniffi_foreign_executor_callback_set(callback: ForeignExecutorCallback) {
     FOREIGN_EXECUTOR_CALLBACK.store(callback as usize, Ordering::Relaxed);
 }
@@ -72,6 +76,13 @@ fn get_foreign_executor_callback() -> ForeignExecutorCallback {
 }
 
 /// Schedule Rust calls using a foreign executor
+///
+/// ForeignExecutors are created by the foreign language and passed into Rust.  Different languages
+/// use different classes:
+/// - On Kotlin this is a CoroutineScope (e.g. `CoroutineScope(Dispatchers.IO)`)
+/// - On Python this is an asyncio.EventLoop (e.g. `asyncio.get_running_loop()`)
+/// - On Swift this is a UniFFI defined struct named `UniFfiForeignExecutor` that simply stores a
+///   task priority (e.g. `UniFfiForeignExecutor(priority: TaskPriority.background)`)
 #[derive(Debug)]
 pub struct ForeignExecutor {
     pub(crate) handle: ForeignExecutorHandle,
@@ -80,19 +91,6 @@ pub struct ForeignExecutor {
 impl ForeignExecutor {
     pub fn new(executor: ForeignExecutorHandle) -> Self {
         Self { handle: executor }
-    }
-
-    /// Schedule a closure to be run.
-    ///
-    /// This method can be used for "fire-and-forget" style calls, where the calling code doesn't
-    /// need to await the result.
-    ///
-    /// Closure requirements:
-    ///   - Send: since the closure will likely run on a different thread
-    ///   - 'static: since it runs at an arbitrary time, so all references need to be 'static
-    ///   - panic::UnwindSafe: if the closure panics, it should not corrupt any data
-    pub fn schedule<F: FnOnce() + Send + 'static + panic::UnwindSafe>(&self, delay: u32, task: F) {
-        ScheduledTask::new(task).schedule_callback(self.handle, delay)
     }
 
     /// Schedule a closure to be run and get a Future for the result
@@ -110,6 +108,124 @@ impl ForeignExecutor {
         future.schedule_callback(self.handle, delay);
         future
     }
+
+    /// Schedule a closure to be run.
+    ///
+    /// This method can be used for "fire-and-forget" style calls, where the calling code doesn't
+    /// need to await the result.
+    ///
+    /// Closure requirements:
+    ///   - Send: since the closure will likely run on a different thread
+    ///   - 'static: since it runs at an arbitrary time, so all references need to be 'static
+    ///   - panic::UnwindSafe: if the closure panics, it should not corrupt any data
+    pub fn schedule<F: FnOnce() + Send + 'static + panic::UnwindSafe>(&self, delay: u32, task: F) {
+        ScheduledTask::new(task).schedule_callback(self.handle, delay)
+    }
+}
+
+/// Schedule a closure to be run and get a Future for the result
+///
+/// ```ignore
+/// uniffi::run!(&my_struct.foreign_executor, {
+///    // run this code, scheduled by the foreign executor
+/// }).await
+///
+/// uniffi::run!(&my_struct.foreign_executor, 100, {
+///    // run this code after a 100ms delay
+/// }).await
+/// ```
+///
+/// - The first parameter is a [ForeignExecutor] ref.  Unlike [ForeignExecutor::run], this macro
+///   will release the borrow before constructing the move closure.  This supports a major use-case
+///   for foreign executors, scheduling a call using a foreign executor stored inside a UniFFI
+///   interface (See the [futures example](https://github.com/mozilla/uniffi-rs/blob/main/examples/futures/src/lib.rs).
+/// - The second, optional, parameter is a delay is milliseconds
+/// - The third parameter is a closure to run, which must be:
+///   - Send: since the closure will likely run on a different thread
+///   - 'static: since it runs at an arbitrary time, so all references need to be 'static
+///   - panic::UnwindSafe: if the closure panics, it should not corrupt any data
+#[macro_export]
+macro_rules! run {
+    ($executor:expr, $closure:expr) => {
+        $crate::run!($executor, 0, $closure)
+    };
+
+    ($executor:expr, $delay:expr, $closure:expr) => {{
+        use std::any::{Any, TypeId};
+        use std::borrow::Borrow;
+        use $crate::ForeignExecutor;
+        assert_eq!(
+            $executor.type_id(),
+            TypeId::of::<ForeignExecutor>(),
+            "First argument is not a &uniffi::ForeignExecutor"
+        );
+        unsafe {
+            // Use borrow() to try to coerce $executor to a ForeignExecutor ref.  This allows
+            // users to leave out the `&`.
+            let executor: &ForeignExecutor = $executor.borrow();
+            // Convert the executor to a raw pointer, than back to a reference.  This releases
+            // the borrow as described in the docstring.  This is only safe if we're sure that
+            // the underlying owned instance still exists, but this is a safe assumption:
+            //   - Note that the only code that will run in this thread is the
+            //     `executor.run()` call.  You can't implement Drop for references, so there's
+            //     no chance that dropping the reference will cause some other code to run.
+            //   - The owned value won't be dropped in this thread by the `executor.run()`
+            //     call.
+            //   - The owned value won't be dropped by another thread.  We currently have a
+            //     shared reference, so no other thread should be able to create a mutable
+            //     reference.
+            let executor = &*(executor as *const ForeignExecutor);
+            executor.run($delay, $closure)
+        }
+    }};
+}
+
+/// Schedule a closure to be run, without getting a Future
+///
+/// This can be used for "fire-and-forget" style calls, where the calling code doesn't
+/// need to await the result.
+///
+/// ```ignore
+/// uniffi::schedule!(&my_struct.foreign_executor, {
+///    // run this code, scheduled by the foreign executor
+/// })
+///
+/// uniffi::schedule!(&my_struct.foreign_executor, 100, {
+///    // run this code after a 100ms delay
+/// })
+/// ```
+///
+/// - The first parameter is a [ForeignExecutor] ref.  Unlike [ForeignExecutor::schedule], this macro
+///   will release the borrow before constructing the move closure.  This supports a major use-case
+///   for foreign executors, scheduling a call using a foreign executor stored inside a UniFFI
+///   interface (See the [futures example](https://github.com/mozilla/uniffi-rs/blob/main/examples/futures/src/lib.rs).
+/// - The second, optional, parameter is a delay is milliseconds
+/// - The third parameter is a closure to run, which must be:
+///   - Send: since the closure will likely schedule on a different thread
+///   - 'static: since it runs at an arbitrary time, so all references need to be 'static
+///   - panic::UnwindSafe: if the closure panics, it should not corrupt any data
+#[macro_export]
+macro_rules! schedule {
+    ($executor:expr, $closure:expr) => {
+        $crate::schedule!($executor, 0, $closure)
+    };
+
+    ($executor:expr, $delay:expr, $closure:expr) => {{
+        use std::any::{Any, TypeId};
+        use std::borrow::Borrow;
+        use $crate::ForeignExecutor;
+        assert_eq!(
+            $executor.type_id(),
+            TypeId::of::<ForeignExecutor>(),
+            "First argument is not a &uniffi::ForeignExecutor"
+        );
+        unsafe {
+            // See the run! macro for a description of what's happening here
+            let executor: &ForeignExecutor = $executor.borrow();
+            let executor = &*(executor as *const ForeignExecutor);
+            executor.schedule($delay, $closure)
+        }
+    }};
 }
 
 /// Low-level schedule interface
@@ -161,12 +277,42 @@ struct RunFuture<T, F> {
 // State inside the RunFuture Arc<>
 struct RunFutureInner<T, F> {
     // SAFETY: we only access this once in the scheduled callback
-    task: UnsafeCell<Option<F>>,
-    mutex: Mutex<RunFutureInner2<T>>,
+    task: RunFutureTask<F>,
+    mutex: Mutex<RunFutureResult<T>>,
 }
 
+/// Scheduled task running in a foreign executor
+struct RunFutureTask<F>(UnsafeCell<Option<F>>);
+
+impl<F> RunFutureTask<F> {
+    fn new(task: F) -> Self {
+        Self(UnsafeCell::new(Some(task)))
+    }
+}
+
+impl<F, T> RunFutureTask<F>
+where
+    F: FnOnce() -> T + panic::UnwindSafe,
+{
+    /// Run the scheduled task.
+    ///
+    /// The result is wrapped in an Option.  If the function panics, it will be logged and None
+    /// will be returned.
+    ///
+    /// SAFETY: Only call this method once
+    unsafe fn run(&self) -> Option<T> {
+        run_task((*self.0.get()).take().unwrap())
+    }
+}
+
+/// Manually mark RunFutureTask as Sync.  This is true as long as the safety rules are followed.
+/// `run()` will only be called once and therefore the UnsafeCell will only be accessed from one
+/// thread.
+
+unsafe impl<F: Send> Sync for RunFutureTask<F> {}
+
 // State inside the RunFuture Mutex<>
-struct RunFutureInner2<T> {
+struct RunFutureResult<T> {
     result: Option<T>,
     waker: Option<Waker>,
 }
@@ -178,8 +324,8 @@ where
     fn new(task: F) -> Self {
         Self {
             inner: Arc::new(RunFutureInner {
-                task: UnsafeCell::new(Some(task)),
-                mutex: Mutex::new(RunFutureInner2 {
+                task: RunFutureTask::new(task),
+                mutex: Mutex::new(RunFutureResult {
                     result: None,
                     waker: None,
                 }),
@@ -195,8 +341,9 @@ where
     extern "C" fn callback(data: *const ()) {
         unsafe {
             let inner = Arc::from_raw(data as *const RunFutureInner<T, F>);
-            let task = (*inner.task.get()).take().unwrap();
-            if let Some(result) = run_task(task) {
+            // Note: it's safe to call `run()` here since we ensure that this callback is only
+            // scheduled to run once.
+            if let Some(result) = inner.task.run() {
                 let mut inner2 = inner.mutex.lock().unwrap();
                 inner2.result = Some(result);
                 if let Some(waker) = inner2.waker.take() {
