@@ -10,7 +10,8 @@ assert(one.inner == 123)
 let two = Two(a: "a", b: nil)
 assert(takeTwo(two: two) == "a")
 
-let obj = makeObject()
+var obj = Object()
+obj = Object.namedCtor(arg: 1)
 assert(obj.isHeavy() == .uncertain)
 
 assert(enumIdentity(value: .true) == .true)
@@ -33,3 +34,28 @@ do {
     fatalError("doStuff should throw if its argument is 0")
 } catch FlatError.InvalidInput {
 }
+
+struct SomeOtherError: Error { }
+
+class SwiftTestCallbackInterface : TestCallbackInterface {
+    func doNothing() { }
+
+    func add(a: UInt32, b: UInt32) -> UInt32 {
+        return a + b;
+    }
+
+    func tryParseInt(value: String) throws -> UInt32 {
+        if (value == "force-unexpected-error") {
+            // raise an error that's not expected
+            throw SomeOtherError()
+        }
+        let parsed = UInt32(value)
+        if parsed != nil {
+            return parsed!
+        } else {
+            throw BasicError.InvalidInput
+        }
+    }
+}
+
+testCallbackInterface(cb: SwiftTestCallbackInterface())

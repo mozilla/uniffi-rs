@@ -5,7 +5,7 @@
 # This builds a docker image containing all the tools we need to run our
 # test suite in CI, including rust, kotlin, and swift.
 
-FROM cimg/rust:1.66.0
+FROM cimg/rust:1.69.0
 
 MAINTAINER Ryan Kelly "rfkelly@mozilla.com"
 
@@ -29,6 +29,8 @@ RUN sudo apt-get update -qq \
         python3-pip \
     && sudo apt-get clean
 
+# Use Cargo's sparse protocol
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
 # This should automatically install the version specified in rust-toolchain.toml
 ADD rust-toolchain.toml rust-toolchain.toml
 RUN rustup self update \

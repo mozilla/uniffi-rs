@@ -12,10 +12,12 @@ import uniffi.coverall.*
 // Test some_dict().
 // N.B. we need to `use` here to clean up the contained `Coveralls` reference.
 createSomeDict().use { d ->
-    assert(d.text == "text");
-    assert(d.maybeText == "maybe_text");
-    assert(d.aBool);
-    assert(d.maybeABool == false);
+    assert(d.text == "text")
+    assert(d.maybeText == "maybe_text")
+    assert(d.someBytes.contentEquals("some_bytes".toByteArray(Charsets.UTF_8)))
+    assert(d.maybeSomeBytes.contentEquals("maybe_some_bytes".toByteArray(Charsets.UTF_8)))
+    assert(d.aBool)
+    assert(d.maybeABool == false)
     assert(d.unsigned8 == 1.toUByte())
     assert(d.maybeUnsigned8 == 2.toUByte())
     assert(d.unsigned16 == 3.toUShort())
@@ -37,6 +39,36 @@ createSomeDict().use { d ->
     assert(d.maybeFloat64!!.almostEquals(1.0))
 
     assert(d.coveralls!!.getName() == "some_dict")
+}
+
+createNoneDict().use { d ->
+    assert(d.text == "text")
+    assert(d.maybeText == null)
+    assert(d.someBytes.contentEquals("some_bytes".toByteArray(Charsets.UTF_8)))
+    assert(d.maybeSomeBytes == null)
+    assert(d.aBool)
+    assert(d.maybeABool == null)
+    assert(d.unsigned8 == 1.toUByte())
+    assert(d.maybeUnsigned8 == null)
+    assert(d.unsigned16 == 3.toUShort())
+    assert(d.maybeUnsigned16 == null)
+    assert(d.unsigned64 == 18446744073709551615UL)
+    assert(d.maybeUnsigned64 == null)
+    assert(d.signed8 == 8.toByte())
+    assert(d.maybeSigned8 == null)
+    assert(d.signed64 == 9223372036854775807L)
+    assert(d.maybeSigned64 == null)
+
+    // floats should be "close enough".
+    fun Float.almostEquals(other: Float) = Math.abs(this - other) < 0.000001
+    fun Double.almostEquals(other: Double) = Math.abs(this - other) < 0.000001
+
+    assert(d.float32.almostEquals(1.2345F))
+    assert(d.maybeFloat32 == null)
+    assert(d.float64.almostEquals(0.0))
+    assert(d.maybeFloat64 == null)
+
+    assert(d.coveralls == null)
 }
 
 
@@ -139,7 +171,7 @@ Coveralls("test_complex_errors").use { coveralls ->
         assert(e.code == 10.toShort())
         assert(e.extendedCode == 20.toShort())
         assert(e.toString() == "uniffi.coverall.ComplexException\$OsException: code=10, extendedCode=20") {
-            "Unexpected ComplexError.OsError.toString() value: ${e.toString()}"
+            "Unexpected ComplexException.OsError.toString() value: ${e.toString()}"
         }
     }
 
@@ -149,12 +181,21 @@ Coveralls("test_complex_errors").use { coveralls ->
     } catch(e: ComplexException.PermissionDenied) {
         assert(e.reason == "Forbidden")
         assert(e.toString() == "uniffi.coverall.ComplexException\$PermissionDenied: reason=Forbidden") {
-            "Unexpected ComplexError.PermissionDenied.toString() value: ${e.toString()}"
+            "Unexpected ComplexException.PermissionDenied.toString() value: ${e.toString()}"
         }
     }
 
     try {
         coveralls.maybeThrowComplex(3)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: ComplexException.UnknownException) {
+        assert(e.toString() == "uniffi.coverall.ComplexException\$UnknownException: ") {
+            "Unexpected ComplexException.UnknownException.toString() value: ${e.toString()}"
+        }
+    }
+
+    try {
+        coveralls.maybeThrowComplex(4)
         throw RuntimeException("Expected method to throw exception")
     } catch(e: InternalException) {
         // Expected result
@@ -216,3 +257,8 @@ d = DictWithDefaults(name = "this", category = "that", integer = 42UL)
 assert(d.name == "this")
 assert(d.category == "that")
 assert(d.integer == 42UL)
+
+// Test bytes
+Coveralls("test_bytes").use { coveralls ->
+    assert(coveralls.reverse("123".toByteArray(Charsets.UTF_8)).toString(Charsets.UTF_8) == "321")
+}

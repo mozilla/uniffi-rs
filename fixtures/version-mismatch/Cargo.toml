@@ -1,0 +1,26 @@
+[package]
+name = "uniffi-fixture-version-mismatch"
+version = "0.22.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_fixture_version_mismatch"
+crate-type = ["lib", "cdylib"]
+
+[[bin]]
+name = "bindgen"
+path = "src/bindgen.rs"
+
+[features]
+default = []
+# Change the API that the proc-macros wrap in order to test mismatches between
+# the scaffolding and bindings code
+proc_macro_v2 = []
+
+[dependencies]
+uniffi = { path = "../../uniffi", version = "0.24", features = ["cli"]}
+
+[build-dependencies]
+uniffi = { path = "../../uniffi", version = "0.24", features = ["build"] }

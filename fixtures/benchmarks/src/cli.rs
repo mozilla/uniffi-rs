@@ -63,7 +63,6 @@ impl Args {
     pub fn parse_for_run_benchmarks() -> Self {
         Self::parse_from(
             std::env::args()
-                .into_iter()
                 // This method finds the first "--" arg, which `benchmarks.rs` inserts to mark the start of
                 // our arguments.
                 .skip_while(|a| a != "--")

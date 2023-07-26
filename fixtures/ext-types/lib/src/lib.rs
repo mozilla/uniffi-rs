@@ -108,4 +108,4 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
 }
 
-include!(concat!(env!("OUT_DIR"), "/ext-types-lib.uniffi.rs"));
+uniffi::include_scaffolding!("ext-types-lib");

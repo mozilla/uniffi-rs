@@ -2,6 +2,8 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::bindings::TargetLanguage;
+use crate::library_mode::generate_bindings;
 use anyhow::{bail, Context, Result};
 use camino::Utf8Path;
 use std::env;
@@ -31,8 +33,8 @@ pub fn test_script_command(
     let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(fixture_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
-    test_helper.copy_cdylibs_to_out_dir(&out_dir)?;
-    generate_sources(&test_helper.cdylib_path()?, &out_dir, &test_helper)?;
+    let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
+    generate_bindings(&cdylib_path, None, &[TargetLanguage::Ruby], &out_dir, false)?;
 
     let rubypath = env::var_os("RUBYLIB").unwrap_or_else(|| OsString::from(""));
     let rubypath = env::join_paths(
@@ -47,22 +49,4 @@ pub fn test_script_command(
         .stderr(Stdio::inherit())
         .stdout(Stdio::inherit());
     Ok(command)
-}
-
-fn generate_sources(
-    library_path: &Utf8Path,
-    out_dir: &Utf8Path,
-    test_helper: &UniFFITestHelper,
-) -> Result<()> {
-    for source in test_helper.get_compile_sources()? {
-        crate::generate_bindings(
-            &source.udl_path,
-            source.config_path.as_deref(),
-            vec!["ruby"],
-            Some(out_dir),
-            Some(library_path),
-            false,
-        )?;
-    }
-    Ok(())
 }

@@ -90,4 +90,4 @@ pub fn run_benchmarks(language: String, cb: Box<dyn TestCallbackInterface>) {
     c.final_summary();
 }
 
-include!(concat!(env!("OUT_DIR"), "/benchmarks.uniffi.rs"));
+uniffi::include_scaffolding!("benchmarks");

@@ -9,12 +9,57 @@ use std::time::SystemTime;
 
 use once_cell::sync::Lazy;
 
+mod traits;
+pub use traits::{get_traits, TestTrait};
+
 static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
 #[derive(Debug, thiserror::Error)]
 pub enum CoverallError {
     #[error("The coverall has too many holes")]
     TooManyHoles,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CoverallFlatError {
+    #[error("Too many variants: {num}")]
+    TooManyVariants { num: i16 },
+}
+
+fn throw_flat_error() -> Result<(), CoverallFlatError> {
+    Err(CoverallFlatError::TooManyVariants { num: 99 })
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+#[uniffi(flat_error)] // "flat" isn't really the correct terminology here.
+pub enum CoverallMacroError {
+    #[error("The coverall has too many macros")]
+    TooManyMacros,
+}
+
+#[uniffi::export]
+fn throw_macro_error() -> Result<(), CoverallMacroError> {
+    Err(CoverallMacroError::TooManyMacros)
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+#[uniffi(flat_error)]
+pub enum CoverallFlatMacroError {
+    #[error("Too many variants: {num}")]
+    TooManyVariants { num: i16 },
+}
+
+#[uniffi::export]
+fn throw_flat_macro_error() -> Result<(), CoverallFlatMacroError> {
+    Err(CoverallFlatMacroError::TooManyVariants { num: 88 })
+}
+
+pub enum CoverallRichErrorNoVariantData {
+    TooManyPlainVariants,
+}
+
+fn throw_rich_error_no_variant_data() -> Result<(), CoverallRichErrorNoVariantData> {
+    Err(CoverallRichErrorNoVariantData::TooManyPlainVariants)
 }
 
 /// This error doesn't appear in the interface, instead
@@ -39,12 +84,34 @@ pub enum ComplexError {
     OsError { code: i16, extended_code: i16 },
     #[error("PermissionDenied: {reason}")]
     PermissionDenied { reason: String },
+    #[error("Unknown error")]
+    UnknownError,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+pub enum ComplexMacroError {
+    #[error("OsError: {code} ({extended_code})")]
+    OsError { code: i16, extended_code: i16 },
+    #[error("PermissionDenied: {reason}")]
+    PermissionDenied { reason: String },
+    #[error("Unknown error")]
+    UnknownError,
+}
+
+#[uniffi::export]
+fn throw_complex_macro_error() -> Result<(), ComplexMacroError> {
+    Err(ComplexMacroError::OsError {
+        code: 1,
+        extended_code: 2,
+    })
+}
+
+#[derive(Clone, Debug, Default)]
 pub struct SimpleDict {
     text: String,
     maybe_text: Option<String>,
+    some_bytes: Vec<u8>,
+    maybe_some_bytes: Option<Vec<u8>>,
     a_bool: bool,
     maybe_a_bool: Option<bool>,
     unsigned8: u8,
@@ -62,6 +129,7 @@ pub struct SimpleDict {
     float64: f64,
     maybe_float64: Option<f64>,
     coveralls: Option<Arc<Coveralls>>,
+    test_trait: Option<Arc<dyn TestTrait>>,
 }
 
 #[derive(Debug, Clone)]
@@ -77,10 +145,46 @@ pub enum MaybeSimpleDict {
     Nah,
 }
 
+fn get_maybe_simple_dict(index: i8) -> MaybeSimpleDict {
+    match index {
+        0 => MaybeSimpleDict::Yeah {
+            d: SimpleDict::default(),
+        },
+        1 => MaybeSimpleDict::Nah,
+        _ => unreachable!("invalid index: {index}"),
+    }
+}
+
+// UDL can not describe this as a "flat" enum, but we'll keep it here to help demonstrate that!
+#[derive(Debug, Clone)]
+pub enum SimpleFlatEnum {
+    First { val: String },
+    Second { num: u16 },
+}
+
+#[derive(Debug, Clone, uniffi::Enum)]
+pub enum SimpleFlatMacroEnum {
+    First { val: String },
+    Second { num: u16 },
+}
+
+#[uniffi::export]
+fn get_simple_flat_macro_enum(index: i8) -> SimpleFlatMacroEnum {
+    match index {
+        0 => SimpleFlatMacroEnum::First {
+            val: "the first".to_string(),
+        },
+        1 => SimpleFlatMacroEnum::Second { num: 2 },
+        _ => unreachable!("invalid index: {index}"),
+    }
+}
+
 fn create_some_dict() -> SimpleDict {
     SimpleDict {
         text: "text".to_string(),
         maybe_text: Some("maybe_text".to_string()),
+        some_bytes: b"some_bytes".to_vec(),
+        maybe_some_bytes: Some(b"maybe_some_bytes".to_vec()),
         a_bool: true,
         maybe_a_bool: Some(false),
         unsigned8: 1,
@@ -98,30 +202,22 @@ fn create_some_dict() -> SimpleDict {
         float64: 0.0,
         maybe_float64: Some(1.0),
         coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
+        test_trait: Some(Arc::new(traits::Trait2 {})),
     }
 }
 
 fn create_none_dict() -> SimpleDict {
     SimpleDict {
         text: "text".to_string(),
-        maybe_text: None,
+        some_bytes: b"some_bytes".to_vec(),
         a_bool: true,
-        maybe_a_bool: None,
         unsigned8: 1,
-        maybe_unsigned8: None,
         unsigned16: 3,
-        maybe_unsigned16: None,
         unsigned64: u64::MAX,
-        maybe_unsigned64: None,
         signed8: 8,
-        maybe_signed8: None,
         signed64: i64::MAX,
-        maybe_signed64: None,
         float32: 1.2345,
-        maybe_float32: None,
-        float64: 0.0,
-        maybe_float64: None,
-        coveralls: None,
+        ..Default::default()
     }
 }
 
@@ -203,6 +299,7 @@ impl Coveralls {
             2 => Err(ComplexError::PermissionDenied {
                 reason: "Forbidden".to_owned(),
             }),
+            3 => Err(ComplexError::UnknownError),
             _ => panic!("Invalid input"),
         }
     }
@@ -282,6 +379,11 @@ impl Coveralls {
         let repairs = self.repairs.lock().unwrap();
         repairs.clone()
     }
+
+    fn reverse(&self, mut value: Vec<u8>) -> Vec<u8> {
+        value.reverse();
+        value
+    }
 }
 
 impl Drop for Coveralls {
@@ -350,4 +452,30 @@ impl ThreadsafeCounter {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/coverall.uniffi.rs"));
+#[derive(Default)]
+pub struct IFirst;
+
+impl IFirst {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn compare(&self, _other: Option<Arc<ISecond>>) -> bool {
+        false
+    }
+}
+
+#[derive(Default)]
+pub struct ISecond;
+
+impl ISecond {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn compare(&self, _other: Option<Arc<IFirst>>) -> bool {
+        false
+    }
+}
+
+uniffi::include_scaffolding!("coverall");

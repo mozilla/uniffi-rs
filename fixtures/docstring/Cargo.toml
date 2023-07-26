@@ -18,7 +18,8 @@ uniffi = { path = "../../uniffi" }
 uniffi = {path = "../../uniffi", features = ["build"] }
 
 [dev-dependencies]
+camino = "1.0.8"
 glob = "0.3"
-uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
+uniffi = { path = "../../uniffi", features = ["bindgen-tests"] }
 uniffi_bindgen = { path = "../../uniffi_bindgen" }
 uniffi_testing = { path = "../../uniffi_testing" }

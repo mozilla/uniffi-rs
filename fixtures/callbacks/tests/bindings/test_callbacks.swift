@@ -35,6 +35,14 @@ class SwiftGetters: ForeignGetters {
         return arg2 ? v?.uppercased() : v
     }
     func getList(v: [Int32], arg2: Bool) throws -> [Int32] { arg2 ? v : [] }
+    func getNothing(v: String) throws -> () {
+        if v == "bad-argument" {
+            throw SimpleError.BadArgument(message: "Bad argument")
+        }
+        if v == "unexpected-error" {
+            throw SomeOtherError()
+        }
+    }
 }
 
 do {
@@ -69,6 +77,9 @@ do {
 
     assert(try! rustGetters.getStringOptionalCallback(callback: callback, v: "TestString", arg2: false) == "TestString")
     assert(try! rustGetters.getStringOptionalCallback(callback: nil, v: "TestString", arg2: false) == nil)
+
+    // Should not throw
+    try! rustGetters.getNothing(callback: callback, v: "TestString")
 
     // rustGetters.destroy()
 
@@ -123,4 +134,19 @@ do {
         // Expected exception
         assert(reason == String(describing: SomeOtherError()))
     }
+
+    do {
+        _ = try rustGetters.getNothing(callback: callback, v: "bad-argument")
+        assertionFailure("getNothing() should have thrown an exception")
+    } catch SimpleError.BadArgument {
+        // Expected exception
+    }
+
+    do {
+        _ = try rustGetters.getNothing(callback: callback, v: "unexpected-error")
+        assertionFailure("getNothing() should have thrown an exception")
+    } catch SimpleError.UnexpectedError {
+        // Expected exception
+    }
+
 }

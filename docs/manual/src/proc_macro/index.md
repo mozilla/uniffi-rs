@@ -25,8 +25,8 @@ command line invocation.
 
 ## The `#[uniffi::export]` attribute
 
-The most important proc-macro is the `export` attribute. It can be used on functions and `impl`
-blocks to make UniFFI aware of them.
+The most important proc-macro is the `export` attribute. It can be used on functions, `impl`
+blocks, and `trait` definitions to make UniFFI aware of them.
 
 ```rust
 #[uniffi::export]
@@ -43,16 +43,41 @@ struct MyObject {
 
 #[uniffi::export]
 impl MyObject {
-    // All methods must have a `self` argument
+    // Constructors need to be annotated as such.
+    // As of right now, they must return `Arc<Self>`, this might change.
+    // If the constructor is named `new`, it is treated as the primary
+    // constructor, so in most languages this is invoked with `MyObject()`.
+    #[uniffi::constructor]
+    fn new(argument: String) -> Arc<Self> {
+        // ...
+    }
+
+    // Constructors with different names are also supported, usually invoked
+    // as `MyObject.named()` (depending on the target language)
+    #[uniffi::constructor]
+    fn named() -> Arc<Self> {
+        // ...
+    }
+
+    // All functions that are not constructors must have a `self` argument
     fn method_a(&self) {
         // ...
     }
 
-    // Arc<Self> is also supported
+    // `Arc<Self>` is also supported
     fn method_b(self: Arc<Self>) {
         // ...
     }
 }
+
+// Corresponding UDL:
+// [Trait]
+// interface MyTrait {};
+#[uniffi::export]
+trait MyTrait {
+    // ...
+}
+
 ```
 
 Most UniFFI [builtin types](../udl/builtin_types.md) can be used as parameter and return types.
@@ -62,16 +87,6 @@ User-defined types are also supported in a limited manner: records (structs with
 `dictionary` in UDL) and enums can be used when the corresponding derive macro is used at
 their definition. Opaque objects (`interface` in UDL) can always be used regardless of whether they
 are defined in UDL and / or via derive macro; they just need to be put inside an `Arc` as always.
-
-User-defined types also have to be (re-)exported from a module called `uniffi_types` at the crate
-root. This is required to ensure that a given type name always means the same thing across all uses
-of `#[uniffi::export]` across the whole module tree.
-
-```rust
-mod uniffi_types {
-    pub(crate) use path::to::MyObject;
-}
-```
 
 ## The `uniffi::Record` derive
 
@@ -89,6 +104,12 @@ will fail).
 pub struct MyRecord {
     pub field_a: String,
     pub field_b: Option<Arc<MyObject>>,
+    // Fields can have a default value.
+    // Currently, only string, integer, float and boolean literals are supported as defaults.
+    #[uniffi(default = "hello")]
+    pub greeting: String,
+    #[uniffi(default = true)]
+    pub some_flag: bool,
 }
 ```
 
@@ -206,6 +227,55 @@ fn do_http_request() -> Result<(), MyApiError> {
     // ...
 }
 ```
+
+## The `#[uniffi::export(callback_interface)]` attribute
+
+`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.html) definition.
+This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
+
+```rust
+#[uniffi::export(callback_interface)]
+pub trait Person {
+    fn name() -> String;
+    fn age() -> u32;
+}
+
+// Corresponding UDL:
+// callback interface Person {
+//     string name();
+//     u32 age();
+// }
+```
+
+### Exception handling in callback interfaces
+
+Most languages allow arbitrary exceptions to be thrown, which presents issues for callback
+interfaces.  If a callback interface function returns a non-Result type, then any exception will
+result in a panic on the Rust side.
+
+To avoid panics, callback interfaces can use `Result<T, E>` types for all return values.  If the callback
+interface implementation throws the exception that corresponds to the `E` parameter, `Err(E)` will
+be returned to the Rust code.  However, in most languages it's still possible for the implementation
+to throw other exceptions.  To avoid panics in those cases, the error type must be wrapped
+with the `#[uniffi(handle_unknown_callback_error)]` attribute and
+`From<UnexpectedUniFFICallbackError>` must be implemented:
+
+```rust
+#[derive(uniffi::Error)]
+#[uniffi(handle_unknown_callback_error)]
+pub enum MyApiError {
+    IOError,
+    ValueError,
+    UnexpectedError { reason: String },
+}
+
+impl From<UnexpectedUniFFICallbackError> for MyApiError {
+    fn from(e: UnexpectedUniFFICallbackError) -> Self {
+        Self::UnexpectedError { reason: e.reason }
+    }
+}
+```
+
 
 ## Other limitations
 

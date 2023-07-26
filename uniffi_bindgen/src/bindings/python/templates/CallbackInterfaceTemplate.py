@@ -1,4 +1,4 @@
-{%- let cbi = ci.get_callback_interface_definition(id).unwrap() %}
+{%- let cbi = ci|get_callback_interface_definition(id) %}
 {%- let foreign_callback = format!("foreignCallback{}", canonical_type_name) %}
 
 {% if self.include_once_check("CallbackInterfaceRuntime.py") %}{% include "CallbackInterfaceRuntime.py" %}{% endif %}
@@ -8,7 +8,7 @@
 class {{ type_name }}:
     {%- call py::docstring(cbi, 4) %}
     {% for meth in cbi.methods() -%}
-    def {{ meth.name()|fn_name }}({% call py::arg_list_decl(meth) %}):
+    def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
         {%- call py::docstring(meth, 8) %}
         raise NotImplementedError
 

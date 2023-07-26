@@ -1,4 +1,4 @@
-{%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let rec = ci|get_record_definition(name) %}
 
 {%- call kt::docstring(rec, 0) %}
 data class {{ type_name }} (

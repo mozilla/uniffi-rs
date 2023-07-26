@@ -53,13 +53,18 @@
 {%- when Type::String %}
 {%- include "StringHelper.kt" %}
 
+{%- when Type::Bytes %}
+{%- include "ByteArrayHelper.kt" %}
+
 {%- when Type::Enum(name) %}
+{%- let e = ci.get_enum_definition(name).unwrap() %}
+{%- if !ci.is_name_used_as_error(name) %}
 {% include "EnumTemplate.kt" %}
-
-{%- when Type::Error(name) %}
+{%- else %}
 {% include "ErrorTemplate.kt" %}
+{%- endif -%}
 
-{%- when Type::Object(name) %}
+{%- when Type::Object { name, imp } %}
 {% include "ObjectTemplate.kt" %}
 
 {%- when Type::Record(name) %}
@@ -77,6 +82,9 @@
 {%- when Type::CallbackInterface(name) %}
 {% include "CallbackInterfaceTemplate.kt" %}
 
+{%- when Type::ForeignExecutor %}
+{% include "ForeignExecutorTemplate.kt" %}
+
 {%- when Type::Timestamp %}
 {% include "TimestampHelper.kt" %}
 
@@ -92,3 +100,7 @@
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
+
+{%- if ci.has_async_fns() %}
+{% include "AsyncTypes.kt" %}
+{%- endif %}

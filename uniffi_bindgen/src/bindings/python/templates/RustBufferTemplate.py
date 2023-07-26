@@ -25,7 +25,7 @@ class RustBuffer(ctypes.Structure):
         )
 
     @contextlib.contextmanager
-    def allocWithBuilder():
+    def allocWithBuilder(*args):
         """Context-manger to allocate a buffer using a RustBufferBuilder.
 
         The allocated buffer will be automatically freed if an error occurs, ensuring that
@@ -75,7 +75,7 @@ class ForeignBytes(ctypes.Structure):
         return "ForeignBytes(len={}, data={})".format(self.len, self.data[0:self.len])
 
 
-class RustBufferStream(object):
+class RustBufferStream:
     """
     Helper for structured reading of bytes from a RustBuffer
     """
@@ -137,8 +137,10 @@ class RustBufferStream(object):
     def readDouble(self):
         return self._unpack_from(8, ">d")
 
+    def readCSizeT(self):
+        return self._unpack_from(ctypes.sizeof(ctypes.c_size_t) , "@N")
 
-class RustBufferBuilder(object):
+class RustBufferBuilder:
     """
     Helper for structured writing of bytes into a RustBuffer.
     """
@@ -204,3 +206,6 @@ class RustBufferBuilder(object):
 
     def writeDouble(self, v):
         self._pack_into(8, ">d", v)
+
+    def writeCSizeT(self, v):
+        self._pack_into(ctypes.sizeof(ctypes.c_size_t) , "@N", v)

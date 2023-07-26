@@ -46,5 +46,11 @@ unsafe impl uniffi::FfiConverter<crate::UniFfiTag> for r#{{ name }} {
     fn try_read(buf: &mut &[u8]) -> uniffi::Result<r#{{ name }}> {
         <{{ name }} as UniffiCustomTypeConverter>::into_custom({{ builtin|ffi_converter }}::try_read(buf)?)
     }
+
+    ::uniffi::ffi_converter_default_return!(crate::UniFfiTag);
+
+    const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
+        .concat_str("{{ name }}")
+        .concat({{ builtin|ffi_converter }}::TYPE_ID_META);
 }
 {%- endfor -%}

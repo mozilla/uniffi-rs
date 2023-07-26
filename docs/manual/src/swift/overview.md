@@ -4,7 +4,7 @@ UniFFI ships with production-quality support for generating Swift bindings.
 Concepts from the UDL file map into Swift as follows:
 
 * Primitive datatypes map to their obvious Swift counterpart, e.g. `u32` becomes `UInt32`,
-  `string` becomes `String`, etc.
+  `string` becomes `String`, `bytes` becomes `Data`, etc.
 * An object interface declared as `interface T` is represented as a Swift `protocol TProtocol`
   and a concrete Swift `class T` that conforms to it. Having the protocol declared explicitly
   can be useful for mocking instances of the class in unittests.

@@ -112,6 +112,18 @@ Task {
 	counter.leave()
 }
 
+// Test async function returning an object
+counter.enter()
+
+Task {
+	let megaphone = await asyncNewMegaphone()
+
+	let result = try await megaphone.fallibleMe(doFail: false)
+	assert(result == 42)
+
+	counter.leave()
+}
+
 // Test with the Tokio runtime.
 counter.enter()
 
@@ -141,6 +153,12 @@ Task {
 	assert(result == 42)
 
 	counter.leave()
+}
+
+Task {
+	let m = try await fallibleStruct(doFail: false)
+	let result = try await m.fallibleMe(doFail: false)
+	assert(result == 42)
 }
 
 counter.enter()
@@ -179,6 +197,16 @@ Task {
 	assert(tDelta.duration > 0 && tDelta.duration < 0.1)
 
 	counter.leave()
+}
+
+Task {
+	do {
+		let _ = try await fallibleStruct(doFail: true)
+	} catch MyError.Foo {
+		assert(true)
+	} catch {
+		assert(false)
+	}
 }
 
 counter.enter()

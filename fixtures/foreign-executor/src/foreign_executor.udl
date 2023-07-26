@@ -1,0 +1,7 @@
+namespace fixture_foreign_executor { };
+
+interface ForeignExecutorTester {
+    constructor(ForeignExecutor executor);
+    [Name=new_from_sequence]
+    constructor(sequence<ForeignExecutor> executors);
+};

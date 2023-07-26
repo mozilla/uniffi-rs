@@ -21,26 +21,26 @@ namespace imported_types_lib {
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in
 // `../../uniffi-one/src/uniffi-one.udl`)
-[External="uniffi-one"]
+[External="uniffi_one"]
 typedef extern UniffiOneType;
 // An enum in the same crate
-[External="uniffi-one"]
+[External="uniffi_one"]
 typedef extern UniffiOneEnum;
 // An interface in the same crate
-[ExternalInterface="uniffi-one"]
+[ExternalInterface="uniffi_one"]
 typedef extern UniffiOneInterface;
 
 // A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and
 // "declared" in `../../guid/src/guid.udl`). But it's still "external" from our POV,
 // So same as the `.udl` type above!
-[External="ext-types-guid"]
+[External="ext_types_guid"]
 typedef extern Guid;
 
 // And re-use the `custom-types` example - this exposes `Url` and `Handle`
-[External="custom-types"]
+[External="custom_types"]
 typedef extern Url;
 
-[External="custom-types"]
+[External="custom_types"]
 typedef extern Handle;
 
 // And a new type here to tie them all together.

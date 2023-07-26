@@ -26,6 +26,8 @@ callback interface ForeignGetters {
   string? get_option(string? v, boolean arg2);
   [Throws=SimpleError]
   sequence<i32> get_list(sequence<i32> v, boolean arg2);
+  [Throws=SimpleError]
+  void get_nothing(string v);
 };
 
 /// These objects are implemented in Rust, and call out to `ForeignGetters`
@@ -42,6 +44,8 @@ interface RustGetters {
   sequence<i32> get_list(ForeignGetters callback, sequence<i32> v, boolean arg2);
   [Throws=SimpleError]
   string? get_string_optional_callback(ForeignGetters? callback, string v, boolean arg2);
+  [Throws=SimpleError]
+  void get_nothing(ForeignGetters callback, string v);
 };
 
 /// These objects are implemented by the foreign language and passed

@@ -32,9 +32,15 @@ struct {{ trait_impl }} {
   handle: u64
 }
 
+impl {{ trait_impl }} {
+    fn new(handle: u64) -> Self {
+        Self { handle }
+    }
+}
+
 impl Drop for {{ trait_impl }} {
     fn drop(&mut self) {
-        {{ foreign_callback_internals }}.invoke_callback_void_return(
+        {{ foreign_callback_internals }}.invoke_callback::<(), crate::UniFfiTag>(
             self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
         )
     }
@@ -63,56 +69,14 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
         let mut args_buf = Vec::new();
         {% endif -%}
         {%- for arg in meth.arguments() %}
-        {{ arg.type_().borrow()|ffi_converter }}::write(r#{{ arg.name() }}, &mut args_buf);
+        {{ arg.as_type().borrow()|ffi_converter }}::write(r#{{ arg.name() }}, &mut args_buf);
         {%- endfor -%}
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
-    {#- Calling into foreign code. #}
-        {%- match (meth.return_type(), meth.throws_type()) %}
-        {%- when (Some(return_type), None) %}
-        {{ foreign_callback_internals }}.invoke_callback::<{{ return_type|type_rs }}, crate::UniFfiTag>(self.handle, {{ loop.index }}, args_rbuf)
-
-        {%- when (Some(return_type), Some(error_type)) %}
-        {{ foreign_callback_internals }}.invoke_callback_with_error::<{{ return_type|type_rs }}, {{ error_type|type_rs }}, crate::UniFfiTag>(self.handle, {{ loop.index }}, args_rbuf)
-
-        {%- when (None, Some(error_type)) %}
-        {{ foreign_callback_internals }}.invoke_callback_with_error::<(), {{ error_type|type_rs }}, crate::UniFfiTag>(self.handle, {{ loop.index }}, args_rbuf)
-
-        {%- when (None, None) %}
-        {{ foreign_callback_internals }}.invoke_callback_void_return(self.handle, {{ loop.index }}, args_rbuf)
-
-        {%- endmatch %}
+        {#- Calling into foreign code. #}
+        {{ foreign_callback_internals }}.invoke_callback::<{{ meth|return_type }}, crate::UniFfiTag>(self.handle, {{ loop.index }}, args_rbuf)
     }
     {%- endfor %}
 }
 
-unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for Box<dyn r#{{ trait_name }}> {
-    type FfiType = u64;
-
-    // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
-    // probably a way to, but this carries lots of thread safety risks, down to impedance
-    // mismatches between Rust and foreign languages, and our uncertainty around implementations of
-    // concurrent handlemaps.
-    //
-    // The use case for them is also quite exotic: it's passing a foreign callback back to the foreign
-    // language.
-    //
-    // Until we have some certainty, and use cases, we shouldn't use them.
-    fn lower(_obj: Box<dyn r#{{ trait_name }}>) -> Self::FfiType {
-        panic!("Lowering CallbackInterface not supported")
-    }
-
-    fn write(_obj: Box<dyn r#{{ trait_name }}>, _buf: &mut std::vec::Vec<u8>) {
-        panic!("Writing CallbackInterface not supported")
-    }
-
-    fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Box<dyn r#{{ trait_name }}>> {
-        Ok(Box::new({{ trait_impl }} { handle: v }))
-    }
-
-    fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Box<dyn r#{{ trait_name }}>> {
-        use uniffi::deps::bytes::Buf;
-        uniffi::check_remaining(buf, 8)?;
-        Self::try_lift(buf.get_u64())
-    }
-}
+::uniffi::ffi_converter_callback_interface!(r#{{ trait_name }}, {{ trait_impl }}, "{{ cbi.name() }}", crate::UniFfiTag);

@@ -4,6 +4,10 @@
 
 use std::sync::Arc;
 
+mod callback_interface;
+
+use callback_interface::TestCallbackInterface;
+
 #[derive(uniffi::Record)]
 pub struct One {
     inner: i32,
@@ -26,13 +30,54 @@ pub struct Three {
     obj: Arc<Object>,
 }
 
+// An object that's not used anywhere (ie, in records, function signatures, etc)
+// should not break things.
+#[derive(uniffi::Object)]
+pub struct Unused;
+
+#[uniffi::export]
+impl Unused {
+    #[uniffi::constructor]
+    fn new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+}
+
+#[uniffi::export]
+pub trait Trait: Send + Sync {
+    fn name(&self) -> String;
+}
+
+struct TraitImpl {}
+
+impl Trait for TraitImpl {
+    fn name(&self) -> String {
+        "TraitImpl".to_string()
+    }
+}
+
 #[derive(uniffi::Object)]
 pub struct Object;
 
 #[uniffi::export]
 impl Object {
+    #[uniffi::constructor]
+    fn new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+
+    #[uniffi::constructor]
+    fn named_ctor(arg: u32) -> Arc<Self> {
+        _ = arg;
+        Self::new()
+    }
+
     fn is_heavy(&self) -> MaybeBool {
         MaybeBool::Uncertain
+    }
+
+    fn get_trait(&self, inc: Option<Arc<dyn Trait>>) -> Arc<dyn Trait> {
+        inc.unwrap_or_else(|| Arc::new(TraitImpl {}))
     }
 }
 
@@ -47,8 +92,18 @@ fn take_two(two: Two) -> String {
 }
 
 #[uniffi::export]
-fn make_object() -> Arc<Object> {
-    Arc::new(Object)
+fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
+    cb.do_nothing();
+    assert_eq!(cb.add(1, 1), 2);
+    assert_eq!(Ok(10), cb.try_parse_int("10".to_string()));
+    assert_eq!(
+        Err(BasicError::InvalidInput),
+        cb.try_parse_int("ten".to_string())
+    );
+    assert!(matches!(
+        cb.try_parse_int("force-unexpected-error".to_string()),
+        Err(BasicError::UnexpectedError { .. }),
+    ));
 }
 
 // Type that's defined in the UDL and not wrapped with #[uniffi::export]
@@ -75,10 +130,18 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
     value
 }
 
-#[derive(uniffi::Error)]
+#[derive(uniffi::Error, Debug, PartialEq, Eq)]
+#[uniffi(handle_unknown_callback_error)]
 pub enum BasicError {
     InvalidInput,
     OsError,
+    UnexpectedError { reason: String },
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for BasicError {
+    fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self::UnexpectedError { reason: e.reason }
+    }
 }
 
 #[uniffi::export]
@@ -112,10 +175,4 @@ impl Object {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/proc-macro.uniffi.rs"));
-
-mod uniffi_types {
-    pub use crate::{
-        BasicError, FlatError, MaybeBool, NestedRecord, Object, One, Three, Two, Zero,
-    };
-}
+uniffi::include_scaffolding!("proc-macro");

@@ -1,6 +1,3 @@
-[bindings.swift]
-cdylib_name = "custom_types"
-
 [bindings.swift.custom_types.Url]
 # Name of the type in the Swift code
 type_name = "URL"
@@ -10,21 +7,44 @@ imports = ["Foundation"]
 into_custom = "URL(string: {})!"
 from_custom = "String(describing: {})"
 
+[bindings.swift.custom_types.TimeIntervalMs]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between i64 and TimeIntervalMs
+into_custom = "Date(timeIntervalSince1970: TimeInterval({}) / 1000.0)"
+from_custom = "Int64({}.timeIntervalSince1970 * 1000.0)"
+
+[bindings.swift.custom_types.TimeIntervalSecDbl]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between f64 and TimeIntervalSecDbl
+into_custom = "Date(timeIntervalSince1970: {})"
+from_custom = "{}.timeIntervalSince1970"
+
+[bindings.swift.custom_types.TimeIntervalSecFlt]
+# Name of the type in the Swift code
+type_name = "Date"
+# Modules that need to be imported
+imports = ["Foundation"]
+# Functions to convert between f32 and TimeIntervalSecFlt
+into_custom = "Date(timeIntervalSince1970: TimeInterval({}))"
+from_custom = "Float({}.timeIntervalSince1970)"
+
 [bindings.kotlin]
-cdylib_name = "custom_types"
 package_name = "customtypes"
 
 [bindings.kotlin.custom_types.Url]
 # Name of the type in the Kotlin code
 type_name = "URL"
 # Classes that need to be imported
-imports = [ "java.net.URL" ]
+imports = [ "java.net.URI", "java.net.URL" ]
 # Functions to convert between strings and URLs
-into_custom = "URL({})"
+into_custom = "URI({}).toURL()"
 from_custom = "{}.toString()"
-
-[bindings.python]
-cdylib_name = "custom_types"
 
 [bindings.python.custom_types.Url]
 # We're going to be the urllib.parse.ParseResult class, which is the closest
@@ -35,6 +55,3 @@ imports = ["urllib.parse"]
 # Functions to convert between strings and the ParsedUrl class
 into_custom = "urllib.parse.urlparse({})"
 from_custom = "urllib.parse.urlunparse({})"
-
-[bindings.ruby]
-cdylib_name = "custom_types"

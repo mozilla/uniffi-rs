@@ -6,6 +6,8 @@ uniffi::build_foreign_language_testcases!(
 
 #[cfg(test)]
 mod tests {
+    use camino::Utf8PathBuf;
+    use uniffi_bindgen::bindings::TargetLanguage;
     use uniffi_testing::UniFFITestHelper;
 
     const DOCSTRINGS: &'static [&str] = &[
@@ -27,7 +29,7 @@ mod tests {
         "<docstring-record>",
     ];
 
-    fn test_docstring(language: &str, file_extension: &str) {
+    fn test_docstring(language: TargetLanguage, file_extension: &str) {
         let test_helper = UniFFITestHelper::new(std::env!("CARGO_PKG_NAME")).unwrap();
 
         let out_dir = test_helper
@@ -37,55 +39,53 @@ mod tests {
             )
             .unwrap();
 
-        for source in test_helper.get_compile_sources().unwrap() {
-            uniffi_bindgen::generate_bindings(
-                &source.udl_path,
-                source.config_path.as_deref(),
-                vec![language],
-                Some(&out_dir),
-                Some(&test_helper.cdylib_path().unwrap()),
-                false,
-            )
-            .unwrap();
+        uniffi_bindgen::generate_bindings(
+            &Utf8PathBuf::from("src/docstring.udl"),
+            None,
+            vec![language],
+            Some(&out_dir),
+            None,
+            false,
+        )
+        .unwrap();
 
-            let glob_pattern = out_dir.join(format!("**/*.{}", file_extension));
+        let glob_pattern = out_dir.join(format!("**/*.{}", file_extension));
 
-            let sources = glob::glob(glob_pattern.as_str())
-                .unwrap()
-                .flatten()
-                .map(|p| String::from(p.to_string_lossy()))
-                .collect::<Vec<String>>();
+        let sources = glob::glob(glob_pattern.as_str())
+            .unwrap()
+            .flatten()
+            .map(|p| String::from(p.to_string_lossy()))
+            .collect::<Vec<String>>();
 
-            assert_eq!(sources.len(), 1);
+        assert_eq!(sources.len(), 1);
 
-            let bindings_source = std::fs::read_to_string(&sources[0]).unwrap();
+        let bindings_source = std::fs::read_to_string(&sources[0]).unwrap();
 
-            let expected: Vec<String> = vec![];
-            assert_eq!(
-                expected,
-                DOCSTRINGS
-                    .iter()
-                    .filter(|v| !bindings_source.contains(*v))
-                    .map(|v| v.to_string())
-                    .collect::<Vec::<_>>(),
-                "docstrings not found in {}",
-                &sources[0]
-            );
-        }
+        let expected: Vec<String> = vec![];
+        assert_eq!(
+            expected,
+            DOCSTRINGS
+                .iter()
+                .filter(|v| !bindings_source.contains(*v))
+                .map(|v| v.to_string())
+                .collect::<Vec::<_>>(),
+            "docstrings not found in {}",
+            &sources[0]
+        );
     }
 
     #[test]
     fn test_docstring_kotlin() {
-        test_docstring("kotlin", "kt");
+        test_docstring(TargetLanguage::Kotlin, "kt");
     }
 
     #[test]
     fn test_docstring_python() {
-        test_docstring("python", "py");
+        test_docstring(TargetLanguage::Python, "py");
     }
 
     #[test]
     fn test_docstring_swift() {
-        test_docstring("swift", "swift");
+        test_docstring(TargetLanguage::Swift, "swift");
     }
 }

@@ -1,0 +1,5 @@
+[bindings.python]
+cdylib_name = "uniffi_type_limits"
+
+[bindings.ruby]
+cdylib_name = "uniffi_type_limits"

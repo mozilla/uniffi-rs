@@ -10,8 +10,13 @@ assert one.inner == 123
 two = Two("a", None)
 assert take_two(two) == "a"
 
-obj = make_object()
+obj = Object()
+obj = Object.named_ctor(1)
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
+
+trait_impl = obj.get_trait(None)
+assert trait_impl.name() == "TraitImpl"
+assert obj.get_trait(trait_impl).name() == "TraitImpl"
 
 assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 
@@ -35,3 +40,21 @@ except FlatError.InvalidInput:
     pass
 else:
     raise Exception("do_stuff should throw if its argument is 0")
+
+class PyTestCallbackInterface(TestCallbackInterface):
+    def do_nothing(self):
+        pass
+
+    def add(self, a, b):
+        return a + b
+
+    def try_parse_int(self, value):
+        if value == "force-unexpected-error":
+            # raise an error that's not expected
+            raise KeyError(value)
+        try:
+            return int(value)
+        except BaseException:
+            raise BasicError.InvalidInput()
+
+test_callback_interface(PyTestCallbackInterface())

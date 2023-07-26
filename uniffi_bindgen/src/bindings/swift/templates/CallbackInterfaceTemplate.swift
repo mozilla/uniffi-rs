@@ -1,4 +1,4 @@
-{%- let cbi = ci.get_callback_interface_definition(name).unwrap() %}
+{%- let cbi = ci|get_callback_interface_definition(name) %}
 {%- let foreign_callback = format!("foreignCallback{}", canonical_type_name) %}
 {%- if self.include_once_check("CallbackInterfaceRuntime.swift") %}{%- include "CallbackInterfaceRuntime.swift" %}{%- endif %}
 
@@ -103,18 +103,15 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
 
 // FfiConverter protocol for callback interfaces
 fileprivate struct {{ ffi_converter_name }} {
-    // Initialize our callback method with the scaffolding code
-    private static var callbackInitialized = false
-    private static func initCallback() {
+    private static let initCallbackOnce: () = {
+        // Swift ensures this initializer code will once run once, even when accessed by multiple threads.
         try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
-                {{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err)
+            {{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err)
         }
-    }
+    }()
+
     private static func ensureCallbackinitialized() {
-        if !callbackInitialized {
-            initCallback()
-            callbackInitialized = true
-        }
+        _ = initCallbackOnce
     }
 
     static func drop(handle: UniFFICallbackHandle) {

@@ -116,12 +116,38 @@ pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
     }
 }
 
+// An async function returning a struct that can throw.
+#[uniffi::export]
+pub async fn fallible_struct(do_fail: bool) -> Result<Arc<Megaphone>, MyError> {
+    if do_fail {
+        Err(MyError::Foo)
+    } else {
+        Ok(new_megaphone())
+    }
+}
+
 /// Sync function that generates a new `Megaphone`.
 ///
 /// It builds a `Megaphone` which has async methods on it.
 #[uniffi::export]
 pub fn new_megaphone() -> Arc<Megaphone> {
     Arc::new(Megaphone)
+}
+
+/// Async function that generates a new `Megaphone`.
+#[uniffi::export]
+pub async fn async_new_megaphone() -> Arc<Megaphone> {
+    new_megaphone()
+}
+
+/// Async function that possibly generates a new `Megaphone`.
+#[uniffi::export]
+pub async fn async_maybe_new_megaphone(y: bool) -> Option<Arc<Megaphone>> {
+    if y {
+        Some(new_megaphone())
+    } else {
+        None
+    }
 }
 
 /// A megaphone. Be careful with the neighbours.
@@ -233,10 +259,4 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
     .await;
 }
 
-include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
-
-mod uniffi_types {
-    pub(crate) use super::Megaphone;
-    pub(crate) use super::MyError;
-    pub(crate) use super::MyRecord;
-}
+uniffi::include_scaffolding!("uniffi_futures");

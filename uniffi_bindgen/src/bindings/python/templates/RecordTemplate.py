@@ -1,4 +1,4 @@
-{%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let rec = ci|get_record_definition(name) %}
 class {{ type_name }}:
     {%- call py::docstring(rec, 4) %}
     def __init__(self, {% for field in rec.fields() %}

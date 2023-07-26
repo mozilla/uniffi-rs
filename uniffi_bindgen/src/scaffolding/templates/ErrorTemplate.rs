@@ -15,12 +15,15 @@
     with_try_read,
     {%- endif %}
     {%- endif %}
+    {%- if ci.is_callback_interface_throws_type(e.as_type()) %}
+    handle_unknown_callback_error,
+    {%- endif %}
 )]
 enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}
     r#{{ variant.name() }} {
         {%- for field in variant.fields() %}
-        r#{{ field.name() }}: {{ field.type_()|type_rs }},
+        r#{{ field.name() }}: {{ field.as_type().borrow()|type_rs }},
         {%- endfor %}
     },
     {%- endfor %}

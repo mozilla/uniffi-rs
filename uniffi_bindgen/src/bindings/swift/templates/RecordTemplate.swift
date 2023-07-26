@@ -1,4 +1,4 @@
-{%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let rec = ci|get_record_definition(name) %}
 {%- call swift::docstring(rec, 0) %}
 public struct {{ type_name }} {
     {%- for field in rec.fields() %}

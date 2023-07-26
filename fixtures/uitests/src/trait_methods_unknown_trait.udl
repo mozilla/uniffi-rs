@@ -1,0 +1,6 @@
+namespace trait_methods {};
+
+// We don't directly support `PartialEq` - this test checks what happens if you specify an unknown trait.
+[Traits=(Display, Debug, PartialEq, Hash, Eq)]
+interface TraitMethods {
+};

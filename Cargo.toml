@@ -9,14 +9,15 @@ members = [
   "uniffi",
   "weedle2",
 
+  "examples/app/uniffi-bindgen-cli",
   "examples/arithmetic",
   "examples/callbacks",
+  "examples/custom-types",
   "examples/geometry",
   "examples/rondpoint",
   "examples/sprites",
   "examples/todolist",
-  "examples/custom-types",
-  "examples/app/uniffi-bindgen-cli",
+  "examples/traits",
 
   "fixtures/benchmarks",
   "fixtures/coverall",
@@ -32,9 +33,11 @@ members = [
   "fixtures/external-types/lib",
 
   "fixtures/docstring",
+  "fixtures/foreign-executor",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",
   "fixtures/keywords/swift",
+  "fixtures/metadata",
   "fixtures/proc-macro",
   "fixtures/reexport-scaffolding-macro",
   "fixtures/regressions/enum-without-i32-helpers",
@@ -46,12 +49,17 @@ members = [
   "fixtures/regressions/missing-newline",
   "fixtures/regressions/swift-callbacks-omit-labels",
   "fixtures/regressions/swift-dictionary-nesting",
+  "fixtures/regressions/unary-result-alias",
+  "fixtures/trait-methods",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
+  "fixtures/version-mismatch",
   "fixtures/simple-fns",
   "fixtures/simple-iface",
   "fixtures/swift-omit-labels",
   "fixtures/futures",
+  "fixtures/swift-bridging-header-compile",
+  "fixtures/type-limits",
 ]
 
 resolver = "2"

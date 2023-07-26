@@ -37,4 +37,4 @@ To expand on the previous point, here are the scenarios where `uniffi` should ge
 
 * Increment the minor version of `uniffi`
   * Once we get to `1.0` then this will change to be a major version bump.
-* Update the `uniffi_bindgen::UNIFFI_CONTRACT_VERSION` string
+* Update the `uniffi_bindgen::UNIFFI_CONTRACT_VERSION` value

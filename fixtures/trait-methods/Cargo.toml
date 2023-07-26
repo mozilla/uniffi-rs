@@ -1,0 +1,22 @@
+[package]
+name = "uniffi-fixture-trait-methods"
+version = "0.22.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_trait_methods"
+
+[dependencies]
+uniffi = {path = "../../uniffi", version = "0.24" }
+once_cell = "1.12"
+thiserror = "1.0"
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", version = "0.24", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", version = "0.24", features = ["bindgen-tests"] }
+

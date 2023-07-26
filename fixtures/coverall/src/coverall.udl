@@ -4,15 +4,27 @@ namespace coverall {
 
     u64 get_num_alive();
 
+    sequence<TestTrait> get_traits();
+
+    MaybeSimpleDict get_maybe_simple_dict(i8 index);
+
     // void returning error throwing namespace function to catch clippy warnings (eg, #1330)
     [Throws=CoverallError]
     void println(string text);
+
+    [Throws=CoverallFlatError]
+    void throw_flat_error();
+
+    [Throws=CoverallRichErrorNoVariantData]
+    void throw_rich_error_no_variant_data();
 };
 
 dictionary SimpleDict {
     string text;
     string? maybe_text;
-    boolean	a_bool;
+    bytes some_bytes;
+    bytes? maybe_some_bytes;
+    boolean a_bool;
     boolean? maybe_a_bool;
     u8 unsigned8;
     u8? maybe_unsigned8;
@@ -29,6 +41,7 @@ dictionary SimpleDict {
     double float64;
     double? maybe_float64;
     Coveralls? coveralls;
+    TestTrait? test_trait;
 };
 
 dictionary DictWithDefaults {
@@ -43,15 +56,38 @@ interface MaybeSimpleDict {
     Nah();
 };
 
+// Note that UDL *can not* express flat enums (ie, those with variants that carry data which
+// should be ignored for the ffi), only flat errors?
+//enum SimpleFlatEnum {
+//    "First",
+//    "Second",
+//};
+
 [Error]
 enum CoverallError {
     "TooManyHoles"
 };
 
+// This error is described in Rust with variants, but because it's declared
+// here via an `enum` it's considered "flat"
+[Error]
+enum CoverallFlatError {
+    "TooManyVariants"
+};
+
+// This error is for an enum that's still "flat" on the Rust side (ie, no
+// variants have associated data), but it behaves differently on the bindings
+// side than had it been described via `enum`
+[Error]
+interface CoverallRichErrorNoVariantData {
+    TooManyPlainVariants();
+};
+
 [Error]
 interface ComplexError {
-   OsError(i16 code, i16 extended_code);
-   PermissionDenied(string reason);
+    OsError(i16 code, i16 extended_code);
+    PermissionDenied(string reason);
+    UnknownError();
 };
 
 interface Coveralls {
@@ -128,6 +164,9 @@ interface Coveralls {
 
     /// Returns all repairs made.
     sequence<Repair> get_repairs();
+
+    /// Reverses the bytes.
+    bytes reverse(bytes value);
 };
 
 // coveralls keep track of their repairs (an interface in a dict)
@@ -149,4 +188,42 @@ interface ThreadsafeCounter {
   constructor();
   void busy_wait(i32 ms);
   i32 increment_if_busy();
+};
+
+// This is a trait implemented on the Rust side.
+[Trait]
+interface TestTrait {
+    string name(); // The name of the implementation
+
+    [Self=ByArc]
+    u64 number();
+
+    /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
+    [Self=ByArc]
+    u64 strong_count();
+
+    /// Takes an `Arc<Self>` and stores it in `self`, dropping the existing
+    /// reference. Note you can create circular references by passing `self`.
+    void take_other(TestTrait? other);
+
+    /// Returns what was previously set via `take_other()`, or null.
+    TestTrait? get_other();
+};
+
+// Forward/backward declarations are fine in UDL.
+// Running the Python tests & type checks will ensure this works,
+// no function calls needed
+
+interface IFirst {
+  constructor();
+
+  // Handling optional with a default value
+  boolean compare(optional ISecond? other = null);
+};
+
+interface ISecond {
+  constructor();
+
+  // Default only
+  boolean compare(IFirst? other);
 };

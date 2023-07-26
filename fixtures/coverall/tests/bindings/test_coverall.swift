@@ -26,6 +26,8 @@ do {
     let d = createSomeDict()
     assert(d.text == "text")
     assert(d.maybeText == "maybe_text")
+    assert(d.someBytes == Data("some_bytes".utf8))
+    assert(d.maybeSomeBytes == Data("maybe_some_bytes".utf8))
     assert(d.aBool)
     assert(d.maybeABool == false);
     assert(d.unsigned8 == 1)
@@ -43,6 +45,32 @@ do {
     assert(d.float64.almostEquals(0.0))
     assert(d.maybeFloat64!.almostEquals(1.0))
     assert(d.coveralls!.getName() == "some_dict")
+}
+
+// Test none_dict().
+do {
+    let d = createNoneDict()
+    assert(d.text == "text")
+    assert(d.maybeText == nil)
+    assert(d.someBytes == Data("some_bytes".utf8))
+    assert(d.maybeSomeBytes == nil)
+    assert(d.aBool)
+    assert(d.maybeABool == nil);
+    assert(d.unsigned8 == 1)
+    assert(d.maybeUnsigned8 == nil)
+    assert(d.unsigned16 == 3)
+    assert(d.maybeUnsigned16 == nil)
+    assert(d.unsigned64 == 18446744073709551615)
+    assert(d.maybeUnsigned64 == nil)
+    assert(d.signed8 == 8)
+    assert(d.maybeSigned8 == nil)
+    assert(d.signed64 == 9223372036854775807)
+    assert(d.maybeSigned64 == nil)
+    assert(d.float32.almostEquals(1.2345))
+    assert(d.maybeFloat32 == nil)
+    assert(d.float64.almostEquals(0.0))
+    assert(d.maybeFloat64 == nil)
+    assert(d.coveralls == nil)
 }
 
 // Test arcs.
@@ -134,6 +162,17 @@ do {
     do {
         let _ = try coveralls.maybeThrowComplex(input: 3)
         fatalError("should have thrown")
+    } catch let e as ComplexError {
+        if case .UnknownError = e {
+        } else {
+            fatalError("wrong error variant: \(e)")
+        }
+        assert(String(describing: e) == "UnknownError", "Unexpected ComplexError.UnknownError description: \(e)")
+    }
+
+    do {
+        let _ = try coveralls.maybeThrowComplex(input: 4)
+        fatalError("should have thrown")
     } catch {
         assert(String(describing: error) == "rustPanic(\"Invalid input\")")
     }
@@ -201,4 +240,10 @@ do {
     coveralls.addPatch(patch: Patch(color: Color.red))
     coveralls.addRepair(repair: Repair(when: Date.init(), patch: Patch(color: Color.blue)))
     assert(coveralls.getRepairs().count == 2)
+}
+
+// Test bytes
+do {
+    let coveralls = Coveralls(name: "test_bytes")
+    assert(coveralls.reverse(value: Data("123".utf8)) == Data("321".utf8))
 }

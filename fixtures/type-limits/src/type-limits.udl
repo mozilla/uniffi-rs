@@ -1,0 +1,17 @@
+namespace uniffi_type_limits {
+  i8 take_i8(i8 v);
+  i16 take_i16(i16 v);
+  i32 take_i32(i32 v);
+  i64 take_i64(i64 v);
+
+  u8 take_u8(u8 v);
+  u16 take_u16(u16 v);
+  u32 take_u32(u32 v);
+  u64 take_u64(u64 v);
+
+  f32 take_f32(f32 v);
+  f64 take_f64(f64 v);
+
+  string take_string(string v);
+  bytes take_bytes(bytes v);
+};
