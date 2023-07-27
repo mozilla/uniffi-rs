@@ -1546,6 +1546,45 @@ impl Foo {
 }
 <span class="boring">}
 </span></code></pre></pre>
+<h2><a class="header" href="#the-unifficustomtype-derive" id="the-unifficustomtype-derive">The <code>uniffi::CustomType</code> derive</a></h2>
+<p>The <code>CustomType</code> derive registers a type as a custom type and can be used on any struct that wants to be exposed
+as a builtin type. You must specify the builtin type using either the <code>builtin</code> or <code>newtype</code> attribute.</p>
+<p>If you specify the <code>builtin</code> attribute, you must manually implement the <code>UniffiCustomTypeConverter</code> for your
+type as described in the <a href="proc_macro/../udl/custom_types.html">UDL documentation for Custom Types</a>. However, if you
+specify the <code>newtype</code> attribute UniFFI will generate the implementation of this trait assuming the type
+implements the &quot;new type&quot; idiom (ie, a tuple struct with the builtin as the only element).</p>
+<p>For example, this type does not use the &quot;new type&quot; idiom, so must specify the complete implementation.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(uniffi::CustomType)]
+#[uniffi(builtin=String)]
+pub struct Uuid {
+    val: String,
+}
+
+impl UniffiCustomTypeConverter for Uuid {
+    type Builtin = String;
+
+    fn into_custom(val: Self::Builtin) -&gt; uniffi::Result&lt;Self&gt; {
+        Ok(Uuid { val })
+    }
+
+    fn from_custom(obj: Self) -&gt; Self::Builtin {
+        obj.val
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Whereas this type uses the &quot;new type&quot; idiom, so <code>UniffiCustomTypeConverter</code> is automatically derived</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(uniffi::CustomType)]
+#[uniffi(newtype=i64)]
+pub struct NewtypeHandle(i64);
+<span class="boring">}
+</span></code></pre></pre>
 <h2><a class="header" href="#the-uniffierror-derive" id="the-uniffierror-derive">The <code>uniffi::Error</code> derive</a></h2>
 <p>The <code>Error</code> derive registers a type as an error and can be used on any enum that the <code>Enum</code> derive also accepts.
 By default, it exposes any variant fields to the foreign code.
