@@ -25,6 +25,7 @@ fun assertApproximateTime(actualTime: Long, expectedTime: Int, testName:  String
 
 // Test `always_ready`.
 runBlocking {
+    println("Test `always_ready`.")
     val time = measureTimeMillis {
         val result = alwaysReady()
 
@@ -36,6 +37,7 @@ runBlocking {
 
 // Test `void`.
 runBlocking {
+    println("Test `void`.")
     val time = measureTimeMillis {
         val result = void()
 
@@ -47,6 +49,7 @@ runBlocking {
 
 // Test `sleep`.
 runBlocking {
+    println("Test `sleep`.")
     val time = measureTimeMillis {
         sleep(200U)
     }
@@ -56,6 +59,7 @@ runBlocking {
 
 // Test sequential futures.
 runBlocking {
+    println("Test sequential futures.")
     val time = measureTimeMillis {
         val resultAlice = sayAfter(100U, "Alice")
         val resultBob = sayAfter(200U, "Bob")
@@ -69,6 +73,7 @@ runBlocking {
 
 // Test concurrent futures.
 runBlocking {
+    println("Test concurrent futures.")
     val time = measureTimeMillis {
         val resultAlice = async { sayAfter(100U, "Alice") }
         val resultBob = async { sayAfter(200U, "Bob") }
@@ -82,6 +87,7 @@ runBlocking {
 
 // Test async methods.
 runBlocking {
+    print("Test async methods.")
     val megaphone = newMegaphone()
     val time = measureTimeMillis {
         val resultAlice = megaphone.sayAfter(200U, "Alice")
@@ -94,6 +100,7 @@ runBlocking {
 
 // Test async method returning optional object
 runBlocking {
+    println("Test async method returning optional object")
     val megaphone = asyncMaybeNewMegaphone(true)
     assert(megaphone != null)
 
@@ -103,6 +110,7 @@ runBlocking {
 
 // Test with the Tokio runtime.
 runBlocking {
+    println("Test async method returning optional object")
     val time = measureTimeMillis {
         val resultAlice = sayAfterWithTokio(200U, "Alice")
 
@@ -114,6 +122,7 @@ runBlocking {
 
 // Test fallible function/method.
 runBlocking {
+    println("Test fallible function/method.")
     val time1 = measureTimeMillis {
         try {
             fallibleMe(false)
@@ -179,6 +188,7 @@ runBlocking {
 
 // Test record.
 runBlocking {
+    println("Test record.")
     val time = measureTimeMillis {
         val result = newMyRecord("foo", 42U)
 
@@ -193,6 +203,7 @@ runBlocking {
 
 // Test a broken sleep.
 runBlocking {
+    println("Test a broken sleep.")
     val time = measureTimeMillis {
         brokenSleep(100U, 0U) // calls the waker twice immediately
         sleep(100U) // wait for possible failure

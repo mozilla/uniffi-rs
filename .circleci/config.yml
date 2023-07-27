@@ -84,7 +84,7 @@ jobs:
           command: |
             # Ensures that all examples are built and avaiable
             cargo build
-      - run: cargo test
+      - run: cargo test -p uniffi-fixture-futures uniffi_foreign_language_testcase_test_futures_kts -- --nocapture
       - run:
           name: mypy Python typechecks
           command: |
@@ -114,7 +114,7 @@ jobs:
       # some tests fail on earlier rust versions and we want to ignore them:
       # * trybuild_ui_tests - 1.61 vs 1.62 hits https://github.com/dtolnay/trybuild/issues/186
       #   (which was WONTFIXd, so this is the best we can do)
-      - run: cargo test -- --skip trybuild_ui_tests
+      - run: cargo test -p uniffi-fixture-futures uniffi_foreign_language_testcase_test_futures_kts -- --nocapture --skip trybuild_ui_tests
   Deploy website:
     docker:
       - image: cimg/rust:1.69
