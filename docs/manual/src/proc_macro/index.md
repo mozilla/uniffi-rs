@@ -47,6 +47,7 @@ fn hello_ffi() {
 // Corresponding UDL:
 //
 // interface MyObject {};
+#[derive(uniffi::Object)] 
 struct MyObject {
     // ...
 }
