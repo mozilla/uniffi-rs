@@ -1,4 +1,5 @@
 use custom_types::Handle;
+use ext_types_external_crate::{ExternalCrateDictionary, ExternalCrateInterface};
 use ext_types_guid::Guid;
 use std::sync::Arc;
 use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneType};
@@ -21,6 +22,8 @@ pub struct CombinedType {
     pub handle: Handle,
     pub handles: Vec<Handle>,
     pub maybe_handle: Option<Handle>,
+
+    pub ecd: ExternalCrateDictionary,
 }
 
 fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
@@ -50,6 +53,8 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
         handle: Handle(123),
         handles: vec![Handle(1), Handle(2), Handle(3)],
         maybe_handle: Some(Handle(4)),
+
+        ecd: ExternalCrateDictionary { sval: "ecd".into() },
     })
 }
 
@@ -106,6 +111,10 @@ fn get_maybe_uniffi_one_enums(es: Vec<Option<UniffiOneEnum>>) -> Vec<Option<Unif
 
 fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
+}
+
+fn get_external_crate_interface(val: String) -> Arc<ExternalCrateInterface> {
+    Arc::new(ExternalCrateInterface::new(val))
 }
 
 uniffi::include_scaffolding!("ext-types-lib");

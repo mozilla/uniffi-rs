@@ -10,6 +10,7 @@ publish = false
 external-crates = [
     "uniffi-fixture-ext-types-guid",
     "uniffi-fixture-ext-types-lib-one",
+    "uniffi-fixture-ext-types-external-crate",
     "uniffi-example-custom-types",
 ]
 
@@ -22,6 +23,7 @@ anyhow = "1"
 bytes = "1.3"
 uniffi = {path = "../../../uniffi", version = "0.24" }
 
+uniffi-fixture-ext-types-external-crate = {path = "../external-crate"}
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 uniffi-fixture-ext-types-guid = {path = "../guid"}
 
