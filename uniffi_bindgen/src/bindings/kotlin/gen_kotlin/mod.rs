@@ -435,7 +435,7 @@ pub mod filters {
             Some(t) => type_name(t)?,
             None => "Unit".into(),
         };
-        Ok(format!("Continuation<{return_type_name}>"))
+        Ok(format!("CancellableContinuation<{return_type_name}>"))
     }
 
     pub fn render_literal(
