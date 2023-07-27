@@ -91,7 +91,7 @@ pub struct ComponentInterface {
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
-    namespace: Option<Namespace>,
+    namespace: Namespace,
     /// The high-level API provided by the component.
     enums: BTreeMap<String, Enum>,
     records: BTreeMap<String, Record>,
@@ -138,8 +138,8 @@ impl ComponentInterface {
     }
 
     ///
-    pub fn namespace_definition(&self) -> Option<&Namespace> {
-        self.namespace.as_ref()
+    pub fn namespace_definition(&self) -> &Namespace {
+        &self.namespace
     }
 
     /// The string namespace within which this API should be presented to the caller.
@@ -147,10 +147,7 @@ impl ComponentInterface {
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
-        match &self.namespace {
-            Some(namespace) => namespace.name(),
-            None => "",
-        }
+        self.namespace.name.as_str()
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -598,10 +595,10 @@ impl ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed namespace definition to the `ComponentInterface`.
     fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
-        if self.namespace.is_some() {
+        if !self.namespace.name.is_empty() {
             bail!("duplicate namespace definition");
         }
-        self.namespace = Some(defn);
+        self.namespace = defn;
         Ok(())
     }
 
@@ -775,7 +772,7 @@ impl ComponentInterface {
     /// as a whole, and which can only be detected after we've finished defining
     /// the entire interface.
     pub fn check_consistency(&self) -> Result<()> {
-        if self.namespace.is_none() {
+        if self.namespace.name.is_empty() {
             bail!("missing namespace definition");
         }
 
@@ -1268,7 +1265,7 @@ new definition: Enum {
         "#;
         let ci = ComponentInterface::from_webidl(UDL).unwrap();
         assert_eq!(
-            ci.namespace_definition().unwrap().docstring().unwrap(),
+            ci.namespace_definition().docstring().unwrap(),
             "informative\ndocstring"
         );
     }

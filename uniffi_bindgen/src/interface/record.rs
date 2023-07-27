@@ -126,6 +126,7 @@ pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,
     pub(super) default: Option<Literal>,
+    #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
 

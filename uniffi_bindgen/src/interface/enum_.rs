@@ -189,6 +189,7 @@ pub struct Enum {
     // * For an Enum not used as an error but which has no variants with data, `flat` will be
     //   false when generating the scaffolding but `true` when generating bindings.
     pub(super) flat: bool,
+    #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
 
@@ -303,6 +304,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
 

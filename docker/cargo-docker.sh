@@ -16,4 +16,4 @@ docker run \
     -v $ROOT_DIR:/mounted_workdir \
     -w /mounted_workdir/$(realpath -m --relative-to=$ROOT_DIR $PWD) \
     --group-add $(id -g) \
-    rfkelly/uniffi-ci:latest bash -i -c "umask 0002 && $*"
+    janerik/uniffi-ci-test:latest bash -i -c "umask 0002 && $*"

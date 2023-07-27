@@ -21,6 +21,7 @@ members = [
 
   "fixtures/benchmarks",
   "fixtures/coverall",
+  "fixtures/coverall-upstream-compatibility",
   "fixtures/callbacks",
 
   "fixtures/ext-types/guid",
