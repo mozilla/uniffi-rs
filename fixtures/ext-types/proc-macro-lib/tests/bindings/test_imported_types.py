@@ -4,6 +4,7 @@
 
 import unittest
 import urllib
+from ext_types_guid import *
 from imported_types_lib import *
 from uniffi_one import *
 
@@ -50,6 +51,18 @@ class TestIt(unittest.TestCase):
     def test_get_guid_procmacro(self):
         g = get_guid_procmacro(None)
         self.assertEqual(g, get_guid_procmacro(g))
+
+    def test_get_customs(self):
+        g = get_guid(None)
+        self.assertEqual(g, get_guid(g))
+
+        u = get_uuid(None)
+        self.assertEqual(u, get_uuid(u))
+        self.assertEqual(get_uuid_value(u), "new")
+
+        h = get_newtype_handle(None)
+        self.assertEqual(h, get_newtype_handle(h))
+        self.assertEqual(get_newtype_handle_value(h), 42)
 
 if __name__=='__main__':
     unittest.main()
