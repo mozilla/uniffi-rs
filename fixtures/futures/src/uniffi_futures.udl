@@ -1,1 +1,1 @@
-namespace uniffi_futures {};
+namespace futures {};
