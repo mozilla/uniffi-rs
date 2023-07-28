@@ -59,7 +59,7 @@ RUN mkdir -p /tmp/setup-kotlin \
     # XXX TODO: should check a sha256sum or something here...
     && bash ./sdk.install.sh \
     && . /root/.sdkman/bin/sdkman-init.sh \
-    && sdk install kotlin \
+    && sdk install kotlin 1.8.20 \
     && cd ../ \
     && rm -rf ./setup-kotlin
 
@@ -76,6 +76,8 @@ RUN mkdir -p /tmp/setup-kotlinx \
     && curl -o kotlinx-coroutines-core-jvm.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.4/kotlinx-coroutines-core-jvm-1.6.4.jar \
     # XXX TODO: should check a sha256sum or something here...
     && mv kotlinx-coroutines-core-jvm.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /root/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /root/.profile \
     && cd ../ \
     && rm -rf ./setup-kotlinx
 
