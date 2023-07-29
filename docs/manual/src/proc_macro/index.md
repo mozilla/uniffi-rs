@@ -186,24 +186,21 @@ impl Foo {
 }
 ```
 
-## The `uniffi::CustomType` derive
+## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 
-The `CustomType` derive registers a type as a custom type and can be used on any struct that wants to be exposed
-as a builtin type. You must specify the builtin type using either the `builtin` or `newtype` attribute.
+There are 2 macros available which allow procmacros to support "custom types" as described in the
+[UDL documentation for Custom Types](../udl/custom_types.md)
 
-If you specify the `builtin` attribute, you must manually implement the `UniffiCustomTypeConverter` for your
-type as described in the [UDL documentation for Custom Types](../udl/custom_types.md). However, if you
-specify the `newtype` attribute UniFFI will generate the implementation of this trait assuming the type
-implements the "new type" idiom (ie, a tuple struct with the builtin as the only element).
-
-For example, this type does not use the "new type" idiom, so must specify the complete implementation.
+The `uniffi::custom_type!` macro requires you to specify the name of the custom type, and the name of the
+builtin which implements this type. Use of this macro requires you to manually implement the
+`UniffiCustomTypeConverter` trait for for your type, as shown below.
 ```rust
 pub struct Uuid {
     val: String,
 }
 
 // Use `url::Url` as a custom type, with `String` as the Builtin
-uniffi::impl_ffi_converter_custom_type!(Url, String);
+uniffi::custom_type!(Url, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -218,13 +215,17 @@ impl UniffiCustomTypeConverter for Uuid {
 }
 ```
 
-Whereas this type uses the "new type" idiom, so we can use `impl_ffi_converter_custom_newtype` to
-automatically implement `UniffiCustomTypeConverter`.
+There's also a `uniffi::custom_newtype!` macro, designed for custom types which use the
+"new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
+is able to make assumptions about how the type is laid out, `UniffiCustomTypeConverter`
+is implemented automatically.
 
 ```rust
-impl_ffi_converter_custom_newtype!(NewTypeHandle, i64);
+uniffi::custom_newtype!(NewTypeHandle, i64);
 pub struct NewtypeHandle(i64);
 ```
+
+and that's it!
 
 ## The `uniffi::Error` derive
 

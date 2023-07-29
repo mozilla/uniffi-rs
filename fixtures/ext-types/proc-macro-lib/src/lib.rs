@@ -145,7 +145,7 @@ pub struct Uuid {
 // Tell UniFfi we want to use am UniffiCustomTypeConverter to go to and
 // from a String.
 //  Note this could be done even if the above `struct` defn was external.
-::uniffi::impl_ffi_converter_custom_type!(Uuid, String);
+uniffi::custom_type!(Uuid, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -163,7 +163,7 @@ impl UniffiCustomTypeConverter for Uuid {
 pub struct NewtypeHandle(i64);
 
 // Uniffi can generate the UniffiCustomTypeConverter for us too.
-::uniffi::impl_ffi_converter_custom_newtype!(NewtypeHandle, i64);
+uniffi::custom_newtype!(NewtypeHandle, i64);
 
 #[uniffi::export]
 fn get_uuid(u: Option<Uuid>) -> Uuid {
