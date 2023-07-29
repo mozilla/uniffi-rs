@@ -138,11 +138,14 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
 
 // Some custom types via macros.
 // Another guid - here we use a regular struct.
-#[derive(uniffi::CustomType)]
-#[uniffi(builtin=String)]
 pub struct Uuid {
     val: String,
 }
+
+// Tell UniFfi we want to use am UniffiCustomTypeConverter to go to and
+// from a String.
+//  Note this could be done even if the above `struct` defn was external.
+::uniffi::impl_ffi_converter_custom_type!(Uuid, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -156,11 +159,11 @@ impl UniffiCustomTypeConverter for Uuid {
     }
 }
 
-// A custom type using the "newtype" idiom.
-// Uniffi can generate the UniffiCustomTypeConverter for us.
-#[derive(uniffi::CustomType)]
-#[uniffi(newtype=i64)]
+// A custom type using the "newtype" idiom. As above, could be external.
 pub struct NewtypeHandle(i64);
+
+// Uniffi can generate the UniffiCustomTypeConverter for us too.
+::uniffi::impl_ffi_converter_custom_newtype!(NewtypeHandle, i64);
 
 #[uniffi::export]
 fn get_uuid(u: Option<Uuid>) -> Uuid {

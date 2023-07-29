@@ -11,12 +11,7 @@
 {%- endmatch %}
 {%- endfor %}
 
-// For custom scaffolding types we need to generate an FfiConverter impl based on the
-// UniffiCustomTypeConverter implementation that the library supplies
-{% for (name, builtin) in ci.iter_custom_types() %}
-
-// Type `{{ name }}` wraps a `{{ builtin|debug }}`
-#[::uniffi::ffi_converter_custom_type(builtin = {{ builtin|type_rs }}, tag = crate::UniFfiTag)]
-struct r#{{ name }} { }
-
+// We generate support for each Custom Type and the builtin type it uses.
+{%- for (name, builtin) in ci.iter_custom_types() %}
+::uniffi::impl_ffi_converter_custom_type!(r#{{ name }}, {{builtin|type_rs}});
 {%- endfor -%}
