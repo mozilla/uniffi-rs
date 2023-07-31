@@ -236,8 +236,8 @@ where
         // Store 1 in `waker_counter`, which we'll use at the end of this call.
         self.wake_counter.store(1, Ordering::Relaxed);
 
-        // Pin<&mut> from our UnsafeCell.  &mut is is safe, since this is the only reference we
-        // ever take to `self.future` and calls to this function are serialized.  Pin<> is safe
+        // `Pin<&mut>`` from our `UnsafeCell`.  `&mut` it is safe, since this is the only reference we
+        // ever take to `self.future` and calls to this function are serialized.  `Pin` is safe
         // since we never move the future out of `self.future`.
         let future = unsafe { Pin::new_unchecked(&mut *self.future.get()) };
         let waker = self.make_waker();
@@ -295,6 +295,8 @@ where
         // This is safe as long as we implement the waker interface correctly.
         unsafe {
             Waker::from_raw(RawWaker::new(
+                // `self` is cloned, and `Self::into_raw` is called immediately. It could leak
+                // memory if the `Waker` doesn't call `Self::from_raw`.
                 self.clone().into_raw(),
                 &Self::RAW_WAKER_VTABLE,
             ))
@@ -509,12 +511,16 @@ mod tests {
         let waker = test_env.rust_future.make_waker();
         let weak_ref = test_env.rust_future_weak();
         assert_eq!(weak_ref.strong_count(), 2);
+
         let waker2 = waker.clone();
         assert_eq!(weak_ref.strong_count(), 3);
+
         drop(waker);
         assert_eq!(weak_ref.strong_count(), 2);
+
         drop(waker2);
         assert_eq!(weak_ref.strong_count(), 1);
+
         drop(test_env);
         assert_eq!(weak_ref.strong_count(), 0);
         assert!(weak_ref.upgrade().is_none());
