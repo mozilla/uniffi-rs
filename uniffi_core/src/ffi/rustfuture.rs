@@ -258,6 +258,9 @@ where
             }),
         );
 
+        // The waker is no longer necessary. Drop it now.
+        drop(waker);
+
         // All the main work is done, time to finish up
         match result {
             Some(Poll::Pending) => {
