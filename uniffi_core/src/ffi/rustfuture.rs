@@ -54,10 +54,10 @@
 //! ) {
 //!     ::uniffi::call_with_output(uniffi_call_status, || {
 //!         let uniffi_rust_future = RustFuture::<_, bool, crate::UniFFITag,>::new(
-//!             future: hello(),
-//!             executor,
-//!             callback,
-//!             callback_data,
+//!             hello(), // the future!
+//!             uniffi_executor,
+//!             uniffi_callback,
+//!             uniffi_callback_data,
 //!         );
 //!         uniffi_rust_future.wake();
 //!     })
@@ -140,14 +140,14 @@ pub type FutureCallback<T> =
 
 /// Future that the foreign code is awaiting
 ///
-/// RustFuture is always stored inside a Pin<Arc<>>.  The `Arc<>` allows it to be shared between
-/// wakers and Pin<> signals that it must not move, since this would break any self-references in
+/// `RustFuture` is always stored inside a `Pin<Arc<_>>`.  The `Arc` allows it to be shared between
+/// wakers and `Pin` signals that it must not move, since this would break any self-references in
 /// the future.
 pub struct RustFuture<F, T, UT>
 where
     // The future needs to be `Send`, since it will move to whatever thread the foreign executor
-    // chooses.  However, it doesn't need to be `Sync', since we don't share references between
-    // threads (see do_wake()).
+    // chooses.  However, it doesn't need to be `Sync`, since we don't share references between
+    // threads (see `do_wake()`).
     F: Future<Output = T> + Send,
     T: FfiConverter<UT>,
 {
@@ -158,8 +158,8 @@ where
     callback_data: *const (),
 }
 
-// Mark RustFuture as Send + Sync, since we will be sharing it between threads.  This means we need
-// to serialize access to any fields that aren't Send + Sync (`future`, `callback`, and
+// Mark `RustFuture` as `Send` + `Sync`, since we will be sharing it between threads.  This means
+// we need to serialize access to any fields that aren't `Send` + `Sync` (`future`, `callback`, and
 // `callback_data`).  See `do_wake()` for details on this.
 
 unsafe impl<F, T, UT> Send for RustFuture<F, T, UT>
@@ -181,6 +181,7 @@ where
     F: Future<Output = T> + Send,
     T: FfiConverter<UT>,
 {
+    /// Create a new `RustFuture`.
     pub fn new(
         future: F,
         executor_handle: ForeignExecutorHandle,
@@ -202,13 +203,17 @@ where
     /// Wake up soon and poll our future.
     ///
     /// This method ensures that a call to `do_wake()` is scheduled.  Only one call will be scheduled
-    /// at any time, even if `wake_soon` called multiple times from multiple threads.
+    /// at any time, even if `wake` called multiple times from multiple threads, in which cases, calls
+    /// to `wake` won't be queued, but simply ignored.
     pub fn wake(self: Pin<Arc<Self>>) {
         if self.wake_counter.fetch_add(1, Ordering::Relaxed) == 0 {
             self.schedule_do_wake();
         }
     }
 
+    /// Schedule `do_wake`.
+    ///
+    /// `self` is consumed but _NOT_ dropped, it's purposely leaked!
     fn schedule_do_wake(self: Pin<Arc<Self>>) {
         unsafe {
             let handle = self.executor.handle;
@@ -345,7 +350,6 @@ where
         Self::from_raw(self_ptr).wake()
     }
 
-    /// This function gets called when a `RawWaker` gets dropped.
     /// This function gets called when a `RawWaker` gets dropped.
     unsafe fn raw_drop(self_ptr: *const ()) {
         drop(Self::from_raw(self_ptr))

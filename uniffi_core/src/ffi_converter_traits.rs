@@ -151,7 +151,7 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// from it (but will not mutate the actual contents of the slice).
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
 
-    /// Invoke a `FutureCallback` to complete a async call
+    /// Invoke a `FutureCallback` to complete an async call
     fn invoke_future_callback(
         callback: Self::FutureCallback,
         callback_data: *const (),
