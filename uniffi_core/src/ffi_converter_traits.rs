@@ -123,8 +123,8 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// The default implementation panics unconditionally.  Errors used in callback interfaces
     /// handle this using the `From<UnexpectedUniFFICallbackError>` impl that the library author
     /// must provide.
-    fn handle_callback_unexpected_error(_e: UnexpectedUniFFICallbackError) -> Self {
-        panic!("Callback interface method returned unexpected error")
+    fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Self {
+        panic!("Callback interface failure: {e}")
     }
 
     /// Write a rust value into a buffer, to send over the FFI in serialized form.
@@ -188,8 +188,8 @@ pub unsafe trait FfiConverterArc<UT> {
     fn lift_callback_error(_buf: RustBuffer) -> Arc<Self> {
         panic!("Callback interface method returned unexpected error")
     }
-    fn handle_callback_unexpected_error(_e: UnexpectedUniFFICallbackError) -> Arc<Self> {
-        panic!("Callback interface method returned unexpected error")
+    fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Arc<Self> {
+        panic!("Callback interface failure: {e}")
     }
     fn write(obj: Arc<Self>, buf: &mut Vec<u8>);
     fn try_read(buf: &mut &[u8]) -> Result<Arc<Self>>;
