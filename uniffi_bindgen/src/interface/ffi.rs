@@ -54,6 +54,8 @@ pub enum FfiType {
     ForeignExecutorHandle,
     /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
     ForeignExecutorCallback,
+    /// Pointer to a `RustFuture`.
+    Future,
     /// Pointer to a callback function to complete an async Rust function
     FutureCallback {
         /// Note: `return_type` is not optional because we have a void callback parameter like we

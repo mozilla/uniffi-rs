@@ -366,6 +366,7 @@ impl SwiftCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
+            FfiType::Future => "UnsafeMutableRawPointer".into(),
             FfiType::FutureCallback { return_type } => {
                 format!("UniFfiFutureCallback{}", self.ffi_type_label(return_type))
             }
@@ -461,6 +462,7 @@ pub mod filters {
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "size_t".into(),
+            FfiType::Future => "void*_Nonnull".into(),
             FfiType::FutureCallback { return_type } => format!(
                 "UniFfiFutureCallback{} _Nonnull",
                 SwiftCodeOracle.ffi_type_label_raw(return_type)

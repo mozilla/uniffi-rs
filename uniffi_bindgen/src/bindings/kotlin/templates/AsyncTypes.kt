@@ -1,7 +1,6 @@
 // Async return type handlers
 
 {# add imports that we use #}
-// {{ self.add_import("kotlin.coroutines.Continuation") }}
 {{ self.add_import("kotlin.coroutines.resume") }}
 {{ self.add_import("kotlin.coroutines.resumeWithException") }}
 {{ self.add_import("kotlinx.coroutines.suspendCancellableCoroutine") }}

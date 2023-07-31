@@ -84,6 +84,7 @@ mod filters {
             FfiType::ForeignBytes => "::uniffi::ForeignBytes".into(),
             FfiType::ForeignCallback => "::uniffi::ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "::uniffi::ForeignExecutorHandle".into(),
+            FfiType::Future => "*const std::os::raw::c_void".into(),
             FfiType::FutureCallback { return_type } => {
                 format!("::uniffi::FutureCallback<{}>", type_ffi(return_type)?)
             }
