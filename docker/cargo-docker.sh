@@ -15,6 +15,6 @@ docker run \
     -v $HOME/.cargo/registry:/home/circleci/.cargo/registry \
     -v $ROOT_DIR:/mounted_workdir \
     -w /mounted_workdir/$(realpath -m --relative-to=$ROOT_DIR $PWD) \
-    -e TERM="xterm256color" \
+    -e TERM="xterm-256color" \
     --group-add $(id -g) \
     ghcr.io/nordsecurity/uniffi-rs-test-runner:v0.0.2 bash -i -c "umask 0002 && $*"

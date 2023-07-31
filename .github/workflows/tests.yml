@@ -19,5 +19,5 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          HOME=/root . /root/.sdkman/bin/sdkman-init.sh
+          source ~/.bashrc
           cargo test
