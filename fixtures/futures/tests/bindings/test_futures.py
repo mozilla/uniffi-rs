@@ -1,4 +1,4 @@
-from uniffi_futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio, fallible_me, fallible_struct, MyError, MyRecord, new_my_record
+from futures import always_ready, void, sleep, say_after, new_megaphone, say_after_with_tokio, fallible_me, fallible_struct, MyError, MyRecord, new_my_record
 import unittest
 from datetime import datetime
 import asyncio
