@@ -26,6 +26,7 @@
 
 - [Generating bindings](./bindings)
 - [Customizing binding generation](./bindings#customizing-the-binding-generation)
+- [Implementing Rust traits in foreign bindings](./foreign_traits)
 
 ## Kotlin
 
