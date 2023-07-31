@@ -13,11 +13,15 @@ jobs:
           rustup show
           rustup update
       - uses: Swatinem/rust-cache@v2
-      - name: Build
-        run: |
-          cargo build
+      # - name: Build
+      #   run: |
+      #     cargo build
       - name: Run tests
         shell: bash
+        env:
+          # Github sets HOME to /github/home and breaks dependencies in Docker image..
+          # https://github.com/actions/runner/issues/863
+          HOME: /root
         run: |
           source ~/.bashrc
           cargo test
