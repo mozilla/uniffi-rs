@@ -198,7 +198,7 @@ fn gen_ffi_function(
                 ::uniffi::deps::log::debug!(#name);
                 ::uniffi::rust_call(uniffi_call_status, || {
                     #pre_fn_call;
-                    let uniffi_rust_future = ::uniffi::RustFuture::<_, #return_ty, crate::UniFfiTag>::new(
+                    let uniffi_rust_future = ::uniffi::RustFuture::<#return_ty, crate::UniFfiTag>::new(
                         #future_expr,
                         uniffi_executor_handle,
                         uniffi_callback,

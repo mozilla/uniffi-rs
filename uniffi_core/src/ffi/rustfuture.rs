@@ -120,13 +120,12 @@ use crate::{
     ForeignExecutorHandle, RustCallStatus,
 };
 use std::{
-    cell::UnsafeCell,
     future::Future,
     panic,
     pin::Pin,
     sync::{
         atomic::{AtomicU32, Ordering},
-        Arc,
+        Arc, RwLock,
     },
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
@@ -143,15 +142,14 @@ pub type FutureCallback<T> =
 /// `RustFuture` is always stored inside a `Pin<Arc<_>>`.  The `Arc` allows it to be shared between
 /// wakers and `Pin` signals that it must not move, since this would break any self-references in
 /// the future.
-pub struct RustFuture<F, T, UT>
+pub struct RustFuture<T, UT>
 where
+    T: FfiConverter<UT>,
+{
     // The future needs to be `Send`, since it will move to whatever thread the foreign executor
     // chooses.  However, it doesn't need to be `Sync`, since we don't share references between
     // threads (see `do_wake()`).
-    F: Future<Output = T> + Send,
-    T: FfiConverter<UT>,
-{
-    future: UnsafeCell<F>,
+    future: RwLock<Option<Pin<Box<dyn Future<Output = T> + Send + 'static>>>>,
     executor: ForeignExecutor,
     wake_counter: AtomicU32,
     callback: T::FutureCallback,
@@ -162,37 +160,29 @@ where
 // we need to serialize access to any fields that aren't `Send` + `Sync` (`future`, `callback`, and
 // `callback_data`).  See `do_wake()` for details on this.
 
-unsafe impl<F, T, UT> Send for RustFuture<F, T, UT>
-where
-    F: Future<Output = T> + Send,
-    T: FfiConverter<UT>,
-{
-}
+unsafe impl<T, UT> Send for RustFuture<T, UT> where T: FfiConverter<UT> {}
 
-unsafe impl<F, T, UT> Sync for RustFuture<F, T, UT>
-where
-    F: Future<Output = T> + Send,
-    T: FfiConverter<UT>,
-{
-}
+unsafe impl<T, UT> Sync for RustFuture<T, UT> where T: FfiConverter<UT> {}
 
-impl<F, T, UT> RustFuture<F, T, UT>
+impl<T, UT> RustFuture<T, UT>
 where
-    F: Future<Output = T> + Send,
     T: FfiConverter<UT>,
 {
     /// Create a new `RustFuture`.
-    pub fn new(
+    pub fn new<F>(
         future: F,
         executor_handle: ForeignExecutorHandle,
         callback: T::FutureCallback,
         callback_data: *const (),
-    ) -> Pin<Arc<Self>> {
+    ) -> Pin<Arc<Self>>
+    where
+        F: Future<Output = T> + Send + 'static,
+    {
         let executor =
             <ForeignExecutor as FfiConverter<crate::UniFfiTag>>::try_lift(executor_handle)
                 .expect("Error lifting ForeignExecutorHandle");
         Arc::pin(Self {
-            future: UnsafeCell::new(future),
+            future: RwLock::new(Some(Box::pin(future))),
             wake_counter: AtomicU32::new(0),
             executor,
             callback,
@@ -206,7 +196,9 @@ where
     /// at any time, even if `wake` called multiple times from multiple threads, in which cases, calls
     /// to `wake` won't be queued, but simply ignored.
     pub fn wake(self: Pin<Arc<Self>>) {
-        if self.wake_counter.fetch_add(1, Ordering::Relaxed) == 0 {
+        if self.wake_counter.fetch_add(1, Ordering::Relaxed) == 0
+            && self.future.read().unwrap().is_some()
+        {
             self.schedule_do_wake();
         }
     }
@@ -236,10 +228,11 @@ where
         // Store 1 in `waker_counter`, which we'll use at the end of this call.
         self.wake_counter.store(1, Ordering::Relaxed);
 
-        // `Pin<&mut>`` from our `UnsafeCell`.  `&mut` it is safe, since this is the only reference we
+        // `Pin<&mut>` from our `UnsafeCell`.  `&mut` it is safe, since this is the only reference we
         // ever take to `self.future` and calls to this function are serialized.  `Pin` is safe
         // since we never move the future out of `self.future`.
-        let future = unsafe { Pin::new_unchecked(&mut *self.future.get()) };
+        let mut future_lock = self.future.write().unwrap();
+        let future = future_lock.as_mut().expect("future is missing");
         let waker = self.make_waker();
 
         // Run the poll and lift the result if it's ready
@@ -252,11 +245,16 @@ where
             // However, we can safely use `AssertUnwindSafe` since a panic will lead the `Err()`
             // case below.  In that case, we will never run `do_wake()` again and will no longer
             // access the future.
-            panic::AssertUnwindSafe(|| match future.poll(&mut Context::from_waker(&waker)) {
-                Poll::Pending => Ok(Poll::Pending),
-                Poll::Ready(v) => T::lower_return(v).map(Poll::Ready),
+            panic::AssertUnwindSafe(|| {
+                match future.as_mut().poll(&mut Context::from_waker(&waker)) {
+                    Poll::Pending => Ok(Poll::Pending),
+                    Poll::Ready(v) => T::lower_return(v).map(Poll::Ready),
+                }
             }),
         );
+
+        // The future lock is no longer needed, drop it.
+        drop(future_lock);
 
         // The waker is no longer necessary. Drop it now.
         drop(waker);
@@ -382,7 +380,7 @@ mod tests {
     }
 
     // Type alias for the RustFuture we'll use in our tests
-    type TestRustFuture = RustFuture<MockFuture, Result<bool, String>, crate::UniFfiTag>;
+    type TestRustFuture = RustFuture<Result<bool, String>, crate::UniFfiTag>;
 
     // Stores the result that we send to the foreign code
     #[derive(Default)]
@@ -442,9 +440,7 @@ mod tests {
         }
 
         fn complete_future(&self, value: Result<bool, String>) {
-            unsafe {
-                (*self.rust_future.future.get()).0 = Some(value);
-            }
+            *self.rust_future.future.write().unwrap() = Some(Box::pin(async { value }));
         }
     }
 
