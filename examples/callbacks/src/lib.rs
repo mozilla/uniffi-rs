@@ -26,7 +26,7 @@ pub trait CallAnswerer {
 pub struct Telephone;
 impl Telephone {
     pub fn new() -> Self {
-        Self::default()
+        Self {}
     }
 
     pub fn call(&self, answerer: Box<dyn CallAnswerer>) -> Result<String, TelephoneError> {

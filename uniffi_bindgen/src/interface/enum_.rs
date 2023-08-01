@@ -302,7 +302,7 @@ mod test {
 
     #[test]
     fn test_associated_data() {
-        const UDL: &str = r##"
+        const UDL: &str = r#"
             namespace test {
                 void takes_an_enum(TestEnum e);
                 void takes_an_enum_with_data(TestEnumWithData ed);
@@ -324,7 +324,7 @@ mod test {
                 One();
                 Two();
             };
-        "##;
+        "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 3);
         assert_eq!(ci.function_definitions().len(), 4);

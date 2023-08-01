@@ -321,7 +321,7 @@ mod test {
     #[test]
     fn test_minimal_and_rich_function() -> Result<()> {
         let ci = ComponentInterface::from_webidl(
-            r##"
+            r#"
             namespace test {
                 void minimal();
                 [Throws=TestError]
@@ -332,7 +332,7 @@ mod test {
             dictionary TestDict {
                 u32 field;
             };
-        "##,
+        "#,
             "crate_name",
         )?;
 
