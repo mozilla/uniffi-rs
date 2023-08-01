@@ -284,25 +284,35 @@
 <a href="#284" id="284">284</a>
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{format_ident, quote, ToTokens};
+<span class="kw">use </span>std::path::{Path <span class="kw">as </span>StdPath, PathBuf};
 <span class="kw">use </span>syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
     Attribute, Path, Token,
 };
 
+<span class="kw">pub fn </span>manifest_path() -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
+    <span class="kw">let </span>manifest_dir =
+        std::env::var_os(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).ok_or(<span class="string">&quot;`CARGO_MANIFEST_DIR` is not set&quot;</span>)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(StdPath::new(<span class="kw-2">&amp;</span>manifest_dir).join(<span class="string">&quot;Cargo.toml&quot;</span>))
+}
+
 <span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
 </span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;String&gt; {
     <span class="comment">// Without the nightly feature and TokenStream::expand_expr, just return the crate name
 
-    </span><span class="kw">use </span>std::path::Path;
-
-    <span class="kw">use </span>fs_err <span class="kw">as </span>fs;
+    </span><span class="kw">use </span>fs_err <span class="kw">as </span>fs;
     <span class="kw">use </span>once_cell::sync::Lazy;
     <span class="kw">use </span>serde::Deserialize;
 
@@ -324,11 +334,9 @@
     }
 
     <span class="kw">static </span>LIB_CRATE_MOD_PATH: Lazy&lt;<span class="prelude-ty">Result</span>&lt;String, String&gt;&gt; = Lazy::new(|| {
-        <span class="kw">let </span>manifest_dir =
-            std::env::var_os(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).ok_or(<span class="string">&quot;`CARGO_MANIFEST_DIR` is not set&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>file = manifest_path()<span class="question-mark">?</span>;
+        <span class="kw">let </span>cargo_toml_bytes = fs::read(file).map_err(|e| e.to_string())<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>cargo_toml_bytes =
-            fs::read(Path::new(<span class="kw-2">&amp;</span>manifest_dir).join(<span class="string">&quot;Cargo.toml&quot;</span>)).map_err(|e| e.to_string())<span class="question-mark">?</span>;
         <span class="kw">let </span>cargo_toml = toml::from_slice::&lt;CargoToml&gt;(<span class="kw-2">&amp;</span>cargo_toml_bytes)
             .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to parse `Cargo.toml`: {e}&quot;</span>))<span class="question-mark">?</span>;
 

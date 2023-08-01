@@ -368,6 +368,28 @@
 <a href="#368" id="368">368</a>
 <a href="#369" id="369">369</a>
 <a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -641,8 +663,30 @@
             },
             <span class="prelude-val">None</span>,
         );
+
+        <span class="kw">let </span>toml_path = <span class="kw">match </span>util::manifest_path() {
+            <span class="prelude-val">Ok</span>(path) =&gt; path.display().to_string(),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
+                <span class="kw">return </span><span class="macro">quote! </span>{
+                    <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
+                }.into();
+            }
+        };
+
         <span class="macro">quote! </span>{
             #metadata
+
+            <span class="comment">// FIXME(HACK):
+            // Include the `Cargo.toml` file into the build.
+            // That way cargo tracks the file and other tools relying on file
+            // tracking see it as well.
+            // See https://bugzilla.mozilla.org/show_bug.cgi?id=1846223
+            // In the future we should handle that by using the `track_path::path` API,
+            // see https://github.com/rust-lang/rust/pull/84029
+            </span><span class="attr">#[allow(dead_code)]
+            </span><span class="kw">mod </span>__unused {
+                <span class="kw">const _</span>: <span class="kw-2">&amp;</span>[u8] = <span class="macro">include_bytes!</span>(#toml_path);
+            }
 
             <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #name, <span class="string">&quot;.uniffi.rs&quot;</span>));
         }
