@@ -14,6 +14,10 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.2...HEAD).
 
+### What's changed?
+
+- `uniffi_macros`: Force-include the Cargo.toml to read ([#1683](https://github.com/mozilla/uniffi-rs/pull/1683))
+
 ## v0.24.2 (backend crates: v0.24.2) - (_2023-07-25_)
 
 [All changes in v0.24.2](https://github.com/mozilla/uniffi-rs/compare/v0.24.1...v0.24.2).
