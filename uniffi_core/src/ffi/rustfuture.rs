@@ -139,9 +139,8 @@ pub type FutureCallback<T> =
 
 /// Future that the foreign code is awaiting
 ///
-/// `RustFuture` is always stored inside a `Pin<Arc<_>>`.  The `Arc` allows it to be shared between
-/// wakers and `Pin` signals that it must not move, since this would break any self-references in
-/// the future.
+/// `RustFuture` is always stored inside an `Arc`.  The `Arc` allows it to be shared between
+/// wakers.
 pub struct RustFuture<T, UT>
 where
     T: FfiConverter<UT>,
@@ -174,14 +173,15 @@ where
         executor_handle: ForeignExecutorHandle,
         callback: T::FutureCallback,
         callback_data: *const (),
-    ) -> Pin<Arc<Self>>
+    ) -> Arc<Self>
     where
         F: Future<Output = T> + Send + 'static,
     {
         let executor =
             <ForeignExecutor as FfiConverter<crate::UniFfiTag>>::try_lift(executor_handle)
                 .expect("Error lifting ForeignExecutorHandle");
-        Arc::pin(Self {
+
+        Arc::new(Self {
             future: RwLock::new(Some(Box::pin(future))),
             wake_counter: AtomicU32::new(0),
             executor,
@@ -195,7 +195,7 @@ where
     /// This method ensures that a call to `do_wake()` is scheduled.  Only one call will be scheduled
     /// at any time, even if `wake` called multiple times from multiple threads, in which cases, calls
     /// to `wake` won't be queued, but simply ignored.
-    pub fn wake(self: Pin<Arc<Self>>) {
+    pub fn wake(self: Arc<Self>) {
         if self.wake_counter.fetch_add(1, Ordering::Relaxed) == 0
             && self.future.read().unwrap().is_some()
         {
@@ -206,31 +206,26 @@ where
     /// Schedule `do_wake`.
     ///
     /// `self` is consumed but _NOT_ dropped, it's purposely leaked!
-    fn schedule_do_wake(self: Pin<Arc<Self>>) {
-        unsafe {
-            let handle = self.executor.handle;
-            let raw_ptr = Arc::into_raw(Pin::into_inner_unchecked(self)) as *const ();
-            // SAFETY: The `into_raw()` / `from_raw()` contract guarantees that our executor cannot
-            // be dropped before we call `from_raw()` on the raw pointer. This means we can safely
-            // use its handle to schedule a callback.
-            schedule_raw(handle, 0, Self::wake_callback, raw_ptr);
-        }
+    fn schedule_do_wake(self: Arc<Self>) {
+        let handle = self.executor.handle;
+        let raw_ptr = Arc::into_raw(self) as *const ();
+        // SAFETY: The `into_raw()` / `from_raw()` contract guarantees that our executor cannot
+        // be dropped before we call `from_raw()` on the raw pointer. This means we can safely
+        // use its handle to schedule a callback.
+        schedule_raw(handle, 0, Self::wake_callback, raw_ptr);
     }
 
     extern "C" fn wake_callback(self_ptr: *const ()) {
         unsafe {
-            Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)).do_wake();
+            Arc::from_raw(self_ptr as *const Self).do_wake();
         };
     }
 
     // Does the work for wake, we take care to ensure this always runs in a serialized fashion.
-    fn do_wake(self: Pin<Arc<Self>>) {
+    fn do_wake(self: Arc<Self>) {
         // Store 1 in `waker_counter`, which we'll use at the end of this call.
         self.wake_counter.store(1, Ordering::Relaxed);
 
-        // `Pin<&mut>` from our `UnsafeCell`.  `&mut` it is safe, since this is the only reference we
-        // ever take to `self.future` and calls to this function are serialized.  `Pin` is safe
-        // since we never move the future out of `self.future`.
         let mut future_lock = self.future.write().unwrap();
         let future = future_lock.as_mut().expect("future is missing");
         let waker = self.make_waker();
@@ -292,7 +287,7 @@ where
         };
     }
 
-    fn make_waker(self: &Pin<Arc<Self>>) -> Waker {
+    fn make_waker(self: &Arc<Self>) -> Waker {
         // This is safe as long as we implement the waker interface correctly.
         unsafe {
             Waker::from_raw(RawWaker::new(
@@ -305,7 +300,7 @@ where
     }
 
     /// Cancel or drop the `Future` contained inside `Self`.
-    pub fn cancel_or_drop_inner_future(self: Pin<Arc<Self>>) {
+    pub fn cancel_or_drop_inner_future(self: Arc<Self>) {
         // Increase the `wake_counter` to ensure the future cannot be awaken again.
         self.wake_counter.fetch_add(1, Ordering::Relaxed);
 
@@ -314,25 +309,19 @@ where
     }
 
     /// SAFETY: Ensure that all calls to `into_raw()` are balanced with a call to `from_raw()`
-    pub fn into_raw(self: Pin<Arc<Self>>) -> *const () {
-        unsafe { Arc::into_raw(Pin::into_inner_unchecked(self)) as *const () }
+    pub fn into_raw(self: Arc<Self>) -> *const () {
+        Arc::into_raw(self) as *const ()
     }
 
     /// Consume a pointer to get an arc
     ///
     /// SAFETY: The pointer must have come from `into_raw()` or was cloned with `raw_clone()`.
     /// Once a pointer is passed into this function, it should no longer be used.
-    pub fn from_raw(self_ptr: *const ()) -> Pin<Arc<Self>> {
-        unsafe { Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)) }
+    pub fn from_raw(self_ptr: *const ()) -> Arc<Self> {
+        unsafe { Arc::from_raw(self_ptr as *const Self) }
     }
 
     // Implement the waker interface by defining a RawWakerVTable
-    //
-    // We could also handle this by implementing the `Wake` interface, but that uses an `Arc<T>`
-    // instead of a `Pin<Arc<T>>` and in theory it could try to move the `T` value out of the arc
-    // with something like `Arc::try_unwrap()` which would break the pinning contract with
-    // `Future`.  Implementing this using `RawWakerVTable` allows us verify that this doesn't
-    // happen.
     const RAW_WAKER_VTABLE: RawWakerVTable = RawWakerVTable::new(
         Self::raw_clone,
         Self::raw_wake,
@@ -407,7 +396,7 @@ mod tests {
 
     // Bundles everything together so that we can run some tests
     struct TestFutureEnvironment {
-        rust_future: Pin<Arc<TestRustFuture>>,
+        rust_future: Arc<TestRustFuture>,
         executor: MockExecutor,
         foreign_result: Pin<Box<Option<MockForeignResult>>>,
     }
@@ -445,7 +434,7 @@ mod tests {
         fn rust_future_weak(&self) -> Weak<TestRustFuture> {
             // It seems like there's not a great way to get an &Arc from a Pin<Arc>, so we need to
             // do a little dance here
-            Arc::downgrade(&Pin::into_inner(Clone::clone(&self.rust_future)))
+            Arc::downgrade(&Arc::clone(&self.rust_future))
         }
 
         fn complete_future(&self, value: Result<bool, String>) {
