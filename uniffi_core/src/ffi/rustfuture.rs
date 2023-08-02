@@ -434,7 +434,7 @@ mod tests {
         fn rust_future_weak(&self) -> Weak<TestRustFuture> {
             // It seems like there's not a great way to get an &Arc from a Pin<Arc>, so we need to
             // do a little dance here
-            Arc::downgrade(&Arc::clone(&self.rust_future))
+            Arc::downgrade(&self.rust_future)
         }
 
         fn complete_future(&self, value: Result<bool, String>) {

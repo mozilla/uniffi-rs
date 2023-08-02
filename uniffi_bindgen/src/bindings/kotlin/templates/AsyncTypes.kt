@@ -8,7 +8,6 @@
 {{ self.add_import("kotlinx.coroutines.CompletionHandler") }}
 
 {# We use these in the generated functions, which don't have access to add_import() -- might as well add it here #}
-// {{ self.add_import("kotlin.coroutines.suspendCoroutine") }}
 {{ self.add_import("kotlinx.coroutines.coroutineScope") }}
 
 
