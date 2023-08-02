@@ -181,7 +181,7 @@ fn gen_ffi_function(
         }
     } else {
         let ffi_drop_ident = Ident::new(&format!("{}_uniffi_drop", ffi_ident), Span::call_site());
-        let mut future_expr = rust_fn_call;
+        let mut future_expr = quote! { async move { #rust_fn_call.await } };
 
         if matches!(arguments.async_runtime, Some(AsyncRuntime::Tokio(_))) {
             future_expr = quote! { ::uniffi::deps::async_compat::Compat::new(#future_expr) }
