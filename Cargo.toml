@@ -30,11 +30,6 @@ members = [
   "fixtures/ext-types/lib",
   "fixtures/ext-types/proc-macro-lib",
 
-  # we should roll the above and below up somehow that makes sense...
-  "fixtures/external-types/crate-one",
-  "fixtures/external-types/crate-two",
-  "fixtures/external-types/lib",
-
   "fixtures/foreign-executor",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",

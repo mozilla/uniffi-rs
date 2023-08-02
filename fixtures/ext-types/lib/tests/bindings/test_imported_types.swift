@@ -32,3 +32,6 @@ assert(getMaybeUniffiOneEnum(e: UniffiOneEnum.one)! == UniffiOneEnum.one)
 assert(getMaybeUniffiOneEnum(e: nil) == nil)
 assert(getUniffiOneEnums(es: [UniffiOneEnum.one]) == [UniffiOneEnum.one])
 assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.one, nil])
+
+assert(ct.ecd.sval == "ecd")
+assert(getExternalCrateInterface(val: "foo").value() == "foo")

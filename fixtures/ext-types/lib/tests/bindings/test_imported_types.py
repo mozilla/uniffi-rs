@@ -43,6 +43,10 @@ class TestIt(unittest.TestCase):
         self.assertEqual([e], get_uniffi_one_enums([e]))
         self.assertEqual([e, None], get_maybe_uniffi_one_enums([e, None]))
 
+    def test_external_crate_types(self):
+        ct = get_combined_type(None)
+        self.assertEqual(ct.ecd.sval, "ecd");
+        self.assertEqual(get_external_crate_interface("foo").value(), "foo")
 
 if __name__=='__main__':
     unittest.main()
