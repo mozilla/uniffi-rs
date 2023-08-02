@@ -31,7 +31,7 @@ macro_rules! impl_ffi_default_with_default {
 }
 
 impl_ffi_default_with_default! {
-    bool, i8, u8, i16, u16, i32, u32, i64, u64, f32, f64
+    bool, i8, u8, i16, u16, i32, u32, i64, u64, f32, f64, usize,
 }
 
 // Implement FfiDefault for the remaining types

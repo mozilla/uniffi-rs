@@ -304,8 +304,17 @@ where
         }
     }
 
+    /// Cancel or drop the `Future` contained inside `Self`.
+    pub fn cancel_or_drop_inner_future(self: Pin<Arc<Self>>) {
+        // Increase the `wake_counter` to ensure the future cannot be awaken again.
+        self.wake_counter.fetch_add(1, Ordering::Relaxed);
+
+        // Take the `Future`, leaving `None` in its place.
+        let _future = self.future.write().unwrap().take();
+    }
+
     /// SAFETY: Ensure that all calls to `into_raw()` are balanced with a call to `from_raw()`
-    fn into_raw(self: Pin<Arc<Self>>) -> *const () {
+    pub fn into_raw(self: Pin<Arc<Self>>) -> *const () {
         unsafe { Arc::into_raw(Pin::into_inner_unchecked(self)) as *const () }
     }
 
@@ -313,7 +322,7 @@ where
     ///
     /// SAFETY: The pointer must have come from `into_raw()` or was cloned with `raw_clone()`.
     /// Once a pointer is passed into this function, it should no longer be used.
-    fn from_raw(self_ptr: *const ()) -> Pin<Arc<Self>> {
+    pub fn from_raw(self_ptr: *const ()) -> Pin<Arc<Self>> {
         unsafe { Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)) }
     }
 

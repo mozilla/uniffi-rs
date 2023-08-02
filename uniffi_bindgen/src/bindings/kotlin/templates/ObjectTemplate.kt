@@ -67,11 +67,21 @@ class {{ type_name }}(
         var callbackHolder: {{ func.result_type().borrow()|future_callback_handler }}? = null
         return coroutineScope {
             val scope = this
+            var rustFuturePtr: Pointer? = null
+            val completionHandler: CompletionHandler = { _ ->
+                rustCall { status ->
+                    _UniFFILib.INSTANCE.{{ meth.ffi_func().name_for_async_drop() }}(
+                        rustFuturePtr!!,
+                        status,
+                    )
+                }
+                callbackHolder = null
+            }
             return@coroutineScope suspendCancellableCoroutine { continuation ->
                 try {
-                    val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation)
+                    val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation, completionHandler)
                     callbackHolder = callback
-                    callWithPointer { thisPtr ->
+                    rustFuturePtr = callWithPointer { thisPtr ->
                         rustCall { status ->
                             _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
                                 thisPtr,
@@ -85,6 +95,7 @@ class {{ type_name }}(
                     }
                 } catch (e: Exception) {
                     continuation.resumeWithException(e)
+                    completionHandler(null)
                 }
             }
         }

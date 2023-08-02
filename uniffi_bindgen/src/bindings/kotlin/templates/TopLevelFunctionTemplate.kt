@@ -17,11 +17,23 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
     var callbackHolder: {{ func.result_type().borrow()|future_callback_handler }}? = null
     return coroutineScope {
         val scope = this
+        var rustFuturePtr: Pointer? = null
+        val completionHandler: CompletionHandler = { _ ->
+            rustCall { status ->
+                _UniFFILib.INSTANCE.{{ func.ffi_func().name_for_async_drop() }}(
+                    rustFuturePtr!!,
+                    status,
+                )
+            }
+            callbackHolder = null
+        }
         return@coroutineScope suspendCancellableCoroutine { continuation ->
+            continuation.invokeOnCancellation(completionHandler)
+
             try {
-                val callback = {{ func.result_type().borrow()|future_callback_handler }}(continuation)
+                val callback = {{ func.result_type().borrow()|future_callback_handler }}(continuation, completionHandler)
                 callbackHolder = callback
-                rustCall { status ->
+                rustFuturePtr = rustCall { status ->
                     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
                         {% call kt::arg_list_lowered(func) %}
                         FfiConverterForeignExecutor.lower(scope),
@@ -32,6 +44,7 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
                 }
             } catch (e: Exception) {
                 continuation.resumeWithException(e)
+                completionHandler(null)
             }
         }
     }

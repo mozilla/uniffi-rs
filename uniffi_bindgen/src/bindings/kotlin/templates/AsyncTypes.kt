@@ -5,6 +5,7 @@
 {{ self.add_import("kotlin.coroutines.resumeWithException") }}
 {{ self.add_import("kotlinx.coroutines.suspendCancellableCoroutine") }}
 {{ self.add_import("kotlinx.coroutines.CancellableContinuation") }}
+{{ self.add_import("kotlinx.coroutines.CompletionHandler") }}
 
 {# We use these in the generated functions, which don't have access to add_import() -- might as well add it here #}
 // {{ self.add_import("kotlin.coroutines.suspendCoroutine") }}
@@ -25,8 +26,11 @@ internal interface UniFfiFutureCallback{{ callback_param|ffi_type_name }} : com.
 {%- for result_type in ci.iter_async_result_types() %}
 {%- let callback_param = result_type.future_callback_param() %}
 
-internal class {{ result_type|future_callback_handler }}(val continuation: {{ result_type|future_continuation_type }})
-    : UniFfiFutureCallback{{ callback_param|ffi_type_name }} {
+internal class {{ result_type|future_callback_handler }}(
+    val continuation: {{ result_type|future_continuation_type }},
+    val completionHandler: CompletionHandler
+) : UniFfiFutureCallback{{ callback_param|ffi_type_name }}
+{
     override fun invoke(_callbackData: USize, returnValue: {{ callback_param|ffi_type_name_by_value }}?, callStatus: RustCallStatus.ByValue) {
         try {
             checkCallStatus({{ result_type|error_handler }}, callStatus)
@@ -36,8 +40,10 @@ internal class {{ result_type|future_callback_handler }}(val continuation: {{ re
             {%- when None %}
             continuation.resume(Unit)
             {%- endmatch %}
+            completionHandler(null)
         } catch (e: Throwable) {
             continuation.resumeWithException(e)
+            completionHandler(null)
         }
     }
 }

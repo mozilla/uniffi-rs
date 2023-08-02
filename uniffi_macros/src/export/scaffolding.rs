@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use std::iter;
 
@@ -180,7 +180,9 @@ fn gen_ffi_function(
             }
         }
     } else {
+        let ffi_drop_ident = Ident::new(&format!("{}_uniffi_drop", ffi_ident), Span::call_site());
         let mut future_expr = rust_fn_call;
+
         if matches!(arguments.async_runtime, Some(AsyncRuntime::Tokio(_))) {
             future_expr = quote! { ::uniffi::deps::async_compat::Compat::new(#future_expr) }
         }
@@ -204,8 +206,23 @@ fn gen_ffi_function(
                         uniffi_callback,
                         uniffi_callback_data
                     );
-                    uniffi_rust_future.wake();
-                    Ok(())
+                    uniffi_rust_future.clone().wake();
+                    Ok(uniffi_rust_future.into_raw() as usize)
+                });
+            }
+
+            #[doc(hidden)]
+            #[no_mangle]
+            pub extern "C" fn #ffi_drop_ident(
+                uniffi_future_ptr: *const (),
+                uniffi_call_status: &mut ::uniffi::RustCallStatus,
+            ) {
+                ::uniffi::deps::log::debug!(#name);
+                ::uniffi::rust_call(uniffi_call_status, || {
+                    let uniffi_rust_future = ::uniffi::RustFuture::<#return_ty, crate::UniFfiTag>::from_raw(
+                        uniffi_future_ptr,
+                    );
+                    Ok(uniffi_rust_future.cancel_or_drop_inner_future())
                 });
             }
         }

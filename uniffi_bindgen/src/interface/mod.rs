@@ -336,6 +336,7 @@ impl ComponentInterface {
             return_type: Some(FfiType::UInt32),
             has_rust_call_status_arg: false,
             is_object_free_function: false,
+            ..Default::default()
         }
     }
 
@@ -353,6 +354,7 @@ impl ComponentInterface {
             return_type: Some(FfiType::RustBuffer(None)),
             has_rust_call_status_arg: true,
             is_object_free_function: false,
+            ..Default::default()
         }
     }
 
@@ -370,6 +372,7 @@ impl ComponentInterface {
             return_type: Some(FfiType::RustBuffer(None)),
             has_rust_call_status_arg: true,
             is_object_free_function: false,
+            ..Default::default()
         }
     }
 
@@ -387,6 +390,7 @@ impl ComponentInterface {
             return_type: None,
             has_rust_call_status_arg: true,
             is_object_free_function: false,
+            ..Default::default()
         }
     }
 
@@ -410,6 +414,7 @@ impl ComponentInterface {
             return_type: Some(FfiType::RustBuffer(None)),
             has_rust_call_status_arg: true,
             is_object_free_function: false,
+            ..Default::default()
         }
     }
 
@@ -467,7 +472,11 @@ impl ComponentInterface {
                     .iter()
                     .map(|cb| cb.ffi_init_callback()),
             )
-            .chain(self.functions.iter().map(|f| &f.ffi_func))
+            .chain(
+                self.functions
+                    .iter()
+                    .flat_map(|f| f.ffi_func().iter_on_self_and_companions()),
+            )
     }
 
     /// List all FFI functions definitions for RustBuffer functionality.
@@ -496,6 +505,7 @@ impl ComponentInterface {
                 is_async: false,
                 has_rust_call_status_arg: false,
                 is_object_free_function: false,
+                ..Default::default()
             })
         } else {
             None
@@ -545,6 +555,7 @@ impl ComponentInterface {
             return_type: Some(FfiType::UInt16),
             has_rust_call_status_arg: false,
             is_object_free_function: false,
+            ..Default::default()
         })
     }
 

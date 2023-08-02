@@ -158,7 +158,11 @@ impl Object {
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
         iter::once(&self.ffi_func_free)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
-            .chain(self.methods.iter().map(|f| &f.ffi_func))
+            .chain(
+                self.methods
+                    .iter()
+                    .flat_map(|f| f.ffi_func().iter_on_self_and_companions()),
+            )
             .chain(
                 self.uniffi_traits
                     .iter()

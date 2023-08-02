@@ -12,14 +12,16 @@
 //! need to know about them. But as a developer working on UniFFI itself, you're likely
 //! to spend a lot of time thinking about how these low-level types are used to represent
 //! the higher-level "interface types" from the [`Type`] enum.
+
+use std::iter;
+use uniffi_meta::{ExternalKind, Type};
+
 /// Represents the restricted set of low-level types that can be used to construct
 /// the C-style FFI layer between a rust component and its foreign language bindings.
 ///
 /// For the types that involve memory allocation, we make a distinction between
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
-use uniffi_meta::{ExternalKind, Type};
-
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FfiType {
     // N.B. there are no booleans at this layer, since they cause problems for JNA.
@@ -152,11 +154,17 @@ pub struct FfiFunction {
     /// Used by C# generator to differentiate the free function and call it with void*
     /// instead of C# `SafeHandle` type. See <https://github.com/mozilla/uniffi-rs/pull/1488>.
     pub(super) is_object_free_function: bool,
+    pub(super) companions: Vec<FfiFunction>,
 }
 
 impl FfiFunction {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    /// Returns the name of the companion drop function if it is itself async.
+    pub fn name_for_async_drop(&self) -> String {
+        format!("{}_uniffi_drop", self.name())
     }
 
     pub fn is_async(&self) -> bool {
@@ -205,12 +213,32 @@ impl FfiFunction {
                     type_: FfiType::FutureCallbackData,
                 },
             ]);
-            // Async scaffolding functions never return values.  Instead, the callback is invoked
-            // when the Future is ready.
-            self.return_type = None;
+            // Async scaffolding functions returns a pointer to the `RustFuture`
+            // value.  This value is only used to handle cancelling/dropping
+            // the future properly; the callback is invoked when the `Future`
+            // is ready.
+            self.return_type = Some(FfiType::Future);
+
+            // Let's add the function to drop the `RustFuture`.
+            self.companions.push(FfiFunction {
+                name: self.name_for_async_drop(),
+                is_async: false,
+                arguments: vec![FfiArgument {
+                    name: "uniffi_future_ptr".to_string(),
+                    type_: FfiType::Future,
+                }],
+                return_type: None,
+                has_rust_call_status_arg: true,
+                is_object_free_function: false,
+                companions: Vec::new(),
+            })
         } else {
             self.return_type = return_type;
         }
+    }
+
+    pub fn iter_on_self_and_companions(&self) -> impl Iterator<Item = &Self> {
+        iter::once(self).chain(&self.companions)
     }
 }
 
@@ -223,6 +251,7 @@ impl Default for FfiFunction {
             return_type: None,
             has_rust_call_status_arg: true,
             is_object_free_function: false,
+            companions: Vec::new(),
         }
     }
 }
