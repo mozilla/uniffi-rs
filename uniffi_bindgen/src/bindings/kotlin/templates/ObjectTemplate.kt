@@ -95,7 +95,11 @@ class {{ type_name }}(
                     }
                 } catch (e: Exception) {
                     continuation.resumeWithException(e)
-                    completionHandler(null)
+                    {#
+                    // Do not call `completionHandler` here.
+                    // If an exception has been thrown, `rustFuturePtr` has no value.
+                    // There is also no `RustFuture` to drop.
+                    #}
                 }
             }
         }

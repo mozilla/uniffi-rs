@@ -44,7 +44,11 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
                 }
             } catch (e: Exception) {
                 continuation.resumeWithException(e)
-                completionHandler(null)
+                {#
+                // Do not call `completionHandler` here.
+                // If an exception has been thrown, `rustFuturePtr` has no value.
+                // There is also no `RustFuture` to drop.
+                #}
             }
         }
     }
