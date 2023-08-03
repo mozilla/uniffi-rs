@@ -39,9 +39,9 @@ internal class {{ result_type|future_callback_handler }}(
             {%- when None %}
             continuation.resume(Unit)
             {%- endmatch %}
-            completionHandler(null)
         } catch (e: Throwable) {
             continuation.resumeWithException(e)
+        } finally {
             completionHandler(null)
         }
     }
