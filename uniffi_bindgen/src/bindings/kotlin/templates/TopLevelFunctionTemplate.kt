@@ -15,18 +15,26 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
     it's invoked
     #}
     var callbackHolder: {{ func.result_type().borrow()|future_callback_handler }}? = null
+    var rustFuturePtr: Pointer? = null
+    val completionHandlerLock = Mutex(locked = true)
+
     return coroutineScope {
         val scope = this
-        var rustFuturePtr: Pointer? = null
         val completionHandler: CompletionHandler = { _ ->
-            rustCall { status ->
-                _UniFFILib.INSTANCE.{{ func.ffi_func().name_for_async_drop() }}(
-                    rustFuturePtr!!,
-                    status,
-                )
+            runBlocking {
+                completionHandlerLock.withLock {
+                    rustCall { status ->
+                        _UniFFILib.INSTANCE.{{ func.ffi_func().name_for_async_drop() }}(
+                            rustFuturePtr!!,
+                            status,
+                        )
+                    }
+                    callbackHolder = null
+                    rustFuturePtr = null
+                }
             }
-            callbackHolder = null
         }
+
         return@coroutineScope suspendCancellableCoroutine { continuation ->
             continuation.invokeOnCancellation(completionHandler)
 
@@ -49,6 +57,8 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
                 // If an exception has been thrown, `rustFuturePtr` has no value.
                 // There is also no `RustFuture` to drop.
                 #}
+            } finally {
+                completionHandlerLock.unlock()
             }
         }
     }

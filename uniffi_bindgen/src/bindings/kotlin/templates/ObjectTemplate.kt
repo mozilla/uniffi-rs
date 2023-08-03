@@ -64,20 +64,30 @@ class {{ type_name }}(
         Make sure to retain a reference to the callback handler to ensure that it's not GCed before
         it's invoked
         #}
-        var callbackHolder: {{ func.result_type().borrow()|future_callback_handler }}? = null
+        var callbackHolder: {{ meth.result_type().borrow()|future_callback_handler }}? = null
+        var rustFuturePtr: Pointer? = null
+        val completionHandlerLock = Mutex(locked = true)
+
         return coroutineScope {
             val scope = this
-            var rustFuturePtr: Pointer? = null
             val completionHandler: CompletionHandler = { _ ->
-                rustCall { status ->
-                    _UniFFILib.INSTANCE.{{ meth.ffi_func().name_for_async_drop() }}(
-                        rustFuturePtr!!,
-                        status,
-                    )
+                runBlocking {
+                    completionHandlerLock.withLock {
+                        rustCall { status ->
+                            _UniFFILib.INSTANCE.{{ meth.ffi_func().name_for_async_drop() }}(
+                                rustFuturePtr!!,
+                                status,
+                            )
+                        }
+                        callbackHolder = null
+                        rustFuturePtr = null
+                    }
                 }
-                callbackHolder = null
             }
+
             return@coroutineScope suspendCancellableCoroutine { continuation ->
+                continuation.invokeOnCancellation(completionHandler)
+
                 try {
                     val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation, completionHandler)
                     callbackHolder = callback
@@ -100,6 +110,8 @@ class {{ type_name }}(
                     // If an exception has been thrown, `rustFuturePtr` has no value.
                     // There is also no `RustFuture` to drop.
                     #}
+                } finally {
+                    completionHandlerLock.unlock()
                 }
             }
         }
