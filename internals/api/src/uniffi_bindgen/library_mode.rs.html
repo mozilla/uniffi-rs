@@ -394,9 +394,9 @@
         .packages
         .iter()
         .filter(|p| {
-            p.targets.iter().any(|t| {
-                t.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>) == crate_name &amp;&amp; t.crate_types.iter().any(|ct| ct == <span class="string">&quot;lib&quot;</span>)
-            })
+            p.targets
+                .iter()
+                .any(|t| t.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>) == crate_name)
         })
         .collect();
     <span class="kw">match </span>matching.len() {
