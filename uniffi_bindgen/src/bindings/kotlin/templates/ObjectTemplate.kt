@@ -61,10 +61,11 @@ class {{ type_name }}(
         // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
         return coroutineScope {
             val scope = this
-            return@coroutineScope suspendCoroutine { continuation ->
+            return@coroutineScope suspendCancellableCoroutine { continuation ->
                 try {
                     val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation)
                     uniffiActiveFutureCallbacks.add(callback)
+                    continuation.invokeOnCancellation { uniffiActiveFutureCallbacks.remove(callback) }
                     callWithPointer { thisPtr ->
                         rustCall { status ->
                             _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(

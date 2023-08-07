@@ -116,8 +116,8 @@
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
 use crate::{
-    rust_call_with_out_status, schedule_raw, FfiConverter, FfiDefault, ForeignExecutor,
-    ForeignExecutorHandle, RustCallStatus,
+    ffi::foreignexecutor::RustTaskCallbackCode, rust_call_with_out_status, schedule_raw,
+    FfiConverter, FfiDefault, ForeignExecutor, ForeignExecutorHandle, RustCallStatus,
 };
 use std::{
     cell::UnsafeCell,
@@ -216,18 +216,33 @@ where
     fn schedule_do_wake(self: Pin<Arc<Self>>) {
         unsafe {
             let handle = self.executor.handle;
-            let raw_ptr = Arc::into_raw(Pin::into_inner_unchecked(self)) as *const ();
+            let raw_ptr = Arc::into_raw(Pin::into_inner_unchecked(self));
             // SAFETY: The `into_raw()` / `from_raw()` contract guarantees that our executor cannot
             // be dropped before we call `from_raw()` on the raw pointer. This means we can safely
             // use its handle to schedule a callback.
-            schedule_raw(handle, 0, Self::wake_callback, raw_ptr);
+            if !schedule_raw(handle, 0, Self::wake_callback, raw_ptr as *const ()) {
+                // There was an error scheduling the callback, drop the arc reference since
+                // `wake_callback()` will never be called
+                //
+                // Note: specifying the `<Self>` generic is a good safety measure.  Things would go
+                // very bad if Rust inferred the wrong type.
+                //
+                // However, the `Pin<>` part doesn't matter since its `repr(transparent)`.
+                Arc::<Self>::decrement_strong_count(raw_ptr);
+            }
         }
     }
 
-    extern "C" fn wake_callback(self_ptr: *const ()) {
-        unsafe {
-            Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)).do_wake();
-        };
+    extern "C" fn wake_callback(self_ptr: *const (), status_code: RustTaskCallbackCode) {
+        // No matter what, call `Arc::from_raw()` to balance the `Arc::into_raw()` call in
+        // `schedule_do_wake()`.
+        let task = unsafe { Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)) };
+        if status_code == RustTaskCallbackCode::Success {
+            // Only drive the future forward on `RustTaskCallbackCode::Success`.
+            // `RUST_TASK_CALLBACK_CANCELED` indicates the foreign executor has been cancelled /
+            // shutdown and we should not continue.
+            task.do_wake();
+        }
     }
 
     // Does the work for wake, we take care to ensure this always runs in a serialized fashion.
@@ -359,7 +374,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{try_lift_from_rust_buffer, MockExecutor};
+    use crate::{try_lift_from_rust_buffer, MockEventLoop};
     use std::sync::Weak;
 
     // Mock future that we can manually control using an Option<>
@@ -396,34 +411,24 @@ mod tests {
     // Bundles everything together so that we can run some tests
     struct TestFutureEnvironment {
         rust_future: Pin<Arc<TestRustFuture>>,
-        executor: MockExecutor,
         foreign_result: Pin<Box<Option<MockForeignResult>>>,
     }
 
     impl TestFutureEnvironment {
-        fn new() -> Self {
+        fn new(eventloop: &Arc<MockEventLoop>) -> Self {
             let foreign_result = Box::pin(None);
             let foreign_result_ptr = &*foreign_result as *const Option<_> as *const ();
-            let executor = MockExecutor::new();
+
             let rust_future = TestRustFuture::new(
                 MockFuture(None),
-                executor.handle().unwrap(),
+                eventloop.new_handle(),
                 mock_foreign_callback,
                 foreign_result_ptr,
             );
             Self {
-                executor,
                 rust_future,
                 foreign_result,
             }
-        }
-
-        fn scheduled_call_count(&self) -> usize {
-            self.executor.call_count()
-        }
-
-        fn run_scheduled_calls(&self) {
-            self.executor.run_all_calls();
         }
 
         fn wake(&self) {
@@ -445,47 +450,49 @@ mod tests {
 
     #[test]
     fn test_wake() {
-        let mut test_env = TestFutureEnvironment::new();
+        let eventloop = MockEventLoop::new();
+        let mut test_env = TestFutureEnvironment::new(&eventloop);
         // Initially, we shouldn't have a result and nothing should be scheduled
         assert!(test_env.foreign_result.is_none());
-        assert_eq!(test_env.scheduled_call_count(), 0);
+        assert_eq!(eventloop.call_count(), 0);
 
         // wake() should schedule a call
         test_env.wake();
-        assert_eq!(test_env.scheduled_call_count(), 1);
+        assert_eq!(eventloop.call_count(), 1);
 
         // When that call runs, we should still not have a result yet
-        test_env.run_scheduled_calls();
+        eventloop.run_all_calls();
         assert!(test_env.foreign_result.is_none());
-        assert_eq!(test_env.scheduled_call_count(), 0);
+        assert_eq!(eventloop.call_count(), 0);
 
         // Multiple wakes should only result in 1 scheduled call
         test_env.wake();
         test_env.wake();
-        assert_eq!(test_env.scheduled_call_count(), 1);
+        assert_eq!(eventloop.call_count(), 1);
 
         // Make the future ready, which should call mock_foreign_callback and set the result
         test_env.complete_future(Ok(true));
-        test_env.run_scheduled_calls();
+        eventloop.run_all_calls();
         let result = test_env
             .foreign_result
             .take()
             .expect("Expected result to be set");
         assert_eq!(result.value, 1);
         assert_eq!(result.status.code, 0);
-        assert_eq!(test_env.scheduled_call_count(), 0);
+        assert_eq!(eventloop.call_count(), 0);
 
         // Future wakes shouldn't schedule any calls
         test_env.wake();
-        assert_eq!(test_env.scheduled_call_count(), 0);
+        assert_eq!(eventloop.call_count(), 0);
     }
 
     #[test]
     fn test_error() {
-        let mut test_env = TestFutureEnvironment::new();
+        let eventloop = MockEventLoop::new();
+        let mut test_env = TestFutureEnvironment::new(&eventloop);
         test_env.complete_future(Err("Something went wrong".into()));
         test_env.wake();
-        test_env.run_scheduled_calls();
+        eventloop.run_all_calls();
         let result = test_env
             .foreign_result
             .take()
@@ -500,12 +507,12 @@ mod tests {
                 String::from("Something went wrong"),
             )
         }
-        assert_eq!(test_env.scheduled_call_count(), 0);
+        assert_eq!(eventloop.call_count(), 0);
     }
 
     #[test]
     fn test_raw_clone_and_drop() {
-        let test_env = TestFutureEnvironment::new();
+        let test_env = TestFutureEnvironment::new(&MockEventLoop::new());
         let waker = test_env.rust_future.make_waker();
         let weak_ref = test_env.rust_future_weak();
         assert_eq!(weak_ref.strong_count(), 2);
@@ -522,7 +529,8 @@ mod tests {
 
     #[test]
     fn test_raw_wake() {
-        let test_env = TestFutureEnvironment::new();
+        let eventloop = MockEventLoop::new();
+        let test_env = TestFutureEnvironment::new(&eventloop);
         let waker = test_env.rust_future.make_waker();
         let weak_ref = test_env.rust_future_weak();
         // `test_env` and `waker` both hold a strong reference to the `RustFuture`
@@ -530,18 +538,54 @@ mod tests {
 
         // wake_by_ref() should schedule a wake
         waker.wake_by_ref();
-        assert_eq!(test_env.scheduled_call_count(), 1);
+        assert_eq!(eventloop.call_count(), 1);
 
         // Once the wake runs, the strong could should not have changed
-        test_env.run_scheduled_calls();
+        eventloop.run_all_calls();
         assert_eq!(weak_ref.strong_count(), 2);
 
         // wake() should schedule a wake
         waker.wake();
-        assert_eq!(test_env.scheduled_call_count(), 1);
+        assert_eq!(eventloop.call_count(), 1);
 
         // Once the wake runs, the strong have decremented, since wake() consumes the waker
-        test_env.run_scheduled_calls();
+        eventloop.run_all_calls();
         assert_eq!(weak_ref.strong_count(), 1);
+    }
+
+    // Test trying to create a RustFuture before the executor is shutdown.
+    //
+    // The main thing we're testing is that we correctly drop the Future in this case
+    #[test]
+    fn test_executor_shutdown() {
+        let eventloop = MockEventLoop::new();
+        eventloop.shutdown();
+        let test_env = TestFutureEnvironment::new(&eventloop);
+        let weak_ref = test_env.rust_future_weak();
+        // When we wake the future, it should try to schedule a callback and fail.  This should
+        // cause the future to be dropped
+        test_env.wake();
+        drop(test_env);
+        assert!(weak_ref.upgrade().is_none());
+    }
+
+    // Similar run a similar test to the last, but simulate an executor shutdown after the future was
+    // scheduled, but before the callback is called.
+    #[test]
+    fn test_executor_shutdown_after_schedule() {
+        let eventloop = MockEventLoop::new();
+        let test_env = TestFutureEnvironment::new(&eventloop);
+        let weak_ref = test_env.rust_future_weak();
+        test_env.complete_future(Ok(true));
+        test_env.wake();
+        eventloop.shutdown();
+        eventloop.run_all_calls();
+
+        // Test that the foreign async side wasn't completed.  Even though we could have
+        // driven the future to completion, we shouldn't have since the executor was shutdown
+        assert!(test_env.foreign_result.is_none());
+        // Also test that we've dropped all references to the future
+        drop(test_env);
+        assert!(weak_ref.upgrade().is_none());
     }
 }

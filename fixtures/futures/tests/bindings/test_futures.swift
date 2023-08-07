@@ -242,9 +242,9 @@ Task {
 	// Wait some time to ensure the task has locked the shared resource
 	try await Task.sleep(nanoseconds: 50_000_000)
 	// Cancel the job task the shared resource has been released.
-        //
-        // FIXME: this test currently passes because `test.cancel()` doesn't actually cancel the
-        // operation.  We need to rework the Swift async handling to handle this properly.
+	//
+	// FIXME: this test currently passes because `test.cancel()` doesn't actually cancel the
+	// operation.  We need to rework the Swift async handling to handle this properly.
 	task.cancel()
 
 	// Try accessing the shared resource again.  The initial task should release the shared resource

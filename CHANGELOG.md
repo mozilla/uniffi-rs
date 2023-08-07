@@ -23,6 +23,7 @@
 
 ### What's Fixed
 
+- Updated the async functionality to correctly handle cancellation (#1669)
 - Kotlin: Fixed low-level issue with exported async APIs
 
 ## v0.24.3 (backend crates: v0.24.3) - (_2023-08-01_)

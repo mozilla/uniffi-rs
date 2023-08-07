@@ -207,25 +207,31 @@ runBlocking {
 
 // Test a future that uses a lock and that is cancelled.
 runBlocking {
-    val job = launch {
-        useSharedResource(SharedResourceOptions(releaseAfterMs=100U, timeoutMs=1000U))
+    val time = measureTimeMillis {
+        val job = launch {
+            useSharedResource(SharedResourceOptions(releaseAfterMs=100U, timeoutMs=1000U))
+        }
+
+        // Wait some time to ensure the task has locked the shared resource
+        delay(50)
+        // Cancel the job before the shared resource has been released.
+        job.cancel()
+
+        // Try accessing the shared resource again.  The initial task should release the shared resource
+        // before the timeout expires.
+        useSharedResource(SharedResourceOptions(releaseAfterMs=0U, timeoutMs=1000U))
     }
-
-    // Wait some time to ensure the task has locked the shared resource
-    delay(50)
-    // Cancel the job before the shared resource has been released.
-    job.cancel()
-
-    // Try accessing the shared resource again.  The initial task should release the shared resource
-    // before the timeout expires.
-    useSharedResource(SharedResourceOptions(releaseAfterMs=0U, timeoutMs=1000U))
+    println("useSharedResource: ${time}ms")
 }
 
 // Test a future that uses a lock and that is not cancelled.
 runBlocking {
-    useSharedResource(SharedResourceOptions(releaseAfterMs=100U, timeoutMs=1000U))
+    val time = measureTimeMillis {
+        useSharedResource(SharedResourceOptions(releaseAfterMs=100U, timeoutMs=1000U))
 
-    useSharedResource(SharedResourceOptions(releaseAfterMs=0U, timeoutMs=1000U))
+        useSharedResource(SharedResourceOptions(releaseAfterMs=0U, timeoutMs=1000U))
+    }
+    println("useSharedResource (not canceled): ${time}ms")
 }
 
 // Test that we properly cleaned up future callback references
