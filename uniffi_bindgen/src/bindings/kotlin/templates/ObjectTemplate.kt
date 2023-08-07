@@ -73,10 +73,10 @@ class {{ type_name }}(
             val completionHandler: CompletionHandler = { _ ->
                 runBlocking {
                     completionHandlerLock.withLock {
-                        if (rustFuturePtr != null) {
+                        rustFuturePtr?.let { rustFuturePtr ->
                             rustCall { status ->
                                 _UniFFILib.INSTANCE.{{ meth.ffi_func().name_for_async_drop() }}(
-                                    rustFuturePtr!!,
+                                    rustFuturePtr,
                                     status,
                                 )
                             }

@@ -23,10 +23,10 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
         val completionHandler: CompletionHandler = { _ ->
             runBlocking {
                 completionHandlerLock.withLock {
-                    if (rustFuturePtr != null) {
+                    rustFuturePtr?.let { rustFuturePtr ->
                         rustCall { status ->
                             _UniFFILib.INSTANCE.{{ func.ffi_func().name_for_async_drop() }}(
-                                rustFuturePtr!!,
+                                rustFuturePtr,
                                 status,
                             )
                         }
