@@ -73,11 +73,13 @@ class {{ type_name }}(
             val completionHandler: CompletionHandler = { _ ->
                 runBlocking {
                     completionHandlerLock.withLock {
-                        rustCall { status ->
-                            _UniFFILib.INSTANCE.{{ meth.ffi_func().name_for_async_drop() }}(
-                                rustFuturePtr!!,
-                                status,
-                            )
+                        if (rustFuturePtr != null) {
+                            rustCall { status ->
+                                _UniFFILib.INSTANCE.{{ meth.ffi_func().name_for_async_drop() }}(
+                                    rustFuturePtr!!,
+                                    status,
+                                )
+                            }
                         }
                         callbackHolder = null
                         rustFuturePtr = null
@@ -86,9 +88,9 @@ class {{ type_name }}(
             }
 
             return@coroutineScope suspendCancellableCoroutine { continuation ->
-                continuation.invokeOnCancellation(completionHandler)
-
                 try {
+                    continuation.invokeOnCancellation(completionHandler)
+
                     val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation, completionHandler)
                     callbackHolder = callback
                     rustFuturePtr = callWithPointer { thisPtr ->

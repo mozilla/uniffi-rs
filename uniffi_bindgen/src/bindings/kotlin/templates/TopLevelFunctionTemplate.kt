@@ -23,11 +23,13 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
         val completionHandler: CompletionHandler = { _ ->
             runBlocking {
                 completionHandlerLock.withLock {
-                    rustCall { status ->
-                        _UniFFILib.INSTANCE.{{ func.ffi_func().name_for_async_drop() }}(
-                            rustFuturePtr!!,
-                            status,
-                        )
+                    if (rustFuturePtr != null) {
+                        rustCall { status ->
+                            _UniFFILib.INSTANCE.{{ func.ffi_func().name_for_async_drop() }}(
+                                rustFuturePtr!!,
+                                status,
+                            )
+                        }
                     }
                     callbackHolder = null
                     rustFuturePtr = null
@@ -36,9 +38,9 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
         }
 
         return@coroutineScope suspendCancellableCoroutine { continuation ->
-            continuation.invokeOnCancellation(completionHandler)
-
             try {
+                continuation.invokeOnCancellation(completionHandler)
+
                 val callback = {{ func.result_type().borrow()|future_callback_handler }}(continuation, completionHandler)
                 callbackHolder = callback
                 rustFuturePtr = rustCall { status ->
