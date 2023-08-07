@@ -59,16 +59,12 @@ class {{ type_name }}(
     override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_decl(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
         // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
         // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
-        //
-        // Make sure to retain a reference to the callback handler to ensure that it's not GCed before
-        // it's invoked
-        var callbackHolder: {{ func.result_type().borrow()|future_callback_handler }}? = null
         return coroutineScope {
             val scope = this
             return@coroutineScope suspendCoroutine { continuation ->
                 try {
                     val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation)
-                    callbackHolder = callback
+                    uniffiActiveFutureCallbacks.add(callback)
                     callWithPointer { thisPtr ->
                         rustCall { status ->
                             _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
