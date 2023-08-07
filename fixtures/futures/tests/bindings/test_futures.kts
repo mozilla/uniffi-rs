@@ -203,3 +203,7 @@ runBlocking {
 
     assertApproximateTime(time, 500, "broken sleep")
 }
+
+
+// Test that we properly cleaned up future callback references
+assert(uniffiActiveFutureCallbacks.size == 0)
