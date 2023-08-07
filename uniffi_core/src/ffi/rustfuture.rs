@@ -306,6 +306,15 @@ where
 
         // Take the `Future`, leaving `None` in its place.
         let _future = self.future.write().unwrap().take();
+
+        #[cfg(feature = "tokio")]
+        {
+            let cancel_future = std::pin::pin!(async_compat::Compat::new(async move {
+                drop(_future);
+            }));
+            let empty_waker = empty_waker();
+            let _ = cancel_future.poll(&mut Context::from_waker(&empty_waker));
+        }
     }
 
     /// SAFETY: Ensure that all calls to `into_raw()` are balanced with a call to `from_raw()`
@@ -355,6 +364,25 @@ where
     unsafe fn raw_drop(self_ptr: *const ()) {
         drop(Self::from_raw(self_ptr))
     }
+}
+
+#[cfg(feature = "tokio")]
+const EMPTY_WAKER_VTABLE: RawWakerVTable = RawWakerVTable::new(
+    |data: *const ()| RawWaker::new(data, &EMPTY_WAKER_VTABLE),
+    |_data: *const ()| (),
+    |_data: *const ()| (),
+    |_data: *const ()| (),
+);
+
+#[cfg(feature = "tokio")]
+const EMPTY_WAKER: RawWaker = RawWaker::new(
+    (&EMPTY_WAKER_VTABLE as *const RawWakerVTable).cast(),
+    &EMPTY_WAKER_VTABLE,
+);
+
+#[cfg(feature = "tokio")]
+fn empty_waker() -> Waker {
+    unsafe { Waker::from_raw(EMPTY_WAKER) }
 }
 
 #[cfg(test)]
