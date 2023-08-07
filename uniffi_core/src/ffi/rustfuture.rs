@@ -54,10 +54,10 @@
 //! ) {
 //!     ::uniffi::call_with_output(uniffi_call_status, || {
 //!         let uniffi_rust_future = RustFuture::<_, bool, crate::UniFFITag,>::new(
-//!             future: hello(),
-//!             executor,
-//!             callback,
-//!             callback_data,
+//!             future: hello(), // the future!
+//!             uniffi_executor,
+//!             uniffi_callback,
+//!             uniffi_callback_data,
 //!         );
 //!         uniffi_rust_future.wake();
 //!     })
@@ -158,9 +158,9 @@ where
     callback_data: *const (),
 }
 
-// Mark RustFuture as Send + Sync, since we will be sharing it between threads.  This means we need
-// to serialize access to any fields that aren't Send + Sync (`future`, `callback`, and
-// `callback_data`).  See `do_wake()` for details on this.
+// Mark `RustFuture` as `Send` + `Sync`, since we will be sharing it between threads.
+// This means we need to serialize access to any fields that aren't `Send` + `Sync` (`future`, `callback`, and `callback_data`).
+// See `do_wake()` for details on this.
 
 unsafe impl<F, T, UT> Send for RustFuture<F, T, UT>
 where
@@ -209,6 +209,10 @@ where
         }
     }
 
+    /// Schedule `do_wake`.
+    ///
+    /// `self` is consumed but _NOT_ dropped, it's purposely leaked via `into_raw()`.
+    /// `wake_callback()` will call `from_raw()` to reverse the leak.
     fn schedule_do_wake(self: Pin<Arc<Self>>) {
         unsafe {
             let handle = self.executor.handle;

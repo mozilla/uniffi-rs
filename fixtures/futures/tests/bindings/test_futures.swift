@@ -1,4 +1,4 @@
-import uniffi_futures
+import futures
 import Foundation // To get `DispatchGroup` and `Date` types.
 
 var counter = DispatchGroup()

@@ -60,6 +60,11 @@ pub struct RustBuffer {
     data: *mut u8,
 }
 
+// Mark `RustBuffer` as safe to send between threads, despite the `u8` pointer.  The only mutable
+// use of that pointer is in `destroy_into_vec()` which requires a &mut on the `RustBuffer`.  This
+// is required to send `RustBuffer` inside a `RustFuture`
+unsafe impl Send for RustBuffer {}
+
 impl RustBuffer {
     /// Creates an empty `RustBuffer`.
     ///

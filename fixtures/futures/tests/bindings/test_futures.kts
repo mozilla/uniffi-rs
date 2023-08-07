@@ -205,5 +205,29 @@ runBlocking {
 }
 
 
+// Test a future that uses a lock and that is cancelled.
+runBlocking {
+    val job = launch {
+        useSharedResource(100U)
+    }
+
+    delay(50)
+    // Cancel the job before the shared resource has been released.
+    job.cancel()
+
+    withTimeout(1000) {
+        useSharedResource(100U)
+    }
+}
+
+// Test a future that uses a lock and that is not cancelled.
+runBlocking {
+    useSharedResource(100U)
+
+    withTimeout(1000) {
+        useSharedResource(100U)
+    }
+}
+
 // Test that we properly cleaned up future callback references
 assert(uniffiActiveFutureCallbacks.size == 0)

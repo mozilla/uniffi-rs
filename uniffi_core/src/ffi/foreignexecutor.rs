@@ -114,8 +114,8 @@ impl ForeignExecutor {
 
 /// Low-level schedule interface
 ///
-/// When using this function, take care to ensure that the ForeignExecutor that holds the
-/// ForeignExecutorHandle has not been dropped.
+/// When using this function, take care to ensure that the `ForeignExecutor` that holds the
+/// `ForeignExecutorHandle` has not been dropped.
 pub(crate) fn schedule_raw(
     handle: ForeignExecutorHandle,
     delay: u32,
