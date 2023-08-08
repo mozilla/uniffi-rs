@@ -1547,14 +1547,12 @@ impl Foo {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<h2><a class="header" href="#the-unifficustomtype-derive" id="the-unifficustomtype-derive">The <code>uniffi::CustomType</code> derive</a></h2>
-<p>The <code>CustomType</code> derive registers a type as a custom type and can be used on any struct that wants to be exposed
-as a builtin type. You must specify the builtin type using either the <code>builtin</code> or <code>newtype</code> attribute.</p>
-<p>If you specify the <code>builtin</code> attribute, you must manually implement the <code>UniffiCustomTypeConverter</code> for your
-type as described in the <a href="proc_macro/../udl/custom_types.html">UDL documentation for Custom Types</a>. However, if you
-specify the <code>newtype</code> attribute UniFFI will generate the implementation of this trait assuming the type
-implements the &quot;new type&quot; idiom (ie, a tuple struct with the builtin as the only element).</p>
-<p>For example, this type does not use the &quot;new type&quot; idiom, so must specify the complete implementation.</p>
+<h2><a class="header" href="#the-unifficustom_type-and-unifficustom_newtype-macros" id="the-unifficustom_type-and-unifficustom_newtype-macros">The <code>uniffi::custom_type</code> and <code>uniffi::custom_newtype</code> macros</a></h2>
+<p>There are 2 macros available which allow procmacros to support &quot;custom types&quot; as described in the
+<a href="proc_macro/../udl/custom_types.html">UDL documentation for Custom Types</a></p>
+<p>The <code>uniffi::custom_type!</code> macro requires you to specify the name of the custom type, and the name of the
+builtin which implements this type. Use of this macro requires you to manually implement the
+<code>UniffiCustomTypeConverter</code> trait for for your type, as shown below.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1563,7 +1561,7 @@ implements the &quot;new type&quot; idiom (ie, a tuple struct with the builtin a
 }
 
 // Use `url::Url` as a custom type, with `String` as the Builtin
-uniffi::impl_ffi_converter_custom_type!(Url, String);
+uniffi::custom_type!(Url, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -1578,15 +1576,18 @@ impl UniffiCustomTypeConverter for Uuid {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Whereas this type uses the &quot;new type&quot; idiom, so we can use <code>impl_ffi_converter_custom_newtype</code> to
-automatically implement <code>UniffiCustomTypeConverter</code>.</p>
+<p>There's also a <code>uniffi::custom_newtype!</code> macro, designed for custom types which use the
+&quot;new type&quot; idiom. You still need to specify the type name and builtin type, but because UniFFI
+is able to make assumptions about how the type is laid out, <code>UniffiCustomTypeConverter</code>
+is implemented automatically.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>impl_ffi_converter_custom_newtype!(NewTypeHandle, i64);
+</span>uniffi::custom_newtype!(NewTypeHandle, i64);
 pub struct NewtypeHandle(i64);
 <span class="boring">}
 </span></code></pre></pre>
+<p>and that's it!</p>
 <h2><a class="header" href="#the-uniffierror-derive" id="the-uniffierror-derive">The <code>uniffi::Error</code> derive</a></h2>
 <p>The <code>Error</code> derive registers a type as an error and can be used on any enum that the <code>Enum</code> derive also accepts.
 By default, it exposes any variant fields to the foreign code.

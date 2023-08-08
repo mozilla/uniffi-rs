@@ -531,7 +531,7 @@
 <span class="doccomment">/// Generate the `FfiConverter` implementation for a Custom Type - ie,
 /// for a `&lt;T&gt;` which implements `UniffiCustomTypeConverter`.
 </span><span class="attr">#[proc_macro]
-</span><span class="kw">pub fn </span>impl_ffi_converter_custom_type(tokens: TokenStream) -&gt; TokenStream {
+</span><span class="kw">pub fn </span>custom_type(tokens: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
     custom::expand_ffi_converter_custom_type(
         <span class="kw-2">&amp;</span>input.lhs,
@@ -546,7 +546,7 @@
 /// Custom Type - ie, for a `&lt;T&gt;` which implements `UniffiCustomTypeConverter` via the
 /// newtype idiom.
 </span><span class="attr">#[proc_macro]
-</span><span class="kw">pub fn </span>impl_ffi_converter_custom_newtype(tokens: TokenStream) -&gt; TokenStream {
+</span><span class="kw">pub fn </span>custom_newtype(tokens: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
     custom::expand_ffi_converter_custom_newtype(
         <span class="kw-2">&amp;</span>input.lhs,
