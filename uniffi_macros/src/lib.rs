@@ -134,7 +134,7 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
 /// Generate the `FfiConverter` implementation for a Custom Type - ie,
 /// for a `<T>` which implements `UniffiCustomTypeConverter`.
 #[proc_macro]
-pub fn impl_ffi_converter_custom_type(tokens: TokenStream) -> TokenStream {
+pub fn custom_type(tokens: TokenStream) -> TokenStream {
     let input: IdentPair = syn::parse_macro_input!(tokens);
     custom::expand_ffi_converter_custom_type(
         &input.lhs,
@@ -149,7 +149,7 @@ pub fn impl_ffi_converter_custom_type(tokens: TokenStream) -> TokenStream {
 /// Custom Type - ie, for a `<T>` which implements `UniffiCustomTypeConverter` via the
 /// newtype idiom.
 #[proc_macro]
-pub fn impl_ffi_converter_custom_newtype(tokens: TokenStream) -> TokenStream {
+pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
     let input: IdentPair = syn::parse_macro_input!(tokens);
     custom::expand_ffi_converter_custom_newtype(
         &input.lhs,
