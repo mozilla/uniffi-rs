@@ -95,157 +95,22 @@
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
-<a href="#146" id="146">146</a>
-<a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
-<a href="#162" id="162">162</a>
-<a href="#163" id="163">163</a>
-<a href="#164" id="164">164</a>
-<a href="#165" id="165">165</a>
-<a href="#166" id="166">166</a>
-<a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
-<a href="#170" id="170">170</a>
-<a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::util::{
-    either_attribute_arg, ident_to_string, mod_path, parse_comma_separated, tagged_impl_header,
-    AttributeSliceExt, UniffiAttributeArgs,
-};
+</span><span class="kw">use </span><span class="kw">crate</span>::util::{ident_to_string, mod_path, tagged_impl_header};
 <span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{
-    parse::{Parse, ParseStream},
-    Data, DeriveInput, Path, Token,
-};
+<span class="kw">use </span>syn::Path;
 
-<span class="kw">pub fn </span>expand_custom(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">if </span>!<span class="macro">matches!</span>(input.data, Data::Struct(<span class="kw">_</span>)) {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-            Span::call_site(),
-            <span class="string">&quot;This derive must only be used on structs&quot;</span>,
-        ));
-    };
-
-    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;CustomTypeAttr&gt;()<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>ffi_converter = custom_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>attr)<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>type_converter = <span class="kw">match </span>attr.newtype {
-        <span class="prelude-val">Some</span>(builtin) =&gt; custom_ffi_type_converter(ident, <span class="kw-2">&amp;</span>builtin)<span class="question-mark">?</span>,
-        <span class="prelude-val">None </span>=&gt; TokenStream::new(),
-    };
-    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
-        #ffi_converter
-        #type_converter
-    })
-}
-
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_custom_type(
-    attr: CustomTypeAttr,
-    input: DeriveInput,
-) -&gt; syn::Result&lt;TokenStream&gt; {
-    custom_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>attr)
-}
-
-<span class="comment">// For custom scaffolding types we need to generate an FfiConverter impl based on the
-// UniffiCustomTypeConverter implementation that the library supplies
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>custom_ffi_converter_impl(
+<span class="comment">// Generate an FfiConverter impl based on the UniffiCustomTypeConverter
+// implementation that the library supplies
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_custom_type(
     ident: <span class="kw-2">&amp;</span>Ident,
-    attr: <span class="kw-2">&amp;</span>CustomTypeAttr,
+    builtin: <span class="kw-2">&amp;</span>Ident,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">if </span>attr.builtin.is_some() &amp;&amp; attr.newtype.is_some() {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-            Span::call_site(),
-            <span class="string">&quot;Custom types must not specify both `builtin` and `newtype`&quot;</span>,
-        ));
-    }
-    <span class="kw">let </span><span class="prelude-val">Some</span>(builtin) = attr.builtin.as_ref().or(attr.newtype.as_ref()) <span class="kw">else </span>{
-        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-            Span::call_site(),
-            <span class="string">&quot;Custom types must specify the builtin/newtype&quot;</span>,
-        ));
-    };
     <span class="kw">let </span>ffi_name = <span class="kw">match </span>builtin.to_string().as_str() {
         <span class="string">&quot;i8&quot; </span>| <span class="string">&quot;u8&quot; </span>| <span class="string">&quot;i16&quot; </span>| <span class="string">&quot;u16&quot; </span>| <span class="string">&quot;i32&quot; </span>| <span class="string">&quot;u32&quot; </span>| <span class="string">&quot;i64&quot; </span>| <span class="string">&quot;u64&quot; </span>| <span class="string">&quot;f32&quot; </span>| <span class="string">&quot;f64&quot; </span>=&gt; {
             builtin.to_string()
@@ -262,7 +127,7 @@
 
     <span class="kw">let </span>ffi_path: TokenStream = ffi_name.parse()<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, attr.tag.as_ref());
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
 
@@ -296,6 +161,22 @@
     })
 }
 
+<span class="comment">// Generate an FfiConverter impl *and* an UniffiCustomTypeConverter.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_custom_newtype(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    builtin: <span class="kw-2">&amp;</span>Ident,
+    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>ffi_converter = expand_ffi_converter_custom_type(ident, builtin, tag)<span class="question-mark">?</span>;
+    <span class="kw">let </span>type_converter = custom_ffi_type_converter(ident, builtin)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+        #ffi_converter
+
+        #type_converter
+    })
+}
+
 <span class="kw">fn </span>custom_ffi_type_converter(ident: <span class="kw-2">&amp;</span>Ident, builtin: <span class="kw-2">&amp;</span>Ident) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="kw">impl </span>UniffiCustomTypeConverter <span class="kw">for </span>#ident {
@@ -310,63 +191,6 @@
             </span>}
         }
     })
-}
-
-<span class="kw">mod </span>kw {
-    <span class="macro">syn::custom_keyword!</span>(tag);
-    <span class="macro">syn::custom_keyword!</span>(builtin);
-    <span class="macro">syn::custom_keyword!</span>(newtype);
-}
-
-<span class="attr">#[derive(Default)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>CustomTypeAttr {
-    tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
-    builtin: <span class="prelude-ty">Option</span>&lt;Ident&gt;,
-    newtype: <span class="prelude-ty">Option</span>&lt;Ident&gt;,
-}
-
-<span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>CustomTypeAttr {
-    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>lookahead = input.lookahead1();
-        <span class="kw">if </span>lookahead.peek(kw::tag) {
-            <span class="kw">let _</span>: kw::tag = input.parse()<span class="question-mark">?</span>;
-            <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                tag: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
-                ..<span class="self">Self</span>::default()
-            })
-        } <span class="kw">else if </span>lookahead.peek(kw::builtin) {
-            <span class="kw">let _</span>: kw::builtin = input.parse()<span class="question-mark">?</span>;
-            <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                builtin: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
-                ..<span class="self">Self</span>::default()
-            })
-        } <span class="kw">else if </span>lookahead.peek(kw::newtype) {
-            <span class="kw">let _</span>: kw::newtype = input.parse()<span class="question-mark">?</span>;
-            <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                newtype: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
-                ..<span class="self">Self</span>::default()
-            })
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(lookahead.error())
-        }
-    }
-
-    <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            tag: either_attribute_arg(<span class="self">self</span>.tag, other.tag)<span class="question-mark">?</span>,
-            builtin: either_attribute_arg(<span class="self">self</span>.builtin, other.builtin)<span class="question-mark">?</span>,
-            newtype: either_attribute_arg(<span class="self">self</span>.newtype, other.newtype)<span class="question-mark">?</span>,
-        })
-    }
-}
-
-<span class="kw">impl </span>Parse <span class="kw">for </span>CustomTypeAttr {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        parse_comma_separated(input)
-    }
 }
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

@@ -139,10 +139,6 @@
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -282,10 +278,6 @@
     <span class="comment">// Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
     </span><span class="kw">pub fn </span>crate_name_rs(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;r#{}&quot;</span>, nm.to_string().to_snake_case()))
-    }
-
-    <span class="kw">pub fn </span>debug(d: <span class="kw-2">&amp;</span><span class="kw">impl </span>std::fmt::Debug) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{d:?}&quot;</span>))
     }
 }
 </code></pre></div>

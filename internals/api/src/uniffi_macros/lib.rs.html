@@ -390,6 +390,11 @@
 <a href="#390" id="390">390</a>
 <a href="#391" id="391">391</a>
 <a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -421,9 +426,23 @@
 <span class="kw">mod </span>util;
 
 <span class="kw">use </span><span class="self">self</span>::{
-    custom::expand_custom, enum_::expand_enum, error::expand_error, export::expand_export,
-    object::expand_object, record::expand_record,
+    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
+    record::expand_record,
 };
+
+<span class="kw">struct </span>IdentPair {
+    lhs: Ident,
+    rhs: Ident,
+}
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>IdentPair {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>lhs = input.parse()<span class="question-mark">?</span>;
+        input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>rhs = input.parse()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ lhs, rhs })
+    }
+}
 
 <span class="doccomment">/// A macro to build testcases for a component&#39;s generated bindings.
 ///
@@ -509,23 +528,30 @@
         .into()
 }
 
-<span class="attr">#[proc_macro_derive(CustomType, attributes(uniffi))]
-</span><span class="kw">pub fn </span>derive_custom_type(input: TokenStream) -&gt; TokenStream {
-    expand_custom(<span class="macro">parse_macro_input!</span>(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+<span class="doccomment">/// Generate the `FfiConverter` implementation for a Custom Type - ie,
+/// for a `&lt;T&gt;` which implements `UniffiCustomTypeConverter`.
+</span><span class="attr">#[proc_macro]
+</span><span class="kw">pub fn </span>impl_ffi_converter_custom_type(tokens: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
+    custom::expand_ffi_converter_custom_type(
+        <span class="kw-2">&amp;</span>input.lhs,
+        <span class="kw-2">&amp;</span>input.rhs,
+        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
 }
 
-<span class="doccomment">/// Generate the FfiConverter implementation for an Custom Type
-///
-/// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
-/// only outputs the `FfiConverter` implementation, not the item.
-</span><span class="attr">#[doc(hidden)]
-#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>ffi_converter_custom_type(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    custom::expand_ffi_converter_custom_type(
-        <span class="macro">syn::parse_macro_input!</span>(attrs),
-        <span class="macro">syn::parse_macro_input!</span>(input),
+<span class="doccomment">/// Generate the `FfiConverter` and the `UniffiCustomTypeConverter` implementations for a
+/// Custom Type - ie, for a `&lt;T&gt;` which implements `UniffiCustomTypeConverter` via the
+/// newtype idiom.
+</span><span class="attr">#[proc_macro]
+</span><span class="kw">pub fn </span>impl_ffi_converter_custom_newtype(tokens: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
+    custom::expand_ffi_converter_custom_newtype(
+        <span class="kw-2">&amp;</span>input.lhs,
+        <span class="kw-2">&amp;</span>input.rhs,
+        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
     .into()
@@ -602,26 +628,10 @@
 </span><span class="attr">#[doc(hidden)]
 #[proc_macro]
 </span><span class="kw">pub fn </span>scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -&gt; TokenStream {
-    <span class="kw">struct </span>Input {
-        trait_ident: Ident,
-        impl_ident: Ident,
-    }
-
-    <span class="kw">impl </span>Parse <span class="kw">for </span>Input {
-        <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-            <span class="kw">let </span>trait_ident = input.parse()<span class="question-mark">?</span>;
-            input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
-            <span class="kw">let </span>impl_ident = input.parse()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                trait_ident,
-                impl_ident,
-            })
-        }
-    }
-    <span class="kw">let </span>input: Input = <span class="macro">syn::parse_macro_input!</span>(tokens);
+    <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
     export::ffi_converter_callback_interface_impl(
-        <span class="kw-2">&amp;</span>input.trait_ident,
-        <span class="kw-2">&amp;</span>input.impl_ident,
+        <span class="kw-2">&amp;</span>input.lhs,
+        <span class="kw-2">&amp;</span>input.rhs,
         <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
     )
     .into()

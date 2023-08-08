@@ -343,11 +343,12 @@ implements the &quot;new type&quot; idiom (ie, a tuple struct with the builtin a
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>#[derive(uniffi::CustomType)]
-#[uniffi(builtin=String)]
-pub struct Uuid {
+</span>pub struct Uuid {
     val: String,
 }
+
+// Use `url::Url` as a custom type, with `String` as the Builtin
+uniffi::impl_ffi_converter_custom_type!(Url, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -362,12 +363,12 @@ impl UniffiCustomTypeConverter for Uuid {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Whereas this type uses the &quot;new type&quot; idiom, so <code>UniffiCustomTypeConverter</code> is automatically derived</p>
+<p>Whereas this type uses the &quot;new type&quot; idiom, so we can use <code>impl_ffi_converter_custom_newtype</code> to
+automatically implement <code>UniffiCustomTypeConverter</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>#[derive(uniffi::CustomType)]
-#[uniffi(newtype=i64)]
+</span>impl_ffi_converter_custom_newtype!(NewTypeHandle, i64);
 pub struct NewtypeHandle(i64);
 <span class="boring">}
 </span></code></pre></pre>
