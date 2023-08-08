@@ -198,11 +198,12 @@ implements the "new type" idiom (ie, a tuple struct with the builtin as the only
 
 For example, this type does not use the "new type" idiom, so must specify the complete implementation.
 ```rust
-#[derive(uniffi::CustomType)]
-#[uniffi(builtin=String)]
 pub struct Uuid {
     val: String,
 }
+
+// Use `url::Url` as a custom type, with `String` as the Builtin
+uniffi::impl_ffi_converter_custom_type!(Url, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -217,11 +218,11 @@ impl UniffiCustomTypeConverter for Uuid {
 }
 ```
 
-Whereas this type uses the "new type" idiom, so `UniffiCustomTypeConverter` is automatically derived
+Whereas this type uses the "new type" idiom, so we can use `impl_ffi_converter_custom_newtype` to
+automatically implement `UniffiCustomTypeConverter`.
 
 ```rust
-#[derive(uniffi::CustomType)]
-#[uniffi(newtype=i64)]
+impl_ffi_converter_custom_newtype!(NewTypeHandle, i64);
 pub struct NewtypeHandle(i64);
 ```
 

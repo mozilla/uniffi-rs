@@ -29,9 +29,23 @@ mod test;
 mod util;
 
 use self::{
-    custom::expand_custom, enum_::expand_enum, error::expand_error, export::expand_export,
-    object::expand_object, record::expand_record,
+    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
+    record::expand_record,
 };
+
+struct IdentPair {
+    lhs: Ident,
+    rhs: Ident,
+}
+
+impl Parse for IdentPair {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lhs = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let rhs = input.parse()?;
+        Ok(Self { lhs, rhs })
+    }
+}
 
 /// A macro to build testcases for a component's generated bindings.
 ///
@@ -117,23 +131,30 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
         .into()
 }
 
-#[proc_macro_derive(CustomType, attributes(uniffi))]
-pub fn derive_custom_type(input: TokenStream) -> TokenStream {
-    expand_custom(parse_macro_input!(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+/// Generate the `FfiConverter` implementation for a Custom Type - ie,
+/// for a `<T>` which implements `UniffiCustomTypeConverter`.
+#[proc_macro]
+pub fn impl_ffi_converter_custom_type(tokens: TokenStream) -> TokenStream {
+    let input: IdentPair = syn::parse_macro_input!(tokens);
+    custom::expand_ffi_converter_custom_type(
+        &input.lhs,
+        &input.rhs,
+        Some(&syn::parse_quote!(crate::UniFfiTag)),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
 }
 
-/// Generate the FfiConverter implementation for an Custom Type
-///
-/// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
-/// only outputs the `FfiConverter` implementation, not the item.
-#[doc(hidden)]
-#[proc_macro_attribute]
-pub fn ffi_converter_custom_type(attrs: TokenStream, input: TokenStream) -> TokenStream {
-    custom::expand_ffi_converter_custom_type(
-        syn::parse_macro_input!(attrs),
-        syn::parse_macro_input!(input),
+/// Generate the `FfiConverter` and the `UniffiCustomTypeConverter` implementations for a
+/// Custom Type - ie, for a `<T>` which implements `UniffiCustomTypeConverter` via the
+/// newtype idiom.
+#[proc_macro]
+pub fn impl_ffi_converter_custom_newtype(tokens: TokenStream) -> TokenStream {
+    let input: IdentPair = syn::parse_macro_input!(tokens);
+    custom::expand_ffi_converter_custom_newtype(
+        &input.lhs,
+        &input.rhs,
+        Some(&syn::parse_quote!(crate::UniFfiTag)),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
     .into()
@@ -210,26 +231,10 @@ pub fn scaffolding_ffi_converter_trait_interface(tokens: TokenStream) -> TokenSt
 #[doc(hidden)]
 #[proc_macro]
 pub fn scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -> TokenStream {
-    struct Input {
-        trait_ident: Ident,
-        impl_ident: Ident,
-    }
-
-    impl Parse for Input {
-        fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-            let trait_ident = input.parse()?;
-            input.parse::<Token![,]>()?;
-            let impl_ident = input.parse()?;
-            Ok(Self {
-                trait_ident,
-                impl_ident,
-            })
-        }
-    }
-    let input: Input = syn::parse_macro_input!(tokens);
+    let input: IdentPair = syn::parse_macro_input!(tokens);
     export::ffi_converter_callback_interface_impl(
-        &input.trait_ident,
-        &input.impl_ident,
+        &input.lhs,
+        &input.rhs,
         Some(&syn::parse_quote!(crate::UniFfiTag)),
     )
     .into()
