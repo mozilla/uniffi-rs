@@ -17,6 +17,7 @@ use syn::{
     parse_macro_input, Ident, LitStr, Token,
 };
 
+mod custom;
 mod enum_;
 mod error;
 mod export;
@@ -31,6 +32,20 @@ use self::{
     enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
     record::expand_record,
 };
+
+struct IdentPair {
+    lhs: Ident,
+    rhs: Ident,
+}
+
+impl Parse for IdentPair {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lhs = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let rhs = input.parse()?;
+        Ok(Self { lhs, rhs })
+    }
+}
 
 /// A macro to build testcases for a component's generated bindings.
 ///
@@ -116,6 +131,35 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
         .into()
 }
 
+/// Generate the `FfiConverter` implementation for a Custom Type - ie,
+/// for a `<T>` which implements `UniffiCustomTypeConverter`.
+#[proc_macro]
+pub fn custom_type(tokens: TokenStream) -> TokenStream {
+    let input: IdentPair = syn::parse_macro_input!(tokens);
+    custom::expand_ffi_converter_custom_type(
+        &input.lhs,
+        &input.rhs,
+        Some(&syn::parse_quote!(crate::UniFfiTag)),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
+}
+
+/// Generate the `FfiConverter` and the `UniffiCustomTypeConverter` implementations for a
+/// Custom Type - ie, for a `<T>` which implements `UniffiCustomTypeConverter` via the
+/// newtype idiom.
+#[proc_macro]
+pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
+    let input: IdentPair = syn::parse_macro_input!(tokens);
+    custom::expand_ffi_converter_custom_newtype(
+        &input.lhs,
+        &input.rhs,
+        Some(&syn::parse_quote!(crate::UniFfiTag)),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
+}
+
 /// Generate the FfiConverter implementation for a Record
 ///
 /// This is used by the Askama scaffolding code.  It this inputs a struct definition, but only
@@ -187,26 +231,10 @@ pub fn scaffolding_ffi_converter_trait_interface(tokens: TokenStream) -> TokenSt
 #[doc(hidden)]
 #[proc_macro]
 pub fn scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -> TokenStream {
-    struct Input {
-        trait_ident: Ident,
-        impl_ident: Ident,
-    }
-
-    impl Parse for Input {
-        fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-            let trait_ident = input.parse()?;
-            input.parse::<Token![,]>()?;
-            let impl_ident = input.parse()?;
-            Ok(Self {
-                trait_ident,
-                impl_ident,
-            })
-        }
-    }
-    let input: Input = syn::parse_macro_input!(tokens);
+    let input: IdentPair = syn::parse_macro_input!(tokens);
     export::ffi_converter_callback_interface_impl(
-        &input.trait_ident,
-        &input.impl_ident,
+        &input.lhs,
+        &input.rhs,
         Some(&syn::parse_quote!(crate::UniFfiTag)),
     )
     .into()
@@ -248,8 +276,30 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
             },
             None,
         );
+
+        let toml_path = match util::manifest_path() {
+            Ok(path) => path.display().to_string(),
+            Err(_) => {
+                return quote! {
+                    compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
+                }.into();
+            }
+        };
+
         quote! {
             #metadata
+
+            // FIXME(HACK):
+            // Include the `Cargo.toml` file into the build.
+            // That way cargo tracks the file and other tools relying on file
+            // tracking see it as well.
+            // See https://bugzilla.mozilla.org/show_bug.cgi?id=1846223
+            // In the future we should handle that by using the `track_path::path` API,
+            // see https://github.com/rust-lang/rust/pull/84029
+            #[allow(dead_code)]
+            mod __unused {
+                const _: &[u8] = include_bytes!(#toml_path);
+            }
 
             include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
         }

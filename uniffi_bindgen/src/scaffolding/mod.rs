@@ -138,8 +138,4 @@ mod filters {
     pub fn crate_name_rs(nm: &str) -> Result<String, askama::Error> {
         Ok(format!("r#{}", nm.to_string().to_snake_case()))
     }
-
-    pub fn debug(d: &impl std::fmt::Debug) -> Result<String, askama::Error> {
-        Ok(format!("{d:?}"))
-    }
 }

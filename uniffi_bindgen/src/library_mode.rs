@@ -158,9 +158,9 @@ fn find_package_by_crate_name(
         .packages
         .iter()
         .filter(|p| {
-            p.targets.iter().any(|t| {
-                t.name.replace('-', "_") == crate_name && t.crate_types.iter().any(|ct| ct == "lib")
-            })
+            p.targets
+                .iter()
+                .any(|t| t.name.replace('-', "_") == crate_name)
         })
         .collect();
     match matching.len() {

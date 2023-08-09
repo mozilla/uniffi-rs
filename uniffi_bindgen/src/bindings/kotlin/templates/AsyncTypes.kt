@@ -9,6 +9,9 @@
 {{ self.add_import("kotlin.coroutines.suspendCoroutine") }}
 {{ self.add_import("kotlinx.coroutines.coroutineScope") }}
 
+// Stores all active future callbacks to ensure they're not GC'ed while waiting for the Rust code to
+// complete the callback
+val uniffiActiveFutureCallbacks = mutableSetOf<Any>()
 
 // FFI type for callback handlers
 {%- for callback_param in ci.iter_future_callback_params()|unique_ffi_types %}
@@ -27,6 +30,7 @@ internal interface UniFfiFutureCallback{{ callback_param|ffi_type_name }} : com.
 internal class {{ result_type|future_callback_handler }}(val continuation: {{ result_type|future_continuation_type }})
     : UniFfiFutureCallback{{ callback_param|ffi_type_name }} {
     override fun invoke(_callbackData: USize, returnValue: {{ callback_param|ffi_type_name_by_value }}?, callStatus: RustCallStatus.ByValue) {
+        uniffiActiveFutureCallbacks.remove(this)
         try {
             checkCallStatus({{ result_type|error_handler }}, callStatus)
             {%- match result_type.return_type %}

@@ -18,6 +18,21 @@
 
 - Crates can now use proc-macros without UDL files to export their interface.  See the "Procedural Macros: Attributes and Derives" manual section for details.
 
+- [Custom Types](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-unifficustomtype-derive) are now supported for proc-macros, including a very
+  low-friction way of exposing types implementing the new-type idiom.
+
+### What's Fixed
+
+- Kotlin: Fixed low-level issue with exported async APIs
+
+## v0.24.3 (backend crates: v0.24.3) - (_2023-08-01_)
+
+[All changes in v0.24.3](https://github.com/mozilla/uniffi-rs/compare/v0.24.2...v0.24.3).
+
+### What's changed?
+
+- `uniffi_macros`: Force-include the Cargo.toml to read ([#1683](https://github.com/mozilla/uniffi-rs/pull/1683))
+
 ## v0.24.2 (backend crates: v0.24.2) - (_2023-07-25_)
 
 [All changes in v0.24.2](https://github.com/mozilla/uniffi-rs/compare/v0.24.1...v0.24.2).
