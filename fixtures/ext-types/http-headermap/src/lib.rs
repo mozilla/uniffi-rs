@@ -3,7 +3,7 @@ use std::str::FromStr;
 pub(crate) use http::HeaderMap;
 
 /// A single HttpHeader for Uniffi bindings
-pub(crate) struct HttpHeader {
+pub struct HttpHeader {
     pub(crate) key: String,
     pub(crate) val: String,
 }

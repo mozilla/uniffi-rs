@@ -14,7 +14,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    parse_macro_input, Ident, LitStr, Token,
+    parse_macro_input, Ident, LitStr, Path, Token,
 };
 
 mod custom;
@@ -44,6 +44,20 @@ impl Parse for IdentPair {
         input.parse::<Token![,]>()?;
         let rhs = input.parse()?;
         Ok(Self { lhs, rhs })
+    }
+}
+
+struct CustomTypeInfo {
+    ident: Ident,
+    builtin: Path,
+}
+
+impl Parse for CustomTypeInfo {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let ident = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let builtin = input.parse()?;
+        Ok(Self { ident, builtin })
     }
 }
 
@@ -135,10 +149,10 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
 /// for a `<T>` which implements `UniffiCustomTypeConverter`.
 #[proc_macro]
 pub fn custom_type(tokens: TokenStream) -> TokenStream {
-    let input: IdentPair = syn::parse_macro_input!(tokens);
+    let input: CustomTypeInfo = syn::parse_macro_input!(tokens);
     custom::expand_ffi_converter_custom_type(
-        &input.lhs,
-        &input.rhs,
+        &input.ident,
+        &input.builtin,
         Some(&syn::parse_quote!(crate::UniFfiTag)),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
@@ -150,10 +164,10 @@ pub fn custom_type(tokens: TokenStream) -> TokenStream {
 /// newtype idiom.
 #[proc_macro]
 pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
-    let input: IdentPair = syn::parse_macro_input!(tokens);
+    let input: CustomTypeInfo = syn::parse_macro_input!(tokens);
     custom::expand_ffi_converter_custom_newtype(
-        &input.lhs,
-        &input.rhs,
+        &input.ident,
+        &input.builtin,
         Some(&syn::parse_quote!(crate::UniFfiTag)),
     )
     .unwrap_or_else(syn::Error::into_compile_error)

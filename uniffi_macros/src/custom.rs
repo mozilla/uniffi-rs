@@ -11,7 +11,7 @@ use syn::Path;
 // implementation that the library supplies
 pub(crate) fn expand_ffi_converter_custom_type(
     ident: &Ident,
-    builtin: &Ident,
+    builtin: &Path,
     tag: Option<&Path>,
 ) -> syn::Result<TokenStream> {
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
@@ -51,7 +51,7 @@ pub(crate) fn expand_ffi_converter_custom_type(
 // Generate an FfiConverter impl *and* an UniffiCustomTypeConverter.
 pub(crate) fn expand_ffi_converter_custom_newtype(
     ident: &Ident,
-    builtin: &Ident,
+    builtin: &Path,
     tag: Option<&Path>,
 ) -> syn::Result<TokenStream> {
     let ffi_converter = expand_ffi_converter_custom_type(ident, builtin, tag)?;
@@ -64,7 +64,7 @@ pub(crate) fn expand_ffi_converter_custom_newtype(
     })
 }
 
-fn custom_ffi_type_converter(ident: &Ident, builtin: &Ident) -> syn::Result<TokenStream> {
+fn custom_ffi_type_converter(ident: &Ident, builtin: &Path) -> syn::Result<TokenStream> {
     Ok(quote! {
         impl UniffiCustomTypeConverter for #ident {
             type Builtin = #builtin;
