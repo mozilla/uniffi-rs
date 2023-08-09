@@ -10,7 +10,7 @@ pub fn read_metadata(data: &[u8]) -> Result<Metadata> {
     MetadataReader::new(data).read_metadata()
 }
 
-// Read a metadat type, this is pub so that we can test it in the metadata fixture
+// Read a metadata type, this is pub so that we can test it in the metadata fixture
 pub fn read_metadata_type(data: &[u8]) -> Result<Type> {
     MetadataReader::new(data).read_type()
 }
