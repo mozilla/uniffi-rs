@@ -151,8 +151,9 @@ mod test_type_ids {
         check_type_id::<Option<u8>>(Type::Optional {
             inner_type: Box::new(Type::UInt8),
         });
-        check_type_id::<Vec<u8>>(Type::Sequence {
-            inner_type: Box::new(Type::UInt8),
+        check_type_id::<Vec<u8>>(Type::Bytes);
+        check_type_id::<Vec<u16>>(Type::Sequence {
+            inner_type: Box::new(Type::UInt16),
         });
         check_type_id::<HashMap<String, u8>>(Type::Map {
             key_type: Box::new(Type::String),

@@ -146,9 +146,16 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_OPTION => Type::Optional {
                 inner_type: Box::new(self.read_type()?),
             },
-            codes::TYPE_VEC => Type::Sequence {
-                inner_type: Box::new(self.read_type()?),
-            },
+            codes::TYPE_VEC => {
+                let inner_type = self.read_type()?;
+                if inner_type == Type::UInt8 {
+                    Type::Bytes
+                } else {
+                    Type::Sequence {
+                        inner_type: Box::new(inner_type),
+                    }
+                }
+            }
             codes::TYPE_HASH_MAP => Type::Map {
                 key_type: Box::new(self.read_type()?),
                 value_type: Box::new(self.read_type()?),

@@ -10,8 +10,8 @@ assert one.inner == 123
 two = Two("a")
 assert take_two(two) == "a"
 
-rwb = RecordWithBytes([1,2,3])
-assert take_record_with_bytes(rwb) == [1,2,3]
+rwb = RecordWithBytes(bytes([1,2,3]))
+assert take_record_with_bytes(rwb) == bytes([1,2,3])
 
 obj = Object()
 obj = Object.named_ctor(1)
@@ -27,7 +27,7 @@ assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 three = Three(obj)
 
 assert(make_zero().inner == "ZERO")
-assert(make_record_with_bytes().some_bytes == [0, 1, 2, 3, 4])
+assert(make_record_with_bytes().some_bytes == bytes([0, 1, 2, 3, 4]))
 
 try:
     always_fails()
