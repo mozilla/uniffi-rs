@@ -10,6 +10,9 @@ assert(one.inner == 123)
 let two = Two(a: "a")
 assert(takeTwo(two: two) == "a")
 
+let rwb = RecordWithBytes(someBytes: [1, 2, 3])
+assert(takeRecordWithBytes(rwb: rwb) == [1, 2, 3])
+
 var obj = Object()
 obj = Object.namedCtor(arg: 1)
 assert(obj.isHeavy() == .uncertain)
@@ -20,6 +23,7 @@ assert(enumIdentity(value: .true) == .true)
 let three = Three(obj: obj)
 
 assert(makeZero().inner == "ZERO")
+assert(makeRecordWithBytes().someBytes == [0, 1, 2, 3, 4])
 
 do {
     try alwaysFails()
@@ -46,6 +50,10 @@ class SwiftTestCallbackInterface : TestCallbackInterface {
 
     func `optional`(a: Optional<UInt32>) -> UInt32 {
         return a ?? 0;
+    }
+
+    func withBytes(rwb: RecordWithBytes) -> [UInt8] {
+        return rwb.someBytes
     }
 
     func tryParseInt(value: String) throws -> UInt32 {

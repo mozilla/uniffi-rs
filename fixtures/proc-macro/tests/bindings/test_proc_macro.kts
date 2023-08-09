@@ -10,6 +10,9 @@ assert(one.inner == 123)
 val two = Two("a")
 assert(takeTwo(two) == "a")
 
+val rwb = RecordWithBytes(byteArrayOf(1,2,3).toUByteArray().toList())
+assert(takeRecordWithBytes(rwb).toUByteArray().toByteArray().contentEquals(byteArrayOf(1, 2, 3)))
+
 var obj = Object()
 obj = Object.namedCtor(1u)
 assert(obj.isHeavy() == MaybeBool.UNCERTAIN)
@@ -20,6 +23,7 @@ assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
 val three = Three(obj)
 
 assert(makeZero().inner == "ZERO")
+assert(makeRecordWithBytes().someBytes.toUByteArray().toByteArray().contentEquals(byteArrayOf(0, 1, 2, 3, 4)))
 
 try {
     alwaysFails()
@@ -42,6 +46,8 @@ class KtTestCallbackInterface : TestCallbackInterface {
     override fun add(a: UInt, b: UInt) = a + b
 
     override fun optional(a: UInt?) = a ?: 0u
+
+    override fun withBytes(rwb: RecordWithBytes) = rwb.someBytes
 
     override fun tryParseInt(value: String): UInt {
         if (value == "force-unexpected-error") {
