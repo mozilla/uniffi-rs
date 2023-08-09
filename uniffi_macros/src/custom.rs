@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::util::{ident_to_string, mod_path, tagged_impl_header};
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::Path;
 
@@ -11,25 +11,9 @@ use syn::Path;
 // implementation that the library supplies
 pub(crate) fn expand_ffi_converter_custom_type(
     ident: &Ident,
-    builtin: &Ident,
+    builtin: &Path,
     tag: Option<&Path>,
 ) -> syn::Result<TokenStream> {
-    let ffi_name = match builtin.to_string().as_str() {
-        "i8" | "u8" | "i16" | "u16" | "i32" | "u32" | "i64" | "u64" | "f32" | "f64" => {
-            builtin.to_string()
-        }
-        "String" => "::uniffi::RustBuffer".to_string(),
-        // in theory we could support others, but for now...
-        _ => {
-            return Err(syn::Error::new(
-                Span::call_site(),
-                "Type is not supported as a custom type builtin",
-            ));
-        }
-    };
-
-    let ffi_path: TokenStream = ffi_name.parse()?;
-
     let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
@@ -37,7 +21,7 @@ pub(crate) fn expand_ffi_converter_custom_type(
     Ok(quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            type FfiType = #ffi_path;
+            type FfiType = <#builtin as ::uniffi::FfiConverter<crate::UniFfiTag>>::FfiType;
             fn lower(obj: #ident ) -> Self::FfiType {
                 <#builtin as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower(<#ident as UniffiCustomTypeConverter>::from_custom(obj))
             }
@@ -67,7 +51,7 @@ pub(crate) fn expand_ffi_converter_custom_type(
 // Generate an FfiConverter impl *and* an UniffiCustomTypeConverter.
 pub(crate) fn expand_ffi_converter_custom_newtype(
     ident: &Ident,
-    builtin: &Ident,
+    builtin: &Path,
     tag: Option<&Path>,
 ) -> syn::Result<TokenStream> {
     let ffi_converter = expand_ffi_converter_custom_type(ident, builtin, tag)?;
@@ -80,7 +64,7 @@ pub(crate) fn expand_ffi_converter_custom_newtype(
     })
 }
 
-fn custom_ffi_type_converter(ident: &Ident, builtin: &Ident) -> syn::Result<TokenStream> {
+fn custom_ffi_type_converter(ident: &Ident, builtin: &Path) -> syn::Result<TokenStream> {
     Ok(quote! {
         impl UniffiCustomTypeConverter for #ident {
             type Builtin = #builtin;

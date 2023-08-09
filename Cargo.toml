@@ -26,6 +26,7 @@ members = [
   "fixtures/callbacks",
 
   "fixtures/ext-types/guid",
+  "fixtures/ext-types/http-headermap",
   "fixtures/ext-types/uniffi-one",
   "fixtures/ext-types/lib",
   "fixtures/ext-types/proc-macro-lib",
