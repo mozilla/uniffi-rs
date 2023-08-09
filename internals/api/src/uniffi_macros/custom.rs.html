@@ -79,28 +79,12 @@
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
 <a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::util::{ident_to_string, mod_path, tagged_impl_header};
-<span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
+<span class="kw">use </span>proc_macro2::{Ident, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::Path;
 
@@ -108,25 +92,9 @@
 // implementation that the library supplies
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_custom_type(
     ident: <span class="kw-2">&amp;</span>Ident,
-    builtin: <span class="kw-2">&amp;</span>Ident,
+    builtin: <span class="kw-2">&amp;</span>Path,
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>ffi_name = <span class="kw">match </span>builtin.to_string().as_str() {
-        <span class="string">&quot;i8&quot; </span>| <span class="string">&quot;u8&quot; </span>| <span class="string">&quot;i16&quot; </span>| <span class="string">&quot;u16&quot; </span>| <span class="string">&quot;i32&quot; </span>| <span class="string">&quot;u32&quot; </span>| <span class="string">&quot;i64&quot; </span>| <span class="string">&quot;u64&quot; </span>| <span class="string">&quot;f32&quot; </span>| <span class="string">&quot;f64&quot; </span>=&gt; {
-            builtin.to_string()
-        }
-        <span class="string">&quot;String&quot; </span>=&gt; <span class="string">&quot;::uniffi::RustBuffer&quot;</span>.to_string(),
-        <span class="comment">// in theory we could support others, but for now...
-        </span><span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                Span::call_site(),
-                <span class="string">&quot;Type is not supported as a custom type builtin&quot;</span>,
-            ));
-        }
-    };
-
-    <span class="kw">let </span>ffi_path: TokenStream = ffi_name.parse()<span class="question-mark">?</span>;
-
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
@@ -134,7 +102,7 @@
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
-            <span class="kw">type </span>FfiType = #ffi_path;
+            <span class="kw">type </span>FfiType = &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType;
             <span class="kw">fn </span>lower(obj: #ident ) -&gt; <span class="self">Self</span>::FfiType {
                 &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(&lt;#ident <span class="kw">as </span>UniffiCustomTypeConverter&gt;::from_custom(obj))
             }
@@ -164,7 +132,7 @@
 <span class="comment">// Generate an FfiConverter impl *and* an UniffiCustomTypeConverter.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_custom_newtype(
     ident: <span class="kw-2">&amp;</span>Ident,
-    builtin: <span class="kw-2">&amp;</span>Ident,
+    builtin: <span class="kw-2">&amp;</span>Path,
     tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ffi_converter = expand_ffi_converter_custom_type(ident, builtin, tag)<span class="question-mark">?</span>;
@@ -177,7 +145,7 @@
     })
 }
 
-<span class="kw">fn </span>custom_ffi_type_converter(ident: <span class="kw-2">&amp;</span>Ident, builtin: <span class="kw-2">&amp;</span>Ident) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">fn </span>custom_ffi_type_converter(ident: <span class="kw-2">&amp;</span>Ident, builtin: <span class="kw-2">&amp;</span>Path) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="kw">impl </span>UniffiCustomTypeConverter <span class="kw">for </span>#ident {
             <span class="kw">type </span>Builtin = #builtin;

@@ -395,6 +395,20 @@
 <a href="#395" id="395">395</a>
 <a href="#396" id="396">396</a>
 <a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -411,7 +425,7 @@
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
-    parse_macro_input, Ident, LitStr, Token,
+    parse_macro_input, Ident, LitStr, Path, Token,
 };
 
 <span class="kw">mod </span>custom;
@@ -441,6 +455,20 @@
         input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
         <span class="kw">let </span>rhs = input.parse()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ lhs, rhs })
+    }
+}
+
+<span class="kw">struct </span>CustomTypeInfo {
+    ident: Ident,
+    builtin: Path,
+}
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>CustomTypeInfo {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>ident = input.parse()<span class="question-mark">?</span>;
+        input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>builtin = input.parse()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ ident, builtin })
     }
 }
 
@@ -532,10 +560,10 @@
 /// for a `&lt;T&gt;` which implements `UniffiCustomTypeConverter`.
 </span><span class="attr">#[proc_macro]
 </span><span class="kw">pub fn </span>custom_type(tokens: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
+    <span class="kw">let </span>input: CustomTypeInfo = <span class="macro">syn::parse_macro_input!</span>(tokens);
     custom::expand_ffi_converter_custom_type(
-        <span class="kw-2">&amp;</span>input.lhs,
-        <span class="kw-2">&amp;</span>input.rhs,
+        <span class="kw-2">&amp;</span>input.ident,
+        <span class="kw-2">&amp;</span>input.builtin,
         <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
@@ -547,10 +575,10 @@
 /// newtype idiom.
 </span><span class="attr">#[proc_macro]
 </span><span class="kw">pub fn </span>custom_newtype(tokens: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
+    <span class="kw">let </span>input: CustomTypeInfo = <span class="macro">syn::parse_macro_input!</span>(tokens);
     custom::expand_ffi_converter_custom_newtype(
-        <span class="kw-2">&amp;</span>input.lhs,
-        <span class="kw-2">&amp;</span>input.rhs,
+        <span class="kw-2">&amp;</span>input.ident,
+        <span class="kw-2">&amp;</span>input.builtin,
         <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
