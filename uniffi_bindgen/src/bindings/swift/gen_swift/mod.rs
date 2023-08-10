@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use once_cell::sync::Lazy;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -26,6 +27,102 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
+
+/// From <https://docs.swift.org/swift-book/documentation/the-swift-programming-language/lexicalstructure/#Keywords-and-Punctuation>
+static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
+    [
+        // Keywords used in declarations:
+        "associatedtype",
+        "class",
+        "deinit",
+        "enum",
+        "extension",
+        "fileprivate",
+        "func",
+        "import",
+        "init",
+        "inout",
+        "internal",
+        "let",
+        "open",
+        "operator",
+        "private",
+        "precedencegroup",
+        "protocol",
+        "public",
+        "rethrows",
+        "static",
+        "struct",
+        "subscript",
+        "typealias",
+        "var",
+        // Keywords used in statements:
+        "break",
+        "case",
+        "catch",
+        "continue",
+        "default",
+        "defer",
+        "do",
+        "else",
+        "fallthrough",
+        "for",
+        "guard",
+        "if",
+        "in",
+        "repeat",
+        "return",
+        "throw",
+        "switch",
+        "where",
+        "while",
+        // Keywords used in expressions and types:
+        "Any",
+        "as",
+        "await",
+        "catch",
+        "false",
+        "is",
+        "nil",
+        "rethrows",
+        "self",
+        "Self",
+        "super",
+        "throw",
+        "throws",
+        "true",
+        "try",
+    ]
+    .iter()
+    .map(ToString::to_string)
+    .collect::<HashSet<_>>()
+});
+
+/// Quote a name for use in a context where keywords must be quoted
+pub fn quote_general_keyword(nm: String) -> String {
+    if KEYWORDS.contains(&nm) {
+        format!("`{nm}`")
+    } else {
+        nm
+    }
+}
+
+/// Per <https://docs.swift.org/swift-book/documentation/the-swift-programming-language/lexicalstructure/#Keywords-and-Punctuation> subset of keywords which need quoting in arg context.
+static ARG_KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
+    ["inout", "var", "let"]
+        .iter()
+        .map(ToString::to_string)
+        .collect::<HashSet<_>>()
+});
+
+/// Quote a name for use in arg context where fewer keywords must be quoted
+pub fn quote_arg_keyword(nm: String) -> String {
+    if ARG_KEYWORDS.contains(&nm) {
+        format!("`{nm}`")
+    } else {
+        nm
+    }
+}
 
 /// Config options for the caller to customize the generated Swift.
 ///
@@ -335,17 +432,17 @@ impl SwiftCodeOracle {
 
     /// Get the idiomatic Swift rendering of a function name.
     fn fn_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
     fn enum_variant_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        nm.to_string().to_lower_camel_case()
     }
 
     fn ffi_type_label_raw(&self, ffi_type: &FfiType) -> String {
@@ -476,15 +573,26 @@ pub mod filters {
 
     /// Get the idiomatic Swift rendering of a function name.
     pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().fn_name(nm))
+        Ok(quote_general_keyword(oracle().fn_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
     pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().var_name(nm))
+        Ok(quote_general_keyword(oracle().var_name(nm)))
     }
 
-    /// Get the idiomatic Swift rendering of an individual enum variant.
+    /// Get the idiomatic Swift rendering of an arguments name.
+    /// This is the same as the var name but quoting is not required.
+    pub fn arg_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(quote_arg_keyword(oracle().var_name(nm)))
+    }
+
+    /// Get the idiomatic Swift rendering of an individual enum variant, quoted if it is a keyword (for use in e.g. declarations)
+    pub fn enum_variant_swift_quoted(nm: &str) -> Result<String, askama::Error> {
+        Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
+    }
+
+    /// Get the idiomatic Swift rendering of an individual enum variant, for contexts (for use in non-declaration contexts where quoting is not needed)
     pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
     }
