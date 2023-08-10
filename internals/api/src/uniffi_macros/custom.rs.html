@@ -104,19 +104,19 @@
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="kw">type </span>FfiType = &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType;
             <span class="kw">fn </span>lower(obj: #ident ) -&gt; <span class="self">Self</span>::FfiType {
-                &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(&lt;#ident <span class="kw">as </span>UniffiCustomTypeConverter&gt;::from_custom(obj))
+                &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(&lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::from_custom(obj))
             }
 
             <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; uniffi::Result&lt;#ident&gt; {
-                &lt;#ident <span class="kw">as </span>UniffiCustomTypeConverter&gt;::into_custom(&lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(v)<span class="question-mark">?</span>)
+                &lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::into_custom(&lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(v)<span class="question-mark">?</span>)
             }
 
             <span class="kw">fn </span>write(obj: #ident, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
-                &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(&lt;#ident <span class="kw">as </span>UniffiCustomTypeConverter&gt;::from_custom(obj), buf);
+                &lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(&lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::from_custom(obj), buf);
             }
 
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; uniffi::Result&lt;#ident&gt; {
-                &lt;#ident <span class="kw">as </span>UniffiCustomTypeConverter&gt;::into_custom(&lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>)
+                &lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::into_custom(&lt;#builtin <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>)
             }
 
             <span class="macro">::uniffi::ffi_converter_default_return!</span>(<span class="kw">crate</span>::UniFfiTag);
@@ -147,7 +147,7 @@
 
 <span class="kw">fn </span>custom_ffi_type_converter(ident: <span class="kw-2">&amp;</span>Ident, builtin: <span class="kw-2">&amp;</span>Path) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
-        <span class="kw">impl </span>UniffiCustomTypeConverter <span class="kw">for </span>#ident {
+        <span class="kw">impl </span><span class="kw">crate</span>::UniffiCustomTypeConverter <span class="kw">for </span>#ident {
             <span class="kw">type </span>Builtin = #builtin;
 
             <span class="kw">fn </span>into_custom(val: <span class="self">Self</span>::Builtin) -&gt; uniffi::Result&lt;<span class="self">Self</span>&gt; {
