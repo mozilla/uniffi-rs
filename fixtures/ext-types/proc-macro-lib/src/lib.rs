@@ -159,11 +159,15 @@ impl UniffiCustomTypeConverter for Uuid {
     }
 }
 
-// A custom type using the "newtype" idiom. As above, could be external.
-pub struct NewtypeHandle(i64);
+mod submodule {
+    // A custom type using the "newtype" idiom.
+    // Uniffi can generate the UniffiCustomTypeConverter for us.
+    pub struct NewtypeHandle(pub(super) i64);
 
-// Uniffi can generate the UniffiCustomTypeConverter for us too.
-uniffi::custom_newtype!(NewtypeHandle, i64);
+    // Uniffi can generate the UniffiCustomTypeConverter for us too.
+    uniffi::custom_newtype!(NewtypeHandle, i64);
+}
+pub use submodule::NewtypeHandle;
 
 #[uniffi::export]
 fn get_uuid(u: Option<Uuid>) -> Uuid {
