@@ -2,7 +2,7 @@
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 public enum {{ type_name }} {
     {% for variant in e.variants() %}
-    case {{ variant.name()|enum_variant_swift }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
+    case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
 }
 
@@ -15,7 +15,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {% for variant in e.variants() %}
         case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift }}{% if variant.has_fields() %}(
             {%- for field in variant.fields() %}
-            {{ field.name()|var_name }}: try {{ field|read_fn }}(from: &buf)
+            {{ field.name()|arg_name }}: try {{ field|read_fn }}(from: &buf)
             {%- if !loop.last %}, {% endif %}
             {%- endfor %}
         ){%- endif %}
