@@ -61,7 +61,7 @@ for arch in $ARCHS; do
         # Hardware iOS targets
         $HOME/.cargo/bin/cargo rustc -p "${FFI_TARGET}" --lib --crate-type staticlib $RELFLAG --target aarch64-apple-ios
       else
-        # M1 iOS simulator -- currently in Nightly only and requires to build `libstd`
+        # M1 iOS simulator
         $HOME/.cargo/bin/cargo rustc -p "${FFI_TARGET}" --lib --crate-type staticlib $RELFLAG --target aarch64-apple-ios-sim
       fi
   esac
