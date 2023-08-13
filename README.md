@@ -56,6 +56,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 There are a few third-party resources that make it easier to work with UniFFI:
 
 * [Plugin support for `.udl` files](https://github.com/Lonami/uniffi-dl) for the IDEA platform ([*uniffi-dl* in the JetBrains marketplace](https://plugins.jetbrains.com/plugin/20527-uniffi-dl)). It provides syntax highlighting, code folding, code completion, reference resolution and navigation (among others features) for the [UniFFI Definition Language (UDL)](https://mozilla.github.io/uniffi-rs/).
+* [cargo swift](https://github.com/antoniusnaumann/cargo-swift), a cargo plugin to build a Swift Package from Rust code. It provides an init command for setting up a UniFFI crate and a package command for building a Swift package from Rust code - without the need for additional configuration or build scripts.
 
 (Please open a PR if you think other resources should be listed!)
 
