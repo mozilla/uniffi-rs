@@ -9,7 +9,7 @@ internal interface UniFfiRustTaskCallback : com.sun.jna.Callback {
 }
 
 object UniFfiForeignExecutorCallback : com.sun.jna.Callback {
-    internal fun callback(handle: USize, delayMs: Int, rustTask: UniFfiRustTaskCallback?, rustTaskData: Pointer?) {
+    fun callback(handle: USize, delayMs: Int, rustTask: UniFfiRustTaskCallback?, rustTaskData: Pointer?) {
         if (rustTask == null) {
             FfiConverterForeignExecutor.drop(handle)
         } else {
