@@ -22,7 +22,7 @@ public interface {{ type_name }} {
 // The ForeignCallback that is passed to Rust.
 internal class {{ foreign_callback }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
-    override fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
+    override fun callback(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
         val cb = {{ ffi_converter_name }}.lift(handle)
         return when (method) {
             IDX_CALLBACK_FREE -> {

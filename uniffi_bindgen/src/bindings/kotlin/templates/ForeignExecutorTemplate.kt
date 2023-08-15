@@ -5,11 +5,11 @@
 // Callback function to execute a Rust task.  The Kotlin code schedules these in a coroutine then
 // invokes them.
 internal interface UniFfiRustTaskCallback : com.sun.jna.Callback {
-    fun invoke(rustTaskData: Pointer?)
+    fun callback(rustTaskData: Pointer?)
 }
 
-object UniFfiForeignExecutorCallback : com.sun.jna.Callback {
-    internal fun invoke(handle: USize, delayMs: Int, rustTask: UniFfiRustTaskCallback?, rustTaskData: Pointer?) {
+internal object UniFfiForeignExecutorCallback : com.sun.jna.Callback {
+    fun callback(handle: USize, delayMs: Int, rustTask: UniFfiRustTaskCallback?, rustTaskData: Pointer?) {
         if (rustTask == null) {
             FfiConverterForeignExecutor.drop(handle)
         } else {
@@ -18,7 +18,7 @@ object UniFfiForeignExecutorCallback : com.sun.jna.Callback {
                 if (delayMs > 0) {
                     delay(delayMs.toLong())
                 }
-                rustTask.invoke(rustTaskData)
+                rustTask.callback(rustTaskData)
             }
         }
     }
