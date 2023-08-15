@@ -7,7 +7,7 @@
         ci: <a class="struct" href="interface/struct.ComponentInterface.html" title="struct uniffi_bindgen::interface::ComponentInterface">ComponentInterface</a>,
         config: Self::<a class="associatedtype" href="trait.BindingGenerator.html#associatedtype.Config" title="type uniffi_bindgen::BindingGenerator::Config">Config</a>,
         out_dir: &amp;Utf8Path
-    ) -&gt; <a class="type" href="https://docs.rs/anyhow/1.0.73/anyhow/type.Result.html" title="type anyhow::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.69.0/std/primitive.unit.html">()</a>&gt;;
+    ) -&gt; <a class="type" href="https://docs.rs/anyhow/1.0.74/anyhow/type.Result.html" title="type anyhow::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.69.0/std/primitive.unit.html">()</a>&gt;;
 }</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A trait representing a UniFFI Binding Generator</p>
 <p>External crates that implement binding generators, should implement this type
 and call the <a href="fn.generate_external_bindings.html" title="fn uniffi_bindgen::generate_external_bindings"><code>generate_external_bindings</code></a> using a type that implements this trait.</p>
@@ -17,7 +17,7 @@ and call the <a href="fn.generate_external_bindings.html" title="fn uniffi_bindg
     ci: <a class="struct" href="interface/struct.ComponentInterface.html" title="struct uniffi_bindgen::interface::ComponentInterface">ComponentInterface</a>,
     config: Self::<a class="associatedtype" href="trait.BindingGenerator.html#associatedtype.Config" title="type uniffi_bindgen::BindingGenerator::Config">Config</a>,
     out_dir: &amp;Utf8Path
-) -&gt; <a class="type" href="https://docs.rs/anyhow/1.0.73/anyhow/type.Result.html" title="type anyhow::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.69.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Writes the bindings to the output directory</p>
+) -&gt; <a class="type" href="https://docs.rs/anyhow/1.0.74/anyhow/type.Result.html" title="type anyhow::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.69.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Writes the bindings to the output directory</p>
 <h5 id="arguments"><a href="#arguments">Arguments</a></h5>
 <ul>
 <li><code>ci</code>: A <a href="interface/struct.ComponentInterface.html" title="struct uniffi_bindgen::interface::ComponentInterface"><code>ComponentInterface</code></a> representing the interface</li>
