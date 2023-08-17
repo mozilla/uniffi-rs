@@ -17,9 +17,9 @@ async-compat = { version = "0.2.1", optional = true }
 bytes = "1.3"
 camino = "1.0.8"
 log = "0.4"
-once_cell = "1.12"
+# Enable "async" so that receivers implement Future, no need for "std" since we don't block on them.
+oneshot = { version = "0.1", features = ["async"] }
 # Regular dependencies
-cargo_metadata = "0.15"
 paste = "1.0"
 static_assertions = "1.1.0"
 
