@@ -176,8 +176,8 @@ by the host operating system (e.g. the key chain).</p>
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub trait Keychain: Send + Sync + Debug {
-  fn get(&amp;self, key: String) -&gt; Result&lt;Option&lt;String&gt;, KeyChainError&gt;
-  fn put(&amp;self, key: String, value: String) -&gt; Result&lt;(), KeyChainError&gt;
+  fn get(&amp;self, key: String) -&gt; Result&lt;Option&lt;String&gt;, KeyChainError&gt;;
+  fn put(&amp;self, key: String, value: String) -&gt; Result&lt;(), KeyChainError&gt;;
 }
 <span class="boring">}
 </span></code></pre></pre>
@@ -229,7 +229,7 @@ which may use it.</p>
 <pre><code class="language-webidl">interface Authenticator {
     constructor(Keychain keychain);
     void login();
-}
+};
 </code></pre>
 <p>In Rust:</p>
 <pre><pre class="playground"><code class="language-rust no_run">
