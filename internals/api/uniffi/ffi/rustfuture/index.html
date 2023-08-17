@@ -39,10 +39,10 @@ invokes the callback.</li>
 ) {
     ::uniffi::call_with_output(uniffi_call_status, || {
         <span class="kw">let </span>uniffi_rust_future = RustFuture::&lt;<span class="kw">_</span>, bool, <span class="kw">crate</span>::UniFFITag,&gt;::new(
-            future: hello(),
-            executor,
-            callback,
-            callback_data,
+            future: hello(), <span class="comment">// the future!
+            </span>uniffi_executor,
+            uniffi_callback,
+            uniffi_callback_data,
         );
         uniffi_rust_future.wake();
     })
