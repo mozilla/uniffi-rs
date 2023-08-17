@@ -80,6 +80,11 @@ impl Object {
     fn get_trait(&self, inc: Option<Arc<dyn Trait>>) -> Arc<dyn Trait> {
         inc.unwrap_or_else(|| Arc::new(TraitImpl {}))
     }
+
+    fn take_error(&self, e: BasicError) -> u32 {
+        assert!(matches!(e, BasicError::InvalidInput));
+        42
+    }
 }
 
 #[uniffi::export]
@@ -107,6 +112,7 @@ fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
         cb.try_parse_int("force-unexpected-error".to_string()),
         Err(BasicError::UnexpectedError { .. }),
     ));
+    assert_eq!(42, cb.callback_handler(Object::new()));
 }
 
 // Type that's defined in the UDL and not wrapped with #[uniffi::export]

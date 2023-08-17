@@ -54,6 +54,11 @@ class KtTestCallbackInterface : TestCallbackInterface {
             throw BasicException.InvalidInput()
         }
     }
+
+    override fun callbackHandler(o: Object): UInt {
+        val v = o.takeError(BasicException.InvalidInput());
+        return v
+    }
 }
 
 testCallbackInterface(KtTestCallbackInterface())
