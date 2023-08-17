@@ -18,8 +18,8 @@ by the host operating system (e.g. the key chain).
 
 ```rust,no_run
 pub trait Keychain: Send + Sync + Debug {
-  fn get(&self, key: String) -> Result<Option<String>, KeyChainError>
-  fn put(&self, key: String, value: String) -> Result<(), KeyChainError>
+  fn get(&self, key: String) -> Result<Option<String>, KeyChainError>;
+  fn put(&self, key: String, value: String) -> Result<(), KeyChainError>;
 }
 ```
 
@@ -85,7 +85,7 @@ In UDL:
 interface Authenticator {
     constructor(Keychain keychain);
     void login();
-}
+};
 ```
 
 In Rust:
