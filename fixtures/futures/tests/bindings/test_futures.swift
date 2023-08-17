@@ -1,4 +1,4 @@
-import uniffi_futures
+import futures
 import Foundation // To get `DispatchGroup` and `Date` types.
 
 var counter = DispatchGroup()
@@ -229,6 +229,35 @@ Task {
 	let tDelta = DateInterval(start: t0, end: t1)
 	assert(tDelta.duration > 0 && tDelta.duration < 0.1)
 
+	counter.leave()
+}
+
+// Test a future that uses a lock and that is cancelled.
+counter.enter()
+Task {
+	let task = Task {
+	    try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+	}
+
+	// Wait some time to ensure the task has locked the shared resource
+	try await Task.sleep(nanoseconds: 50_000_000)
+	// Cancel the job task the shared resource has been released.
+	//
+	// FIXME: this test currently passes because `test.cancel()` doesn't actually cancel the
+	// operation.  We need to rework the Swift async handling to handle this properly.
+	task.cancel()
+
+	// Try accessing the shared resource again.  The initial task should release the shared resource
+	// before the timeout expires.
+	try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 0, timeoutMs: 1000))
+	counter.leave()
+}
+
+// Test a future that uses a lock and that is not cancelled.
+counter.enter()
+Task {
+	try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+	try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 0, timeoutMs: 1000))
 	counter.leave()
 }
 

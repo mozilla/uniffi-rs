@@ -1,3 +1,9 @@
+private let UNIFFI_RUST_TASK_CALLBACK_SUCCESS: Int8 = 0
+private let UNIFFI_RUST_TASK_CALLBACK_CANCELLED: Int8 = 1
+private let UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS: Int8 = 0
+private let UNIFFI_FOREIGN_EXECUTOR_CALLBACK_CANCELED: Int8 = 1
+private let UNIFFI_FOREIGN_EXECUTOR_CALLBACK_ERROR: Int8 = 2
+
 // Encapsulates an executor that can run Rust tasks
 //
 // On Swift, `Task.detached` can handle this we just need to know what priority to send it.
@@ -35,7 +41,7 @@ fileprivate struct FfiConverterForeignExecutor: FfiConverter {
 }
 
 
-fileprivate func uniffiForeignExecutorCallback(executorHandle: Int, delayMs: UInt32, rustTask: UniFfiRustTaskCallback?, taskData: UnsafeRawPointer?) {
+fileprivate func uniffiForeignExecutorCallback(executorHandle: Int, delayMs: UInt32, rustTask: UniFfiRustTaskCallback?, taskData: UnsafeRawPointer?) -> Int8 {
     if let rustTask = rustTask {
         let executor = try! FfiConverterForeignExecutor.lift(executorHandle)
         Task.detached(priority: executor.priority) {
@@ -43,12 +49,14 @@ fileprivate func uniffiForeignExecutorCallback(executorHandle: Int, delayMs: UIn
                 let nanoseconds: UInt64 = numericCast(delayMs * 1000000)
                 try! await Task.sleep(nanoseconds: nanoseconds)
             }
-            rustTask(taskData)
+            rustTask(taskData, UNIFFI_RUST_TASK_CALLBACK_SUCCESS)
         }
-
+        return UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
+    } else {
+        // When rustTask is null, we should drop the foreign executor.
+        // However, since its just a value type, we don't need to do anything here.
+        return UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
     }
-    // No else branch: when rustTask is null, we should drop the foreign executor. However, since
-    // its just a value type, we don't need to do anything here.
 }
 
 fileprivate func uniffiInitForeignExecutor() {

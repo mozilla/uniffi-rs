@@ -11,10 +11,11 @@ suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% ma
     // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
     return coroutineScope {
         val scope = this
-        return@coroutineScope suspendCoroutine { continuation ->
+        return@coroutineScope suspendCancellableCoroutine { continuation ->
             try {
                 val callback = {{ func.result_type().borrow()|future_callback_handler }}(continuation)
                 uniffiActiveFutureCallbacks.add(callback)
+                continuation.invokeOnCancellation { uniffiActiveFutureCallbacks.remove(callback) }
                 rustCall { status ->
                     _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
                         {% call kt::arg_list_lowered(func) %}

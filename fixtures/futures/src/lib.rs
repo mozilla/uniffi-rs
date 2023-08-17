@@ -276,4 +276,40 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
     .await;
 }
 
-uniffi::include_scaffolding!("uniffi_futures");
+#[derive(uniffi::Record)]
+pub struct SharedResourceOptions {
+    pub release_after_ms: u16,
+    pub timeout_ms: u16,
+}
+
+// Our error.
+#[derive(uniffi::Error, Debug)]
+pub enum AsyncError {
+    Timeout,
+}
+
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn use_shared_resource(options: SharedResourceOptions) -> Result<(), AsyncError> {
+    use once_cell::sync::Lazy;
+    use tokio::{
+        sync::Mutex,
+        time::{sleep, timeout},
+    };
+
+    static MUTEX: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+
+    let _guard = timeout(
+        Duration::from_millis(options.timeout_ms.into()),
+        MUTEX.lock(),
+    )
+    .await
+    .map_err(|_| {
+        println!("Timeout error in use_shared_resource().  The unit test may hang after this");
+        AsyncError::Timeout
+    })?;
+
+    sleep(Duration::from_millis(options.release_after_ms.into())).await;
+    Ok(())
+}
+
+uniffi::include_scaffolding!("futures");
