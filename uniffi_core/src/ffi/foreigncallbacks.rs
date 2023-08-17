@@ -115,7 +115,6 @@
 
 use crate::{FfiConverter, RustBuffer};
 use std::fmt;
-use std::os::raw::c_int;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// ForeignCallback is the Rust representation of a foreign language function.
@@ -133,12 +132,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 ///   arguments from the buffer and passes them to the user's callback.
 /// * `buf_ptr` is a pointer to where the resulting buffer will be written. UniFFI will allocate a
 ///   buffer to write the result into.
-/// * A callback returns:
-///    - `-2` An error occurred that was serialized to buf_ptr
-///    - `-1` An unexpected error occurred
-///    - `0` is a deprecated way to signal that if the call succeeded, but did not modify buf_ptr
-///    - `1` If the call succeeded.  For non-void functions the return value should be serialized
-///      to buf_ptr.
+/// * Callbacks return on of the `CallbackResult` values
 ///   Note: The output buffer might still contain 0 bytes of data.
 pub type ForeignCallback = unsafe extern "C" fn(
     handle: u64,
@@ -146,14 +140,41 @@ pub type ForeignCallback = unsafe extern "C" fn(
     args_data: *const u8,
     args_len: i32,
     buf_ptr: *mut RustBuffer,
-) -> c_int;
+) -> i32;
 
 /// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
 /// and it can be deleted from the handle map.
 pub const IDX_CALLBACK_FREE: u32 = 0;
-pub const CALLBACK_SUCCESS: i32 = 0;
-pub const CALLBACK_ERROR: i32 = 1;
-pub const CALLBACK_UNEXPECTED_ERROR: i32 = 2;
+
+/// Result of a foreign callback invocation
+#[repr(i32)]
+#[derive(Debug, PartialEq, Eq)]
+pub enum CallbackResult {
+    /// Successful call.
+    /// The return value is serialized to `buf_ptr`.
+    Success = 0,
+    /// Expected error.
+    /// This is returned when a foreign method throws an exception that corresponds to the Rust Err half of a Result.
+    /// The error value is serialized to `buf_ptr`.
+    Error = 1,
+    /// Unexpected error.
+    /// An error message string is serialized to `buf_ptr`.
+    UnexpectedError = 2,
+}
+
+impl TryFrom<i32> for CallbackResult {
+    // On errors we return the unconverted value
+    type Error = i32;
+
+    fn try_from(value: i32) -> Result<Self, i32> {
+        match value {
+            0 => Ok(Self::Success),
+            1 => Ok(Self::Error),
+            2 => Ok(Self::UnexpectedError),
+            n => Err(n)
+        }
+    }
+}
 
 // Overly-paranoid sanity checking to ensure that these types are
 // convertible between each-other. `transmute` actually should check this for
@@ -206,7 +227,7 @@ impl ForeignCallbackInternals {
         method: u32,
         args: RustBuffer,
         ret_rbuf: &mut RustBuffer,
-    ) -> c_int {
+    ) -> i32 {
         let ptr_value = self.callback_ptr.load(Ordering::SeqCst);
         unsafe {
             // SAFETY: `callback_ptr` was set in `set_callback` from a ForeignCallback pointer, so
@@ -229,11 +250,13 @@ impl ForeignCallbackInternals {
         R: FfiConverter<UniFfiTag>,
     {
         let mut ret_rbuf = RustBuffer::new();
-        let callback_result = self.call_callback(handle, method, args, &mut ret_rbuf);
-        match callback_result {
-            CALLBACK_SUCCESS => R::lift_callback_return(ret_rbuf),
-            CALLBACK_ERROR => R::lift_callback_error(ret_rbuf),
-            CALLBACK_UNEXPECTED_ERROR => {
+        let raw_result = self.call_callback(handle, method, args, &mut ret_rbuf);
+        let result = CallbackResult::try_from(raw_result)
+            .unwrap_or_else(|code| panic!("Callback failed with unexpected return code: {code}"));
+        match result {
+            CallbackResult::Success => R::lift_callback_return(ret_rbuf),
+            CallbackResult::Error => R::lift_callback_error(ret_rbuf),
+            CallbackResult::UnexpectedError => {
                 let reason = if !ret_rbuf.is_empty() {
                     match <String as FfiConverter<UniFfiTag>>::try_lift(ret_rbuf) {
                         Ok(s) => s,
@@ -248,8 +271,6 @@ impl ForeignCallbackInternals {
                 };
                 R::handle_callback_unexpected_error(UnexpectedUniFFICallbackError { reason })
             }
-            // Other values should never be returned
-            _ => panic!("Callback failed with unexpected return code"),
         }
     }
 }
