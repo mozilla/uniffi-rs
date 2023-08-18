@@ -13,7 +13,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         {% for variant in e.variants() %}
-        case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift }}{% if variant.has_fields() %}(
+        case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift_quoted }}{% if variant.has_fields() %}(
             {%- for field in variant.fields() %}
             {{ field.name()|arg_name }}: try {{ field|read_fn }}(from: &buf)
             {%- if !loop.last %}, {% endif %}
@@ -28,13 +28,13 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         switch value {
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
-        case let .{{ variant.name()|enum_variant_swift }}({% for field in variant.fields() %}{{ field.name()|var_name }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+        case let .{{ variant.name()|enum_variant_swift_quoted }}({% for field in variant.fields() %}{{ field.name()|var_name }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             writeInt(&buf, Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
             {{ field|write_fn }}({{ field.name()|var_name }}, into: &buf)
             {% endfor -%}
         {% else %}
-        case .{{ variant.name()|enum_variant_swift }}:
+        case .{{ variant.name()|enum_variant_swift_quoted }}:
             writeInt(&buf, Int32({{ loop.index }}))
         {% endif %}
         {%- endfor %}

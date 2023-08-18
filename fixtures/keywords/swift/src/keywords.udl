@@ -4,6 +4,7 @@ namespace keywords_swift {
 
 enum case {
     "internal",
+    "init",
 };
 
 [Enum]
