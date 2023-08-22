@@ -5,8 +5,8 @@ public object {{ ffi_converter_name }}: FfiConverterRustBuffer<Map<{{ key_type_n
         return buildMap<{{ key_type_name }}, {{ value_type_name }}> {
             val len = buf.getInt()
             repeat(len) {
-                val k = { { key_type|read_fn } }(buf)
-                val v = { { value_type|read_fn } }(buf)
+                val k = {{ key_type|read_fn }}(buf)
+                val v = {{ value_type|read_fn }}(buf)
                 this[k] = v
             }
         }
