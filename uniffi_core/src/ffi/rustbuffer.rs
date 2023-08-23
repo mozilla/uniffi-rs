@@ -212,11 +212,7 @@ impl Default for RustBuffer {
 /// to the foreign-language code as a `RustBuffer` struct. Callers must eventually
 /// free the resulting buffer, either by explicitly calling [`uniffi_rustbuffer_free`] defined
 /// below, or by passing ownership of the buffer back into Rust code.
-#[no_mangle]
-pub extern "C" fn uniffi_rustbuffer_alloc(
-    size: i32,
-    call_status: &mut RustCallStatus,
-) -> RustBuffer {
+pub fn uniffi_rustbuffer_alloc(size: i32, call_status: &mut RustCallStatus) -> RustBuffer {
     rust_call(call_status, || {
         Ok(RustBuffer::new_with_size(size.max(0) as usize))
     })
@@ -230,8 +226,7 @@ pub extern "C" fn uniffi_rustbuffer_alloc(
 /// # Safety
 /// This function will dereference a provided pointer in order to copy bytes from it, so
 /// make sure the `ForeignBytes` struct contains a valid pointer and length.
-#[no_mangle]
-pub unsafe extern "C" fn uniffi_rustbuffer_from_bytes(
+pub fn uniffi_rustbuffer_from_bytes(
     bytes: ForeignBytes,
     call_status: &mut RustCallStatus,
 ) -> RustBuffer {
@@ -247,8 +242,7 @@ pub unsafe extern "C" fn uniffi_rustbuffer_from_bytes(
 /// The argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
-#[no_mangle]
-pub unsafe extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
+pub fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
     rust_call(call_status, || {
         RustBuffer::destroy(buf);
         Ok(())
@@ -270,8 +264,7 @@ pub unsafe extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &m
 /// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
-#[no_mangle]
-pub unsafe extern "C" fn uniffi_rustbuffer_reserve(
+pub fn uniffi_rustbuffer_reserve(
     buf: RustBuffer,
     additional: i32,
     call_status: &mut RustCallStatus,
