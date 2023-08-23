@@ -4,10 +4,9 @@
 
 //! Schedule tasks using a foreign executor.
 
-use std::{
-    panic,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::panic;
+
+use crate::{ForeignExecutorCallback, ForeignExecutorCallbackCell};
 
 /// Opaque handle for a foreign task executor.
 ///
@@ -21,25 +20,6 @@ pub struct ForeignExecutorHandle(pub(crate) *const ());
 unsafe impl Send for ForeignExecutorHandle {}
 
 unsafe impl Sync for ForeignExecutorHandle {}
-
-/// Callback to schedule a Rust call with a `ForeignExecutor`. The bindings code registers exactly
-/// one of these with the Rust code.
-///
-/// Delay is an approximate amount of ms to wait before scheduling the call.  Delay is usually 0,
-/// which means schedule sometime soon.
-///
-/// As a special case, when Rust drops the foreign executor, with 'task=null'`.  The foreign
-/// bindings should release the reference to the executor that was reserved for Rust.
-///
-/// This callback can be invoked from any thread, including threads created by Rust.
-///
-/// The callback should return one of the `ForeignExecutorCallbackResult` values.
-pub type ForeignExecutorCallback = extern "C" fn(
-    executor: ForeignExecutorHandle,
-    delay: u32,
-    task: Option<RustTaskCallback>,
-    task_data: *const (),
-) -> i8;
 
 /// Result code returned by `ForeignExecutorCallback`
 #[repr(i8)]
@@ -104,22 +84,13 @@ pub enum RustTaskCallbackCode {
     Cancelled = 1,
 }
 
-static FOREIGN_EXECUTOR_CALLBACK: AtomicUsize = AtomicUsize::new(0);
+static FOREIGN_EXECUTOR_CALLBACK: ForeignExecutorCallbackCell = ForeignExecutorCallbackCell::new();
 
 /// Set the global ForeignExecutorCallback.  This is called by the foreign bindings, normally
 /// during initialization.
 #[no_mangle]
 pub extern "C" fn uniffi_foreign_executor_callback_set(callback: ForeignExecutorCallback) {
-    FOREIGN_EXECUTOR_CALLBACK.store(callback as usize, Ordering::Relaxed);
-}
-
-fn get_foreign_executor_callback() -> ForeignExecutorCallback {
-    match FOREIGN_EXECUTOR_CALLBACK.load(Ordering::Relaxed) {
-        0 => panic!("FOREIGN_EXECUTOR_CALLBACK not set"),
-        // SAFETY: The below call is okay because we only store values in
-        // FOREIGN_EXECUTOR_CALLBACK that were cast from a ForeignExecutorCallback.
-        n => unsafe { std::mem::transmute(n) },
-    }
+    FOREIGN_EXECUTOR_CALLBACK.set(callback);
 }
 
 /// Schedule Rust calls using a foreign executor
@@ -201,13 +172,13 @@ pub(crate) fn schedule_raw(
     callback: RustTaskCallback,
     data: *const (),
 ) -> bool {
-    let result_code = (get_foreign_executor_callback())(handle, delay, Some(callback), data);
+    let result_code = (FOREIGN_EXECUTOR_CALLBACK.get())(handle, delay, Some(callback), data);
     ForeignExecutorCallbackResult::check_result_code(result_code)
 }
 
 impl Drop for ForeignExecutor {
     fn drop(&mut self) {
-        (get_foreign_executor_callback())(self.handle, 0, None, std::ptr::null());
+        (FOREIGN_EXECUTOR_CALLBACK.get())(self.handle, 0, None, std::ptr::null());
     }
 }
 
