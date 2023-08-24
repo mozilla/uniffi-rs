@@ -317,13 +317,9 @@ pub fn generate_bindings(
     Ok(())
 }
 
-pub fn dump_json(library_path: &Utf8Path) -> Result<String> {
+pub fn print_repr(library_path: &Utf8Path) -> Result<()> {
     let metadata = macro_metadata::extract_from_library(library_path)?;
-    Ok(serde_json::to_string_pretty(&metadata)?)
-}
-
-pub fn print_json(library_path: &Utf8Path) -> Result<()> {
-    println!("{}", dump_json(library_path)?);
+    println!("{metadata:#?}");
     Ok(())
 }
 

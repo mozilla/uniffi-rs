@@ -17,11 +17,9 @@
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
 //! by the [`ffi::FfiType`](super::ffi::FfiType) enum, but that's a detail that is invisible to end users.
 
-use serde::Serialize;
-
 use crate::Checksum;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd)]
 pub enum ObjectImpl {
     Struct,
     Trait,
@@ -51,7 +49,7 @@ impl ObjectImpl {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd)]
 pub enum ExternalKind {
     Interface,
     // Either a record or enum
@@ -61,7 +59,7 @@ pub enum ExternalKind {
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
-#[derive(Debug, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd)]
 pub enum Type {
     // Primitive types.
     UInt8,
