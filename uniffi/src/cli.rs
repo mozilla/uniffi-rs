@@ -69,8 +69,8 @@ enum Commands {
         udl_file: Utf8PathBuf,
     },
 
-    /// Print the JSON representation of the interface from a dynamic library
-    PrintJson {
+    /// Print a debug representation of the interface from a dynamic library
+    PrintRepr {
         /// Path to the library file (.so, .dll, .dylib, or .a)
         path: Utf8PathBuf,
     },
@@ -128,8 +128,8 @@ pub fn run_main() -> anyhow::Result<()> {
                 !no_format,
             )?;
         }
-        Commands::PrintJson { path } => {
-            uniffi_bindgen::print_json(&path)?;
+        Commands::PrintRepr { path } => {
+            uniffi_bindgen::print_repr(&path)?;
         }
     };
     Ok(())
