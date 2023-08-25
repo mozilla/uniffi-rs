@@ -475,10 +475,6 @@
 <a href="#475" id="475">475</a>
 <a href="#476" id="476">476</a>
 <a href="#477" id="477">477</a>
-<a href="#478" id="478">478</a>
-<a href="#479" id="479">479</a>
-<a href="#480" id="480">480</a>
-<a href="#481" id="481">481</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -798,13 +794,9 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub fn </span>dump_json(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+<span class="kw">pub fn </span>print_repr(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>metadata = macro_metadata::extract_from_library(library_path)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(serde_json::to_string_pretty(<span class="kw-2">&amp;</span>metadata)<span class="question-mark">?</span>)
-}
-
-<span class="kw">pub fn </span>print_json(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, dump_json(library_path)<span class="question-mark">?</span>);
+    <span class="macro">println!</span>(<span class="string">&quot;{metadata:#?}&quot;</span>);
     <span class="prelude-val">Ok</span>(())
 }
 
