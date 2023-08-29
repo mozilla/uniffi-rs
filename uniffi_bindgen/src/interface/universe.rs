@@ -8,6 +8,7 @@
 //!
 use anyhow::Result;
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
+use uniffi_meta::NamespaceMetadata;
 
 pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
 
@@ -24,7 +25,7 @@ pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
 #[derive(Debug, Default)]
 pub(crate) struct TypeUniverse {
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
-    pub namespace: String,
+    pub namespace: NamespaceMetadata,
 
     // Named type definitions (including aliases).
     type_definitions: HashMap<String, Type>,

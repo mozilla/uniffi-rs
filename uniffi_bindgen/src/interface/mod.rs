@@ -114,12 +114,18 @@ impl ComponentInterface {
     /// Add a metadata group to a `ComponentInterface`.
     pub fn add_metadata(&mut self, group: uniffi_meta::MetadataGroup) -> Result<()> {
         if self.types.namespace.is_empty() {
-            self.types.namespace = group.namespace.name.clone();
-        } else if self.types.namespace != group.namespace.name {
+            self.types.namespace = group.namespace.clone();
+        } else if self.types.namespace.crate_name.is_empty() {
+            self.types.namespace.crate_name = group.namespace.crate_name.clone();
+        } else if self.types.namespace.name.is_empty() {
+            self.types.namespace.name = group.namespace.name.clone();
+        } else if self.types.namespace != group.namespace {
             bail!(
-                "Namespace mismatch: {} - {}",
+                "Namespace mismatch: {}::{} - {}::{}",
+                group.namespace.crate_name,
                 group.namespace.name,
-                self.types.namespace
+                self.types.namespace.crate_name,
+                self.types.namespace.name,
             );
         }
         // Unconditionally add the String type, which is used by the panic handling
@@ -133,7 +139,7 @@ impl ComponentInterface {
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
-        self.types.namespace.as_str()
+        self.types.namespace.name.as_str()
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -322,7 +328,12 @@ impl ComponentInterface {
     /// The value returned by this method is used as a prefix to namespace all UDL-defined FFI
     /// functions used in this ComponentInterface.
     pub fn ffi_namespace(&self) -> &str {
-        &self.types.namespace
+        // Compat layer with the previous, arguably wrong, behavior
+        if self.types.namespace.crate_name.is_empty() {
+            &self.types.namespace.name
+        } else {
+            &self.types.namespace.crate_name
+        }
     }
 
     /// Builtin FFI function to get the current contract version

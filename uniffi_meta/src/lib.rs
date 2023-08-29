@@ -116,10 +116,16 @@ impl Checksum for &str {
 // The namespace of a Component interface.
 //
 // This is used to match up the macro metadata with the UDL items.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NamespaceMetadata {
     pub crate_name: String,
     pub name: String,
+}
+
+impl NamespaceMetadata {
+    pub fn is_empty(&self) -> bool {
+        self.crate_name.is_empty() && self.name.is_empty()
+    }
 }
 
 // UDL file included with `include_scaffolding!()`
