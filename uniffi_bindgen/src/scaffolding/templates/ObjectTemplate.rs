@@ -12,17 +12,11 @@
 
 {%- match obj.imp() -%}
 {%- when ObjectImpl::Trait %}
-::uniffi::scaffolding_ffi_converter_trait_interface!(r#{{ obj.name() }});
+::uniffi::expand_trait_interface_support!(r#{{ obj.name() }});
 {% else %}
-#[::uniffi::ffi_converter_interface(tag = crate::UniFfiTag)]
+#[::uniffi::expand_interface_support(tag = crate::UniFfiTag)]
 struct {{ obj.rust_name() }} { }
 {% endmatch %}
-
-// All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
-// if they are not, but unfortunately it fails with an unactionably obscure error message.
-// By asserting the requirement explicitly, we help Rust produce a more scrutable error message
-// and thus help the user debug why the requirement isn't being met.
-uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: Sync, Send);
 
 {% let ffi_free = obj.ffi_object_free() -%}
 #[doc(hidden)]
