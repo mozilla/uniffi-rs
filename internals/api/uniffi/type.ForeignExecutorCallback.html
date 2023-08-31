@@ -2,7 +2,7 @@
 one of these with the Rust code.</p>
 <p>Delay is an approximate amount of ms to wait before scheduling the call.  Delay is usually 0,
 which means schedule sometime soon.</p>
-<p>As a special case, when Rust drops the foreign executor, with ‘task=null’`.  The foreign
+<p>As a special case, when Rust drops the foreign executor, with <code>task=null</code>.  The foreign
 bindings should release the reference to the executor that was reserved for Rust.</p>
 <p>This callback can be invoked from any thread, including threads created by Rust.</p>
 <p>The callback should return one of the <code>ForeignExecutorCallbackResult</code> values.</p>

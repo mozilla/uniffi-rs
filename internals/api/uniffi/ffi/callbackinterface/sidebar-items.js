@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["IDX_CALLBACK_FREE"],"enum":["CallbackResult"],"struct":["ForeignCallbackInternals","UnexpectedUniFFICallbackError"]};

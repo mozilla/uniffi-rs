@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ForeignExecutorCallbackResult","RustTaskCallbackCode"],"fn":["uniffi_foreign_executor_callback_set"],"struct":["ForeignExecutor","ForeignExecutorHandle"],"type":["ForeignExecutorCallback","RustTaskCallback"]};
+window.SIDEBAR_ITEMS = {"enum":["ForeignExecutorCallbackResult","RustTaskCallbackCode"],"fn":["uniffi_foreign_executor_callback_set"],"struct":["ForeignExecutor","ForeignExecutorHandle"],"type":["RustTaskCallback"]};
