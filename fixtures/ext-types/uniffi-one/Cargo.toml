@@ -8,6 +8,7 @@ publish = false
 
 [lib]
 crate-type = ["lib", "cdylib"]
+# Note the crate name is different from the namespace used by this crate.
 name = "uniffi_one"
 
 [dependencies]

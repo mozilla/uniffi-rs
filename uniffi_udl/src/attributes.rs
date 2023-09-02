@@ -35,6 +35,7 @@ pub(super) enum Attribute {
     External {
         crate_name: String,
         kind: ExternalKind,
+        export: bool,
     },
     // Custom type on the scaffolding side
     Custom,
@@ -77,10 +78,22 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     "External" => Ok(Attribute::External {
                         crate_name: name_from_id_or_string(&identity.rhs),
                         kind: ExternalKind::DataClass,
+                        export: false,
+                    }),
+                    "ExternalExport" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::DataClass,
+                        export: true,
                     }),
                     "ExternalInterface" => Ok(Attribute::External {
                         crate_name: name_from_id_or_string(&identity.rhs),
                         kind: ExternalKind::Interface,
+                        export: false,
+                    }),
+                    "ExternalInterfaceExport" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::Interface,
+                        export: true,
                     }),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
@@ -481,6 +494,14 @@ impl TypedefAttributes {
     pub(super) fn external_kind(&self) -> Option<ExternalKind> {
         self.0.iter().find_map(|attr| match attr {
             Attribute::External { kind, .. } => Some(*kind),
+            _ => None,
+        })
+    }
+
+    pub(super) fn external_tagged(&self) -> Option<bool> {
+        // If it was "exported" via a proc-macro the FfiConverter was not tagged.
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::External { export, .. } => Some(!*export),
             _ => None,
         })
     }

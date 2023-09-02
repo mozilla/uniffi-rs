@@ -144,11 +144,13 @@ impl<'a> TypeRenderer<'a> {
     }
 
     // Get the package name for an external type
-    fn external_type_package_name(&self, module_path: &str) -> String {
+    fn external_type_package_name(&self, module_path: &str, namespace: &str) -> String {
+        // config overrides are keyed by the crate name, default fallback is the namespace.
         let crate_name = module_path.split("::").next().unwrap();
         match self.kotlin_config.external_packages.get(crate_name) {
             Some(name) => name.clone(),
-            None => crate_name.to_string(),
+            // unreachable in library mode - all deps are in our config with correct namespace.
+            None => format!("uniffi.{namespace}"),
         }
     }
 

@@ -252,16 +252,21 @@ impl ComponentInterface {
 
     /// Get details about all `Type::External` types.
     /// Returns an iterator of (name, crate_name, kind)
-    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, String, ExternalKind)> {
+    pub fn iter_external_types(
+        &self,
+    ) -> impl Iterator<Item = (&String, String, ExternalKind, bool)> {
         self.types.iter_known_types().filter_map(|t| match t {
             Type::External {
                 name,
                 module_path,
                 kind,
+                tagged,
+                ..
             } => Some((
                 name,
                 module_path.split("::").next().unwrap().to_string(),
                 *kind,
+                *tagged,
             )),
             _ => None,
         })

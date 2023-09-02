@@ -4,7 +4,9 @@
 
 use crate::interface::{CallbackInterface, ComponentInterface, Enum, Record, Type};
 use anyhow::{bail, Context};
-use uniffi_meta::{group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup};
+use uniffi_meta::{
+    create_metadata_groups, group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup,
+};
 
 /// Add Metadata items to the ComponentInterface
 ///
@@ -18,7 +20,9 @@ pub fn add_to_ci(
     iface: &mut ComponentInterface,
     metadata_items: Vec<Metadata>,
 ) -> anyhow::Result<()> {
-    for group in group_metadata(metadata_items)? {
+    let mut group_map = create_metadata_groups(&metadata_items);
+    group_metadata(&mut group_map, metadata_items)?;
+    for group in group_map.into_values() {
         if group.items.is_empty() {
             continue;
         }
