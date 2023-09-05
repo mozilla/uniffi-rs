@@ -35,8 +35,7 @@
 use anyhow::Result;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::Literal;
-use super::{AsType, ObjectImpl, Type, TypeIterator};
+use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
 use uniffi_meta::Checksum;
 
 /// Represents a standalone function.
@@ -242,11 +241,19 @@ pub trait Callable {
     fn arguments(&self) -> Vec<&Argument>;
     fn return_type(&self) -> Option<Type>;
     fn throws_type(&self) -> Option<Type>;
+    fn is_async(&self) -> bool;
     fn result_type(&self) -> ResultType {
         ResultType {
             return_type: self.return_type(),
             throws_type: self.throws_type(),
         }
+    }
+
+    /// Quick way to get the rust_future_complete function that corresponds to our return type.
+    fn ffi_rust_future_complete(&self, ci: &ComponentInterface) -> String {
+        ci.ffi_rust_future_complete(self.return_type().map(Into::into))
+            .name()
+            .to_owned()
     }
 }
 
@@ -262,6 +269,10 @@ impl Callable for Function {
     fn throws_type(&self) -> Option<Type> {
         self.throws_type().cloned()
     }
+
+    fn is_async(&self) -> bool {
+        self.is_async
+    }
 }
 
 // Needed because Askama likes to add extra refs to variables
@@ -276,6 +287,10 @@ impl<T: Callable> Callable for &T {
 
     fn throws_type(&self) -> Option<Type> {
         (*self).throws_type()
+    }
+
+    fn is_async(&self) -> bool {
+        (*self).is_async()
     }
 }
 

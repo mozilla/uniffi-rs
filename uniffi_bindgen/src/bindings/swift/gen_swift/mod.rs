@@ -463,10 +463,10 @@ impl SwiftCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
-            FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", self.ffi_type_label(return_type))
+            FfiType::RustFutureContinuation => "UniFfiRustFutureContinuation".into(),
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+                "UnsafeMutableRawPointer".into()
             }
-            FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
         }
     }
 
@@ -474,7 +474,9 @@ impl SwiftCodeOracle {
         match ffi_type {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
-            | FfiType::FutureCallback { .. } => {
+            | FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuation
+            | FfiType::RustFutureContinuationData => {
                 format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
             }
             _ => self.ffi_type_label_raw(ffi_type),
@@ -558,11 +560,10 @@ pub mod filters {
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "size_t".into(),
-            FfiType::FutureCallback { return_type } => format!(
-                "UniFfiFutureCallback{} _Nonnull",
-                SwiftCodeOracle.ffi_type_label_raw(return_type)
-            ),
-            FfiType::FutureCallbackData => "void* _Nonnull".into(),
+            FfiType::RustFutureContinuation => "UniFfiRustFutureContinuation _Nonnull".into(),
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+                "void* _Nonnull".into()
+            }
         })
     }
 
@@ -615,16 +616,6 @@ pub mod filters {
             match &result.throws_type {
                 Some(t) => SwiftCodeOracle.find(t).canonical_name(),
                 None => "".into(),
-            }
-        ))
-    }
-
-    pub fn future_continuation_type(result: &ResultType) -> Result<String, askama::Error> {
-        Ok(format!(
-            "CheckedContinuation<{}, Error>",
-            match &result.return_type {
-                Some(return_type) => type_name(return_type)?,
-                None => "()".into(),
             }
         ))
     }

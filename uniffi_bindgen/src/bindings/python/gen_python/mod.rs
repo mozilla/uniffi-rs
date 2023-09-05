@@ -311,13 +311,9 @@ impl PythonCodeOracle {
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
             FfiType::ForeignExecutorCallback => "_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
-            FfiType::FutureCallback { return_type } => {
-                format!(
-                    "_uniffi_future_callback_t({})",
-                    Self::ffi_type_label(return_type),
-                )
-            }
-            FfiType::FutureCallbackData => "ctypes.c_size_t".to_string(),
+            FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
+            FfiType::RustFutureContinuation => "_UNIFFI_FUTURE_CONTINUATION_T".to_string(),
+            FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
 }
@@ -408,23 +404,12 @@ pub mod filters {
         Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
-    // Name of the callback function we pass to Rust to complete an async call
-    pub fn async_callback_fn(result_type: &ResultType) -> Result<String, askama::Error> {
-        let return_string = match &result_type.return_type {
-            Some(t) => PythonCodeOracle.find(t).canonical_name().to_snake_case(),
-            None => "void".into(),
-        };
-        let throws_string = match &result_type.throws_type {
-            Some(t) => PythonCodeOracle.find(t).canonical_name().to_snake_case(),
-            None => "void".into(),
-        };
-        Ok(format!(
-            "_uniffi_async_callback_{return_string}__{throws_string}"
-        ))
-    }
-
     pub fn literal_py(literal: &Literal, as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().literal(literal))
+    }
+
+    pub fn ffi_type(type_: &Type) -> Result<FfiType, askama::Error> {
+        Ok(type_.into())
     }
 
     /// Get the Python syntax for representing a given low-level `FfiType`.

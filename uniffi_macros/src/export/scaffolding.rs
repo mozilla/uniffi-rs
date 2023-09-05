@@ -147,11 +147,17 @@ impl ScaffoldingBits {
 
         Self {
             params,
-            pre_fn_call: quote! {
-                let uniffi_self = match #ffi_converter::try_lift(uniffi_self_lowered) {
-                    Ok(v) => v,
-                    Err(e) => return Err(#return_ffi_converter::handle_failed_lift("self", e)),
-                };
+            pre_fn_call: if sig.is_async {
+                quote! {
+                    let uniffi_self = #ffi_converter::try_lift(uniffi_self_lowered).unwrap()
+                }
+            } else {
+                quote! {
+                    let uniffi_self = match #ffi_converter::try_lift(uniffi_self_lowered) {
+                        Ok(v) => v,
+                        Err(e) => return Err(#return_ffi_converter::handle_failed_lift("self", e)),
+                    };
+                }
             },
             rust_fn_call,
         }
@@ -241,25 +247,10 @@ fn gen_ffi_function(
         quote! {
             #[doc(hidden)]
             #[no_mangle]
-            #vis extern "C" fn #ffi_ident(
-                #(#params,)*
-                uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
-                uniffi_callback: <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FutureCallback,
-                uniffi_callback_data: *const (),
-                uniffi_call_status: &mut ::uniffi::RustCallStatus,
-            ) {
+            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::RustFutureHandle {
                 ::uniffi::deps::log::debug!(#name);
-                ::uniffi::rust_call(uniffi_call_status, || {
-                    #pre_fn_call;
-                    let uniffi_rust_future = ::uniffi::RustFuture::<_, #return_ty, crate::UniFfiTag>::new(
-                        #future_expr,
-                        uniffi_executor_handle,
-                        uniffi_callback,
-                        uniffi_callback_data
-                    );
-                    uniffi_rust_future.wake();
-                    Ok(())
-                });
+                #pre_fn_call;
+                ::uniffi::rust_future_new(async move { #future_expr.await }, crate::UniFfiTag)
             }
         }
     })

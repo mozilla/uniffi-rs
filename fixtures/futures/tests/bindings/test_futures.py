@@ -150,21 +150,14 @@ class TestFutures(unittest.TestCase):
 
     # Test a future that uses a lock and that is cancelled.
     def test_shared_resource_cancellation(self):
-        # Note: Python uses the event loop to schedule calls via the `call_soon_threadsafe()`
-        # method.  This means that creating a task and cancelling it won't trigger the issue, we
-        # need to create an EventLoop and close it instead.
-        loop = asyncio.new_event_loop()
-        loop.create_task(use_shared_resource(
-            SharedResourceOptions(release_after_ms=100, timeout_ms=1000)))
-        # Wait some time to ensure the task has locked the shared resource
-        loop.call_later(0.05, loop.stop)
-        loop.run_forever()
-        # Close the EventLoop before the shared resource has been released.
-        loop.close()
-
-        # Try accessing the shared resource again using the main event loop.  The initial task
-        # should release the shared resource before the timeout expires.
-        asyncio.run(use_shared_resource(SharedResourceOptions(release_after_ms=0, timeout_ms=1000)))
+        async def test():
+            task = asyncio.create_task(use_shared_resource(
+                SharedResourceOptions(release_after_ms=5000, timeout_ms=100)))
+            # Wait some time to ensure the task has locked the shared resource
+            await asyncio.sleep(0.05)
+            task.cancel()
+            await use_shared_resource(SharedResourceOptions(release_after_ms=0, timeout_ms=1000))
+        asyncio.run(test())
 
     def test_shared_resource_no_cancellation(self):
         async def test():

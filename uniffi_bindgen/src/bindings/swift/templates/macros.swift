@@ -80,10 +80,16 @@
 {%- if func.is_async() %}async{% endif %}
 {%- endmacro -%}
 
+{#
+Handle throws and try.
+
+Note: async methods can unconditionally throw, since they can always be cancelled.
+#}
+
 {%- macro throws(func) %}
-{%- if func.throws() %}throws{% endif %}
+{%- if func.throws() || func.is_async() %}throws{% endif %}
 {%- endmacro -%}
 
 {%- macro try(func) %}
-{%- if func.throws() %}try {% else %}try! {% endif %}
+{%- if func.throws() || func.is_async() %}try {% else %}try! {% endif %}
 {%- endmacro -%}

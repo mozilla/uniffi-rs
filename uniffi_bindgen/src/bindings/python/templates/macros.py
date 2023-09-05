@@ -100,13 +100,27 @@ _rust_call(
 {%- macro method_decl(py_method_name, meth) %}
 {%  if meth.is_async() %}
 
-    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
         {%- call setup_args_extra_indent(meth) %}
-        return await _rust_call_async(
-            _UniffiLib.{{ func.ffi_func().name() }},
-            {{ func.result_type().borrow()|async_callback_fn }},
-            self._pointer,
-            {% call arg_list_lowered(func) %}
+        return _uniffi_rust_call_async(
+            _UniffiLib.{{ meth.ffi_func().name() }}(
+                self._pointer, {% call arg_list_lowered(meth) %}
+            ),
+            _UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
+            # lift function
+            {%- match meth.return_type() %}
+            {%- when Some(return_type) %}
+            {{ return_type|lift_fn }},
+            {%- when None %}
+            lambda val: None,
+            {% endmatch %}
+            # Error FFI converter
+            {%- match meth.throws_type() %}
+            {%- when Some(e) %}
+            {{ e|ffi_converter_name }},
+            {%- when None %}
+            None,
+            {%- endmatch %}
         )
 
 {%- else -%}

@@ -40,6 +40,11 @@ _DEFAULT = object()
 # Contains loading, initialization code, and the FFI Function declarations.
 {% include "NamespaceLibraryTemplate.py" %}
 
+# Async support
+{%- if ci.has_async_fns() %}
+{%- include "Async.py" %}
+{%- endif %}
+
 # Public interface members begin here.
 {{ type_helper_code }}
 

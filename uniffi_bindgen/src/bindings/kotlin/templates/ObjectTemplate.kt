@@ -57,32 +57,29 @@ class {{ type_name }}(
     {%- if meth.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_decl(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
-        // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
-        // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
-        return coroutineScope {
-            val scope = this
-            return@coroutineScope suspendCancellableCoroutine { continuation ->
-                try {
-                    val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation)
-                    uniffiActiveFutureCallbacks.add(callback)
-                    continuation.invokeOnCancellation { uniffiActiveFutureCallbacks.remove(callback) }
-                    callWithPointer { thisPtr ->
-                        rustCall { status ->
-                            _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
-                                thisPtr,
-                                {% call kt::arg_list_lowered(meth) %}
-                                FfiConverterForeignExecutor.lower(scope),
-                                callback,
-                                USize(0),
-                                status,
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    continuation.resumeWithException(e)
-                }
-            }
-        }
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
+                    thisPtr,
+                    {% call kt::arg_list_lowered(meth) %}
+                )
+            },
+            { future, status -> _UniFFILib.INSTANCE.{{ meth.ffi_rust_future_complete(ci) }}(future, status) },
+            // lift function
+            {%- match meth.return_type() %}
+            {%- when Some(return_type) %}
+            { {{ return_type|lift_fn }}(it) },
+            {%- when None %}
+            { Unit },
+            {% endmatch %}
+            // Error FFI converter
+            {%- match meth.throws_type() %}
+            {%- when Some(e) %}
+            {{ e|error_type_name }}.ErrorHandler,
+            {%- when None %}
+            NullCallStatusErrorHandler,
+            {%- endmatch %}
+        )
     }
     {%- else -%}
     {%- match meth.return_type() -%}

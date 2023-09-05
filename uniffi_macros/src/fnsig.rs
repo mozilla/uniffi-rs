@@ -108,10 +108,15 @@ impl FnSignature {
     }
 
     /// Lift expressions for each of our arguments
-    pub fn lift_exprs(&self) -> impl Iterator<Item = TokenStream> + '_ {
-        self.args
-            .iter()
-            .map(|a| a.lift_expr(&self.return_ffi_converter()))
+    pub fn lift_exprs(&self) -> Vec<TokenStream> {
+        if self.is_async {
+            self.args.iter().map(|a| a.lift_expr_async()).collect()
+        } else {
+            self.args
+                .iter()
+                .map(|a| a.lift_expr(&self.return_ffi_converter()))
+                .collect()
+        }
     }
 
     /// Write expressions for each of our arguments
@@ -380,6 +385,22 @@ impl NamedArg {
                 Ok(v) => v,
                 Err(e) => return Err(#return_ffi_converter::handle_failed_lift(#name, e))
             }
+        };
+        match &self.ref_type {
+            None => lift,
+            Some(ref_type) => quote! {
+                <#ty as ::std::borrow::Borrow<#ref_type>>::borrow(&#lift)
+            },
+        }
+    }
+
+    /// Unfortunately, we can't handle error conversion in async functions yet
+    pub(crate) fn lift_expr_async(&self) -> TokenStream {
+        let ident = &self.ident;
+        let ty = &self.ty;
+        let ffi_converter = self.ffi_converter();
+        let lift = quote! {
+            #ffi_converter::try_lift(#ident).unwrap()
         };
         match &self.ref_type {
             None => lift,
