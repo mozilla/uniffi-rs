@@ -581,6 +581,10 @@ impl Callable for Constructor {
     fn throws_type(&self) -> Option<Type> {
         self.throws_type().cloned()
     }
+
+    fn is_async(&self) -> bool {
+        false
+    }
 }
 
 impl Callable for Method {
@@ -594,6 +598,10 @@ impl Callable for Method {
 
     fn throws_type(&self) -> Option<Type> {
         self.throws_type().cloned()
+    }
+
+    fn is_async(&self) -> bool {
+        self.is_async
     }
 }
 

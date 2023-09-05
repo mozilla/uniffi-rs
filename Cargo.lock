@@ -1971,6 +1971,7 @@ dependencies = [
  "bytes",
  "camino",
  "log",
+ "once_cell",
  "oneshot",
  "paste",
  "static_assertions",

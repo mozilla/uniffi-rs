@@ -196,6 +196,7 @@ pub struct KotlinWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
+    has_async_fns: bool,
 }
 
 impl<'a> KotlinWrapper<'a> {
@@ -208,6 +209,7 @@ impl<'a> KotlinWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
+            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -216,6 +218,10 @@ impl<'a> KotlinWrapper<'a> {
             .iter_types()
             .map(|t| KotlinCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
+            .chain(
+                self.has_async_fns
+                    .then(|| "uniffiRustFutureContinuationCallback.register".into()),
+            )
             .collect()
     }
 
@@ -300,10 +306,11 @@ impl KotlinCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
             FfiType::ForeignExecutorHandle => "USize".to_string(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
-            FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", Self::ffi_type_label(return_type))
+            FfiType::RustFutureHandle => "Pointer".to_string(),
+            FfiType::RustFutureContinuationCallback => {
+                "UniFffiRustFutureContinuationCallbackType".to_string()
             }
-            FfiType::FutureCallbackData => "USize".to_string(),
+            FfiType::RustFutureContinuationData => "USize".to_string(),
         }
     }
 }

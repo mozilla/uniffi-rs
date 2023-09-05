@@ -44,25 +44,6 @@ def _rust_call_with_error(error_ffi_converter, fn, *args):
     _uniffi_check_call_status(error_ffi_converter, call_status)
     return result
 
-def _rust_call_async(scaffolding_fn, callback_fn, *args):
-    # Call the scaffolding function, passing it a callback handler for `AsyncTypes.py` and a pointer
-    # to a python Future object.  The async function then awaits the Future.
-    uniffi_eventloop = asyncio.get_running_loop()
-    uniffi_py_future = uniffi_eventloop.create_future()
-    uniffi_call_status = _UniffiRustCallStatus(code=_UniffiRustCallStatus.CALL_SUCCESS, error_buf=_UniffiRustBuffer(0, 0, None))
-    scaffolding_fn(*args,
-       _UniffiConverterForeignExecutor._pointer_manager.new_pointer(uniffi_eventloop),
-       callback_fn,
-       # Note: It's tempting to skip the pointer manager and just use a `py_object` pointing to a
-       # local variable like we do in Swift.  However, Python doesn't use cooperative cancellation
-       # -- asyncio can cancel a task at anytime.  This means if we use a local variable, the Rust
-       # callback could fire with a dangling pointer.
-       _UniffiPyFuturePointerManager.new_pointer(uniffi_py_future),
-       ctypes.byref(uniffi_call_status),
-    )
-    _uniffi_check_call_status(None, uniffi_call_status)
-    return uniffi_py_future
-
 def _uniffi_check_call_status(error_ffi_converter, call_status):
     if call_status.code == _UniffiRustCallStatus.CALL_SUCCESS:
         pass
@@ -88,3 +69,7 @@ def _uniffi_check_call_status(error_ffi_converter, call_status):
 # A function pointer for a callback as defined by UniFFI.
 # Rust definition `fn(handle: u64, method: u32, args: _UniffiRustBuffer, buf_ptr: *mut _UniffiRustBuffer) -> int`
 _UNIFFI_FOREIGN_CALLBACK_T = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_ulonglong, ctypes.c_ulong, ctypes.POINTER(ctypes.c_char), ctypes.c_int, ctypes.POINTER(_UniffiRustBuffer))
+
+# UniFFI future continuation
+_UNIFFI_FUTURE_CONTINUATION_T = ctypes.CFUNCTYPE(None, ctypes.c_size_t, ctypes.c_int8)
+
