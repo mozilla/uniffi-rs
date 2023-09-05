@@ -96,7 +96,3 @@
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
-
-{%- if ci.has_async_fns() %}
-{%- include "AsyncTypes.swift" %}
-{%- endif %}

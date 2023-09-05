@@ -342,6 +342,7 @@ pub struct SwiftWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<String>,
+    has_async_fns: bool,
 }
 impl<'a> SwiftWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -353,6 +354,7 @@ impl<'a> SwiftWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
+            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -365,6 +367,10 @@ impl<'a> SwiftWrapper<'a> {
             .iter_types()
             .map(|t| SwiftCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
+            .chain(
+                self.has_async_fns
+                    .then(|| "uniffiInitContinuationCallback".into()),
+            )
             .collect()
     }
 }
@@ -463,10 +469,10 @@ impl SwiftCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
-            FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", self.ffi_type_label(return_type))
+            FfiType::RustFutureContinuationCallback => "UniFfiRustFutureContinuation".into(),
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+                "UnsafeMutableRawPointer".into()
             }
-            FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
         }
     }
 
@@ -474,7 +480,9 @@ impl SwiftCodeOracle {
         match ffi_type {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
-            | FfiType::FutureCallback { .. } => {
+            | FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationCallback
+            | FfiType::RustFutureContinuationData => {
                 format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
             }
             _ => self.ffi_type_label_raw(ffi_type),
@@ -558,11 +566,12 @@ pub mod filters {
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "size_t".into(),
-            FfiType::FutureCallback { return_type } => format!(
-                "UniFfiFutureCallback{} _Nonnull",
-                SwiftCodeOracle.ffi_type_label_raw(return_type)
-            ),
-            FfiType::FutureCallbackData => "void* _Nonnull".into(),
+            FfiType::RustFutureContinuationCallback => {
+                "UniFfiRustFutureContinuation _Nonnull".into()
+            }
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+                "void* _Nonnull".into()
+            }
         })
     }
 
@@ -615,16 +624,6 @@ pub mod filters {
             match &result.throws_type {
                 Some(t) => SwiftCodeOracle.find(t).canonical_name(),
                 None => "".into(),
-            }
-        ))
-    }
-
-    pub fn future_continuation_type(result: &ResultType) -> Result<String, askama::Error> {
-        Ok(format!(
-            "CheckedContinuation<{}, Error>",
-            match &result.return_type {
-                Some(return_type) => type_name(return_type)?,
-                None => "()".into(),
             }
         ))
     }

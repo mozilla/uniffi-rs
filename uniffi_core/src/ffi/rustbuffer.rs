@@ -49,6 +49,7 @@ use crate::ffi::{rust_call, ForeignBytes, RustCallStatus};
 /// This struct is based on `ByteBuffer` from the `ffi-support` crate, but modified
 /// to retain unallocated capacity rather than truncating to the occupied length.
 #[repr(C)]
+#[derive(Debug)]
 pub struct RustBuffer {
     /// The allocated capacity of the underlying `Vec<u8>`.
     /// In Rust this is a `usize`, but we use an `i32` for compatibility with JNA.

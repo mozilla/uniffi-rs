@@ -42,6 +42,11 @@ import java.util.concurrent.ConcurrentHashMap
 // and the FFI Function declarations in a com.sun.jna.Library.
 {% include "NamespaceLibraryTemplate.kt" %}
 
+// Async support
+{%- if ci.has_async_fns() %}
+{% include "Async.kt" %}
+{%- endif %}
+
 // Public interface members begin here.
 {{ type_helper_code }}
 

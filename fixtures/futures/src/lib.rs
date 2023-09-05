@@ -151,6 +151,12 @@ pub async fn async_maybe_new_megaphone(y: bool) -> Option<Arc<Megaphone>> {
     }
 }
 
+/// Async function that inputs `Megaphone`.
+#[uniffi::export]
+pub async fn say_after_with_megaphone(megaphone: Arc<Megaphone>, ms: u16, who: String) -> String {
+    megaphone.say_after(ms, who).await
+}
+
 /// A megaphone. Be careful with the neighbours.
 #[derive(uniffi::Object)]
 pub struct Megaphone;
