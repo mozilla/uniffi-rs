@@ -487,7 +487,7 @@ impl ComponentInterface {
     pub fn ffi_foreign_executor_callback_set(&self) -> Option<FfiFunction> {
         if self.types.contains(&Type::ForeignExecutor) {
             Some(FfiFunction {
-                name: "uniffi_foreign_executor_callback_set".into(),
+                name: format!("ffi_{}_foreign_executor_callback_set", self.ffi_namespace()),
                 arguments: vec![FfiArgument {
                     name: "callback".into(),
                     type_: FfiType::ForeignExecutorCallback,

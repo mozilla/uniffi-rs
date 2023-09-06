@@ -55,4 +55,9 @@ def _uniffi_executor_callback(eventloop_address, delay, task_ptr, task_data):
         return _UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
 
 # Register the callback with the scaffolding
-_UniffiLib.uniffi_foreign_executor_callback_set(_uniffi_executor_callback)
+{%- match ci.ffi_foreign_executor_callback_set() %}
+{%- when Some with (fn) %}
+_UniffiLib.{{ fn.name() }}(_uniffi_executor_callback)
+{%- when None %}
+{#- No foreign executor, we don't set anything #}
+{% endmatch %}

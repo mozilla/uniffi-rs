@@ -50,7 +50,12 @@ public object FfiConverterForeignExecutor: FfiConverter<CoroutineScope, USize> {
     }
 
     internal fun register(lib: _UniFFILib) {
-        lib.uniffi_foreign_executor_callback_set(UniFfiForeignExecutorCallback)
+        {%- match ci.ffi_foreign_executor_callback_set() %}
+        {%- when Some with (fn) %}
+        lib.{{ fn.name() }}(UniFfiForeignExecutorCallback)
+        {%- when None %}
+        {#- No foreign executor, we don't set anything #}
+        {% endmatch %}
     }
 
     // Number of live handles, exposed so we can test the memory management
