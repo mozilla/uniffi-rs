@@ -1551,7 +1551,7 @@
     </span><span class="kw">pub fn </span>ffi_foreign_executor_callback_set(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;FfiFunction&gt; {
         <span class="kw">if </span><span class="self">self</span>.types.contains(<span class="kw-2">&amp;</span>Type::ForeignExecutor) {
             <span class="prelude-val">Some</span>(FfiFunction {
-                name: <span class="string">&quot;uniffi_foreign_executor_callback_set&quot;</span>.into(),
+                name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_foreign_executor_callback_set&quot;</span>, <span class="self">self</span>.ffi_namespace()),
                 arguments: <span class="macro">vec!</span>[FfiArgument {
                     name: <span class="string">&quot;callback&quot;</span>.into(),
                     type_: FfiType::ForeignExecutorCallback,
