@@ -21,7 +21,7 @@ public struct UniFfiForeignExecutor {
 
 fileprivate struct FfiConverterForeignExecutor: FfiConverter {
     typealias SwiftType = UniFfiForeignExecutor
-    // Rust uses a pointer to represent the FfiConverterForeignExecutor, but we only need a u8. 
+    // Rust uses a pointer to represent the FfiConverterForeignExecutor, but we only need a u8.
     // let's use `Int`, which is equivalent to `size_t`
     typealias FfiType = Int
 
@@ -60,5 +60,10 @@ fileprivate func uniffiForeignExecutorCallback(executorHandle: Int, delayMs: UIn
 }
 
 fileprivate func uniffiInitForeignExecutor() {
-    uniffi_foreign_executor_callback_set(uniffiForeignExecutorCallback)
+    {%- match ci.ffi_foreign_executor_callback_set() %}
+    {%- when Some with (fn) %}
+    {{ fn.name() }}(uniffiForeignExecutorCallback)
+    {%- when None %}
+    {#- No foreign executor, we don't set anything #}
+    {% endmatch %}
 }

@@ -88,8 +88,7 @@ static FOREIGN_EXECUTOR_CALLBACK: ForeignExecutorCallbackCell = ForeignExecutorC
 
 /// Set the global ForeignExecutorCallback.  This is called by the foreign bindings, normally
 /// during initialization.
-#[no_mangle]
-pub extern "C" fn uniffi_foreign_executor_callback_set(callback: ForeignExecutorCallback) {
+pub fn foreign_executor_callback_set(callback: ForeignExecutorCallback) {
     FOREIGN_EXECUTOR_CALLBACK.set(callback);
 }
 
@@ -253,7 +252,7 @@ mod test {
         pub fn new() -> Arc<Self> {
             // Make sure we install a foreign executor callback that can deal with mock event loops
             FOREIGN_EXECUTOR_CALLBACK_INIT
-                .call_once(|| uniffi_foreign_executor_callback_set(mock_executor_callback));
+                .call_once(|| foreign_executor_callback_set(mock_executor_callback));
 
             Arc::new(Self {
                 inner: Mutex::new(MockEventLoopInner {
