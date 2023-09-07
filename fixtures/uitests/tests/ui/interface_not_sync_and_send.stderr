@@ -11,12 +11,11 @@ note: required because it appears within the type `Counter`
   |
 9 | pub struct Counter {
   |            ^^^^^^^
-note: required by a bound in `_::{closure#0}::assert_impl_all`
- --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
+note: required by a bound in `FfiConverterArc`
+ --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
   |
-  | #[::uniffi::expand_interface_support(tag = crate::UniFfiTag)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-  = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::expand_interface_support` (in Nightly builds, run with -Z macro-backtrace for more info)
+  | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+  |                                              ^^^^ required by this bound in `FfiConverterArc`
 
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
   --> tests/ui/interface_not_sync_and_send.rs:27:12
@@ -31,9 +30,8 @@ note: required because it appears within the type `ProcMacroCounter`
    |
 27 | pub struct ProcMacroCounter {
    |            ^^^^^^^^^^^^^^^^
-note: required by a bound in `_::{closure#0}::assert_impl_all`
-  --> tests/ui/interface_not_sync_and_send.rs:26:10
+note: required by a bound in `FfiConverterArc`
+  --> $WORKSPACE/uniffi_core/src/ffi_converter_traits.rs
    |
-26 | #[derive(uniffi::Object)]
-   |          ^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-   = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the derive macro `uniffi::Object` (in Nightly builds, run with -Z macro-backtrace for more info)
+   | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+   |                                              ^^^^ required by this bound in `FfiConverterArc`
