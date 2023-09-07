@@ -22,3 +22,23 @@ impl Counter {
         new_value
     }
 }
+
+#[derive(uniffi::Object)]
+pub struct ProcMacroCounter {
+    // This will fail to compile, because `Cell` is not `Sync`.
+    value: Cell<u32>,
+}
+
+#[uniffi::export]
+impl ProcMacroCounter {
+    #[uniffi::constructor]
+    pub fn new() -> std::sync::Arc<Self> {
+        std::sync::Arc::new(Self { value: Cell::new(0) })
+    }
+
+    pub fn increment(&self) -> u32 {
+        let new_value = self.value.get() + 1;
+        self.value.set(new_value);
+        new_value
+    }
+}

@@ -216,24 +216,26 @@ pub fn ffi_converter_error(attrs: TokenStream, input: TokenStream) -> TokenStrea
     .into()
 }
 
-/// Generate the FfiConverter implementation for an Interface
+/// Generate various support elements, including the FfiConverter implementation,
+/// for an Interface
 ///
 /// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
 /// only outputs the `FfiConverter` implementation, not the item.
 #[doc(hidden)]
 #[proc_macro_attribute]
-pub fn ffi_converter_interface(attrs: TokenStream, input: TokenStream) -> TokenStream {
-    object::expand_ffi_converter_interface(
+pub fn expand_interface_support(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    object::expand_interface_support(
         syn::parse_macro_input!(attrs),
         syn::parse_macro_input!(input),
     )
     .into()
 }
 
-/// Generate the FfiConverter implementation for an trait interface for the scaffolding code
+/// Generate various support elements, including the FfiConverter implementation,
+/// for a trait interface for the scaffolding code
 #[doc(hidden)]
 #[proc_macro]
-pub fn scaffolding_ffi_converter_trait_interface(tokens: TokenStream) -> TokenStream {
+pub fn expand_trait_interface_support(tokens: TokenStream) -> TokenStream {
     export::ffi_converter_trait_impl(
         &syn::parse_macro_input!(tokens),
         Some(&syn::parse_quote!(crate::UniFfiTag)),

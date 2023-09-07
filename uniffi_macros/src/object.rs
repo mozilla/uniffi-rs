@@ -44,7 +44,7 @@ pub fn expand_object(input: DeriveInput, module_path: String) -> TokenStream {
     }
 }
 
-pub(crate) fn expand_ffi_converter_interface(attr: CommonAttr, input: DeriveInput) -> TokenStream {
+pub(crate) fn expand_interface_support(attr: CommonAttr, input: DeriveInput) -> TokenStream {
     interface_impl(&input.ident, attr.tag.as_ref())
 }
 
@@ -57,6 +57,12 @@ pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
     };
 
     quote! {
+        // All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
+        // if they are not, but unfortunately it fails with an unactionably obscure error message.
+        // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
+        // and thus help the user debug why the requirement isn't being met.
+        uniffi::deps::static_assertions::assert_impl_all!(#ident: Sync, Send);
+
         #[doc(hidden)]
         #[automatically_derived]
         /// Support for passing reference-counted shared objects via the FFI.

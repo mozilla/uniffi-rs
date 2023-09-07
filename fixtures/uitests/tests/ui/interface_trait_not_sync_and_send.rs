@@ -6,3 +6,8 @@ fn main() { /* empty main required by `trybuild` */}
 // This will fail to compile, because the trait is not explicit Send+Sync
 pub trait Trait {
 }
+
+// This will fail to compile, because the trait is not explicit Send+Sync
+#[uniffi::export]
+pub trait ProcMacroTrait {
+}
