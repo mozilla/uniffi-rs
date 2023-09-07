@@ -159,6 +159,12 @@
 <a href="#159" id="159">159</a>
 <a href="#160" id="160">160</a>
 <a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{DeriveInput, Path};
@@ -205,7 +211,7 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_interface(attr: CommonAttr, input: DeriveInput) -&gt; TokenStream {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_interface_support(attr: CommonAttr, input: DeriveInput) -&gt; TokenStream {
     interface_impl(<span class="kw-2">&amp;</span>input.ident, attr.tag.as_ref())
 }
 
@@ -218,6 +224,12 @@
     };
 
     <span class="macro">quote! </span>{
+        <span class="comment">// All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
+        // if they are not, but unfortunately it fails with an unactionably obscure error message.
+        // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
+        // and thus help the user debug why the requirement isn&#39;t being met.
+        </span><span class="macro">uniffi::deps::static_assertions::assert_impl_all!</span>(#ident: Sync, Send);
+
         <span class="attr">#[doc(hidden)]
         #[automatically_derived]
         </span><span class="doccomment">/// Support for passing reference-counted shared objects via the FFI.
