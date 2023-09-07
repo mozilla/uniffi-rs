@@ -174,7 +174,7 @@ pub unsafe trait FfiConverter<UT>: Sized {
 /// ## Safety
 ///
 /// This has the same safety considerations as FfiConverter
-pub unsafe trait FfiConverterArc<UT> {
+pub unsafe trait FfiConverterArc<UT>: Send + Sync {
     type FfiType;
     type ReturnType: FfiDefault;
     type FutureCallback: Copy;
