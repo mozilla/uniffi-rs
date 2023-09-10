@@ -22,6 +22,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let reexport_hack_ident = format_ident!("{module_path}_uniffi_reexport_hack");
     let ffi_foreign_executor_callback_set_ident =
         format_ident!("ffi_{module_path}_foreign_executor_callback_set");
+    let ffi_rust_future_continuation_callback_set =
+        format_ident!("ffi_{module_path}_rust_future_continuation_callback_set");
     let ffi_rust_future_poll = format_ident!("ffi_{module_path}_rust_future_poll");
     let ffi_rust_future_cancel = format_ident!("ffi_{module_path}_rust_future_cancel");
     let ffi_rust_future_free = format_ident!("ffi_{module_path}_rust_future_free");
@@ -100,12 +102,15 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rust_future_poll(
-            handle: ::uniffi::RustFutureHandle,
-            continuation: ::uniffi::RustFutureContinuation,
-            data: *const ()
-        ) {
-            ::uniffi::ffi::rust_future_poll(handle, continuation, data);
+        pub unsafe extern "C" fn #ffi_rust_future_continuation_callback_set(callback: ::uniffi::RustFutureContinuationCallback) {
+            ::uniffi::ffi::rust_future_continuation_callback_set(callback);
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, data: *const ()) {
+            ::uniffi::ffi::rust_future_poll(handle, data);
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]

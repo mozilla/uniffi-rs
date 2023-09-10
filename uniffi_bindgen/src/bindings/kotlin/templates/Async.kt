@@ -6,9 +6,13 @@ internal const val UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1.toShort()
 internal val uniffiContinuationHandleMap = UniFfiHandleMap<CancellableContinuation<Short>>()
 
 // FFI type for Rust future continuations
-internal object uniffiRustFutureContinuation: UniFffiRustFutureContinutationType {
+internal object uniffiRustFutureContinuationCallback: UniFffiRustFutureContinuationCallbackType {
     override fun callback(continuationHandle: USize, pollResult: Short) {
         uniffiContinuationHandleMap.remove(continuationHandle)?.resume(pollResult)
+    }
+
+    internal fun register(lib: _UniFFILib) {
+        lib.{{ ci.ffi_rust_future_continuation_callback_set().name() }}(this)
     }
 }
 
@@ -23,7 +27,6 @@ internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
             val pollResult = suspendCancellableCoroutine<Short> { continuation ->
                 _UniFFILib.INSTANCE.{{ ci.ffi_rust_future_poll().name() }}(
                     rustFuture,
-                    uniffiRustFutureContinuation,
                     uniffiContinuationHandleMap.insert(continuation)
                 )
             }
@@ -36,3 +39,4 @@ internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
         _UniFFILib.INSTANCE.{{ ci.ffi_rust_future_free().name() }}(rustFuture)
     }
 }
+

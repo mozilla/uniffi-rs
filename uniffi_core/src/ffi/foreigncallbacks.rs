@@ -10,7 +10,7 @@
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use crate::{ForeignExecutorHandle, RustBuffer, RustTaskCallback};
+use crate::{ForeignExecutorHandle, RustBuffer, RustFuturePoll, RustTaskCallback};
 
 /// ForeignCallback is the Rust representation of a foreign language function.
 /// It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,
@@ -56,11 +56,20 @@ pub type ForeignExecutorCallback = extern "C" fn(
     task_data: *const (),
 ) -> i8;
 
+/// Foreign callback that's passed to [rust_future_poll]
+///
+/// The Rust side of things calls this when the foreign side should call [rust_future_poll] again
+/// to continue progress on the future.
+pub type RustFutureContinuationCallback = extern "C" fn(callback_data: *const (), RustFuturePoll);
+
 /// Store a [ForeignCallback] pointer
 pub(crate) struct ForeignCallbackCell(AtomicUsize);
 
 /// Store a [ForeignExecutorCallback] pointer
 pub(crate) struct ForeignExecutorCallbackCell(AtomicUsize);
+
+/// Store a [RustFutureContinuationCallback] pointer
+pub(crate) struct RustFutureContinuationCallbackCell(AtomicUsize);
 
 /// Macro to define foreign callback types as well as the callback cell.
 macro_rules! impl_foreign_callback_cell {
@@ -101,3 +110,7 @@ macro_rules! impl_foreign_callback_cell {
 
 impl_foreign_callback_cell!(ForeignCallback, ForeignCallbackCell);
 impl_foreign_callback_cell!(ForeignExecutorCallback, ForeignExecutorCallbackCell);
+impl_foreign_callback_cell!(
+    RustFutureContinuationCallback,
+    RustFutureContinuationCallbackCell
+);

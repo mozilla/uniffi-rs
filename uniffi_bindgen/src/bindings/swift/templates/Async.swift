@@ -20,7 +20,6 @@ internal func uniffiRustCallAsync<F, T>(
             pollResult = await withUnsafeContinuation {
                 {{ ci.ffi_rust_future_poll().name() }}(
                     rustFuture,
-                    uniffiFutureContinuation,
                     ContinuationHolder($0).toOpaque()
                 )
             }
@@ -37,7 +36,7 @@ internal func uniffiRustCallAsync<F, T>(
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
 // lift the return value or error and resume the suspended function.
-fileprivate func uniffiFutureContinuation(ptr: UnsafeMutableRawPointer, pollResult: Int8) {
+fileprivate func uniffiFutureContinuationCallback(ptr: UnsafeMutableRawPointer, pollResult: Int8) {
     ContinuationHolder.fromOpaque(ptr).resume(pollResult)
 }
 
@@ -61,4 +60,8 @@ class ContinuationHolder {
     static func fromOpaque(_ ptr: UnsafeRawPointer) -> ContinuationHolder {
         return Unmanaged<ContinuationHolder>.fromOpaque(ptr).takeRetainedValue()
     }
+}
+
+fileprivate func uniffiInitContinuationCallback() {
+    {{ ci.ffi_rust_future_continuation_callback_set().name() }}(uniffiFutureContinuationCallback)
 }

@@ -2,13 +2,13 @@
 _UNIFFI_RUST_FUTURE_POLL_READY = 0
 _UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1
 
-# Stores futures for _uniffi_continuation_func
+# Stores futures for _uniffi_continuation_callback
 _UniffiContinuationPointerManager = _UniffiPointerManager()
 
 # Continuation callback for async functions
 # lift the return value or error and resolve the future, causing the async function to resume.
 @_UNIFFI_FUTURE_CONTINUATION_T
-def _uniffi_continuation_func(future_ptr, poll_code):
+def _uniffi_continuation_callback(future_ptr, poll_code):
     (eventloop, future) = _UniffiContinuationPointerManager.release_pointer(future_ptr)
     eventloop.call_soon_threadsafe(_uniffi_set_future_result, future, poll_code)
 
@@ -25,7 +25,6 @@ async def _uniffi_rust_call_async(rust_future, ffi_complete, lift_func, error_ff
             future = eventloop.create_future()
             _UniffiLib.{{ ci.ffi_rust_future_poll().name() }}(
                 rust_future,
-                _uniffi_continuation_func,
                 _UniffiContinuationPointerManager.new_pointer((eventloop, future)),
             )
             poll_code = await future
@@ -37,3 +36,5 @@ async def _uniffi_rust_call_async(rust_future, ffi_complete, lift_func, error_ff
         )
     finally:
         _UniffiLib.{{ ci.ffi_rust_future_free().name() }}(rust_future)
+
+_UniffiLib.{{ ci.ffi_rust_future_continuation_callback_set().name() }}(_uniffi_continuation_callback)

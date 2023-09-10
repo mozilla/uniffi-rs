@@ -163,7 +163,7 @@ mod filters {
                 unimplemented!("Foreign executors are not implemented")
             }
             FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuation
+            | FfiType::RustFutureContinuationCallback
             | FfiType::RustFutureContinuationData => {
                 unimplemented!("Async functions are not implemented")
             }

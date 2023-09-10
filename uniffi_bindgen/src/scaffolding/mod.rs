@@ -85,7 +85,7 @@ mod filters {
             FfiType::ForeignBytes => "::uniffi::ForeignBytes".into(),
             FfiType::ForeignCallback => "::uniffi::ForeignCallback".into(),
             FfiType::RustFutureHandle => "::uniffi::RustFutureHandle".into(),
-            FfiType::RustFutureContinuation => "::uniffi::RustFutureContinuation".into(),
+            FfiType::RustFutureContinuationCallback => "::uniffi::RustFutureContinuation".into(),
             FfiType::RustFutureContinuationData => "*const ()".into(),
             FfiType::ForeignExecutorHandle => "::uniffi::ForeignExecutorHandle".into(),
             FfiType::ForeignExecutorCallback => "::uniffi::ForeignExecutorCallback".into(),

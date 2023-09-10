@@ -428,6 +428,24 @@ impl ComponentInterface {
         }
     }
 
+    /// Builtin FFI function to set the Rust Future continuation callback
+    pub fn ffi_rust_future_continuation_callback_set(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!(
+                "ffi_{}_rust_future_continuation_callback_set",
+                self.ffi_namespace()
+            ),
+            arguments: vec![FfiArgument {
+                name: "callback".to_owned(),
+                type_: FfiType::RustFutureContinuationCallback,
+            }],
+            return_type: None,
+            is_async: false,
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
     /// Builtin FFI function to poll a Rust future.
     pub fn ffi_rust_future_poll(&self) -> FfiFunction {
         FfiFunction {
@@ -437,11 +455,6 @@ impl ComponentInterface {
                 FfiArgument {
                     name: "handle".to_owned(),
                     type_: FfiType::RustFutureHandle,
-                },
-                // Continuation to call when the future can make progress
-                FfiArgument {
-                    name: "continuation".into(),
-                    type_: FfiType::RustFutureContinuation,
                 },
                 // Data to pass to the continuation
                 FfiArgument {
@@ -612,6 +625,7 @@ impl ComponentInterface {
     /// List all FFI functions definitions for async functionality.
     pub fn iter_futures_ffi_function_definitons(&self) -> impl Iterator<Item = FfiFunction> {
         [
+            self.ffi_rust_future_continuation_callback_set(),
             self.ffi_rust_future_poll(),
             self.ffi_rust_future_cancel(),
             self.ffi_rust_future_free(),

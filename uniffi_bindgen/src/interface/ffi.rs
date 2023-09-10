@@ -57,7 +57,7 @@ pub enum FfiType {
     /// Pointer to a Rust future
     RustFutureHandle,
     /// Continuation function for a Rust future
-    RustFutureContinuation,
+    RustFutureContinuationCallback,
     RustFutureContinuationData,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.

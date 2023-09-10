@@ -10,6 +10,8 @@
 //!
 //! We implement async foreign functions using a simplified version of the Future API:
 //!
+//! 0. At startup, register a [RustFutureContinuationCallback] by calling
+//!    rust_future_continuation_callback_set.
 //! 1. Call the scaffolding function to get a [RustFutureHandle]
 //! 2a. In a loop:
 //!   - Call [rust_future_poll]
@@ -73,18 +75,18 @@
 //! [`Waker`]: https://doc.rust-lang.org/std/task/struct.Waker.html
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
-use crate::{rust_call_with_out_status, FfiConverter, FfiDefault, RustCallStatus};
+use crate::{
+    rust_call_with_out_status, FfiConverter, FfiDefault, RustCallStatus,
+    RustFutureContinuationCallback, RustFutureContinuationCallbackCell,
+};
 use std::{
-    cell::UnsafeCell,
     future::Future,
     marker::PhantomData,
+    mem,
     ops::Deref,
     panic,
     pin::Pin,
-    sync::{
-        atomic::{AtomicU8, Ordering},
-        Arc, Mutex,
-    },
+    sync::{Arc, Mutex},
     task::{Context, Poll, Wake},
 };
 
@@ -102,11 +104,18 @@ pub enum RustFuturePoll {
 #[repr(transparent)]
 pub struct RustFutureHandle(*const ());
 
-/// Foreign callback that's passed to [rust_future_poll]
-///
-/// The Rust side of things calls this when the foreign side should call [rust_future_poll] and
-/// continue progress on the future.
-pub type RustFutureContinuation = extern "C" fn(callback_data: *const (), status: RustFuturePoll);
+/// Stores the global continuation callback
+static RUST_FUTURE_CONTINUATION_CALLBACK_CELL: RustFutureContinuationCallbackCell =
+    RustFutureContinuationCallbackCell::new();
+
+/// Set the global RustFutureContinuationCallback.
+pub fn rust_future_continuation_callback_set(callback: RustFutureContinuationCallback) {
+    RUST_FUTURE_CONTINUATION_CALLBACK_CELL.set(callback);
+}
+
+fn call_continuation(data: *const (), poll_code: RustFuturePoll) {
+    RUST_FUTURE_CONTINUATION_CALLBACK_CELL.get()(data, poll_code)
+}
 
 // === Public FFI API ===
 
@@ -146,13 +155,9 @@ where
 /// # Safety
 ///
 /// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_poll(
-    handle: RustFutureHandle,
-    continuation: RustFutureContinuation,
-    data: *const (),
-) {
+pub unsafe fn rust_future_poll(handle: RustFutureHandle, data: *const ()) {
     let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi>);
-    future.clone().ffi_poll(continuation, data)
+    future.clone().ffi_poll(data)
 }
 
 /// Cancel a Rust future
@@ -186,7 +191,7 @@ pub unsafe fn rust_future_complete<T: FfiDefault>(
 ) -> T {
     let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi>);
     let mut return_value = T::ffi_default();
-    let out_return = std::mem::transmute::<&mut T, &mut ()>(&mut return_value);
+    let out_return = mem::transmute::<&mut T, &mut ()>(&mut return_value);
     future.ffi_complete(out_return, out_status);
     return_value
 }
@@ -202,135 +207,68 @@ pub unsafe fn rust_future_free(handle: RustFutureHandle) {
     future.ffi_free()
 }
 
-/// Thread-safe storage for a RustFutureContinuation
+/// Thread-safe storage for [RustFutureContinuationCallback] data
 ///
-/// The basic guarantee is that all continuations passed to [Self::store] are called exactly once
-/// (assuming that [Self::try_call_continuation] is called after the last store).  This enables us to
-/// uphold the [rust_future_poll] guarantee.
+/// The basic guarantee is that all data pointers passed in are passed out exactly once to the
+/// foreign continuation callback. This enables us to uphold the [rust_future_poll] guarantee.
 ///
-/// AtomicContinuationCell uses atomic trickery to make all operations thread-safe but non-blocking.
-struct AtomicContinuationCell {
-    state: AtomicU8,
-    stored: UnsafeCell<Option<(RustFutureContinuation, *const ())>>,
+/// [ContinuationDataCell] also tracks cancellation, which is closely tied to continuation data.
+enum ContinuationDataCell {
+    Empty,
+    Cancelled,
+    Set(*const ()),
 }
 
-impl AtomicContinuationCell {
-    /// Lock bit
-    const STATE_LOCK: u8 = 1 << 0;
-    /// Bit signalling that we should call the continuation
-    const STATE_NEEDS_CALL: u8 = 1 << 1;
-    /// Bit signalling that the RustFuture has been cancelled
-    const STATE_CANCELLED: u8 = 1 << 2;
-
+impl ContinuationDataCell {
     fn new() -> Self {
-        Self {
-            state: AtomicU8::new(0),
-            stored: UnsafeCell::new(None),
+        Self::Empty
+    }
+
+    /// Store new continuation data
+    fn store(&mut self, data: *const ()) {
+        // If we're cancelled, then call the continuation immediately rather than storing it
+        if matches!(self, Self::Cancelled) {
+            call_continuation(data, RustFuturePoll::Ready);
+            return;
         }
-    }
 
-    /// Try to take a lock, optionally setting the other bits
-    fn try_lock(&self, extra_bits: u8) -> bool {
-        let prev_state = self
-            .state
-            .fetch_or(Self::STATE_LOCK | extra_bits, Ordering::Acquire);
-        (prev_state & Self::STATE_LOCK) == 0
-    }
-
-    /// Release a lock, calling any stored continuation
-    fn unlock_and_call(&self) {
-        self.call_continuation_unchecked();
-        self.state.fetch_and(
-            !(Self::STATE_LOCK | Self::STATE_NEEDS_CALL),
-            Ordering::Release,
-        );
-    }
-
-    /// Release a lock with the intention of keeping a stored continuation
-    ///
-    /// However, if another thread set the STATE_NEEDS_CALL or STATE_READY bit, then instead call
-    /// the stored continuation for them.
-    fn unlock_and_store(&self, new_continuation: RustFutureContinuation, data: *const ()) {
-        // Set the continuation
-        let stored = unsafe { &mut *self.stored.get() };
-        if stored.is_some() {
-            log::error!("AtomicContinuationCell::unlock_and_store: continuation already set");
-            self.call_continuation_unchecked();
-        }
-        *stored = Some((new_continuation, data));
-
-        match self
-            .state
-            .compare_exchange(Self::STATE_LOCK, 0, Ordering::Release, Ordering::Relaxed)
-        {
-            // Success!
-            Ok(_) => (),
-            Err(_) => {
-                // Another thread set the STATE_NEEDS_CALL or STATE_READY bit, so we should call the
-                // continuation for them.
-                self.call_continuation_unchecked();
-                // We can now unlock unconditionally
-                self.state.fetch_and(
-                    !(Self::STATE_LOCK | Self::STATE_NEEDS_CALL),
-                    Ordering::Release,
+        match mem::replace(self, Self::Set(data)) {
+            Self::Empty => (),
+            Self::Cancelled => unreachable!(),
+            Self::Set(old_data) => {
+                log::error!(
+                    "store: observed Self::Set state, is poll() being called from multiple threads at once?"
                 );
+                call_continuation(old_data, RustFuturePoll::Ready);
             }
         }
     }
 
-    // Take the data out of self.continuation.  If it was set, then call the continuation.
-    //
-    // Only call this if you have the lock
-    fn call_continuation_unchecked(&self) {
-        let stored = unsafe { &mut *self.stored.get() };
-        if let Some((continuation, data)) = stored.take() {
-            continuation(data, self.poll_code());
+    fn send(&mut self) {
+        if matches!(self, Self::Cancelled) {
+            return;
+        }
+
+        if let Self::Set(old_data) = mem::replace(self, Self::Empty) {
+            call_continuation(old_data, RustFuturePoll::MaybeReady);
         }
     }
 
-    fn try_call_continuation(&self, cancelled: bool) {
-        let extra_bits = if cancelled {
-            Self::STATE_NEEDS_CALL | Self::STATE_CANCELLED
-        } else {
-            Self::STATE_NEEDS_CALL
-        };
-        if self.try_lock(extra_bits) {
-            self.unlock_and_call();
-        }
-    }
-
-    fn store(&self, continuation: RustFutureContinuation, data: *const ()) {
-        if self.try_lock(0) {
-            self.unlock_and_store(continuation, data);
-        } else {
-            // Failed to acquire the lock
-            //   - If the other thread was calling `try_call_continuation`, that means they locked us out
-            //     just before we could store the continuation.
-            //   - If the other thread was calling `store`, then something weird happened and
-            //     there's already a stored continuation.
-            //
-            // In either case, call the continuation now.
-            continuation(data, self.poll_code());
-        }
-    }
-
-    fn poll_code(&self) -> RustFuturePoll {
-        if self.state.load(Ordering::Relaxed) & Self::STATE_CANCELLED == 0 {
-            RustFuturePoll::MaybeReady
-        } else {
-            RustFuturePoll::Ready
+    fn cancel(&mut self) {
+        if let Self::Set(old_data) = mem::replace(self, Self::Cancelled) {
+            call_continuation(old_data, RustFuturePoll::Ready);
         }
     }
 
     fn is_cancelled(&self) -> bool {
-        self.state.load(Ordering::Relaxed) & Self::STATE_CANCELLED != 0
+        matches!(self, Self::Cancelled)
     }
 }
 
-// AtomicContinuationCell is Send + Sync as long the previous code is working correctly.
+// ContinuationDataCell is Send + Sync as long we handle the *const () pointer correctly
 
-unsafe impl Send for AtomicContinuationCell {}
-unsafe impl Sync for AtomicContinuationCell {}
+unsafe impl Send for ContinuationDataCell {}
+unsafe impl Sync for ContinuationDataCell {}
 
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
@@ -444,7 +382,7 @@ where
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
     future: Mutex<WrappedFuture<F, T, UT>>,
-    continuation: AtomicContinuationCell,
+    continuation_data: Mutex<ContinuationDataCell>,
     // UT is used as the generic parameter for FfiConverter.
     // Let's model this with PhantomData as a function that inputs a UT value.
     _phantom: PhantomData<fn(UT) -> ()>,
@@ -460,30 +398,34 @@ where
     fn new(future: F, _tag: UT) -> Arc<Self> {
         Arc::new(Self {
             future: Mutex::new(WrappedFuture::new(future)),
-            continuation: AtomicContinuationCell::new(),
+            continuation_data: Mutex::new(ContinuationDataCell::new()),
             _phantom: PhantomData,
         })
     }
 
-    fn poll(self: Arc<Self>, new_continuation: RustFutureContinuation, data: *const ()) {
-        let ready = self.continuation.is_cancelled() || {
+    fn poll(self: Arc<Self>, data: *const ()) {
+        let ready = self.is_cancelled() || {
             let mut locked = self.future.lock().unwrap();
             let waker: std::task::Waker = Arc::clone(&self).into();
             locked.poll(&mut Context::from_waker(&waker))
         };
         if ready {
-            new_continuation(data, RustFuturePoll::Ready);
+            call_continuation(data, RustFuturePoll::Ready)
         } else {
-            self.continuation.store(new_continuation, data);
+            self.continuation_data.lock().unwrap().store(data);
         }
     }
 
+    fn is_cancelled(&self) -> bool {
+        self.continuation_data.lock().unwrap().is_cancelled()
+    }
+
     fn wake(&self) {
-        self.continuation.try_call_continuation(false)
+        self.continuation_data.lock().unwrap().send();
     }
 
     fn cancel(&self) {
-        self.continuation.try_call_continuation(true);
+        self.continuation_data.lock().unwrap().cancel();
     }
 
     fn complete(&self, return_value: &mut T::ReturnType, call_status: &mut RustCallStatus) {
@@ -494,8 +436,8 @@ where
     }
 
     fn free(self: Arc<Self>) {
-        // Call any leftover continuation callbacks now
-        self.continuation.try_call_continuation(true);
+        // Call cancel() to send any leftover data to the continuation callback
+        self.continuation_data.lock().unwrap().cancel();
         // Ensure we drop our inner future, releasing all held references
         self.future.lock().unwrap().free();
     }
@@ -523,7 +465,7 @@ where
 /// unnamable.
 #[doc(hidden)]
 trait RustFutureFfi {
-    fn ffi_poll(self: Arc<Self>, continuation: RustFutureContinuation, data: *const ());
+    fn ffi_poll(self: Arc<Self>, data: *const ());
     fn ffi_cancel(&self);
     unsafe fn ffi_complete(&self, out_return: &mut (), call_status: &mut RustCallStatus);
     fn ffi_free(self: Arc<Self>);
@@ -536,8 +478,8 @@ where
     T: FfiConverter<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    fn ffi_poll(self: Arc<Self>, continuation: RustFutureContinuation, data: *const ()) {
-        self.poll(continuation, data)
+    fn ffi_poll(self: Arc<Self>, data: *const ()) {
+        self.poll(data)
     }
 
     fn ffi_cancel(&self) {
@@ -624,8 +566,12 @@ mod tests {
     fn poll(rust_future: &Arc<dyn RustFutureFfi>) -> OnceCell<RustFuturePoll> {
         let cell = OnceCell::new();
         let cell_ptr = &cell as *const OnceCell<RustFuturePoll> as *const ();
-        rust_future.clone().ffi_poll(poll_continuation, cell_ptr);
+        rust_future.clone().ffi_poll(cell_ptr);
         cell
+    }
+
+    fn setup_continuation_callback() {
+        RUST_FUTURE_CONTINUATION_CALLBACK_CELL.set(poll_continuation);
     }
 
     extern "C" fn poll_continuation(data: *const (), code: RustFuturePoll) {
@@ -647,6 +593,7 @@ mod tests {
 
     #[test]
     fn test_success() {
+        setup_continuation_callback();
         let (sender, rust_future) = channel();
 
         // Test polling the rust future before it's ready
@@ -676,6 +623,7 @@ mod tests {
 
     #[test]
     fn test_error() {
+        setup_continuation_callback();
         let (sender, rust_future) = channel();
 
         let continuation_result = poll(&rust_future);
@@ -703,6 +651,7 @@ mod tests {
     // reference to the RustFuture
     #[test]
     fn test_cancel() {
+        setup_continuation_callback();
         let (_sender, rust_future) = channel();
 
         let continuation_result = poll(&rust_future);
@@ -723,6 +672,7 @@ mod tests {
     // reference to the RustFuture
     #[test]
     fn test_release_future() {
+        setup_continuation_callback();
         let (sender, rust_future) = channel();
         // Create a weak reference to the channel to use to check if rust_future has dropped its
         // future.
@@ -745,6 +695,7 @@ mod tests {
     // This shouldn't happen in practice, but it seems like good defensive programming
     #[test]
     fn test_complete_with_stored_continuation() {
+        setup_continuation_callback();
         let (_sender, rust_future) = channel();
 
         let continuation_result = poll(&rust_future);
