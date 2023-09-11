@@ -54,7 +54,9 @@ fn throw_flat_macro_error() -> Result<(), CoverallFlatMacroError> {
     Err(CoverallFlatMacroError::TooManyVariants { num: 88 })
 }
 
+#[derive(Debug, thiserror::Error)]
 pub enum CoverallRichErrorNoVariantData {
+    #[error("TooManyPlainVariants")]
     TooManyPlainVariants,
 }
 

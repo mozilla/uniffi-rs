@@ -4,13 +4,13 @@
 
 use crate::{
     export::ImplItem,
-    fnsig::{FnKind, FnSignature},
+    fnsig::{FnKind, FnSignature, ReceiverArg},
     util::{create_metadata_items, ident_to_string, mod_path, tagged_impl_header},
 };
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::iter;
-use syn::{Ident, Path};
+use syn::Ident;
 
 pub(super) fn trait_impl(
     ident: &Ident,
@@ -25,7 +25,7 @@ pub(super) fn trait_impl(
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<TokenStream>>()?;
-    let ffi_converter_tokens = ffi_converter_callback_interface_impl(trait_ident, ident, None);
+    let ffi_converter_tokens = ffi_converter_callback_interface_impl(trait_ident, ident, false);
 
     Ok(quote! {
         #[doc(hidden)]
@@ -61,13 +61,17 @@ pub(super) fn trait_impl(
 pub fn ffi_converter_callback_interface_impl(
     trait_ident: &Ident,
     trait_impl_ident: &Ident,
-    tag: Option<&Path>,
+    udl_mode: bool,
 ) -> TokenStream {
     let name = ident_to_string(trait_ident);
-    let impl_spec = tagged_impl_header("FfiConverter", &quote! { Box<dyn #trait_ident> }, tag);
-    let tag = match tag {
-        Some(t) => quote! { #t },
-        None => quote! { T },
+    let dyn_trait = quote! { dyn #trait_ident };
+    let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
+    let impl_spec = tagged_impl_header("FfiConverter", &box_dyn_trait, udl_mode);
+    let lift_ref_impl_spec = tagged_impl_header("LiftRef", &dyn_trait, udl_mode);
+    let tag = if udl_mode {
+        quote! { crate::UniFfiTag }
+    } else {
+        quote! { T }
     };
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -98,7 +102,7 @@ pub fn ffi_converter_callback_interface_impl(
             }
 
             fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
-                Ok(Box::new(<#trait_impl_ident>::new(v)))
+                Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(v)))
             }
 
             fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
@@ -114,6 +118,10 @@ pub fn ffi_converter_callback_interface_impl(
             )
             .concat_str(#mod_path)
             .concat_str(#name);
+        }
+
+        #lift_ref_impl_spec {
+            type LiftType = #box_dyn_trait;
         }
     }
 }
@@ -139,18 +147,22 @@ fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<To
         }
     };
 
-    if receiver.is_none() {
-        return Err(syn::Error::new(
-            sig.span,
-            "callback interface methods must take &self as their first argument",
-        ));
-    }
+    let self_param = match receiver {
+        None => {
+            return Err(syn::Error::new(
+                sig.span,
+                "callback interface methods must take &self as their first argument",
+            ));
+        }
+        Some(ReceiverArg::Ref) => quote! { &self },
+        Some(ReceiverArg::Arc) => quote! { self: Arc<Self> },
+    };
     let params = sig.params();
     let buf_ident = Ident::new("uniffi_args_buf", Span::call_site());
     let write_exprs = sig.write_exprs(&buf_ident);
 
     Ok(quote! {
-        fn #ident(&self, #(#params),*) -> #return_ty {
+        fn #ident(#self_param, #(#params),*) -> #return_ty {
             #[allow(unused_mut)]
             let mut #buf_ident = ::std::vec::Vec::new();
             #(#write_exprs;)*

@@ -4,7 +4,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::{visit_mut::VisitMut, Item, Path, Type};
+use syn::{visit_mut::VisitMut, Item, Type};
 
 mod attributes;
 mod callback_interface;
@@ -12,7 +12,6 @@ mod item;
 mod scaffolding;
 
 use self::{
-    attributes::ExportAttributeArguments,
     item::{ExportItem, ImplItem},
     scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
 };
@@ -20,6 +19,7 @@ use crate::{
     object::interface_meta_static_var,
     util::{ident_to_string, mod_path, tagged_impl_header},
 };
+pub use attributes::ExportAttributeArguments;
 pub use callback_interface::ffi_converter_callback_interface_impl;
 use uniffi_meta::free_fn_symbol_name;
 
@@ -29,8 +29,9 @@ use uniffi_meta::free_fn_symbol_name;
 pub(crate) fn expand_export(
     mut item: Item,
     args: ExportAttributeArguments,
-    mod_path: String,
+    udl_mode: bool,
 ) -> syn::Result<TokenStream> {
+    let mod_path = mod_path()?;
     // If the input is an `impl` block, rewrite any uses of the `Self` type
     // alias to the actual type, so we don't have to special-case it in the
     // metadata collection or scaffolding code generation (which generates
@@ -40,7 +41,7 @@ pub(crate) fn expand_export(
     let metadata = ExportItem::new(item, &args)?;
 
     match metadata {
-        ExportItem::Function { sig } => gen_fn_scaffolding(sig, &args),
+        ExportItem::Function { sig } => gen_fn_scaffolding(sig, &args, udl_mode),
         ExportItem::Impl { items, self_ident } => {
             if let Some(rt) = &args.async_runtime {
                 if items
@@ -57,8 +58,8 @@ pub(crate) fn expand_export(
             let item_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| match item {
-                    ImplItem::Constructor(sig) => gen_constructor_scaffolding(sig, &args),
-                    ImplItem::Method(sig) => gen_method_scaffolding(sig, &args),
+                    ImplItem::Constructor(sig) => gen_constructor_scaffolding(sig, &args, udl_mode),
+                    ImplItem::Method(sig) => gen_method_scaffolding(sig, &args, udl_mode),
                 })
                 .collect::<syn::Result<_>>()?;
             Ok(quote_spanned! { self_ident.span() => #item_tokens })
@@ -101,15 +102,17 @@ pub(crate) fn expand_export(
                                 "async trait methods are not supported",
                             ));
                         }
-                        gen_method_scaffolding(sig, &args)
+                        gen_method_scaffolding(sig, &args, udl_mode)
                     }
                     _ => unreachable!("traits have no constructors"),
                 })
                 .collect::<syn::Result<_>>()?;
 
-            let meta_static_var = interface_meta_static_var(&self_ident, true, &mod_path)
-                .unwrap_or_else(syn::Error::into_compile_error);
-            let ffi_converter_tokens = ffi_converter_trait_impl(&self_ident, None);
+            let meta_static_var = (!udl_mode).then(|| {
+                interface_meta_static_var(&self_ident, true, &mod_path)
+                    .unwrap_or_else(syn::Error::into_compile_error)
+            });
+            let ffi_converter_tokens = ffi_converter_trait_impl(&self_ident, false);
 
             Ok(quote_spanned! { self_ident.span() =>
                 #meta_static_var
@@ -163,14 +166,15 @@ pub(crate) fn expand_export(
 
                 #trait_impl
 
-                        #(#metadata_items)*
+                #(#metadata_items)*
             })
         }
     }
 }
 
-pub(crate) fn ffi_converter_trait_impl(trait_ident: &Ident, tag: Option<&Path>) -> TokenStream {
-    let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, tag);
+pub(crate) fn ffi_converter_trait_impl(trait_ident: &Ident, udl_mode: bool) -> TokenStream {
+    let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, udl_mode);
+    let lift_ref_impl_spec = tagged_impl_header("LiftRef", &quote! { dyn #trait_ident }, udl_mode);
     let name = ident_to_string(trait_ident);
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -231,6 +235,10 @@ pub(crate) fn ffi_converter_trait_impl(trait_ident: &Ident, tag: Option<&Path>) 
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(true);
+        }
+
+        #lift_ref_impl_spec {
+            type LiftType = ::std::sync::Arc<dyn #trait_ident>;
         }
     }
 }

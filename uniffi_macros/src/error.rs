@@ -2,19 +2,24 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    Data, DataEnum, DeriveInput, Index, Path, Token,
+    Data, DataEnum, DeriveInput, Index,
 };
 
 use crate::{
     enum_::{handle_callback_unexpected_error_fn, rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
+        chain, create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
         parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
         AttributeSliceExt, UniffiAttributeArgs,
     },
 };
 
-pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
+pub fn expand_error(
+    input: DeriveInput,
+    // Attributes from #[derive_error_for_udl()], if we are in udl mode
+    attr_from_udl_mode: Option<ErrorAttr>,
+    udl_mode: bool,
+) -> syn::Result<TokenStream> {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
@@ -24,12 +29,16 @@ pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
             ));
         }
     };
-
     let ident = &input.ident;
-    let attr = input.attrs.parse_uniffi_attr_args::<ErrorAttr>()?;
-    let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr);
-    let meta_static_var = error_meta_static_var(ident, &enum_, attr.flat.is_some())
-        .unwrap_or_else(syn::Error::into_compile_error);
+    let mut attr: ErrorAttr = input.attrs.parse_uniffi_attr_args()?;
+    if let Some(attr_from_udl_mode) = attr_from_udl_mode {
+        attr = attr.merge(attr_from_udl_mode)?;
+    }
+    let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr, udl_mode);
+    let meta_static_var = (!udl_mode).then(|| {
+        error_meta_static_var(ident, &enum_, attr.flat.is_some())
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
 
     let variant_errors: TokenStream = enum_
         .variants
@@ -53,23 +62,17 @@ pub fn expand_error(input: DeriveInput) -> syn::Result<TokenStream> {
     })
 }
 
-pub(crate) fn expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -> TokenStream {
-    match input.data {
-        Data::Enum(e) => error_ffi_converter_impl(&input.ident, &e, &attr),
-        _ => syn::Error::new(
-            proc_macro2::Span::call_site(),
-            "This attribute must only be used on enums",
-        )
-        .into_compile_error(),
-    }
-}
-
-fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -> TokenStream {
+fn error_ffi_converter_impl(
+    ident: &Ident,
+    enum_: &DataEnum,
+    attr: &ErrorAttr,
+    udl_mode: bool,
+) -> TokenStream {
     if attr.flat.is_some() {
         flat_error_ffi_converter_impl(
             ident,
             enum_,
-            attr.tag.as_ref(),
+            udl_mode,
             attr.with_try_read.is_some(),
             attr.handle_unknown_callback_error.is_some(),
         )
@@ -77,7 +80,7 @@ fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -
         rich_error_ffi_converter_impl(
             ident,
             enum_,
-            attr.tag.as_ref(),
+            udl_mode,
             attr.handle_unknown_callback_error.is_some(),
         )
     }
@@ -90,12 +93,13 @@ fn error_ffi_converter_impl(ident: &Ident, enum_: &DataEnum, attr: &ErrorAttr) -
 fn flat_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
-    tag: Option<&Path>,
+    udl_mode: bool,
     implement_try_read: bool,
     handle_unknown_callback_error: bool,
 ) -> TokenStream {
     let name = ident_to_string(ident);
-    let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
+    let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
+    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
@@ -162,6 +166,10 @@ fn flat_error_ffi_converter_impl(
                 .concat_str(#mod_path)
                 .concat_str(#name);
         }
+
+        #lift_ref_impl_spec {
+            type LiftType = Self;
+        }
     }
 }
 
@@ -199,16 +207,8 @@ pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStr
         .collect())
 }
 
-mod kw {
-    syn::custom_keyword!(tag);
-    syn::custom_keyword!(flat_error);
-    syn::custom_keyword!(with_try_read);
-    syn::custom_keyword!(handle_unknown_callback_error);
-}
-
 #[derive(Default)]
-pub(crate) struct ErrorAttr {
-    tag: Option<Path>,
+pub struct ErrorAttr {
     flat: Option<kw::flat_error>,
     with_try_read: Option<kw::with_try_read>,
     /// Can this error be used in a callback interface?
@@ -218,14 +218,7 @@ pub(crate) struct ErrorAttr {
 impl UniffiAttributeArgs for ErrorAttr {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::tag) {
-            let _: kw::tag = input.parse()?;
-            let _: Token![=] = input.parse()?;
-            Ok(Self {
-                tag: Some(input.parse()?),
-                ..Self::default()
-            })
-        } else if lookahead.peek(kw::flat_error) {
+        if lookahead.peek(kw::flat_error) {
             Ok(Self {
                 flat: input.parse()?,
                 ..Self::default()
@@ -247,7 +240,6 @@ impl UniffiAttributeArgs for ErrorAttr {
 
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
-            tag: either_attribute_arg(self.tag, other.tag)?,
             flat: either_attribute_arg(self.flat, other.flat)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
             handle_unknown_callback_error: either_attribute_arg(

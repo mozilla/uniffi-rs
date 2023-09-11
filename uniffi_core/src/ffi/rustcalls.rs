@@ -172,36 +172,13 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{
-        ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower, MetadataBuffer,
-        UniFfiTag,
-    };
+    use crate::test_util::TestError;
 
     fn create_call_status() -> RustCallStatus {
         RustCallStatus {
             code: 0,
             error_buf: MaybeUninit::new(RustBuffer::new()),
         }
-    }
-
-    #[derive(Debug, PartialEq)]
-    struct TestError(String);
-
-    // Use FfiConverter to simplify lifting TestError out of RustBuffer to check it
-    unsafe impl FfiConverter<UniFfiTag> for TestError {
-        ffi_converter_rust_buffer_lift_and_lower!(UniFfiTag);
-        ffi_converter_default_return!(UniFfiTag);
-
-        fn write(obj: TestError, buf: &mut Vec<u8>) {
-            <String as FfiConverter<UniFfiTag>>::write(obj.0, buf);
-        }
-
-        fn try_read(buf: &mut &[u8]) -> anyhow::Result<TestError> {
-            <String as FfiConverter<UniFfiTag>>::try_read(buf).map(TestError)
-        }
-
-        // Use a dummy value here since we don't actually need TYPE_ID_META
-        const TYPE_ID_META: MetadataBuffer = MetadataBuffer::new();
     }
 
     fn test_callback(a: u8) -> Result<i8, TestError> {

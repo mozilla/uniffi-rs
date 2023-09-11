@@ -39,44 +39,25 @@ mod state {
 
 mod error {
     use super::Weapon;
-    use std::fmt;
 
-    #[derive(uniffi::Error)]
+    #[derive(Debug, thiserror::Error, uniffi::Error)]
     #[uniffi(flat_error)]
     #[allow(dead_code)]
     pub enum FlatError {
+        #[error("Overflow")]
         Overflow(String), // UniFFI should ignore this field, since `flat_error` was specified
+        #[error("DivideByZero")]
         DivideByZero,
     }
 
-    #[derive(uniffi::Error)]
+    #[derive(Debug, thiserror::Error, uniffi::Error)]
     pub enum ComplexError {
+        #[error("NotFound")]
         NotFound,
+        #[error("PermissionDenied")]
         PermissionDenied { reason: String },
+        #[error("InvalidWeapon")]
         InvalidWeapon { weapon: Weapon },
-    }
-
-    impl fmt::Display for FlatError {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            match self {
-                Self::Overflow(s) => write!(f, "FlatError::Overflow({s})"),
-                Self::DivideByZero => write!(f, "FlatError::DivideByZero"),
-            }
-        }
-    }
-
-    impl fmt::Display for ComplexError {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            match self {
-                Self::NotFound => write!(f, "ComplexError::NotFound()"),
-                Self::PermissionDenied { reason } => {
-                    write!(f, "ComplexError::PermissionDenied({reason})")
-                }
-                Self::InvalidWeapon { weapon } => {
-                    write!(f, "ComplexError::InvalidWeapon({weapon:?})")
-                }
-            }
-        }
     }
 }
 

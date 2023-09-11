@@ -374,14 +374,14 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{try_lift_from_rust_buffer, MockEventLoop};
+    use crate::{test_util::TestError, try_lift_from_rust_buffer, MockEventLoop};
     use std::sync::Weak;
 
     // Mock future that we can manually control using an Option<>
-    struct MockFuture(Option<Result<bool, String>>);
+    struct MockFuture(Option<Result<bool, TestError>>);
 
     impl Future for MockFuture {
-        type Output = Result<bool, String>;
+        type Output = Result<bool, TestError>;
 
         fn poll(self: Pin<&mut Self>, _context: &mut Context<'_>) -> Poll<Self::Output> {
             match &self.0 {
@@ -392,7 +392,7 @@ mod tests {
     }
 
     // Type alias for the RustFuture we'll use in our tests
-    type TestRustFuture = RustFuture<MockFuture, Result<bool, String>, crate::UniFfiTag>;
+    type TestRustFuture = RustFuture<MockFuture, Result<bool, TestError>, crate::UniFfiTag>;
 
     // Stores the result that we send to the foreign code
     #[derive(Default)]
@@ -441,7 +441,7 @@ mod tests {
             Arc::downgrade(&Pin::into_inner(Clone::clone(&self.rust_future)))
         }
 
-        fn complete_future(&self, value: Result<bool, String>) {
+        fn complete_future(&self, value: Result<bool, TestError>) {
             unsafe {
                 (*self.rust_future.future.get()).0 = Some(value);
             }

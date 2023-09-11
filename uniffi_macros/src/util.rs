@@ -8,7 +8,7 @@ use std::path::{Path as StdPath, PathBuf};
 use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
-    Attribute, Path, Token,
+    Attribute, Token,
 };
 
 pub fn manifest_path() -> Result<PathBuf, String> {
@@ -206,70 +206,26 @@ pub fn either_attribute_arg<T: ToTokens>(a: Option<T>, b: Option<T>) -> syn::Res
 pub(crate) fn tagged_impl_header(
     trait_name: &str,
     ident: &impl ToTokens,
-    tag: Option<&Path>,
+    udl_mode: bool,
 ) -> TokenStream {
     let trait_name = Ident::new(trait_name, Span::call_site());
-    match tag {
-        Some(tag) => quote! { impl ::uniffi::#trait_name<#tag> for #ident },
-        None => quote! { impl<T> ::uniffi::#trait_name<T> for #ident },
+    if udl_mode {
+        quote! { impl ::uniffi::#trait_name<crate::UniFfiTag> for #ident }
+    } else {
+        quote! { impl<T> ::uniffi::#trait_name<T> for #ident }
     }
 }
 
-mod kw {
-    syn::custom_keyword!(tag);
-}
-
-#[derive(Default)]
-pub(crate) struct CommonAttr {
-    /// Specifies the `UniFfiTag` used when implementing `FfiConverter`
-    ///   - When things are defined with proc-macros, this is `None` which means create a blanket
-    ///     impl for all types.
-    ///   - When things are defined with UDL files this is `Some(crate::UniFfiTag)`, which means only
-    ///     implement it for the local tag in the crate
-    ///
-    /// The reason for this split is remote types, i.e. types defined in remote crates that we
-    /// don't control and therefore can't define a blanket impl on because of the orphan rules.
-    ///
-    /// With UDL, we handle this by only implementing `FfiConverter<crate::UniFfiTag>` for the
-    /// type.  This gets around the orphan rules since a local type is in the trait, but requires
-    /// a `uniffi::ffi_converter_forward!` call if the type is used in a second local crate (an
-    /// External typedef).  This is natural for UDL-based generation, since you always need to
-    /// define the external type in the UDL file.
-    ///
-    /// With proc-macros this system isn't so natural.  Instead, we plan to use this system:
-    ///   - Most of the time, types aren't remote and we use the blanket impl.
-    ///   - When types are remote, we'll need a special syntax to define an `FfiConverter` for them
-    ///     and also a special declaration to use the types in other crates.  This requires some
-    ///     extra work for the consumer, but it should be rare.
-    pub tag: Option<Path>,
-}
-
-impl UniffiAttributeArgs for CommonAttr {
-    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
-        let lookahead = input.lookahead1();
-        if lookahead.peek(kw::tag) {
-            let _: kw::tag = input.parse()?;
-            let _: Token![=] = input.parse()?;
-            Ok(Self {
-                tag: Some(input.parse()?),
-            })
-        } else {
-            Err(lookahead.error())
-        }
-    }
-
-    fn merge(self, other: Self) -> syn::Result<Self> {
-        Ok(Self {
-            tag: either_attribute_arg(self.tag, other.tag)?,
-        })
-    }
-}
-
-// So CommonAttr can be used with `parse_macro_input!`
-impl Parse for CommonAttr {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        parse_comma_separated(input)
-    }
+/// Custom keywords
+pub mod kw {
+    syn::custom_keyword!(async_runtime);
+    syn::custom_keyword!(callback_interface);
+    syn::custom_keyword!(constructor);
+    syn::custom_keyword!(default);
+    syn::custom_keyword!(flat_error);
+    syn::custom_keyword!(handle_unknown_callback_error);
+    syn::custom_keyword!(None);
+    syn::custom_keyword!(with_try_read);
 }
 
 /// Specifies a type from a dependent crate

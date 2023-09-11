@@ -24,7 +24,7 @@
 use crate::{
     check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
     lower_into_rust_buffer, metadata, try_lift_from_rust_buffer, FfiConverter, FutureCallback,
-    MetadataBuffer, Result, RustBuffer, RustCallStatus, UnexpectedUniFFICallbackError,
+    LiftRef, MetadataBuffer, Result, RustBuffer, RustCallStatus, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -32,6 +32,7 @@ use paste::paste;
 use std::{
     collections::HashMap,
     convert::{Infallible, TryFrom},
+    error::Error,
     time::{Duration, SystemTime},
 };
 
@@ -477,7 +478,7 @@ unsafe impl<UT> FfiConverter<UT> for crate::ForeignExecutor {
 unsafe impl<UT, R, E> FfiConverter<UT> for Result<R, E>
 where
     R: FfiConverter<UT>,
-    E: FfiConverter<UT>,
+    E: FfiConverter<UT> + Error + Send + Sync + 'static,
 {
     type FfiType = (); // Placeholder while lower/lift/serializing is unimplemented
     type ReturnType = R::ReturnType;
@@ -503,6 +504,13 @@ where
         match v {
             Ok(r) => R::lower_return(r),
             Err(e) => Err(lower_into_rust_buffer(e)),
+        }
+    }
+
+    fn handle_failed_lift(arg_name: &str, err: anyhow::Error) -> RustBuffer {
+        match err.downcast::<E>() {
+            Ok(actual_error) => lower_into_rust_buffer(actual_error),
+            Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
         }
     }
 
@@ -532,4 +540,39 @@ where
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)
         .concat(R::TYPE_ID_META)
         .concat(E::TYPE_ID_META);
+}
+
+macro_rules! simple_lift_ref_impl {
+    ($($t:ty),* $(,)?) => {
+        $(
+            impl<UT> LiftRef<UT> for $t {
+                type LiftType = $t;
+            }
+        )*
+    }
+}
+
+simple_lift_ref_impl!(
+    u8, i8, u16, i16, u32, i32, u64, i64, f32, f64, bool, String, Duration, SystemTime
+);
+
+impl<UT, T> LiftRef<UT> for Option<T>
+where
+    Option<T>: FfiConverter<UT>,
+{
+    type LiftType = Self;
+}
+
+impl<UT, T> LiftRef<UT> for Vec<T>
+where
+    Vec<T>: FfiConverter<UT>,
+{
+    type LiftType = Self;
+}
+
+impl<UT, K, V> LiftRef<UT> for HashMap<K, V>
+where
+    HashMap<K, V>: FfiConverter<UT>,
+{
+    type LiftType = Self;
 }

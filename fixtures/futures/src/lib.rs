@@ -101,8 +101,9 @@ pub async fn sleep(ms: u16) -> bool {
 }
 
 // Our error.
-#[derive(uniffi::Error, Debug)]
+#[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum MyError {
+    #[error("Foo")]
     Foo,
 }
 
@@ -283,8 +284,9 @@ pub struct SharedResourceOptions {
 }
 
 // Our error.
-#[derive(uniffi::Error, Debug)]
+#[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum AsyncError {
+    #[error("Timeout")]
     Timeout,
 }
 
