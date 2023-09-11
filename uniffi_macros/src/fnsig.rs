@@ -7,7 +7,7 @@ use crate::util::{
 };
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType};
+use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
 
 pub(crate) struct FnSignature {
     pub kind: FnKind,
@@ -269,12 +269,10 @@ impl TryFrom<FnArg> for Arg {
         let kind = match syn_arg {
             FnArg::Typed(p) => match *p.pat {
                 Pat::Ident(i) => {
-                    let ty = *p.ty;
-                    let ty = quote! { #ty };
                     if i.ident == "self" {
                         Ok(ArgKind::Receiver(ReceiverArg))
                     } else {
-                        Ok(ArgKind::Named(NamedArg::new(i.ident, ty)))
+                        Ok(ArgKind::Named(NamedArg::new(i.ident, &p.ty)))
                     }
                 }
                 _ => Err(syn::Error::new_spanned(p, "Argument name missing")),
@@ -294,14 +292,27 @@ pub(crate) struct NamedArg {
     pub(crate) ident: Ident,
     pub(crate) name: String,
     pub(crate) ty: TokenStream,
+    pub(crate) is_ref: bool,
 }
 
 impl NamedArg {
-    pub(crate) fn new(ident: Ident, ty: TokenStream) -> Self {
-        Self {
-            name: ident_to_string(&ident),
-            ident,
-            ty,
+    pub(crate) fn new(ident: Ident, ty: &Type) -> Self {
+        match ty {
+            Type::Reference(r) => {
+                let inner = &r.elem;
+                Self {
+                    name: ident_to_string(&ident),
+                    ident,
+                    ty: quote! { ::std::sync::Arc<#inner> },
+                    is_ref: true,
+                }
+            }
+            _ => Self {
+                name: ident_to_string(&ident),
+                ident,
+                ty: quote! { #ty },
+                is_ref: false,
+            },
         }
     }
 
@@ -336,9 +347,13 @@ impl NamedArg {
         let ident = &self.ident;
         let ffi_converter = self.ffi_converter();
         let panic_fmt = format!("Failed to convert arg '{}': {{}}", self.name);
-        quote! {
+        let lift = quote! {
             #ffi_converter::try_lift(#ident)
                 .unwrap_or_else(|err| ::std::panic!(#panic_fmt, err))
+        };
+        match self.is_ref {
+            false => lift,
+            true => quote! { &*#lift },
         }
     }
 

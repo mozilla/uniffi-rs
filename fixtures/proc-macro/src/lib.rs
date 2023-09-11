@@ -77,6 +77,10 @@ impl Object {
         MaybeBool::Uncertain
     }
 
+    fn is_other_heavy(&self, other: &Self) -> MaybeBool {
+        other.is_heavy()
+    }
+
     fn get_trait(&self, inc: Option<Arc<dyn Trait>>) -> Arc<dyn Trait> {
         inc.unwrap_or_else(|| Arc::new(TraitImpl {}))
     }
@@ -85,6 +89,11 @@ impl Object {
         assert!(matches!(e, BasicError::InvalidInput));
         42
     }
+}
+
+#[uniffi::export]
+fn get_trait_name_by_ref(t: &dyn Trait) -> String {
+    t.name()
 }
 
 #[uniffi::export]
