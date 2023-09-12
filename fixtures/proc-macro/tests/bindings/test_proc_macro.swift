@@ -13,6 +13,13 @@ assert(takeTwo(two: two) == "a")
 var obj = Object()
 obj = Object.namedCtor(arg: 1)
 assert(obj.isHeavy() == .uncertain)
+let obj2 = Object()
+assert(obj.isOtherHeavy(other: obj2) == .uncertain)
+
+let traitImpl = obj.getTrait(inc: nil)
+assert(traitImpl.name() == "TraitImpl")
+assert(obj.getTrait(inc: traitImpl).name() == "TraitImpl")
+assert(getTraitNameByRef(t: traitImpl) == "TraitImpl")
 
 assert(enumIdentity(value: .true) == .true)
 

@@ -20,6 +20,7 @@
 
 - [Custom Types](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-unifficustomtype-derive) are now supported for proc-macros, including a very
   low-friction way of exposing types implementing the new-type idiom.
+- Proc-macros: Added support for ByRef arguments
 
 ### What's Fixed
 

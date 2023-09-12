@@ -13,6 +13,8 @@ assert(takeTwo(two) == "a")
 var obj = Object()
 obj = Object.namedCtor(1u)
 assert(obj.isHeavy() == MaybeBool.UNCERTAIN)
+var obj2 = Object()
+assert(obj.isOtherHeavy(obj2) == MaybeBool.UNCERTAIN)
 
 assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
 
@@ -34,6 +36,11 @@ try {
     throw RuntimeException("doStuff should throw if its argument is 0")
 } catch (e: FlatException) {
 }
+
+val traitImpl = obj.getTrait(null)
+assert(traitImpl.name() == "TraitImpl")
+assert(obj.getTrait(traitImpl).name() == "TraitImpl")
+assert(getTraitNameByRef(traitImpl) == "TraitImpl")
 
 
 class KtTestCallbackInterface : TestCallbackInterface {

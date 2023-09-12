@@ -13,10 +13,13 @@ assert take_two(two) == "a"
 obj = Object()
 obj = Object.named_ctor(1)
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
+obj2 = Object()
+assert obj.is_other_heavy(obj2) == MaybeBool.UNCERTAIN
 
 trait_impl = obj.get_trait(None)
 assert trait_impl.name() == "TraitImpl"
 assert obj.get_trait(trait_impl).name() == "TraitImpl"
+assert get_trait_name_by_ref(trait_impl) == "TraitImpl"
 
 assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 

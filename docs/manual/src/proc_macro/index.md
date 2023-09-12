@@ -186,6 +186,19 @@ impl Foo {
 }
 ```
 
+Exported functions can input object arguments as either an `Arc<>` or reference.
+```rust
+// Input foo as an Arc and bar as a reference
+fn call_both(foo: Arc<Foo>, bar: &Foo) {
+  foo.method_a();
+  bar.method_rba();
+```
+
+There are a couple limitations when using references for arguments:
+  - They can only be used with objects and trait interfaces
+  - The reference must be visible in the function signature.
+    If you have a type alias `type MyFooRef<'a> = &'a Foo`, then `fn do_something(foo: MyFooRef<'_>)` would not work.
+
 ## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 
 There are 2 macros available which allow procmacros to support "custom types" as described in the
