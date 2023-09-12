@@ -1547,6 +1547,22 @@ impl Foo {
 }
 <span class="boring">}
 </span></code></pre></pre>
+<p>Exported functions can input object arguments as either an <code>Arc&lt;&gt;</code> or reference.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Input foo as an Arc and bar as a reference
+fn call_both(foo: Arc&lt;Foo&gt;, bar: &amp;Foo) {
+  foo.method_a();
+  bar.method_rba();
+<span class="boring">}
+</span></code></pre></pre>
+<p>There are a couple limitations when using references for arguments:</p>
+<ul>
+<li>They can only be used with objects and trait interfaces</li>
+<li>The reference must be visible in the function signature.
+If you have a type alias <code>type MyFooRef&lt;'a&gt; = &amp;'a Foo</code>, then <code>fn do_something(foo: MyFooRef&lt;'_&gt;)</code> would not work.</li>
+</ul>
 <h2><a class="header" href="#the-unifficustom_type-and-unifficustom_newtype-macros" id="the-unifficustom_type-and-unifficustom_newtype-macros">The <code>uniffi::custom_type</code> and <code>uniffi::custom_newtype</code> macros</a></h2>
 <p>There are 2 macros available which allow procmacros to support &quot;custom types&quot; as described in the
 <a href="proc_macro/../udl/custom_types.html">UDL documentation for Custom Types</a></p>

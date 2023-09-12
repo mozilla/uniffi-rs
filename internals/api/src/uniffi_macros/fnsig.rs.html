@@ -366,6 +366,21 @@
 <a href="#366" id="366">366</a>
 <a href="#367" id="367">367</a>
 <a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -375,7 +390,7 @@
 };
 <span class="kw">use </span>proc_macro2::{Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType};
+<span class="kw">use </span>syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>FnSignature {
     <span class="kw">pub </span>kind: FnKind,
@@ -637,12 +652,10 @@
         <span class="kw">let </span>kind = <span class="kw">match </span>syn_arg {
             FnArg::Typed(p) =&gt; <span class="kw">match </span><span class="kw-2">*</span>p.pat {
                 Pat::Ident(i) =&gt; {
-                    <span class="kw">let </span>ty = <span class="kw-2">*</span>p.ty;
-                    <span class="kw">let </span>ty = <span class="macro">quote! </span>{ #ty };
                     <span class="kw">if </span>i.ident == <span class="string">&quot;self&quot; </span>{
                         <span class="prelude-val">Ok</span>(ArgKind::Receiver(ReceiverArg))
                     } <span class="kw">else </span>{
-                        <span class="prelude-val">Ok</span>(ArgKind::Named(NamedArg::new(i.ident, ty)))
+                        <span class="prelude-val">Ok</span>(ArgKind::Named(NamedArg::new(i.ident, <span class="kw-2">&amp;</span>p.ty)))
                     }
                 }
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(p, <span class="string">&quot;Argument name missing&quot;</span>)),
@@ -662,14 +675,27 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) ident: Ident,
     <span class="kw">pub</span>(<span class="kw">crate</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">crate</span>) ty: TokenStream,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) is_ref: bool,
 }
 
 <span class="kw">impl </span>NamedArg {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(ident: Ident, ty: TokenStream) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            name: ident_to_string(<span class="kw-2">&amp;</span>ident),
-            ident,
-            ty,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(ident: Ident, ty: <span class="kw-2">&amp;</span>Type) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>ty {
+            Type::Reference(r) =&gt; {
+                <span class="kw">let </span>inner = <span class="kw-2">&amp;</span>r.elem;
+                <span class="self">Self </span>{
+                    name: ident_to_string(<span class="kw-2">&amp;</span>ident),
+                    ident,
+                    ty: <span class="macro">quote! </span>{ ::std::sync::Arc&lt;#inner&gt; },
+                    is_ref: <span class="bool-val">true</span>,
+                }
+            }
+            <span class="kw">_ </span>=&gt; <span class="self">Self </span>{
+                name: ident_to_string(<span class="kw-2">&amp;</span>ident),
+                ident,
+                ty: <span class="macro">quote! </span>{ #ty },
+                is_ref: <span class="bool-val">false</span>,
+            },
         }
     }
 
@@ -704,9 +730,13 @@
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
         <span class="kw">let </span>ffi_converter = <span class="self">self</span>.ffi_converter();
         <span class="kw">let </span>panic_fmt = <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg &#39;{}&#39;: {{}}&quot;</span>, <span class="self">self</span>.name);
-        <span class="macro">quote! </span>{
+        <span class="kw">let </span>lift = <span class="macro">quote! </span>{
             #ffi_converter::try_lift(#ident)
                 .unwrap_or_else(|err| <span class="macro">::std::panic!</span>(#panic_fmt, err))
+        };
+        <span class="kw">match </span><span class="self">self</span>.is_ref {
+            <span class="bool-val">false </span>=&gt; lift,
+            <span class="bool-val">true </span>=&gt; <span class="macro">quote! </span>{ <span class="kw-2">&amp;*</span>#lift },
         }
     }
 
