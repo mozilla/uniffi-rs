@@ -1897,6 +1897,13 @@ JNA 5.7 or greater is required.</p>
     implementation &quot;net.java.dev.jna:jna:5.7.0@aar&quot;
 }
 </code></pre>
+<h2><a class="header" href="#coroutines-dependency" id="coroutines-dependency">Coroutines dependency</a></h2>
+<p>UniFFI relies on <a href="https://github.com/Kotlin/kotlinx.coroutines">kotlinx coroutines core</a> for future and async support. Version 1.6 or greater is required.</p>
+<p>Set the dependency in your <code>build.gradle</code>:</p>
+<pre><code class="language-groovy">dependencies {
+    implementation &quot;org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4&quot;
+}
+</code></pre>
 <h1><a class="header" href="#kotlin-lifetimes" id="kotlin-lifetimes">Kotlin Lifetimes</a></h1>
 <p>All interfaces exposed via Kotlin expose a public API for freeing
 the Kotlin wrapper object in lieu of reliable finalizers. This is done
