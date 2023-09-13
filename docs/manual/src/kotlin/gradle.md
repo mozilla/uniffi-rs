@@ -62,3 +62,17 @@ dependencies {
 ```
 
 [JNA]: https://github.com/java-native-access/jna
+
+## Coroutines dependency
+
+UniFFI relies on [kotlinx coroutines core] for future and async support. Version 1.6 or greater is required.
+
+Set the dependency in your `build.gradle`:
+
+```groovy
+dependencies {
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+}
+```
+
+[kotlinx coroutines core]: https://github.com/Kotlin/kotlinx.coroutines
