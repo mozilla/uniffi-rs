@@ -54,10 +54,19 @@ impl APIConverter<VariantMetadata> for weedle::interface::OperationInterfaceMemb
         }
         let name: String = {
             use weedle::types::{
-                NonAnyType::Identifier, ReturnType, SingleType::NonAny, Type::Single,
+                NonAnyType::{self, Identifier},
+                ReturnType,
+                SingleType::NonAny,
+                Type::Single,
             };
             match &self.return_type {
                 ReturnType::Type(Single(NonAny(Identifier(id)))) => id.type_.0.to_owned(),
+                // Using recognized/parsed types as enum variant names can lead to the bail error because they match
+                // before `Identifier`. `Error` is one that's likely to be common, so we're circumventing what is
+                // likely a parsing issue here. As an example of the issue `Promise` (`Promise(PromiseType<'a>)`) as
+                // a variant matches the `Identifier` arm, but `DataView` (`DataView(MayBeNull<term!(DataView)>)`)
+                // fails.
+                ReturnType::Type(Single(NonAny(NonAnyType::Error(_)))) => "Error".to_string(),
                 _ => bail!("enum interface members must have plain identifiers as names"),
             }
         };
