@@ -131,6 +131,7 @@
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -257,7 +258,8 @@
 
         <span class="comment">// A trait that&#39;s in our crate for our external wrapped types to implement.
         </span><span class="attr">#[allow(unused)]
-        </span><span class="kw">trait </span>UniffiCustomTypeConverter {
+        #[doc(hidden)]
+        </span><span class="kw">pub trait </span>UniffiCustomTypeConverter {
             <span class="kw">type </span>Builtin;
             <span class="kw">fn </span>into_custom(val: <span class="self">Self</span>::Builtin) -&gt; uniffi::Result&lt;<span class="self">Self</span>&gt; <span class="kw">where </span><span class="self">Self</span>: Sized;
             <span class="kw">fn </span>from_custom(obj: <span class="self">Self</span>) -&gt; <span class="self">Self</span>::Builtin;
