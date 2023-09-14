@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import Foundation
+
 import uniffi_proc_macro
 
 let one = makeOne(inner: 123)
@@ -9,6 +11,9 @@ assert(one.inner == 123)
 
 let two = Two(a: "a")
 assert(takeTwo(two: two) == "a")
+
+let rwb = RecordWithBytes(someBytes: Data([1, 2, 3]))
+assert(takeRecordWithBytes(rwb: rwb) == Data([1, 2, 3]))
 
 var obj = Object()
 obj = Object.namedCtor(arg: 1)
@@ -27,6 +32,7 @@ assert(enumIdentity(value: .true) == .true)
 let three = Three(obj: obj)
 
 assert(makeZero().inner == "ZERO")
+assert(makeRecordWithBytes().someBytes == Data([0, 1, 2, 3, 4]))
 
 do {
     try alwaysFails()
@@ -53,6 +59,10 @@ class SwiftTestCallbackInterface : TestCallbackInterface {
 
     func `optional`(a: Optional<UInt32>) -> UInt32 {
         return a ?? 0;
+    }
+
+    func withBytes(rwb: RecordWithBytes) -> Data {
+        return rwb.someBytes
     }
 
     func tryParseInt(value: String) throws -> UInt32 {

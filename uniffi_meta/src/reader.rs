@@ -10,7 +10,7 @@ pub fn read_metadata(data: &[u8]) -> Result<Metadata> {
     MetadataReader::new(data).read_metadata()
 }
 
-// Read a metadat type, this is pub so that we can test it in the metadata fixture
+// Read a metadata type, this is pub so that we can test it in the metadata fixture
 pub fn read_metadata_type(data: &[u8]) -> Result<Type> {
     MetadataReader::new(data).read_type()
 }
@@ -146,9 +146,16 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_OPTION => Type::Optional {
                 inner_type: Box::new(self.read_type()?),
             },
-            codes::TYPE_VEC => Type::Sequence {
-                inner_type: Box::new(self.read_type()?),
-            },
+            codes::TYPE_VEC => {
+                let inner_type = self.read_type()?;
+                if inner_type == Type::UInt8 {
+                    Type::Bytes
+                } else {
+                    Type::Sequence {
+                        inner_type: Box::new(inner_type),
+                    }
+                }
+            }
             codes::TYPE_HASH_MAP => Type::Map {
                 key_type: Box::new(self.read_type()?),
                 value_type: Box::new(self.read_type()?),

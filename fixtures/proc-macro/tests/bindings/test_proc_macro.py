@@ -10,6 +10,9 @@ assert one.inner == 123
 two = Two("a")
 assert take_two(two) == "a"
 
+rwb = RecordWithBytes(bytes([1,2,3]))
+assert take_record_with_bytes(rwb) == bytes([1,2,3])
+
 obj = Object()
 obj = Object.named_ctor(1)
 assert obj.is_heavy() == MaybeBool.UNCERTAIN
@@ -27,6 +30,7 @@ assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 three = Three(obj)
 
 assert(make_zero().inner == "ZERO")
+assert(make_record_with_bytes().some_bytes == bytes([0, 1, 2, 3, 4]))
 
 try:
     always_fails()
@@ -55,6 +59,9 @@ class PyTestCallbackInterface(TestCallbackInterface):
         if a is None:
             return 0
         return a
+
+    def with_bytes(self, rwb):
+        return rwb.some_bytes
 
     def try_parse_int(self, value):
         if value == "force-unexpected-error":

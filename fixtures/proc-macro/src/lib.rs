@@ -31,6 +31,11 @@ pub struct Three {
     obj: Arc<Object>,
 }
 
+#[derive(uniffi::Record, Debug, PartialEq)]
+pub struct RecordWithBytes {
+    some_bytes: Vec<u8>,
+}
+
 // An object that's not used anywhere (ie, in records, function signatures, etc)
 // should not break things.
 #[derive(uniffi::Object)]
@@ -107,11 +112,22 @@ fn take_two(two: Two) -> String {
 }
 
 #[uniffi::export]
+fn take_record_with_bytes(rwb: RecordWithBytes) -> Vec<u8> {
+    rwb.some_bytes
+}
+
+#[uniffi::export]
 fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
     cb.do_nothing();
     assert_eq!(cb.add(1, 1), 2);
     assert_eq!(cb.optional(Some(1)), 1);
     assert_eq!(cb.optional(None), 0);
+    assert_eq!(
+        cb.with_bytes(RecordWithBytes {
+            some_bytes: vec![9, 8, 7],
+        }),
+        vec![9, 8, 7]
+    );
     assert_eq!(Ok(10), cb.try_parse_int("10".to_string()));
     assert_eq!(
         Err(BasicError::InvalidInput),
@@ -133,6 +149,13 @@ pub struct Zero {
 fn make_zero() -> Zero {
     Zero {
         inner: String::from("ZERO"),
+    }
+}
+
+#[uniffi::export]
+fn make_record_with_bytes() -> RecordWithBytes {
+    RecordWithBytes {
+        some_bytes: vec![0, 1, 2, 3, 4],
     }
 }
 
