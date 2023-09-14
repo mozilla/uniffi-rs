@@ -249,9 +249,28 @@ pub trait Callable {
         }
     }
 
-    /// Quick way to get the rust_future_complete function that corresponds to our return type.
+    // Quick way to get the rust future scaffolding function that corresponds to our return type.
+
+    fn ffi_rust_future_poll(&self, ci: &ComponentInterface) -> String {
+        ci.ffi_rust_future_poll(self.return_type().map(Into::into))
+            .name()
+            .to_owned()
+    }
+
+    fn ffi_rust_future_cancel(&self, ci: &ComponentInterface) -> String {
+        ci.ffi_rust_future_cancel(self.return_type().map(Into::into))
+            .name()
+            .to_owned()
+    }
+
     fn ffi_rust_future_complete(&self, ci: &ComponentInterface) -> String {
         ci.ffi_rust_future_complete(self.return_type().map(Into::into))
+            .name()
+            .to_owned()
+    }
+
+    fn ffi_rust_future_free(&self, ci: &ComponentInterface) -> String {
+        ci.ffi_rust_future_free(self.return_type().map(Into::into))
             .name()
             .to_owned()
     }

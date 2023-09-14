@@ -18,14 +18,16 @@ internal object uniffiRustFutureContinuationCallback: UniFffiRustFutureContinuat
 
 internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
     rustFuture: Pointer,
+    pollFunc: (Pointer, USize) -> Unit,
     completeFunc: (Pointer, RustCallStatus) -> F,
+    freeFunc: (Pointer) -> Unit,
     liftFunc: (F) -> T,
     errorHandler: CallStatusErrorHandler<E>
 ): T {
     try {
         do {
             val pollResult = suspendCancellableCoroutine<Short> { continuation ->
-                _UniFFILib.INSTANCE.{{ ci.ffi_rust_future_poll().name() }}(
+                pollFunc(
                     rustFuture,
                     uniffiContinuationHandleMap.insert(continuation)
                 )
@@ -36,7 +38,7 @@ internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
             rustCallWithError(errorHandler, { status -> completeFunc(rustFuture, status) })
         )
     } finally {
-        _UniFFILib.INSTANCE.{{ ci.ffi_rust_future_free().name() }}(rustFuture)
+        freeFunc(rustFuture)
     }
 }
 

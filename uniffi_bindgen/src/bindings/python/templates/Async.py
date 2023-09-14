@@ -16,14 +16,14 @@ def _uniffi_set_future_result(future, poll_code):
     if not future.cancelled():
         future.set_result(poll_code)
 
-async def _uniffi_rust_call_async(rust_future, ffi_complete, lift_func, error_ffi_converter):
+async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free, lift_func, error_ffi_converter):
     try:
         eventloop = asyncio.get_running_loop()
 
         # Loop and poll until we see a _UNIFFI_RUST_FUTURE_POLL_READY value
         while True:
             future = eventloop.create_future()
-            _UniffiLib.{{ ci.ffi_rust_future_poll().name() }}(
+            ffi_poll(
                 rust_future,
                 _UniffiContinuationPointerManager.new_pointer((eventloop, future)),
             )
@@ -35,6 +35,6 @@ async def _uniffi_rust_call_async(rust_future, ffi_complete, lift_func, error_ff
             _rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
         )
     finally:
-        _UniffiLib.{{ ci.ffi_rust_future_free().name() }}(rust_future)
+        ffi_free(rust_future)
 
 _UniffiLib.{{ ci.ffi_rust_future_continuation_callback_set().name() }}(_uniffi_continuation_callback)

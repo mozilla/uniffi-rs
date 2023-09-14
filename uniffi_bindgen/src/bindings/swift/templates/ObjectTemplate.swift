@@ -53,7 +53,10 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
                     {%- endfor %}
                 )
             },
+            pollFunc: {{ meth.ffi_rust_future_poll(ci) }},
+            cancelFunc: {{ meth.ffi_rust_future_cancel(ci) }},
             completeFunc: {{ meth.ffi_rust_future_complete(ci) }},
+            freeFunc: {{ meth.ffi_rust_future_free(ci) }},
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
             liftFunc: {{ return_type|lift_fn }},

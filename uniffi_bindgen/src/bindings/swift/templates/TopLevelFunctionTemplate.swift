@@ -9,7 +9,10 @@ public func {{ func.name()|fn_name }}({%- call swift::arg_list_decl(func) -%}) a
                 {%- endfor %}
             )
         },
+        pollFunc: {{ func.ffi_rust_future_poll(ci) }},
+        cancelFunc: {{ func.ffi_rust_future_cancel(ci) }},
         completeFunc: {{ func.ffi_rust_future_complete(ci) }},
+        freeFunc: {{ func.ffi_rust_future_free(ci) }},
         {%- match func.return_type() %}
         {%- when Some(return_type) %}
         liftFunc: {{ return_type|lift_fn }},

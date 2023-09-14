@@ -24,10 +24,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         format_ident!("ffi_{module_path}_foreign_executor_callback_set");
     let ffi_rust_future_continuation_callback_set =
         format_ident!("ffi_{module_path}_rust_future_continuation_callback_set");
-    let ffi_rust_future_poll = format_ident!("ffi_{module_path}_rust_future_poll");
-    let ffi_rust_future_cancel = format_ident!("ffi_{module_path}_rust_future_cancel");
-    let ffi_rust_future_free = format_ident!("ffi_{module_path}_rust_future_free");
-    let ffi_rust_future_complete_fns = rust_future_complete_fns(&module_path);
+    let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&module_path);
 
     Ok(quote! {
         // Unit struct to parameterize the FfiConverter trait.
@@ -106,28 +103,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             ::uniffi::ffi::rust_future_continuation_callback_set(callback);
         }
 
-        #[allow(clippy::missing_safety_doc, missing_docs)]
-        #[doc(hidden)]
-        #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, data: *const ()) {
-            ::uniffi::ffi::rust_future_poll(handle, data);
-        }
-
-        #[allow(clippy::missing_safety_doc, missing_docs)]
-        #[doc(hidden)]
-        #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rust_future_cancel(handle: ::uniffi::RustFutureHandle) {
-            ::uniffi::ffi::rust_future_cancel(handle)
-        }
-
-        #ffi_rust_future_complete_fns
-
-        #[allow(clippy::missing_safety_doc, missing_docs)]
-        #[doc(hidden)]
-        #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rust_future_free(handle: ::uniffi::RustFutureHandle) {
-            ::uniffi::ffi::rust_future_free(handle)
-        }
+        #ffi_rust_future_scaffolding_fns
 
         // Code to re-export the UniFFI scaffolding functions.
         //
@@ -169,88 +145,73 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     })
 }
 
-/// Generates the rust_future_complete functions
+/// Generates the rust_future_* functions
 ///
 /// The foreign side uses a type-erased `RustFutureHandle` to interact with futures, which presents
-/// a problem when completing them.  What type does the future output?
+/// a problem when creating scaffolding functions.  What is the `ReturnType` parameter of `RustFutureFfi`?
 ///
 /// Handle this by using some brute-force monomorphization.  For each possible ffi type, we
-/// generate a rust_future_complete function.  The bindings code is responsible for calling the one
+/// generate a set of scaffolding functions.  The bindings code is responsible for calling the one
 /// corresponds the scaffolding function that created the `RustFutureHandle`.
 ///
 /// This introduces safety issues, but we do get some type checking.  If the bindings code calls
 /// the wrong rust_future_complete function, they should get an unexpected return type, which
 /// hopefully will result in a compile-time error.
-fn rust_future_complete_fns(module_path: &str) -> TokenStream {
+fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
     let fn_info = [
-        (
-            quote! { u8 },
-            format_ident!("ffi_{module_path}_rust_future_complete_u8"),
-        ),
-        (
-            quote! { i8 },
-            format_ident!("ffi_{module_path}_rust_future_complete_i8"),
-        ),
-        (
-            quote! { u16 },
-            format_ident!("ffi_{module_path}_rust_future_complete_u16"),
-        ),
-        (
-            quote! { i16 },
-            format_ident!("ffi_{module_path}_rust_future_complete_i16"),
-        ),
-        (
-            quote! { u32 },
-            format_ident!("ffi_{module_path}_rust_future_complete_u32"),
-        ),
-        (
-            quote! { i32 },
-            format_ident!("ffi_{module_path}_rust_future_complete_i32"),
-        ),
-        (
-            quote! { u64 },
-            format_ident!("ffi_{module_path}_rust_future_complete_u64"),
-        ),
-        (
-            quote! { i64 },
-            format_ident!("ffi_{module_path}_rust_future_complete_i64"),
-        ),
-        (
-            quote! { f32 },
-            format_ident!("ffi_{module_path}_rust_future_complete_f32"),
-        ),
-        (
-            quote! { f64 },
-            format_ident!("ffi_{module_path}_rust_future_complete_f64"),
-        ),
-        (
-            quote! { *const ::std::ffi::c_void },
-            format_ident!("ffi_{module_path}_rust_future_complete_pointer"),
-        ),
-        (
-            quote! { ::uniffi::RustBuffer },
-            format_ident!("ffi_{module_path}_rust_future_complete_rust_buffer"),
-        ),
-        (
-            quote! { () },
-            format_ident!("ffi_{module_path}_rust_future_complete_void"),
-        ),
+        (quote! { u8 }, "u8"),
+        (quote! { i8 }, "i8"),
+        (quote! { u16 }, "u16"),
+        (quote! { i16 }, "i16"),
+        (quote! { u32 }, "u32"),
+        (quote! { i32 }, "i32"),
+        (quote! { u64 }, "u64"),
+        (quote! { i64 }, "i64"),
+        (quote! { f32 }, "f32"),
+        (quote! { f64 }, "f64"),
+        (quote! { *const ::std::ffi::c_void }, "pointer"),
+        (quote! { ::uniffi::RustBuffer }, "rust_buffer"),
+        (quote! { () }, "void"),
     ];
+    fn_info.iter()
+    .map(|(return_type, fn_suffix)| {
+        let ffi_rust_future_poll = format_ident!("ffi_{module_path}_rust_future_poll_{fn_suffix}");
+        let ffi_rust_future_cancel = format_ident!("ffi_{module_path}_rust_future_cancel_{fn_suffix}");
+        let ffi_rust_future_complete = format_ident!("ffi_{module_path}_rust_future_complete_{fn_suffix}");
+        let ffi_rust_future_free = format_ident!("ffi_{module_path}_rust_future_free_{fn_suffix}");
 
-    let types = fn_info.iter().map(|i| &i.0);
-    let names = fn_info.iter().map(|i| &i.1);
-
-    quote! {
-        #(
+        quote! {
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #names(
+            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, data: *const ()) {
+                ::uniffi::ffi::rust_future_poll::<#return_type>(handle, data);
+            }
+
+            #[allow(clippy::missing_safety_doc, missing_docs)]
+            #[doc(hidden)]
+            #[no_mangle]
+            pub unsafe extern "C" fn #ffi_rust_future_cancel(handle: ::uniffi::RustFutureHandle) {
+                ::uniffi::ffi::rust_future_cancel::<#return_type>(handle)
+            }
+
+            #[allow(clippy::missing_safety_doc, missing_docs)]
+            #[doc(hidden)]
+            #[no_mangle]
+            pub unsafe extern "C" fn #ffi_rust_future_complete(
                 handle: ::uniffi::RustFutureHandle,
                 out_status: &mut ::uniffi::RustCallStatus
-            ) -> #types {
-                ::uniffi::ffi::rust_future_complete(handle, out_status)
+            ) -> #return_type {
+                ::uniffi::ffi::rust_future_complete::<#return_type>(handle, out_status)
             }
-        )*
-    }
+
+            #[allow(clippy::missing_safety_doc, missing_docs)]
+            #[doc(hidden)]
+            #[no_mangle]
+            pub unsafe extern "C" fn #ffi_rust_future_free(handle: ::uniffi::RustFutureHandle) {
+                ::uniffi::ffi::rust_future_free::<#return_type>(handle)
+            }
+        }
+    })
+    .collect()
 }

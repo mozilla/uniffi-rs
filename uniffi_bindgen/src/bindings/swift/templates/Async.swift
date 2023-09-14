@@ -3,7 +3,10 @@ private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
 internal func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UnsafeMutableRawPointer,
+    pollFunc: (UnsafeMutableRawPointer, UnsafeMutableRawPointer) -> (),
+    cancelFunc: (UnsafeMutableRawPointer) -> (),
     completeFunc: (UnsafeMutableRawPointer, UnsafeMutablePointer<RustCallStatus>) -> F,
+    freeFunc: (UnsafeMutableRawPointer) -> (),
     liftFunc: (F) throws -> T,
     errorHandler: ((RustBuffer) throws -> Error)?
 ) async throws -> T {
@@ -12,20 +15,17 @@ internal func uniffiRustCallAsync<F, T>(
     uniffiEnsureInitialized()
     let rustFuture = rustFutureFunc()
     defer {
-        {{ ci.ffi_rust_future_free().name() }}(rustFuture)
+        freeFunc(rustFuture)
     }
     await withTaskCancellationHandler {
         var pollResult: Int8;
         repeat {
             pollResult = await withUnsafeContinuation {
-                {{ ci.ffi_rust_future_poll().name() }}(
-                    rustFuture,
-                    ContinuationHolder($0).toOpaque()
-                )
+                pollFunc(rustFuture, ContinuationHolder($0).toOpaque())
             }
         } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
     } onCancel: {
-        {{ ci.ffi_rust_future_cancel().name() }}(rustFuture)
+        cancelFunc(rustFuture)
     }
 
     return try liftFunc(makeRustCall(

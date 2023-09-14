@@ -447,9 +447,9 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function to poll a Rust future.
-    pub fn ffi_rust_future_poll(&self) -> FfiFunction {
+    pub fn ffi_rust_future_poll(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
-            name: format!("ffi_{}_rust_future_poll", self.ffi_namespace()),
+            name: self.rust_future_ffi_fn_name("rust_future_poll", return_ffi_type),
             is_async: false,
             arguments: vec![
                 FfiArgument {
@@ -472,35 +472,8 @@ impl ComponentInterface {
     ///
     /// We generate one of these for each FFI return type.
     pub fn ffi_rust_future_complete(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
-        let name = match &return_ffi_type {
-            Some(t) => match t {
-                FfiType::UInt8 => format!("ffi_{}_rust_future_complete_u8", self.ffi_namespace()),
-                FfiType::Int8 => format!("ffi_{}_rust_future_complete_i8", self.ffi_namespace()),
-                FfiType::UInt16 => format!("ffi_{}_rust_future_complete_u16", self.ffi_namespace()),
-                FfiType::Int16 => format!("ffi_{}_rust_future_complete_i16", self.ffi_namespace()),
-                FfiType::UInt32 => format!("ffi_{}_rust_future_complete_u32", self.ffi_namespace()),
-                FfiType::Int32 => format!("ffi_{}_rust_future_complete_i32", self.ffi_namespace()),
-                FfiType::UInt64 => format!("ffi_{}_rust_future_complete_u64", self.ffi_namespace()),
-                FfiType::Int64 => format!("ffi_{}_rust_future_complete_i64", self.ffi_namespace()),
-                FfiType::Float32 => {
-                    format!("ffi_{}_rust_future_complete_f32", self.ffi_namespace())
-                }
-                FfiType::Float64 => {
-                    format!("ffi_{}_rust_future_complete_f64", self.ffi_namespace())
-                }
-                FfiType::RustArcPtr(_) => {
-                    format!("ffi_{}_rust_future_complete_pointer", self.ffi_namespace())
-                }
-                FfiType::RustBuffer(_) => format!(
-                    "ffi_{}_rust_future_complete_rust_buffer",
-                    self.ffi_namespace()
-                ),
-                _ => unimplemented!("Async functions for {t:?}"),
-            },
-            None => format!("ffi_{}_rust_future_complete_void", self.ffi_namespace()),
-        };
         FfiFunction {
-            name,
+            name: self.rust_future_ffi_fn_name("rust_future_complete", return_ffi_type.clone()),
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
@@ -513,9 +486,9 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function for cancelling a Rust Future
-    pub fn ffi_rust_future_cancel(&self) -> FfiFunction {
+    pub fn ffi_rust_future_cancel(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
-            name: format!("ffi_{}_rust_future_cancel", self.ffi_namespace()),
+            name: self.rust_future_ffi_fn_name("rust_future_cancel", return_ffi_type),
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
@@ -528,9 +501,9 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function for freeing a Rust Future
-    pub fn ffi_rust_future_free(&self) -> FfiFunction {
+    pub fn ffi_rust_future_free(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
-            name: format!("ffi_{}_rust_future_free", self.ffi_namespace()),
+            name: self.rust_future_ffi_fn_name("rust_future_free", return_ffi_type),
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
@@ -539,6 +512,28 @@ impl ComponentInterface {
             return_type: None,
             has_rust_call_status_arg: false,
             is_object_free_function: false,
+        }
+    }
+
+    fn rust_future_ffi_fn_name(&self, base_name: &str, return_ffi_type: Option<FfiType>) -> String {
+        let namespace = self.ffi_namespace();
+        match return_ffi_type {
+            Some(t) => match t {
+                FfiType::UInt8 => format!("ffi_{namespace}_{base_name}_u8"),
+                FfiType::Int8 => format!("ffi_{namespace}_{base_name}_i8"),
+                FfiType::UInt16 => format!("ffi_{namespace}_{base_name}_u16"),
+                FfiType::Int16 => format!("ffi_{namespace}_{base_name}_i16"),
+                FfiType::UInt32 => format!("ffi_{namespace}_{base_name}_u32"),
+                FfiType::Int32 => format!("ffi_{namespace}_{base_name}_i32"),
+                FfiType::UInt64 => format!("ffi_{namespace}_{base_name}_u64"),
+                FfiType::Int64 => format!("ffi_{namespace}_{base_name}_i64"),
+                FfiType::Float32 => format!("ffi_{namespace}_{base_name}_f32"),
+                FfiType::Float64 => format!("ffi_{namespace}_{base_name}_f64"),
+                FfiType::RustArcPtr(_) => format!("ffi_{namespace}_{base_name}_pointer"),
+                FfiType::RustBuffer(_) => format!("ffi_{namespace}_{base_name}_rust_buffer"),
+                _ => unimplemented!("FFI return type: {t:?}"),
+            },
+            None => format!("ffi_{namespace}_{base_name}_void"),
         }
     }
 
@@ -623,29 +618,37 @@ impl ComponentInterface {
     }
 
     /// List all FFI functions definitions for async functionality.
-    pub fn iter_futures_ffi_function_definitons(&self) -> impl Iterator<Item = FfiFunction> {
-        [
-            self.ffi_rust_future_continuation_callback_set(),
-            self.ffi_rust_future_poll(),
-            self.ffi_rust_future_cancel(),
-            self.ffi_rust_future_free(),
-            self.ffi_rust_future_complete(Some(FfiType::UInt8)),
-            self.ffi_rust_future_complete(Some(FfiType::Int8)),
-            self.ffi_rust_future_complete(Some(FfiType::UInt16)),
-            self.ffi_rust_future_complete(Some(FfiType::Int16)),
-            self.ffi_rust_future_complete(Some(FfiType::UInt32)),
-            self.ffi_rust_future_complete(Some(FfiType::Int32)),
-            self.ffi_rust_future_complete(Some(FfiType::UInt64)),
-            self.ffi_rust_future_complete(Some(FfiType::Int64)),
-            self.ffi_rust_future_complete(Some(FfiType::Float32)),
-            self.ffi_rust_future_complete(Some(FfiType::Float64)),
+    pub fn iter_futures_ffi_function_definitons(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+        let all_possible_return_ffi_types = [
+            Some(FfiType::UInt8),
+            Some(FfiType::Int8),
+            Some(FfiType::UInt16),
+            Some(FfiType::Int16),
+            Some(FfiType::UInt32),
+            Some(FfiType::Int32),
+            Some(FfiType::UInt64),
+            Some(FfiType::Int64),
+            Some(FfiType::Float32),
+            Some(FfiType::Float64),
             // RustBuffer and RustArcPtr have an inner field which doesn't affect the rust future
             // complete scaffolding function, so we just use a placeholder value here.
-            self.ffi_rust_future_complete(Some(FfiType::RustArcPtr("".to_owned()))),
-            self.ffi_rust_future_complete(Some(FfiType::RustBuffer(None))),
-            self.ffi_rust_future_complete(None),
-        ]
-        .into_iter()
+            Some(FfiType::RustArcPtr("".to_owned())),
+            Some(FfiType::RustBuffer(None)),
+            None,
+        ];
+
+        iter::once(self.ffi_rust_future_continuation_callback_set()).chain(
+            all_possible_return_ffi_types
+                .into_iter()
+                .flat_map(|return_type| {
+                    [
+                        self.ffi_rust_future_poll(return_type.clone()),
+                        self.ffi_rust_future_cancel(return_type.clone()),
+                        self.ffi_rust_future_free(return_type.clone()),
+                        self.ffi_rust_future_complete(return_type),
+                    ]
+                }),
+        )
     }
 
     /// The ffi_foreign_executor_callback_set FFI function

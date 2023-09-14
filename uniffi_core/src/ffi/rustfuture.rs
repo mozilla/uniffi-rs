@@ -138,7 +138,7 @@ where
 {
     // Create a RustFuture and coerce to `Arc<dyn RustFutureFfi>`, which is what we use to
     // implement the FFI
-    let future_ffi = RustFuture::new(future, tag) as Arc<dyn RustFutureFfi>;
+    let future_ffi = RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>;
     // Box the Arc, to convert the wide pointer into a normal sized pointer so that we can pass it
     // to the foreign code.
     let boxed_ffi = Box::new(future_ffi);
@@ -155,8 +155,8 @@ where
 /// # Safety
 ///
 /// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_poll(handle: RustFutureHandle, data: *const ()) {
-    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi>);
+pub unsafe fn rust_future_poll<ReturnType>(handle: RustFutureHandle, data: *const ()) {
+    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
     future.clone().ffi_poll(data)
 }
 
@@ -170,8 +170,8 @@ pub unsafe fn rust_future_poll(handle: RustFutureHandle, data: *const ()) {
 /// # Safety
 ///
 /// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_cancel(handle: RustFutureHandle) {
-    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi>);
+pub unsafe fn rust_future_cancel<ReturnType>(handle: RustFutureHandle) {
+    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
     future.clone().ffi_cancel()
 }
 
@@ -185,15 +185,12 @@ pub unsafe fn rust_future_cancel(handle: RustFutureHandle) {
 /// - The [RustFutureHandle] must not previously have been passed to [rust_future_free]
 /// - The `T` param must correctly correspond to the [rust_future_new] call.  It must
 ///   be `<Output as FfiConverter<UT>>::ReturnType`
-pub unsafe fn rust_future_complete<T: FfiDefault>(
+pub unsafe fn rust_future_complete<ReturnType>(
     handle: RustFutureHandle,
     out_status: &mut RustCallStatus,
-) -> T {
-    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi>);
-    let mut return_value = T::ffi_default();
-    let out_return = mem::transmute::<&mut T, &mut ()>(&mut return_value);
-    future.ffi_complete(out_return, out_status);
-    return_value
+) -> ReturnType {
+    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
+    future.ffi_complete(out_status)
 }
 
 /// Free a Rust future, dropping the strong reference and releasing all references held by the
@@ -202,8 +199,8 @@ pub unsafe fn rust_future_complete<T: FfiDefault>(
 /// # Safety
 ///
 /// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_free(handle: RustFutureHandle) {
-    let future = Box::from_raw(handle.0 as *mut Arc<dyn RustFutureFfi>);
+pub unsafe fn rust_future_free<ReturnType>(handle: RustFutureHandle) {
+    let future = Box::from_raw(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
     future.ffi_free()
 }
 
@@ -343,13 +340,15 @@ where
         }
     }
 
-    fn complete(&mut self, out_return: &mut T::ReturnType, out_status: &mut RustCallStatus) {
+    fn complete(&mut self, out_status: &mut RustCallStatus) -> T::ReturnType {
+        let mut return_value = T::ReturnType::ffi_default();
         match self.result.take() {
-            Some(Ok(v)) => *out_return = v,
+            Some(Ok(v)) => return_value = v,
             Some(Err(call_status)) => *out_status = call_status,
             None => *out_status = RustCallStatus::cancelled(),
         }
         self.free();
+        return_value
     }
 
     fn free(&mut self) {
@@ -428,11 +427,8 @@ where
         self.continuation_data.lock().unwrap().cancel();
     }
 
-    fn complete(&self, return_value: &mut T::ReturnType, call_status: &mut RustCallStatus) {
-        self.future
-            .lock()
-            .unwrap()
-            .complete(return_value, call_status)
+    fn complete(&self, call_status: &mut RustCallStatus) -> T::ReturnType {
+        self.future.lock().unwrap().complete(call_status)
     }
 
     fn free(self: Arc<Self>) {
@@ -459,19 +455,26 @@ where
     }
 }
 
-/// RustFuture FFI trait.  This allows `Arc<RustFuture<_, _, _>>` to be cast to
-/// `Arc<dyn RustFutureFfi>`, which is needed to implement the public FFI API.  In particular, this
+/// RustFuture FFI trait.  This allows `Arc<RustFuture<F, T, UT>>` to be cast to
+/// `Arc<dyn RustFutureFfi<T::ReturnType>>`, which is needed to implement the public FFI API.  In particular, this
 /// allows you to use RustFuture functionality without knowing the concrete Future type, which is
 /// unnamable.
+///
+/// This is parametrized on the ReturnType rather than the `T` directly, to reduce the number of
+/// scaffolding functions we need to generate.  If it was parametrized on `T`, then we would need
+/// to create a poll, cancel, complete, and free scaffolding function for each exported async
+/// function.  That would add ~1kb binary size per exported function based on a quick estimate on a
+/// x86-64 machine . By parametrizing on `T::ReturnType` we can instead monomorphize by hand and
+/// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
-trait RustFutureFfi {
+trait RustFutureFfi<ReturnType> {
     fn ffi_poll(self: Arc<Self>, data: *const ());
     fn ffi_cancel(&self);
-    unsafe fn ffi_complete(&self, out_return: &mut (), call_status: &mut RustCallStatus);
+    fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;
     fn ffi_free(self: Arc<Self>);
 }
 
-impl<F, T, UT> RustFutureFfi for RustFuture<F, T, UT>
+impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
@@ -486,11 +489,8 @@ where
         self.cancel()
     }
 
-    unsafe fn ffi_complete(&self, out_return: &mut (), call_status: &mut RustCallStatus) {
-        // Unsafely transmute out_return.  This works as long as the foreign code calls the
-        // correct `rust_future_complete_*` function.
-        let out_return = std::mem::transmute::<&mut (), &mut T::ReturnType>(out_return);
-        self.complete(out_return, call_status)
+    fn ffi_complete(&self, call_status: &mut RustCallStatus) -> T::ReturnType {
+        self.complete(call_status)
     }
 
     fn ffi_free(self: Arc<Self>) {
@@ -553,7 +553,7 @@ mod tests {
     }
 
     // Create a sender and rust future that we can use for testing
-    fn channel() -> (Sender, Arc<dyn RustFutureFfi>) {
+    fn channel() -> (Sender, Arc<dyn RustFutureFfi<RustBuffer>>) {
         let channel = Arc::new(Mutex::new(Channel {
             result: None,
             waker: None,
@@ -563,7 +563,7 @@ mod tests {
     }
 
     /// Poll a Rust future and get an OnceCell that's set when the continuation is called
-    fn poll(rust_future: &Arc<dyn RustFutureFfi>) -> OnceCell<RustFuturePoll> {
+    fn poll(rust_future: &Arc<dyn RustFutureFfi<RustBuffer>>) -> OnceCell<RustFuturePoll> {
         let cell = OnceCell::new();
         let cell_ptr = &cell as *const OnceCell<RustFuturePoll> as *const ();
         rust_future.clone().ffi_poll(cell_ptr);
@@ -579,16 +579,10 @@ mod tests {
         cell.set(code).expect("Error setting OnceCell");
     }
 
-    fn complete(rust_future: Arc<dyn RustFutureFfi>) -> (RustBuffer, RustCallStatus) {
-        let mut out_return = RustBuffer::new();
+    fn complete(rust_future: Arc<dyn RustFutureFfi<RustBuffer>>) -> (RustBuffer, RustCallStatus) {
         let mut out_status_code = RustCallStatus::default();
-        unsafe {
-            rust_future.ffi_complete(
-                std::mem::transmute::<_, &mut ()>(&mut out_return),
-                &mut out_status_code,
-            );
-        }
-        (out_return, out_status_code)
+        let return_value = rust_future.ffi_complete(&mut out_status_code);
+        (return_value, out_status_code)
     }
 
     #[test]

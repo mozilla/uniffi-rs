@@ -106,7 +106,9 @@ _rust_call(
             _UniffiLib.{{ meth.ffi_func().name() }}(
                 self._pointer, {% call arg_list_lowered(meth) %}
             ),
+            _UniffiLib.{{ meth.ffi_rust_future_poll(ci) }},
             _UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
+            _UniffiLib.{{ meth.ffi_rust_future_free(ci) }},
             # lift function
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
