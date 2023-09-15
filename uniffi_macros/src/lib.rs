@@ -270,29 +270,13 @@ pub fn scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -> Toke
 /// the generated `my_component_name.uniffi.rs` (which it assumes has
 /// been successfully built by your crate's `build.rs` script).
 #[proc_macro]
-pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
-    let name = syn::parse_macro_input!(component_name as LitStr);
+pub fn include_scaffolding(udl_stem: TokenStream) -> TokenStream {
+    let udl_stem = syn::parse_macro_input!(udl_stem as LitStr);
     if std::env::var("OUT_DIR").is_err() {
         quote! {
             compile_error!("This macro assumes the crate has a build.rs script, but $OUT_DIR is not present");
         }
     } else {
-        let udl_name = name.value();
-        let mod_path = match util::mod_path() {
-            Ok(v) => quote! { #v },
-            Err(e) => e.into_compile_error()
-        };
-        let metadata = util::create_metadata_items(
-            "UDL",
-            &udl_name.replace('-', "_").to_ascii_uppercase(),
-            quote! {
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::UDL_FILE)
-                        .concat_str(#mod_path)
-                        .concat_str(#udl_name)
-            },
-            None,
-        );
-
         let toml_path = match util::manifest_path() {
             Ok(path) => path.display().to_string(),
             Err(_) => {
@@ -303,8 +287,6 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
         };
 
         quote! {
-            #metadata
-
             // FIXME(HACK):
             // Include the `Cargo.toml` file into the build.
             // That way cargo tracks the file and other tools relying on file
@@ -317,7 +299,7 @@ pub fn include_scaffolding(component_name: TokenStream) -> TokenStream {
                 const _: &[u8] = include_bytes!(#toml_path);
             }
 
-            include!(concat!(env!("OUT_DIR"), "/", #name, ".uniffi.rs"));
+            include!(concat!(env!("OUT_DIR"), "/", #udl_stem, ".uniffi.rs"));
         }
     }.into()
 }

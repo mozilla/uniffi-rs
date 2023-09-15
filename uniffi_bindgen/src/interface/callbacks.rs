@@ -13,7 +13,7 @@
 //! callback interface Example {
 //!   string hello();
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -26,7 +26,7 @@
 //! # callback interface Example {
 //! #  string hello();
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let callback = ci.get_callback_interface_definition("Example").unwrap();
 //! assert_eq!(callback.name(), "Example");
 //! assert_eq!(callback.methods()[0].name(), "hello");
@@ -55,10 +55,10 @@ pub struct CallbackInterface {
 }
 
 impl CallbackInterface {
-    pub fn new(name: String) -> CallbackInterface {
+    pub fn new(name: String, module_path: String) -> CallbackInterface {
         CallbackInterface {
             name,
-            module_path: Default::default(),
+            module_path,
             methods: Default::default(),
             ffi_init_callback: Default::default(),
         }
@@ -76,9 +76,9 @@ impl CallbackInterface {
         &self.ffi_init_callback
     }
 
-    pub(super) fn derive_ffi_funcs(&mut self, ci_namespace: &str) {
+    pub(super) fn derive_ffi_funcs(&mut self) {
         self.ffi_init_callback.name =
-            uniffi_meta::init_callback_fn_symbol_name(ci_namespace, &self.name);
+            uniffi_meta::init_callback_fn_symbol_name(&self.module_path, &self.name);
         self.ffi_init_callback.arguments = vec![FfiArgument {
             name: "callback_stub".to_string(),
             type_: FfiType::ForeignCallback,
@@ -111,7 +111,7 @@ mod test {
             // Weird, but allowed.
             callback interface Testing {};
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.callback_interface_definitions().len(), 1);
         assert_eq!(
             ci.get_callback_interface_definition("Testing")
@@ -134,7 +134,7 @@ mod test {
                 u64 too();
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.callback_interface_definitions().len(), 2);
 
         let callbacks_one = ci.get_callback_interface_definition("One").unwrap();

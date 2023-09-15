@@ -74,12 +74,16 @@ mod tests {
     #[test]
     fn test_symbols_present() {
         let library = load_library();
-        let coveralls_ci =
-            ComponentInterface::from_webidl(include_str!("../../coverall/src/coverall.udl"))
-                .unwrap();
-        let callbacks_ci =
-            ComponentInterface::from_webidl(include_str!("../../callbacks/src/callbacks.udl"))
-                .unwrap();
+        let coveralls_ci = ComponentInterface::from_webidl(
+            include_str!("../../coverall/src/coverall.udl"),
+            "uniffi_coverall",
+        )
+        .unwrap();
+        let callbacks_ci = ComponentInterface::from_webidl(
+            include_str!("../../callbacks/src/callbacks.udl"),
+            "uniffi_fixture_callbacks",
+        )
+        .unwrap();
 
         // UniFFI internal function
         assert!(has_symbol::<
@@ -130,9 +134,11 @@ mod tests {
     fn test_calls() {
         let mut call_status = RustCallStatus::default();
         let library = load_library();
-        let coveralls_ci =
-            ComponentInterface::from_webidl(include_str!("../../coverall/src/coverall.udl"))
-                .unwrap();
+        let coveralls_ci = ComponentInterface::from_webidl(
+            include_str!("../../coverall/src/coverall.udl"),
+            "uniffi_coverall",
+        )
+        .unwrap();
         let object_def = coveralls_ci.get_object_definition("Coveralls").unwrap();
 
         let get_num_alive: Symbol<unsafe extern "C" fn(&mut RustCallStatus) -> u64> = get_symbol(

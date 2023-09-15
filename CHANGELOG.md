@@ -15,6 +15,17 @@
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.24.3...HEAD).
 
 ### What's new
+- Fixed issues when trying to combine UDL and procmacros in the same crate when the "namespace" is
+  different from the crate name. This meant that the "ffi namespace" has changed to consistently be
+  the crate name, rather than either the crate name or the namespace name depending on whether the
+  item was declared via a procmacro or UDL. This should be invisible in most cases, but custom
+  build environments might require some changes. Specifically:
+  * `uniffi::generate_scaffolding(udl_path)` now uses the udl_path to locate the corresponding `Cargo.toml`, which
+    is parsed to determine the crate name (ie, the name under the `[lib]` entry). If your environment is such that
+    Cargo.toml can't be located or parsed, you should instead use `uniffi::generate_scaffolding_for_crate(udl_path, crate_name)`.
+  * Similarly, when executing `uniffi_bindgen` from the command-line to generate bindings and when not using "library mode",
+    `Cargo.toml` will be located and parsed to determine the crate name. Specifying `--crate-name` on the command-line can
+    be used to avoid this and use the specified value.
 
 - Crates can now use proc-macros without UDL files to export their interface.  See the "Procedural Macros: Attributes and Derives" manual section for details.
 

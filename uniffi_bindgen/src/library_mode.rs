@@ -130,7 +130,7 @@ fn find_sources(
                 .parent()
                 .context("manifest path has no parent")?;
             let crate_name = group.namespace.crate_name.clone();
-            let mut ci = ComponentInterface::default();
+            let mut ci = ComponentInterface::new(&crate_name);
             if let Some(metadata) = load_udl_metadata(&group, crate_root, &crate_name)? {
                 ci.add_metadata(metadata)?;
             };
@@ -187,16 +187,24 @@ fn load_udl_metadata(
         0 => Ok(None),
         // Found a UDL file, use it to load the CI, then add the MetadataGroup
         1 => {
-            let ci_name = &udl_items[0].name;
+            if udl_items[0].module_path != crate_name {
+                bail!(
+                    "UDL is for crate '{}' but this crate name is '{}'",
+                    udl_items[0].module_path,
+                    crate_name
+                );
+            }
+            let ci_name = &udl_items[0].file_stub;
             let ci_path = crate_root.join("src").join(format!("{ci_name}.udl"));
             if ci_path.exists() {
                 let udl = fs::read_to_string(ci_path)?;
-                Ok(Some(uniffi_udl::parse_udl(&udl)?))
+                let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
+                Ok(Some(udl_group))
             } else {
                 bail!("{ci_path} not found");
             }
         }
-        n => bail!("{n} UDL files found for {crate_name}"),
+        n => bail!("{n} UDL files found for {crate_root}"),
     }
 }
 

@@ -26,7 +26,7 @@ pub(crate) struct InterfaceCollector {
 
 impl InterfaceCollector {
     /// Parse an `InterfaceCollector` from a string containing a WebIDL definition.
-    pub fn from_webidl(idl: &str) -> Result<Self> {
+    pub fn from_webidl(idl: &str, crate_name: &str) -> Result<Self> {
         let mut ci = Self::default();
         // There's some lifetime thing with the errors returned from weedle::Definitions::parse
         // that my own lifetime is too short to worry about figuring out; unwrap and move on.
@@ -42,7 +42,9 @@ impl InterfaceCollector {
         }
         // We process the WebIDL definitions in 3 passes.
         // First, find the namespace.
+        // XXX - TODO: it's no longer necessary to do this pass.
         ci.types.namespace = ci.find_namespace(&defns)?;
+        ci.types.crate_name = crate_name.to_string();
         // Next, go through and look for all the named types.
         ci.types.add_type_definitions_from(defns.as_slice())?;
 
@@ -133,7 +135,7 @@ impl From<InterfaceCollector> for uniffi_meta::MetadataGroup {
     fn from(value: InterfaceCollector) -> Self {
         Self {
             namespace: uniffi_meta::NamespaceMetadata {
-                crate_name: Default::default(),
+                crate_name: value.types.module_path(),
                 name: value.types.namespace,
             },
             items: value.items,
@@ -228,6 +230,8 @@ pub(crate) struct TypeCollector {
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     pub namespace: String,
 
+    pub crate_name: String,
+
     // Named type definitions (including aliases).
     pub type_definitions: HashMap<String, Type>,
 }
@@ -235,7 +239,7 @@ pub(crate) struct TypeCollector {
 impl TypeCollector {
     /// The module path which should be used by all items in this namespace.
     pub fn module_path(&self) -> String {
-        self.namespace.clone()
+        self.crate_name.clone()
     }
 
     /// Add the definitions of all named [Type]s from a given WebIDL definition.

@@ -21,7 +21,7 @@
 //!   constructor(string? name);
 //!   string my_name();
 //! };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! #   constructor(string? name);
 //! #   string my_name();
 //! # };
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let obj = ci.get_object_definition("Example").unwrap();
 //! assert_eq!(obj.name(), "Example");
 //! assert_eq!(obj.constructors().len(), 1);
@@ -50,7 +50,7 @@
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! # interface Example {};
-//! # "##)?;
+//! # "##, "crate_name")?;
 //! let obj = ci.get_object_definition("Example").unwrap();
 //! assert_eq!(obj.name(), "Example");
 //! assert_eq!(obj.constructors().len(), 0);
@@ -172,12 +172,8 @@ impl Object {
             )
     }
 
-    pub fn derive_ffi_funcs(&mut self, ci_namespace: &str) -> Result<()> {
-        // The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don't overwrite it in that case.
-        if self.ffi_func_free.name().is_empty() {
-            self.ffi_func_free.name = uniffi_meta::free_fn_symbol_name(ci_namespace, &self.name);
-        }
+    pub fn derive_ffi_funcs(&mut self) -> Result<()> {
+        assert!(!self.ffi_func_free.name().is_empty());
         self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
             type_: FfiType::RustArcPtr(self.name.to_string()),
@@ -186,13 +182,13 @@ impl Object {
         self.ffi_func_free.is_object_free_function = true;
 
         for cons in self.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_namespace, &self.name);
+            cons.derive_ffi_func();
         }
         for meth in self.methods.iter_mut() {
-            meth.derive_ffi_func(ci_namespace, &self.name)?;
+            meth.derive_ffi_func()?;
         }
         for ut in self.uniffi_traits.iter_mut() {
-            ut.derive_ffi_func(ci_namespace, &self.name)?;
+            ut.derive_ffi_func()?;
         }
 
         Ok(())
@@ -324,16 +320,10 @@ impl Constructor {
         self.name == "new"
     }
 
-    fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) {
-        // The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don't overwrite it in that case.
-        if self.ffi_func.name.is_empty() {
-            self.ffi_func.name =
-                uniffi_meta::constructor_symbol_name(ci_namespace, obj_name, &self.name);
-        }
-
+    fn derive_ffi_func(&mut self) {
+        assert!(!self.ffi_func.name().is_empty());
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FfiType::RustArcPtr(obj_name.to_string()));
+        self.ffi_func.return_type = Some(FfiType::RustArcPtr(self.object_name.clone()));
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -459,13 +449,8 @@ impl Method {
         self.takes_self_by_arc
     }
 
-    pub fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) -> Result<()> {
-        // The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don't overwrite it in that case.
-        if self.ffi_func.name.is_empty() {
-            self.ffi_func.name =
-                uniffi_meta::method_symbol_name(ci_namespace, obj_name, &self.name);
-        }
+    pub fn derive_ffi_func(&mut self) -> Result<()> {
+        assert!(!self.ffi_func.name().is_empty());
         self.ffi_func.init(
             self.return_type.as_ref().map(Into::into),
             self.full_arguments().iter().map(Into::into),
@@ -516,9 +501,14 @@ impl From<uniffi_meta::MethodMetadata> for Method {
 
 impl From<uniffi_meta::TraitMethodMetadata> for Method {
     fn from(meta: uniffi_meta::TraitMethodMetadata) -> Self {
+        let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let return_type = meta.return_type.map(Into::into);
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
+        let ffi_func = FfiFunction {
+            name: ffi_name,
+            ..FfiFunction::default()
+        };
         Self {
             name: meta.name,
             object_name: meta.trait_name,
@@ -530,9 +520,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
             checksum: meta.checksum,
-            // These are placeholder values that don't affect any behavior since we don't create
-            // scaffolding functions for callback interface methods
-            ffi_func: FfiFunction::default(),
+            ffi_func,
             object_impl: ObjectImpl::Struct,
         }
     }
@@ -561,16 +549,16 @@ impl UniffiTrait {
         )
     }
 
-    pub fn derive_ffi_func(&mut self, ci_namespace: &str, obj_name: &str) -> Result<()> {
+    pub fn derive_ffi_func(&mut self) -> Result<()> {
         match self {
             UniffiTrait::Display { fmt: m }
             | UniffiTrait::Debug { fmt: m }
             | UniffiTrait::Hash { hash: m } => {
-                m.derive_ffi_func(ci_namespace, obj_name)?;
+                m.derive_ffi_func()?;
             }
             UniffiTrait::Eq { eq, ne } => {
-                eq.derive_ffi_func(ci_namespace, obj_name)?;
-                ne.derive_ffi_func(ci_namespace, obj_name)?;
+                eq.derive_ffi_func()?;
+                ne.derive_ffi_func()?;
             }
         }
         Ok(())
@@ -623,7 +611,7 @@ mod test {
                 sequence<u32> code_points_of_name();
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
         ci.get_object_definition("Testing").unwrap();
 
@@ -654,7 +642,7 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
@@ -684,7 +672,7 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
@@ -711,7 +699,7 @@ mod test {
                 void new(u32 v);
             };
         "#;
-        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL, "crate_name").unwrap_err();
         assert_eq!(
             err.to_string(),
             "the method name \"new\" is reserved for the default constructor"
@@ -727,7 +715,7 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL, "crate_name").unwrap_err();
         assert_eq!(err.to_string(), "Duplicate interface member name: \"new\"");
 
         const UDL2: &str = r#"
@@ -738,7 +726,7 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL2, "crate_name").unwrap_err();
         assert_eq!(err.to_string(), "Duplicate interface member name: \"new\"");
     }
 
@@ -752,7 +740,7 @@ mod test {
             interface ATrait {
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         let obj = ci.get_object_definition("NotATrait").unwrap();
         assert_eq!(obj.imp.rust_name_for(&obj.name), "r#NotATrait");
         let obj = ci.get_object_definition("ATrait").unwrap();
@@ -768,7 +756,7 @@ mod test {
                 constructor();
             };
         "#;
-        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL, "crate_name").unwrap_err();
         assert_eq!(
             err.to_string(),
             "Trait interfaces can not have constructors: \"new\""

@@ -1,4 +1,5 @@
-namespace uniffi_proc_macro { };
+// Namespace different from crate name.
+namespace proc_macro { };
 
 // Use this to test that types defined in the UDL can be used in the proc-macros
 dictionary Zero {

@@ -61,8 +61,6 @@ mod enum_;
 pub use enum_::{Enum, Variant};
 mod function;
 pub use function::{Argument, Callable, Function, ResultType};
-mod namespace;
-pub use namespace::Namespace;
 mod object;
 pub use object::{Constructor, Method, Object, UniffiTrait};
 mod record;
@@ -72,7 +70,7 @@ pub mod ffi;
 pub use ffi::{FfiArgument, FfiFunction, FfiType};
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata,
+    ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
     UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
@@ -98,27 +96,46 @@ pub struct ComponentInterface {
 }
 
 impl ComponentInterface {
+    pub fn new(crate_name: &str) -> Self {
+        assert!(!crate_name.is_empty());
+        Self {
+            types: TypeUniverse::new(NamespaceMetadata {
+                crate_name: crate_name.to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
-    pub fn from_webidl(idl: &str) -> Result<Self> {
-        let group = uniffi_udl::parse_udl(idl)?;
+    pub fn from_webidl(idl: &str, module_path: &str) -> Result<Self> {
+        ensure!(
+            !module_path.is_empty(),
+            "you must specify a valid crate name"
+        );
+        let group = uniffi_udl::parse_udl(idl, module_path)?;
         Self::from_metadata(group)
     }
 
     /// Create a `ComponentInterface` from a `MetadataGroup`
+    /// Public so that external binding generators can use it.
     pub fn from_metadata(group: uniffi_meta::MetadataGroup) -> Result<Self> {
-        let mut ci = Self::default();
+        let mut ci = Self {
+            types: TypeUniverse::new(group.namespace.clone()),
+            ..Default::default()
+        };
         ci.add_metadata(group)?;
         Ok(ci)
     }
 
     /// Add a metadata group to a `ComponentInterface`.
     pub fn add_metadata(&mut self, group: uniffi_meta::MetadataGroup) -> Result<()> {
-        if self.types.namespace.is_empty() {
-            self.types.namespace = group.namespace.name.clone();
-        } else if self.types.namespace != group.namespace.name {
+        if self.types.namespace.name.is_empty() {
+            self.types.namespace = group.namespace.clone();
+        } else if self.types.namespace != group.namespace {
             bail!(
-                "Namespace mismatch: {} - {}",
-                group.namespace.name,
+                "Namespace mismatch: {:?} - {:?}",
+                group.namespace,
                 self.types.namespace
             );
         }
@@ -133,7 +150,7 @@ impl ComponentInterface {
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
-        self.types.namespace.as_str()
+        &self.types.namespace.name
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -317,12 +334,10 @@ impl ComponentInterface {
             .any(|t| matches!(t, Type::Map { .. }))
     }
 
-    /// The namespace to use in FFI-level function definitions.
-    ///
-    /// The value returned by this method is used as a prefix to namespace all UDL-defined FFI
-    /// functions used in this ComponentInterface.
-    pub fn ffi_namespace(&self) -> &str {
-        &self.types.namespace
+    // The namespace to use in crate-level FFI function definitions. Not used as the ffi
+    // namespace for types - each type has its own `module_path` which is used for them.
+    fn ffi_namespace(&self) -> &str {
+        &self.types.namespace.crate_name
     }
 
     /// Builtin FFI function to get the current contract version
@@ -742,15 +757,14 @@ impl ComponentInterface {
     /// This should only be called after the high-level types have been completed defined, otherwise
     /// the resulting set will be missing some entries.
     pub fn derive_ffi_funcs(&mut self) -> Result<()> {
-        let ci_namespace = self.ffi_namespace().to_owned();
         for func in self.functions.iter_mut() {
-            func.derive_ffi_func(&ci_namespace)?;
+            func.derive_ffi_func()?;
         }
         for obj in self.objects.iter_mut() {
-            obj.derive_ffi_funcs(&ci_namespace)?;
+            obj.derive_ffi_funcs()?;
         }
         for callback in self.callback_interfaces.iter_mut() {
-            callback.derive_ffi_funcs(&ci_namespace);
+            callback.derive_ffi_funcs();
         }
         Ok(())
     }
@@ -900,12 +914,12 @@ mod test {
                 u32 field;
             };
         "#;
-        let err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL, "crate_name").unwrap_err();
         assert_eq!(
             err.to_string(),
             "Conflicting type definition for `Testing`! \
-             existing definition: Object { module_path: \"test\", name: \"Testing\", imp: Struct }, \
-             new definition: Record { module_path: \"test\", name: \"Testing\" }"
+             existing definition: Object { module_path: \"crate_name\", name: \"Testing\", imp: Struct }, \
+             new definition: Record { module_path: \"crate_name\", name: \"Testing\" }"
         );
 
         const UDL2: &str = r#"
@@ -916,12 +930,12 @@ mod test {
             [Error]
             enum Testing { "three", "four" };
         "#;
-        let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL2, "crate_name").unwrap_err();
         assert_eq!(
             err.to_string(),
             "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
     name: \"Testing\",
-    module_path: \"test\",
+    module_path: \"crate_name\",
     variants: [
         Variant {
             name: \"one\",
@@ -936,7 +950,7 @@ mod test {
 },
 new definition: Enum {
     name: \"Testing\",
-    module_path: \"test\",
+    module_path: \"crate_name\",
     variants: [
         Variant {
             name: \"three\",
@@ -959,7 +973,7 @@ new definition: Enum {
                 "one", "two"
             };
         "#;
-        let err = ComponentInterface::from_webidl(UDL3).unwrap_err();
+        let err = ComponentInterface::from_webidl(UDL3, "crate_name").unwrap_err();
         assert!(format!("{err:#}").contains("Conflicting type definition for \"Testing\""));
     }
 
@@ -1032,7 +1046,7 @@ new definition: Enum {
                 void tester(Testing foo);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert!(!ci.item_contains_unsigned_types(&Type::Object {
             name: "Testing".into(),
             module_path: "".into(),
@@ -1054,7 +1068,7 @@ new definition: Enum {
                 u64 baz;
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert!(ci.item_contains_unsigned_types(&Type::Object {
             name: "TestObj".into(),
             module_path: "".into(),
