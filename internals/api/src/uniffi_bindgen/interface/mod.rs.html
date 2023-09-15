@@ -1062,6 +1062,20 @@
 <a href="#1062" id="1062">1062</a>
 <a href="#1063" id="1063">1063</a>
 <a href="#1064" id="1064">1064</a>
+<a href="#1065" id="1065">1065</a>
+<a href="#1066" id="1066">1066</a>
+<a href="#1067" id="1067">1067</a>
+<a href="#1068" id="1068">1068</a>
+<a href="#1069" id="1069">1069</a>
+<a href="#1070" id="1070">1070</a>
+<a href="#1071" id="1071">1071</a>
+<a href="#1072" id="1072">1072</a>
+<a href="#1073" id="1073">1073</a>
+<a href="#1074" id="1074">1074</a>
+<a href="#1075" id="1075">1075</a>
+<a href="#1076" id="1076">1076</a>
+<a href="#1077" id="1077">1077</a>
+<a href="#1078" id="1078">1078</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1125,8 +1139,6 @@
 <span class="kw">pub use </span>enum_::{Enum, Variant};
 <span class="kw">mod </span>function;
 <span class="kw">pub use </span>function::{Argument, Callable, Function, ResultType};
-<span class="kw">mod </span>namespace;
-<span class="kw">pub use </span>namespace::Namespace;
 <span class="kw">mod </span>object;
 <span class="kw">pub use </span>object::{Constructor, Method, Object, UniffiTrait};
 <span class="kw">mod </span>record;
@@ -1136,7 +1148,7 @@
 <span class="kw">pub use </span>ffi::{FfiArgument, FfiFunction, FfiType};
 <span class="kw">pub use </span>uniffi_meta::Radix;
 <span class="kw">use </span>uniffi_meta::{
-    ConstructorMetadata, LiteralMetadata, ObjectMetadata, TraitMethodMetadata,
+    ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
     UNIFFI_CONTRACT_VERSION,
 };
 <span class="kw">pub type </span>Literal = LiteralMetadata;
@@ -1162,27 +1174,46 @@
 }
 
 <span class="kw">impl </span>ComponentInterface {
+    <span class="kw">pub fn </span>new(crate_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="macro">assert!</span>(!crate_name.is_empty());
+        <span class="self">Self </span>{
+            types: TypeUniverse::new(NamespaceMetadata {
+                crate_name: crate_name.to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
     <span class="doccomment">/// Parse a `ComponentInterface` from a string containing a WebIDL definition.
-    </span><span class="kw">pub fn </span>from_webidl(idl: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>group = uniffi_udl::parse_udl(idl)<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>from_webidl(idl: <span class="kw-2">&amp;</span>str, module_path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="macro">ensure!</span>(
+            !module_path.is_empty(),
+            <span class="string">&quot;you must specify a valid crate name&quot;
+        </span>);
+        <span class="kw">let </span>group = uniffi_udl::parse_udl(idl, module_path)<span class="question-mark">?</span>;
         <span class="self">Self</span>::from_metadata(group)
     }
 
     <span class="doccomment">/// Create a `ComponentInterface` from a `MetadataGroup`
+    /// Public so that external binding generators can use it.
     </span><span class="kw">pub fn </span>from_metadata(group: uniffi_meta::MetadataGroup) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>ci = <span class="self">Self</span>::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>ci = <span class="self">Self </span>{
+            types: TypeUniverse::new(group.namespace.clone()),
+            ..Default::default()
+        };
         ci.add_metadata(group)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(ci)
     }
 
     <span class="doccomment">/// Add a metadata group to a `ComponentInterface`.
     </span><span class="kw">pub fn </span>add_metadata(<span class="kw-2">&amp;mut </span><span class="self">self</span>, group: uniffi_meta::MetadataGroup) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if </span><span class="self">self</span>.types.namespace.is_empty() {
-            <span class="self">self</span>.types.namespace = group.namespace.name.clone();
-        } <span class="kw">else if </span><span class="self">self</span>.types.namespace != group.namespace.name {
+        <span class="kw">if </span><span class="self">self</span>.types.namespace.name.is_empty() {
+            <span class="self">self</span>.types.namespace = group.namespace.clone();
+        } <span class="kw">else if </span><span class="self">self</span>.types.namespace != group.namespace {
             <span class="macro">bail!</span>(
-                <span class="string">&quot;Namespace mismatch: {} - {}&quot;</span>,
-                group.namespace.name,
+                <span class="string">&quot;Namespace mismatch: {:?} - {:?}&quot;</span>,
+                group.namespace,
                 <span class="self">self</span>.types.namespace
             );
         }
@@ -1197,7 +1228,7 @@
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     </span><span class="kw">pub fn </span>namespace(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-        <span class="self">self</span>.types.namespace.as_str()
+        <span class="kw-2">&amp;</span><span class="self">self</span>.types.namespace.name
     }
 
     <span class="kw">pub fn </span>uniffi_contract_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
@@ -1381,12 +1412,10 @@
             .any(|t| <span class="macro">matches!</span>(t, Type::Map { .. }))
     }
 
-    <span class="doccomment">/// The namespace to use in FFI-level function definitions.
-    ///
-    /// The value returned by this method is used as a prefix to namespace all UDL-defined FFI
-    /// functions used in this ComponentInterface.
-    </span><span class="kw">pub fn </span>ffi_namespace(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.types.namespace
+    <span class="comment">// The namespace to use in crate-level FFI function definitions. Not used as the ffi
+    // namespace for types - each type has its own `module_path` which is used for them.
+    </span><span class="kw">fn </span>ffi_namespace(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.types.namespace.crate_name
     }
 
     <span class="doccomment">/// Builtin FFI function to get the current contract version
@@ -1806,15 +1835,14 @@
     /// This should only be called after the high-level types have been completed defined, otherwise
     /// the resulting set will be missing some entries.
     </span><span class="kw">pub fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>ci_namespace = <span class="self">self</span>.ffi_namespace().to_owned();
         <span class="kw">for </span>func <span class="kw">in </span><span class="self">self</span>.functions.iter_mut() {
-            func.derive_ffi_func(<span class="kw-2">&amp;</span>ci_namespace)<span class="question-mark">?</span>;
+            func.derive_ffi_func()<span class="question-mark">?</span>;
         }
         <span class="kw">for </span>obj <span class="kw">in </span><span class="self">self</span>.objects.iter_mut() {
-            obj.derive_ffi_funcs(<span class="kw-2">&amp;</span>ci_namespace)<span class="question-mark">?</span>;
+            obj.derive_ffi_funcs()<span class="question-mark">?</span>;
         }
         <span class="kw">for </span>callback <span class="kw">in </span><span class="self">self</span>.callback_interfaces.iter_mut() {
-            callback.derive_ffi_funcs(<span class="kw-2">&amp;</span>ci_namespace);
+            callback.derive_ffi_funcs();
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -1964,12 +1992,12 @@
                 u32 field;
             };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
             <span class="string">&quot;Conflicting type definition for `Testing`! \
-             existing definition: Object { module_path: \&quot;test\&quot;, name: \&quot;Testing\&quot;, imp: Struct }, \
-             new definition: Record { module_path: \&quot;test\&quot;, name: \&quot;Testing\&quot; }&quot;
+             existing definition: Object { module_path: \&quot;crate_name\&quot;, name: \&quot;Testing\&quot;, imp: Struct }, \
+             new definition: Record { module_path: \&quot;crate_name\&quot;, name: \&quot;Testing\&quot; }&quot;
         </span>);
 
         <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
@@ -1980,12 +2008,12 @@
             [Error]
             enum Testing { &quot;three&quot;, &quot;four&quot; };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
             <span class="string">&quot;Mismatching definition for enum `Testing`!\nexisting definition: Enum {
     name: \&quot;Testing\&quot;,
-    module_path: \&quot;test\&quot;,
+    module_path: \&quot;crate_name\&quot;,
     variants: [
         Variant {
             name: \&quot;one\&quot;,
@@ -2000,7 +2028,7 @@
 },
 new definition: Enum {
     name: \&quot;Testing\&quot;,
-    module_path: \&quot;test\&quot;,
+    module_path: \&quot;crate_name\&quot;,
     variants: [
         Variant {
             name: \&quot;three\&quot;,
@@ -2023,7 +2051,7 @@ new definition: Enum {
                 &quot;one&quot;, &quot;two&quot;
             };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL3).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL3, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">&quot;{err:#}&quot;</span>).contains(<span class="string">&quot;Conflicting type definition for \&quot;Testing\&quot;&quot;</span>));
     }
 
@@ -2096,7 +2124,7 @@ new definition: Enum {
                 void tester(Testing foo);
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert!</span>(!ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object {
             name: <span class="string">&quot;Testing&quot;</span>.into(),
             module_path: <span class="string">&quot;&quot;</span>.into(),
@@ -2118,7 +2146,7 @@ new definition: Enum {
                 u64 baz;
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert!</span>(ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object {
             name: <span class="string">&quot;TestObj&quot;</span>.into(),
             module_path: <span class="string">&quot;&quot;</span>.into(),

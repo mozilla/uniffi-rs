@@ -252,7 +252,7 @@
 //!   string name;
 //!   u32 value;
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -266,7 +266,7 @@
 //! #   string name;
 //! #   u32 value;
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let record = ci.get_record_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(record.name(), &quot;Example&quot;);
 //! assert_eq!(record.fields()[0].name(), &quot;name&quot;);
@@ -394,7 +394,7 @@
                 required boolean spin;
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.record_definitions().count(), <span class="number">3</span>);
 
         <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Empty&quot;</span>).unwrap();
@@ -439,7 +439,7 @@
                 u32 value;
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.record_definitions().count(), <span class="number">1</span>);
         <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">2</span>);

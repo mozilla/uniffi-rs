@@ -139,6 +139,7 @@
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -148,16 +149,17 @@
 <span class="kw">use </span>std::borrow::Borrow;
 
 <span class="kw">use </span><span class="kw">super</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use </span>heck::ToSnakeCase;
+<span class="kw">use </span>heck::{ToShoutySnakeCase, ToSnakeCase};
 
 <span class="attr">#[derive(Template)]
 #[template(syntax = <span class="string">&quot;rs&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;scaffolding_template.rs&quot;</span>)]
 </span><span class="kw">pub struct </span>RustScaffolding&lt;<span class="lifetime">&#39;a</span>&gt; {
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    udl_base_name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
 }
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RustScaffolding&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub fn </span>new(ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{ ci }
+    <span class="kw">pub fn </span>new(ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface, udl_base_name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ ci, udl_base_name }
     }
 }
 <span class="kw">mod </span>filters {

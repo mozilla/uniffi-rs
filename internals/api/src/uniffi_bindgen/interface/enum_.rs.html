@@ -525,7 +525,7 @@
 //!   &quot;one&quot;,
 //!   &quot;two&quot;
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -538,7 +538,7 @@
 //! #   &quot;one&quot;,
 //! #   &quot;two&quot;
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let e = ci.get_enum_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(e.name(), &quot;Example&quot;);
 //! assert_eq!(e.variants().len(), 2);
@@ -560,7 +560,7 @@
 //!   One(u32 first);
 //!   Two(u32 first, string second);
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -575,7 +575,7 @@
 //! #   One(u32 first);
 //! #   Two(u32 first, string second);
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let e = ci.get_enum_definition(&quot;ExampleWithData&quot;).unwrap();
 //! assert_eq!(e.name(), &quot;ExampleWithData&quot;);
 //! assert_eq!(e.variants().len(), 3);
@@ -597,7 +597,7 @@
 //!   &quot;one&quot;,
 //!   &quot;two&quot;
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -611,7 +611,7 @@
 //! #   &quot;one&quot;,
 //! #   &quot;two&quot;
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let err = ci.get_enum_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(err.name(), &quot;Example&quot;);
 //! assert_eq!(err.variants().len(), 2);
@@ -633,7 +633,7 @@
 //!   two(string reason);
 //!   three(i32 x, i32 y);
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -648,7 +648,7 @@
 //! #   two(string reason);
 //! #   three(i32 x, i32 y);
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let err = ci.get_enum_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(err.name(), &quot;Example&quot;);
 //! assert_eq!(err.variants().len(), 3);
@@ -803,7 +803,7 @@
             // We should probably disallow this...
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;one&quot; };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             ci.get_enum_definition(<span class="string">&quot;Testing&quot;</span>).unwrap().variants().len(),
@@ -836,7 +836,7 @@
                 Two();
             };
         &quot;##</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(ci.function_definitions().len(), <span class="number">4</span>);
 
@@ -911,7 +911,7 @@
             farg.arguments()[<span class="number">0</span>].as_type(),
             Type::Enum {
                 name: <span class="string">&quot;TestEnum&quot;</span>.into(),
-                module_path: <span class="string">&quot;test&quot;</span>.into()
+                module_path: <span class="string">&quot;crate_name&quot;</span>.into()
             }
         );
         <span class="macro">assert_eq!</span>(
@@ -935,7 +935,7 @@
             farg.arguments()[<span class="number">0</span>].as_type(),
             Type::Enum {
                 name: <span class="string">&quot;TestEnumWithData&quot;</span>.into(),
-                module_path: <span class="string">&quot;test&quot;</span>.into()
+                module_path: <span class="string">&quot;crate_name&quot;</span>.into()
             }
         );
         <span class="macro">assert_eq!</span>(
@@ -962,7 +962,7 @@
             [Error]
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;three&quot; };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">1</span>);
         <span class="kw">let </span>error = ci.get_enum_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(
@@ -986,7 +986,7 @@
             [Error]
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;one&quot; };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             ci.get_enum_definition(<span class="string">&quot;Testing&quot;</span>).unwrap().variants().len(),
@@ -1005,7 +1005,7 @@
                 Two(u8 code);
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">1</span>);
         <span class="kw">let </span>error: <span class="kw-2">&amp;</span>Enum = ci.get_enum_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(

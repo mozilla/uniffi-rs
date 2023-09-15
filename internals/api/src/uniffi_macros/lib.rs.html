@@ -393,24 +393,6 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
-<a href="#396" id="396">396</a>
-<a href="#397" id="397">397</a>
-<a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
-<a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
-<a href="#403" id="403">403</a>
-<a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a>
-<a href="#408" id="408">408</a>
-<a href="#409" id="409">409</a>
-<a href="#410" id="410">410</a>
-<a href="#411" id="411">411</a>
-<a href="#412" id="412">412</a>
-<a href="#413" id="413">413</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -683,29 +665,13 @@
 /// the generated `my_component_name.uniffi.rs` (which it assumes has
 /// been successfully built by your crate&#39;s `build.rs` script).
 </span><span class="attr">#[proc_macro]
-</span><span class="kw">pub fn </span>include_scaffolding(component_name: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>name = <span class="macro">syn::parse_macro_input!</span>(component_name <span class="kw">as </span>LitStr);
+</span><span class="kw">pub fn </span>include_scaffolding(udl_stem: TokenStream) -&gt; TokenStream {
+    <span class="kw">let </span>udl_stem = <span class="macro">syn::parse_macro_input!</span>(udl_stem <span class="kw">as </span>LitStr);
     <span class="kw">if </span>std::env::var(<span class="string">&quot;OUT_DIR&quot;</span>).is_err() {
         <span class="macro">quote! </span>{
             <span class="macro">compile_error!</span>(<span class="string">&quot;This macro assumes the crate has a build.rs script, but $OUT_DIR is not present&quot;</span>);
         }
     } <span class="kw">else </span>{
-        <span class="kw">let </span>udl_name = name.value();
-        <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
-            <span class="prelude-val">Ok</span>(v) =&gt; <span class="macro">quote! </span>{ #v },
-            <span class="prelude-val">Err</span>(e) =&gt; e.into_compile_error()
-        };
-        <span class="kw">let </span>metadata = util::create_metadata_items(
-            <span class="string">&quot;UDL&quot;</span>,
-            <span class="kw-2">&amp;</span>udl_name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>).to_ascii_uppercase(),
-            <span class="macro">quote! </span>{
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::UDL_FILE)
-                        .concat_str(#mod_path)
-                        .concat_str(#udl_name)
-            },
-            <span class="prelude-val">None</span>,
-        );
-
         <span class="kw">let </span>toml_path = <span class="kw">match </span>util::manifest_path() {
             <span class="prelude-val">Ok</span>(path) =&gt; path.display().to_string(),
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
@@ -716,8 +682,6 @@
         };
 
         <span class="macro">quote! </span>{
-            #metadata
-
             <span class="comment">// FIXME(HACK):
             // Include the `Cargo.toml` file into the build.
             // That way cargo tracks the file and other tools relying on file
@@ -730,7 +694,7 @@
                 <span class="kw">const _</span>: <span class="kw-2">&amp;</span>[u8] = <span class="macro">include_bytes!</span>(#toml_path);
             }
 
-            <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #name, <span class="string">&quot;.uniffi.rs&quot;</span>));
+            <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/&quot;</span>, #udl_stem, <span class="string">&quot;.uniffi.rs&quot;</span>));
         }
     }.into()
 }

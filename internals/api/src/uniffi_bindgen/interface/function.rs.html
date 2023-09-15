@@ -331,7 +331,6 @@
 <a href="#331" id="331">331</a>
 <a href="#332" id="332">332</a>
 <a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -346,7 +345,7 @@
 //! namespace example {
 //!     string hello();
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -358,7 +357,7 @@
 //! # namespace example {
 //! #     string hello();
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let func = ci.get_function_definition(&quot;hello&quot;).unwrap();
 //! assert_eq!(func.name(), &quot;hello&quot;);
 //! assert!(matches!(func.return_type(), Some(Type::String)));
@@ -382,6 +381,7 @@
 </span><span class="attr">#[derive(Debug, Clone, Checksum)]
 </span><span class="kw">pub struct </span>Function {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
@@ -445,12 +445,8 @@
         <span class="self">self</span>.throws.as_ref()
     }
 
-    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don&#39;t overwrite it in that case.
-        </span><span class="kw">if </span><span class="self">self</span>.ffi_func.name.is_empty() {
-            <span class="self">self</span>.ffi_func.name = uniffi_meta::fn_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
-        }
+    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func.name.is_empty());
         <span class="self">self</span>.ffi_func.init(
             <span class="self">self</span>.return_type.as_ref().map(Into::into),
             <span class="self">self</span>.arguments.iter().map(Into::into),
@@ -496,6 +492,7 @@
 
         <span class="self">Self </span>{
             name: meta.name,
+            module_path: meta.module_path,
             is_async,
             arguments,
             return_type,
@@ -635,6 +632,7 @@
                 u32 field;
             };
         &quot;##</span>,
+            <span class="string">&quot;crate_name&quot;</span>,
         )<span class="question-mark">?</span>;
 
         <span class="kw">let </span>func1 = ci.get_function_definition(<span class="string">&quot;minimal&quot;</span>).unwrap();

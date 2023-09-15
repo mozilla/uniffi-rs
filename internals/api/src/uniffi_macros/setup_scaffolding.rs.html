@@ -145,17 +145,17 @@
 
 <span class="kw">pub fn </span>setup_scaffolding(namespace: String) -&gt; <span class="prelude-ty">Result</span>&lt;TokenStream&gt; {
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ffi_contract_version_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{namespace}_uniffi_contract_version&quot;</span>);
+    <span class="kw">let </span>ffi_contract_version_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_uniffi_contract_version&quot;</span>);
     <span class="kw">let </span>namespace_upper = namespace.to_ascii_uppercase();
     <span class="kw">let </span>namespace_const_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_CONST_NAMESPACE_{namespace_upper}&quot;</span>);
     <span class="kw">let </span>namespace_static_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_NAMESPACE_{namespace_upper}&quot;</span>);
-    <span class="kw">let </span>ffi_rustbuffer_alloc_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{namespace}_rustbuffer_alloc&quot;</span>);
-    <span class="kw">let </span>ffi_rustbuffer_from_bytes_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{namespace}_rustbuffer_from_bytes&quot;</span>);
-    <span class="kw">let </span>ffi_rustbuffer_free_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{namespace}_rustbuffer_free&quot;</span>);
-    <span class="kw">let </span>ffi_rustbuffer_reserve_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{namespace}_rustbuffer_reserve&quot;</span>);
-    <span class="kw">let </span>reexport_hack_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{namespace}_uniffi_reexport_hack&quot;</span>);
+    <span class="kw">let </span>ffi_rustbuffer_alloc_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_rustbuffer_alloc&quot;</span>);
+    <span class="kw">let </span>ffi_rustbuffer_from_bytes_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_rustbuffer_from_bytes&quot;</span>);
+    <span class="kw">let </span>ffi_rustbuffer_free_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_rustbuffer_free&quot;</span>);
+    <span class="kw">let </span>ffi_rustbuffer_reserve_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_rustbuffer_reserve&quot;</span>);
+    <span class="kw">let </span>reexport_hack_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{module_path}_uniffi_reexport_hack&quot;</span>);
     <span class="kw">let </span>ffi_foreign_executor_callback_set_ident =
-        <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{namespace}_foreign_executor_callback_set&quot;</span>);
+        <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_foreign_executor_callback_set&quot;</span>);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="comment">// Unit struct to parameterize the FfiConverter trait.

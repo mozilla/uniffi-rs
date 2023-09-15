@@ -162,7 +162,7 @@
 //! callback interface Example {
 //!   string hello();
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -175,7 +175,7 @@
 //! # callback interface Example {
 //! #  string hello();
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let callback = ci.get_callback_interface_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(callback.name(), &quot;Example&quot;);
 //! assert_eq!(callback.methods()[0].name(), &quot;hello&quot;);
@@ -204,10 +204,10 @@
 }
 
 <span class="kw">impl </span>CallbackInterface {
-    <span class="kw">pub fn </span>new(name: String) -&gt; CallbackInterface {
+    <span class="kw">pub fn </span>new(name: String, module_path: String) -&gt; CallbackInterface {
         CallbackInterface {
             name,
-            module_path: Default::default(),
+            module_path,
             methods: Default::default(),
             ffi_init_callback: Default::default(),
         }
@@ -225,9 +225,9 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_init_callback
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str) {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.ffi_init_callback.name =
-            uniffi_meta::init_callback_fn_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
+            uniffi_meta::init_callback_fn_symbol_name(<span class="kw-2">&amp;</span><span class="self">self</span>.module_path, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
         <span class="self">self</span>.ffi_init_callback.arguments = <span class="macro">vec!</span>[FfiArgument {
             name: <span class="string">&quot;callback_stub&quot;</span>.to_string(),
             type_: FfiType::ForeignCallback,
@@ -260,7 +260,7 @@
             // Weird, but allowed.
             callback interface Testing {};
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.callback_interface_definitions().len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             ci.get_callback_interface_definition(<span class="string">&quot;Testing&quot;</span>)
@@ -283,7 +283,7 @@
                 u64 too();
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.callback_interface_definitions().len(), <span class="number">2</span>);
 
         <span class="kw">let </span>callbacks_one = ci.get_callback_interface_definition(<span class="string">&quot;One&quot;</span>).unwrap();

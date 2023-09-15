@@ -127,6 +127,13 @@
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
 <a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -138,7 +145,7 @@
 </span><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
-<span class="kw">pub use </span>uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
+<span class="kw">pub use </span>uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
 
 <span class="doccomment">/// The set of all possible types used in a particular component interface.
 ///
@@ -152,8 +159,8 @@
 /// lot of cloning.
 </span><span class="attr">#[derive(Debug, Default)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TypeUniverse {
-    <span class="doccomment">/// The unique prefix that we&#39;ll use for namespacing when exposing this component&#39;s API.
-    </span><span class="kw">pub </span>namespace: String,
+    <span class="doccomment">/// The unique prefixes that we&#39;ll use for namespacing when exposing this component&#39;s API.
+    </span><span class="kw">pub </span>namespace: NamespaceMetadata,
 
     <span class="comment">// Named type definitions (including aliases).
     </span>type_definitions: HashMap&lt;String, Type&gt;,
@@ -162,6 +169,13 @@
 }
 
 <span class="kw">impl </span>TypeUniverse {
+    <span class="kw">pub fn </span>new(namespace: NamespaceMetadata) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            namespace,
+            ..Default::default()
+        }
+    }
+
     <span class="doccomment">/// Add the definition of a named [Type].
     </span><span class="kw">fn </span>add_type_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">match </span><span class="self">self</span>.type_definitions.entry(name.to_string()) {

@@ -763,18 +763,6 @@
 <a href="#763" id="763">763</a>
 <a href="#764" id="764">764</a>
 <a href="#765" id="765">765</a>
-<a href="#766" id="766">766</a>
-<a href="#767" id="767">767</a>
-<a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -798,7 +786,7 @@
 //!   constructor(string? name);
 //!   string my_name();
 //! };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -812,7 +800,7 @@
 //! #   constructor(string? name);
 //! #   string my_name();
 //! # };
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let obj = ci.get_object_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(obj.name(), &quot;Example&quot;);
 //! assert_eq!(obj.constructors().len(), 1);
@@ -827,7 +815,7 @@
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
 //! # namespace example {};
 //! # interface Example {};
-//! # &quot;##)?;
+//! # &quot;##, &quot;crate_name&quot;)?;
 //! let obj = ci.get_object_definition(&quot;Example&quot;).unwrap();
 //! assert_eq!(obj.name(), &quot;Example&quot;);
 //! assert_eq!(obj.constructors().len(), 0);
@@ -949,12 +937,8 @@
             )
     }
 
-    <span class="kw">pub fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don&#39;t overwrite it in that case.
-        </span><span class="kw">if </span><span class="self">self</span>.ffi_func_free.name().is_empty() {
-            <span class="self">self</span>.ffi_func_free.name = uniffi_meta::free_fn_symbol_name(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
-        }
+    <span class="kw">pub fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func_free.name().is_empty());
         <span class="self">self</span>.ffi_func_free.arguments = <span class="macro">vec!</span>[FfiArgument {
             name: <span class="string">&quot;ptr&quot;</span>.to_string(),
             type_: FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()),
@@ -963,13 +947,13 @@
         <span class="self">self</span>.ffi_func_free.is_object_free_function = <span class="bool-val">true</span>;
 
         <span class="kw">for </span>cons <span class="kw">in </span><span class="self">self</span>.constructors.iter_mut() {
-            cons.derive_ffi_func(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
+            cons.derive_ffi_func();
         }
         <span class="kw">for </span>meth <span class="kw">in </span><span class="self">self</span>.methods.iter_mut() {
-            meth.derive_ffi_func(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name)<span class="question-mark">?</span>;
+            meth.derive_ffi_func()<span class="question-mark">?</span>;
         }
         <span class="kw">for </span>ut <span class="kw">in </span><span class="self">self</span>.uniffi_traits.iter_mut() {
-            ut.derive_ffi_func(ci_namespace, <span class="kw-2">&amp;</span><span class="self">self</span>.name)<span class="question-mark">?</span>;
+            ut.derive_ffi_func()<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -1101,16 +1085,10 @@
         <span class="self">self</span>.name == <span class="string">&quot;new&quot;
     </span>}
 
-    <span class="kw">fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, obj_name: <span class="kw-2">&amp;</span>str) {
-        <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don&#39;t overwrite it in that case.
-        </span><span class="kw">if </span><span class="self">self</span>.ffi_func.name.is_empty() {
-            <span class="self">self</span>.ffi_func.name =
-                uniffi_meta::constructor_symbol_name(ci_namespace, obj_name, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
-        }
-
+    <span class="kw">fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func.name().is_empty());
         <span class="self">self</span>.ffi_func.arguments = <span class="self">self</span>.arguments.iter().map(Into::into).collect();
-        <span class="self">self</span>.ffi_func.return_type = <span class="prelude-val">Some</span>(FfiType::RustArcPtr(obj_name.to_string()));
+        <span class="self">self</span>.ffi_func.return_type = <span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="self">self</span>.object_name.clone()));
     }
 
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
@@ -1236,13 +1214,8 @@
         <span class="self">self</span>.takes_self_by_arc
     }
 
-    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, obj_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="comment">// The name is already set if the function is defined through a proc-macro invocation
-        // rather than in UDL. Don&#39;t overwrite it in that case.
-        </span><span class="kw">if </span><span class="self">self</span>.ffi_func.name.is_empty() {
-            <span class="self">self</span>.ffi_func.name =
-                uniffi_meta::method_symbol_name(ci_namespace, obj_name, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
-        }
+    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func.name().is_empty());
         <span class="self">self</span>.ffi_func.init(
             <span class="self">self</span>.return_type.as_ref().map(Into::into),
             <span class="self">self</span>.full_arguments().iter().map(Into::into),
@@ -1293,9 +1266,14 @@
 
 <span class="kw">impl </span>From&lt;uniffi_meta::TraitMethodMetadata&gt; <span class="kw">for </span>Method {
     <span class="kw">fn </span>from(meta: uniffi_meta::TraitMethodMetadata) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>ffi_name = meta.ffi_symbol_name();
         <span class="kw">let </span>checksum_fn_name = meta.checksum_symbol_name();
         <span class="kw">let </span>return_type = meta.return_type.map(Into::into);
         <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
+        <span class="kw">let </span>ffi_func = FfiFunction {
+            name: ffi_name,
+            ..FfiFunction::default()
+        };
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.trait_name,
@@ -1307,9 +1285,7 @@
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
             checksum: meta.checksum,
-            <span class="comment">// These are placeholder values that don&#39;t affect any behavior since we don&#39;t create
-            // scaffolding functions for callback interface methods
-            </span>ffi_func: FfiFunction::default(),
+            ffi_func,
             object_impl: ObjectImpl::Struct,
         }
     }
@@ -1338,16 +1314,16 @@
         )
     }
 
-    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci_namespace: <span class="kw-2">&amp;</span>str, obj_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">pub fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             UniffiTrait::Display { fmt: m }
             | UniffiTrait::Debug { fmt: m }
             | UniffiTrait::Hash { hash: m } =&gt; {
-                m.derive_ffi_func(ci_namespace, obj_name)<span class="question-mark">?</span>;
+                m.derive_ffi_func()<span class="question-mark">?</span>;
             }
             UniffiTrait::Eq { eq, ne } =&gt; {
-                eq.derive_ffi_func(ci_namespace, obj_name)<span class="question-mark">?</span>;
-                ne.derive_ffi_func(ci_namespace, obj_name)<span class="question-mark">?</span>;
+                eq.derive_ffi_func()<span class="question-mark">?</span>;
+                ne.derive_ffi_func()<span class="question-mark">?</span>;
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -1400,7 +1376,7 @@
                 sequence&lt;u32&gt; code_points_of_name();
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.object_definitions().len(), <span class="number">1</span>);
         ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
 
@@ -1431,7 +1407,7 @@
                 constructor(u32 v);
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.object_definitions().len(), <span class="number">1</span>);
 
         <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
@@ -1461,7 +1437,7 @@
                 constructor(u32 v);
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.object_definitions().len(), <span class="number">1</span>);
 
         <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
@@ -1488,7 +1464,7 @@
                 void new(u32 v);
             };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
             <span class="string">&quot;the method name \&quot;new\&quot; is reserved for the default constructor&quot;
@@ -1504,7 +1480,7 @@
                 constructor(u32 v);
             };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Duplicate interface member name: \&quot;new\&quot;&quot;</span>);
 
         <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
@@ -1515,7 +1491,7 @@
                 constructor(u32 v);
             };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Duplicate interface member name: \&quot;new\&quot;&quot;</span>);
     }
 
@@ -1529,7 +1505,7 @@
             interface ATrait {
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;NotATrait&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">&quot;r#NotATrait&quot;</span>);
         <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;ATrait&quot;</span>).unwrap();
@@ -1545,7 +1521,7 @@
                 constructor();
             };
         &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL).unwrap_err();
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
             <span class="string">&quot;Trait interfaces can not have constructors: \&quot;new\&quot;&quot;

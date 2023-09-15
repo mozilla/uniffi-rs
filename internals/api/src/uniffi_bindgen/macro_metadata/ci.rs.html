@@ -133,6 +133,9 @@
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -245,7 +248,10 @@
                 module_path: meta.module_path.clone(),
                 name: meta.name.clone(),
             })<span class="question-mark">?</span>;
-            iface.add_callback_interface_definition(CallbackInterface::new(meta.name));
+            iface.add_callback_interface_definition(CallbackInterface::new(
+                meta.name,
+                meta.module_path,
+            ));
         }
         Metadata::TraitMethod(meta) =&gt; {
             iface.add_trait_method_meta(meta)<span class="question-mark">?</span>;
