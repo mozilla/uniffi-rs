@@ -508,4 +508,60 @@ mod test {
         assert!(!error.is_flat());
         assert!(ci.is_name_used_as_error(&error.name));
     }
+
+    #[test]
+    fn test_enum_variant_named_error() {
+        const UDL: &str = r#"
+            namespace test{};
+
+            [Enum]
+            interface Testing {
+                Normal(string first);
+                Error(string first);
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(ci.enum_definitions().count(), 1);
+        let testing: &Enum = ci.get_enum_definition("Testing").unwrap();
+        assert_eq!(
+            testing.variants()[0]
+                .fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::<Vec<_>>(),
+            vec!["first"]
+        );
+        assert_eq!(
+            testing.variants()[0]
+                .fields()
+                .iter()
+                .map(|f| f.as_type())
+                .collect::<Vec<_>>(),
+            vec![Type::String]
+        );
+        assert_eq!(
+            testing.variants()[1]
+                .fields()
+                .iter()
+                .map(|f| f.name())
+                .collect::<Vec<_>>(),
+            vec!["first"]
+        );
+        assert_eq!(
+            testing.variants()[1]
+                .fields()
+                .iter()
+                .map(|f| f.as_type())
+                .collect::<Vec<_>>(),
+            vec![Type::String]
+        );
+        assert_eq!(
+            testing
+                .variants()
+                .iter()
+                .map(|v| v.name())
+                .collect::<Vec<_>>(),
+            vec!["Normal", "Error"]
+        );
+    }
 }
