@@ -520,7 +520,7 @@ mod test {
                 Error(string first);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.enum_definitions().count(), 1);
         let testing: &Enum = ci.get_enum_definition("Testing").unwrap();
         assert_eq!(
