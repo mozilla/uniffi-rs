@@ -1087,7 +1087,7 @@
                 Error(string first);
             };
         &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL).unwrap();
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.enum_definitions().count(), <span class="number">1</span>);
         <span class="kw">let </span>testing: <span class="kw-2">&amp;</span>Enum = ci.get_enum_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
         <span class="macro">assert_eq!</span>(
