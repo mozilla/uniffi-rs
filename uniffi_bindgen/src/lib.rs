@@ -96,7 +96,6 @@ use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::fs::read_to_string;
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::{collections::HashMap, process::Command, str::FromStr};

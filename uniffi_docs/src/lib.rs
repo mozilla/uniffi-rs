@@ -4,12 +4,13 @@
 
 use std::{collections::HashMap, fs::read_to_string, path::Path, str::FromStr};
 
+use uniffi_meta::Checksum;
 use anyhow::Result;
 use pulldown_cmark::{Event, HeadingLevel::H1, Parser, Tag};
 use syn::Attribute;
 
 /// Function documentation.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 pub struct Function {
     pub description: String,
     pub arguments_descriptions: HashMap<String, String>,

@@ -178,33 +178,6 @@ impl From<uniffi_meta::FnMetadata> for Function {
     }
 }
 
-impl APIConverter<Function> for weedle::namespace::NamespaceMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
-        match self {
-            weedle::namespace::NamespaceMember::Operation(f) => f.convert(ci),
-            _ => bail!("no support for namespace member type {:?} yet", self),
-        }
-    }
-}
-
-impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Function> {
-        let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-        Ok(Function {
-            name: match self.identifier {
-                None => bail!("anonymous functions are not supported {:?}", self),
-                Some(id) => id.0.to_string(),
-            },
-            is_async: false,
-            documentation: None,
-            return_type,
-            arguments: self.args.body.list.convert(ci)?,
-            ffi_func: Default::default(),
-            attributes: FunctionAttributes::try_from(self.attributes.as_ref())?,
-        })
-    }
-}
-
 /// Represents an argument to a function/constructor/method call.
 ///
 /// Each argument has a name and a type, along with some optional metadata.

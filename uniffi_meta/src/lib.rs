@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::{collections::BTreeMap, hash::Hasher};
+use std::{collections::{BTreeMap, HashMap}, hash::Hasher};
 pub use uniffi_checksum_derive::Checksum;
 
 mod ffi_names;
@@ -73,6 +73,16 @@ impl<T: Checksum> Checksum for Vec<T> {
 }
 
 impl<K: Checksum, V: Checksum> Checksum for BTreeMap<K, V> {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
+        state.write(&(self.len() as u64).to_le_bytes());
+        for (key, value) in self {
+            Checksum::checksum(key, state);
+            Checksum::checksum(value, state);
+        }
+    }
+}
+
+impl<K: Checksum, V: Checksum> Checksum for HashMap<K, V> {
     fn checksum<H: Hasher>(&self, state: &mut H) {
         state.write(&(self.len() as u64).to_le_bytes());
         for (key, value) in self {

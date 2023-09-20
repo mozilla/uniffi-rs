@@ -1990,10 +1990,10 @@ dependencies = [
  "paste",
  "serde",
  "toml",
+ "uniffi_docs",
  "uniffi_meta",
  "uniffi_testing",
  "uniffi_udl",
- "weedle2",
 ]
 
 [[package]]
@@ -2029,13 +2029,14 @@ dependencies = [
 
 [[package]]
 name = "uniffi_docs"
-version = "0.23.0"
+version = "0.24.3"
 dependencies = [
  "anyhow",
  "indoc",
  "pulldown-cmark",
  "quote",
  "syn 1.0.109",
+ "uniffi_meta",
 ]
 
 [[package]]

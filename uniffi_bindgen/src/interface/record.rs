@@ -86,12 +86,6 @@ impl Record {
             .iter()
             .any(|field| field.documentation.is_some())
     }
-
-    pub fn type_(&self) -> Type {
-        // *sigh* at the clone here, the relationship between a ComponentInterface
-        // and its contained types could use a bit of a cleanup.
-        Type::Record(self.name.clone())
-    }
 }
 
 impl AsType for Record {

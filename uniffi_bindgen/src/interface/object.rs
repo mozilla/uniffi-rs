@@ -124,10 +124,6 @@ impl Object {
         self.documentation.as_ref()
     }
 
-    pub fn type_(&self) -> Type {
-        Type::Object(self.name.clone())
-    }
-
     pub fn constructors(&self) -> Vec<&Constructor> {
         self.constructors.iter().collect()
     }
@@ -233,6 +229,7 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             module_path: meta.module_path,
             name: meta.name,
             imp: meta.imp,
+            documentation: None,
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: meta.uniffi_traits.into_iter().map(Into::into).collect(),
@@ -346,18 +343,6 @@ impl Constructor {
     }
 }
 
-impl Default for Constructor {
-    fn default() -> Self {
-        Constructor {
-            name: String::from("new"),
-            documentation: None,
-            arguments: Vec::new(),
-            ffi_func: Default::default(),
-            attributes: Default::default(),
-        }
-    }
-}
-
 impl From<uniffi_meta::ConstructorMetadata> for Constructor {
     fn from(meta: uniffi_meta::ConstructorMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
@@ -372,6 +357,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             name: meta.name,
             object_name: meta.self_name,
             object_module_path: meta.module_path,
+            documentation: None,
             arguments,
             ffi_func,
             throws: meta.throws.map(Into::into),
@@ -548,6 +534,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
             object_name: meta.trait_name,
             object_module_path: meta.module_path,
             is_async: false,
+            documentation: None,
             arguments,
             return_type,
             throws: meta.throws.map(Into::into),
@@ -559,42 +546,6 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
         }
     }
 }
-
-impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Method> {
-        if self.special.is_some() {
-            bail!("special operations not supported");
-        }
-
-        if self.modifier.is_some() {
-            bail!("method modifiers are not supported")
-        }
-
-        let return_type = ci.resolve_return_type_expression(&self.return_type)?;
-
-        Ok(Method {
-            name: match self.identifier {
-                None => bail!("anonymous methods are not supported {:?}", self),
-                Some(id) => {
-                    let name = id.0.to_string();
-                    if name == "new" {
-                        bail!("the method name \"new\" is reserved for the default constructor");
-                    }
-                    name
-                }
-            },
-            documentation: None,
-            // We don't know the name of the containing `Object` at this point, fill it in later.
-            object_name: Default::default(),
-            is_async: false,
-            arguments: self.args.body.list.convert(ci)?,
-            return_type,
-            ffi_func: Default::default(),
-            attributes: MethodAttributes::try_from(self.attributes.as_ref())?,
-        })
-    }
-}
-
 
 /// The list of traits we support generating helper methods for.
 #[derive(Clone, Debug, Checksum)]

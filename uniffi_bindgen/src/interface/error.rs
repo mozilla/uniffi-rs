@@ -150,18 +150,6 @@ impl From<uniffi_meta::ErrorMetadata> for Error {
     }
 }
 
-impl APIConverter<Error> for weedle::EnumDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
-        Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))
-    }
-}
-
-impl APIConverter<Error> for weedle::InterfaceDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Error> {
-        Ok(Error::from_enum(APIConverter::<Enum>::convert(self, ci)?))
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
