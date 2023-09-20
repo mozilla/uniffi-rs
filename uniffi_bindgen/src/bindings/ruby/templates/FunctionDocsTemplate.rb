@@ -5,12 +5,12 @@
 {% endfor -%}
 
     {%- if docs.arguments_descriptions.len() > 0 %}# 
-    {% for arg in func.arguments() -%}# @param [{{ arg.type_()|type_name }}] {{ arg.name() }} {{ docs.arguments_descriptions[arg.name()] }}
+    {% for arg in func.arguments() -%}# @param [{{ canonical_name(arg.type_()) }}] {{ arg.name() }} {{ docs.arguments_descriptions[arg.name()] }}
     {% endfor -%} 
     {% endif -%}
 
     {%- match docs.return_description -%}
-      {% when Some with (desc) %}# @return [{{ func.return_type().unwrap()|type_name }}] {{ desc }}
+      {% when Some with (desc) %}# @return [{{ canonical_name(func.return_type().unwrap()) }}] {{ desc }}
       {%- when None %}
     {%- endmatch %}
   {%- when None %}

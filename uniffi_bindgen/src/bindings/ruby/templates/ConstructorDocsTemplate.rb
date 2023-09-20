@@ -5,7 +5,7 @@
 {% endfor -%}
 
     {%- if docs.arguments_descriptions.len() > 0 %}# 
-    {% for arg in func.arguments() -%}# @param [{{ arg.type_()|type_name }}] {{ arg.name() }} {{ docs.arguments_descriptions[arg.name()] }}
+    {% for arg in func.arguments() -%}# @param [{{ canonical_name(arg.type_()) }}] {{ arg.name() }} {{ docs.arguments_descriptions[arg.name()] }}
     {% endfor -%} 
     {% endif -%}
 
