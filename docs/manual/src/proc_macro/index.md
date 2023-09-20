@@ -1,32 +1,42 @@
-# Experimental: Attributes and Derives
+# Procedural Macros: Attributes and Derives
 
-UniFFI is in the process of having its interface definition mechanism rewritten to avoid the
-duplication of function signatures and type definitions between Rust code and the UDL file (and the
-possibility for the two to go out of sync). The new interface definition mechanism is based on
-[Procedural Macros][] (proc-macros), specifically the attribute and derive macros.
+UniFFI allows you to define your function signatures and type definitions directly in your Rust
+code, avoiding the need to duplicate them in a UDL file and so avoiding the possibility for the two to get out of sync.
+This  mechanism is based on [Procedural Macros][] (proc-macros), specifically the attribute and derive macros.
 
-This rewrite is not yet complete, but can already have UniFFI extract some kinds of definitions out
-of your Rust code, in addition to what is declared in the UDL file. However, you have to make sure
+You can have this mechanism extract some kinds of definitions out of your Rust code,
+in addition to what is declared in the UDL file. However, you have to make sure
 that the UDL file is still valid on its own: All types referenced in fields, parameter and return
 types in UDL must also be declared in UDL.
 
+Further, using this capability probably means you still need to refer to the UDL documentation,
+because at this time, that documentation tends to conflate the UniFFI type model and the
+description of how foreign bindings use that type model. For example, the documentation for
+a UDL interface describes both how it is defined in UDL and how Swift and Kotlin might use
+that interface. The latter is relevent even if you define the interface using proc-macros
+instead of in UDL.
+
 [Procedural Macros]: https://doc.rust-lang.org/reference/procedural-macros.html
 
-**⚠ Warning ⚠** As the page title says, this is experimental. Bugs are expected and if you want to
-try it is recommended that you use `uniffi` as a git dependency so you don't run into issues that
-are already fixed.
+**⚠ Warning ⚠** This facility is relatively new, so things may change often. However, this remains
+true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.
 
 ## Build workflow
 
-Before any of the things discussed below work, make sure to update your bindings generation steps
-to start with a build of your library and add
-`--lib-file <CARGO WORKSPACE>/target/<TARGET>/<BUILT CDYLIB OR STATICLIB>` to your `uniffi-bindgen`
-command line invocation.
+Library mode is recommended when using UniFFI proc-macros (See the [Foreign language bindings docs](../tutorial/foreign_language_bindings.md) for more info).
+
+If your crate's API is declared using only proc-macros and not UDL files, call the `uniffi::setup_scaffolding` macro at the top of your source code:
+
+```rust
+uniffi::setup_scaffolding!();
+```
+
+**⚠ Warning ⚠** Do not call both `uniffi::setup_scaffolding!()` and `uniffi::include_scaffolding!!()` in the same crate.
 
 ## The `#[uniffi::export]` attribute
 
-The most important proc-macro is the `export` attribute. It can be used on functions and `impl`
-blocks to make UniFFI aware of them.
+The most important proc-macro is the `export` attribute. It can be used on functions, `impl`
+blocks, and `trait` definitions to make UniFFI aware of them.
 
 ```rust
 #[uniffi::export]
@@ -37,22 +47,48 @@ fn hello_ffi() {
 // Corresponding UDL:
 //
 // interface MyObject {};
+#[derive(uniffi::Object)] 
 struct MyObject {
     // ...
 }
 
 #[uniffi::export]
 impl MyObject {
-    // All methods must have a `self` argument
+    // Constructors need to be annotated as such.
+    // As of right now, they must return `Arc<Self>`, this might change.
+    // If the constructor is named `new`, it is treated as the primary
+    // constructor, so in most languages this is invoked with `MyObject()`.
+    #[uniffi::constructor]
+    fn new(argument: String) -> Arc<Self> {
+        // ...
+    }
+
+    // Constructors with different names are also supported, usually invoked
+    // as `MyObject.named()` (depending on the target language)
+    #[uniffi::constructor]
+    fn named() -> Arc<Self> {
+        // ...
+    }
+
+    // All functions that are not constructors must have a `self` argument
     fn method_a(&self) {
         // ...
     }
 
-    // Arc<Self> is also supported
+    // `Arc<Self>` is also supported
     fn method_b(self: Arc<Self>) {
         // ...
     }
 }
+
+// Corresponding UDL:
+// [Trait]
+// interface MyTrait {};
+#[uniffi::export]
+trait MyTrait {
+    // ...
+}
+
 ```
 
 Most UniFFI [builtin types](../udl/builtin_types.md) can be used as parameter and return types.
@@ -62,16 +98,6 @@ User-defined types are also supported in a limited manner: records (structs with
 `dictionary` in UDL) and enums can be used when the corresponding derive macro is used at
 their definition. Opaque objects (`interface` in UDL) can always be used regardless of whether they
 are defined in UDL and / or via derive macro; they just need to be put inside an `Arc` as always.
-
-User-defined types also have to be (re-)exported from a module called `uniffi_types` at the crate
-root. This is required to ensure that a given type name always means the same thing across all uses
-of `#[uniffi::export]` across the whole module tree.
-
-```rust
-mod uniffi_types {
-    pub(crate) use path::to::MyObject;
-}
-```
 
 ## The `uniffi::Record` derive
 
@@ -89,6 +115,12 @@ will fail).
 pub struct MyRecord {
     pub field_a: String,
     pub field_b: Option<Arc<MyObject>>,
+    // Fields can have a default value.
+    // Currently, only string, integer, float and boolean literals are supported as defaults.
+    #[uniffi(default = "hello")]
+    pub greeting: String,
+    #[uniffi(default = true)]
+    pub some_flag: bool,
 }
 ```
 
@@ -154,6 +186,60 @@ impl Foo {
 }
 ```
 
+Exported functions can input object arguments as either an `Arc<>` or reference.
+```rust
+// Input foo as an Arc and bar as a reference
+fn call_both(foo: Arc<Foo>, bar: &Foo) {
+  foo.method_a();
+  bar.method_rba();
+```
+
+There are a couple limitations when using references for arguments:
+  - They can only be used with objects and trait interfaces
+  - The reference must be visible in the function signature.
+    If you have a type alias `type MyFooRef<'a> = &'a Foo`, then `fn do_something(foo: MyFooRef<'_>)` would not work.
+
+## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
+
+There are 2 macros available which allow procmacros to support "custom types" as described in the
+[UDL documentation for Custom Types](../udl/custom_types.md)
+
+The `uniffi::custom_type!` macro requires you to specify the name of the custom type, and the name of the
+builtin which implements this type. Use of this macro requires you to manually implement the
+`UniffiCustomTypeConverter` trait for for your type, as shown below.
+```rust
+pub struct Uuid {
+    val: String,
+}
+
+// Use `url::Url` as a custom type, with `String` as the Builtin
+uniffi::custom_type!(Url, String);
+
+impl UniffiCustomTypeConverter for Uuid {
+    type Builtin = String;
+
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(Uuid { val })
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.val
+    }
+}
+```
+
+There's also a `uniffi::custom_newtype!` macro, designed for custom types which use the
+"new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
+is able to make assumptions about how the type is laid out, `UniffiCustomTypeConverter`
+is implemented automatically.
+
+```rust
+uniffi::custom_newtype!(NewTypeHandle, i64);
+pub struct NewtypeHandle(i64);
+```
+
+and that's it!
+
 ## The `uniffi::Error` derive
 
 The `Error` derive registers a type as an error and can be used on any enum that the `Enum` derive also accepts.
@@ -206,6 +292,78 @@ fn do_http_request() -> Result<(), MyApiError> {
     // ...
 }
 ```
+
+## The `#[uniffi::export(callback_interface)]` attribute
+
+`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.html) definition.
+This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
+
+```rust
+#[uniffi::export(callback_interface)]
+pub trait Person {
+    fn name() -> String;
+    fn age() -> u32;
+}
+
+// Corresponding UDL:
+// callback interface Person {
+//     string name();
+//     u32 age();
+// }
+```
+
+### Exception handling in callback interfaces
+
+Most languages allow arbitrary exceptions to be thrown, which presents issues for callback
+interfaces.  If a callback interface function returns a non-Result type, then any exception will
+result in a panic on the Rust side.
+
+To avoid panics, callback interfaces can use `Result<T, E>` types for all return values.  If the callback
+interface implementation throws the exception that corresponds to the `E` parameter, `Err(E)` will
+be returned to the Rust code.  However, in most languages it's still possible for the implementation
+to throw other exceptions.  To avoid panics in those cases, the error type must be wrapped
+with the `#[uniffi(handle_unknown_callback_error)]` attribute and
+`From<UnexpectedUniFFICallbackError>` must be implemented:
+
+```rust
+#[derive(uniffi::Error)]
+#[uniffi(handle_unknown_callback_error)]
+pub enum MyApiError {
+    IOError,
+    ValueError,
+    UnexpectedError { reason: String },
+}
+
+impl From<UnexpectedUniFFICallbackError> for MyApiError {
+    fn from(e: UnexpectedUniFFICallbackError) -> Self {
+        Self::UnexpectedError { reason: e.reason }
+    }
+}
+```
+
+## Types from dependent crates
+
+When using proc-macros, you can use types from dependent crates in your exported library, as long as
+the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
+exceptions:
+
+### Types from UDL-based dependent crates
+
+If the dependent crate uses a UDL file to define their types, then you must invoke one of the
+`uniffi::use_udl_*!` macros, for example:
+
+```rust
+uniffi::use_udl_record!(dependent_crate, RecordType);
+uniffi::use_udl_enum!(dependent_crate, EnumType);
+uniffi::use_udl_error!(dependent_crate, ErrorType);
+uniffi::use_udl_object!(dependent_crate, ObjectType);
+```
+
+### Non-UniFFI types from dependent crates
+
+If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
+then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
+to fix this limitation soon.
 
 ## Other limitations
 

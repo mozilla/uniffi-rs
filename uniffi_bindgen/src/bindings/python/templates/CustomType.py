@@ -1,7 +1,10 @@
 {%- match python_config.custom_types.get(name.as_str())  %}
 {% when None %}
 {#- No custom type config, just forward all methods to our builtin type #}
-class FfiConverterType{{ name }}:
+# Type alias
+{{ name }} = {{ builtin|type_name }}
+
+class _UniffiConverterType{{ name }}:
     @staticmethod
     def write(value, buf):
         {{ builtin|ffi_converter_name }}.write(value, buf)
@@ -28,8 +31,11 @@ class FfiConverterType{{ name }}:
 {%- else %}
 {%- endmatch %}
 
+# Type alias
+{{ name }} = {{ builtin|type_name }}
+
 {#- Custom type config supplied, use it to convert the builtin type #}
-class FfiConverterType{{ name }}:
+class _UniffiConverterType{{ name }}:
     @staticmethod
     def write(value, buf):
         builtin_value = {{ config.from_custom.render("value") }}

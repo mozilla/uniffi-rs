@@ -1,0 +1,10 @@
+// The generated scaffolding is imported into a submodule on the Rust side (for namespacing)
+// and then reexported using `pub use *`.
+// We hit a case where some required types weren't `pub` and thus this would fail.
+
+[Custom]
+typedef i32 Integer;
+
+namespace regression_test_nested_module {
+  Integer run();
+};

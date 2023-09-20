@@ -22,7 +22,7 @@ commands:
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
-      - run: rustup override set 1.65.0
+      - run: rustup override set 1.66.0
       - run: rustup update
   build-api-docs:
     steps:
@@ -39,9 +39,7 @@ orbs:
 jobs:
   Check Rust formatting:
     docker:
-      # Our policy for updating this rust version is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
-      # See also rust-toolchain.toml in the root of this repo, which is used to ensure the local version of rust matches.
-      - image: rfkelly/uniffi-ci:latest
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -51,7 +49,7 @@ jobs:
       - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
-      - image: rfkelly/uniffi-ci:latest
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -61,7 +59,7 @@ jobs:
       - run: cargo clippy --all --all-targets -- -D warnings
   Lint Rust Docs:
     docker:
-      - image: rfkelly/uniffi-ci:latest
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -69,7 +67,7 @@ jobs:
       - build-api-docs
   Rust and Foreign Language tests:
     docker:
-      - image: rfkelly/uniffi-ci:latest
+      - image: janerik/uniffi-ci-test:latest
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
@@ -87,12 +85,22 @@ jobs:
             # Ensures that all examples are built and avaiable
             cargo build
       - run: cargo test
+      - run:
+          name: mypy Python typechecks
+          command: |
+            pip install mypy
+            for file in $(find target -name "*.py"); do
+              mypy "$file";
+            done
+
   Rust and Foreign Language tests - min supported rust:
     docker:
-      - image: rfkelly/uniffi-ci:latest
+      - image: janerik/uniffi-ci-test:latest
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
+      - run: |
+          echo 'export CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git' >> $BASH_ENV
       - checkout
       - prepare-rust-min-version
       - run:
@@ -109,7 +117,7 @@ jobs:
       - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
-      - image: rfkelly/uniffi-ci:latest
+      - image: cimg/rust:1.69
     resource_class: small
     steps:
       - checkout
@@ -121,6 +129,28 @@ jobs:
       - gh-pages/deploy:
           build-dir: docs/manual/book
           ssh-fingerprints: "ac:68:a3:78:ea:ee:00:05:30:e1:dc:1f:2e:2f:7c:81"
+
+  Deploy Docker:
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Build container image
+          command: |
+            docker build -t uniffi-ci:build -f docker/Dockerfile-build .
+      - run:
+          name: Push to Dockerhub
+          command: |
+            cd docker
+            if [ -n "${CIRCLE_TAG}" ]; then
+              # Strip the `docker-` prefix of the tag
+              TAG="${CIRCLE_TAG#docker-}"
+              ./deploy-dockerhub.sh "$TAG"
+              ./deploy-dockerhub.sh "latest"
+            fi
 
 workflows:
   version: 2
@@ -143,3 +173,11 @@ workflows:
           filters:
             branches:
               only: main
+  deploy-docker:
+    jobs:
+      - Deploy Docker:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^docker-v.*/

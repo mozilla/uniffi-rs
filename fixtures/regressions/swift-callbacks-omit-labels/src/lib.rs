@@ -26,4 +26,4 @@ impl Client {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/test.uniffi.rs"));
+uniffi::include_scaffolding!("test");

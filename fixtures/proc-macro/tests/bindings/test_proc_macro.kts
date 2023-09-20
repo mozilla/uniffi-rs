@@ -7,11 +7,17 @@ import uniffi.fixture.proc_macro.*;
 val one = makeOne(123)
 assert(one.inner == 123)
 
-val two = Two("a", null)
+val two = Two("a")
 assert(takeTwo(two) == "a")
 
-val obj = makeObject()
+val rwb = RecordWithBytes(byteArrayOf(1,2,3))
+assert(takeRecordWithBytes(rwb).contentEquals(byteArrayOf(1, 2, 3)))
+
+var obj = Object()
+obj = Object.namedCtor(1u)
 assert(obj.isHeavy() == MaybeBool.UNCERTAIN)
+var obj2 = Object()
+assert(obj.isOtherHeavy(obj2) == MaybeBool.UNCERTAIN)
 
 assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
 
@@ -19,6 +25,7 @@ assert(enumIdentity(MaybeBool.TRUE) == MaybeBool.TRUE)
 val three = Three(obj)
 
 assert(makeZero().inner == "ZERO")
+assert(makeRecordWithBytes().someBytes.contentEquals(byteArrayOf(0, 1, 2, 3, 4)))
 
 try {
     alwaysFails()
@@ -33,3 +40,38 @@ try {
     throw RuntimeException("doStuff should throw if its argument is 0")
 } catch (e: FlatException) {
 }
+
+val traitImpl = obj.getTrait(null)
+assert(traitImpl.name() == "TraitImpl")
+assert(obj.getTrait(traitImpl).name() == "TraitImpl")
+assert(getTraitNameByRef(traitImpl) == "TraitImpl")
+
+
+class KtTestCallbackInterface : TestCallbackInterface {
+    override fun doNothing() { }
+
+    override fun add(a: UInt, b: UInt) = a + b
+
+    override fun optional(a: UInt?) = a ?: 0u
+
+    override fun withBytes(rwb: RecordWithBytes) = rwb.someBytes
+
+    override fun tryParseInt(value: String): UInt {
+        if (value == "force-unexpected-error") {
+            // raise an error that's not expected
+            throw RuntimeException(value)
+        }
+        try {
+            return value.toUInt()
+        } catch(e: NumberFormatException) {
+            throw BasicException.InvalidInput()
+        }
+    }
+
+    override fun callbackHandler(o: Object): UInt {
+        val v = o.takeError(BasicException.InvalidInput());
+        return v
+    }
+}
+
+testCallbackInterface(KtTestCallbackInterface())

@@ -19,7 +19,8 @@
   - [External Types](./udl/ext_types.md)
     - [Declaring External Types](./udl/ext_types_external.md)
     - [Declaring Custom Types](./udl/custom_types.md)
-- [Experimental: Attributes and Derives](./proc_macro/index.md)
+- [Procedural Macros: Attributes and Derives](./proc_macro/index.md)
+- [Futures and async support](./futures.md)
 
 # Kotlin
 

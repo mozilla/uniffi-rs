@@ -16,7 +16,7 @@ pub enum InternalError {
     Unexpected,
 }
 
-fn get_guid(guid: Option<Guid>) -> Guid {
+pub fn get_guid(guid: Option<Guid>) -> Guid {
     // This function doesn't return a Result, so all conversion errors are panics
     match guid {
         Some(guid) => {
@@ -96,4 +96,4 @@ impl UniffiCustomTypeConverter for Guid {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/guid.uniffi.rs"));
+uniffi::include_scaffolding!("guid");

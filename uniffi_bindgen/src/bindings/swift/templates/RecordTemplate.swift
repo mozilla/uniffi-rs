@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 {%- let rec = ci.get_record_definition(name).unwrap() %}
 {% let struct = rec %}{% include "RecordDocsTemplate.swift" %}
+=======
+{%- let rec = ci|get_record_definition(name) %}
+>>>>>>> upstream/main
 public struct {{ type_name }} {
     {%- for field in rec.fields() %}
     public var {{ field.name()|var_name }}: {{ field|type_name }}
@@ -37,7 +41,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         return try {{ type_name }}(
             {%- for field in rec.fields() %}
-            {{ field.name()|var_name }}: {{ field|read_fn }}(from: &buf)
+            {{ field.name()|arg_name }}: {{ field|read_fn }}(from: &buf)
             {%- if !loop.last %}, {% endif %}
             {%- endfor %}
         )

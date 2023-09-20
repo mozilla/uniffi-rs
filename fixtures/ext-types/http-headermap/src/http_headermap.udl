@@ -1,0 +1,17 @@
+dictionary HttpHeader {
+    string key;
+    string val;
+};
+
+[Custom]
+typedef sequence<HttpHeader> HeaderMap;
+
+callback interface HeaderMapCallback {
+   HeaderMap run(HeaderMap arg);
+};
+
+namespace ext_types_http_headermap {
+  HeaderMap get_headermap(string value);
+
+  HeaderMap run_callback(HeaderMapCallback arg);
+};

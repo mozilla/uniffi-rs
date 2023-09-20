@@ -18,7 +18,7 @@ impl TodoList {
         }
     }
 
-    fn add_item(&mut self, todo: String) {
+    fn add_item(&self, todo: String) {
         self.items.write().unwrap().push(todo);
     }
 
@@ -73,6 +73,61 @@ func display(list: TodoListProtocol) {
 Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
 for testing.
 
+## Exposing Traits as interfaces
+
+It's possible to have UniFFI expose a Rust trait as an interface by specifying a `Trait` attribute.
+
+For example, in the UDL file you might specify:
+
+```idl
+[Trait]
+interface Button {
+    string name();
+};
+
+```
+
+With the following Rust implementation:
+
+```rust
+pub trait Button: Send + Sync {
+    fn name(&self) -> String;
+}
+
+struct StopButton {}
+
+impl Button for StopButton  {
+    fn name(&self) -> String {
+        "stop".to_string()
+    }
+}
+```
+
+Uniffi explicitly checks all interfaces are `Send + Sync` - there's a ui-test which demonstrates obscure rust compiler errors when it's not true. Traits however need to explicitly add those bindings.
+
+References to traits are passed around like normal interface objects - in an `Arc<>`.
+For example, this UDL:
+
+```idl
+namespace traits {
+    sequence<Button> get_buttons();
+    Button press(Button button);
+};
+```
+
+would have these signatures in Rust:
+
+```rust
+fn get_buttons() -> Vec<Arc<dyn Button>> { ... }
+fn press(button: Arc<dyn Button>) -> Arc<dyn Button> { ... }
+```
+
+See the ["traits" example](https://github.com/mozilla/uniffi-rs/tree/main/examples/traits) for more.
+
+### Traits construction
+
+Because any number of `struct`s may implement a trait, they don't have constructors.
+
 ## Alternate Named Constructors
 
 In addition to the default constructor connected to the `::new()` method, you can specify
@@ -92,6 +147,35 @@ interface TodoList {
 For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.
+
+## Exposing methods from standard Rust traits
+
+Rust has a number of general purpose traits which add functionality to objects, such
+as `Debug`, `Display`, etc. It's possible to tell UniFFI that your object implements these
+traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
+generate special methods on the object.
+
+For example, consider the following example:
+```
+[Traits=Debug]
+interface TodoList {
+    ...
+}
+```
+and the following Rust code:
+```rust
+#[derive(Debug)]
+struct TodoList {
+   ...
+}
+```
+
+This will cause the Python bindings to generate a `__repr__` method that returns the value implemented by the `Debug` trait.
+Not all bindings support generating special methods, so they may be ignored.
+It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.
+
+The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
+is `Debug`, `Display`, `Eq` and `Hash`.
 
 ## Managing Shared References
 

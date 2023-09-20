@@ -1,9 +1,2 @@
 [bindings.kotlin]
 package_name = "uniffi.fixture.simple_iface"
-cdylib_name = "uniffi_simple_iface"
-
-[bindings.python]
-cdylib_name = "uniffi_simple_iface"
-
-[bindings.swift]
-cdylib_name = "uniffi_simple_iface"

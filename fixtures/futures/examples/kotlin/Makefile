@@ -4,7 +4,7 @@ install-jar:
 
 build:
 	cargo build --release
-	../../../../target/release/uniffi-fixtures-futures generate --lib-file ../../../../target/release/libuniffi_futures.dylib ../../src/uniffi_futures.udl --language kotlin --out-dir .
+	../../../../target/release/uniffi-fixtures-futures generate --lib-file ../../../../target/release/libuniffi_futures.dylib ../../src/futures.udl --language kotlin --out-dir .
 	rm -f libuniffi_futures.dylib
 	ln -s ../../../../target/release/libuniffi_futures.dylib libuniffi_futures.dylib
 	kotlinc -cp kotlinx-coroutines-core-jvm.jar:jna.jar -include-runtime -d demo.jar uniffi/fixture/futures/*.kt demo.kt

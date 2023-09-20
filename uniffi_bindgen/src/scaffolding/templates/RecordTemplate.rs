@@ -11,6 +11,6 @@
 #[::uniffi::ffi_converter_record(tag = crate::UniFfiTag)]
 struct r#{{ rec.name() }} {
     {%- for field in rec.fields() %}
-    r#{{ field.name() }}: {{ field.type_()|type_rs }},
+    r#{{ field.name() }}: {{ field.as_type().borrow()|type_rs }},
     {%- endfor %}
 }

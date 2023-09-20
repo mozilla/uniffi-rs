@@ -22,7 +22,7 @@ class RustBufferStream
   end
 
   {% for typ in ci.iter_types() -%}
-  {%- let canonical_type_name = typ.canonical_name().borrow()|class_name_rb -%}
+  {%- let canonical_type_name = canonical_name(typ).borrow()|class_name_rb -%}
   {%- match typ -%}
 
   {% when Type::Int8 -%}
@@ -106,6 +106,16 @@ class RustBufferStream
     read(size).force_encoding(Encoding::UTF_8)
   end
 
+  {% when Type::Bytes -%}
+
+  def readBytes
+    size = unpack_from 4, 'l>'
+
+    raise InternalError, 'Unexpected negative byte string length' if size.negative?
+
+    read(size).force_encoding(Encoding::BINARY)
+  end
+
   {% when Type::Timestamp -%}
   # The Timestamp type.
   ONE_SECOND_IN_NANOSECONDS = 10**9
@@ -140,7 +150,7 @@ class RustBufferStream
     Time.at(seconds, nanoseconds, :nanosecond, in: '+00:00').utc
   end
 
-  {% when Type::Object with (object_name) -%}
+  {% when Type::Object with { name: object_name, module_path, imp } -%}
   # The Object type {{ object_name }}.
 
   def read{{ canonical_type_name }}
@@ -148,8 +158,10 @@ class RustBufferStream
     return {{ object_name|class_name_rb }}._uniffi_allocate(pointer)
   end
 
-  {% when Type::Enum with (enum_name) -%}
-  {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
+  {% when Type::Enum { name, module_path } -%}
+  {%- let e = ci|get_enum_definition(name) -%}
+  {% if !ci.is_name_used_as_error(name) %}
+  {% let enum_name = name %}
   # The Enum type {{ enum_name }}.
 
   def read{{ canonical_type_name }}
@@ -168,7 +180,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ enum_name|class_name_rb }}::{{ variant.name()|enum_name_rb }}.new(
             {%- for field in variant.fields() %}
-            self.read{{ field.type_().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            self.read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -180,8 +192,9 @@ class RustBufferStream
     {%- endif %}
   end
 
-  {% when Type::Error with (error_name) -%}
-  {%- let e = ci.get_error_definition(error_name).unwrap().wrapped_enum() %}
+  {% else %}
+
+  {% let error_name = name %}
 
   # The Error type {{ error_name }}
 
@@ -203,7 +216,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
             {%- for field in variant.fields() %}
-            read{{ field.type_().canonical_name().borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -215,21 +228,22 @@ class RustBufferStream
     raise InternalError, 'Unexpected variant tag for {{ canonical_type_name }}'
     {%- endif %}
   end
+  {% endif %}
 
-  {% when Type::Record with (record_name) -%}
-  {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
+  {% when Type::Record { name: record_name, module_path } -%}
+  {%- let rec = ci|get_record_definition(record_name) -%}
   # The Record type {{ record_name }}.
 
   def read{{ canonical_type_name }}
     {{ rec.name()|class_name_rb }}.new(
       {%- for field in rec.fields() %}
-      read{{ field.type_().canonical_name().borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
+      read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}
     )
   end
 
-  {% when Type::Optional with (inner_type) -%}
-  # The Optional<T> type for {{ inner_type.canonical_name() }}.
+  {% when Type::Optional { inner_type } -%}
+  # The Optional<T> type for {{ canonical_name(inner_type) }}.
 
   def read{{ canonical_type_name }}
     flag = unpack_from 1, 'c'
@@ -237,14 +251,14 @@ class RustBufferStream
     if flag == 0
       return nil
     elsif flag == 1
-      return read{{ inner_type.canonical_name().borrow()|class_name_rb }}
+      return read{{ canonical_name(inner_type).borrow()|class_name_rb }}
     else
       raise InternalError, 'Unexpected flag byte for {{ canonical_type_name }}'
     end
   end
 
-  {% when Type::Sequence with (inner_type) -%}
-  # The Sequence<T> type for {{ inner_type.canonical_name() }}.
+  {% when Type::Sequence { inner_type } -%}
+  # The Sequence<T> type for {{ canonical_name(inner_type) }}.
 
   def read{{ canonical_type_name }}
     count = unpack_from 4, 'l>'
@@ -254,14 +268,14 @@ class RustBufferStream
     items = []
 
     count.times do
-      items.append read{{ inner_type.canonical_name().borrow()|class_name_rb }}
+      items.append read{{ canonical_name(inner_type).borrow()|class_name_rb }}
     end
 
     items
   end
 
-  {% when Type::Map with (k, inner_type) -%}
-  # The Map<T> type for {{ inner_type.canonical_name() }}.
+  {% when Type::Map { key_type: k, value_type: inner_type } -%}
+  # The Map<T> type for {{ canonical_name(inner_type) }}.
 
   def read{{ canonical_type_name }}
     count = unpack_from 4, 'l>'
@@ -270,7 +284,7 @@ class RustBufferStream
     items = {}
     count.times do
       key = readString
-      items[key] = read{{ inner_type.canonical_name().borrow()|class_name_rb }}
+      items[key] = read{{ canonical_name(inner_type).borrow()|class_name_rb }}
     end
 
     items

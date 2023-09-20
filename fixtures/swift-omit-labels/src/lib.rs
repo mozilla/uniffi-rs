@@ -14,4 +14,4 @@ fn multiple_args(amount: i32, _msg: String) -> i32 {
     amount
 }
 
-include!(concat!(env!("OUT_DIR"), "/omit_argument_labels.uniffi.rs"));
+uniffi::include_scaffolding!("omit_argument_labels");

@@ -33,3 +33,6 @@ assert(getMaybeUniffiOneEnum(uoe)!! == uoe)
 assert(getMaybeUniffiOneEnum(null) == null)
 assert(getUniffiOneEnums(listOf(uoe)) == listOf(uoe))
 assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
+
+assert(ct.ecd.sval == "ecd")
+assert(getExternalCrateInterface("foo").value() == "foo")

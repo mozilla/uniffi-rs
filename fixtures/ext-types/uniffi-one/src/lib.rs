@@ -9,6 +9,11 @@ pub enum UniffiOneEnum {
     Two,
 }
 
+#[derive(uniffi::Record)]
+pub struct UniffiOneProcMacroType {
+    pub sval: String,
+}
+
 #[derive(Default)]
 pub struct UniffiOneInterface {
     current: AtomicI32,
@@ -24,4 +29,4 @@ impl UniffiOneInterface {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/uniffi-one.uniffi.rs"));
+uniffi::include_scaffolding!("uniffi-one");

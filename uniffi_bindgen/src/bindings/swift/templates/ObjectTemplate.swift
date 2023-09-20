@@ -1,4 +1,4 @@
-{%- let obj = ci.get_object_definition(name).unwrap() %}
+{%- let obj = ci|get_object_definition(name) %}
 public protocol {{ obj.name() }}Protocol {
     {% for meth in obj.methods() -%}
     {%- let func = meth -%}
@@ -51,16 +51,24 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {%- if meth.is_async() %}
 
     public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
-        let future = {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
-
-        return {% if meth.throws() -%}
-            try await withCheckedThrowingContinuation
-        {%- else -%}
-            await withCheckedContinuation
-        {%- endif -%}
-        { continuation in
-            let env = Unmanaged.passRetained(_UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env(rustyFuture: future, continuation: continuation))
-            _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw_env: env.toOpaque())
+        // Suspend the function and call the scaffolding function, passing it a callback handler from
+        // `AsyncTypes.swift`
+        //
+        // Make sure to hold on to a reference to the continuation in the top-level scope so that
+        // it's not freed before the callback is invoked.
+        var continuation: {{ meth.result_type().borrow()|future_continuation_type }}? = nil
+        return {% call swift::try(meth) %} await withCheckedThrowingContinuation {
+            continuation = $0
+            try! rustCall() {
+                {{ meth.ffi_func().name() }}(
+                    self.pointer,
+                    {% call swift::arg_list_lowered(meth) %}
+                    FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                    {{ meth.result_type().borrow()|future_callback }},
+                    &continuation,
+                    $0
+                )
+            }
         }
     }
 
@@ -86,77 +94,6 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {%- endif -%}
     {% endfor %}
 }
-
-{% for meth in obj.methods() -%}
-{%- if meth.is_async() -%}
-
-fileprivate class _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env {
-    var rustFuture: OpaquePointer
-    var continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, {% if meth.throws() %}Error{% else %}Never{% endif %}>
-
-    init(rustyFuture: OpaquePointer, continuation: CheckedContinuation<{% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|type_name }}{% when None %}(){% endmatch %}, {% if meth.throws() %}Error{% else %}Never{% endif %}>) {
-        self.rustFuture = rustyFuture
-        self.continuation = continuation
-    }
-
-    deinit {
-        try! rustCall {
-            {{ meth.ffi_func().name() }}_drop(self.rustFuture, $0)
-        }
-    }
-}
-
-fileprivate func _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker(raw_env: UnsafeMutableRawPointer?) {
-    Task {
-        let env = Unmanaged<_UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_Env>.fromOpaque(raw_env!)
-        let env_ref = env.takeUnretainedValue()
-        let polledResult = {% match meth.ffi_func().return_type() -%}
-        {%- when Some with (return_type) -%}
-            UnsafeMutablePointer<{{ return_type|type_ffi_lowered }}>.allocate(capacity: 1)
-        {%- when None -%}
-            UnsafeMutableRawPointer.allocate(byteCount: 0, alignment: 0)
-        {%- endmatch %}
-        {% if meth.throws() -%}do {
-        {%- endif %}
-
-        let isReady = {% match meth.throws_type() -%}
-        {%- when Some with (error) -%}
-            try rustCallWithError({{ error|ffi_converter_name }}.self) {
-        {%- when None -%}
-            try! rustCall() {
-        {%- endmatch %}
-            {{ meth.ffi_func().name() }}_poll(
-                env_ref.rustFuture,
-                _UniFFI_{{ obj.name() }}_{{ meth.name()|class_name }}_waker,
-                env.toOpaque(),
-                polledResult,
-                $0
-            )
-        }
-
-        if isReady {
-            env_ref.continuation.resume(returning: {% match meth.return_type() -%}
-            {%- when Some with (return_type) -%}
-                try! {{ return_type|lift_fn }}(polledResult.move())
-            {%- when None -%}
-                ()
-            {%- endmatch -%}
-            )
-            polledResult.deallocate()
-            env.release()
-        }
-        {%- if meth.throws() %}
-        } catch {
-            env_ref.continuation.resume(throwing: error)
-            polledResult.deallocate()
-            env.release()
-        }
-        {%- endif %}
-    }
-}
-
-{% endif -%}
-{%- endfor %}
 
 public struct {{ ffi_converter_name }}: FfiConverter {
     typealias FfiType = UnsafeMutableRawPointer

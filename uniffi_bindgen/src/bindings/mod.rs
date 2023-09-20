@@ -10,9 +10,9 @@
 use anyhow::{bail, Result};
 use camino::Utf8Path;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::interface::ComponentInterface;
-use crate::MergeWith;
 
 pub mod kotlin;
 pub mod python;
@@ -26,11 +26,37 @@ pub mod swift;
 /// a few `TryFrom` implementations to help guess the correct target language from
 /// e.g. a file extension of command-line argument.
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum TargetLanguage {
     Kotlin,
     Swift,
     Python,
     Ruby,
+}
+
+impl fmt::Display for TargetLanguage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Kotlin => write!(f, "kotlin"),
+            Self::Swift => write!(f, "swift"),
+            Self::Python => write!(f, "python"),
+            Self::Ruby => write!(f, "ruby"),
+        }
+    }
+}
+
+/// Mode for the `run_script` function defined for each language
+#[derive(Clone, Debug)]
+pub struct RunScriptOptions {
+    pub show_compiler_messages: bool,
+}
+
+impl Default for RunScriptOptions {
+    fn default() -> Self {
+        Self {
+            show_compiler_messages: true,
+        }
+    }
 }
 
 impl TryFrom<&str> for TargetLanguage {
@@ -66,14 +92,19 @@ impl TryFrom<String> for TargetLanguage {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
+<<<<<<< HEAD
     pub doc_comments: Option<bool>,
     #[serde(default)]
     kotlin: kotlin::Config,
+=======
+    pub(crate) kotlin: kotlin::Config,
+>>>>>>> upstream/main
     #[serde(default)]
-    swift: swift::Config,
+    pub(crate) swift: swift::Config,
     #[serde(default)]
-    python: python::Config,
+    pub(crate) python: python::Config,
     #[serde(default)]
+<<<<<<< HEAD
     ruby: ruby::Config,
 }
 
@@ -99,6 +130,9 @@ impl MergeWith for Config {
             ruby: self.ruby.merge_with(&other.ruby),
         }
     }
+=======
+    pub(crate) ruby: ruby::Config,
+>>>>>>> upstream/main
 }
 
 /// Generate foreign language bindings from a compiled `uniffi` library.

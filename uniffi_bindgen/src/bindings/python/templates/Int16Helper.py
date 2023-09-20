@@ -1,8 +1,12 @@
-class FfiConverterInt16(FfiConverterPrimitive):
-    @staticmethod
-    def read(buf):
-        return buf.readI16()
+class _UniffiConverterInt16(_UniffiConverterPrimitiveInt):
+    CLASS_NAME = "i16"
+    VALUE_MIN = -2**15
+    VALUE_MAX = 2**15
 
     @staticmethod
-    def write(value, buf):
-        buf.writeI16(value)
+    def read(buf):
+        return buf.read_i16()
+
+    @staticmethod
+    def write_unchecked(value, buf):
+        buf.write_i16(value)

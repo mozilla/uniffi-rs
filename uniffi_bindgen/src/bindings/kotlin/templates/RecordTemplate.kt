@@ -1,4 +1,4 @@
-{%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let rec = ci|get_record_definition(name) %}
 
 {% let struct = rec %}{% include "RecordDocsTemplate.kt" %}
 data class {{ type_name }} (

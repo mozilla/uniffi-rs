@@ -1,22 +1,30 @@
-{%- let obj = ci.get_object_definition(name).unwrap() %}
+{%- let obj = ci|get_object_definition(name) %}
 
+<<<<<<< HEAD
 class {{ type_name }}(object): {% let struct = obj %}{% include "StructureDocsTemplate.py" %}
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+=======
+class {{ type_name }}:
+    _pointer: ctypes.c_void_p
+
+{%- match obj.primary_constructor() %}
+{%-     when Some with (cons) %}
+>>>>>>> upstream/main
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
         {%- let func = cons -%}
         {% include "MethodDocsTemplate.py" %}
 
         {%- call py::setup_args_extra_indent(cons) %}
         self._pointer = {% call py::to_ffi_call(cons) %}
-    {%- when None %}
-    {%- endmatch %}
+{%-     when None %}
+{%- endmatch %}
 
     def __del__(self):
         # In case of partial initialization of instances.
         pointer = getattr(self, "_pointer", None)
         if pointer is not None:
-            rust_call(_UniFFILib.{{ obj.ffi_object_free().name() }}, pointer)
+            _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
 
     # Used by alternative constructors or any methods which return this type.
     @classmethod
@@ -27,7 +35,8 @@ class {{ type_name }}(object): {% let struct = obj %}{% include "StructureDocsTe
         inst._pointer = pointer
         return inst
 
-    {% for cons in obj.alternate_constructors() -%}
+{%- for cons in obj.alternate_constructors() %}
+
     @classmethod
     def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- let func = cons -%}
@@ -37,40 +46,30 @@ class {{ type_name }}(object): {% let struct = obj %}{% include "StructureDocsTe
         # Call the (fallible) function before creating any half-baked object instances.
         pointer = {% call py::to_ffi_call(cons) %}
         return cls._make_instance_(pointer)
-    {% endfor %}
+{% endfor %}
 
-    {% for meth in obj.methods() -%}
-    {% if meth.is_async() %}
-    async def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
-        {%- call py::setup_args_extra_indent(meth) %}
-        {#- Get the `RustFuture`. -#}
-        rust_future = {% call py::to_ffi_call_with_prefix("self._pointer", meth) %}
-        future = None
+{%- for meth in obj.methods() -%}
+    {%- call py::method_decl(meth.name()|fn_name, meth) %}
+{% endfor %}
 
-        def trampoline() -> (FuturePoll, any):
-            nonlocal rust_future
+{%- for tm in obj.uniffi_traits() -%}
+{%-     match tm %}
+{%-         when UniffiTrait::Debug { fmt } %}
+            {%- call py::method_decl("__repr__", fmt) %}
+{%-         when UniffiTrait::Display { fmt } %}
+            {%- call py::method_decl("__str__", fmt) %}
+{%-         when UniffiTrait::Eq { eq, ne } %}
+    def __eq__(self, other: object) -> {{ eq.return_type().unwrap()|type_name }}:
+        if not isinstance(other, {{ type_name }}):
+            return NotImplemented
 
-            {% match meth.ffi_func().return_type() -%}
-            {%- when Some with (return_type) -%}
-            polled_result = {{ return_type|ffi_type_name }}()
-            polled_result_ref = ctypes.byref(polled_result)
-            {% when None %}
-            polled_result_ref = ctypes.c_void_type()
-            {% endmatch %}
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", eq) %})
 
-            is_ready = {% match meth.throws_type() -%}
-            {%- when Some with (error) -%}
-            rust_call_with_error({{ error|ffi_converter_name }},
-            {%- when None -%}
-            rust_call(
-            {%- endmatch %}
-                _UniFFILib.{{ meth.ffi_func().name() }}_poll,
-                rust_future,
-                future._future_ffi_waker(),
-                ctypes.c_void_p(),
-                polled_result_ref,
-            )
+    def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
+        if not isinstance(other, {{ type_name }}):
+            return NotImplemented
 
+<<<<<<< HEAD
             if is_ready is True:
                 result = {% match meth.return_type() %}{% when Some with (return_type) %}{{ return_type|lift_fn }}(polled_result){% when None %}None{% endmatch %}
 
@@ -112,12 +111,19 @@ class {{ type_name }}(object): {% let struct = obj %}{% include "StructureDocsTe
     {% endmatch %}
     {% endif %}
     {% endfor %}
+=======
+        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", ne) %})
+{%-         when UniffiTrait::Hash { hash } %}
+            {%- call py::method_decl("__hash__", hash) %}
+{%      endmatch %}
+{% endfor %}
+>>>>>>> upstream/main
 
 
 class {{ ffi_converter_name }}:
     @classmethod
     def read(cls, buf):
-        ptr = buf.readU64()
+        ptr = buf.read_u64()
         if ptr == 0:
             raise InternalError("Raw pointer value was null")
         return cls.lift(ptr)
@@ -125,8 +131,8 @@ class {{ ffi_converter_name }}:
     @classmethod
     def write(cls, value, buf):
         if not isinstance(value, {{ type_name }}):
-            raise TypeError("Expected {{ type_name }} instance, {} found".format(value.__class__.__name__))
-        buf.writeU64(cls.lower(value))
+            raise TypeError("Expected {{ type_name }} instance, {} found".format(type(value).__name__))
+        buf.write_u64(cls.lower(value))
 
     @staticmethod
     def lift(value):

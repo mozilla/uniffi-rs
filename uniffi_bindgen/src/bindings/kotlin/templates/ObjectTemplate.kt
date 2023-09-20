@@ -1,4 +1,4 @@
-{%- let obj = ci.get_object_definition(name).unwrap() %}
+{%- let obj = ci|get_object_definition(name) %}
 {%- if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
 {{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
@@ -9,7 +9,7 @@ public interface {{ type_name }}Interface {
     {%- include "FunctionDocsTemplate.kt" -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) -%}
-    @Throws({{ throwable|type_name }}::class)
+    @Throws({{ throwable|error_type_name }}::class)
     {%- when None -%}
     {%- endmatch %}
     {% if meth.is_async() -%}
@@ -56,11 +56,39 @@ class {{ type_name }}(
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
-        @Throws({{ throwable|type_name }}::class)
+    @Throws({{ throwable|error_type_name }}::class)
     {%- else -%}
     {%- endmatch -%}
-    {%- if meth.is_async() -%}
-        {%- call kt::async_meth(meth) -%}
+    {%- if meth.is_async() %}
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_decl(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
+        // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
+        // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
+        return coroutineScope {
+            val scope = this
+            return@coroutineScope suspendCancellableCoroutine { continuation ->
+                try {
+                    val callback = {{ meth.result_type().borrow()|future_callback_handler }}(continuation)
+                    uniffiActiveFutureCallbacks.add(callback)
+                    continuation.invokeOnCancellation { uniffiActiveFutureCallbacks.remove(callback) }
+                    callWithPointer { thisPtr ->
+                        rustCall { status ->
+                            _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
+                                thisPtr,
+                                {% call kt::arg_list_lowered(meth) %}
+                                FfiConverterForeignExecutor.lower(scope),
+                                callback,
+                                USize(0),
+                                status,
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
+                }
+            }
+        }
+    }
     {%- else -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) -%}

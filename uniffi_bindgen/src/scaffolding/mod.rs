@@ -7,20 +7,17 @@ use askama::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
-use heck::ToSnakeCase;
+use heck::{ToShoutySnakeCase, ToSnakeCase};
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
 pub struct RustScaffolding<'a> {
     ci: &'a ComponentInterface,
-    uniffi_version: &'static str,
+    udl_base_name: &'a str,
 }
 impl<'a> RustScaffolding<'a> {
-    pub fn new(ci: &'a ComponentInterface) -> Self {
-        Self {
-            ci,
-            uniffi_version: crate::BINDGEN_VERSION,
-        }
+    pub fn new(ci: &'a ComponentInterface, udl_base_name: &'a str) -> Self {
+        Self { ci, udl_base_name }
     }
 }
 mod filters {
@@ -40,23 +37,34 @@ mod filters {
             Type::Float64 => "f64".into(),
             Type::Boolean => "bool".into(),
             Type::String => "String".into(),
+            Type::Bytes => "Vec<u8>".into(),
             Type::Timestamp => "std::time::SystemTime".into(),
             Type::Duration => "std::time::Duration".into(),
-            Type::Enum(name) | Type::Record(name) | Type::Error(name) => format!("r#{name}"),
-            Type::Object(name) => format!("std::sync::Arc<r#{name}>"),
-            Type::CallbackInterface(name) => format!("Box<dyn r#{name}>"),
-            Type::Optional(t) => format!("std::option::Option<{}>", type_rs(t)?),
-            Type::Sequence(t) => format!("std::vec::Vec<{}>", type_rs(t)?),
-            Type::Map(k, v) => format!(
+            Type::Enum { name, .. } | Type::Record { name, .. } => format!("r#{name}"),
+            Type::Object { name, imp, .. } => {
+                format!("std::sync::Arc<{}>", imp.rust_name_for(name))
+            }
+            Type::CallbackInterface { name, .. } => format!("Box<dyn r#{name}>"),
+            Type::ForeignExecutor => "::uniffi::ForeignExecutor".into(),
+            Type::Optional { inner_type } => {
+                format!("std::option::Option<{}>", type_rs(inner_type)?)
+            }
+            Type::Sequence { inner_type } => format!("std::vec::Vec<{}>", type_rs(inner_type)?),
+            Type::Map {
+                key_type,
+                value_type,
+            } => format!(
                 "std::collections::HashMap<{}, {}>",
-                type_rs(k)?,
-                type_rs(v)?
+                type_rs(key_type)?,
+                type_rs(value_type)?
             ),
             Type::Custom { name, .. } => format!("r#{name}"),
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } => format!("::std::sync::Arc<r#{name}>"),
             Type::External { name, .. } => format!("r#{name}"),
-            Type::Unresolved { .. } => {
-                unreachable!("UDL scaffolding code never contains unresolved types")
-            }
         })
     }
 
@@ -73,9 +81,15 @@ mod filters {
             FfiType::Float32 => "f32".into(),
             FfiType::Float64 => "f64".into(),
             FfiType::RustArcPtr(_) => "*const std::os::raw::c_void".into(),
-            FfiType::RustBuffer(_) => "uniffi::RustBuffer".into(),
-            FfiType::ForeignBytes => "uniffi::ForeignBytes".into(),
-            FfiType::ForeignCallback => "uniffi::ForeignCallback".into(),
+            FfiType::RustBuffer(_) => "::uniffi::RustBuffer".into(),
+            FfiType::ForeignBytes => "::uniffi::ForeignBytes".into(),
+            FfiType::ForeignCallback => "::uniffi::ForeignCallback".into(),
+            FfiType::ForeignExecutorHandle => "::uniffi::ForeignExecutorHandle".into(),
+            FfiType::FutureCallback { return_type } => {
+                format!("::uniffi::FutureCallback<{}>", type_ffi(return_type)?)
+            }
+            FfiType::FutureCallbackData => "*const ()".into(),
+            FfiType::ForeignExecutorCallback => "::uniffi::ForeignExecutorCallback".into(),
         })
     }
 
@@ -89,13 +103,36 @@ mod filters {
                 kind: ExternalKind::Interface,
                 ..
             } => {
-                format!("<::std::sync::Arc<r#{name}> as uniffi::FfiConverter<crate::UniFfiTag>>")
+                format!("<::std::sync::Arc<r#{name}> as ::uniffi::FfiConverter<crate::UniFfiTag>>")
             }
             _ => format!(
-                "<{} as uniffi::FfiConverter<crate::UniFfiTag>>",
+                "<{} as ::uniffi::FfiConverter<crate::UniFfiTag>>",
                 type_rs(type_)?
             ),
         })
+    }
+
+    pub fn return_type<T: Callable>(callable: &T) -> Result<String, askama::Error> {
+        let return_type = match callable.return_type() {
+            Some(t) => type_rs(&t)?,
+            None => "()".to_string(),
+        };
+        match callable.throws_type() {
+            Some(t) => type_rs(&t)?,
+            None => "()".to_string(),
+        };
+        Ok(match callable.throws_type() {
+            Some(e) => format!("::std::result::Result<{return_type}, {}>", type_rs(&e)?),
+            None => return_type,
+        })
+    }
+
+    // Map return types to their fully-qualified `FfiConverter` impl.
+    pub fn return_ffi_converter<T: Callable>(callable: &T) -> Result<String, askama::Error> {
+        let return_type = return_type(callable)?;
+        Ok(format!(
+            "<{return_type} as ::uniffi::FfiConverter<crate::UniFfiTag>>"
+        ))
     }
 
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.

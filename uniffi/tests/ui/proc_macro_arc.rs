@@ -22,7 +22,3 @@ mod child {
         match &*foo {}
     }
 }
-
-mod uniffi_types {
-    pub use super::Foo;
-}

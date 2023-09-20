@@ -7,6 +7,7 @@
 #[allow(non_camel_case_types)]
 pub enum r#case {
     r#internal,
+    r#init,
 }
 
 #[allow(non_camel_case_types)]
@@ -43,4 +44,4 @@ pub enum func {
     class { object: u8 },
 }
 
-include!(concat!(env!("OUT_DIR"), "/keywords.uniffi.rs"));
+uniffi::include_scaffolding!("keywords");

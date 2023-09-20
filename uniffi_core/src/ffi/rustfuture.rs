@@ -1,26 +1,23 @@
-//! [`RustFuture`] represents a [`Future`] that can be sent over FFI safely-ish.
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+//! [`RustFuture`] represents a [`Future`] that can be sent to the foreign code over FFI.
 //!
-//! The [`RustFuture`] type holds an inner `Future<Output = Result<E, T>>`, and
-//! thus is parameterized by `T` and `E`. On the `RustFuture` type itself, there
-//! is no constraint over those generic types (constraints are present in the
-//! [`uniffi_rustfuture_poll`] function, where `T: FfiReturn`, see later
-//! to learn more). Every function or method that returns a `Future` must
-//! transform the result into a `Result`. This is done by the procedural
-//! macros automatically: `Future<Output = T>` is transformed into `RustFuture<T,
-//! Infallible>`, and `Future<Output = Result<T, E>>` is transformed into
-//! `RustFuture<T, E>`.
-//!
-//! This type may not be instantiated directly, but _via_ the procedural macros,
-//! such as `#[uniffi::export]`. A `RustFuture` is created, boxed, and then
-//! manipulated by (hidden) helper functions, resp. [`uniffi_rustfuture_poll`]
-//! and [`uniffi_rustfuture_drop`]. Because the `RustFuture` type contains a
-//! generic parameters `T` and `E`, the procedural macros will do a
-//! monomorphisation phase so that all the API has all their types statically
-//! known.
+//! This type is not instantiated directly, but via the procedural macros, such as `#[uniffi::export]`.
 //!
 //! # The big picture
 //!
-//! This section will explain how the entire workflow works.
+//! What happens when you call an async function exported from the Rust API?
+//!
+//! 1. You make a call to a generated async function in the foreign bindings.
+//! 2. That function suspends itself, then makes a scaffolding call.  In addition to the normal
+//!    arguments, it passes a `ForeignExecutor` and callback.
+//! 3. Rust uses the `ForeignExecutor` to schedules polls of the Future until it's ready.  Then
+//!    invokes the callback.
+//! 4. The callback resumes the suspended async function from (2), closing the loop.
+//!
+//! # Anatomy of an async call
 //!
 //! Let's consider the following Rust function:
 //!
@@ -31,113 +28,48 @@
 //! }
 //! ```
 //!
-//! In Rust, this `async fn` syntax is strictly equivalent to:
+//! In Rust, this `async fn` syntax is strictly equivalent to a normal function that returns a
+//! `Future`:
 //!
 //! ```rust,ignore
 //! #[uniffi::export]
 //! fn hello() -> impl Future<Output = bool> { /* … */ }
 //! ```
 //!
-//! Once this is understood, it becomes obvious that an `async` function
-//! returns a `Future`.
-//!
-//! This function will not be modified, but new functions with a C ABI will be
-//! created, as such:
+//! `uniffi-bindgen` will generate a scaffolding function for each exported async function:
 //!
 //! ```rust,ignore
-//! /// The `hello` function, as seen from the outside. It returns a `Future`, or
-//! /// more precisely, a `RustFuture` that wraps the returned future.
+//! // The `hello` function, as seen from the outside. It inputs 3 extra arguments:
+//! //  - executor: used to schedule polls of the future
+//! //  - callback: invoked when the future is ready
+//! //  - callback_data: opaque pointer that's passed to the callback.  It points to any state needed to
+//! //    resume the async function.
 //! #[no_mangle]
 //! pub extern "C" fn _uniffi_hello(
-//!     call_status: &mut ::uniffi::RustCallStatus
-//! ) -> Option<Box<::uniffi::RustFuture<bool, ::std::convert::Infallible>>> {
-//!     ::uniffi::call_with_output(call_status, || {
-//!         Some(Box::new(::uniffi::RustFuture::new(async move {
-//!             Ok(hello().await)
-//!         })))
+//!     // ...If the function inputted arguments, the lowered versions would go here
+//!     uniffi_executor: ForeignExecutor,
+//!     uniffi_callback: <bool as FfiConverter<crate::UniFFITag>>::FutureCallback,
+//!     uniffi_callback_data: *const (),
+//!     uniffi_call_status: &mut ::uniffi::RustCallStatus
+//! ) {
+//!     ::uniffi::call_with_output(uniffi_call_status, || {
+//!         let uniffi_rust_future = RustFuture::<_, bool, crate::UniFFITag,>::new(
+//!             future: hello(), // the future!
+//!             uniffi_executor,
+//!             uniffi_callback,
+//!             uniffi_callback_data,
+//!         );
+//!         uniffi_rust_future.wake();
 //!     })
 //! }
 //! ```
 //!
-//! This function returns an `Option<Box<RustFuture<T, E>>`:
-//!
-//! * Why an `Option`? Because in case of an error, it must return a default
-//!   value, in this case `None`, otherwise `Some`. If we were returning `Box`
-//!   directly, it would leak a pointer.
-//!
-//! * Why `Box`? Because Rust doesn't own the future, it's passed to the
-//!   foreign language, and the foreign language is responsible to manage it.
-//!
-//!  * Finally, this function calls the real Rust `hello` function. It
-//!    transforms its result into a `Result` if it's needed.
-//!
-//! The second generated function is the _poll function_:
-//!
-//! ```rust,ignore
-//! /// The function to poll the `RustFuture` returned by `_uniffi_hello`.
-//! #[no_mangle]
-//! pub extern "C" fn _uniffi_hello_poll(
-//!     future: Option<&mut ::uniffi::RustFuture<bool, ::std::convert::Infallible>>,
-//!     waker: Option<NonNull<::uniffi::RustFutureForeignWakerFunction>>,
-//!     waker_environment: *const ::uniffi::RustFutureForeignWakerEnvironment,
-//!     polled_result: &mut <bool as ::uniffi::FfiReturn>::FfiType,
-//!     call_status:: &mut ::uniffi::RustCallStatus,
-//! ) -> bool {
-//!     ::uniffi::ffi::uniffi_rustfuture_poll(future, waker, waker_environment, polled_result, call_status)
-//! }
-//! ```
-//!
-//! Let's analyse this function because it's an important one:
-//!
-//! * First off, this _poll FFI function_ forwards everything to
-//!   [`uniffi_rustfuture_poll`]. The latter is generic, while the former has been
-//!   monomorphised by the procedural macro.
-//!
-//! * Second, it receives the `RustFuture` from `_uniffi_hello` as an
-//!   `Option<&mut RustFuture<_>>`. It doesn't take ownership of the `RustFuture`!
-//!   It borrows it (mutably). It's wrapped inside an `Option` to check whether
-//!   it's a null pointer or not; it's defensive programming here, `null` will
-//!   make the Rust code to panic gracefully.
-//!
-//! * Third, it receives a _waker_ as a pair of a _function pointer_ plus its
-//!   _environment_, if any; a null pointer is purposely allowed for the environment.
-//!   This waker function lives on the foreign language side. We will come back
-//!   to it in a second.
-//!
-//! * Fourth, it receives an in-out `polled_result` argument, that is filled with the
-//!   polled result if the future is ready.
-//!
-//! * Firth, the classical `call_status`, which is part of the calling API of `uniffi`.
-//!
-//! * Finally, the function returns `true` if the future is ready, `false` if pending.
-//!
-//! Please don't forget to read [`uniffi_rustfuture_poll`] to learn how
-//! `polled_result` + `call_status` + the returned bool type are used to indicate
-//! in which state the future is.
-//!
-//! So, everytime this function is called, it polls the `RustFuture` after
-//! having reconstituted a valid [`Waker`] for it. As said earlier, we will come
-//! back to it.
-//!
-//! The last generated function is the _drop function_:
-//!
-//! ```rust,ignore
-//! #[no_mangle]
-//! pub extern "C" fn _uniffi_hello_drop(
-//!     future: Option<Box<::uniffi::RustFuture<bool, ::std::convert::Infallible>>>,
-//!     call_status: &mut ::uniffi::RustCallStatus
-//! ) {
-//!     ::uniffi::ffi::uniffi_rustfuture_drop(future, call_status)
-//! }
-//! ```
-//!
-//! First off, this _drop function_ is responsible to drop the `RustFuture`. It's
-//! clear by looking at its signature: It receives an `Option<Box<RustFuture<_>>>`,
-//! i.e. it takes ownership of the `RustFuture` _via_ `Box`!
-//!
-//! Similarly to the _poll function_, it forwards everything to
-//! [`uniffi_rustfuture_drop`], which is the generic version of the monomorphised _drop
-//! function_.
+//! Rust will continue to poll the future until it's ready, after that.  The callback will
+//! eventually be invoked with these arguments:
+//!   - callback_data
+//!   - FfiConverter::ReturnType (the type that would be returned by a sync function)
+//!   - RustCallStatus (used to signal errors/panics when executing the future)
+//! - Rust will stop polling the future, even if it's waker is invoked again.
 //!
 //! ## How does `Future` work exactly?
 //!
@@ -175,112 +107,6 @@
 //!
 //! “awakening” is done by using the `Waker`.
 //!
-//! ## Awaken from the foreign language land
-//!
-//! Our _poll function_ receives a waker function pointer, along with a waker
-//! environment. We said that the waker function lives on the foreign language
-//! side. That's really important. It cannot live inside Rust because Rust
-//! isn't aware of which foreign language it is run from, and thus doesn't know
-//! which executor is used. It is UniFFI's job to write a proper foreign waker
-//! function that will use the native foreign language's executor provided
-//! by the foreign language itself (e.g. `Task` in Swift) or by some common
-//! libraries (e.g. `asyncio` in Python), to ask to poll the future again.
-//!
-//! We expect the waker to be the same per future. This property is not
-//! checked, but the current foreign language implementations provided by UniFFI
-//! guarantee that the waker is the same per future everytime. Changing the
-//! waker for the same future leads to undefined behaviours, and may panic at some
-//! point or leak data.
-//!
-//! The waker must live longer than the `RustFuture`, so its lifetime's range
-//! must include `_uniffi_hello()` to `_uniffi_hello_drop()`, otherwise it leads to
-//! undefined behaviours.
-//!
-//! ## The workflow
-//!
-//! 1. The foreign language starts by calling the regular FFI function
-//!    `_uniffi_hello`. It gets an `Option<Box<RustFuture<_>>>`.
-//!
-//! 2. The foreign language immediately polls the future by using the `_uniffi_hello_poll`
-//!    function. It passes a function pointer to the waker function, implemented
-//!    inside the foreign language, along with its environment if any.
-//!
-//!    - Either the future is ready and computes a value, in this case the _poll
-//!      function_ will lift the value and will drop the future with the _drop function_
-//!      (`_uniffi_hello_drop`),
-//!
-//!    - or the future is pending (not ready), and is responsible to register
-//!      the waker (as explained above).
-//!
-//! 3. When the waker is called, it calls the _poll function_, so we basically jump
-//!    to point 2 of this list.
-//!
-//! There is an important subtlety though. Imagine the following Rust code:
-//!
-//! ```rust,ignore
-//! let mut shared_state: MutexGuard<_> = a_shared_state.lock().unwrap();
-//!
-//! if let Some(waker) = shared_state.waker.take() {
-//!     waker.wake();
-//! }
-//! ```
-//!
-//! This code will call the waker. That's nice and all. However, when the waker
-//! function is called by `waker.wake()`, this code above has not returned yet.
-//! And the waker function, as designed so far, will call the _poll function_
-//! of the Rust `Future`  which… may use the same lock (`a_shared_state`),
-//! which is not released yet: there is a dead-lock! Rust is not responsible of
-//! that, kind of. Rust **must ignore how the executor works**, all `Future`s
-//! are executor-agnostic by design. To avoid creating problems, the waker
-//! must “cut” the flow, so that Rust code can continue to run as expected, and
-//! after that, the _poll function_ must be called.
-//!
-//! Put differently, the waker function must call the _poll function_ _as
-//! soon as possible_, not _immediately_. It actually makes sense: The waker
-//! must signal the executor to schedule a poll for a specific `Future` when
-//! possible; it's not an inline operation. The implementation of the waker
-//! must be very careful of that.
-//!
-//! With a diagram (because this comment would look so much clever with a diagram),
-//! it looks like this:
-//!
-//! ```text
-//!           ┌────────────────────┐
-//!           │                    │
-//!           │   Calling hello    │
-//!           │                    │
-//!           └─────────┬──────────┘
-//!                     │
-//!                     ▼       fn waker ◄──┐
-//!     ┌────────────────────────────────┐  │
-//!     │                                │  │
-//!     │  Ask the executor to schedule  │  │
-//!     │  this as soon as possible      │  │
-//!     │                                │  │
-//!     │  ┌──────────────────────────┐  │  │
-//!     │  │                          │  │  │
-//!     │  │  Polling the RustFuture  │  │  │
-//!     │  │  Pass pointer to waker ──┼──┼──┘
-//!     │  │                          │  │
-//!     │  └────────────┬─────────────┘  │
-//!     │               │                │
-//!     └───────────────┼────────────────┘
-//!                     │
-//!                     ▼
-//!         ┌──── The future is ─────┐
-//!         │                        │
-//!       Ready                   Pending
-//!         │                        │
-//!         ▼                        ▼
-//! ┌───────────────┐     ┌──────────────────────┐
-//! │  Lift result  │     │       Nothing        │
-//! │   Have fun    │     │  Let's wait for the  │
-//! └───────────────┘     │  waker to be called  │
-//!                       └──────────────────────┘
-//! ```
-//!
-//! That's all folks!
-//!
 //! [`Future`]: https://doc.rust-lang.org/std/future/trait.Future.html
 //! [`Future::poll`]: https://doc.rust-lang.org/std/future/trait.Future.html#tymethod.poll
 //! [`Pol::Ready`]: https://doc.rust-lang.org/std/task/enum.Poll.html#variant.Ready
@@ -289,372 +115,477 @@
 //! [`Waker`]: https://doc.rust-lang.org/std/task/struct.Waker.html
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
-use super::FfiDefault;
-use crate::{call_with_result, FfiConverter, RustBuffer, RustCallStatus};
+use crate::{
+    ffi::foreignexecutor::RustTaskCallbackCode, rust_call_with_out_status, schedule_raw,
+    FfiConverter, FfiDefault, ForeignExecutor, ForeignExecutorHandle, RustCallStatus,
+};
 use std::{
-    ffi::c_void,
+    cell::UnsafeCell,
     future::Future,
-    mem::ManuallyDrop,
     panic,
     pin::Pin,
-    sync::Arc,
+    sync::{
+        atomic::{AtomicU32, Ordering},
+        Arc,
+    },
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
-/// `RustFuture` represents a [`Future`] that can be sent over FFI safely-ish.
+/// Callback that we invoke when a `RustFuture` is ready.
 ///
-/// See the module documentation to learn more.
-#[repr(transparent)]
-pub struct RustFuture<T, E>(Pin<Box<dyn Future<Output = Result<T, E>> + 'static>>);
+/// The foreign code passes a pointer to one of these callbacks along with an opaque data pointer.
+/// When the future is ready, we invoke the callback.
+pub type FutureCallback<T> =
+    extern "C" fn(callback_data: *const (), result: T, status: RustCallStatus);
 
-impl<T, E> RustFuture<T, E> {
-    /// Create a new `RustFuture` from a regular `Future`.
-    pub fn new<F>(future: F) -> Self
-    where
-        F: Future<Output = Result<T, E>> + 'static,
-    {
-        Self(Box::pin(future))
+/// Future that the foreign code is awaiting
+///
+/// RustFuture is always stored inside a Pin<Arc<>>.  The `Arc<>` allows it to be shared between
+/// wakers and Pin<> signals that it must not move, since this would break any self-references in
+/// the future.
+pub struct RustFuture<F, T, UT>
+where
+    // The future needs to be `Send`, since it will move to whatever thread the foreign executor
+    // chooses.  However, it doesn't need to be `Sync', since we don't share references between
+    // threads (see do_wake()).
+    F: Future<Output = T> + Send,
+    T: FfiConverter<UT>,
+{
+    future: UnsafeCell<F>,
+    executor: ForeignExecutor,
+    wake_counter: AtomicU32,
+    callback: T::FutureCallback,
+    callback_data: *const (),
+}
+
+// Mark `RustFuture` as `Send` + `Sync`, since we will be sharing it between threads.
+// This means we need to serialize access to any fields that aren't `Send` + `Sync` (`future`, `callback`, and `callback_data`).
+// See `do_wake()` for details on this.
+
+unsafe impl<F, T, UT> Send for RustFuture<F, T, UT>
+where
+    F: Future<Output = T> + Send,
+    T: FfiConverter<UT>,
+{
+}
+
+unsafe impl<F, T, UT> Sync for RustFuture<F, T, UT>
+where
+    F: Future<Output = T> + Send,
+    T: FfiConverter<UT>,
+{
+}
+
+impl<F, T, UT> RustFuture<F, T, UT>
+where
+    F: Future<Output = T> + Send,
+    T: FfiConverter<UT>,
+{
+    pub fn new(
+        future: F,
+        executor_handle: ForeignExecutorHandle,
+        callback: T::FutureCallback,
+        callback_data: *const (),
+    ) -> Pin<Arc<Self>> {
+        let executor =
+            <ForeignExecutor as FfiConverter<crate::UniFfiTag>>::try_lift(executor_handle)
+                .expect("Error lifting ForeignExecutorHandle");
+        Arc::pin(Self {
+            future: UnsafeCell::new(future),
+            wake_counter: AtomicU32::new(0),
+            executor,
+            callback,
+            callback_data,
+        })
     }
 
-    /// Create a new `RustFuture` from a Tokio `Future`. It needs an
-    /// intermediate compatibility layer to be handlded as a regular Rust
-    /// `Future`.
-    #[cfg(feature = "tokio")]
-    pub fn new_tokio<F>(future: F) -> Self
-    where
-        F: Future<Output = Result<T, E>> + 'static,
-    {
-        Self(Box::pin(async_compat::Compat::new(future)))
+    /// Wake up soon and poll our future.
+    ///
+    /// This method ensures that a call to `do_wake()` is scheduled.  Only one call will be scheduled
+    /// at any time, even if `wake_soon` called multiple times from multiple threads.
+    pub fn wake(self: Pin<Arc<Self>>) {
+        if self.wake_counter.fetch_add(1, Ordering::Relaxed) == 0 {
+            self.schedule_do_wake();
+        }
     }
 
-    /// Poll the future.
+    /// Schedule `do_wake`.
     ///
-    /// There is one subtlety compared to `Future::poll` though: the
-    /// `foreign_waker` and `foreign_waker_environment` variables replace the
-    /// classical [`Context`]. We want the `RustFuture` **to be driven by the
-    /// foreign language's executor**. Hence the possibility for the foreign
-    /// language to provide its own waker function: Rust can signal something
-    /// has happened within the future and should be polled again.
-    ///
-    /// `Poll` is mapped to [`RustFuturePoll`].
-    ///
-    /// [`Context`]: https://doc.rust-lang.org/std/task/struct.Context.html
-    fn poll(
-        &mut self,
-        foreign_waker: RustFutureForeignWakerFunction,
-        foreign_waker_environment: *const c_void,
-    ) -> RustFuturePoll<Result<T, E>> {
-        let waker = unsafe {
-            Waker::from_raw(RawWaker::new(
-                RustFutureForeignWaker::new(foreign_waker, foreign_waker_environment)
-                    .into_unit_ptr(),
-                &RustFutureForeignRawWaker::VTABLE,
-            ))
+    /// `self` is consumed but _NOT_ dropped, it's purposely leaked via `into_raw()`.
+    /// `wake_callback()` will call `from_raw()` to reverse the leak.
+    fn schedule_do_wake(self: Pin<Arc<Self>>) {
+        unsafe {
+            let handle = self.executor.handle;
+            let raw_ptr = Arc::into_raw(Pin::into_inner_unchecked(self));
+            // SAFETY: The `into_raw()` / `from_raw()` contract guarantees that our executor cannot
+            // be dropped before we call `from_raw()` on the raw pointer. This means we can safely
+            // use its handle to schedule a callback.
+            if !schedule_raw(handle, 0, Self::wake_callback, raw_ptr as *const ()) {
+                // There was an error scheduling the callback, drop the arc reference since
+                // `wake_callback()` will never be called
+                //
+                // Note: specifying the `<Self>` generic is a good safety measure.  Things would go
+                // very bad if Rust inferred the wrong type.
+                //
+                // However, the `Pin<>` part doesn't matter since its `repr(transparent)`.
+                Arc::<Self>::decrement_strong_count(raw_ptr);
+            }
+        }
+    }
+
+    extern "C" fn wake_callback(self_ptr: *const (), status_code: RustTaskCallbackCode) {
+        // No matter what, call `Arc::from_raw()` to balance the `Arc::into_raw()` call in
+        // `schedule_do_wake()`.
+        let task = unsafe { Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)) };
+        if status_code == RustTaskCallbackCode::Success {
+            // Only drive the future forward on `RustTaskCallbackCode::Success`.
+            // `RUST_TASK_CALLBACK_CANCELED` indicates the foreign executor has been cancelled /
+            // shutdown and we should not continue.
+            task.do_wake();
+        }
+    }
+
+    // Does the work for wake, we take care to ensure this always runs in a serialized fashion.
+    fn do_wake(self: Pin<Arc<Self>>) {
+        // Store 1 in `waker_counter`, which we'll use at the end of this call.
+        self.wake_counter.store(1, Ordering::Relaxed);
+
+        // Pin<&mut> from our UnsafeCell.  &mut is is safe, since this is the only reference we
+        // ever take to `self.future` and calls to this function are serialized.  Pin<> is safe
+        // since we never move the future out of `self.future`.
+        let future = unsafe { Pin::new_unchecked(&mut *self.future.get()) };
+        let waker = self.make_waker();
+
+        // Run the poll and lift the result if it's ready
+        let mut out_status = RustCallStatus::default();
+        let result: Option<Poll<T::ReturnType>> = rust_call_with_out_status(
+            &mut out_status,
+            // This closure uses a `&mut F` value, which means it's not UnwindSafe by default.  If
+            // the closure panics, the future may be in an invalid state.
+            //
+            // However, we can safely use `AssertUnwindSafe` since a panic will lead the `Err()`
+            // case below.  In that case, we will never run `do_wake()` again and will no longer
+            // access the future.
+            panic::AssertUnwindSafe(|| match future.poll(&mut Context::from_waker(&waker)) {
+                Poll::Pending => Ok(Poll::Pending),
+                Poll::Ready(v) => T::lower_return(v).map(Poll::Ready),
+            }),
+        );
+
+        // All the main work is done, time to finish up
+        match result {
+            Some(Poll::Pending) => {
+                // Since we set `wake_counter` to 1 at the start of this function...
+                //   - If it's > 1 now, then some other code tried to wake us while we were polling
+                //     the future.  Schedule another poll in this case.
+                //   - If it's still 1, then exit after decrementing it.  The next call to `wake()`
+                //     will schedule a poll.
+                if self.wake_counter.fetch_sub(1, Ordering::Relaxed) > 1 {
+                    self.schedule_do_wake();
+                }
+            }
+            // Success!  Call our callback.
+            //
+            // Don't decrement `wake_counter'.  This way, if wake() is called in the future, we
+            // will just ignore it
+            Some(Poll::Ready(v)) => {
+                T::invoke_future_callback(self.callback, self.callback_data, v, out_status);
+            }
+            // Error/panic polling the future.  Call the callback with a default value.
+            // `out_status` contains the error code and serialized error.  Again, don't decrement
+            // `wake_counter'.
+            None => {
+                T::invoke_future_callback(
+                    self.callback,
+                    self.callback_data,
+                    T::ReturnType::ffi_default(),
+                    out_status,
+                );
+            }
         };
-        let mut context = Context::from_waker(&waker);
-
-        self.0.as_mut().poll(&mut context).into()
     }
-}
 
-/// `RustFuturePoll` is the equivalent of [`Poll`], except that it has one
-/// more variant: `Throwing`, which is the ”FFI default” variant.
-///
-/// Why? The [`FfiDefault`] trait is used to compute a default value when an
-/// error must be returned. It must be reflected inside the `RustFuturePoll`
-/// type to know in which state the `RustFuture` is.
-///
-/// [`Poll`]: https://doc.rust-lang.org/std/task/enum.Poll.html
-#[derive(Debug)]
-pub enum RustFuturePoll<T> {
-    /// A value `T` is ready!
-    Ready(T),
-
-    /// Naah, please try later, maybe a value will be ready?
-    Pending,
-
-    /// The default state for `FfiDefault`, indicating that the `RustFuture` is
-    /// throwing an error.
-    Throwing,
-}
-
-impl<T> From<Poll<T>> for RustFuturePoll<T> {
-    fn from(value: Poll<T>) -> Self {
-        match value {
-            Poll::Ready(ready) => Self::Ready(ready),
-            Poll::Pending => Self::Pending,
-        }
-    }
-}
-
-impl<T, E> RustFuturePoll<Result<T, E>> {
-    /// Transpose a `RustFuturePoll<Result<T, E>>` to a
-    /// `Result<RustFuturePoll<T>, E>`.
-    fn transpose(self) -> Result<RustFuturePoll<T>, E> {
-        match self {
-            Self::Ready(ready) => match ready {
-                Ok(ok) => Ok(RustFuturePoll::Ready(ok)),
-                Err(error) => Err(error),
-            },
-
-            Self::Pending => Ok(RustFuturePoll::Pending),
-
-            Self::Throwing => Ok(RustFuturePoll::Throwing),
-        }
-    }
-}
-
-impl<T> FfiDefault for RustFuturePoll<T> {
-    fn ffi_default() -> Self {
-        Self::Throwing
-    }
-}
-
-#[cfg(test)]
-mod tests_rust_future {
-    use super::*;
-    use std::mem;
-
-    #[test]
-    fn test_rust_future_size() {
-        let pointer_size = mem::size_of::<*const u8>();
-        let rust_future_size = pointer_size * 2;
-
-        assert_eq!(mem::size_of::<RustFuture::<bool, ()>>(), rust_future_size);
-        assert_eq!(mem::size_of::<RustFuture::<u64, ()>>(), rust_future_size);
-    }
-}
-
-/// Type alias to a function with a C ABI. It defines the shape of the foreign
-/// language's waker which is called by the [`RustFuture`] to signal the
-/// foreign language that something has happened. See the module documentation
-/// to learn more.
-pub type RustFutureForeignWakerFunction = unsafe extern "C" fn(env: *const c_void);
-
-#[derive(Debug)]
-struct RustFutureForeignWaker {
-    waker: RustFutureForeignWakerFunction,
-    waker_environment: *const c_void,
-}
-
-impl RustFutureForeignWaker {
-    fn new(waker: RustFutureForeignWakerFunction, waker_environment: *const c_void) -> Self {
-        Self {
-            waker,
-            waker_environment,
+    fn make_waker(self: &Pin<Arc<Self>>) -> Waker {
+        // This is safe as long as we implement the waker interface correctly.
+        unsafe {
+            Waker::from_raw(RawWaker::new(
+                self.clone().into_raw(),
+                &Self::RAW_WAKER_VTABLE,
+            ))
         }
     }
 
-    fn into_unit_ptr(self) -> *const () {
-        Arc::into_raw(Arc::new(self)) as *const ()
+    /// SAFETY: Ensure that all calls to `into_raw()` are balanced with a call to `from_raw()`
+    fn into_raw(self: Pin<Arc<Self>>) -> *const () {
+        unsafe { Arc::into_raw(Pin::into_inner_unchecked(self)) as *const () }
     }
 
-    unsafe fn increment_reference_count(me: *const ()) {
-        Arc::increment_strong_count(me as *const Self);
+    /// Consume a pointer to get an arc
+    ///
+    /// SAFETY: The pointer must have come from `into_raw()` or was cloned with `raw_clone()`.
+    /// Once a pointer is passed into this function, it should no longer be used.
+    fn from_raw(self_ptr: *const ()) -> Pin<Arc<Self>> {
+        unsafe { Pin::new_unchecked(Arc::from_raw(self_ptr as *const Self)) }
     }
 
-    unsafe fn from_unit_ptr(me: *const ()) -> Arc<Self> {
-        Arc::from_raw(me as *const Self)
-    }
-}
-
-/// Zero-sized type to create the VTable
-/// ([Virtual method table](https://en.wikipedia.org/wiki/Virtual_method_table))
-/// for the `RawWaker`.
-struct RustFutureForeignRawWaker;
-
-impl RustFutureForeignRawWaker {
-    const VTABLE: RawWakerVTable = RawWakerVTable::new(
-        Self::clone_waker,
-        Self::wake,
-        Self::wake_by_ref,
-        Self::drop_waker,
+    // Implement the waker interface by defining a RawWakerVTable
+    //
+    // We could also handle this by implementing the `Wake` interface, but that uses an `Arc<T>`
+    // instead of a `Pin<Arc<T>>` and in theory it could try to move the `T` value out of the arc
+    // with something like `Arc::try_unwrap()` which would break the pinning contract with
+    // `Future`.  Implementing this using `RawWakerVTable` allows us verify that this doesn't
+    // happen.
+    const RAW_WAKER_VTABLE: RawWakerVTable = RawWakerVTable::new(
+        Self::raw_clone,
+        Self::raw_wake,
+        Self::raw_wake_by_ref,
+        Self::raw_drop,
     );
 
     /// This function will be called when the `RawWaker` gets cloned, e.g. when
     /// the `Waker` in which the `RawWaker` is stored gets cloned.
-    unsafe fn clone_waker(foreign_waker: *const ()) -> RawWaker {
-        RustFutureForeignWaker::increment_reference_count(foreign_waker);
-
-        RawWaker::new(foreign_waker, &Self::VTABLE)
+    unsafe fn raw_clone(self_ptr: *const ()) -> RawWaker {
+        Arc::increment_strong_count(self_ptr as *const Self);
+        RawWaker::new(self_ptr, &Self::RAW_WAKER_VTABLE)
     }
 
     /// This function will be called when `wake` is called on the `Waker`. It
     /// must wake up the task associated with this `RawWaker`.
-    unsafe fn wake(foreign_waker: *const ()) {
-        let waker = RustFutureForeignWaker::from_unit_ptr(foreign_waker);
-        let func = waker.waker;
-
-        func(waker.waker_environment);
+    unsafe fn raw_wake(self_ptr: *const ()) {
+        Self::from_raw(self_ptr).wake()
     }
 
     /// This function will be called when `wake_by_ref` is called on the
     /// `Waker`. It must wake up the task associated with this `RawWaker`.
-    unsafe fn wake_by_ref(foreign_waker: *const ()) {
-        let waker = ManuallyDrop::new(RustFutureForeignWaker::from_unit_ptr(foreign_waker));
-        let func = waker.waker;
-
-        func(waker.waker_environment);
+    unsafe fn raw_wake_by_ref(self_ptr: *const ()) {
+        // This could be optimized by only incrementing the strong count if we end up calling
+        // `schedule_do_wake()`, but it's not clear that's worth the extra complexity
+        Arc::increment_strong_count(self_ptr as *const Self);
+        Self::from_raw(self_ptr).wake()
     }
 
     /// This function gets called when a `RawWaker` gets dropped.
-    unsafe fn drop_waker(foreign_waker: *const ()) {
-        drop(RustFutureForeignWaker::from_unit_ptr(foreign_waker));
+    /// This function gets called when a `RawWaker` gets dropped.
+    unsafe fn raw_drop(self_ptr: *const ()) {
+        drop(Self::from_raw(self_ptr))
     }
 }
 
 #[cfg(test)]
-mod tests_raw_waker_vtable {
+mod tests {
     use super::*;
-    use std::{cell::RefCell, ptr};
+    use crate::{try_lift_from_rust_buffer, MockEventLoop};
+    use std::sync::Weak;
 
-    // This entire `RustFuture` stuff assumes the waker lives in the foreign
-    // language, but for the sake of testing, we will fake it.
-    extern "C" fn my_waker(env: *const c_void) {
-        let env = ManuallyDrop::new(unsafe { Box::from_raw(env as *mut RefCell<bool>) });
-        env.replace(true);
+    // Mock future that we can manually control using an Option<>
+    struct MockFuture(Option<Result<bool, String>>);
 
-        // do something smart!
+    impl Future for MockFuture {
+        type Output = Result<bool, String>;
+
+        fn poll(self: Pin<&mut Self>, _context: &mut Context<'_>) -> Poll<Self::Output> {
+            match &self.0 {
+                Some(v) => Poll::Ready(v.clone()),
+                None => Poll::Pending,
+            }
+        }
     }
 
-    #[test]
-    fn test_rust_future_foreign_waker_basic_manipulations() {
-        let foreign_waker_ptr =
-            RustFutureForeignWaker::new(my_waker as _, ptr::null()).into_unit_ptr();
-        let foreign_waker: Arc<RustFutureForeignWaker> =
-            unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+    // Type alias for the RustFuture we'll use in our tests
+    type TestRustFuture = RustFuture<MockFuture, Result<bool, String>, crate::UniFfiTag>;
 
-        assert_eq!(Arc::strong_count(&foreign_waker), 1);
+    // Stores the result that we send to the foreign code
+    #[derive(Default)]
+    struct MockForeignResult {
+        value: i8,
+        status: RustCallStatus,
     }
 
-    #[test]
-    fn test_clone_and_drop_waker() {
-        let foreign_waker_ptr =
-            RustFutureForeignWaker::new(my_waker as _, ptr::null()).into_unit_ptr();
-        let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+    extern "C" fn mock_foreign_callback(data_ptr: *const (), value: i8, status: RustCallStatus) {
+        println!("mock_foreign_callback: {value} {data_ptr:?}");
+        let result: &mut Option<MockForeignResult> =
+            unsafe { &mut *(data_ptr as *mut Option<MockForeignResult>) };
+        *result = Some(MockForeignResult { value, status });
+    }
 
-        let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
-        assert_eq!(Arc::strong_count(&foreign_waker), 2);
+    // Bundles everything together so that we can run some tests
+    struct TestFutureEnvironment {
+        rust_future: Pin<Arc<TestRustFuture>>,
+        foreign_result: Pin<Box<Option<MockForeignResult>>>,
+    }
 
-        unsafe { RustFutureForeignRawWaker::drop_waker(foreign_waker_ptr) };
-        assert_eq!(Arc::strong_count(&foreign_waker), 1);
+    impl TestFutureEnvironment {
+        fn new(eventloop: &Arc<MockEventLoop>) -> Self {
+            let foreign_result = Box::pin(None);
+            let foreign_result_ptr = &*foreign_result as *const Option<_> as *const ();
+
+            let rust_future = TestRustFuture::new(
+                MockFuture(None),
+                eventloop.new_handle(),
+                mock_foreign_callback,
+                foreign_result_ptr,
+            );
+            Self {
+                rust_future,
+                foreign_result,
+            }
+        }
+
+        fn wake(&self) {
+            self.rust_future.clone().wake();
+        }
+
+        fn rust_future_weak(&self) -> Weak<TestRustFuture> {
+            // It seems like there's not a great way to get an &Arc from a Pin<Arc>, so we need to
+            // do a little dance here
+            Arc::downgrade(&Pin::into_inner(Clone::clone(&self.rust_future)))
+        }
+
+        fn complete_future(&self, value: Result<bool, String>) {
+            unsafe {
+                (*self.rust_future.future.get()).0 = Some(value);
+            }
+        }
     }
 
     #[test]
     fn test_wake() {
-        let foreign_waker_environment_ptr = Box::into_raw(Box::new(RefCell::new(false)));
-        let foreign_waker_ptr =
-            RustFutureForeignWaker::new(my_waker as _, foreign_waker_environment_ptr as *const _)
-                .into_unit_ptr();
-        let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
+        let eventloop = MockEventLoop::new();
+        let mut test_env = TestFutureEnvironment::new(&eventloop);
+        // Initially, we shouldn't have a result and nothing should be scheduled
+        assert!(test_env.foreign_result.is_none());
+        assert_eq!(eventloop.call_count(), 0);
 
-        // Clone to increase the strong count, so that we can see if it's been dropped by `wake` later.
-        let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
-        assert_eq!(Arc::strong_count(&foreign_waker), 2);
+        // wake() should schedule a call
+        test_env.wake();
+        assert_eq!(eventloop.call_count(), 1);
 
-        // Let's call the waker.
-        unsafe { RustFutureForeignRawWaker::wake(foreign_waker_ptr) };
+        // When that call runs, we should still not have a result yet
+        eventloop.run_all_calls();
+        assert!(test_env.foreign_result.is_none());
+        assert_eq!(eventloop.call_count(), 0);
 
-        // Has it been called?
-        let foreign_waker_environment = unsafe { Box::from_raw(foreign_waker_environment_ptr) };
-        assert!(foreign_waker_environment.take());
+        // Multiple wakes should only result in 1 scheduled call
+        test_env.wake();
+        test_env.wake();
+        assert_eq!(eventloop.call_count(), 1);
 
-        // Has the waker been dropped?
-        assert_eq!(Arc::strong_count(&foreign_waker), 1);
+        // Make the future ready, which should call mock_foreign_callback and set the result
+        test_env.complete_future(Ok(true));
+        eventloop.run_all_calls();
+        let result = test_env
+            .foreign_result
+            .take()
+            .expect("Expected result to be set");
+        assert_eq!(result.value, 1);
+        assert_eq!(result.status.code, 0);
+        assert_eq!(eventloop.call_count(), 0);
+
+        // Future wakes shouldn't schedule any calls
+        test_env.wake();
+        assert_eq!(eventloop.call_count(), 0);
     }
 
     #[test]
-    fn test_wake_by_ref() {
-        let foreign_waker_environment_ptr = Box::into_raw(Box::new(RefCell::new(false)));
-        let foreign_waker_ptr =
-            RustFutureForeignWaker::new(my_waker as _, foreign_waker_environment_ptr as *const _)
-                .into_unit_ptr();
-        let foreign_waker = unsafe { RustFutureForeignWaker::from_unit_ptr(foreign_waker_ptr) };
-
-        // Clone to increase the strong count, so that we can see if it has not been dropped by `wake_by_ref` later.
-        let _ = unsafe { RustFutureForeignRawWaker::clone_waker(foreign_waker_ptr) };
-        assert_eq!(Arc::strong_count(&foreign_waker), 2);
-
-        // Let's call the waker by reference.
-        unsafe { RustFutureForeignRawWaker::wake_by_ref(foreign_waker_ptr) };
-
-        // Has it been called?
-        let foreign_waker_environment = unsafe { Box::from_raw(foreign_waker_environment_ptr) };
-        assert!(foreign_waker_environment.take());
-
-        // Has the waker not been dropped?
-        assert_eq!(Arc::strong_count(&foreign_waker), 2);
-
-        // Dropping manually to avoid data leak.
-        unsafe { RustFutureForeignRawWaker::drop_waker(foreign_waker_ptr) };
-    }
-}
-
-const READY: bool = true;
-const PENDING: bool = false;
-
-/// Poll a [`RustFuture`]. If the `RustFuture` is ready, the function returns
-/// `true` and puts the result inside `polled_result`, otherwise it returns
-/// `false` and _doesn't modify_ the value inside `polled_result`. A third
-/// case exists: if the `RustFuture` is throwing an error, the function returns
-/// `true` but doesn't modify `polled_result` either, however the value
-/// of  `call_status` is changed appropriately. It is summarized inside the
-/// following table:
-///
-/// | `RustFuture`'s state | `polled_result`         | `call_status.code` | returned value |
-/// |----------------------|-------------------------|--------------------|----------------|
-/// | `Ready(Ok(T))`       | is mapped to `T::lower` | `CALL_SUCCESS`     | `true`         |
-/// | `Ready(Err(E))`      | is not modified         | `CALL_ERROR`       | `true`         |
-/// | `Pending`            | is not modified         | `CALL_SUCCESS`     | `false`        |
-///
-/// Please see the module documentation to learn more.
-///
-/// # Panics
-///
-/// The function panics if `future` or `waker` is a NULL pointer.
-pub fn uniffi_rustfuture_poll<T, E, UT>(
-    future: Option<&mut RustFuture<T, E>>,
-    waker: Option<RustFutureForeignWakerFunction>,
-    waker_environment: *const c_void,
-    polled_result: &mut T::FfiType,
-    call_status: &mut RustCallStatus,
-) -> bool
-where
-    T: FfiConverter<UT>,
-    E: FfiConverter<UT, FfiType = RustBuffer>,
-{
-    // If polling the future panics, an error will be recorded in call_status and the future will
-    // be dropped, so there is no potential for observing any inconsistent state in it.
-    let mut future = panic::AssertUnwindSafe(future.expect("`future` is a null pointer"));
-    let waker = waker.expect("`waker` is a null pointer");
-
-    match call_with_result(call_status, move || {
-        future
-            .poll(waker, waker_environment)
-            .transpose()
-            .map_err(E::lower)
-    }) {
-        RustFuturePoll::Ready(ready) => {
-            *polled_result = T::lower(ready);
-
-            READY
+    fn test_error() {
+        let eventloop = MockEventLoop::new();
+        let mut test_env = TestFutureEnvironment::new(&eventloop);
+        test_env.complete_future(Err("Something went wrong".into()));
+        test_env.wake();
+        eventloop.run_all_calls();
+        let result = test_env
+            .foreign_result
+            .take()
+            .expect("Expected result to be set");
+        assert_eq!(result.status.code, 1);
+        unsafe {
+            assert_eq!(
+                try_lift_from_rust_buffer::<String, crate::UniFfiTag>(
+                    result.status.error_buf.assume_init()
+                )
+                .unwrap(),
+                String::from("Something went wrong"),
+            )
         }
-
-        RustFuturePoll::Pending => PENDING,
-
-        RustFuturePoll::Throwing => READY,
+        assert_eq!(eventloop.call_count(), 0);
     }
-}
 
-/// Drop a [`RustFuture`].
-///
-/// Because this function takes ownership of `future` (by `Box`ing it), the
-/// future will be dropped naturally by the compiler at the end of the function
-/// scope.
-///
-/// Please see the module documentation to learn more.
-pub fn uniffi_rustfuture_drop<T, E>(
-    _future: Option<Box<RustFuture<T, E>>>,
-    _call_status: &mut RustCallStatus,
-) {
+    #[test]
+    fn test_raw_clone_and_drop() {
+        let test_env = TestFutureEnvironment::new(&MockEventLoop::new());
+        let waker = test_env.rust_future.make_waker();
+        let weak_ref = test_env.rust_future_weak();
+        assert_eq!(weak_ref.strong_count(), 2);
+        let waker2 = waker.clone();
+        assert_eq!(weak_ref.strong_count(), 3);
+        drop(waker);
+        assert_eq!(weak_ref.strong_count(), 2);
+        drop(waker2);
+        assert_eq!(weak_ref.strong_count(), 1);
+        drop(test_env);
+        assert_eq!(weak_ref.strong_count(), 0);
+        assert!(weak_ref.upgrade().is_none());
+    }
+
+    #[test]
+    fn test_raw_wake() {
+        let eventloop = MockEventLoop::new();
+        let test_env = TestFutureEnvironment::new(&eventloop);
+        let waker = test_env.rust_future.make_waker();
+        let weak_ref = test_env.rust_future_weak();
+        // `test_env` and `waker` both hold a strong reference to the `RustFuture`
+        assert_eq!(weak_ref.strong_count(), 2);
+
+        // wake_by_ref() should schedule a wake
+        waker.wake_by_ref();
+        assert_eq!(eventloop.call_count(), 1);
+
+        // Once the wake runs, the strong could should not have changed
+        eventloop.run_all_calls();
+        assert_eq!(weak_ref.strong_count(), 2);
+
+        // wake() should schedule a wake
+        waker.wake();
+        assert_eq!(eventloop.call_count(), 1);
+
+        // Once the wake runs, the strong have decremented, since wake() consumes the waker
+        eventloop.run_all_calls();
+        assert_eq!(weak_ref.strong_count(), 1);
+    }
+
+    // Test trying to create a RustFuture before the executor is shutdown.
+    //
+    // The main thing we're testing is that we correctly drop the Future in this case
+    #[test]
+    fn test_executor_shutdown() {
+        let eventloop = MockEventLoop::new();
+        eventloop.shutdown();
+        let test_env = TestFutureEnvironment::new(&eventloop);
+        let weak_ref = test_env.rust_future_weak();
+        // When we wake the future, it should try to schedule a callback and fail.  This should
+        // cause the future to be dropped
+        test_env.wake();
+        drop(test_env);
+        assert!(weak_ref.upgrade().is_none());
+    }
+
+    // Similar run a similar test to the last, but simulate an executor shutdown after the future was
+    // scheduled, but before the callback is called.
+    #[test]
+    fn test_executor_shutdown_after_schedule() {
+        let eventloop = MockEventLoop::new();
+        let test_env = TestFutureEnvironment::new(&eventloop);
+        let weak_ref = test_env.rust_future_weak();
+        test_env.complete_future(Ok(true));
+        test_env.wake();
+        eventloop.shutdown();
+        eventloop.run_all_calls();
+
+        // Test that the foreign async side wasn't completed.  Even though we could have
+        // driven the future to completion, we shouldn't have since the executor was shutdown
+        assert!(test_env.foreign_result.is_none());
+        // Also test that we've dropped all references to the future
+        drop(test_env);
+        assert!(weak_ref.upgrade().is_none());
+    }
 }

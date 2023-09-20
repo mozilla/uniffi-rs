@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::ffi::{call_with_output, ForeignBytes, RustCallStatus};
+use crate::ffi::{rust_call, ForeignBytes, RustCallStatus};
 
 /// Support for passing an allocated-by-Rust buffer of bytes over the FFI.
 ///
@@ -60,6 +60,11 @@ pub struct RustBuffer {
     data: *mut u8,
 }
 
+// Mark `RustBuffer` as safe to send between threads, despite the `u8` pointer.  The only mutable
+// use of that pointer is in `destroy_into_vec()` which requires a &mut on the `RustBuffer`.  This
+// is required to send `RustBuffer` inside a `RustFuture`
+unsafe impl Send for RustBuffer {}
+
 impl RustBuffer {
     /// Creates an empty `RustBuffer`.
     ///
@@ -99,6 +104,11 @@ impl RustBuffer {
         self.len
             .try_into()
             .expect("buffer length negative or overflowed")
+    }
+
+    /// Get a pointer to the data
+    pub fn data_pointer(&self) -> *const u8 {
+        self.data
     }
 
     /// Returns true if the length of the buffer is 0.
@@ -202,13 +212,23 @@ impl Default for RustBuffer {
 /// to the foreign-language code as a `RustBuffer` struct. Callers must eventually
 /// free the resulting buffer, either by explicitly calling [`uniffi_rustbuffer_free`] defined
 /// below, or by passing ownership of the buffer back into Rust code.
+#[cfg(feature = "extern-rustbuffer")]
 #[no_mangle]
 pub extern "C" fn uniffi_rustbuffer_alloc(
     size: i32,
     call_status: &mut RustCallStatus,
 ) -> RustBuffer {
-    call_with_output(call_status, || {
-        RustBuffer::new_with_size(size.max(0) as usize)
+    _uniffi_rustbuffer_alloc(size, call_status)
+}
+
+#[cfg(not(feature = "extern-rustbuffer"))]
+pub fn uniffi_rustbuffer_alloc(size: i32, call_status: &mut RustCallStatus) -> RustBuffer {
+    _uniffi_rustbuffer_alloc(size, call_status)
+}
+
+fn _uniffi_rustbuffer_alloc(size: i32, call_status: &mut RustCallStatus) -> RustBuffer {
+    rust_call(call_status, || {
+        Ok(RustBuffer::new_with_size(size.max(0) as usize))
     })
 }
 
@@ -220,14 +240,30 @@ pub extern "C" fn uniffi_rustbuffer_alloc(
 /// # Safety
 /// This function will dereference a provided pointer in order to copy bytes from it, so
 /// make sure the `ForeignBytes` struct contains a valid pointer and length.
+#[cfg(feature = "extern-rustbuffer")]
 #[no_mangle]
-pub unsafe extern "C" fn uniffi_rustbuffer_from_bytes(
+pub extern "C" fn uniffi_rustbuffer_from_bytes(
     bytes: ForeignBytes,
     call_status: &mut RustCallStatus,
 ) -> RustBuffer {
-    call_with_output(call_status, || {
+    _uniffi_rustbuffer_from_bytes(bytes, call_status)
+}
+
+#[cfg(not(feature = "extern-rustbuffer"))]
+pub fn uniffi_rustbuffer_from_bytes(
+    bytes: ForeignBytes,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    _uniffi_rustbuffer_from_bytes(bytes, call_status)
+}
+
+fn _uniffi_rustbuffer_from_bytes(
+    bytes: ForeignBytes,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    rust_call(call_status, || {
         let bytes = bytes.as_slice();
-        RustBuffer::from_vec(bytes.to_vec())
+        Ok(RustBuffer::from_vec(bytes.to_vec()))
     })
 }
 
@@ -237,9 +273,22 @@ pub unsafe extern "C" fn uniffi_rustbuffer_from_bytes(
 /// The argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
+#[cfg(feature = "extern-rustbuffer")]
 #[no_mangle]
-pub unsafe extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
-    call_with_output(call_status, || RustBuffer::destroy(buf))
+pub extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
+    _uniffi_rustbuffer_free(buf, call_status)
+}
+
+#[cfg(not(feature = "extern-rustbuffer"))]
+pub fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
+    _uniffi_rustbuffer_free(buf, call_status)
+}
+
+fn _uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
+    rust_call(call_status, || {
+        RustBuffer::destroy(buf);
+        Ok(())
+    })
 }
 
 /// Reserve additional capacity in a byte buffer that had previously been passed to the
@@ -257,19 +306,37 @@ pub unsafe extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &m
 /// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
+#[cfg(feature = "extern-rustbuffer")]
 #[no_mangle]
-pub unsafe extern "C" fn uniffi_rustbuffer_reserve(
+pub extern "C" fn uniffi_rustbuffer_reserve(
     buf: RustBuffer,
     additional: i32,
     call_status: &mut RustCallStatus,
 ) -> RustBuffer {
-    call_with_output(call_status, || {
+    _uniffi_rustbuffer_reserve(buf, additional, call_status)
+}
+
+#[cfg(not(feature = "extern-rustbuffer"))]
+pub fn uniffi_rustbuffer_reserve(
+    buf: RustBuffer,
+    additional: i32,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    _uniffi_rustbuffer_reserve(buf, additional, call_status)
+}
+
+fn _uniffi_rustbuffer_reserve(
+    buf: RustBuffer,
+    additional: i32,
+    call_status: &mut RustCallStatus,
+) -> RustBuffer {
+    rust_call(call_status, || {
         let additional: usize = additional
             .try_into()
             .expect("additional buffer length negative or overflowed");
         let mut v = buf.destroy_into_vec();
         v.reserve(additional);
-        RustBuffer::from_vec(v)
+        Ok(RustBuffer::from_vec(v))
     })
 }
 

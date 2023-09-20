@@ -11,14 +11,16 @@
 //! These types are purely an implementation detail of UniFFI, so consumers shouldn't
 //! need to know about them. But as a developer working on UniFFI itself, you're likely
 //! to spend a lot of time thinking about how these low-level types are used to represent
-//! the higher-level "interface types" from the [`super::types::Type`] enum.
+//! the higher-level "interface types" from the [`Type`] enum.
 /// Represents the restricted set of low-level types that can be used to construct
 /// the C-style FFI layer between a rust component and its foreign language bindings.
 ///
 /// For the types that involve memory allocation, we make a distinction between
 /// "owned" types (the recipient must free it, or pass it to someone else) and
 /// "borrowed" types (the sender must keep it alive for the duration of the call).
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+use uniffi_meta::{ExternalKind, Type};
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FfiType {
     // N.B. there are no booleans at this layer, since they cause problems for JNA.
     UInt8,
@@ -45,11 +47,91 @@ pub enum FfiType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
-    /// A pointer to a single function in to the foreign language.
-    /// This function contains all the machinery to make callbacks work on the foreign language side.
+    /// Pointer to a callback function that handles all callbacks on the foreign language side.
     ForeignCallback,
+    /// Pointer-sized opaque handle that represents a foreign executor.  Foreign bindings can
+    /// either use an actual pointer or a usized integer.
+    ForeignExecutorHandle,
+    /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
+    ForeignExecutorCallback,
+    /// Pointer to a callback function to complete an async Rust function
+    FutureCallback {
+        /// Note: `return_type` is not optional because we have a void callback parameter like we
+        /// can have a void return.  Instead, we use `UInt8` as a placeholder value.
+        return_type: Box<FfiType>,
+    },
+    /// Opaque pointer passed to the FutureCallback
+    FutureCallbackData,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
+}
+
+/// When passing data across the FFI, each `Type` value will be lowered into a corresponding
+/// `FfiType` value. This conversion tells you which one.
+///
+/// Note that the conversion is one-way - given an FfiType, it is not in general possible to
+/// tell what the corresponding Type is that it's being used to represent.
+impl From<&Type> for FfiType {
+    fn from(t: &Type) -> FfiType {
+        match t {
+            // Types that are the same map to themselves, naturally.
+            Type::UInt8 => FfiType::UInt8,
+            Type::Int8 => FfiType::Int8,
+            Type::UInt16 => FfiType::UInt16,
+            Type::Int16 => FfiType::Int16,
+            Type::UInt32 => FfiType::UInt32,
+            Type::Int32 => FfiType::Int32,
+            Type::UInt64 => FfiType::UInt64,
+            Type::Int64 => FfiType::Int64,
+            Type::Float32 => FfiType::Float32,
+            Type::Float64 => FfiType::Float64,
+            // Booleans lower into an Int8, to work around a bug in JNA.
+            Type::Boolean => FfiType::Int8,
+            // Strings are always owned rust values.
+            // We might add a separate type for borrowed strings in future.
+            Type::String => FfiType::RustBuffer(None),
+            // Byte strings are also always owned rust values.
+            // We might add a separate type for borrowed byte strings in future as well.
+            Type::Bytes => FfiType::RustBuffer(None),
+            // Objects are pointers to an Arc<>
+            Type::Object { name, .. } => FfiType::RustArcPtr(name.to_owned()),
+            // Callback interfaces are passed as opaque integer handles.
+            Type::CallbackInterface { .. } => FfiType::UInt64,
+            Type::ForeignExecutor => FfiType::ForeignExecutorHandle,
+            // Other types are serialized into a bytebuffer and deserialized on the other side.
+            Type::Enum { .. }
+            | Type::Record { .. }
+            | Type::Optional { .. }
+            | Type::Sequence { .. }
+            | Type::Map { .. }
+            | Type::Timestamp
+            | Type::Duration => FfiType::RustBuffer(None),
+            Type::External {
+                name,
+                kind: ExternalKind::Interface,
+                ..
+            } => FfiType::RustArcPtr(name.clone()),
+            Type::External {
+                name,
+                kind: ExternalKind::DataClass,
+                ..
+            } => FfiType::RustBuffer(Some(name.clone())),
+            Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
+        }
+    }
+}
+
+// Needed for rust scaffolding askama template
+impl From<Type> for FfiType {
+    fn from(ty: Type) -> Self {
+        (&ty).into()
+    }
+}
+
+impl From<&&Type> for FfiType {
+    fn from(ty: &&Type) -> Self {
+        (*ty).into()
+    }
 }
 
 /// Represents an "extern C"-style function that will be part of the FFI.
@@ -58,12 +140,16 @@ pub enum FfiType {
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
 /// some built-in `FfiFunction` helpers for use in the foreign language bindings.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct FfiFunction {
     pub(super) name: String,
     pub(super) is_async: bool,
     pub(super) arguments: Vec<FfiArgument>,
     pub(super) return_type: Option<FfiType>,
+    pub(super) has_rust_call_status_arg: bool,
+    /// Used by C# generator to differentiate the free function and call it with void*
+    /// instead of C# `SafeHandle` type. See <https://github.com/mozilla/uniffi-rs/pull/1488>.
+    pub(super) is_object_free_function: bool,
 }
 
 impl FfiFunction {
@@ -81,6 +167,61 @@ impl FfiFunction {
 
     pub fn return_type(&self) -> Option<&FfiType> {
         self.return_type.as_ref()
+    }
+
+    pub fn has_rust_call_status_arg(&self) -> bool {
+        self.has_rust_call_status_arg
+    }
+
+    pub fn is_object_free_function(&self) -> bool {
+        self.is_object_free_function
+    }
+
+    pub fn init(
+        &mut self,
+        return_type: Option<FfiType>,
+        args: impl IntoIterator<Item = FfiArgument>,
+    ) {
+        self.arguments = args.into_iter().collect();
+        if self.is_async() {
+            self.arguments.extend([
+                // Used to schedule polls
+                FfiArgument {
+                    name: "uniffi_executor".into(),
+                    type_: FfiType::ForeignExecutorHandle,
+                },
+                // Invoked when the future is ready
+                FfiArgument {
+                    name: "uniffi_callback".into(),
+                    type_: FfiType::FutureCallback {
+                        return_type: Box::new(return_type.unwrap_or(FfiType::UInt8)),
+                    },
+                },
+                // Data pointer passed to the callback
+                FfiArgument {
+                    name: "uniffi_callback_data".into(),
+                    type_: FfiType::FutureCallbackData,
+                },
+            ]);
+            // Async scaffolding functions never return values.  Instead, the callback is invoked
+            // when the Future is ready.
+            self.return_type = None;
+        } else {
+            self.return_type = return_type;
+        }
+    }
+}
+
+impl Default for FfiFunction {
+    fn default() -> Self {
+        Self {
+            name: "".into(),
+            is_async: false,
+            arguments: Vec::new(),
+            return_type: None,
+            has_rust_call_status_arg: true,
+            is_object_free_function: false,
+        }
     }
 }
 

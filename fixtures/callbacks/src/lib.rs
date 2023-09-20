@@ -7,6 +7,7 @@ trait ForeignGetters {
     fn get_string(&self, v: String, arg2: bool) -> Result<String, SimpleError>;
     fn get_option(&self, v: Option<String>, arg2: bool) -> Result<Option<String>, ComplexError>;
     fn get_list(&self, v: Vec<i32>, arg2: bool) -> Result<Vec<i32>, SimpleError>;
+    fn get_nothing(&self, v: String) -> Result<(), SimpleError>;
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -85,6 +86,10 @@ impl RustGetters {
     ) -> Result<Option<String>, SimpleError> {
         callback.map(|c| c.get_string(v, arg2)).transpose()
     }
+
+    fn get_nothing(&self, callback: Box<dyn ForeignGetters>, v: String) -> Result<(), SimpleError> {
+        callback.get_nothing(v)
+    }
 }
 
 impl Default for RustGetters {
@@ -117,4 +122,4 @@ impl RustStringifier {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/callbacks.uniffi.rs"));
+uniffi::include_scaffolding!("callbacks");

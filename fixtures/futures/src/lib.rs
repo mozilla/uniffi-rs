@@ -116,12 +116,38 @@ pub async fn fallible_me(do_fail: bool) -> Result<u8, MyError> {
     }
 }
 
+// An async function returning a struct that can throw.
+#[uniffi::export]
+pub async fn fallible_struct(do_fail: bool) -> Result<Arc<Megaphone>, MyError> {
+    if do_fail {
+        Err(MyError::Foo)
+    } else {
+        Ok(new_megaphone())
+    }
+}
+
 /// Sync function that generates a new `Megaphone`.
 ///
 /// It builds a `Megaphone` which has async methods on it.
 #[uniffi::export]
 pub fn new_megaphone() -> Arc<Megaphone> {
     Arc::new(Megaphone)
+}
+
+/// Async function that generates a new `Megaphone`.
+#[uniffi::export]
+pub async fn async_new_megaphone() -> Arc<Megaphone> {
+    new_megaphone()
+}
+
+/// Async function that possibly generates a new `Megaphone`.
+#[uniffi::export]
+pub async fn async_maybe_new_megaphone(y: bool) -> Option<Arc<Megaphone>> {
+    if y {
+        Some(new_megaphone())
+    } else {
+        None
+    }
 }
 
 /// A megaphone. Be careful with the neighbours.
@@ -142,6 +168,23 @@ impl Megaphone {
         } else {
             Ok(42)
         }
+    }
+}
+
+// The async_runtime attribute used to error when *any* function in the impl block was not async,
+// now it should work as long as at least one function *is* async.
+#[uniffi::export(async_runtime = "tokio")]
+impl Megaphone {
+    /// A sync method that yells something immediately.
+    pub fn say_now(&self, who: String) -> String {
+        format!("Hello, {who}!").to_uppercase()
+    }
+
+    /// An async method that yells something after a certain time.
+    ///
+    /// Uses tokio's timer functionality.
+    pub async fn say_after_with_tokio(self: Arc<Self>, ms: u16, who: String) -> String {
+        say_after_with_tokio(ms, who).await.to_uppercase()
     }
 }
 
@@ -233,10 +276,40 @@ pub async fn broken_sleep(ms: u16, fail_after: u16) {
     .await;
 }
 
-include!(concat!(env!("OUT_DIR"), "/uniffi_futures.uniffi.rs"));
-
-mod uniffi_types {
-    pub(crate) use super::Megaphone;
-    pub(crate) use super::MyError;
-    pub(crate) use super::MyRecord;
+#[derive(uniffi::Record)]
+pub struct SharedResourceOptions {
+    pub release_after_ms: u16,
+    pub timeout_ms: u16,
 }
+
+// Our error.
+#[derive(uniffi::Error, Debug)]
+pub enum AsyncError {
+    Timeout,
+}
+
+#[uniffi::export(async_runtime = "tokio")]
+pub async fn use_shared_resource(options: SharedResourceOptions) -> Result<(), AsyncError> {
+    use once_cell::sync::Lazy;
+    use tokio::{
+        sync::Mutex,
+        time::{sleep, timeout},
+    };
+
+    static MUTEX: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+
+    let _guard = timeout(
+        Duration::from_millis(options.timeout_ms.into()),
+        MUTEX.lock(),
+    )
+    .await
+    .map_err(|_| {
+        println!("Timeout error in use_shared_resource().  The unit test may hang after this");
+        AsyncError::Timeout
+    })?;
+
+    sleep(Duration::from_millis(options.release_after_ms.into())).await;
+    Ok(())
+}
+
+uniffi::include_scaffolding!("futures");

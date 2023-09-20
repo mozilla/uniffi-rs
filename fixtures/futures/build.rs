@@ -1,3 +1,3 @@
 fn main() {
-    uniffi::generate_scaffolding("./src/uniffi_futures.udl").unwrap();
+    uniffi::generate_scaffolding("src/futures.udl").unwrap();
 }

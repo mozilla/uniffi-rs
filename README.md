@@ -14,9 +14,9 @@ project to build browser storage and syncing functionality for Firefox mobile br
 written once in Rust, and auto-generated bindings allow that functionality to be called from both Kotlin (for Android apps)
 and Swift (for iOS apps).
 
-Currently supported "foreign" languages include Kotlin, Swift, Python and Ruby.
-In general, we'd welcome contributions of other foreign bindings, but we recommend you contact the team first -
-see [the contributing section below](#contributing).
+Currently first-party supported foreign languages include Kotlin, Swift, Python and Ruby.
+Additional foreign language bindings can be developed externally and we welcome contributions to list them here.
+See [Third-party foreign language bindings](#third-party-foreign-language-bindings).
 
 ## User Guide
 
@@ -41,15 +41,22 @@ Other tools we know of which try and solve a similarly shaped problem are:
 
 * [Diplomat](https://github.com/rust-diplomat/diplomat/) - see our [writeup of
   the different approach taken by that tool](docs/diplomat-and-macros.md)
+* [Interoptopus](https://github.com/ralfbiedert/interoptopus/)
 
 (Please open a PR if you think other tools should be listed!)
 
-## External resources
+## Third-party foreign language bindings
+
+* [Kotlin Multiplatform support](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
+* [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
+* [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
+
+### External resources
 
 There are a few third-party resources that make it easier to work with UniFFI:
 
-* [Kotlin Multiplatform support](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
 * [Plugin support for `.udl` files](https://github.com/Lonami/uniffi-dl) for the IDEA platform ([*uniffi-dl* in the JetBrains marketplace](https://plugins.jetbrains.com/plugin/20527-uniffi-dl)). It provides syntax highlighting, code folding, code completion, reference resolution and navigation (among others features) for the [UniFFI Definition Language (UDL)](https://mozilla.github.io/uniffi-rs/).
+* [cargo swift](https://github.com/antoniusnaumann/cargo-swift), a cargo plugin to build a Swift Package from Rust code. It provides an init command for setting up a UniFFI crate and a package command for building a Swift package from Rust code - without the need for additional configuration or build scripts.
 
 (Please open a PR if you think other resources should be listed!)
 
