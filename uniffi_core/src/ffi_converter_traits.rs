@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::Arc;
+use std::{borrow::Borrow, sync::Arc};
 
 use crate::{
     try_lift_from_rust_buffer, FfiDefault, MetadataBuffer, Result, RustBuffer, RustCallStatus,
@@ -90,6 +90,16 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// thrown exceptions on the foreign code, serialize the error into a RustBuffer and return
     /// `Err(buf)`
     fn lower_return(obj: Self) -> Result<Self::ReturnType, RustBuffer>;
+
+    /// If possible, get a serialized error for failed argument lifts
+    ///
+    /// By default, we just panic and let `rust_call` handle things.  However, for `Result<_, E>`
+    /// returns, if the anyhow error can be downcast to `E`, then serialize that and return it.
+    /// This results in the foreign code throwing a "normal" exception, rather than an unexpected
+    /// exception.
+    fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> RustBuffer {
+        panic!("Failed to convert arg '{arg_name}': {e}")
+    }
 
     /// Lift a rust value of the target type, from an FFI value of type Self::FfiType.
     ///
@@ -252,4 +262,15 @@ where
     }
 
     const TYPE_ID_META: MetadataBuffer = T::TYPE_ID_META;
+}
+
+/// Trait used to lift references
+///
+/// This is needed because if we see a `&T` parameter, it's not clear which FfiConverter to use to
+/// lift it.  Normally it's just `T`, but for interfaces it's `Arc<T>` and for callback interfaces
+/// it's `Box<T>`.
+///
+/// This trait provides the proc-macros with a way to name the correct type.
+pub trait LiftRef<UT> {
+    type LiftType: FfiConverter<UT> + Borrow<Self>;
 }

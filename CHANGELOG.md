@@ -28,10 +28,11 @@
     be used to avoid this and use the specified value.
 
 - Crates can now use proc-macros without UDL files to export their interface.  See the "Procedural Macros: Attributes and Derives" manual section for details.
-
 - [Custom Types](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-unifficustomtype-derive) are now supported for proc-macros, including a very
   low-friction way of exposing types implementing the new-type idiom.
 - Proc-macros: Added support for ByRef arguments
+- Proc-macros: Implemented custom type conversion error handling (https://mozilla.github.io/uniffi-rs/udl/custom_types.html#error-handling-during-conversion)
+- Error types must now implement `Error + Send + Sync + 'static`.
 
 ### What's Fixed
 

@@ -12,6 +12,7 @@ name = "uniffi_uitests"
 [dependencies]
 uniffi = {path = "../../uniffi", version = "0.24" }
 uniffi_macros = {path = "../../uniffi_macros"}
+thiserror = "1.0"
 
 [dev-dependencies]
 trybuild = "1.0.76"

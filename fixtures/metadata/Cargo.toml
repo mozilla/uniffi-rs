@@ -9,6 +9,7 @@ publish = false
 name = "uniffi_fixture_metadata"
 
 [dependencies]
+thiserror = "1.0"
 uniffi = { path = "../../uniffi", version = "0.24" }
 uniffi_meta = { path = "../../uniffi_meta" }
 uniffi_core = { path = "../../uniffi_core" }

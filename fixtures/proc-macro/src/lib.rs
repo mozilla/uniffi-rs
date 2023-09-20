@@ -13,6 +13,11 @@ pub struct One {
     inner: i32,
 }
 
+#[uniffi::export]
+pub fn one_inner_by_ref(one: &One) -> i32 {
+    one.inner
+}
+
 #[derive(uniffi::Record)]
 pub struct Two {
     a: String,
@@ -171,11 +176,14 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
     value
 }
 
-#[derive(uniffi::Error, Debug, PartialEq, Eq)]
+#[derive(thiserror::Error, uniffi::Error, Debug, PartialEq, Eq)]
 #[uniffi(handle_unknown_callback_error)]
 pub enum BasicError {
+    #[error("InvalidInput")]
     InvalidInput,
+    #[error("OsError")]
     OsError,
+    #[error("UnexpectedError")]
     UnexpectedError { reason: String },
 }
 

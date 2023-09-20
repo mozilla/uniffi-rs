@@ -2,63 +2,45 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
-    Data, DataStruct, DeriveInput, Field, Lit, Path, Token,
+    Data, DataStruct, DeriveInput, Field, Lit, Token,
 };
 
 use crate::util::{
-    create_metadata_items, either_attribute_arg, ident_to_string, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, ArgumentNotAllowedHere, AttributeSliceExt,
-    CommonAttr, UniffiAttributeArgs,
+    create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path, tagged_impl_header,
+    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
 };
 
-pub fn expand_record(input: DeriveInput) -> TokenStream {
+pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
     let record = match input.data {
         Data::Struct(s) => s,
         _ => {
-            return syn::Error::new(
+            return Err(syn::Error::new(
                 Span::call_site(),
                 "This derive must only be used on structs",
-            )
-            .into_compile_error();
+            ));
         }
     };
 
     let ident = &input.ident;
-    let attr_error = input
-        .attrs
-        .parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
-        .err()
-        .map(syn::Error::into_compile_error);
-    let ffi_converter = record_ffi_converter_impl(ident, &record, None)
+    let ffi_converter = record_ffi_converter_impl(ident, &record, udl_mode)
         .unwrap_or_else(syn::Error::into_compile_error);
-    let meta_static_var =
-        record_meta_static_var(ident, &record).unwrap_or_else(syn::Error::into_compile_error);
+    let meta_static_var = (!udl_mode).then(|| {
+        record_meta_static_var(ident, &record).unwrap_or_else(syn::Error::into_compile_error)
+    });
 
-    quote! {
-        #attr_error
+    Ok(quote! {
         #ffi_converter
         #meta_static_var
-    }
-}
-
-pub(crate) fn expand_record_ffi_converter(attr: CommonAttr, input: DeriveInput) -> TokenStream {
-    match input.data {
-        Data::Struct(s) => record_ffi_converter_impl(&input.ident, &s, attr.tag.as_ref())
-            .unwrap_or_else(syn::Error::into_compile_error),
-        _ => syn::Error::new(
-            proc_macro2::Span::call_site(),
-            "This attribute must only be used on structs",
-        )
-        .into_compile_error(),
-    }
+    })
 }
 
 pub(crate) fn record_ffi_converter_impl(
     ident: &Ident,
     record: &DataStruct,
-    tag: Option<&Path>,
+    udl_mode: bool,
 ) -> syn::Result<TokenStream> {
-    let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
+    let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
+    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
     let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
@@ -82,6 +64,10 @@ pub(crate) fn record_ffi_converter_impl(
                 .concat_str(#mod_path)
                 .concat_str(#name);
         }
+
+        #lift_ref_impl_spec {
+            type LiftType = Self;
+        }
     })
 }
 
@@ -92,11 +78,6 @@ fn write_field(f: &Field) -> TokenStream {
     quote! {
         <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(obj.#ident, buf);
     }
-}
-
-mod kw {
-    syn::custom_keyword!(default);
-    syn::custom_keyword!(None);
 }
 
 pub enum FieldDefault {
