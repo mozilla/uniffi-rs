@@ -393,6 +393,21 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -495,18 +510,21 @@
 
 <span class="attr">#[proc_macro_attribute]
 </span><span class="kw">pub fn </span>export(attr_args: TokenStream, input: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>input2 = proc_macro2::TokenStream::from(input.clone());
+    do_export(attr_args, input, <span class="bool-val">false</span>)
+}
+
+<span class="kw">fn </span>do_export(attr_args: TokenStream, input: TokenStream, udl_mode: bool) -&gt; TokenStream {
+    <span class="kw">let </span>copied_input = (!udl_mode).then(|| proc_macro2::TokenStream::from(input.clone()));
 
     <span class="kw">let </span>gen_output = || {
-        <span class="kw">let </span>mod_path = util::mod_path()<span class="question-mark">?</span>;
         <span class="kw">let </span>args = syn::parse(attr_args)<span class="question-mark">?</span>;
         <span class="kw">let </span>item = syn::parse(input)<span class="question-mark">?</span>;
-        expand_export(item, args, mod_path)
+        expand_export(item, args, udl_mode)
     };
     <span class="kw">let </span>output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 
     <span class="macro">quote! </span>{
-        #input2
+        #copied_input
         #output
     }
     .into()
@@ -514,28 +532,28 @@
 
 <span class="attr">#[proc_macro_derive(Record, attributes(uniffi))]
 </span><span class="kw">pub fn </span>derive_record(input: TokenStream) -&gt; TokenStream {
-    expand_record(<span class="macro">parse_macro_input!</span>(input)).into()
+    expand_record(<span class="macro">parse_macro_input!</span>(input), <span class="bool-val">false</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attr">#[proc_macro_derive(Enum)]
 </span><span class="kw">pub fn </span>derive_enum(input: TokenStream) -&gt; TokenStream {
-    expand_enum(<span class="macro">parse_macro_input!</span>(input)).into()
+    expand_enum(<span class="macro">parse_macro_input!</span>(input), <span class="bool-val">false</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attr">#[proc_macro_derive(Object)]
 </span><span class="kw">pub fn </span>derive_object(input: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>mod_path = <span class="kw">match </span>util::mod_path() {
-        <span class="prelude-val">Ok</span>(p) =&gt; p,
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error().into(),
-    };
-    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input);
-
-    expand_object(input, mod_path).into()
+    expand_object(<span class="macro">parse_macro_input!</span>(input), <span class="bool-val">false</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="attr">#[proc_macro_derive(Error, attributes(uniffi))]
 </span><span class="kw">pub fn </span>derive_error(input: TokenStream) -&gt; TokenStream {
-    expand_error(<span class="macro">parse_macro_input!</span>(input))
+    expand_error(<span class="macro">parse_macro_input!</span>(input), <span class="prelude-val">None</span>, <span class="bool-val">false</span>)
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -545,13 +563,9 @@
 </span><span class="attr">#[proc_macro]
 </span><span class="kw">pub fn </span>custom_type(tokens: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>input: CustomTypeInfo = <span class="macro">syn::parse_macro_input!</span>(tokens);
-    custom::expand_ffi_converter_custom_type(
-        <span class="kw-2">&amp;</span>input.ident,
-        <span class="kw-2">&amp;</span>input.builtin,
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
-    )
-    .unwrap_or_else(syn::Error::into_compile_error)
-    .into()
+    custom::expand_ffi_converter_custom_type(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>input.builtin, <span class="bool-val">true</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 <span class="doccomment">/// Generate the `FfiConverter` and the `UniffiCustomTypeConverter` implementations for a
@@ -560,70 +574,97 @@
 </span><span class="attr">#[proc_macro]
 </span><span class="kw">pub fn </span>custom_newtype(tokens: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>input: CustomTypeInfo = <span class="macro">syn::parse_macro_input!</span>(tokens);
-    custom::expand_ffi_converter_custom_newtype(
-        <span class="kw-2">&amp;</span>input.ident,
-        <span class="kw-2">&amp;</span>input.builtin,
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
+    custom::expand_ffi_converter_custom_newtype(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>input.builtin, <span class="bool-val">true</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+<span class="comment">// == derive_for_udl and export_for_udl ==
+//
+// The Askama templates generate placeholder items wrapped with these attributes. The goal is to
+// have all scaffolding generation go through the same code path.
+//
+// The one difference is that derive-style attributes are not allowed inside attribute macro
+// inputs.  Instead, we take the attributes from the macro invocation itself.
+//
+// Instead of:
+//
+// ```
+// #[derive(Error)
+// #[uniffi(flat_error])
+// enum { .. }
+// ```
+//
+// We have:
+//
+// ```
+// #[derive_error_for_udl(flat_error)]
+// enum { ... }
+//  ```
+//
+// # Differences between UDL-mode and normal mode
+//
+// ## Metadata symbols / checksum functions
+//
+// In UDL mode, we don&#39;t export the static metadata symbols or generate the checksum
+// functions.  This could be changed, but there doesn&#39;t seem to be much benefit at this point.
+//
+// ## The FfiConverter&lt;UT&gt; parameter
+//
+// In UDL-mode, we only implement `FfiConverter` for the local tag (`FfiConverter&lt;crate::UniFfiTag&gt;`)
+//
+// The reason for this split is remote types, i.e. types defined in remote crates that we
+// don&#39;t control and therefore can&#39;t define a blanket impl on because of the orphan rules.
+//
+// With UDL, we handle this by only implementing `FfiConverter&lt;crate::UniFfiTag&gt;` for the
+// type.  This gets around the orphan rules since a local type is in the trait, but requires
+// a `uniffi::ffi_converter_forward!` call if the type is used in a second local crate (an
+// External typedef).  This is natural for UDL-based generation, since you always need to
+// define the external type in the UDL file.
+//
+// With proc-macros this system isn&#39;t so natural.  Instead, we create a blanket implementation
+// for all UT and support for remote types is still TODO.
+
+</span><span class="attr">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>derive_record_for_udl(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    expand_record(<span class="macro">syn::parse_macro_input!</span>(input), <span class="bool-val">true</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+<span class="attr">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>derive_enum_for_udl(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    expand_enum(<span class="macro">syn::parse_macro_input!</span>(input), <span class="bool-val">true</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+<span class="attr">#[doc(hidden)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>derive_error_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    expand_error(
+        <span class="macro">syn::parse_macro_input!</span>(input),
+        <span class="prelude-val">Some</span>(<span class="macro">syn::parse_macro_input!</span>(attrs)),
+        <span class="bool-val">true</span>,
     )
     .unwrap_or_else(syn::Error::into_compile_error)
     .into()
 }
 
-<span class="doccomment">/// Generate the FfiConverter implementation for a Record
-///
-/// This is used by the Askama scaffolding code.  It this inputs a struct definition, but only
-/// outputs the `FfiConverter` implementation, not the struct.
-</span><span class="attr">#[doc(hidden)]
+<span class="attr">#[doc(hidden)]
 #[proc_macro_attribute]
-</span><span class="kw">pub fn </span>ffi_converter_record(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    record::expand_record_ffi_converter(
-        <span class="macro">syn::parse_macro_input!</span>(attrs),
-        <span class="macro">syn::parse_macro_input!</span>(input),
-    )
-    .into()
+</span><span class="kw">pub fn </span>derive_object_for_udl(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    expand_object(<span class="macro">syn::parse_macro_input!</span>(input), <span class="bool-val">true</span>)
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
-<span class="doccomment">/// Generate the FfiConverter implementation for an Enum
-///
-/// This is used by the Askama scaffolding code.  It this inputs an enum definition, but only
-/// outputs the `FfiConverter` implementation, not the enum.
-</span><span class="attr">#[doc(hidden)]
+<span class="attr">#[doc(hidden)]
 #[proc_macro_attribute]
-</span><span class="kw">pub fn </span>ffi_converter_enum(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    enum_::expand_enum_ffi_converter(
-        <span class="macro">syn::parse_macro_input!</span>(attrs),
-        <span class="macro">syn::parse_macro_input!</span>(input),
-    )
-    .into()
-}
-
-<span class="doccomment">/// Generate the FfiConverter implementation for an Error enum
-///
-/// This is used by the Askama scaffolding code.  It this inputs an enum definition, but only
-/// outputs the `FfiConverter` implementation, not the enum.
-</span><span class="attr">#[doc(hidden)]
-#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>ffi_converter_error(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    error::expand_ffi_converter_error(
-        <span class="macro">syn::parse_macro_input!</span>(attrs),
-        <span class="macro">syn::parse_macro_input!</span>(input),
-    )
-    .into()
-}
-
-<span class="doccomment">/// Generate various support elements, including the FfiConverter implementation,
-/// for an Interface
-///
-/// This is used by the Askama scaffolding code.  It this inputs an struct/enum definition, but
-/// only outputs the `FfiConverter` implementation, not the item.
-</span><span class="attr">#[doc(hidden)]
-#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>expand_interface_support(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    object::expand_interface_support(
-        <span class="macro">syn::parse_macro_input!</span>(attrs),
-        <span class="macro">syn::parse_macro_input!</span>(input),
-    )
-    .into()
+</span><span class="kw">pub fn </span>export_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    do_export(attrs, input, <span class="bool-val">true</span>)
 }
 
 <span class="doccomment">/// Generate various support elements, including the FfiConverter implementation,
@@ -631,11 +672,7 @@
 </span><span class="attr">#[doc(hidden)]
 #[proc_macro]
 </span><span class="kw">pub fn </span>expand_trait_interface_support(tokens: TokenStream) -&gt; TokenStream {
-    export::ffi_converter_trait_impl(
-        <span class="kw-2">&amp;</span><span class="macro">syn::parse_macro_input!</span>(tokens),
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
-    )
-    .into()
+    export::ffi_converter_trait_impl(<span class="kw-2">&amp;</span><span class="macro">syn::parse_macro_input!</span>(tokens), <span class="bool-val">true</span>).into()
 }
 
 <span class="doccomment">/// Generate the FfiConverter implementation for an trait interface for the scaffolding code
@@ -643,12 +680,7 @@
 #[proc_macro]
 </span><span class="kw">pub fn </span>scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
-    export::ffi_converter_callback_interface_impl(
-        <span class="kw-2">&amp;</span>input.lhs,
-        <span class="kw-2">&amp;</span>input.rhs,
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">syn::parse_quote!</span>(<span class="kw">crate</span>::UniFfiTag)),
-    )
-    .into()
+    export::ffi_converter_callback_interface_impl(<span class="kw-2">&amp;</span>input.lhs, <span class="kw-2">&amp;</span>input.rhs, <span class="bool-val">true</span>).into()
 }
 
 <span class="doccomment">/// A helper macro to include generated component scaffolding.
@@ -700,9 +732,7 @@
 }
 
 <span class="comment">// Use a UniFFI types from dependent crates that uses UDL files
-//
-// See [util::CommonAttr] for a discussion of why this is needed.
-
+// See the derive_for_udl and export_for_udl section for a discussion of why this is needed.
 </span><span class="attr">#[proc_macro]
 </span><span class="kw">pub fn </span>use_udl_record(tokens: TokenStream) -&gt; TokenStream {
     use_udl_simple_type(tokens)

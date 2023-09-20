@@ -204,7 +204,7 @@
                 <span class="kw">let </span>sig = FnSignature::new_function(item.sig)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Function { sig })
             }
-            syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item),
+            syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item, args.constructor.is_some()),
             syn::Item::Trait(item) =&gt; <span class="self">Self</span>::from_trait(item, args.callback_interface.is_some()),
             <span class="comment">// FIXME: Support const / static?
             </span><span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
@@ -215,7 +215,7 @@
         }
     }
 
-    <span class="kw">fn </span>from_impl(item: syn::ItemImpl) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub fn </span>from_impl(item: syn::ItemImpl, force_constructor: bool) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">if </span>!item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
                 <span class="kw-2">&amp;</span>item.generics,
@@ -257,7 +257,7 @@
                 };
 
                 <span class="kw">let </span>attrs = ExportedImplFnAttributes::new(<span class="kw-2">&amp;</span>impl_fn.attrs)<span class="question-mark">?</span>;
-                <span class="kw">let </span>item = <span class="kw">if </span>attrs.constructor {
+                <span class="kw">let </span>item = <span class="kw">if </span>force_constructor || attrs.constructor {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,

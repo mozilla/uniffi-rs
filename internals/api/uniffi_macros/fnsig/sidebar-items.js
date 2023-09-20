@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ArgKind","FnKind"],"struct":["Arg","FnSignature","NamedArg","ReceiverArg"]};
+window.SIDEBAR_ITEMS = {"enum":["ArgKind","FnKind","ReceiverArg"],"fn":["looks_like_result"],"struct":["Arg","FnSignature","NamedArg"]};

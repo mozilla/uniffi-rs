@@ -222,74 +222,47 @@
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
 <a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
-<a href="#227" id="227">227</a>
-<a href="#228" id="228">228</a>
-<a href="#229" id="229">229</a>
-<a href="#230" id="230">230</a>
-<a href="#231" id="231">231</a>
-<a href="#232" id="232">232</a>
-<a href="#233" id="233">233</a>
-<a href="#234" id="234">234</a>
-<a href="#235" id="235">235</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
-<span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index, Path};
+<span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
     create_metadata_items, ident_to_string, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, ArgumentNotAllowedHere, AttributeSliceExt,
-    CommonAttr,
+    try_metadata_value_from_usize, try_read_field,
 };
 
-<span class="kw">pub fn </span>expand_enum(input: DeriveInput) -&gt; TokenStream {
+<span class="kw">pub fn </span>expand_enum(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span>syn::Error::new(Span::call_site(), <span class="string">&quot;This derive must only be used on enums&quot;</span>)
-                .into_compile_error();
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                Span::call_site(),
+                <span class="string">&quot;This derive must only be used on enums&quot;</span>,
+            ))
         }
     };
-
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr_error = input
-        .attrs
-        .parse_uniffi_attr_args::&lt;ArgumentNotAllowedHere&gt;()
-        .err()
-        .map(syn::Error::into_compile_error);
-    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="prelude-val">None</span>);
+    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, udl_mode);
 
-    <span class="kw">let </span>meta_static_var =
-        enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(syn::Error::into_compile_error);
+    <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
+        enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(syn::Error::into_compile_error)
+    });
 
-    <span class="macro">quote! </span>{
-        #attr_error
+    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl
         #meta_static_var
-    }
-}
-
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_enum_ffi_converter(attr: CommonAttr, input: DeriveInput) -&gt; TokenStream {
-    <span class="kw">match </span>input.data {
-        Data::Enum(e) =&gt; enum_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>e, attr.tag.as_ref()),
-        <span class="kw">_ </span>=&gt; syn::Error::new(
-            proc_macro2::Span::call_site(),
-            <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
-        )
-        .into_compile_error(),
-    }
+    })
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    udl_mode: bool,
 ) -&gt; TokenStream {
     enum_or_error_ffi_converter_impl(
         ident,
         enum_,
-        tag,
+        udl_mode,
         <span class="bool-val">false</span>,
         <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_ENUM },
     )
@@ -298,13 +271,13 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rich_error_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    udl_mode: bool,
     handle_unknown_callback_error: bool,
 ) -&gt; TokenStream {
     enum_or_error_ffi_converter_impl(
         ident,
         enum_,
-        tag,
+        udl_mode,
         handle_unknown_callback_error,
         <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_ENUM },
     )
@@ -313,12 +286,13 @@
 <span class="kw">fn </span>enum_or_error_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    udl_mode: bool,
     handle_unknown_callback_error: bool,
     metadata_type_code: TokenStream,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(ident);
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, udl_mode);
+    <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, ident, udl_mode);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
@@ -381,6 +355,10 @@
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
                 .concat_str(#mod_path)
                 .concat_str(#name);
+        }
+
+        #lift_ref_impl_spec {
+            <span class="kw">type </span>LiftType = <span class="self">Self</span>;
         }
     }
 }

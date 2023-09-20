@@ -286,13 +286,21 @@
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
 <a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{quote, quote_spanned};
-<span class="kw">use </span>syn::{visit_mut::VisitMut, Item, Path, Type};
+<span class="kw">use </span>syn::{visit_mut::VisitMut, Item, Type};
 
 <span class="kw">mod </span>attributes;
 <span class="kw">mod </span>callback_interface;
@@ -300,7 +308,6 @@
 <span class="kw">mod </span>scaffolding;
 
 <span class="kw">use </span><span class="self">self</span>::{
-    attributes::ExportAttributeArguments,
     item::{ExportItem, ImplItem},
     scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
 };
@@ -308,6 +315,7 @@
     object::interface_meta_static_var,
     util::{ident_to_string, mod_path, tagged_impl_header},
 };
+<span class="kw">pub use </span>attributes::ExportAttributeArguments;
 <span class="kw">pub use </span>callback_interface::ffi_converter_callback_interface_impl;
 <span class="kw">use </span>uniffi_meta::free_fn_symbol_name;
 
@@ -317,8 +325,9 @@
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_export(
     <span class="kw-2">mut </span>item: Item,
     args: ExportAttributeArguments,
-    mod_path: String,
+    udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
     <span class="comment">// If the input is an `impl` block, rewrite any uses of the `Self` type
     // alias to the actual type, so we don&#39;t have to special-case it in the
     // metadata collection or scaffolding code generation (which generates
@@ -328,7 +337,7 @@
     <span class="kw">let </span>metadata = ExportItem::new(item, <span class="kw-2">&amp;</span>args)<span class="question-mark">?</span>;
 
     <span class="kw">match </span>metadata {
-        ExportItem::Function { sig } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args),
+        ExportItem::Function { sig } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
         ExportItem::Impl { items, self_ident } =&gt; {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(rt) = <span class="kw-2">&amp;</span>args.async_runtime {
                 <span class="kw">if </span>items
@@ -345,8 +354,8 @@
             <span class="kw">let </span>item_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| <span class="kw">match </span>item {
-                    ImplItem::Constructor(sig) =&gt; gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>args),
-                    ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args),
+                    ImplItem::Constructor(sig) =&gt; gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
+                    ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
                 })
                 .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt; #item_tokens })
@@ -389,15 +398,17 @@
                                 <span class="string">&quot;async trait methods are not supported&quot;</span>,
                             ));
                         }
-                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args)
+                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode)
                     }
                     <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
                 })
                 .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
-            <span class="kw">let </span>meta_static_var = interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>mod_path)
-                .unwrap_or_else(syn::Error::into_compile_error);
-            <span class="kw">let </span>ffi_converter_tokens = ffi_converter_trait_impl(<span class="kw-2">&amp;</span>self_ident, <span class="prelude-val">None</span>);
+            <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
+                interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span>mod_path)
+                    .unwrap_or_else(syn::Error::into_compile_error)
+            });
+            <span class="kw">let </span>ffi_converter_tokens = ffi_converter_trait_impl(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">false</span>);
 
             <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt;
                 #meta_static_var
@@ -451,14 +462,15 @@
 
                 #trait_impl
 
-                        #(#metadata_items)*
+                #(#metadata_items)*
             })
         }
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ffi_converter_trait_impl(trait_ident: <span class="kw-2">&amp;</span>Ident, tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;) -&gt; TokenStream {
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverterArc&quot;</span>, <span class="kw-2">&amp;</span><span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident }, tag);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ffi_converter_trait_impl(trait_ident: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; TokenStream {
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverterArc&quot;</span>, <span class="kw-2">&amp;</span><span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident }, udl_mode);
+    <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, <span class="kw-2">&amp;</span><span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident }, udl_mode);
     <span class="kw">let </span>name = ident_to_string(trait_ident);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
@@ -519,6 +531,10 @@
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(<span class="bool-val">true</span>);
+        }
+
+        #lift_ref_impl_spec {
+            <span class="kw">type </span>LiftType = ::std::sync::Arc&lt;<span class="kw">dyn </span>#trait_ident&gt;;
         }
     }
 }

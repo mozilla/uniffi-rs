@@ -140,7 +140,9 @@
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, parse_comma_separated, UniffiAttributeArgs};
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
 
 <span class="kw">use </span>proc_macro2::TokenStream;
 <span class="kw">use </span>quote::ToTokens;
@@ -149,15 +151,11 @@
     Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
 };
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>kw {
-    <span class="macro">syn::custom_keyword!</span>(async_runtime);
-    <span class="macro">syn::custom_keyword!</span>(callback_interface);
-}
-
 <span class="attr">#[derive(Default)]
 </span><span class="kw">pub struct </span>ExportAttributeArguments {
     <span class="kw">pub</span>(<span class="kw">crate</span>) async_runtime: <span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) callback_interface: <span class="prelude-ty">Option</span>&lt;kw::callback_interface&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) constructor: <span class="prelude-ty">Option</span>&lt;kw::constructor&gt;,
 }
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>ExportAttributeArguments {
@@ -181,6 +179,11 @@
                 callback_interface: input.parse()<span class="question-mark">?</span>,
                 ..<span class="self">Self</span>::default()
             })
+        } <span class="kw">else if </span>lookahead.peek(kw::constructor) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                constructor: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>::default())
         }
@@ -193,6 +196,7 @@
                 <span class="self">self</span>.callback_interface,
                 other.callback_interface,
             )<span class="question-mark">?</span>,
+            constructor: either_attribute_arg(<span class="self">self</span>.constructor, other.constructor)<span class="question-mark">?</span>,
         })
     }
 }

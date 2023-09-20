@@ -211,6 +211,59 @@
 <a href="#211" id="211">211</a>
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -225,6 +278,7 @@
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: FnSignature,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
+    udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if </span>sig.receiver.is_some() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
@@ -240,8 +294,11 @@
             ));
         }
     }
-    <span class="kw">let </span>metadata_items = sig.metadata_items()<span class="question-mark">?</span>;
-    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments)<span class="question-mark">?</span>;
+    <span class="kw">let </span>metadata_items = (!udl_mode).then(|| {
+        sig.metadata_items()
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments, udl_mode)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_items
@@ -251,6 +308,7 @@
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_constructor_scaffolding(
     sig: FnSignature,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
+    udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if </span>sig.receiver.is_some() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
@@ -261,8 +319,11 @@
     <span class="kw">if </span>sig.is_async {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(sig.span, <span class="string">&quot;constructors can&#39;t be async&quot;</span>));
     }
-    <span class="kw">let </span>metadata_items = sig.metadata_items()<span class="question-mark">?</span>;
-    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments)<span class="question-mark">?</span>;
+    <span class="kw">let </span>metadata_items = (!udl_mode).then(|| {
+        sig.metadata_items()
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments, udl_mode)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_items
@@ -272,6 +333,7 @@
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
     sig: FnSignature,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
+    udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>scaffolding_func = <span class="kw">if </span>sig.receiver.is_none() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
@@ -279,10 +341,13 @@
             <span class="string">&quot;associated functions are not currently supported&quot;</span>,
         ));
     } <span class="kw">else </span>{
-        gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments)<span class="question-mark">?
+        gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments, udl_mode)<span class="question-mark">?
     </span>};
 
-    <span class="kw">let </span>metadata_items = sig.metadata_items()<span class="question-mark">?</span>;
+    <span class="kw">let </span>metadata_items = (!udl_mode).then(|| {
+        sig.metadata_items()
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_items
@@ -300,19 +365,30 @@
 }
 
 <span class="kw">impl </span>ScaffoldingBits {
-    <span class="kw">fn </span>new_for_function(sig: <span class="kw-2">&amp;</span>FnSignature) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>new_for_function(sig: <span class="kw-2">&amp;</span>FnSignature, udl_mode: bool) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
         <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = sig.args.iter().map(NamedArg::scaffolding_param).collect();
         <span class="kw">let </span>param_lifts = sig.lift_exprs();
+        <span class="kw">let </span>simple_rust_fn_call = <span class="macro">quote! </span>{ #ident(#(#param_lifts,)<span class="kw-2">*</span>) };
+        <span class="kw">let </span>rust_fn_call = <span class="kw">if </span>udl_mode &amp;&amp; sig.looks_like_result {
+            <span class="macro">quote! </span>{ #simple_rust_fn_call.map_err(::std::convert::Into::into) }
+        } <span class="kw">else </span>{
+            simple_rust_fn_call
+        };
 
         <span class="self">Self </span>{
             params,
             pre_fn_call: <span class="macro">quote! </span>{},
-            rust_fn_call: <span class="macro">quote! </span>{ #ident(#(#param_lifts,)<span class="kw-2">*</span>) },
+            rust_fn_call,
         }
     }
 
-    <span class="kw">fn </span>new_for_method(sig: <span class="kw-2">&amp;</span>FnSignature, self_ident: <span class="kw-2">&amp;</span>Ident, is_trait: bool) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>new_for_method(
+        sig: <span class="kw-2">&amp;</span>FnSignature,
+        self_ident: <span class="kw-2">&amp;</span>Ident,
+        is_trait: bool,
+        udl_mode: bool,
+    ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
         <span class="kw">let </span>ffi_converter = <span class="kw">if </span>is_trait {
             <span class="macro">quote! </span>{
@@ -327,27 +403,44 @@
             .chain(sig.scaffolding_params())
             .collect();
         <span class="kw">let </span>param_lifts = sig.lift_exprs();
+        <span class="kw">let </span>simple_rust_fn_call = <span class="macro">quote! </span>{ uniffi_self.#ident(#(#param_lifts,)<span class="kw-2">*</span>) };
+        <span class="kw">let </span>rust_fn_call = <span class="kw">if </span>udl_mode &amp;&amp; sig.looks_like_result {
+            <span class="macro">quote! </span>{ #simple_rust_fn_call.map_err(::std::convert::Into::into) }
+        } <span class="kw">else </span>{
+            simple_rust_fn_call
+        };
+        <span class="kw">let </span>return_ffi_converter = sig.return_ffi_converter();
 
         <span class="self">Self </span>{
             params,
             pre_fn_call: <span class="macro">quote! </span>{
-                <span class="kw">let </span>uniffi_self = #ffi_converter::try_lift(uniffi_self_lowered).unwrap_or_else(|err| {
-                    <span class="macro">::std::panic!</span>(<span class="string">&quot;Failed to convert arg &#39;self&#39;: {}&quot;</span>, err)
-                });
+                <span class="kw">let </span>uniffi_self = <span class="kw">match </span>#ffi_converter::try_lift(uniffi_self_lowered) {
+                    <span class="prelude-val">Ok</span>(v) =&gt; v,
+                    <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(#return_ffi_converter::handle_failed_lift(<span class="string">&quot;self&quot;</span>, e)),
+                };
             },
-            rust_fn_call: <span class="macro">quote! </span>{ uniffi_self.#ident(#(#param_lifts,)<span class="kw-2">*</span>) },
+            rust_fn_call,
         }
     }
 
-    <span class="kw">fn </span>new_for_constructor(sig: <span class="kw-2">&amp;</span>FnSignature, self_ident: <span class="kw-2">&amp;</span>Ident) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>new_for_constructor(sig: <span class="kw-2">&amp;</span>FnSignature, self_ident: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
         <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = sig.args.iter().map(NamedArg::scaffolding_param).collect();
         <span class="kw">let </span>param_lifts = sig.lift_exprs();
+        <span class="kw">let </span>simple_rust_fn_call = <span class="macro">quote! </span>{ #self_ident::#ident(#(#param_lifts,)<span class="kw-2">*</span>) };
+        <span class="kw">let </span>rust_fn_call = <span class="kw">match </span>(udl_mode, sig.looks_like_result) {
+            <span class="comment">// For UDL
+            </span>(<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">quote! </span>{ ::std::sync::Arc::new(#simple_rust_fn_call) },
+            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
+                <span class="macro">quote! </span>{ #simple_rust_fn_call.map(::std::sync::Arc::new).map_err(::std::convert::Into::into) }
+            }
+            (<span class="bool-val">false</span>, <span class="kw">_</span>) =&gt; simple_rust_fn_call,
+        };
 
         <span class="self">Self </span>{
             params,
             pre_fn_call: <span class="macro">quote! </span>{},
-            rust_fn_call: <span class="macro">quote! </span>{ #self_ident::#ident(#(#param_lifts,)<span class="kw-2">*</span>) },
+            rust_fn_call,
         }
     }
 }
@@ -359,18 +452,29 @@
 </span><span class="kw">fn </span>gen_ffi_function(
     sig: <span class="kw-2">&amp;</span>FnSignature,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
+    udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ScaffoldingBits {
         params,
         pre_fn_call,
         rust_fn_call,
     } = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.kind {
-        FnKind::Function =&gt; ScaffoldingBits::new_for_function(sig),
-        FnKind::Method { self_ident } =&gt; ScaffoldingBits::new_for_method(sig, self_ident, <span class="bool-val">false</span>),
-        FnKind::TraitMethod { self_ident, .. } =&gt; {
-            ScaffoldingBits::new_for_method(sig, self_ident, <span class="bool-val">true</span>)
+        FnKind::Function =&gt; ScaffoldingBits::new_for_function(sig, udl_mode),
+        FnKind::Method { self_ident } =&gt; {
+            ScaffoldingBits::new_for_method(sig, self_ident, <span class="bool-val">false</span>, udl_mode)
         }
-        FnKind::Constructor { self_ident } =&gt; ScaffoldingBits::new_for_constructor(sig, self_ident),
+        FnKind::TraitMethod { self_ident, .. } =&gt; {
+            ScaffoldingBits::new_for_method(sig, self_ident, <span class="bool-val">true</span>, udl_mode)
+        }
+        FnKind::Constructor { self_ident } =&gt; {
+            ScaffoldingBits::new_for_constructor(sig, self_ident, udl_mode)
+        }
+    };
+    <span class="comment">// Scaffolding functions are logically `pub`, but we don&#39;t use that in UDL mode since UDL has
+    // historically not required types to be `pub`
+    </span><span class="kw">let </span>vis = <span class="kw">match </span>udl_mode {
+        <span class="bool-val">false </span>=&gt; <span class="macro">quote! </span>{ <span class="kw">pub </span>},
+        <span class="bool-val">true </span>=&gt; <span class="macro">quote! </span>{},
     };
 
     <span class="kw">let </span>ffi_ident = sig.scaffolding_fn_ident()<span class="question-mark">?</span>;
@@ -381,14 +485,16 @@
         <span class="macro">quote! </span>{
             <span class="attr">#[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
+            </span>#vis <span class="kw">extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
                 #(#params,)*
                 call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
             ) -&gt; &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::ReturnType {
                 <span class="macro">::uniffi::deps::log::debug!</span>(#name);
                 ::uniffi::rust_call(call_status, || {
                     #pre_fn_call
-                    &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower_return(#rust_fn_call)
+                    &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower_return(
+                        #rust_fn_call
+                    )
                 })
             }
         }
@@ -401,7 +507,7 @@
         <span class="macro">quote! </span>{
             <span class="attr">#[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
+            </span>#vis <span class="kw">extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
                 #(#params,)*
                 uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
                 uniffi_callback: &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FutureCallback,

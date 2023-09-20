@@ -256,31 +256,28 @@
 <a href="#256" id="256">256</a>
 <a href="#257" id="257">257</a>
 <a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
-<a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
-<a href="#262" id="262">262</a>
-<a href="#263" id="263">263</a>
-<a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
-    Data, DataEnum, DeriveInput, Index, Path, Token,
+    Data, DataEnum, DeriveInput, Index,
 };
 
 <span class="kw">use crate</span>::{
     enum_::{handle_callback_unexpected_error_fn, rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, either_attribute_arg, ident_to_string, mod_path,
+        chain, create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
         parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
         AttributeSliceExt, UniffiAttributeArgs,
     },
 };
 
-<span class="kw">pub fn </span>expand_error(input: DeriveInput) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub fn </span>expand_error(
+    input: DeriveInput,
+    <span class="comment">// Attributes from #[derive_error_for_udl()], if we are in udl mode
+    </span>attr_from_udl_mode: <span class="prelude-ty">Option</span>&lt;ErrorAttr&gt;,
+    udl_mode: bool,
+) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
         Data::Enum(e) =&gt; e,
         <span class="kw">_ </span>=&gt; {
@@ -290,12 +287,16 @@
             ));
         }
     };
-
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>attr = input.attrs.parse_uniffi_attr_args::&lt;ErrorAttr&gt;()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr);
-    <span class="kw">let </span>meta_static_var = error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())
-        .unwrap_or_else(syn::Error::into_compile_error);
+    <span class="kw">let </span><span class="kw-2">mut </span>attr: ErrorAttr = input.attrs.parse_uniffi_attr_args()<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_from_udl_mode) = attr_from_udl_mode {
+        attr = attr.merge(attr_from_udl_mode)<span class="question-mark">?</span>;
+    }
+    <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr, udl_mode);
+    <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
+        error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
 
     <span class="kw">let </span>variant_errors: TokenStream = enum_
         .variants
@@ -319,23 +320,17 @@
     })
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_ffi_converter_error(attr: ErrorAttr, input: DeriveInput) -&gt; TokenStream {
-    <span class="kw">match </span>input.data {
-        Data::Enum(e) =&gt; error_ffi_converter_impl(<span class="kw-2">&amp;</span>input.ident, <span class="kw-2">&amp;</span>e, <span class="kw-2">&amp;</span>attr),
-        <span class="kw">_ </span>=&gt; syn::Error::new(
-            proc_macro2::Span::call_site(),
-            <span class="string">&quot;This attribute must only be used on enums&quot;</span>,
-        )
-        .into_compile_error(),
-    }
-}
-
-<span class="kw">fn </span>error_ffi_converter_impl(ident: <span class="kw-2">&amp;</span>Ident, enum_: <span class="kw-2">&amp;</span>DataEnum, attr: <span class="kw-2">&amp;</span>ErrorAttr) -&gt; TokenStream {
+<span class="kw">fn </span>error_ffi_converter_impl(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    enum_: <span class="kw-2">&amp;</span>DataEnum,
+    attr: <span class="kw-2">&amp;</span>ErrorAttr,
+    udl_mode: bool,
+) -&gt; TokenStream {
     <span class="kw">if </span>attr.flat.is_some() {
         flat_error_ffi_converter_impl(
             ident,
             enum_,
-            attr.tag.as_ref(),
+            udl_mode,
             attr.with_try_read.is_some(),
             attr.handle_unknown_callback_error.is_some(),
         )
@@ -343,7 +338,7 @@
         rich_error_ffi_converter_impl(
             ident,
             enum_,
-            attr.tag.as_ref(),
+            udl_mode,
             attr.handle_unknown_callback_error.is_some(),
         )
     }
@@ -356,12 +351,13 @@
 </span><span class="kw">fn </span>flat_error_ffi_converter_impl(
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    tag: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt;,
+    udl_mode: bool,
     implement_try_read: bool,
     handle_unknown_callback_error: bool,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(ident);
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, tag);
+    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, udl_mode);
+    <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, ident, udl_mode);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
@@ -428,6 +424,10 @@
                 .concat_str(#mod_path)
                 .concat_str(#name);
         }
+
+        #lift_ref_impl_spec {
+            <span class="kw">type </span>LiftType = <span class="self">Self</span>;
+        }
     }
 }
 
@@ -465,16 +465,8 @@
         .collect())
 }
 
-<span class="kw">mod </span>kw {
-    <span class="macro">syn::custom_keyword!</span>(tag);
-    <span class="macro">syn::custom_keyword!</span>(flat_error);
-    <span class="macro">syn::custom_keyword!</span>(with_try_read);
-    <span class="macro">syn::custom_keyword!</span>(handle_unknown_callback_error);
-}
-
 <span class="attr">#[derive(Default)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ErrorAttr {
-    tag: <span class="prelude-ty">Option</span>&lt;Path&gt;,
+</span><span class="kw">pub struct </span>ErrorAttr {
     flat: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
     with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
     <span class="doccomment">/// Can this error be used in a callback interface?
@@ -484,14 +476,7 @@
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ErrorAttr {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
-        <span class="kw">if </span>lookahead.peek(kw::tag) {
-            <span class="kw">let _</span>: kw::tag = input.parse()<span class="question-mark">?</span>;
-            <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                tag: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
-                ..<span class="self">Self</span>::default()
-            })
-        } <span class="kw">else if </span>lookahead.peek(kw::flat_error) {
+        <span class="kw">if </span>lookahead.peek(kw::flat_error) {
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
                 flat: input.parse()<span class="question-mark">?</span>,
                 ..<span class="self">Self</span>::default()
@@ -513,7 +498,6 @@
 
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            tag: either_attribute_arg(<span class="self">self</span>.tag, other.tag)<span class="question-mark">?</span>,
             flat: either_attribute_arg(<span class="self">self</span>.flat, other.flat)<span class="question-mark">?</span>,
             with_try_read: either_attribute_arg(<span class="self">self</span>.with_try_read, other.with_try_read)<span class="question-mark">?</span>,
             handle_unknown_callback_error: either_attribute_arg(

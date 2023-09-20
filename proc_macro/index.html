@@ -243,12 +243,46 @@ trait MyTrait {
 
 <span class="boring">}
 </span></code></pre></pre>
-<p>Most UniFFI <a href="../udl/builtin_types.html">builtin types</a> can be used as parameter and return types.
-When a type is not supported, you will get a clear compiler error about it.</p>
-<p>User-defined types are also supported in a limited manner: records (structs with named fields,
-<code>dictionary</code> in UDL) and enums can be used when the corresponding derive macro is used at
-their definition. Opaque objects (<code>interface</code> in UDL) can always be used regardless of whether they
-are defined in UDL and / or via derive macro; they just need to be put inside an <code>Arc</code> as always.</p>
+<p>All owned <a href="../udl/builtin_types.html">builtin types</a> and user-defined types can be used as arguments
+and return types.</p>
+<p>Arguments and receivers can also be references to these types, for example:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Input data types as references
+#[uniffi::export]
+fn process_data(a: &amp;MyRecord, b: &amp;MyEnum, c: Option&lt;&amp;MyRecord&gt;) {
+    ...
+}
+
+#[uniffi::export]
+impl Foo {
+  // Methods can take a `&amp;self`, which will be borrowed from `Arc&lt;Self&gt;`
+  fn some_method(&amp;self) {
+    ...
+  }
+}
+
+// Input foo as an Arc and bar as a reference
+fn call_both(foo: Arc&lt;Foo&gt;, bar: &amp;Foo) {
+  foo.some_method();
+  bar.some_method();
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>The one restriction is that the reference must be visible in the function signature.  This wouldn't
+work:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>type MyFooRef = &amp;'static Foo;
+
+// ERROR: UniFFI won't recognize that the `foo` argument is a reference.
+#[uniffi::export]
+fn do_something(foo: MyFooRef) {
+}
+<span class="boring">}
+</span></code></pre></pre>
 <h2><a class="header" href="#the-uniffirecord-derive" id="the-uniffirecord-derive">The <code>uniffi::Record</code> derive</a></h2>
 <p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
 supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types
@@ -332,22 +366,6 @@ impl Foo {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>Exported functions can input object arguments as either an <code>Arc&lt;&gt;</code> or reference.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// Input foo as an Arc and bar as a reference
-fn call_both(foo: Arc&lt;Foo&gt;, bar: &amp;Foo) {
-  foo.method_a();
-  bar.method_rba();
-<span class="boring">}
-</span></code></pre></pre>
-<p>There are a couple limitations when using references for arguments:</p>
-<ul>
-<li>They can only be used with objects and trait interfaces</li>
-<li>The reference must be visible in the function signature.
-If you have a type alias <code>type MyFooRef&lt;'a&gt; = &amp;'a Foo</code>, then <code>fn do_something(foo: MyFooRef&lt;'_&gt;)</code> would not work.</li>
-</ul>
 <h2><a class="header" href="#the-unifficustom_type-and-unifficustom_newtype-macros" id="the-unifficustom_type-and-unifficustom_newtype-macros">The <code>uniffi::custom_type</code> and <code>uniffi::custom_newtype</code> macros</a></h2>
 <p>There are 2 macros available which allow procmacros to support &quot;custom types&quot; as described in the
 <a href="../udl/custom_types.html">UDL documentation for Custom Types</a></p>

@@ -381,6 +381,52 @@
 <a href="#381" id="381">381</a>
 <a href="#382" id="382">382</a>
 <a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -402,6 +448,10 @@
     <span class="kw">pub </span>receiver: <span class="prelude-ty">Option</span>&lt;ReceiverArg&gt;,
     <span class="kw">pub </span>args: Vec&lt;NamedArg&gt;,
     <span class="kw">pub </span>return_ty: TokenStream,
+    <span class="comment">// Does this the return type look like a result?
+    // Only use this in UDL mode.
+    // In general, it&#39;s not reliable because it fails for type aliases.
+    </span><span class="kw">pub </span>looks_like_result: bool,
 }
 
 <span class="kw">impl </span>FnSignature {
@@ -428,6 +478,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(kind: FnKind, sig: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>span = sig.span();
         <span class="kw">let </span>ident = sig.ident;
+        <span class="kw">let </span>looks_like_result = looks_like_result(<span class="kw-2">&amp;</span>sig.output);
         <span class="kw">let </span>output = <span class="kw">match </span>sig.output {
             ReturnType::Default =&gt; <span class="macro">quote! </span>{ () },
             ReturnType::Type(<span class="kw">_</span>, ty) =&gt; <span class="macro">quote! </span>{ #ty },
@@ -462,23 +513,34 @@
                 })
             })
             .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             kind,
             span,
-            mod_path: mod_path()<span class="question-mark">?</span>,
+            mod_path,
             name: ident_to_string(<span class="kw-2">&amp;</span>ident),
             ident,
             is_async,
             receiver,
             args,
             return_ty: output,
+            looks_like_result,
         })
+    }
+
+    <span class="kw">pub fn </span>return_ffi_converter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+        <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span><span class="self">self</span>.return_ty;
+        <span class="macro">quote! </span>{
+            &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+        }
     }
 
     <span class="doccomment">/// Lift expressions for each of our arguments
     </span><span class="kw">pub fn </span>lift_exprs(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="self">self</span>.args.iter().map(NamedArg::lift_expr)
+        <span class="self">self</span>.args
+            .iter()
+            .map(|a| a.lift_expr(<span class="kw-2">&amp;</span><span class="self">self</span>.return_ffi_converter()))
     }
 
     <span class="doccomment">/// Write expressions for each of our arguments
@@ -496,16 +558,17 @@
 
     <span class="doccomment">/// Name of the scaffolding function to generate for this function
     </span><span class="kw">pub fn </span>scaffolding_fn_ident(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;Ident&gt; {
-        <span class="kw">let </span>mod_path = <span class="kw-2">&amp;</span><span class="self">self</span>.mod_path;
         <span class="kw">let </span>name = <span class="kw-2">&amp;</span><span class="self">self</span>.name;
         <span class="kw">let </span>name = <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.kind {
-            FnKind::Function =&gt; uniffi_meta::fn_symbol_name(mod_path, name),
+            FnKind::Function =&gt; uniffi_meta::fn_symbol_name(<span class="kw-2">&amp;</span><span class="self">self</span>.mod_path, name),
             FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } =&gt; {
-                uniffi_meta::method_symbol_name(mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), name)
+                uniffi_meta::method_symbol_name(<span class="kw-2">&amp;</span><span class="self">self</span>.mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), name)
             }
-            FnKind::Constructor { self_ident } =&gt; {
-                uniffi_meta::constructor_symbol_name(mod_path, <span class="kw-2">&amp;</span>ident_to_string(self_ident), name)
-            }
+            FnKind::Constructor { self_ident } =&gt; uniffi_meta::constructor_symbol_name(
+                <span class="kw-2">&amp;</span><span class="self">self</span>.mod_path,
+                <span class="kw-2">&amp;</span>ident_to_string(self_ident),
+                name,
+            ),
         };
         <span class="prelude-val">Ok</span>(Ident::new(<span class="kw-2">&amp;</span>name, Span::call_site()))
     }
@@ -608,19 +671,18 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>checksum_symbol_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">let </span>mod_path = <span class="kw-2">&amp;</span><span class="self">self</span>.mod_path;
         <span class="kw">let </span>name = <span class="kw-2">&amp;</span><span class="self">self</span>.name;
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.kind {
-            FnKind::Function =&gt; uniffi_meta::fn_checksum_symbol_name(mod_path, name),
+            FnKind::Function =&gt; uniffi_meta::fn_checksum_symbol_name(<span class="kw-2">&amp;</span><span class="self">self</span>.mod_path, name),
             FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } =&gt; {
                 uniffi_meta::method_checksum_symbol_name(
-                    mod_path,
+                    <span class="kw-2">&amp;</span><span class="self">self</span>.mod_path,
                     <span class="kw-2">&amp;</span>ident_to_string(self_ident),
                     name,
                 )
             }
             FnKind::Constructor { self_ident } =&gt; uniffi_meta::constructor_checksum_symbol_name(
-                mod_path,
+                <span class="kw-2">&amp;</span><span class="self">self</span>.mod_path,
                 <span class="kw-2">&amp;</span>ident_to_string(self_ident),
                 name,
             ),
@@ -651,31 +713,42 @@
         <span class="kw">let </span>span = syn_arg.span();
         <span class="kw">let </span>kind = <span class="kw">match </span>syn_arg {
             FnArg::Typed(p) =&gt; <span class="kw">match </span><span class="kw-2">*</span>p.pat {
-                Pat::Ident(i) =&gt; {
-                    <span class="kw">if </span>i.ident == <span class="string">&quot;self&quot; </span>{
-                        <span class="prelude-val">Ok</span>(ArgKind::Receiver(ReceiverArg))
-                    } <span class="kw">else </span>{
-                        <span class="prelude-val">Ok</span>(ArgKind::Named(NamedArg::new(i.ident, <span class="kw-2">&amp;</span>p.ty)))
-                    }
-                }
+                Pat::Ident(i) =&gt; <span class="prelude-val">Ok</span>(ArgKind::Named(NamedArg::new(i.ident, <span class="kw-2">&amp;</span>p.ty))),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(p, <span class="string">&quot;Argument name missing&quot;</span>)),
             },
-            FnArg::Receiver(Receiver { .. }) =&gt; <span class="prelude-val">Ok</span>(ArgKind::Receiver(ReceiverArg)),
+            FnArg::Receiver(receiver) =&gt; <span class="prelude-val">Ok</span>(ArgKind::Receiver(ReceiverArg::from(receiver))),
         }<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ span, kind })
     }
 }
 
-<span class="comment">// A unit struct is kind of silly now, but eventually we may want to differentiate between methods
-// that input &amp;self vs Arc&lt;Self
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ReceiverArg;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>ReceiverArg {
+    Ref,
+    Arc,
+}
+
+<span class="kw">impl </span>From&lt;Receiver&gt; <span class="kw">for </span>ReceiverArg {
+    <span class="kw">fn </span>from(receiver: Receiver) -&gt; <span class="self">Self </span>{
+        <span class="kw">if let </span>Type::Path(p) = <span class="kw-2">*</span>receiver.ty {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(segment) = p.path.segments.last() {
+                <span class="comment">// This comparison will fail if a user uses a typedef for Arc.  Maybe we could
+                // implement some system like TYPE_ID_META to figure this out from the type system.
+                // However, this seems good enough for now.
+                </span><span class="kw">if </span>segment.ident == <span class="string">&quot;Arc&quot; </span>{
+                    <span class="kw">return </span>ReceiverArg::Arc;
+                }
+            }
+        }
+        <span class="self">Self</span>::Ref
+    }
+}
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>NamedArg {
     <span class="kw">pub</span>(<span class="kw">crate</span>) ident: Ident,
     <span class="kw">pub</span>(<span class="kw">crate</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">crate</span>) ty: TokenStream,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) is_ref: bool,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) ref_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
 }
 
 <span class="kw">impl </span>NamedArg {
@@ -686,15 +759,15 @@
                 <span class="self">Self </span>{
                     name: ident_to_string(<span class="kw-2">&amp;</span>ident),
                     ident,
-                    ty: <span class="macro">quote! </span>{ ::std::sync::Arc&lt;#inner&gt; },
-                    is_ref: <span class="bool-val">true</span>,
+                    ty: <span class="macro">quote! </span>{ &lt;#inner <span class="kw">as </span>::uniffi::LiftRef&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::LiftType },
+                    ref_type: <span class="prelude-val">Some</span>(<span class="kw-2">*</span>inner.clone()),
                 }
             }
             <span class="kw">_ </span>=&gt; <span class="self">Self </span>{
                 name: ident_to_string(<span class="kw-2">&amp;</span>ident),
                 ident,
                 ty: <span class="macro">quote! </span>{ #ty },
-                is_ref: <span class="bool-val">false</span>,
+                ref_type: <span class="prelude-val">None</span>,
             },
         }
     }
@@ -726,17 +799,22 @@
     }
 
     <span class="doccomment">/// Generate the expression to lift the scaffolding parameter for this arg
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>lift_expr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>lift_expr(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_converter: <span class="kw-2">&amp;</span>TokenStream) -&gt; TokenStream {
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
+        <span class="kw">let </span>ty = <span class="kw-2">&amp;</span><span class="self">self</span>.ty;
         <span class="kw">let </span>ffi_converter = <span class="self">self</span>.ffi_converter();
-        <span class="kw">let </span>panic_fmt = <span class="macro">format!</span>(<span class="string">&quot;Failed to convert arg &#39;{}&#39;: {{}}&quot;</span>, <span class="self">self</span>.name);
+        <span class="kw">let </span>name = <span class="kw-2">&amp;</span><span class="self">self</span>.name;
         <span class="kw">let </span>lift = <span class="macro">quote! </span>{
-            #ffi_converter::try_lift(#ident)
-                .unwrap_or_else(|err| <span class="macro">::std::panic!</span>(#panic_fmt, err))
+            <span class="kw">match </span>#ffi_converter::try_lift(#ident) {
+                <span class="prelude-val">Ok</span>(v) =&gt; v,
+                <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(#return_ffi_converter::handle_failed_lift(#name, e))
+            }
         };
-        <span class="kw">match </span><span class="self">self</span>.is_ref {
-            <span class="bool-val">false </span>=&gt; lift,
-            <span class="bool-val">true </span>=&gt; <span class="macro">quote! </span>{ <span class="kw-2">&amp;*</span>#lift },
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.ref_type {
+            <span class="prelude-val">None </span>=&gt; lift,
+            <span class="prelude-val">Some</span>(ref_type) =&gt; <span class="macro">quote! </span>{
+                &lt;#ty <span class="kw">as </span>::std::borrow::Borrow&lt;#ref_type&gt;&gt;::borrow(<span class="kw-2">&amp;</span>#lift)
+            },
         }
     }
 
@@ -756,6 +834,20 @@
         }
     }
 }
+
+<span class="kw">fn </span>looks_like_result(return_type: <span class="kw-2">&amp;</span>ReturnType) -&gt; bool {
+    <span class="kw">if let </span>ReturnType::Type(<span class="kw">_</span>, ty) = return_type {
+        <span class="kw">if let </span>Type::Path(p) = <span class="kw-2">&amp;**</span>ty {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(seg) = p.path.segments.last() {
+                <span class="kw">if </span>seg.ident == <span class="string">&quot;Result&quot; </span>{
+                    <span class="kw">return </span><span class="bool-val">true</span>;
+                }
+            }
+        }
+    }
+
+    <span class="bool-val">false
+</span>}
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>FnKind {

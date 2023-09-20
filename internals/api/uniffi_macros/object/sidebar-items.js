@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["expand_interface_support","expand_object","interface_impl","interface_meta_static_var"]};
+window.SIDEBAR_ITEMS = {"fn":["expand_object","interface_impl","interface_meta_static_var"]};
