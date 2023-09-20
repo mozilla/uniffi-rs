@@ -995,13 +995,16 @@ mod test {
             "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    documentation: None,
     variants: [
         Variant {
             name: \"one\",
+            documentation: None,
             fields: [],
         },
         Variant {
             name: \"two\",
+            documentation: None,
             fields: [],
         },
     ],
@@ -1010,13 +1013,16 @@ mod test {
 new definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    documentation: None,
     variants: [
         Variant {
             name: \"three\",
+            documentation: None,
             fields: [],
         },
         Variant {
             name: \"four\",
+            documentation: None,
             fields: [],
         },
     ],
