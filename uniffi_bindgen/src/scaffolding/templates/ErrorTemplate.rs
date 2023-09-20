@@ -7,8 +7,7 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-#[::uniffi::ffi_converter_error(
-    tag = crate::UniFfiTag,
+#[::uniffi::derive_error_for_udl(
     {% if e.is_flat() -%}
     flat_error,
     {% if ci.should_generate_error_read(e) -%}

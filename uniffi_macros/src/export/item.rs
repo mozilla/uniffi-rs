@@ -30,7 +30,7 @@ impl ExportItem {
                 let sig = FnSignature::new_function(item.sig)?;
                 Ok(Self::Function { sig })
             }
-            syn::Item::Impl(item) => Self::from_impl(item),
+            syn::Item::Impl(item) => Self::from_impl(item, args.constructor.is_some()),
             syn::Item::Trait(item) => Self::from_trait(item, args.callback_interface.is_some()),
             // FIXME: Support const / static?
             _ => Err(syn::Error::new(
@@ -41,7 +41,7 @@ impl ExportItem {
         }
     }
 
-    fn from_impl(item: syn::ItemImpl) -> syn::Result<Self> {
+    pub fn from_impl(item: syn::ItemImpl, force_constructor: bool) -> syn::Result<Self> {
         if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             return Err(syn::Error::new_spanned(
                 &item.generics,
@@ -83,7 +83,7 @@ impl ExportItem {
                 };
 
                 let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
-                let item = if attrs.constructor {
+                let item = if force_constructor || attrs.constructor {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,

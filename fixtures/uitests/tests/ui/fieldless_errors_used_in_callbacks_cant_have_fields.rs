@@ -3,20 +3,17 @@ uniffi_macros::generate_and_include_scaffolding!("../../../../fixtures/uitests/s
 
 fn main() { /* empty main required by `trybuild` */}
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 enum ArithmeticError {
-  IntegerOverflow,
-  // Since this is listed in the UDL as not having fields and is used in a callback interface, it
-  // really needs to have no fields.
-  DivisionByZero { numerator: u64 },
-  // Tuple-style fields are also invalid
-  UnexpectedError(String),
-}
-
-impl std::fmt::Display for ArithmeticError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        <Self as std::fmt::Debug>::fmt(self, f)
-    }
+    #[error("IntegerOverflow")]
+    IntegerOverflow,
+    // Since this is listed in the UDL as not having fields and is used in a callback interface, it
+    // really needs to have no fields.
+    #[error("DivisionByZero")]
+    DivisionByZero { numerator: u64 },
+    // Tuple-style fields are also invalid
+    #[error("UnexpectedError: {0}")]
+    UnexpectedError(String),
 }
 
 impl From<uniffi::UnexpectedUniFFICallbackError> for ArithmeticError {

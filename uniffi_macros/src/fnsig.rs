@@ -19,6 +19,10 @@ pub(crate) struct FnSignature {
     pub receiver: Option<ReceiverArg>,
     pub args: Vec<NamedArg>,
     pub return_ty: TokenStream,
+    // Does this the return type look like a result?
+    // Only use this in UDL mode.
+    // In general, it's not reliable because it fails for type aliases.
+    pub looks_like_result: bool,
 }
 
 impl FnSignature {
@@ -45,6 +49,7 @@ impl FnSignature {
     pub(crate) fn new(kind: FnKind, sig: syn::Signature) -> syn::Result<Self> {
         let span = sig.span();
         let ident = sig.ident;
+        let looks_like_result = looks_like_result(&sig.output);
         let output = match sig.output {
             ReturnType::Default => quote! { () },
             ReturnType::Type(_, ty) => quote! { #ty },
@@ -79,23 +84,34 @@ impl FnSignature {
                 })
             })
             .collect::<syn::Result<Vec<_>>>()?;
+        let mod_path = mod_path()?;
 
         Ok(Self {
             kind,
             span,
-            mod_path: mod_path()?,
+            mod_path,
             name: ident_to_string(&ident),
             ident,
             is_async,
             receiver,
             args,
             return_ty: output,
+            looks_like_result,
         })
+    }
+
+    pub fn return_ffi_converter(&self) -> TokenStream {
+        let return_ty = &self.return_ty;
+        quote! {
+            <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>
+        }
     }
 
     /// Lift expressions for each of our arguments
     pub fn lift_exprs(&self) -> impl Iterator<Item = TokenStream> + '_ {
-        self.args.iter().map(NamedArg::lift_expr)
+        self.args
+            .iter()
+            .map(|a| a.lift_expr(&self.return_ffi_converter()))
     }
 
     /// Write expressions for each of our arguments
@@ -113,16 +129,17 @@ impl FnSignature {
 
     /// Name of the scaffolding function to generate for this function
     pub fn scaffolding_fn_ident(&self) -> syn::Result<Ident> {
-        let mod_path = &self.mod_path;
         let name = &self.name;
         let name = match &self.kind {
-            FnKind::Function => uniffi_meta::fn_symbol_name(mod_path, name),
+            FnKind::Function => uniffi_meta::fn_symbol_name(&self.mod_path, name),
             FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } => {
-                uniffi_meta::method_symbol_name(mod_path, &ident_to_string(self_ident), name)
+                uniffi_meta::method_symbol_name(&self.mod_path, &ident_to_string(self_ident), name)
             }
-            FnKind::Constructor { self_ident } => {
-                uniffi_meta::constructor_symbol_name(mod_path, &ident_to_string(self_ident), name)
-            }
+            FnKind::Constructor { self_ident } => uniffi_meta::constructor_symbol_name(
+                &self.mod_path,
+                &ident_to_string(self_ident),
+                name,
+            ),
         };
         Ok(Ident::new(&name, Span::call_site()))
     }
@@ -225,19 +242,18 @@ impl FnSignature {
     }
 
     pub(crate) fn checksum_symbol_name(&self) -> String {
-        let mod_path = &self.mod_path;
         let name = &self.name;
         match &self.kind {
-            FnKind::Function => uniffi_meta::fn_checksum_symbol_name(mod_path, name),
+            FnKind::Function => uniffi_meta::fn_checksum_symbol_name(&self.mod_path, name),
             FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } => {
                 uniffi_meta::method_checksum_symbol_name(
-                    mod_path,
+                    &self.mod_path,
                     &ident_to_string(self_ident),
                     name,
                 )
             }
             FnKind::Constructor { self_ident } => uniffi_meta::constructor_checksum_symbol_name(
-                mod_path,
+                &self.mod_path,
                 &ident_to_string(self_ident),
                 name,
             ),
@@ -268,31 +284,42 @@ impl TryFrom<FnArg> for Arg {
         let span = syn_arg.span();
         let kind = match syn_arg {
             FnArg::Typed(p) => match *p.pat {
-                Pat::Ident(i) => {
-                    if i.ident == "self" {
-                        Ok(ArgKind::Receiver(ReceiverArg))
-                    } else {
-                        Ok(ArgKind::Named(NamedArg::new(i.ident, &p.ty)))
-                    }
-                }
+                Pat::Ident(i) => Ok(ArgKind::Named(NamedArg::new(i.ident, &p.ty))),
                 _ => Err(syn::Error::new_spanned(p, "Argument name missing")),
             },
-            FnArg::Receiver(Receiver { .. }) => Ok(ArgKind::Receiver(ReceiverArg)),
+            FnArg::Receiver(receiver) => Ok(ArgKind::Receiver(ReceiverArg::from(receiver))),
         }?;
 
         Ok(Self { span, kind })
     }
 }
 
-// A unit struct is kind of silly now, but eventually we may want to differentiate between methods
-// that input &self vs Arc<Self
-pub(crate) struct ReceiverArg;
+pub(crate) enum ReceiverArg {
+    Ref,
+    Arc,
+}
+
+impl From<Receiver> for ReceiverArg {
+    fn from(receiver: Receiver) -> Self {
+        if let Type::Path(p) = *receiver.ty {
+            if let Some(segment) = p.path.segments.last() {
+                // This comparison will fail if a user uses a typedef for Arc.  Maybe we could
+                // implement some system like TYPE_ID_META to figure this out from the type system.
+                // However, this seems good enough for now.
+                if segment.ident == "Arc" {
+                    return ReceiverArg::Arc;
+                }
+            }
+        }
+        Self::Ref
+    }
+}
 
 pub(crate) struct NamedArg {
     pub(crate) ident: Ident,
     pub(crate) name: String,
     pub(crate) ty: TokenStream,
-    pub(crate) is_ref: bool,
+    pub(crate) ref_type: Option<Type>,
 }
 
 impl NamedArg {
@@ -303,15 +330,15 @@ impl NamedArg {
                 Self {
                     name: ident_to_string(&ident),
                     ident,
-                    ty: quote! { ::std::sync::Arc<#inner> },
-                    is_ref: true,
+                    ty: quote! { <#inner as ::uniffi::LiftRef<crate::UniFfiTag>>::LiftType },
+                    ref_type: Some(*inner.clone()),
                 }
             }
             _ => Self {
                 name: ident_to_string(&ident),
                 ident,
                 ty: quote! { #ty },
-                is_ref: false,
+                ref_type: None,
             },
         }
     }
@@ -343,17 +370,22 @@ impl NamedArg {
     }
 
     /// Generate the expression to lift the scaffolding parameter for this arg
-    pub(crate) fn lift_expr(&self) -> TokenStream {
+    pub(crate) fn lift_expr(&self, return_ffi_converter: &TokenStream) -> TokenStream {
         let ident = &self.ident;
+        let ty = &self.ty;
         let ffi_converter = self.ffi_converter();
-        let panic_fmt = format!("Failed to convert arg '{}': {{}}", self.name);
+        let name = &self.name;
         let lift = quote! {
-            #ffi_converter::try_lift(#ident)
-                .unwrap_or_else(|err| ::std::panic!(#panic_fmt, err))
+            match #ffi_converter::try_lift(#ident) {
+                Ok(v) => v,
+                Err(e) => return Err(#return_ffi_converter::handle_failed_lift(#name, e))
+            }
         };
-        match self.is_ref {
-            false => lift,
-            true => quote! { &*#lift },
+        match &self.ref_type {
+            None => lift,
+            Some(ref_type) => quote! {
+                <#ty as ::std::borrow::Borrow<#ref_type>>::borrow(&#lift)
+            },
         }
     }
 
@@ -372,6 +404,20 @@ impl NamedArg {
             .concat(#ffi_converter::TYPE_ID_META)
         }
     }
+}
+
+fn looks_like_result(return_type: &ReturnType) -> bool {
+    if let ReturnType::Type(_, ty) = return_type {
+        if let Type::Path(p) = &**ty {
+            if let Some(seg) = p.path.segments.last() {
+                if seg.ident == "Result" {
+                    return true;
+                }
+            }
+        }
+    }
+
+    false
 }
 
 #[derive(Debug)]

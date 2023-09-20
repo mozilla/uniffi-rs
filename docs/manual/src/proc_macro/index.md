@@ -91,13 +91,45 @@ trait MyTrait {
 
 ```
 
-Most UniFFI [builtin types](../udl/builtin_types.md) can be used as parameter and return types.
-When a type is not supported, you will get a clear compiler error about it.
 
-User-defined types are also supported in a limited manner: records (structs with named fields,
-`dictionary` in UDL) and enums can be used when the corresponding derive macro is used at
-their definition. Opaque objects (`interface` in UDL) can always be used regardless of whether they
-are defined in UDL and / or via derive macro; they just need to be put inside an `Arc` as always.
+All owned [builtin types](../udl/builtin_types.md) and user-defined types can be used as arguments
+and return types.
+
+Arguments and receivers can also be references to these types, for example:
+
+```rust
+// Input data types as references
+#[uniffi::export]
+fn process_data(a: &MyRecord, b: &MyEnum, c: Option<&MyRecord>) {
+    ...
+}
+
+#[uniffi::export]
+impl Foo {
+  // Methods can take a `&self`, which will be borrowed from `Arc<Self>`
+  fn some_method(&self) {
+    ...
+  }
+}
+
+// Input foo as an Arc and bar as a reference
+fn call_both(foo: Arc<Foo>, bar: &Foo) {
+  foo.some_method();
+  bar.some_method();
+}
+```
+
+The one restriction is that the reference must be visible in the function signature.  This wouldn't
+work:
+
+```rust
+type MyFooRef = &'static Foo;
+
+// ERROR: UniFFI won't recognize that the `foo` argument is a reference.
+#[uniffi::export]
+fn do_something(foo: MyFooRef) {
+}
+```
 
 ## The `uniffi::Record` derive
 
@@ -185,19 +217,6 @@ impl Foo {
     }
 }
 ```
-
-Exported functions can input object arguments as either an `Arc<>` or reference.
-```rust
-// Input foo as an Arc and bar as a reference
-fn call_both(foo: Arc<Foo>, bar: &Foo) {
-  foo.method_a();
-  bar.method_rba();
-```
-
-There are a couple limitations when using references for arguments:
-  - They can only be used with objects and trait interfaces
-  - The reference must be visible in the function signature.
-    If you have a type alias `type MyFooRef<'a> = &'a Foo`, then `fn do_something(foo: MyFooRef<'_>)` would not work.
 
 ## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 

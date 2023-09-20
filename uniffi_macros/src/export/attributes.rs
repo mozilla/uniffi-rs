@@ -1,4 +1,4 @@
-use crate::util::{either_attribute_arg, parse_comma_separated, UniffiAttributeArgs};
+use crate::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
 
 use proc_macro2::TokenStream;
 use quote::ToTokens;
@@ -7,15 +7,11 @@ use syn::{
     Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
 };
 
-pub(crate) mod kw {
-    syn::custom_keyword!(async_runtime);
-    syn::custom_keyword!(callback_interface);
-}
-
 #[derive(Default)]
 pub struct ExportAttributeArguments {
     pub(crate) async_runtime: Option<AsyncRuntime>,
     pub(crate) callback_interface: Option<kw::callback_interface>,
+    pub(crate) constructor: Option<kw::constructor>,
 }
 
 impl Parse for ExportAttributeArguments {
@@ -39,6 +35,11 @@ impl UniffiAttributeArgs for ExportAttributeArguments {
                 callback_interface: input.parse()?,
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::constructor) {
+            Ok(Self {
+                constructor: input.parse()?,
+                ..Self::default()
+            })
         } else {
             Ok(Self::default())
         }
@@ -51,6 +52,7 @@ impl UniffiAttributeArgs for ExportAttributeArguments {
                 self.callback_interface,
                 other.callback_interface,
             )?,
+            constructor: either_attribute_arg(self.constructor, other.constructor)?,
         })
     }
 }

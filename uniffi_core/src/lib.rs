@@ -44,7 +44,7 @@ mod ffi_converter_traits;
 pub mod metadata;
 
 pub use ffi::*;
-pub use ffi_converter_traits::{FfiConverter, FfiConverterArc};
+pub use ffi_converter_traits::{FfiConverter, FfiConverterArc, LiftRef};
 pub use metadata::*;
 
 // Re-export the libs that we use in the generated code,
@@ -305,6 +305,10 @@ macro_rules! do_ffi_converter_forward {
             const TYPE_ID_META: ::uniffi::MetadataBuffer =
                 <$T as $crate::$trait<$existing_impl_tag>>::TYPE_ID_META;
         }
+
+        impl $crate::LiftRef<$new_impl_tag> for $T {
+            type LiftType = <$T as $crate::LiftRef<$existing_impl_tag>>::LiftType;
+        }
     };
 }
 
@@ -336,5 +340,46 @@ mod test {
             expected, result,
             "Expected results after lowering and lifting to be equal"
         )
+    }
+}
+
+#[cfg(test)]
+pub mod test_util {
+    use std::{error::Error, fmt};
+
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    pub struct TestError(pub String);
+
+    // Use FfiConverter to simplify lifting TestError out of RustBuffer to check it
+    unsafe impl FfiConverter<UniFfiTag> for TestError {
+        ffi_converter_rust_buffer_lift_and_lower!(UniFfiTag);
+        ffi_converter_default_return!(UniFfiTag);
+
+        fn write(obj: TestError, buf: &mut Vec<u8>) {
+            <String as FfiConverter<UniFfiTag>>::write(obj.0, buf);
+        }
+
+        fn try_read(buf: &mut &[u8]) -> Result<TestError> {
+            <String as FfiConverter<UniFfiTag>>::try_read(buf).map(TestError)
+        }
+
+        // Use a dummy value here since we don't actually need TYPE_ID_META
+        const TYPE_ID_META: MetadataBuffer = MetadataBuffer::new();
+    }
+
+    impl fmt::Display for TestError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl Error for TestError {}
+
+    impl<T: Into<String>> From<T> for TestError {
+        fn from(v: T) -> Self {
+            Self(v.into())
+        }
     }
 }

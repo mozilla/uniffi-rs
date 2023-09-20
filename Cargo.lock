@@ -1800,6 +1800,7 @@ name = "uniffi-fixture-futures"
 version = "0.21.0"
 dependencies = [
  "once_cell",
+ "thiserror",
  "tokio",
  "uniffi",
 ]
@@ -2043,6 +2044,7 @@ dependencies = [
 name = "uniffi_fixture_metadata"
 version = "0.1.0"
 dependencies = [
+ "thiserror",
  "uniffi",
  "uniffi_core",
  "uniffi_meta",
@@ -2100,6 +2102,7 @@ dependencies = [
 name = "uniffi_uitests"
 version = "0.22.0"
 dependencies = [
+ "thiserror",
  "trybuild",
  "uniffi",
  "uniffi_macros",

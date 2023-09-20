@@ -1,27 +1,22 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{DeriveInput, Path};
+use syn::DeriveInput;
 use uniffi_meta::free_fn_symbol_name;
 
-use crate::util::{
-    create_metadata_items, ident_to_string, mod_path, tagged_impl_header, ArgumentNotAllowedHere,
-    AttributeSliceExt, CommonAttr,
-};
+use crate::util::{create_metadata_items, ident_to_string, mod_path, tagged_impl_header};
 
-pub fn expand_object(input: DeriveInput, module_path: String) -> TokenStream {
+pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
+    let module_path = mod_path()?;
     let ident = &input.ident;
-    let attr_error = input
-        .attrs
-        .parse_uniffi_attr_args::<ArgumentNotAllowedHere>()
-        .err()
-        .map(syn::Error::into_compile_error);
     let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
-    let meta_static_var = interface_meta_static_var(ident, false, &module_path)
-        .unwrap_or_else(syn::Error::into_compile_error);
-    let interface_impl = interface_impl(ident, None);
+    let meta_static_var = (!udl_mode).then(|| {
+        interface_meta_static_var(ident, false, &module_path)
+            .unwrap_or_else(syn::Error::into_compile_error)
+    });
+    let interface_impl = interface_impl(ident, udl_mode);
 
-    quote! {
+    Ok(quote! {
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(
@@ -38,19 +33,15 @@ pub fn expand_object(input: DeriveInput, module_path: String) -> TokenStream {
             });
         }
 
-        #attr_error
         #interface_impl
         #meta_static_var
-    }
+    })
 }
 
-pub(crate) fn expand_interface_support(attr: CommonAttr, input: DeriveInput) -> TokenStream {
-    interface_impl(&input.ident, attr.tag.as_ref())
-}
-
-pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
+pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
     let name = ident_to_string(ident);
-    let impl_spec = tagged_impl_header("FfiConverterArc", ident, tag);
+    let impl_spec = tagged_impl_header("FfiConverterArc", ident, udl_mode);
+    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
@@ -143,6 +134,10 @@ pub(crate) fn interface_impl(ident: &Ident, tag: Option<&Path>) -> TokenStream {
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(false);
+        }
+
+        #lift_ref_impl_spec {
+            type LiftType = ::std::sync::Arc<Self>;
         }
     }
 }

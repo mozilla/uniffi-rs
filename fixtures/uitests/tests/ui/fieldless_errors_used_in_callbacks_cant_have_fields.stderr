@@ -1,12 +1,11 @@
 error[E0533]: expected value, found struct variant `Self::DivisionByZero`
  --> $OUT_DIR[uniffi_uitests]/errors.uniffi.rs
   |
-  | / #[::uniffi::ffi_converter_error(
-  | |     tag = crate::UniFfiTag,
+  | / #[::uniffi::derive_error_for_udl(
   | |     flat_error,
   | |     with_try_read,
   | |     handle_unknown_callback_error,
   | | )]
   | |__^ not a value
   |
-  = note: this error originates in the attribute macro `::uniffi::ffi_converter_error` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the attribute macro `::uniffi::derive_error_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)

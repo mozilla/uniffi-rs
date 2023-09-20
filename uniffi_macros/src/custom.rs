@@ -12,9 +12,10 @@ use syn::Path;
 pub(crate) fn expand_ffi_converter_custom_type(
     ident: &Ident,
     builtin: &Path,
-    tag: Option<&Path>,
+    udl_mode: bool,
 ) -> syn::Result<TokenStream> {
-    let impl_spec = tagged_impl_header("FfiConverter", ident, tag);
+    let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
+    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
 
@@ -45,6 +46,10 @@ pub(crate) fn expand_ffi_converter_custom_type(
                 .concat_str(#name)
                 .concat(<#builtin as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META);
         }
+
+        #lift_ref_impl_spec {
+            type LiftType = Self;
+        }
     })
 }
 
@@ -52,9 +57,9 @@ pub(crate) fn expand_ffi_converter_custom_type(
 pub(crate) fn expand_ffi_converter_custom_newtype(
     ident: &Ident,
     builtin: &Path,
-    tag: Option<&Path>,
+    udl_mode: bool,
 ) -> syn::Result<TokenStream> {
-    let ffi_converter = expand_ffi_converter_custom_type(ident, builtin, tag)?;
+    let ffi_converter = expand_ffi_converter_custom_type(ident, builtin, udl_mode)?;
     let type_converter = custom_ffi_type_converter(ident, builtin)?;
 
     Ok(quote! {
