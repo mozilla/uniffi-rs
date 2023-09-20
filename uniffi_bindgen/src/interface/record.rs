@@ -120,22 +120,6 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
     }
 }
 
-impl APIConverter<Record> for weedle::DictionaryDefinition<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Record> {
-        if self.attributes.is_some() {
-            bail!("dictionary attributes are not supported yet");
-        }
-        if self.inheritance.is_some() {
-            bail!("dictionary inheritance is not supported");
-        }
-        Ok(Record {
-            name: self.identifier.0.to_string(),
-            documentation: None,
-            fields: self.members.body.convert(ci)?,
-        })
-    }
-}
-
 // Represents an individual field on a Record.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Checksum)]
 pub struct Field {
@@ -151,8 +135,6 @@ impl Field {
         &self.name
     }
 
-<<<<<<< HEAD
-=======
     pub fn documentation(&self) -> Option<&String> {
         self.documentation.as_ref()
     }
@@ -161,7 +143,6 @@ impl Field {
         &self.type_
     }
 
->>>>>>> dd5fb2661 (Implement attaching documentation to struct fields/enum variants.)
     pub fn default_value(&self) -> Option<&Literal> {
         self.default.as_ref()
     }
@@ -171,12 +152,12 @@ impl Field {
     }
 }
 
-<<<<<<< HEAD
 impl AsType for Field {
     fn as_type(&self) -> Type {
         self.type_.clone()
     }
 }
+
 
 impl TryFrom<uniffi_meta::FieldMetadata> for Field {
     type Error = anyhow::Error;
@@ -187,32 +168,7 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
         let default = meta.default;
         Ok(Self {
             name,
-=======
-impl From<uniffi_meta::FieldMetadata> for Field {
-    fn from(meta: uniffi_meta::FieldMetadata) -> Self {
-        Self {
-            name: meta.name,
             documentation: None,
-            type_: convert_type(&meta.ty),
-            default: None,
-        }
-    }
-}
-
-impl APIConverter<Field> for weedle::dictionary::DictionaryMember<'_> {
-    fn convert(&self, ci: &mut ComponentInterface) -> Result<Field> {
-        if self.attributes.is_some() {
-            bail!("dictionary member attributes are not supported yet");
-        }
-        let type_ = ci.resolve_type_expression(&self.type_)?;
-        let default = match self.default {
-            None => None,
-            Some(v) => Some(convert_default_value(&v.value, &type_)?),
-        };
-        Ok(Field {
-            name: self.identifier.0.to_string(),
-            documentation: None,
->>>>>>> dd5fb2661 (Implement attaching documentation to struct fields/enum variants.)
             type_,
             default,
         })

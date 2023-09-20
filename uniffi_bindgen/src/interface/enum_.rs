@@ -239,7 +239,7 @@ impl Enum {
             documentation: None,
             variants: meta.variants.into_iter().map(Into::into).collect(),
             flat,
-        }
+        })
     }
 }
 
@@ -325,7 +325,7 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
                 .collect::<Result<_>>()?,
             documentation: None,
             fields: meta.fields.into_iter().map(Into::into).collect(),
-        }
+        })
     }
 }
 
