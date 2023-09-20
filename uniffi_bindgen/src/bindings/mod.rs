@@ -89,7 +89,6 @@ impl TryFrom<String> for TargetLanguage {
     }
 }
 
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     pub doc_comments: Option<bool>,

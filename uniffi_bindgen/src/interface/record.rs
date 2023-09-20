@@ -152,7 +152,6 @@ impl AsType for Field {
     }
 }
 
-
 impl TryFrom<uniffi_meta::FieldMetadata> for Field {
     type Error = anyhow::Error;
 

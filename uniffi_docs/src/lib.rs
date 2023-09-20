@@ -4,10 +4,10 @@
 
 use std::{collections::HashMap, fs::read_to_string, path::Path, str::FromStr};
 
-use uniffi_meta::Checksum;
 use anyhow::Result;
 use pulldown_cmark::{Event, HeadingLevel::H1, Parser, Tag};
 use syn::Attribute;
+use uniffi_meta::Checksum;
 
 /// Function documentation.
 #[derive(Debug, Clone, PartialEq, Eq, Checksum)]
