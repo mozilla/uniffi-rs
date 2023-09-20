@@ -199,6 +199,10 @@ impl Argument {
         self.by_ref
     }
 
+    pub fn type_(&self) -> &Type {
+        &self.type_
+    }
+
     pub fn is_trait_ref(&self) -> bool {
         matches!(&self.type_, Type::Object { imp, .. } if *imp == ObjectImpl::Trait)
     }
