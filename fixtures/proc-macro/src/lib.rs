@@ -92,7 +92,7 @@ fn take_two(two: Two) -> String {
 }
 
 #[uniffi::export]
-fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
+fn call_callback_interface(cb: Box<dyn TestCallbackInterface>) {
     cb.do_nothing();
     assert_eq!(cb.add(1, 1), 2);
     assert_eq!(Ok(10), cb.try_parse_int("10".to_string()));
