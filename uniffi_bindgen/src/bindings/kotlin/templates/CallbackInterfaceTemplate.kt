@@ -17,6 +17,7 @@ public interface {{ type_name }} {
     {%- else -%}
     {%- endmatch %}
     {% endfor %}
+    companion object
 }
 
 // The ForeignCallback that is passed to Rust.
