@@ -130,5 +130,32 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> where Self: Sized;
             fn from_custom(obj: Self) -> Self::Builtin;
         }
+
+        // A trait that allows us to convert from an error type returned by Rust functions
+        // into a type returned over the FFI.
+        pub trait UniffiErrorConverter<T> {
+            fn convert(value: T) -> Self;
+        }
+
+        // Any T by default returns itself.
+        impl<T> UniffiErrorConverter<T> for T {
+            fn convert(e: T) -> Self {
+                e
+            }
+        }
+
+        // Need something like this? Does not compile.
+        // impl<T, U> UniffiErrorConverter<T> for U where U: Into<T> + ?Sized {
+        //     fn convert(e: T) -> Self {
+        //         todo!();
+        //     }
+        // }
+
+        // A plain struct returned from Rust functions are converted to an Arc<>.
+        impl<T> UniffiErrorConverter<T> for ::std::sync::Arc<T> {
+            fn convert(e: T) -> Self {
+                ::std::sync::Arc::new(e)
+            }
+        }
     })
 }

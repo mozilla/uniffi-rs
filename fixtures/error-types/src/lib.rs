@@ -4,6 +4,10 @@
 
 use std::sync::Arc;
 
+// XXX - UDL declares this returns `ErrorInterface`, which means `Arc<>`.
+// We can go `From<anyhow::Error>` into an `ErrorInterface`, but not an
+// `Arc<ErrorInterface>`.
+// So other magic (needs to!) go from `anyhow::Error` -> `Into<ErrorInterface>` -> `Arc<ErrorInterface>`
 fn anyhow_bail(message: String) -> anyhow::Result<()> {
     anyhow::bail!("{message}");
 }
@@ -33,9 +37,15 @@ impl ErrorInterface {
     }
 }
 
-impl From<anyhow::Error> for ErrorInterface {
-    fn from(e: anyhow::Error) -> Self {
-        Self { e }
+// This would be ideal...
+// impl From<anyhow::Error> for ErrorInterface {
+//     fn from(e: anyhow::Error) -> Self {
+//         Self { e }
+// A custom trait *almost* works, but breaks an existing `From<>`
+// in coveralls - eg `impl From<InternalErrorInterface> for ErrorInterface`.
+impl UniffiErrorConverter<anyhow::Error> for Arc<ErrorInterface> {
+    fn convert(e: anyhow::Error) -> Self {
+        Arc::new(ErrorInterface { e })
     }
 }
 

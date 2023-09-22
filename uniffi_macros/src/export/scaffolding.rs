@@ -105,7 +105,7 @@ impl ScaffoldingBits {
         let param_lifts = sig.lift_exprs();
         let simple_rust_fn_call = quote! { #ident(#(#param_lifts,)*) };
         let rust_fn_call = if udl_mode && sig.looks_like_result {
-            quote! { #simple_rust_fn_call.map_err(::std::convert::Into::into) }
+            quote! { #simple_rust_fn_call.map_err(|e| UniffiErrorConverter::convert(e)) }
         } else {
             simple_rust_fn_call
         };
@@ -139,7 +139,7 @@ impl ScaffoldingBits {
         let param_lifts = sig.lift_exprs();
         let simple_rust_fn_call = quote! { uniffi_self.#ident(#(#param_lifts,)*) };
         let rust_fn_call = if udl_mode && sig.looks_like_result {
-            quote! { #simple_rust_fn_call.map_err(::std::convert::Into::into) }
+            quote! { #simple_rust_fn_call.map_err(|e| UniffiErrorConverter::convert(e)) }
         } else {
             simple_rust_fn_call
         };
@@ -166,7 +166,7 @@ impl ScaffoldingBits {
             // For UDL
             (true, false) => quote! { ::std::sync::Arc::new(#simple_rust_fn_call) },
             (true, true) => {
-                quote! { #simple_rust_fn_call.map(::std::sync::Arc::new).map_err(::std::convert::Into::into) }
+                quote! { #simple_rust_fn_call.map(::std::sync::Arc::new).map_err(|e| UniffiErrorConverter::convert(e)) }
             }
             (false, _) => simple_rust_fn_call,
         };
