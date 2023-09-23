@@ -210,8 +210,79 @@ Coveralls("test_interfaces_in_dicts").use { coveralls ->
     assert(coveralls.getRepairs().size == 2)
 }
 
-Coveralls("test_regressions").use { coveralls ->
-    assert(coveralls.getStatus("success") == "status: success")
+// Test traits implemented in Rust
+makeRustGetters().let { rustGetters ->
+    testGetters(rustGetters)
+    testGettersFromKotlin(rustGetters)
+}
+
+fun testGettersFromKotlin(getters: Getters) {
+    assert(getters.getBool(true, true) == false);
+    assert(getters.getBool(true, false) == true);
+    assert(getters.getBool(false, true) == true);
+    assert(getters.getBool(false, false) == false);
+
+    assert(getters.getString("hello", false) == "hello");
+    assert(getters.getString("hello", true) == "HELLO");
+
+    assert(getters.getOption("hello", true) == "HELLO");
+    assert(getters.getOption("hello", false) == "hello");
+    assert(getters.getOption("", true) == null);
+
+    assert(getters.getList(listOf(1, 2, 3), true) == listOf(1, 2, 3))
+    assert(getters.getList(listOf(1, 2, 3), false) == listOf<Int>())
+
+    assert(getters.getNothing("hello") == Unit);
+
+    try {
+        getters.getString("too-many-holes", true)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: CoverallException.TooManyHoles) {
+        // Expected
+    }
+
+    try {
+        getters.getOption("os-error", true)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: ComplexException.OsException) {
+        assert(e.code.toInt() == 100)
+        assert(e.extendedCode.toInt() == 200)
+    }
+
+    try {
+        getters.getOption("unknown-error", true)
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: ComplexException.UnknownException) {
+        // Expected
+    }
+
+    try {
+        getters.getString("unexpected-error", true)
+    } catch(e: InternalException) {
+        // Expected
+    }
+}
+
+// Test NodeTrait
+getTraits().let { traits ->
+    assert(traits[0].name() == "node-1")
+    // Note: strong counts are 1 more than you might expect, because the strongCount() method
+    // holds a strong ref.
+    assert(traits[0].strongCount() == 2UL)
+
+    assert(traits[1].name() == "node-2")
+    assert(traits[1].strongCount() == 2UL)
+
+    traits[0].setParent(traits[1])
+    assert(ancestorNames(traits[0]) == listOf("node-2"))
+    assert(ancestorNames(traits[1]).isEmpty())
+    assert(traits[1].strongCount() == 3UL)
+    assert(traits[0].getParent()!!.name() == "node-2")
+    traits[0].setParent(null)
+
+    Coveralls("test_regressions").use { coveralls ->
+        assert(coveralls.getStatus("success") == "status: success")
+    }
 }
 
 // This tests that the UniFFI-generated scaffolding doesn't introduce any unexpected locking.

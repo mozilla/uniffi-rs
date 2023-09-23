@@ -247,3 +247,82 @@ do {
     let coveralls = Coveralls(name: "test_bytes")
     assert(coveralls.reverse(value: Data("123".utf8)) == Data("321".utf8))
 }
+
+// Test traits implemented in Rust
+do {
+    let rustGetters = makeRustGetters()
+    testGetters(g: rustGetters)
+    testGettersFromSwift(getters: rustGetters)
+}
+
+func testGettersFromSwift(getters: Getters) {
+    assert(getters.getBool(v: true, arg2: true) == false);
+    assert(getters.getBool(v: true, arg2: false) == true);
+    assert(getters.getBool(v: false, arg2: true) == true);
+    assert(getters.getBool(v: false, arg2: false) == false);
+
+    assert(try! getters.getString(v: "hello", arg2: false) == "hello");
+    assert(try! getters.getString(v: "hello", arg2: true) == "HELLO");
+
+    assert(try! getters.getOption(v: "hello", arg2: true) == "HELLO");
+    assert(try! getters.getOption(v: "hello", arg2: false) == "hello");
+    assert(try! getters.getOption(v: "", arg2: true) == nil);
+
+    assert(getters.getList(v: [1, 2, 3], arg2: true) == [1, 2, 3])
+    assert(getters.getList(v: [1, 2, 3], arg2: false) == [])
+
+    assert(getters.getNothing(v: "hello") == ());
+
+    do {
+        let _ = try getters.getString(v: "too-many-holes", arg2: true)
+        fatalError("should have thrown")
+    } catch CoverallError.TooManyHoles {
+        // Expected
+    } catch {
+        fatalError("Unexpected error: \(error)")
+    }
+
+    do {
+        try getters.getOption(v: "os-error", arg2: true)
+        fatalError("should have thrown")
+    } catch ComplexError.OsError(let code, let extendedCode) {
+        assert(code == 100)
+        assert(extendedCode == 200)
+    } catch {
+        fatalError("Unexpected error: \(error)")
+    }
+
+    do {
+        try getters.getOption(v: "unknown-error", arg2: true)
+        fatalError("should have thrown")
+    } catch ComplexError.UnknownError {
+        // Expected
+    } catch {
+        fatalError("Unexpected error: \(error)")
+    }
+
+    do {
+        try getters.getString(v: "unexpected-error", arg2: true)
+    } catch {
+        // Expected
+    }
+}
+
+// Test Node trait
+do {
+    let traits = getTraits()
+    assert(traits[0].name() == "node-1")
+    // Note: strong counts are 1 more than you might expect, because the strongCount() method
+    // holds a strong ref.
+    assert(traits[0].strongCount() == 2)
+
+    assert(traits[1].name() == "node-2")
+    assert(traits[1].strongCount() == 2)
+
+    traits[0].setParent(parent: traits[1])
+    assert(ancestorNames(node: traits[0]) == ["node-2"])
+    assert(ancestorNames(node: traits[1]) == [])
+    assert(traits[1].strongCount() == 3)
+    assert(traits[0].getParent()!.name() == "node-2")
+    traits[0].setParent(parent: nil)
+}
