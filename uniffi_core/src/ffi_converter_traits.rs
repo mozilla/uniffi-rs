@@ -91,7 +91,7 @@ pub unsafe trait FfiConverter<UT>: Sized {
     /// returns, if the anyhow error can be downcast to `E`, then serialize that and return it.
     /// This results in the foreign code throwing a "normal" exception, rather than an unexpected
     /// exception.
-    fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> RustBuffer {
+    fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> Self {
         panic!("Failed to convert arg '{arg_name}': {e}")
     }
 

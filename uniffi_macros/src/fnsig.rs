@@ -107,16 +107,48 @@ impl FnSignature {
         }
     }
 
-    /// Lift expressions for each of our arguments
-    pub fn lift_exprs(&self) -> Vec<TokenStream> {
-        if self.is_async {
-            self.args.iter().map(|a| a.lift_expr_async()).collect()
-        } else {
-            self.args
-                .iter()
-                .map(|a| a.lift_expr(&self.return_ffi_converter()))
-                .collect()
+    /// Generate a closure that tries to lift all arguments into a tuple.
+    ///
+    /// The closure moves all scaffolding arguments into itself and returns:
+    ///   - The lifted argument tuple on success
+    ///   - The field name and error on failure (`Err(&'static str, anyhow::Error>`)
+    pub fn lift_closure(&self, self_lift: Option<TokenStream>) -> TokenStream {
+        let arg_lifts = self.args.iter().map(|arg| {
+            let ident = &arg.ident;
+            let ffi_converter = arg.ffi_converter();
+            let name = &arg.name;
+            quote! {
+                match #ffi_converter::try_lift(#ident) {
+                    Ok(v) => v,
+                    Err(e) => return Err((#name, e)),
+                }
+            }
+        });
+        let all_lifts = self_lift.into_iter().chain(arg_lifts);
+        quote! {
+            move || Ok((
+                #(#all_lifts,)*
+            ))
         }
+    }
+
+    /// Call a Rust function from a [Self::lift_closure] success.
+    ///
+    /// This takes an Ok value returned by `lift_closure` with the name `uniffi_args` and generates
+    /// a series of parameters to pass to the Rust function.
+    pub fn rust_call_params(&self, self_lift: bool) -> TokenStream {
+        let start_idx = if self_lift { 1 } else { 0 };
+        let args = self.args.iter().enumerate().map(|(i, arg)| {
+            let idx = syn::Index::from(i + start_idx);
+            let ty = &arg.ty;
+            match &arg.ref_type {
+                None => quote! { uniffi_args.#idx },
+                Some(ref_type) => quote! {
+                    <#ty as ::std::borrow::Borrow<#ref_type>>::borrow(&uniffi_args.#idx)
+                },
+            }
+        });
+        quote! { #(#args),* }
     }
 
     /// Write expressions for each of our arguments
@@ -372,42 +404,6 @@ impl NamedArg {
         let ident = &self.ident;
         let ffi_type = self.ffi_type();
         quote! { #ident: #ffi_type }
-    }
-
-    /// Generate the expression to lift the scaffolding parameter for this arg
-    pub(crate) fn lift_expr(&self, return_ffi_converter: &TokenStream) -> TokenStream {
-        let ident = &self.ident;
-        let ty = &self.ty;
-        let ffi_converter = self.ffi_converter();
-        let name = &self.name;
-        let lift = quote! {
-            match #ffi_converter::try_lift(#ident) {
-                Ok(v) => v,
-                Err(e) => return Err(#return_ffi_converter::handle_failed_lift(#name, e))
-            }
-        };
-        match &self.ref_type {
-            None => lift,
-            Some(ref_type) => quote! {
-                <#ty as ::std::borrow::Borrow<#ref_type>>::borrow(&#lift)
-            },
-        }
-    }
-
-    /// Unfortunately, we can't handle error conversion in async functions yet
-    pub(crate) fn lift_expr_async(&self) -> TokenStream {
-        let ident = &self.ident;
-        let ty = &self.ty;
-        let ffi_converter = self.ffi_converter();
-        let lift = quote! {
-            #ffi_converter::try_lift(#ident).unwrap()
-        };
-        match &self.ref_type {
-            None => lift,
-            Some(ref_type) => quote! {
-                <#ty as ::std::borrow::Borrow<#ref_type>>::borrow(&#lift)
-            },
-        }
     }
 
     /// Generate the expression to write the scaffolding parameter for this arg

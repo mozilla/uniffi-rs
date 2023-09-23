@@ -118,8 +118,11 @@ counter.enter()
 Task {
 	let megaphone = await asyncNewMegaphone()
 
-	let result = try await megaphone.fallibleMe(doFail: false)
-	assert(result == 42)
+        let result = await sayAfterWithMegaphone(megaphone: megaphone, ms: 20, who: "Alice")
+        assert(result == "HELLO, ALICE!")
+
+	let result2 = try await megaphone.fallibleMe(doFail: false)
+	assert(result2 == 42)
 
 	counter.leave()
 }

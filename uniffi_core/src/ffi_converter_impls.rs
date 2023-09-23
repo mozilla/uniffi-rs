@@ -494,9 +494,9 @@ where
         }
     }
 
-    fn handle_failed_lift(arg_name: &str, err: anyhow::Error) -> RustBuffer {
+    fn handle_failed_lift(arg_name: &str, err: anyhow::Error) -> Self {
         match err.downcast::<E>() {
-            Ok(actual_error) => lower_into_rust_buffer(actual_error),
+            Ok(actual_error) => Err(actual_error),
             Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
         }
     }

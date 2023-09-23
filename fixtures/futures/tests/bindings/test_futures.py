@@ -74,6 +74,19 @@ class TestFutures(unittest.TestCase):
 
         asyncio.run(test())
 
+    def test_async_object_param(self):
+        async def test():
+            megaphone = new_megaphone()
+            t0 = now()
+            result_alice = await say_after_with_megaphone(megaphone, 200, 'Alice')
+            t1 = now()
+
+            t_delta = (t1 - t0).total_seconds()
+            self.assertGreater(t_delta, 0.2)
+            self.assertEqual(result_alice, 'HELLO, ALICE!')
+
+        asyncio.run(test())
+
     def test_with_tokio_runtime(self):
         async def test():
             t0 = now()

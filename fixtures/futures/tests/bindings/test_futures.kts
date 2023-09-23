@@ -92,6 +92,17 @@ runBlocking {
     assertApproximateTime(time, 200, "async methods")
 }
 
+runBlocking {
+    val megaphone = newMegaphone()
+    val time = measureTimeMillis {
+        val resultAlice = sayAfterWithMegaphone(megaphone, 200U, "Alice")
+
+        assert(resultAlice == "HELLO, ALICE!")
+    }
+
+    assertApproximateTime(time, 200, "async methods")
+}
+
 // Test async method returning optional object
 runBlocking {
     val megaphone = asyncMaybeNewMegaphone(true)
