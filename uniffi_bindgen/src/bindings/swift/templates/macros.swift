@@ -5,24 +5,22 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- call try(func) -%}
     {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-        rustCallWithError({{ e|ffi_converter_name }}.lift) {
+        try uniffiRustCallWithError({{ e|ffi_converter_name }}.lift) {
     {%- else -%}
-        rustCall() {
+        uniffiRustCall() {
     {%- endmatch %}
     {{ func.ffi_func().name() }}({% call arg_list_lowered(func) -%} $0)
 }
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{% call try(func) %}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|ffi_converter_name }}.lift) {
+    try uniffiRustCallWithError({{ e|ffi_converter_name }}.lift) {
     {%- else %}
-    rustCall() {
+    uniffiRustCall() {
     {% endmatch %}
     {{ func.ffi_func().name() }}(
         {{- prefix }}, {% call arg_list_lowered(func) -%} $0
@@ -87,9 +85,9 @@ Note: async methods can unconditionally throw, since they can always be cancelle
 #}
 
 {%- macro throws(func) %}
-{%- if func.throws() || func.is_async() %}throws{% endif %}
+{%- if func.throws() %}throws{% endif %}
 {%- endmacro -%}
 
 {%- macro try(func) %}
-{%- if func.throws() || func.is_async() %}try {% else %}try! {% endif %}
+{%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}

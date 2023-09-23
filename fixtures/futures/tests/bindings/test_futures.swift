@@ -8,7 +8,7 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result = try! await alwaysReady()
+	let result = await alwaysReady()
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -22,7 +22,7 @@ Task {
 counter.enter()
 
 Task {
-	let result = try! await newMyRecord(a: "foo", b: 42)
+	let result = await newMyRecord(a: "foo", b: 42)
 
 	assert(result.a == "foo")
 	assert(result.b == 42)
@@ -35,7 +35,7 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	try! await void()
+	await void()
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -49,7 +49,7 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result = try! await sleep(ms: 2000)
+	let result = await sleep(ms: 2000)
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -64,8 +64,8 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result_alice = try! await sayAfter(ms: 1000, who: "Alice")
-	let result_bob = try! await sayAfter(ms: 2000, who: "Bob")
+	let result_alice = await sayAfter(ms: 1000, who: "Alice")
+	let result_bob = await sayAfter(ms: 2000, who: "Bob")
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -84,7 +84,7 @@ Task {
 	async let bob = sayAfter(ms: 2000, who: "Bob")
 
 	let t0 = Date()
-	let (result_alice, result_bob) = try! await (alice, bob)
+	let (result_alice, result_bob) = await (alice, bob)
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -102,7 +102,7 @@ Task {
 	let megaphone = newMegaphone()
 
 	let t0 = Date()
-	let result_alice = try! await megaphone.sayAfter(ms: 2000, who: "Alice")
+	let result_alice = await megaphone.sayAfter(ms: 2000, who: "Alice")
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)
@@ -116,7 +116,7 @@ Task {
 counter.enter()
 
 Task {
-	let megaphone = try! await asyncNewMegaphone()
+	let megaphone = await asyncNewMegaphone()
 
 	let result = try await megaphone.fallibleMe(doFail: false)
 	assert(result == 42)
@@ -129,7 +129,7 @@ counter.enter()
 
 Task {
 	let t0 = Date()
-	let result_alice = try! await sayAfterWithTokio(ms: 2000, who: "Alice")
+	let result_alice = await sayAfterWithTokio(ms: 2000, who: "Alice")
 	let t1 = Date()
 
 	let tDelta = DateInterval(start: t0, end: t1)

@@ -44,11 +44,11 @@ fileprivate extension RustCallStatus {
     }
 }
 
-private func rustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
-    try makeRustCall(callback, errorHandler: nil)
+private func uniffiRustCall<T>(_ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) -> T {
+    try! makeRustCall(callback, errorHandler: nil)
 }
 
-private func rustCallWithError<T>(
+private func uniffiRustCallWithError<T>(
     _ errorHandler: @escaping (RustBuffer) throws -> Error,
     _ callback: (UnsafeMutablePointer<RustCallStatus>) -> T) throws -> T {
     try makeRustCall(callback, errorHandler: errorHandler)

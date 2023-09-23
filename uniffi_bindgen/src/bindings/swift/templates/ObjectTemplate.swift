@@ -28,7 +28,7 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {%- endmatch %}
 
     deinit {
-        try! rustCall { {{ obj.ffi_object_free().name() }}(pointer, $0) }
+        uniffiRustCall { {{ obj.ffi_object_free().name() }}(pointer, $0) }
     }
 
     {% for cons in obj.alternate_constructors() %}
@@ -44,7 +44,11 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {%- if meth.is_async() %}
 
     public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
-        return {% call swift::try(meth) %} await uniffiRustCallAsync(
+        {%- if meth|is_cancellable(config) %}
+        return try await uniffiRustCallAsyncCancellable(
+        {%- else %}
+        return {% if meth.throws() %}try {% endif %}await uniffiRustCallAsync(
+        {%- endif %}
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
                     self.pointer,
@@ -54,21 +58,33 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
                 )
             },
             pollFunc: {{ meth.ffi_rust_future_poll(ci) }},
+            {%- if meth|is_cancellable(config) %}
             cancelFunc: {{ meth.ffi_rust_future_cancel(ci) }},
-            completeFunc: {{ meth.ffi_rust_future_complete(ci) }},
-            freeFunc: {{ meth.ffi_rust_future_free(ci) }},
-            {%- match meth.return_type() %}
-            {%- when Some(return_type) %}
-            liftFunc: {{ return_type|lift_fn }},
-            {%- when None %}
-            liftFunc: { $0 },
-            {%- endmatch %}
-            {%- match meth.throws_type() %}
-            {%- when Some with (e) %}
-            errorHandler: {{ e|ffi_converter_name }}.lift
-            {%- else %}
-            errorHandler: nil
-            {% endmatch %}
+            {%- endif %}
+            completeFunc: { rustFuture in
+                {%- match meth.return_type() %}
+                {%- when Some(return_type) %}
+                let liftReturn = { try! {{ return_type|lift_fn }}($0) }
+                {%- when None %}
+                let liftReturn = { (_: ()) in () }
+                {%- endmatch %}
+
+                return liftReturn(
+                    {%- match meth.throws_type() %}
+                    {%- when Some with (e) %}
+                    try uniffiRustCallWithError(
+                        {{ e|ffi_converter_name }}.lift
+                    ) { callStatus in
+                        {{ meth.ffi_rust_future_complete(ci) }}(rustFuture, callStatus)
+                    }
+                    {%- else %}
+                    uniffiRustCall { callStatus in
+                        {{ meth.ffi_rust_future_complete(ci) }}(rustFuture, callStatus)
+                    }
+                    {%- endmatch %}
+                )
+            },
+            freeFunc: {{ meth.ffi_rust_future_free(ci) }}
         )
     }
 

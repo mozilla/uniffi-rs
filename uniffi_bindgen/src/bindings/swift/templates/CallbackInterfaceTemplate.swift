@@ -103,7 +103,7 @@ fileprivate let {{ foreign_callback }} : ForeignCallback =
 fileprivate struct {{ ffi_converter_name }} {
     private static let initCallbackOnce: () = {
         // Swift ensures this initializer code will once run once, even when accessed by multiple threads.
-        try! rustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
+        uniffiRustCall { (err: UnsafeMutablePointer<RustCallStatus>) in
             {{ cbi.ffi_init_callback().name() }}({{ foreign_callback }}, err)
         }
     }()

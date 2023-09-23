@@ -585,6 +585,10 @@ impl Callable for Constructor {
     fn is_async(&self) -> bool {
         false
     }
+
+    fn spec(&self) -> String {
+        self.object_name.clone()
+    }
 }
 
 impl Callable for Method {
@@ -602,6 +606,10 @@ impl Callable for Method {
 
     fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    fn spec(&self) -> String {
+        format!("{}.{}", self.object_name, self.name)
     }
 }
 
