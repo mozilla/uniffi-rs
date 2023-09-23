@@ -10,11 +10,11 @@ use std::time::SystemTime;
 use once_cell::sync::Lazy;
 
 mod traits;
-pub use traits::{get_traits, TestTrait};
+pub use traits::{ancestor_names, get_traits, make_rust_getters, test_getters, Getters, NodeTrait};
 
 static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum CoverallError {
     #[error("The coverall has too many holes")]
     TooManyHoles,
@@ -80,7 +80,7 @@ impl From<InternalCoverallError> for CoverallError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum ComplexError {
     #[error("OsError: {code} ({extended_code})")]
     OsError { code: i16, extended_code: i16 },
@@ -131,7 +131,7 @@ pub struct SimpleDict {
     float64: f64,
     maybe_float64: Option<f64>,
     coveralls: Option<Arc<Coveralls>>,
-    test_trait: Option<Arc<dyn TestTrait>>,
+    test_trait: Option<Arc<dyn NodeTrait>>,
 }
 
 #[derive(Debug, Clone)]
@@ -204,7 +204,7 @@ fn create_some_dict() -> SimpleDict {
         float64: 0.0,
         maybe_float64: Some(1.0),
         coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
-        test_trait: Some(Arc::new(traits::Trait2 {})),
+        test_trait: Some(Arc::new(traits::Trait2::default())),
     }
 }
 

@@ -31,7 +31,7 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(d.signed64, 9223372036854775807)
         self.assertEqual(d.maybe_signed64, 0)
         self.assertEqual(d.coveralls.get_name(), "some_dict")
-        self.assertEqual(d.test_trait.name(), "trait 2")
+        self.assertEqual(d.test_trait.name(), "node-2")
 
         # floats should be "close enough" - although it's mildly surprising that
         # we need to specify `places=6` whereas the default is 7.
@@ -279,20 +279,59 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(coveralls.reverse(b"123"), b"321")
 
 class TraitsTest(unittest.TestCase):
-    def test_simple(self):
+    # Test traits implemented in Rust
+    def test_rust_getters(self):
+        test_getters(make_rust_getters())
+        self.check_getters_from_python(make_rust_getters())
+
+    def check_getters_from_python(self, getters):
+        self.assertEqual(getters.get_bool(True, True), False);
+        self.assertEqual(getters.get_bool(True, False), True);
+        self.assertEqual(getters.get_bool(False, True), True);
+        self.assertEqual(getters.get_bool(False, False), False);
+
+        self.assertEqual(getters.get_string("hello", False), "hello");
+        self.assertEqual(getters.get_string("hello", True), "HELLO");
+
+        self.assertEqual(getters.get_option("hello", True), "HELLO");
+        self.assertEqual(getters.get_option("hello", False), "hello");
+        self.assertEqual(getters.get_option("", True), None);
+
+        self.assertEqual(getters.get_list([1, 2, 3], True), [1, 2, 3]);
+        self.assertEqual(getters.get_list([1, 2, 3], False), [])
+
+        self.assertEqual(getters.get_nothing("hello"), None);
+
+        with self.assertRaises(CoverallError.TooManyHoles):
+            getters.get_string("too-many-holes", True)
+
+        with self.assertRaises(ComplexError.OsError) as cm:
+            getters.get_option("os-error", True)
+        self.assertEqual(cm.exception.code, 100)
+        self.assertEqual(cm.exception.extended_code, 200)
+
+        with self.assertRaises(ComplexError.UnknownError):
+            getters.get_option("unknown-error", True)
+
+        with self.assertRaises(InternalError):
+            getters.get_string("unexpected-error", True)
+
+    def test_node(self):
         traits = get_traits()
-        self.assertEqual(traits[0].name(), "trait 1")
-        self.assertEqual(traits[0].number(), 1)
+        self.assertEqual(traits[0].name(), "node-1")
+        # Note: strong counts are 1 more than you might expect, because the strong_count() method
+        # holds a strong ref.
         self.assertEqual(traits[0].strong_count(), 2)
 
-        self.assertEqual(traits[1].name(), "trait 2")
-        self.assertEqual(traits[1].number(), 2)
+        self.assertEqual(traits[1].name(), "node-2")
         self.assertEqual(traits[1].strong_count(), 2)
 
-        traits[0].take_other(traits[1])
+        traits[0].set_parent(traits[1])
+        self.assertEqual(ancestor_names(traits[0]), ["node-2"])
+        self.assertEqual(ancestor_names(traits[1]), [])
         self.assertEqual(traits[1].strong_count(), 3)
-        self.assertEqual(traits[0].get_other().name(), "trait 2")
-        traits[0].take_other(None)
+        self.assertEqual(traits[0].get_parent().name(), "node-2")
+        traits[0].set_parent(None)
 
 if __name__=='__main__':
     unittest.main()
