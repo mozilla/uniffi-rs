@@ -66,13 +66,8 @@ pub fn ffi_converter_callback_interface_impl(
     let name = ident_to_string(trait_ident);
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
-    let impl_spec = tagged_impl_header("FfiConverter", &box_dyn_trait, udl_mode);
+    let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, udl_mode);
     let lift_ref_impl_spec = tagged_impl_header("LiftRef", &dyn_trait, udl_mode);
-    let tag = if udl_mode {
-        quote! { crate::UniFfiTag }
-    } else {
-        quote! { T }
-    };
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
@@ -81,37 +76,18 @@ pub fn ffi_converter_callback_interface_impl(
     quote! {
         #[doc(hidden)]
         #[automatically_derived]
-        unsafe #impl_spec {
+        unsafe #lift_impl_spec {
             type FfiType = u64;
 
-            // Lower and write are tricky to implement because we have a dyn trait as our type.  There's
-            // probably a way to, but this carries lots of thread safety risks, down to impedance
-            // mismatches between Rust and foreign languages, and our uncertainty around implementations of
-            // concurrent handlemaps.
-            //
-            // The use case for them is also quite exotic: it's passing a foreign callback back to the foreign
-            // language.
-            //
-            // Until we have some certainty, and use cases, we shouldn't use them.
-            fn lower(_obj: Self) -> Self::FfiType {
-                panic!("Lowering CallbackInterface not supported")
-            }
-
-            fn write(_obj: Self, _buf: &mut std::vec::Vec<u8>) {
-                panic!("Writing CallbackInterface not supported")
-            }
-
-            fn try_lift(v: Self::FfiType) -> uniffi::deps::anyhow::Result<Self> {
+            fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<Self> {
                 Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(v)))
             }
 
-            fn try_read(buf: &mut &[u8]) -> uniffi::deps::anyhow::Result<Self> {
+            fn try_read(buf: &mut &[u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 use uniffi::deps::bytes::Buf;
-                uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(buf.get_u64())
+                ::uniffi::check_remaining(buf, 8)?;
+                <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(buf.get_u64())
             }
-
-            ::uniffi::ffi_converter_default_return!(#tag);
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
                 ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
@@ -120,7 +96,7 @@ pub fn ffi_converter_callback_interface_impl(
             .concat_str(#name);
         }
 
-        #lift_ref_impl_spec {
+        unsafe #lift_ref_impl_spec {
             type LiftType = #box_dyn_trait;
         }
     }

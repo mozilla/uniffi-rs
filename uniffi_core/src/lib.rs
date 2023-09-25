@@ -44,7 +44,9 @@ mod ffi_converter_traits;
 pub mod metadata;
 
 pub use ffi::*;
-pub use ffi_converter_traits::{FfiConverter, FfiConverterArc, LiftRef};
+pub use ffi_converter_traits::{
+    FfiConverter, FfiConverterArc, Lift, LiftRef, LiftReturn, Lower, LowerReturn,
+};
 pub use metadata::*;
 
 // Re-export the libs that we use in the generated code,
@@ -147,50 +149,6 @@ pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
     Ok(())
 }
 
-/// Helper function to lower an `anyhow::Error` that's wrapping an error type
-pub fn lower_anyhow_error_or_panic<UT, E>(err: anyhow::Error, arg_name: &str) -> RustBuffer
-where
-    E: 'static + FfiConverter<UT> + Sync + Send + std::fmt::Debug + std::fmt::Display,
-{
-    match err.downcast::<E>() {
-        Ok(actual_error) => lower_into_rust_buffer(actual_error),
-        Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
-    }
-}
-
-/// Helper function to create a RustBuffer with a single value
-pub fn lower_into_rust_buffer<T: FfiConverter<UT>, UT>(obj: T) -> RustBuffer {
-    let mut buf = ::std::vec::Vec::new();
-    T::write(obj, &mut buf);
-    RustBuffer::from_vec(buf)
-}
-
-/// Helper function to deserialize a RustBuffer with a single value
-pub fn try_lift_from_rust_buffer<T: FfiConverter<UT>, UT>(v: RustBuffer) -> Result<T> {
-    let vec = v.destroy_into_vec();
-    let mut buf = vec.as_slice();
-    let value = T::try_read(&mut buf)?;
-    match Buf::remaining(&buf) {
-        0 => Ok(value),
-        n => bail!("junk data left in buffer after lifting (count: {n})",),
-    }
-}
-
-/// Macro to implement returning values by simply lowering them and returning them
-///
-/// This is what we use for all FfiConverters except for `Result`.  This would be nicer as a
-/// trait default, but Rust doesn't support defaults on associated types.
-#[macro_export]
-macro_rules! ffi_converter_default_return {
-    ($uniffi_tag:ty) => {
-        type ReturnType = <Self as $crate::FfiConverter<$uniffi_tag>>::FfiType;
-
-        fn lower_return(v: Self) -> ::std::result::Result<Self::FfiType, $crate::RustBuffer> {
-            Ok(<Self as $crate::FfiConverter<$uniffi_tag>>::lower(v))
-        }
-    };
-}
-
 /// Macro to implement lowering/lifting using a `RustBuffer`
 ///
 /// For complex types where it's too fiddly or too unsafe to convert them into a special-purpose
@@ -204,11 +162,21 @@ macro_rules! ffi_converter_rust_buffer_lift_and_lower {
         type FfiType = $crate::RustBuffer;
 
         fn lower(v: Self) -> $crate::RustBuffer {
-            $crate::lower_into_rust_buffer::<Self, $uniffi_tag>(v)
+            let mut buf = ::std::vec::Vec::new();
+            <Self as $crate::FfiConverter<$uniffi_tag>>::write(v, &mut buf);
+            $crate::RustBuffer::from_vec(buf)
         }
 
         fn try_lift(buf: $crate::RustBuffer) -> $crate::Result<Self> {
-            $crate::try_lift_from_rust_buffer::<Self, $uniffi_tag>(buf)
+            let vec = buf.destroy_into_vec();
+            let mut buf = vec.as_slice();
+            let value = <Self as $crate::FfiConverter<$uniffi_tag>>::try_read(&mut buf)?;
+            match $crate::deps::bytes::Buf::remaining(&buf) {
+                0 => Ok(value),
+                n => $crate::deps::anyhow::bail!(
+                    "junk data left in buffer after lifting (count: {n})",
+                ),
+            }
         }
     };
 }
@@ -222,11 +190,13 @@ macro_rules! ffi_converter_forward {
     ($T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
         ::uniffi::do_ffi_converter_forward!(
             FfiConverter,
-            Self,
+            $T,
             $T,
             $existing_impl_tag,
             $new_impl_tag
         );
+
+        $crate::derive_ffi_traits!(local $T);
     };
 }
 
@@ -238,11 +208,13 @@ macro_rules! ffi_converter_arc_forward {
     ($T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
         ::uniffi::do_ffi_converter_forward!(
             FfiConverterArc,
-            ::std::sync::Arc<Self>,
+            ::std::sync::Arc<$T>,
             $T,
             $existing_impl_tag,
             $new_impl_tag
         );
+
+        // Note: no need to call derive_ffi_traits! because there is a blanket impl for all Arc<T>
     };
 }
 
@@ -253,16 +225,9 @@ macro_rules! do_ffi_converter_forward {
     ($trait:ident, $rust_type:ty, $T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
         unsafe impl $crate::$trait<$new_impl_tag> for $T {
             type FfiType = <$T as $crate::$trait<$existing_impl_tag>>::FfiType;
-            type ReturnType = <$T as $crate::$trait<$existing_impl_tag>>::FfiType;
 
             fn lower(obj: $rust_type) -> Self::FfiType {
                 <$T as $crate::$trait<$existing_impl_tag>>::lower(obj)
-            }
-
-            fn lower_return(
-                v: $rust_type,
-            ) -> ::std::result::Result<Self::ReturnType, $crate::RustBuffer> {
-                <$T as $crate::$trait<$existing_impl_tag>>::lower_return(v)
             }
 
             fn try_lift(v: Self::FfiType) -> $crate::Result<$rust_type> {
@@ -279,10 +244,6 @@ macro_rules! do_ffi_converter_forward {
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer =
                 <$T as $crate::$trait<$existing_impl_tag>>::TYPE_ID_META;
-        }
-
-        impl $crate::LiftRef<$new_impl_tag> for $T {
-            type LiftType = <$T as $crate::LiftRef<$existing_impl_tag>>::LiftType;
         }
     };
 }
@@ -328,9 +289,8 @@ pub mod test_util {
     pub struct TestError(pub String);
 
     // Use FfiConverter to simplify lifting TestError out of RustBuffer to check it
-    unsafe impl FfiConverter<UniFfiTag> for TestError {
+    unsafe impl<UT> FfiConverter<UT> for TestError {
         ffi_converter_rust_buffer_lift_and_lower!(UniFfiTag);
-        ffi_converter_default_return!(UniFfiTag);
 
         fn write(obj: TestError, buf: &mut Vec<u8>) {
             <String as FfiConverter<UniFfiTag>>::write(obj.0, buf);
@@ -357,4 +317,6 @@ pub mod test_util {
             Self(v.into())
         }
     }
+
+    derive_ffi_traits!(blanket TestError);
 }

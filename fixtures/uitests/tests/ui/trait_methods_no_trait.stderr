@@ -16,7 +16,7 @@ note: required by a bound in `uniffi_uniffi_trait_methods_fn_method_traitmethods
 error[E0277]: `TraitMethods` doesn't implement `std::fmt::Display`
  --> $OUT_DIR[uniffi_uitests]/trait_methods.uniffi.rs
   |
-  | /                 match<std::sync::Arc<r#TraitMethods> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+  | /                 match<std::sync::Arc<r#TraitMethods> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
   | |                     Ok(ref val) => val,
   | |                     Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
   | |                 }

@@ -33,6 +33,8 @@
 - Proc-macros: Added support for ByRef arguments
 - Proc-macros: Implemented custom type conversion error handling (https://mozilla.github.io/uniffi-rs/udl/custom_types.html#error-handling-during-conversion)
 - Error types must now implement `Error + Send + Sync + 'static`.
+- Proc-macros: The `handle_unknown_callback_error` attribute is no longer needed for callback
+  interface errors
 
 ### What's Fixed
 

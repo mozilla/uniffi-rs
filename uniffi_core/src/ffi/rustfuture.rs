@@ -88,7 +88,7 @@ use std::{
 
 use once_cell::sync::OnceCell;
 
-use crate::{rust_call_with_out_status, FfiConverter, FfiDefault, RustCallStatus};
+use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
 
 /// Result code for [rust_future_poll].  This is passed to the continuation function.
 #[repr(i8)]
@@ -144,9 +144,9 @@ where
     // executor calls polls it and the Rust executor wakes it.  It does not need to by `Sync`,
     // since we synchronize all access to the values.
     F: Future<Output = T> + Send + 'static,
-    // T is the output of the Future.  It needs to implement FfiConverter.  Also it must be Send +
+    // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
     // 'static for the same reason as F.
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     // The UniFfiTag ZST. The Send + 'static bound is to keep rustc happy.
     UT: Send + 'static,
 {
@@ -198,7 +198,7 @@ pub unsafe fn rust_future_cancel<ReturnType>(handle: RustFutureHandle) {
 ///
 /// - The [RustFutureHandle] must not previously have been passed to [rust_future_free]
 /// - The `T` param must correctly correspond to the [rust_future_new] call.  It must
-///   be `<Output as FfiConverter<UT>>::ReturnType`
+///   be `<Output as LowerReturn<UT>>::ReturnType`
 pub unsafe fn rust_future_complete<ReturnType>(
     handle: RustFutureHandle,
     out_status: &mut RustCallStatus,
@@ -286,7 +286,7 @@ struct WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     // Note: this could be a single enum, but that would make it easy to mess up the future pinning
@@ -300,7 +300,7 @@ impl<F, T, UT> WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     fn new(future: F) -> Self {
@@ -379,7 +379,7 @@ unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
 }
@@ -389,14 +389,14 @@ struct RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
     future: Mutex<WrappedFuture<F, T, UT>>,
     continuation_data: Mutex<ContinuationDataCell>,
-    // UT is used as the generic parameter for FfiConverter.
+    // UT is used as the generic parameter for [LowerReturn].
     // Let's model this with PhantomData as a function that inputs a UT value.
     _phantom: PhantomData<fn(UT) -> ()>,
 }
@@ -405,7 +405,7 @@ impl<F, T, UT> RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     fn new(future: F, _tag: UT) -> Arc<Self> {
@@ -457,7 +457,7 @@ impl<F, T, UT> Wake for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     fn wake(self: Arc<Self>) {
@@ -492,7 +492,7 @@ impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: FfiConverter<UT> + Send + 'static,
+    T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     fn ffi_poll(self: Arc<Self>, data: *const ()) {
@@ -515,7 +515,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{test_util::TestError, try_lift_from_rust_buffer, RustBuffer, RustCallStatusCode};
+    use crate::{test_util::TestError, Lift, RustBuffer, RustCallStatusCode};
+    use once_cell::sync::OnceCell;
     use std::task::Waker;
 
     // Sender/Receiver pair that we use for testing
@@ -623,7 +624,7 @@ mod tests {
         let (return_buf, call_status) = complete(rust_future);
         assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(
-            <String as FfiConverter<crate::UniFfiTag>>::try_lift(return_buf).unwrap(),
+            <String as Lift<crate::UniFfiTag>>::try_lift(return_buf).unwrap(),
             "All done"
         );
     }
@@ -645,7 +646,7 @@ mod tests {
         assert_eq!(call_status.code, RustCallStatusCode::Error);
         unsafe {
             assert_eq!(
-                try_lift_from_rust_buffer::<TestError, crate::UniFfiTag>(
+                <TestError as Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(
                     call_status.error_buf.assume_init()
                 )
                 .unwrap(),

@@ -188,7 +188,6 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
 }
 
 #[derive(thiserror::Error, uniffi::Error, Debug, PartialEq, Eq)]
-#[uniffi(handle_unknown_callback_error)]
 pub enum BasicError {
     #[error("InvalidInput")]
     InvalidInput,

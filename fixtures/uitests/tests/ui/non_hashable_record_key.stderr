@@ -14,7 +14,8 @@ error[E0277]: the trait bound `f32: Hash` is not satisfied
             u128
             u16
           and $N others
-  = note: required for `HashMap<f32, u64>` to implement `FfiConverter<UniFfiTag>`
+  = note: required for `HashMap<f32, u64>` to implement `Lower<UniFfiTag>`
+  = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
   = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
@@ -33,7 +34,8 @@ error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
             u128
             u16
           and $N others
-  = note: required for `HashMap<f32, u64>` to implement `FfiConverter<UniFfiTag>`
+  = note: required for `HashMap<f32, u64>` to implement `Lower<UniFfiTag>`
+  = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
   = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0425]: cannot find function `get_dict` in this scope

@@ -83,7 +83,7 @@ impl {{ obj.rust_name() }} {
             uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: std::fmt::Debug); // This object has a trait method which requires `Debug` be implemented.
             format!(
                 "{:?}",
-                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
                     Ok(ref val) => val,
                     Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
                 }
@@ -96,7 +96,7 @@ impl {{ obj.rust_name() }} {
             uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: std::fmt::Display); // This object has a trait method which requires `Display` be implemented.
             format!(
                 "{}",
-                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
                     Ok(ref val) => val,
                     Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
                 }
@@ -109,7 +109,7 @@ impl {{ obj.rust_name() }} {
                 use ::std::hash::{Hash, Hasher};
                 uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: Hash); // This object has a trait method which requires `Hash` be implemented.
                 let mut s = ::std::collections::hash_map::DefaultHasher::new();
-                Hash::hash(match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_lift(r#ptr) {
+                Hash::hash(match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
                     Ok(ref val) => val,
                     Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
                 }, &mut s);

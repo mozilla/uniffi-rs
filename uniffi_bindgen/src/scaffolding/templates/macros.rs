@@ -8,7 +8,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 
 {%- macro _arg_list_rs_call(func) %}
     {%- for arg in func.full_arguments() %}
-        match {{- arg.as_type().borrow()|ffi_converter }}::try_lift(r#{{ arg.name() }}) {
+        match {{- arg.as_type().borrow()|ffi_trait("Lift") }}::try_lift(r#{{ arg.name() }}) {
         {%- if arg.by_ref() %}
         {#  args passed by reference get special treatment for traits and their Box<> #}
         {%-     if arg.is_trait_ref() %}
@@ -58,7 +58,7 @@ r#{{ func.name() }}({% call _arg_list_rs_call(func) -%})
 
 {% macro return_signature(func) %}
 {%- match func.return_type() %}
-{%- when Some with (return_type) %} -> {{ return_type|ffi_converter }}::ReturnType
+{%- when Some with (return_type) %} -> {{ return_type|ffi_trait("LowerReturn") }}::ReturnType
 {%- else -%}
 {%- endmatch -%}
 {%- endmacro -%}
@@ -72,7 +72,7 @@ pub extern "C" fn r#{{ meth.ffi_func().name() }}(
 ) {% call return_signature(meth) %} {
     uniffi::deps::log::debug!("{{ meth.ffi_func().name() }}");
     uniffi::rust_call(call_status, || {
-        {{ meth|return_ffi_converter }}::lower_return(
+        <{{ meth|return_type }} as ::uniffi::LowerReturn<crate::UniFfiTag>>::lower_return(
 {%- endmacro %}
 
 {%- macro method_decl_postscript(meth) %}
