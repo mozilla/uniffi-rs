@@ -21,6 +21,7 @@ public interface {{ type_name }}Interface {
     {%- endmatch -%}
 
     {% endfor %}
+    companion object
 }
 
 class {{ type_name }}(
@@ -110,6 +111,8 @@ class {{ type_name }}(
             {{ type_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
     }
+    {% else %}
+    companion object
     {% endif %}
 }
 

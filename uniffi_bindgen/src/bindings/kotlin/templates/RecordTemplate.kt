@@ -16,6 +16,7 @@ data class {{ type_name }} (
         {% call kt::destroy_fields(rec) %}
     }
     {% endif %}
+    companion object
 }
 
 public object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
