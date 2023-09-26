@@ -249,6 +249,9 @@ pub trait Callable {
         }
     }
 
+    // Way to identify this in the `uniffi.toml` file
+    fn spec(&self) -> String;
+
     // Quick way to get the rust future scaffolding function that corresponds to our return type.
 
     fn ffi_rust_future_poll(&self, ci: &ComponentInterface) -> String {
@@ -292,6 +295,10 @@ impl Callable for Function {
     fn is_async(&self) -> bool {
         self.is_async
     }
+
+    fn spec(&self) -> String {
+        self.name.clone()
+    }
 }
 
 // Needed because Askama likes to add extra refs to variables
@@ -310,6 +317,10 @@ impl<T: Callable> Callable for &T {
 
     fn is_async(&self) -> bool {
         (*self).is_async()
+    }
+
+    fn spec(&self) -> String {
+        (*self).spec()
     }
 }
 

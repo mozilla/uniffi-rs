@@ -41,3 +41,21 @@ In Rust `Future` terminology this means the foreign bindings supply the "executo
 There are [some great API docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that are well worth a read.
 
 See the [foreign-executor fixture](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor) for more implementation details.
+
+## Swift Cancellation
+
+Swift async functions normally do not check for cancellation of their parent task.  You can opt in
+to this using the `[bindings.swift.cancellable]` array in the `uniffi.toml` file:
+
+```toml
+[bindings.swift]
+cancellable = [
+   # Make the `foo` function cancellable
+   "foo",
+   # Make the `Bar.do_something` method cancellable
+   "Bar.do_something",
+]
+```
+
+Note: Cancellable functions throw `CancellationError` when cancelled.  This means they always
+`throw`, even if the underlying Rust function does not return a `Result<>`.

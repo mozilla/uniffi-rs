@@ -84,4 +84,4 @@ class SwiftTestCallbackInterface : TestCallbackInterface {
     }
 }
 
-callCallbackInterface(cb: SwiftTestCallbackInterface())
+testCallbackInterface(cb: SwiftTestCallbackInterface())

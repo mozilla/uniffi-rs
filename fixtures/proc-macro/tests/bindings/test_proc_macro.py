@@ -77,4 +77,4 @@ class PyTestCallbackInterface(TestCallbackInterface):
         v = h.take_error(BasicError.InvalidInput())
         return v
 
-call_callback_interface(PyTestCallbackInterface())
+test_callback_interface(PyTestCallbackInterface())

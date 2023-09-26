@@ -1,13 +1,36 @@
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
-internal func uniffiRustCallAsync<F, T>(
+internal func uniffiRustCallAsync<T>(
     rustFutureFunc: () -> UnsafeMutableRawPointer,
     pollFunc: (UnsafeMutableRawPointer, UnsafeMutableRawPointer) -> (),
-    completeFunc: (UnsafeMutableRawPointer, UnsafeMutablePointer<RustCallStatus>) -> F,
-    freeFunc: (UnsafeMutableRawPointer) -> (),
-    liftFunc: (F) throws -> T,
-    errorHandler: ((RustBuffer) throws -> Error)?
+    completeFunc: (UnsafeMutableRawPointer) throws -> T,
+    freeFunc: (UnsafeMutableRawPointer) -> ()
+) async rethrows -> T {
+    // Make sure to call uniffiEnsureInitialized() since future creation doesn't have a
+    // RustCallStatus param, so doesn't use makeRustCall()
+    uniffiEnsureInitialized()
+    let rustFuture = rustFutureFunc()
+    defer {
+        freeFunc(rustFuture)
+    }
+
+    var pollResult: Int8;
+    repeat {
+        pollResult = await withUnsafeContinuation {
+            pollFunc(rustFuture, ContinuationHolder($0).toOpaque())
+        }
+    } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+
+    return try completeFunc(rustFuture)
+}
+
+internal func uniffiRustCallAsyncCancellable<T>(
+    rustFutureFunc: () -> UnsafeMutableRawPointer,
+    pollFunc: (UnsafeMutableRawPointer, UnsafeMutableRawPointer) -> (),
+    cancelFunc: (UnsafeMutableRawPointer) -> (),
+    completeFunc: (UnsafeMutableRawPointer) throws -> T,
+    freeFunc: (UnsafeMutableRawPointer) -> ()
 ) async throws -> T {
     // Make sure to call uniffiEnsureInitialized() since future creation doesn't have a
     // RustCallStatus param, so doesn't use makeRustCall()
@@ -16,17 +39,18 @@ internal func uniffiRustCallAsync<F, T>(
     defer {
         freeFunc(rustFuture)
     }
-    var pollResult: Int8;
-    repeat {
-        pollResult = await withUnsafeContinuation {
-            pollFunc(rustFuture, ContinuationHolder($0).toOpaque())
-        }
-    } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+    await withTaskCancellationHandler {
+        var pollResult: Int8;
+        repeat {
+            pollResult = await withUnsafeContinuation {
+                pollFunc(rustFuture, ContinuationHolder($0).toOpaque())
+            }
+        } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
+    } onCancel: {
+        cancelFunc(rustFuture)
+    }
 
-    return try liftFunc(makeRustCall(
-        { completeFunc(rustFuture, $0) },
-        errorHandler: errorHandler
-    ))
+    return try completeFunc(rustFuture)
 }
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They

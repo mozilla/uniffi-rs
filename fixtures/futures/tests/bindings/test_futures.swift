@@ -118,8 +118,11 @@ counter.enter()
 Task {
 	let megaphone = await asyncNewMegaphone()
 
-	let result = try await megaphone.fallibleMe(doFail: false)
-	assert(result == 42)
+        let result = await sayAfterWithMegaphone(megaphone: megaphone, ms: 20, who: "Alice")
+        assert(result == "HELLO, ALICE!")
+
+	let result2 = try await megaphone.fallibleMe(doFail: false)
+	assert(result2 == 42)
 
 	counter.leave()
 }
@@ -236,7 +239,8 @@ Task {
 counter.enter()
 Task {
 	let task = Task {
-	    try! await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 100, timeoutMs: 1000))
+        // Use try? to ignore cancellation errors
+	    try? await useSharedResource(options: SharedResourceOptions(releaseAfterMs: 5000, timeoutMs: 100))
 	}
 
 	// Wait some time to ensure the task has locked the shared resource

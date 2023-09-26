@@ -122,7 +122,7 @@ fn take_record_with_bytes(rwb: RecordWithBytes) -> Vec<u8> {
 }
 
 #[uniffi::export]
-fn call_callback_interface(cb: Box<dyn TestCallbackInterface>) {
+fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
     cb.do_nothing();
     assert_eq!(cb.add(1, 1), 2);
     assert_eq!(cb.optional(Some(1)), 1);

@@ -75,4 +75,4 @@ class KtTestCallbackInterface : TestCallbackInterface {
     }
 }
 
-callCallbackInterface(KtTestCallbackInterface())
+testCallbackInterface(KtTestCallbackInterface())

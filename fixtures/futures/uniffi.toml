@@ -1,2 +1,7 @@
 [bindings.kotlin]
 package_name = "uniffi.fixture.futures"
+
+[bindings.swift]
+cancellable = [
+    "use_shared_resource"
+]

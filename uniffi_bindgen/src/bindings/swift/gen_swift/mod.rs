@@ -137,6 +137,8 @@ pub struct Config {
     generate_module_map: Option<bool>,
     omit_argument_labels: Option<bool>,
     #[serde(default)]
+    cancellable: Vec<String>,
+    #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
 }
 
@@ -626,5 +628,16 @@ pub mod filters {
                 None => "".into(),
             }
         ))
+    }
+
+    // Is an async function/method cancellable?
+    pub fn is_cancellable(
+        callable: &impl Callable,
+        config: &Config,
+    ) -> Result<bool, askama::Error> {
+        Ok(config
+            .cancellable
+            .iter()
+            .any(|spec| spec == &callable.spec()))
     }
 }
