@@ -231,8 +231,8 @@ pub struct Uuid {
     val: String,
 }
 
-// Use `url::Url` as a custom type, with `String` as the Builtin
-uniffi::custom_type!(Url, String);
+// Use `Uuid` as a custom type, with `String` as the Builtin
+uniffi::custom_type!(Uuid, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
