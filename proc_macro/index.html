@@ -379,8 +379,8 @@ builtin which implements this type. Use of this macro requires you to manually i
     val: String,
 }
 
-// Use `url::Url` as a custom type, with `String` as the Builtin
-uniffi::custom_type!(Url, String);
+// Use `Uuid` as a custom type, with `String` as the Builtin
+uniffi::custom_type!(Uuid, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
