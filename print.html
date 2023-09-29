@@ -1175,6 +1175,8 @@ dictionary ConsumingDict {
 };
 
 </code></pre>
+<p>If in the above example, <code>DemoDict</code> was actually &quot;exported&quot; via a procmacro
+you should instead use <code>ExternExport</code></p>
 <p>(Note the special type <code>extern</code> used on the <code>typedef</code>. It is not currently enforced that the
 literal <code>extern</code> is used, but we hope to enforce this later, so please use it!)</p>
 <p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,

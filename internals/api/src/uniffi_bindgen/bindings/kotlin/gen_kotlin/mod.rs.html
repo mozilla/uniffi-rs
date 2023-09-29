@@ -522,6 +522,8 @@
 <a href="#522" id="522">522</a>
 <a href="#523" id="523">523</a>
 <a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -668,11 +670,13 @@
     }
 
     <span class="comment">// Get the package name for an external type
-    </span><span class="kw">fn </span>external_type_package_name(<span class="kw-2">&amp;</span><span class="self">self</span>, module_path: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="kw">let </span>crate_name = module_path.split(<span class="string">&quot;::&quot;</span>).next().unwrap();
+    </span><span class="kw">fn </span>external_type_package_name(<span class="kw-2">&amp;</span><span class="self">self</span>, module_path: <span class="kw-2">&amp;</span>str, namespace: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="comment">// config overrides are keyed by the crate name, default fallback is the namespace.
+        </span><span class="kw">let </span>crate_name = module_path.split(<span class="string">&quot;::&quot;</span>).next().unwrap();
         <span class="kw">match </span><span class="self">self</span>.kotlin_config.external_packages.get(crate_name) {
             <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
-            <span class="prelude-val">None </span>=&gt; crate_name.to_string(),
+            <span class="comment">// unreachable in library mode - all deps are in our config with correct namespace.
+            </span><span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;uniffi.{namespace}&quot;</span>),
         }
     }
 
