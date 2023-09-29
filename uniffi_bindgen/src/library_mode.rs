@@ -26,7 +26,7 @@ use std::{
     collections::{HashMap, HashSet},
     fs,
 };
-use uniffi_meta::{group_metadata, MetadataGroup};
+use uniffi_meta::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
 
 /// Generate foreign bindings
 ///
@@ -121,8 +121,34 @@ fn find_sources(
     library_path: &Utf8Path,
     cdylib_name: Option<&str>,
 ) -> Result<Vec<Source>> {
-    group_metadata(macro_metadata::extract_from_library(library_path)?)?
-        .into_iter()
+    let items = macro_metadata::extract_from_library(library_path)?;
+    let mut metadata_groups = create_metadata_groups(&items);
+    group_metadata(&mut metadata_groups, items)?;
+
+    // Collect and process all UDL from all groups at the start - the fixups
+    // of external types makes this tricky to do as we finalize the group.
+    let mut udl_items: HashMap<String, MetadataGroup> = HashMap::new();
+
+    for group in metadata_groups.values() {
+        let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
+        let crate_root = package
+            .manifest_path
+            .parent()
+            .context("manifest path has no parent")?;
+        let crate_name = group.namespace.crate_name.clone();
+        if let Some(mut metadata_group) = load_udl_metadata(group, crate_root, &crate_name)? {
+            // fixup the items.
+            metadata_group.items = metadata_group
+                .items
+                .into_iter()
+                .map(|item| fixup_external_type(item, &metadata_groups))
+                .collect();
+            udl_items.insert(crate_name, metadata_group);
+        };
+    }
+
+    metadata_groups
+        .into_values()
         .map(|group| {
             let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
             let crate_root = package
@@ -131,7 +157,7 @@ fn find_sources(
                 .context("manifest path has no parent")?;
             let crate_name = group.namespace.crate_name.clone();
             let mut ci = ComponentInterface::new(&crate_name);
-            if let Some(metadata) = load_udl_metadata(&group, crate_root, &crate_name)? {
+            if let Some(metadata) = udl_items.remove(&crate_name) {
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;

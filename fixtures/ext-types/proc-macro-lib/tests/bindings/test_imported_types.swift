@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import imported_types_lib
-//import uniffi_one
 import Foundation
 
 let ct = getCombinedType(value: nil)
@@ -28,6 +27,7 @@ assert(getUniffiOneTypes(ts: [UniffiOneType(sval: "hello")]) == [UniffiOneType(s
 assert(getMaybeUniffiOneTypes(ts: [UniffiOneType(sval: "hello"), nil]) == [UniffiOneType(sval: "hello"), nil])
 
 assert(getUniffiOneProcMacroType(t: UniffiOneProcMacroType(sval: "hello from proc-macro world")).sval == "hello from proc-macro world")
+assert(getMyProcMacroType(t: UniffiOneProcMacroType(sval: "proc-macros all the way down")).sval == "proc-macros all the way down")
 
 assert(getUniffiOneEnum(e: UniffiOneEnum.one) == UniffiOneEnum.one)
 assert(getMaybeUniffiOneEnum(e: UniffiOneEnum.one)! == UniffiOneEnum.one)

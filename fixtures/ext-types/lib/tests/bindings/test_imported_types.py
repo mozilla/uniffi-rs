@@ -5,7 +5,7 @@
 import unittest
 import urllib
 from imported_types_lib import *
-from uniffi_one import *
+from uniffi_one_ns import *
 
 class TestIt(unittest.TestCase):
     def test_it(self):
@@ -47,6 +47,11 @@ class TestIt(unittest.TestCase):
         ct = get_combined_type(None)
         self.assertEqual(ct.ecd.sval, "ecd");
         self.assertEqual(get_external_crate_interface("foo").value(), "foo")
+
+    def test_procmacro_types(self):
+        t1 = UniffiOneProcMacroType("hello")
+        self.assertEqual(t1, get_uniffi_one_proc_macro_type(t1))
+        self.assertEqual(t1, get_my_proc_macro_type(t1))
 
 if __name__=='__main__':
     unittest.main()

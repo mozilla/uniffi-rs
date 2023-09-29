@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import uniffi.imported_types_lib.*
-import uniffi.uniffi_one.*
+import uniffi.uniffi_one_ns.*
 
 val ct = getCombinedType(null)
 assert(ct.uot.sval == "hello")
@@ -29,6 +29,7 @@ assert(getMaybeUniffiOneTypes(listOf(uot, null)) == listOf(uot, null))
 
 val uopmt = UniffiOneProcMacroType("hello from proc-macro world")
 assert(getUniffiOneProcMacroType(uopmt) == uopmt)
+assert(getMyProcMacroType(uopmt) == uopmt)
 
 val uoe = UniffiOneEnum.ONE
 assert(getUniffiOneEnum(uoe) == uoe)

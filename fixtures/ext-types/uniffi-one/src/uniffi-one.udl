@@ -1,4 +1,4 @@
-namespace uniffi_one {};
+namespace uniffi_one_ns {};
 
 dictionary UniffiOneType {
     string sval;

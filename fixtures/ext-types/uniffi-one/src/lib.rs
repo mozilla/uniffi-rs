@@ -29,4 +29,9 @@ impl UniffiOneInterface {
     }
 }
 
+#[uniffi::export]
+fn get_my_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
+    t
+}
+
 uniffi::include_scaffolding!("uniffi-one");

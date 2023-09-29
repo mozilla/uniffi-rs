@@ -9,7 +9,7 @@ mod ffi_names;
 pub use ffi_names::*;
 
 mod group;
-pub use group::{group_metadata, MetadataGroup};
+pub use group::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
 
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
@@ -402,6 +402,23 @@ pub enum Metadata {
 impl Metadata {
     pub fn read(data: &[u8]) -> anyhow::Result<Self> {
         read_metadata(data)
+    }
+
+    pub(crate) fn module_path(&self) -> &String {
+        match self {
+            Metadata::Namespace(meta) => &meta.crate_name,
+            Metadata::UdlFile(meta) => &meta.module_path,
+            Metadata::Func(meta) => &meta.module_path,
+            Metadata::Constructor(meta) => &meta.module_path,
+            Metadata::Method(meta) => &meta.module_path,
+            Metadata::Record(meta) => &meta.module_path,
+            Metadata::Enum(meta) => &meta.module_path,
+            Metadata::Object(meta) => &meta.module_path,
+            Metadata::CallbackInterface(meta) => &meta.module_path,
+            Metadata::TraitMethod(meta) => &meta.module_path,
+            Metadata::Error(meta) => meta.module_path(),
+            Metadata::CustomType(meta) => &meta.module_path,
+        }
     }
 }
 
