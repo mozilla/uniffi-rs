@@ -15,9 +15,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Build
         run: |
-          cargo build
+           # Disable debug info, because the job runs out of disk space
+           RUSTFLAGS="-C debuginfo=0" cargo build
       - name: Run tests
         shell: bash
         run: |
           HOME=/root . /root/.sdkman/bin/sdkman-init.sh
-          cargo test
+           # Disable debug info, because the job runs out of disk space
+          RUSTFLAGS="-C debuginfo=0" cargo test

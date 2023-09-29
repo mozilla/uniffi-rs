@@ -16,6 +16,7 @@ mod tests {
         "<docstring-associated-error>",
         "<docstring-callback-method>",
         "<docstring-callback>",
+        "<docstring-enum-variant>",
         "<docstring-enum>",
         "<docstring-error>",
         "<docstring-function>",
