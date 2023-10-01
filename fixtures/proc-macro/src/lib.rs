@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 mod callback_interface;
 
@@ -114,6 +114,17 @@ fn make_one(inner: i32) -> One {
 #[uniffi::export]
 fn take_two(two: Two) -> String {
     two.a
+}
+
+#[uniffi::export]
+fn make_hashmap(k: i8, v: u64) -> HashMap<i8, u64> {
+    HashMap::from([(k, v)])
+}
+
+// XXX - fails to call this from python - https://github.com/mozilla/uniffi-rs/issues/1774
+#[uniffi::export]
+fn return_hashmap(h: HashMap<i8, u64>) -> HashMap<i8, u64> {
+    h
 }
 
 #[uniffi::export]
