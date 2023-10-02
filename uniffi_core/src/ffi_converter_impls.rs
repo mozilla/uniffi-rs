@@ -385,10 +385,7 @@ unsafe impl<UT, T: FfiConverter<UT>> FfiConverter<UT> for Vec<T> {
         MetadataBuffer::from_code(metadata::codes::TYPE_VEC).concat(T::TYPE_ID_META);
 }
 
-/// Support for associative arrays via the FFI.
-/// Note that because of webidl limitations,
-/// the key must always be of the String type.
-///
+/// Support for associative arrays via the FFI - `record<u32, u64>` in UDL.
 /// HashMaps are currently always passed by serializing to a buffer.
 /// We write a `i32` entries count followed by each entry (string
 /// key followed by the value) in turn.
