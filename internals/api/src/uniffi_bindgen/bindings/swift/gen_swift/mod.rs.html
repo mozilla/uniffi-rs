@@ -628,7 +628,6 @@
 <a href="#628" id="628">628</a>
 <a href="#629" id="629">629</a>
 <a href="#630" id="630">630</a>
-<a href="#631" id="631">631</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -973,6 +972,7 @@
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet&lt;String&gt;,
+    has_async_fns: bool,
 }
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; SwiftWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
@@ -984,6 +984,7 @@
             ci,
             type_helper_code,
             type_imports,
+            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -996,6 +997,10 @@
             .iter_types()
             .map(|t| SwiftCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
+            .chain(
+                <span class="self">self</span>.has_async_fns
+                    .then(|| <span class="string">&quot;uniffiInitContinuationCallback&quot;</span>.into()),
+            )
             .collect()
     }
 }
@@ -1094,10 +1099,10 @@
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.into(),
             FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;Int&quot;</span>.into(),
             FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;ForeignExecutorCallback&quot;</span>.into(),
-            FfiType::FutureCallback { return_type } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;UniFfiFutureCallback{}&quot;</span>, <span class="self">self</span>.ffi_type_label(return_type))
+            FfiType::RustFutureContinuationCallback =&gt; <span class="string">&quot;UniFfiRustFutureContinuation&quot;</span>.into(),
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData =&gt; {
+                <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into()
             }
-            FfiType::FutureCallbackData =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
         }
     }
 
@@ -1105,7 +1110,9 @@
         <span class="kw">match </span>ffi_type {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
-            | FfiType::FutureCallback { .. } =&gt; {
+            | FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationCallback
+            | FfiType::RustFutureContinuationData =&gt; {
                 <span class="macro">format!</span>(<span class="string">&quot;{} _Nonnull&quot;</span>, <span class="self">self</span>.ffi_type_label_raw(ffi_type))
             }
             <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label_raw(ffi_type),
@@ -1189,11 +1196,12 @@
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.into(),
             FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UniFfiForeignExecutorCallback _Nonnull&quot;</span>.into(),
             FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;size_t&quot;</span>.into(),
-            FfiType::FutureCallback { return_type } =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;UniFfiFutureCallback{} _Nonnull&quot;</span>,
-                SwiftCodeOracle.ffi_type_label_raw(return_type)
-            ),
-            FfiType::FutureCallbackData =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
+            FfiType::RustFutureContinuationCallback =&gt; {
+                <span class="string">&quot;UniFfiRustFutureContinuation _Nonnull&quot;</span>.into()
+            }
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData =&gt; {
+                <span class="string">&quot;void* _Nonnull&quot;</span>.into()
+            }
         })
     }
 
@@ -1246,16 +1254,6 @@
             <span class="kw">match </span><span class="kw-2">&amp;</span>result.throws_type {
                 <span class="prelude-val">Some</span>(t) =&gt; SwiftCodeOracle.find(t).canonical_name(),
                 <span class="prelude-val">None </span>=&gt; <span class="string">&quot;&quot;</span>.into(),
-            }
-        ))
-    }
-
-    <span class="kw">pub fn </span>future_continuation_type(result: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;CheckedContinuation&lt;{}, Error&gt;&quot;</span>,
-            <span class="kw">match </span><span class="kw-2">&amp;</span>result.return_type {
-                <span class="prelude-val">Some</span>(return_type) =&gt; type_name(return_type)<span class="question-mark">?</span>,
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;()&quot;</span>.into(),
             }
         ))
     }

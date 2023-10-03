@@ -139,7 +139,6 @@
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -226,11 +225,10 @@
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;::uniffi::RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;::uniffi::ForeignBytes&quot;</span>.into(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;::uniffi::ForeignCallback&quot;</span>.into(),
+            FfiType::RustFutureHandle =&gt; <span class="string">&quot;::uniffi::RustFutureHandle&quot;</span>.into(),
+            FfiType::RustFutureContinuationCallback =&gt; <span class="string">&quot;::uniffi::RustFutureContinuation&quot;</span>.into(),
+            FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;*const ()&quot;</span>.into(),
             FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;::uniffi::ForeignExecutorHandle&quot;</span>.into(),
-            FfiType::FutureCallback { return_type } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;::uniffi::FutureCallback&lt;{}&gt;&quot;</span>, type_ffi(return_type)<span class="question-mark">?</span>)
-            }
-            FfiType::FutureCallbackData =&gt; <span class="string">&quot;*const ()&quot;</span>.into(),
             FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;::uniffi::ForeignExecutorCallback&quot;</span>.into(),
         })
     }

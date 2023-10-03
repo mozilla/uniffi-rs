@@ -331,6 +331,40 @@
 <a href="#331" id="331">331</a>
 <a href="#332" id="332">332</a>
 <a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -368,8 +402,7 @@
 </span><span class="kw">use </span>anyhow::Result;
 
 <span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
-<span class="kw">use </span><span class="kw">super</span>::Literal;
-<span class="kw">use super</span>::{AsType, ObjectImpl, Type, TypeIterator};
+<span class="kw">use super</span>::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
 <span class="kw">use </span>uniffi_meta::Checksum;
 
 <span class="doccomment">/// Represents a standalone function.
@@ -575,11 +608,38 @@
     <span class="kw">fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Argument&gt;;
     <span class="kw">fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt;;
     <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt;;
+    <span class="kw">fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
     <span class="kw">fn </span>result_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ResultType {
         ResultType {
             return_type: <span class="self">self</span>.return_type(),
             throws_type: <span class="self">self</span>.throws_type(),
         }
+    }
+
+    <span class="comment">// Quick way to get the rust future scaffolding function that corresponds to our return type.
+
+    </span><span class="kw">fn </span>ffi_rust_future_poll(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        ci.ffi_rust_future_poll(<span class="self">self</span>.return_type().map(Into::into))
+            .name()
+            .to_owned()
+    }
+
+    <span class="kw">fn </span>ffi_rust_future_cancel(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        ci.ffi_rust_future_cancel(<span class="self">self</span>.return_type().map(Into::into))
+            .name()
+            .to_owned()
+    }
+
+    <span class="kw">fn </span>ffi_rust_future_complete(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        ci.ffi_rust_future_complete(<span class="self">self</span>.return_type().map(Into::into))
+            .name()
+            .to_owned()
+    }
+
+    <span class="kw">fn </span>ffi_rust_future_free(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        ci.ffi_rust_future_free(<span class="self">self</span>.return_type().map(Into::into))
+            .name()
+            .to_owned()
     }
 }
 
@@ -595,6 +655,10 @@
     <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
         <span class="self">self</span>.throws_type().cloned()
     }
+
+    <span class="kw">fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.is_async
+    }
 }
 
 <span class="comment">// Needed because Askama likes to add extra refs to variables
@@ -609,6 +673,10 @@
 
     <span class="kw">fn </span>throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
         (<span class="kw-2">*</span><span class="self">self</span>).throws_type()
+    }
+
+    <span class="kw">fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        (<span class="kw-2">*</span><span class="self">self</span>).is_async()
     }
 }
 

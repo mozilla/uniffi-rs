@@ -427,6 +427,23 @@
 <a href="#427" id="427">427</a>
 <a href="#428" id="428">428</a>
 <a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -536,11 +553,48 @@
         }
     }
 
-    <span class="doccomment">/// Lift expressions for each of our arguments
-    </span><span class="kw">pub fn </span>lift_exprs(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="self">self</span>.args
-            .iter()
-            .map(|a| a.lift_expr(<span class="kw-2">&amp;</span><span class="self">self</span>.return_ffi_converter()))
+    <span class="doccomment">/// Generate a closure that tries to lift all arguments into a tuple.
+    ///
+    /// The closure moves all scaffolding arguments into itself and returns:
+    ///   - The lifted argument tuple on success
+    ///   - The field name and error on failure (`Err(&amp;&#39;static str, anyhow::Error&gt;`)
+    </span><span class="kw">pub fn </span>lift_closure(<span class="kw-2">&amp;</span><span class="self">self</span>, self_lift: <span class="prelude-ty">Option</span>&lt;TokenStream&gt;) -&gt; TokenStream {
+        <span class="kw">let </span>arg_lifts = <span class="self">self</span>.args.iter().map(|arg| {
+            <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>arg.ident;
+            <span class="kw">let </span>ffi_converter = arg.ffi_converter();
+            <span class="kw">let </span>name = <span class="kw-2">&amp;</span>arg.name;
+            <span class="macro">quote! </span>{
+                <span class="kw">match </span>#ffi_converter::try_lift(#ident) {
+                    <span class="prelude-val">Ok</span>(v) =&gt; v,
+                    <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>((#name, e)),
+                }
+            }
+        });
+        <span class="kw">let </span>all_lifts = self_lift.into_iter().chain(arg_lifts);
+        <span class="macro">quote! </span>{
+            <span class="kw">move </span>|| <span class="prelude-val">Ok</span>((
+                #(#all_lifts,)*
+            ))
+        }
+    }
+
+    <span class="doccomment">/// Call a Rust function from a [Self::lift_closure] success.
+    ///
+    /// This takes an Ok value returned by `lift_closure` with the name `uniffi_args` and generates
+    /// a series of parameters to pass to the Rust function.
+    </span><span class="kw">pub fn </span>rust_call_params(<span class="kw-2">&amp;</span><span class="self">self</span>, self_lift: bool) -&gt; TokenStream {
+        <span class="kw">let </span>start_idx = <span class="kw">if </span>self_lift { <span class="number">1 </span>} <span class="kw">else </span>{ <span class="number">0 </span>};
+        <span class="kw">let </span>args = <span class="self">self</span>.args.iter().enumerate().map(|(i, arg)| {
+            <span class="kw">let </span>idx = syn::Index::from(i + start_idx);
+            <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>arg.ty;
+            <span class="kw">match </span><span class="kw-2">&amp;</span>arg.ref_type {
+                <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ uniffi_args.#idx },
+                <span class="prelude-val">Some</span>(ref_type) =&gt; <span class="macro">quote! </span>{
+                    &lt;#ty <span class="kw">as </span>::std::borrow::Borrow&lt;#ref_type&gt;&gt;::borrow(<span class="kw-2">&amp;</span>uniffi_args.#idx)
+                },
+            }
+        });
+        <span class="macro">quote! </span>{ #(#args),* }
     }
 
     <span class="doccomment">/// Write expressions for each of our arguments
@@ -796,26 +850,6 @@
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
         <span class="kw">let </span>ffi_type = <span class="self">self</span>.ffi_type();
         <span class="macro">quote! </span>{ #ident: #ffi_type }
-    }
-
-    <span class="doccomment">/// Generate the expression to lift the scaffolding parameter for this arg
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>lift_expr(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_converter: <span class="kw-2">&amp;</span>TokenStream) -&gt; TokenStream {
-        <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
-        <span class="kw">let </span>ty = <span class="kw-2">&amp;</span><span class="self">self</span>.ty;
-        <span class="kw">let </span>ffi_converter = <span class="self">self</span>.ffi_converter();
-        <span class="kw">let </span>name = <span class="kw-2">&amp;</span><span class="self">self</span>.name;
-        <span class="kw">let </span>lift = <span class="macro">quote! </span>{
-            <span class="kw">match </span>#ffi_converter::try_lift(#ident) {
-                <span class="prelude-val">Ok</span>(v) =&gt; v,
-                <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(#return_ffi_converter::handle_failed_lift(#name, e))
-            }
-        };
-        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.ref_type {
-            <span class="prelude-val">None </span>=&gt; lift,
-            <span class="prelude-val">Some</span>(ref_type) =&gt; <span class="macro">quote! </span>{
-                &lt;#ty <span class="kw">as </span>::std::borrow::Borrow&lt;#ref_type&gt;&gt;::borrow(<span class="kw-2">&amp;</span>#lift)
-            },
-        }
     }
 
     <span class="doccomment">/// Generate the expression to write the scaffolding parameter for this arg

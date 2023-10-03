@@ -150,16 +150,6 @@
 <a href="#150" id="150">150</a>
 <a href="#151" id="151">151</a>
 <a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
-<a href="#162" id="162">162</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
@@ -227,7 +217,6 @@
             <span class="comment">// Don&#39;t use a pointer to &lt;T&gt; as that requires a `pub &lt;T&gt;`
             </span><span class="kw">type </span>FfiType = <span class="kw-2">*const </span>::std::os::raw::c_void;
             <span class="kw">type </span>ReturnType = <span class="kw-2">*const </span>::std::os::raw::c_void;
-            <span class="kw">type </span>FutureCallback = ::uniffi::FutureCallback&lt;<span class="self">Self</span>::ReturnType&gt;;
 
             <span class="doccomment">/// When lowering, we have an owned `Arc` and we transfer that ownership
             /// to the foreign-language code, &quot;leaking&quot; it out of Rust&#39;s ownership system
@@ -281,15 +270,6 @@
 
             <span class="kw">fn </span>lower_return(v: ::std::sync::Arc&lt;<span class="self">Self</span>&gt;) -&gt; ::std::result::Result&lt;<span class="self">Self</span>::FfiType, ::uniffi::RustBuffer&gt; {
                 <span class="prelude-val">Ok</span>(&lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(v))
-            }
-
-            <span class="kw">fn </span>invoke_future_callback(
-                callback: <span class="self">Self</span>::FutureCallback,
-                callback_data: <span class="kw-2">*const </span>(),
-                return_value: <span class="self">Self</span>::ReturnType,
-                call_status: ::uniffi::RustCallStatus,
-            ) {
-                callback(callback_data, return_value, call_status);
             }
 
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)

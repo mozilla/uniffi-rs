@@ -11,7 +11,7 @@ the error into a <code>RustBuffer</code>, then return <code>Ok(buf)</code></li>
 <li>If the function returns a <code>Ok</code> value it will be unwrapped and returned</li>
 <li>If the function returns a <code>Err</code> value:
 <ul>
-<li><code>out_status.code</code> will be set to <code>CALL_ERROR</code></li>
+<li><code>out_status.code</code> will be set to <a href="../enum.RustCallStatusCode.html#variant.Error" title="variant uniffi::RustCallStatusCode::Error">RustCallStatusCode::Error</a>.</li>
 <li><code>out_status.error_buf</code> will be set to a newly allocated <code>RustBuffer</code> containing the error.  The calling
 code is responsible for freeing the <code>RustBuffer</code></li>
 <li><code>FfiDefault::ffi_default()</code> is returned, although foreign code should ignore this value</li>

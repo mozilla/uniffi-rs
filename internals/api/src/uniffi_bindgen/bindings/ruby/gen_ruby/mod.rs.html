@@ -373,6 +373,8 @@
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -537,7 +539,9 @@
             FfiType::ForeignExecutorHandle =&gt; {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>)
             }
-            FfiType::FutureCallback { .. } | FfiType::FutureCallbackData =&gt; {
+            FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationCallback
+            | FfiType::RustFutureContinuationData =&gt; {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Async functions are not implemented&quot;</span>)
             }
         })

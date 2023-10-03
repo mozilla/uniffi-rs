@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["setup_scaffolding"]};
+window.SIDEBAR_ITEMS = {"fn":["rust_future_scaffolding_fns","setup_scaffolding"]};

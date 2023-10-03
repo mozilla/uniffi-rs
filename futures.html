@@ -162,7 +162,7 @@
                         <h1><a class="header" href="#asyncfuture-support" id="asyncfuture-support">Async/Future support</a></h1>
 <p>UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust <code>Future</code>/<code>async fn</code> to and from foreign native futures (<code>async</code>/<code>await</code> in Python/Swift, <code>suspend fun</code> in Kotlin etc.)</p>
 <p>Check out the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/futures">examples</a> or the more terse and thorough <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures">fixtures</a>.</p>
-<p>Note that currently async functions are only supported by proc-macros, if you require UDL support please file a bug.</p>
+<p>Note that currently async functions are only supported by proc-macros, UDL support is being planned in https://github.com/mozilla/uniffi-rs/issues/1716.</p>
 <h2><a class="header" href="#example" id="example">Example</a></h2>
 <p>This is a short &quot;async sleep()&quot; example:</p>
 <pre><code class="language-Rust">use std::time::Duration;
@@ -190,96 +190,6 @@ if __name__ == '__main__':
 <p>In Rust <code>Future</code> terminology this means the foreign bindings supply the &quot;executor&quot; - think event-loop, or async runtime. In this example it's <code>asyncio</code>. There's no requirement for a Rust event loop.</p>
 <p>There are <a href="https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html">some great API docs</a> on the implementation that are well worth a read.</p>
 <p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor">foreign-executor fixture</a> for more implementation details.</p>
-<h2><a class="header" href="#how-it-works" id="how-it-works">How it works</a></h2>
-<p>As <a href="https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html">described in the documentation</a>,
-UniFFI generates code which uses callbacks from Rust futures back into that foreign &quot;executor&quot; to drive them to completion.
-Fortunately, each of the bindings and Rust have similar models, so the discussion below is Python, but it's almost exactly the same in Kotlin and Swift.</p>
-<p>In the above example, the generated <code>say_after</code> function looks something like:</p>
-<pre><code class="language-python">
-# A helper to work with asyncio.
-def _rust_say_after_executor(eventloop_handle, rust_task_handle):
-    event_loop = UniFFIMagic_GetExecutor(eventloop_handle)
-
-    def callback(task_handle):
-        # The event-loop has called us - call back into Rust.
-        _uniffi_say_after_executor_callback(task_handle)
-
-    # Now have the asyncio eventloop - ask it to schedule a call to help drive the Rust future.
-    eventloop.call_soon_threadsafe(callback, rust_task_handle)
-
-# A helper for say_after which creates a future and passes it Rust
-def _rust_call_say_after(callback_fn):
-    # Handle to our executor.
-    eventloop = asyncio.get_running_loop()
-    eventloop_handle = UniFFIMagic_SetExecutor(eventloop)
-
-    # Use asyncio to create a new Python future.
-    future = eventloop.create_future()
-    future_handle = UniFFIMagic_SetFuture(future)
-
-    # This is a &quot;normal&quot; UniFFI call across the FFI to Rust scaffoloding, but
-    # because it is an async function it has a special signature which
-    # requires the handles and the callback.
-    _uniffi_call_say_after(executor_handle, callback_fun, future_handle)
-
-    # and return the future to the caller.
-    return future
-
-def say_after_callback(future_handle, result)
-    future = UniFFIMagic_GetFuture(future_handle)
-    if future.cancelled():
-        return
-    future.set_result(result))
-
-def say_after(...):
-    return await _rust_call_say_after(say_after_callback)
-
-</code></pre>
-<p>And the code generated for Rust is something like:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>struct SayAfterHelper {
-    rust_future: Future&lt;&gt;,
-    uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
-    uniffi_callback: ::uniffi::FfiConverter::FutureCallback,
-    uniffi_future_handle: ...,
-}
-
-impl SayAfterHelper {
-    fn wake(&amp;self) {
-        match self.rust_future.poll() {
-            Some(Poll::Pending) =&gt; {
-                // ... snip executor stuff
-                self.rust_future.wake()
-            },
-            Some(Poll::Ready(v)) =&gt; {
-                // ready - tell the foreign executor
-                UniFFI_Magic_Invoke_Foreign_Callback(self.uniffi_callback, self.uniffi_future_handle)
-            },
-            None =&gt; todo!(&quot;error handling&quot;),
-        }
-    }
-}
-
-pub extern &quot;C&quot; fn _uniffi_call_say_after(
-    uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
-    uniffi_callback: ::uniffi::FfiConverter::FutureCallback,
-    uniffi_future_handle: ...,
-) {
-    // Call the async function to get the Rust future.
-    let rust_future = say_after(...)
-    let helper = SayAfterHelper {
-        rust_future,
-        uniffi_executor_handle,
-        uniffi_callback,
-        uniffi_future_handle,
-    );
-    helper.wake();
-    Ok(())
-}
-<span class="boring">}
-</span></code></pre></pre>
 
                     </main>
 
