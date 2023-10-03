@@ -6,8 +6,9 @@ use syn::{
 };
 
 use crate::util::{
-    create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+    create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw, mod_path,
+    tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+    UniffiAttributeArgs,
 };
 
 pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
@@ -40,7 +41,7 @@ pub(crate) fn record_ffi_converter_impl(
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
+    let derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
     let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
@@ -50,7 +51,6 @@ pub(crate) fn record_ffi_converter_impl(
         #[automatically_derived]
         unsafe #impl_spec {
             ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
-            ::uniffi::ffi_converter_default_return!(crate::UniFfiTag);
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -65,9 +65,7 @@ pub(crate) fn record_ffi_converter_impl(
                 .concat_str(#name);
         }
 
-        #lift_ref_impl_spec {
-            type LiftType = Self;
-        }
+        #derive_ffi_traits
     })
 }
 
@@ -76,7 +74,7 @@ fn write_field(f: &Field) -> TokenStream {
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(obj.#ident, buf);
+        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(obj.#ident, buf);
     }
 }
 
@@ -158,9 +156,11 @@ pub(crate) fn record_meta_static_var(
                 None => quote! { .concat_bool(false) },
             };
 
+            // Note: fields need to implement both `Lower` and `Lift` to be used in a record.  The
+            // TYPE_ID_META should be the same for both traits.
             Ok(quote! {
                 .concat_str(#name)
-                .concat(<#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::TYPE_ID_META)
+                .concat(<#ty as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
                 #default
             })
         })

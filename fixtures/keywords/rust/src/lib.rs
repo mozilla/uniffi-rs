@@ -16,9 +16,7 @@ impl r#break {
     pub fn r#break(&self, v: HashMap<u8, Arc<r#break>>) -> Option<HashMap<u8, Arc<r#break>>> {
         Some(v)
     }
-    fn r#continue(&self, v: Vec<Box<dyn r#continue>>) -> Option<Vec<Box<dyn r#continue>>> {
-        Some(v)
-    }
+    fn r#continue(&self, _v: Vec<Box<dyn r#continue>>) {}
     pub fn r#yield(&self, _async: u8) {}
     pub fn r#async(&self, _yield: Option<u8>) {}
 }
@@ -26,7 +24,7 @@ impl r#break {
 #[allow(non_camel_case_types)]
 pub trait r#continue {
     fn r#return(&self, v: r#return) -> r#return;
-    fn r#continue(&self, v: Vec<Box<dyn r#continue>>) -> Option<Box<dyn r#continue>>;
+    fn r#continue(&self) -> Option<Box<dyn r#continue>>;
     fn r#break(&self, _v: Option<Arc<r#break>>) -> HashMap<u8, Arc<r#break>>;
     fn r#while(&self, _v: Vec<r#while>) -> r#while;
     fn r#yield(&self, _v: HashMap<u8, Vec<r#yield>>) -> Option<HashMap<u8, Vec<r#yield>>>;
@@ -42,7 +40,7 @@ pub struct r#return {
 #[allow(non_camel_case_types)]
 pub struct r#while {
     r#return: r#return,
-    r#continue: Vec<Box<dyn r#continue>>,
+    r#yield: Vec<r#yield>,
     r#break: HashMap<u8, Arc<r#break>>,
     r#for: Option<Arc<r#break>>,
     r#async: Vec<r#return>,
@@ -55,9 +53,8 @@ pub enum r#async {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum r#yield {
-    #[error("async error")]
     r#async,
 }
 

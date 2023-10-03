@@ -290,10 +290,6 @@ impl ComponentInterface {
         self.types.get_type_definition(name)
     }
 
-    pub fn is_callback_interface_throws_type(&self, type_: Type) -> bool {
-        self.callback_interface_throws_types.contains(&type_)
-    }
-
     /// Iterate over all types contained in the given item.
     ///
     /// This method uses `iter_types` to iterate over the types contained within the given type,

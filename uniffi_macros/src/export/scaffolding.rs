@@ -216,7 +216,7 @@ fn gen_ffi_function(
 
     let ffi_ident = sig.scaffolding_fn_ident()?;
     let name = &sig.name;
-    let return_ffi_converter = &sig.return_ffi_converter();
+    let return_impl = &sig.return_impl();
 
     Ok(if !sig.is_async {
         quote! {
@@ -225,15 +225,15 @@ fn gen_ffi_function(
             #vis extern "C" fn #ffi_ident(
                 #(#params,)*
                 call_status: &mut ::uniffi::RustCallStatus,
-            ) -> #return_ffi_converter::ReturnType {
+            ) -> #return_impl::ReturnType {
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
-                    #return_ffi_converter::lower_return(
+                    #return_impl::lower_return(
                         match uniffi_lift_args() {
                             Ok(uniffi_args) => #rust_fn_call,
                             Err((arg_name, anyhow_error)) => {
-                                #return_ffi_converter::handle_failed_lift(arg_name, anyhow_error)
+                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
                             },
                         }
                     )
@@ -262,7 +262,7 @@ fn gen_ffi_function(
                     Err((arg_name, anyhow_error)) => {
                         ::uniffi::rust_future_new(
                             async move {
-                                #return_ffi_converter::handle_failed_lift(arg_name, anyhow_error)
+                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
                             },
                             crate::UniFfiTag,
                         )

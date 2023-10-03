@@ -190,7 +190,6 @@ pub(crate) fn ffi_converter_trait_impl(trait_ident: &Ident, udl_mode: bool) -> T
 
         unsafe #impl_spec {
             type FfiType = *const ::std::os::raw::c_void;
-            type ReturnType = Self::FfiType;
 
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
                 ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) as *const ::std::os::raw::c_void
@@ -217,17 +216,13 @@ pub(crate) fn ffi_converter_trait_impl(trait_ident: &Ident, udl_mode: bool) -> T
                     ::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
-            fn lower_return(v: ::std::sync::Arc<Self>) -> ::std::result::Result<Self::FfiType, ::uniffi::RustBuffer> {
-                Ok(<Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(v))
-            }
-
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(true);
         }
 
-        #lift_ref_impl_spec {
+        unsafe #lift_ref_impl_spec {
             type LiftType = ::std::sync::Arc<dyn #trait_ident>;
         }
     }

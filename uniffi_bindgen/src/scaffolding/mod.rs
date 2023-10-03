@@ -92,20 +92,20 @@ mod filters {
         })
     }
 
-    // Map a type to Rust code that specifies the FfiConverter implementation.
+    // Map a type a ffi converter trait impl
     //
-    // This outputs something like `<TheFfiConverterStruct as FfiConverter>`
-    pub fn ffi_converter(type_: &Type) -> Result<String, askama::Error> {
+    // This outputs something like `<MyStruct as Lift<crate::UniFfiTag>>`
+    pub fn ffi_trait(type_: &Type, trait_name: &str) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::External {
                 name,
                 kind: ExternalKind::Interface,
                 ..
             } => {
-                format!("<::std::sync::Arc<r#{name}> as ::uniffi::FfiConverter<crate::UniFfiTag>>")
+                format!("<::std::sync::Arc<r#{name}> as ::uniffi::{trait_name}<crate::UniFfiTag>>")
             }
             _ => format!(
-                "<{} as ::uniffi::FfiConverter<crate::UniFfiTag>>",
+                "<{} as ::uniffi::{trait_name}<crate::UniFfiTag>>",
                 type_rs(type_)?
             ),
         })
@@ -124,14 +124,6 @@ mod filters {
             Some(e) => format!("::std::result::Result<{return_type}, {}>", type_rs(&e)?),
             None => return_type,
         })
-    }
-
-    // Map return types to their fully-qualified `FfiConverter` impl.
-    pub fn return_ffi_converter<T: Callable>(callable: &T) -> Result<String, askama::Error> {
-        let return_type = return_type(callable)?;
-        Ok(format!(
-            "<{return_type} as ::uniffi::FfiConverter<crate::UniFfiTag>>"
-        ))
     }
 
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.

@@ -4,7 +4,6 @@ error[E0533]: expected value, found struct variant `Self::DivisionByZero`
   | / #[::uniffi::derive_error_for_udl(
   | |     flat_error,
   | |     with_try_read,
-  | |     handle_unknown_callback_error,
   | | )]
   | |__^ not a value
   |
