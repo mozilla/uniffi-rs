@@ -7,29 +7,26 @@
 
 @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% match func.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
-    // Create a new `CoroutineScope` for this operation, suspend the coroutine, and call the
-    // scaffolding function, passing it one of the callback handlers from `AsyncTypes.kt`.
-    return coroutineScope {
-        val scope = this
-        return@coroutineScope suspendCancellableCoroutine { continuation ->
-            try {
-                val callback = {{ func.result_type().borrow()|future_callback_handler }}(continuation)
-                uniffiActiveFutureCallbacks.add(callback)
-                continuation.invokeOnCancellation { uniffiActiveFutureCallbacks.remove(callback) }
-                rustCall { status ->
-                    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
-                        {% call kt::arg_list_lowered(func) %}
-                        FfiConverterForeignExecutor.lower(scope),
-                        callback,
-                        USize(0),
-                        status,
-                    )
-                }
-            } catch (e: Exception) {
-                continuation.resumeWithException(e)
-            }
-        }
-    }
+    return uniffiRustCallAsync(
+        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call kt::arg_list_lowered(func) %}),
+        { future, continuation -> _UniFFILib.INSTANCE.{{ func.ffi_rust_future_poll(ci) }}(future, continuation) },
+        { future, status -> _UniFFILib.INSTANCE.{{ func.ffi_rust_future_complete(ci) }}(future, status) },
+        { future -> _UniFFILib.INSTANCE.{{ func.ffi_rust_future_free(ci) }}(future) },
+        // lift function
+        {%- match func.return_type() %}
+        {%- when Some(return_type) %}
+        { {{ return_type|lift_fn }}(it) },
+        {%- when None %}
+        { Unit },
+        {% endmatch %}
+        // Error FFI converter
+        {%- match func.throws_type() %}
+        {%- when Some(e) %}
+        {{ e|error_type_name }}.ErrorHandler,
+        {%- when None %}
+        NullCallStatusErrorHandler,
+        {%- endmatch %}
+    )
 }
 
 {%- else %}

@@ -23,8 +23,8 @@
 /// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, ffi_converter_default_return, ffi_converter_rust_buffer_lift_and_lower,
-    lower_into_rust_buffer, metadata, try_lift_from_rust_buffer, FfiConverter, FutureCallback,
-    LiftRef, MetadataBuffer, Result, RustBuffer, RustCallStatus, UnexpectedUniFFICallbackError,
+    lower_into_rust_buffer, metadata, try_lift_from_rust_buffer, FfiConverter, LiftRef,
+    MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -121,9 +121,6 @@ unsafe impl<UT> FfiConverter<UT> for () {
     type FfiType = ();
     // Returning `()` is FFI-safe, since it gets translated into a void return
     type ReturnType = ();
-    // However, we can't use `FutureCallback<()>` since passing `()` as an argument is not
-    // FFI-safe.  So we used an arbitrary non-ZST type instead.
-    type FutureCallback = FutureCallback<u8>;
 
     fn try_lift(_: Self::FfiType) -> Result<()> {
         Ok(())
@@ -139,15 +136,6 @@ unsafe impl<UT> FfiConverter<UT> for () {
 
     fn lower_return(_: ()) -> Result<Self::ReturnType, RustBuffer> {
         Ok(())
-    }
-
-    fn invoke_future_callback(
-        callback: Self::FutureCallback,
-        callback_data: *const (),
-        _return_value: (),
-        call_status: RustCallStatus,
-    ) {
-        callback(callback_data, 0, call_status)
     }
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_UNIT);
@@ -425,7 +413,7 @@ where
         .concat(V::TYPE_ID_META);
 }
 
-/// FFI support for ForeignSchedulers
+/// FFI support for [ForeignExecutor]
 ///
 /// These are passed over the FFI as opaque pointer-sized types representing the foreign executor.
 /// The foreign bindings may use an actual pointer to the executor object, or a usized integer
@@ -479,7 +467,6 @@ where
 {
     type FfiType = (); // Placeholder while lower/lift/serializing is unimplemented
     type ReturnType = R::ReturnType;
-    type FutureCallback = R::FutureCallback;
 
     fn try_lift(_: Self::FfiType) -> Result<Self> {
         unimplemented!("try_lift");
@@ -504,9 +491,9 @@ where
         }
     }
 
-    fn handle_failed_lift(arg_name: &str, err: anyhow::Error) -> RustBuffer {
+    fn handle_failed_lift(arg_name: &str, err: anyhow::Error) -> Self {
         match err.downcast::<E>() {
-            Ok(actual_error) => lower_into_rust_buffer(actual_error),
+            Ok(actual_error) => Err(actual_error),
             Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
         }
     }
@@ -523,15 +510,6 @@ where
 
     fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Self {
         Err(E::handle_callback_unexpected_error(e))
-    }
-
-    fn invoke_future_callback(
-        callback: Self::FutureCallback,
-        callback_data: *const (),
-        return_value: Self::ReturnType,
-        call_status: RustCallStatus,
-    ) {
-        R::invoke_future_callback(callback, callback_data, return_value, call_status)
     }
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)

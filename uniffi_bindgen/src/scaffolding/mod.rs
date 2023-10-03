@@ -84,11 +84,10 @@ mod filters {
             FfiType::RustBuffer(_) => "::uniffi::RustBuffer".into(),
             FfiType::ForeignBytes => "::uniffi::ForeignBytes".into(),
             FfiType::ForeignCallback => "::uniffi::ForeignCallback".into(),
+            FfiType::RustFutureHandle => "::uniffi::RustFutureHandle".into(),
+            FfiType::RustFutureContinuationCallback => "::uniffi::RustFutureContinuation".into(),
+            FfiType::RustFutureContinuationData => "*const ()".into(),
             FfiType::ForeignExecutorHandle => "::uniffi::ForeignExecutorHandle".into(),
-            FfiType::FutureCallback { return_type } => {
-                format!("::uniffi::FutureCallback<{}>", type_ffi(return_type)?)
-            }
-            FfiType::FutureCallbackData => "*const ()".into(),
             FfiType::ForeignExecutorCallback => "::uniffi::ForeignExecutorCallback".into(),
         })
     }

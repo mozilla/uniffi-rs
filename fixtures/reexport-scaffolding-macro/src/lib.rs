@@ -8,7 +8,7 @@ mod tests {
     use std::ffi::CString;
     use std::os::raw::c_void;
     use std::process::{Command, Stdio};
-    use uniffi::{FfiConverter, ForeignCallback, RustBuffer, RustCallStatus};
+    use uniffi::{FfiConverter, ForeignCallback, RustBuffer, RustCallStatus, RustCallStatusCode};
     use uniffi_bindgen::ComponentInterface;
 
     struct UniFfiTag;
@@ -165,7 +165,7 @@ mod tests {
             get_symbol(&library, object_def.ffi_object_free().name());
 
         let num_alive = unsafe { get_num_alive(&mut call_status) };
-        assert_eq!(call_status.code, 0);
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(num_alive, 0);
 
         let obj_id = unsafe {
@@ -174,24 +174,24 @@ mod tests {
                 &mut call_status,
             )
         };
-        assert_eq!(call_status.code, 0);
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
 
         let name_buf = unsafe { coveralls_get_name(obj_id, &mut call_status) };
-        assert_eq!(call_status.code, 0);
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(
             <String as FfiConverter<UniFfiTag>>::try_lift(name_buf).unwrap(),
             "TestName"
         );
 
         let num_alive = unsafe { get_num_alive(&mut call_status) };
-        assert_eq!(call_status.code, 0);
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(num_alive, 1);
 
         unsafe { coveralls_free(obj_id, &mut call_status) };
-        assert_eq!(call_status.code, 0);
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
 
         let num_alive = unsafe { get_num_alive(&mut call_status) };
-        assert_eq!(call_status.code, 0);
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(num_alive, 0);
     }
 }
