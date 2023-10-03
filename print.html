@@ -1697,34 +1697,6 @@ pub trait Person {
 // }
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#exception-handling-in-callback-interfaces" id="exception-handling-in-callback-interfaces">Exception handling in callback interfaces</a></h3>
-<p>Most languages allow arbitrary exceptions to be thrown, which presents issues for callback
-interfaces.  If a callback interface function returns a non-Result type, then any exception will
-result in a panic on the Rust side.</p>
-<p>To avoid panics, callback interfaces can use <code>Result&lt;T, E&gt;</code> types for all return values.  If the callback
-interface implementation throws the exception that corresponds to the <code>E</code> parameter, <code>Err(E)</code> will
-be returned to the Rust code.  However, in most languages it's still possible for the implementation
-to throw other exceptions.  To avoid panics in those cases, the error type must be wrapped
-with the <code>#[uniffi(handle_unknown_callback_error)]</code> attribute and
-<code>From&lt;UnexpectedUniFFICallbackError&gt;</code> must be implemented:</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[derive(uniffi::Error)]
-#[uniffi(handle_unknown_callback_error)]
-pub enum MyApiError {
-    IOError,
-    ValueError,
-    UnexpectedError { reason: String },
-}
-
-impl From&lt;UnexpectedUniFFICallbackError&gt; for MyApiError {
-    fn from(e: UnexpectedUniFFICallbackError) -&gt; Self {
-        Self::UnexpectedError { reason: e.reason }
-    }
-}
-<span class="boring">}
-</span></code></pre></pre>
 <h2><a class="header" href="#types-from-dependent-crates" id="types-from-dependent-crates">Types from dependent crates</a></h2>
 <p>When using proc-macros, you can use types from dependent crates in your exported library, as long as
 the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple

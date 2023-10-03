@@ -230,8 +230,9 @@
 };
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+    create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw, mod_path,
+    tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+    UniffiAttributeArgs,
 };
 
 <span class="kw">pub fn </span>expand_record(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -264,7 +265,7 @@
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, udl_mode);
-    <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, ident, udl_mode);
+    <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(write_field).collect();
@@ -274,7 +275,6 @@
         <span class="attr">#[automatically_derived]
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="macro">::uniffi::ffi_converter_rust_buffer_lift_and_lower!</span>(<span class="kw">crate</span>::UniFfiTag);
-            <span class="macro">::uniffi::ffi_converter_default_return!</span>(<span class="kw">crate</span>::UniFfiTag);
 
             <span class="kw">fn </span>write(obj: <span class="self">Self</span>, buf: <span class="kw-2">&amp;mut </span>::std::vec::Vec&lt;u8&gt;) {
                 #write_impl
@@ -289,9 +289,7 @@
                 .concat_str(#name);
         }
 
-        #lift_ref_impl_spec {
-            <span class="kw">type </span>LiftType = <span class="self">Self</span>;
-        }
+        #derive_ffi_traits
     })
 }
 
@@ -300,7 +298,7 @@
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
     <span class="macro">quote! </span>{
-        &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(obj.#ident, buf);
+        &lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(obj.#ident, buf);
     }
 }
 
@@ -382,9 +380,11 @@
                 <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">false</span>) },
             };
 
-            <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+            <span class="comment">// Note: fields need to implement both `Lower` and `Lift` to be used in a record.  The
+            // TYPE_ID_META should be the same for both traits.
+            </span><span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                 .concat_str(#name)
-                .concat(&lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                .concat(&lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                 #default
             })
         })

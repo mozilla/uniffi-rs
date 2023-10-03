@@ -7,7 +7,7 @@
 <li>For errors that should be translated into thrown exceptions in the foreign code, serialize
 the error into a <code>RustBuffer</code>, then return <code>Ok(buf)</code></li>
 <li>The success type, must implement <code>FfiDefault</code>.</li>
-<li><code>FfiConverter::lower_return</code> returns <code>Result&lt;&gt;</code> types that meet the above criteria&gt;</li>
+<li><code>Return::lower_return</code> returns <code>Result&lt;&gt;</code> types that meet the above criteria&gt;</li>
 <li>If the function returns a <code>Ok</code> value it will be unwrapped and returned</li>
 <li>If the function returns a <code>Err</code> value:
 <ul>

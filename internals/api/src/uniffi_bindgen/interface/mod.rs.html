@@ -1224,10 +1224,6 @@
 <a href="#1224" id="1224">1224</a>
 <a href="#1225" id="1225">1225</a>
 <a href="#1226" id="1226">1226</a>
-<a href="#1227" id="1227">1227</a>
-<a href="#1228" id="1228">1228</a>
-<a href="#1229" id="1229">1229</a>
-<a href="#1230" id="1230">1230</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1518,10 +1514,6 @@
     <span class="doccomment">/// Get a specific type
     </span><span class="kw">pub fn </span>get_type(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Type&gt; {
         <span class="self">self</span>.types.get_type_definition(name)
-    }
-
-    <span class="kw">pub fn </span>is_callback_interface_throws_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: Type) -&gt; bool {
-        <span class="self">self</span>.callback_interface_throws_types.contains(<span class="kw-2">&amp;</span>type_)
     }
 
     <span class="doccomment">/// Iterate over all types contained in the given item.

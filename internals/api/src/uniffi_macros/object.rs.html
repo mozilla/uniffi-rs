@@ -145,11 +145,6 @@
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
 </pre><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
@@ -216,7 +211,6 @@
         </span><span class="kw">unsafe </span>#impl_spec {
             <span class="comment">// Don&#39;t use a pointer to &lt;T&gt; as that requires a `pub &lt;T&gt;`
             </span><span class="kw">type </span>FfiType = <span class="kw-2">*const </span>::std::os::raw::c_void;
-            <span class="kw">type </span>ReturnType = <span class="kw-2">*const </span>::std::os::raw::c_void;
 
             <span class="doccomment">/// When lowering, we have an owned `Arc` and we transfer that ownership
             /// to the foreign-language code, &quot;leaking&quot; it out of Rust&#39;s ownership system
@@ -268,17 +262,13 @@
                 &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) <span class="kw">as </span><span class="self">Self</span>::FfiType)
             }
 
-            <span class="kw">fn </span>lower_return(v: ::std::sync::Arc&lt;<span class="self">Self</span>&gt;) -&gt; ::std::result::Result&lt;<span class="self">Self</span>::FfiType, ::uniffi::RustBuffer&gt; {
-                <span class="prelude-val">Ok</span>(&lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(v))
-            }
-
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(<span class="bool-val">false</span>);
         }
 
-        #lift_ref_impl_spec {
+        <span class="kw">unsafe </span>#lift_ref_impl_spec {
             <span class="kw">type </span>LiftType = ::std::sync::Arc&lt;<span class="self">Self</span>&gt;;
         }
     }

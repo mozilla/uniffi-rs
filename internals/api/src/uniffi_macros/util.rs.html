@@ -244,6 +244,15 @@
 <a href="#244" id="244">244</a>
 <a href="#245" id="245">245</a>
 <a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -326,7 +335,7 @@
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
     <span class="macro">quote! </span>{
-        #ident: &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+        #ident: &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
     }
 }
 
@@ -462,6 +471,14 @@
     }
 }
 
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>derive_ffi_traits(ty: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; TokenStream {
+    <span class="kw">if </span>udl_mode {
+        <span class="macro">quote! </span>{ <span class="macro">::uniffi::derive_ffi_traits!</span>(local #ty); }
+    } <span class="kw">else </span>{
+        <span class="macro">quote! </span>{ <span class="macro">::uniffi::derive_ffi_traits!</span>(blanket #ty); }
+    }
+}
+
 <span class="doccomment">/// Custom keywords
 </span><span class="kw">pub mod </span>kw {
     <span class="macro">syn::custom_keyword!</span>(async_runtime);
@@ -469,9 +486,10 @@
     <span class="macro">syn::custom_keyword!</span>(constructor);
     <span class="macro">syn::custom_keyword!</span>(default);
     <span class="macro">syn::custom_keyword!</span>(flat_error);
-    <span class="macro">syn::custom_keyword!</span>(handle_unknown_callback_error);
     <span class="macro">syn::custom_keyword!</span>(<span class="prelude-val">None</span>);
     <span class="macro">syn::custom_keyword!</span>(with_try_read);
+    <span class="comment">// Not used anymore
+    </span><span class="macro">syn::custom_keyword!</span>(handle_unknown_callback_error);
 }
 
 <span class="doccomment">/// Specifies a type from a dependent crate

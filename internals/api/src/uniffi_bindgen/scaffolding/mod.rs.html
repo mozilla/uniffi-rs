@@ -131,14 +131,6 @@
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -233,20 +225,20 @@
         })
     }
 
-    <span class="comment">// Map a type to Rust code that specifies the FfiConverter implementation.
+    <span class="comment">// Map a type a ffi converter trait impl
     //
-    // This outputs something like `&lt;TheFfiConverterStruct as FfiConverter&gt;`
-    </span><span class="kw">pub fn </span>ffi_converter(type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    // This outputs something like `&lt;MyStruct as Lift&lt;crate::UniFfiTag&gt;&gt;`
+    </span><span class="kw">pub fn </span>ffi_trait(type_: <span class="kw-2">&amp;</span>Type, trait_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
             Type::External {
                 name,
                 kind: ExternalKind::Interface,
                 ..
             } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;&lt;::std::sync::Arc&lt;r#{name}&gt; as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>)
+                <span class="macro">format!</span>(<span class="string">&quot;&lt;::std::sync::Arc&lt;r#{name}&gt; as ::uniffi::{trait_name}&lt;crate::UniFfiTag&gt;&gt;&quot;</span>)
             }
             <span class="kw">_ </span>=&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;&lt;{} as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
+                <span class="string">&quot;&lt;{} as ::uniffi::{trait_name}&lt;crate::UniFfiTag&gt;&gt;&quot;</span>,
                 type_rs(type_)<span class="question-mark">?
             </span>),
         })
@@ -265,14 +257,6 @@
             <span class="prelude-val">Some</span>(e) =&gt; <span class="macro">format!</span>(<span class="string">&quot;::std::result::Result&lt;{return_type}, {}&gt;&quot;</span>, type_rs(<span class="kw-2">&amp;</span>e)<span class="question-mark">?</span>),
             <span class="prelude-val">None </span>=&gt; return_type,
         })
-    }
-
-    <span class="comment">// Map return types to their fully-qualified `FfiConverter` impl.
-    </span><span class="kw">pub fn </span>return_ffi_converter&lt;T: Callable&gt;(callable: <span class="kw-2">&amp;</span>T) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>return_type = return_type(callable)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;&lt;{return_type} as ::uniffi::FfiConverter&lt;crate::UniFfiTag&gt;&gt;&quot;
-        </span>))
     }
 
     <span class="comment">// Turns a `crate-name` into the `crate_name` the .rs code needs to specify.

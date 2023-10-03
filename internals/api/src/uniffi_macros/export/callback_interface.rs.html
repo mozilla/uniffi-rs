@@ -173,30 +173,6 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -265,13 +241,8 @@
     <span class="kw">let </span>name = ident_to_string(trait_ident);
     <span class="kw">let </span>dyn_trait = <span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident };
     <span class="kw">let </span>box_dyn_trait = <span class="macro">quote! </span>{ ::std::boxed::Box&lt;#dyn_trait&gt; };
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, <span class="kw-2">&amp;</span>box_dyn_trait, udl_mode);
+    <span class="kw">let </span>lift_impl_spec = tagged_impl_header(<span class="string">&quot;Lift&quot;</span>, <span class="kw-2">&amp;</span>box_dyn_trait, udl_mode);
     <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, <span class="kw-2">&amp;</span>dyn_trait, udl_mode);
-    <span class="kw">let </span>tag = <span class="kw">if </span>udl_mode {
-        <span class="macro">quote! </span>{ <span class="kw">crate</span>::UniFfiTag }
-    } <span class="kw">else </span>{
-        <span class="macro">quote! </span>{ T }
-    };
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
@@ -280,37 +251,18 @@
     <span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
         #[automatically_derived]
-        </span><span class="kw">unsafe </span>#impl_spec {
+        </span><span class="kw">unsafe </span>#lift_impl_spec {
             <span class="kw">type </span>FfiType = u64;
 
-            <span class="comment">// Lower and write are tricky to implement because we have a dyn trait as our type.  There&#39;s
-            // probably a way to, but this carries lots of thread safety risks, down to impedance
-            // mismatches between Rust and foreign languages, and our uncertainty around implementations of
-            // concurrent handlemaps.
-            //
-            // The use case for them is also quite exotic: it&#39;s passing a foreign callback back to the foreign
-            // language.
-            //
-            // Until we have some certainty, and use cases, we shouldn&#39;t use them.
-            </span><span class="kw">fn </span>lower(_obj: <span class="self">Self</span>) -&gt; <span class="self">Self</span>::FfiType {
-                <span class="macro">panic!</span>(<span class="string">&quot;Lowering CallbackInterface not supported&quot;</span>)
-            }
-
-            <span class="kw">fn </span>write(_obj: <span class="self">Self</span>, _buf: <span class="kw-2">&amp;mut </span>std::vec::Vec&lt;u8&gt;) {
-                <span class="macro">panic!</span>(<span class="string">&quot;Writing CallbackInterface not supported&quot;</span>)
-            }
-
-            <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
+            <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 <span class="prelude-val">Ok</span>(::std::boxed::Box::new(&lt;#trait_impl_ident&gt;::new(v)))
             }
 
-            <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
+            <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 <span class="kw">use </span>uniffi::deps::bytes::Buf;
-                uniffi::check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
-                &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(buf.get_u64())
+                ::uniffi::check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
+                &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(buf.get_u64())
             }
-
-            <span class="macro">::uniffi::ffi_converter_default_return!</span>(#tag);
 
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
                 ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
@@ -319,7 +271,7 @@
             .concat_str(#name);
         }
 
-        #lift_ref_impl_spec {
+        <span class="kw">unsafe </span>#lift_ref_impl_spec {
             <span class="kw">type </span>LiftType = #box_dyn_trait;
         }
     }

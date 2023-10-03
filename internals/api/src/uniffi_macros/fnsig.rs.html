@@ -442,8 +442,6 @@
 <a href="#442" id="442">442</a>
 <a href="#443" id="443">443</a>
 <a href="#444" id="444">444</a>
-<a href="#445" id="445">445</a>
-<a href="#446" id="446">446</a>
 </pre><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -546,10 +544,10 @@
         })
     }
 
-    <span class="kw">pub fn </span>return_ffi_converter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+    <span class="kw">pub fn </span>return_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
         <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span><span class="self">self</span>.return_ty;
         <span class="macro">quote! </span>{
-            &lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+            &lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
         }
     }
 
@@ -561,10 +559,10 @@
     </span><span class="kw">pub fn </span>lift_closure(<span class="kw-2">&amp;</span><span class="self">self</span>, self_lift: <span class="prelude-ty">Option</span>&lt;TokenStream&gt;) -&gt; TokenStream {
         <span class="kw">let </span>arg_lifts = <span class="self">self</span>.args.iter().map(|arg| {
             <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>arg.ident;
-            <span class="kw">let </span>ffi_converter = arg.ffi_converter();
+            <span class="kw">let </span>lift_impl = arg.lift_impl();
             <span class="kw">let </span>name = <span class="kw-2">&amp;</span>arg.name;
             <span class="macro">quote! </span>{
-                <span class="kw">match </span>#ffi_converter::try_lift(#ident) {
+                <span class="kw">match </span>#lift_impl::try_lift(#ident) {
                     <span class="prelude-val">Ok</span>(v) =&gt; v,
                     <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>((#name, e)),
                 }
@@ -647,7 +645,7 @@
             </span><span class="self">self</span>.args.len(),
             <span class="string">&quot;UniFFI limits functions to 256 arguments&quot;</span>,
         )<span class="question-mark">?</span>;
-        <span class="kw">let </span>arg_metadata_calls = <span class="self">self</span>.args.iter().map(NamedArg::metadata_calls);
+        <span class="kw">let </span>arg_metadata_calls = <span class="self">self</span>.args.iter().map(NamedArg::arg_metadata);
 
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.kind {
             FnKind::Function =&gt; <span class="prelude-val">Ok</span>(create_metadata_items(
@@ -660,7 +658,7 @@
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                 },
                 <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
             )),
@@ -678,7 +676,7 @@
                             .concat_bool(#is_async)
                             .concat_value(#args_len)
                             #(#arg_metadata_calls)*
-                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                     },
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -698,7 +696,7 @@
                             .concat_bool(#is_async)
                             .concat_value(#args_len)
                             #(#arg_metadata_calls)*
-                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                     },
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -716,7 +714,7 @@
                             .concat_str(#name)
                             .concat_value(#args_len)
                             #(#arg_metadata_calls)*
-                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                     },
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -826,16 +824,14 @@
         }
     }
 
-    <span class="doccomment">/// Generate the expression for this argument&#39;s FfiConverter
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ffi_converter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>lift_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
         <span class="kw">let </span>ty = <span class="kw-2">&amp;</span><span class="self">self</span>.ty;
-        <span class="macro">quote! </span>{ &lt;#ty <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt; }
+        <span class="macro">quote! </span>{ &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt; }
     }
 
-    <span class="doccomment">/// Generate the expression for this argument&#39;s FfiType
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ffi_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
-        <span class="kw">let </span>ffi_converter = <span class="self">self</span>.ffi_converter();
-        <span class="macro">quote! </span>{ #ffi_converter::FfiType }
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>lower_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+        <span class="kw">let </span>ty = <span class="kw-2">&amp;</span><span class="self">self</span>.ty;
+        <span class="macro">quote! </span>{ &lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt; }
     }
 
     <span class="doccomment">/// Generate the parameter for this Arg
@@ -848,23 +844,23 @@
     <span class="doccomment">/// Generate the scaffolding parameter for this Arg
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>scaffolding_param(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
-        <span class="kw">let </span>ffi_type = <span class="self">self</span>.ffi_type();
-        <span class="macro">quote! </span>{ #ident: #ffi_type }
+        <span class="kw">let </span>lift_impl = <span class="self">self</span>.lift_impl();
+        <span class="macro">quote! </span>{ #ident: #lift_impl::FfiType }
     }
 
     <span class="doccomment">/// Generate the expression to write the scaffolding parameter for this arg
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write_expr(<span class="kw-2">&amp;</span><span class="self">self</span>, buf_ident: <span class="kw-2">&amp;</span>Ident) -&gt; TokenStream {
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
-        <span class="kw">let </span>ffi_converter = <span class="self">self</span>.ffi_converter();
-        <span class="macro">quote! </span>{ #ffi_converter::write(#ident, <span class="kw-2">&amp;mut </span>#buf_ident) }
+        <span class="kw">let </span>lower_impl = <span class="self">self</span>.lower_impl();
+        <span class="macro">quote! </span>{ #lower_impl::write(#ident, <span class="kw-2">&amp;mut </span>#buf_ident) }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>metadata_calls(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>arg_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
         <span class="kw">let </span>name = <span class="kw-2">&amp;</span><span class="self">self</span>.name;
-        <span class="kw">let </span>ffi_converter = <span class="self">self</span>.ffi_converter();
+        <span class="kw">let </span>lift_impl = <span class="self">self</span>.lift_impl();
         <span class="macro">quote! </span>{
             .concat_str(#name)
-            .concat(#ffi_converter::TYPE_ID_META)
+            .concat(#lift_impl::TYPE_ID_META)
         }
     }
 }
