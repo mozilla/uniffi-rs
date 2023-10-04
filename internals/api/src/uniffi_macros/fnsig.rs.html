@@ -442,6 +442,28 @@
 <a href="#442" id="442">442</a>
 <a href="#443" id="443">443</a>
 <a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -631,7 +653,7 @@
     }
 
     <span class="doccomment">/// Generate metadata items for this function
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>metadata_items(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;TokenStream&gt; {
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>metadata_expr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;TokenStream&gt; {
         <span class="kw">let </span><span class="self">Self </span>{
             name,
             return_ty,
@@ -648,18 +670,67 @@
         <span class="kw">let </span>arg_metadata_calls = <span class="self">self</span>.args.iter().map(NamedArg::arg_metadata);
 
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.kind {
-            FnKind::Function =&gt; <span class="prelude-val">Ok</span>(create_metadata_items(
-                <span class="string">&quot;func&quot;</span>,
-                name,
-                <span class="macro">quote! </span>{
-                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
+            FnKind::Function =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
+                    .concat_str(#mod_path)
+                    .concat_str(#name)
+                    .concat_bool(#is_async)
+                    .concat_value(#args_len)
+                    #(#arg_metadata_calls)*
+                    .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+            }),
+
+            FnKind::Method { self_ident } =&gt; {
+                <span class="kw">let </span>object_name = ident_to_string(self_ident);
+                <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
+                        .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                },
+                })
+            }
+
+            FnKind::TraitMethod { self_ident, index } =&gt; {
+                <span class="kw">let </span>object_name = ident_to_string(self_ident);
+                <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_u32(#index)
+                        .concat_str(#name)
+                        .concat_bool(#is_async)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                })
+            }
+
+            FnKind::Constructor { self_ident } =&gt; {
+                <span class="kw">let </span>object_name = ident_to_string(self_ident);
+                <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_str(#name)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                })
+            }
+        }
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>metadata_items(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;TokenStream&gt; {
+        <span class="kw">let </span><span class="self">Self </span>{ name, .. } = <span class="kw-2">&amp;</span><span class="self">self</span>;
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.kind {
+            FnKind::Function =&gt; <span class="prelude-val">Ok</span>(create_metadata_items(
+                <span class="string">&quot;func&quot;</span>,
+                name,
+                <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                 <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
             )),
 
@@ -668,36 +739,17 @@
                 <span class="prelude-val">Ok</span>(create_metadata_items(
                     <span class="string">&quot;method&quot;</span>,
                     <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
-                    <span class="macro">quote! </span>{
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
-                            .concat_str(#mod_path)
-                            .concat_str(#object_name)
-                            .concat_str(#name)
-                            .concat_bool(#is_async)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                    },
+                    <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
             }
 
-            FnKind::TraitMethod { self_ident, index } =&gt; {
+            FnKind::TraitMethod { self_ident, .. } =&gt; {
                 <span class="kw">let </span>object_name = ident_to_string(self_ident);
                 <span class="prelude-val">Ok</span>(create_metadata_items(
                     <span class="string">&quot;method&quot;</span>,
                     <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
-                    <span class="macro">quote! </span>{
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
-                            .concat_str(#mod_path)
-                            .concat_str(#object_name)
-                            .concat_u32(#index)
-                            .concat_str(#name)
-                            .concat_bool(#is_async)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                    },
+                    <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
             }
@@ -707,15 +759,7 @@
                 <span class="prelude-val">Ok</span>(create_metadata_items(
                     <span class="string">&quot;constructor&quot;</span>,
                     <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
-                    <span class="macro">quote! </span>{
-                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
-                            .concat_str(#mod_path)
-                            .concat_str(#object_name)
-                            .concat_str(#name)
-                            .concat_value(#args_len)
-                            #(#arg_metadata_calls)*
-                            .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                    },
+                    <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
             }

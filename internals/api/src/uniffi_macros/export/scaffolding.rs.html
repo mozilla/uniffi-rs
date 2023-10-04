@@ -460,7 +460,7 @@
 ///
 /// `pre_fn_call` is the statements that we should execute before the rust call
 /// `rust_fn` is the Rust function to call.
-</span><span class="kw">fn </span>gen_ffi_function(
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_ffi_function(
     sig: <span class="kw-2">&amp;</span>FnSignature,
     arguments: <span class="kw-2">&amp;</span>ExportAttributeArguments,
     udl_mode: bool,

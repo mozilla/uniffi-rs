@@ -142,6 +142,35 @@
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
 <a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
 
 <span class="kw">use </span>proc_macro2::TokenStream;
@@ -156,6 +185,11 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) async_runtime: <span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) callback_interface: <span class="prelude-ty">Option</span>&lt;kw::callback_interface&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) constructor: <span class="prelude-ty">Option</span>&lt;kw::constructor&gt;,
+    <span class="comment">// tried to make this a vec but that got messy quickly...
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) trait_debug: <span class="prelude-ty">Option</span>&lt;kw::Debug&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) trait_display: <span class="prelude-ty">Option</span>&lt;kw::Display&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) trait_hash: <span class="prelude-ty">Option</span>&lt;kw::Hash&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) trait_eq: <span class="prelude-ty">Option</span>&lt;kw::Eq&gt;,
 }
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>ExportAttributeArguments {
@@ -184,6 +218,26 @@
                 constructor: input.parse()<span class="question-mark">?</span>,
                 ..<span class="self">Self</span>::default()
             })
+        } <span class="kw">else if </span>lookahead.peek(kw::Debug) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                trait_debug: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::Display) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                trait_display: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::Hash) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                trait_hash: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::Eq) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                trait_eq: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>::default())
         }
@@ -197,6 +251,10 @@
                 other.callback_interface,
             )<span class="question-mark">?</span>,
             constructor: either_attribute_arg(<span class="self">self</span>.constructor, other.constructor)<span class="question-mark">?</span>,
+            trait_debug: either_attribute_arg(<span class="self">self</span>.trait_debug, other.trait_debug)<span class="question-mark">?</span>,
+            trait_display: either_attribute_arg(<span class="self">self</span>.trait_display, other.trait_display)<span class="question-mark">?</span>,
+            trait_hash: either_attribute_arg(<span class="self">self</span>.trait_hash, other.trait_hash)<span class="question-mark">?</span>,
+            trait_eq: either_attribute_arg(<span class="self">self</span>.trait_eq, other.trait_eq)<span class="question-mark">?</span>,
         })
     }
 }

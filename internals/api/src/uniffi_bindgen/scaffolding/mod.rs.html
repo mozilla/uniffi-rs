@@ -107,30 +107,6 @@
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -201,31 +177,7 @@
         })
     }
 
-    <span class="kw">pub fn </span>type_ffi(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
-            FfiType::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.into(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.into(),
-            FfiType::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.into(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.into(),
-            FfiType::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.into(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.into(),
-            FfiType::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.into(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.into(),
-            FfiType::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.into(),
-            FfiType::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;*const std::os::raw::c_void&quot;</span>.into(),
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;::uniffi::RustBuffer&quot;</span>.into(),
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;::uniffi::ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;::uniffi::ForeignCallback&quot;</span>.into(),
-            FfiType::RustFutureHandle =&gt; <span class="string">&quot;::uniffi::RustFutureHandle&quot;</span>.into(),
-            FfiType::RustFutureContinuationCallback =&gt; <span class="string">&quot;::uniffi::RustFutureContinuation&quot;</span>.into(),
-            FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;*const ()&quot;</span>.into(),
-            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;::uniffi::ForeignExecutorHandle&quot;</span>.into(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;::uniffi::ForeignExecutorCallback&quot;</span>.into(),
-        })
-    }
-
-    <span class="comment">// Map a type a ffi converter trait impl
+    <span class="comment">// Map a type to Rust code that specifies the FfiConverter implementation.
     //
     // This outputs something like `&lt;MyStruct as Lift&lt;crate::UniFfiTag&gt;&gt;`
     </span><span class="kw">pub fn </span>ffi_trait(type_: <span class="kw-2">&amp;</span>Type, trait_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {

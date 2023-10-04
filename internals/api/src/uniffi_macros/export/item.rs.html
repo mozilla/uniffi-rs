@@ -172,6 +172,32 @@
 <a href="#172" id="172">172</a>
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -181,6 +207,7 @@
 <span class="kw">use </span>quote::ToTokens;
 
 <span class="kw">use </span><span class="kw">super</span>::attributes::{ExportAttributeArguments, ExportedImplFnAttributes};
+<span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>ExportItem {
     Function {
@@ -195,6 +222,10 @@
         items: Vec&lt;ImplItem&gt;,
         callback_interface: bool,
     },
+    Struct {
+        self_ident: Ident,
+        uniffi_traits: Vec&lt;UniffiTraitDiscriminants&gt;,
+    },
 }
 
 <span class="kw">impl </span>ExportItem {
@@ -206,6 +237,7 @@
             }
             syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item, args.constructor.is_some()),
             syn::Item::Trait(item) =&gt; <span class="self">Self</span>::from_trait(item, args.callback_interface.is_some()),
+            syn::Item::Struct(item) =&gt; <span class="self">Self</span>::from_struct(item, args),
             <span class="comment">// FIXME: Support const / static?
             </span><span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
@@ -322,6 +354,26 @@
             items,
             self_ident,
             callback_interface,
+        })
+    }
+
+    <span class="kw">fn </span>from_struct(item: syn::ItemStruct, args: <span class="kw-2">&amp;</span>ExportAttributeArguments) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>uniffi_traits = Vec::new();
+        <span class="kw">if </span>args.trait_debug.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Debug);
+        }
+        <span class="kw">if </span>args.trait_display.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Display);
+        }
+        <span class="kw">if </span>args.trait_hash.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Hash);
+        }
+        <span class="kw">if </span>args.trait_eq.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Eq);
+        }
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Struct {
+            self_ident: item.ident,
+            uniffi_traits,
         })
     }
 }

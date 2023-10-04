@@ -268,6 +268,12 @@
 <a href="#268" id="268">268</a>
 <a href="#269" id="269">269</a>
 <a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -296,7 +302,9 @@
     collections::{HashMap, HashSet},
     fs,
 };
-<span class="kw">use </span>uniffi_meta::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
+<span class="kw">use </span>uniffi_meta::{
+    create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
+};
 
 <span class="doccomment">/// Generate foreign bindings
 ///
@@ -412,6 +420,10 @@
                 .items
                 .into_iter()
                 .map(|item| fixup_external_type(item, <span class="kw-2">&amp;</span>metadata_groups))
+                <span class="comment">// some items are both in UDL and library metadata. For many that&#39;s fine but
+                // uniffi-traits aren&#39;t trivial to compare meaning we end up with dupes.
+                // We filter out such problematic items here.
+                </span>.filter(|item| !<span class="macro">matches!</span>(item, Metadata::UniffiTrait { .. }))
                 .collect();
             udl_items.insert(crate_name, metadata_group);
         };

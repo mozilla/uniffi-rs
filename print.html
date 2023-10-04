@@ -803,6 +803,17 @@ struct TodoList {
 }
 <span class="boring">}
 </span></code></pre></pre>
+<p>(or using proc-macros)</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, uniffi::Object)]
+#[uniffi::export(Debug)]
+struct TodoList {
+   ...
+}
+<span class="boring">}
+</span></code></pre></pre>
 <p>This will cause the Python bindings to generate a <code>__repr__</code> method that returns the value implemented by the <code>Debug</code> trait.
 Not all bindings support generating special methods, so they may be ignored.
 It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.</p>

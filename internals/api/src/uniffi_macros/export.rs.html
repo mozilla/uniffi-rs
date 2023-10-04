@@ -279,6 +279,16 @@
 <a href="#279" id="279">279</a>
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -291,10 +301,13 @@
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>item;
 <span class="kw">mod </span>scaffolding;
+<span class="kw">mod </span>utrait;
 
 <span class="kw">use </span><span class="self">self</span>::{
     item::{ExportItem, ImplItem},
-    scaffolding::{gen_constructor_scaffolding, gen_fn_scaffolding, gen_method_scaffolding},
+    scaffolding::{
+        gen_constructor_scaffolding, gen_ffi_function, gen_fn_scaffolding, gen_method_scaffolding,
+    },
 };
 <span class="kw">use crate</span>::{
     object::interface_meta_static_var,
@@ -449,6 +462,13 @@
 
                 #(#metadata_items)*
             })
+        }
+        ExportItem::Struct {
+            self_ident,
+            uniffi_traits,
+        } =&gt; {
+            <span class="macro">assert!</span>(!udl_mode);
+            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits)
         }
     }
 }

@@ -1224,6 +1224,14 @@
 <a href="#1224" id="1224">1224</a>
 <a href="#1225" id="1225">1225</a>
 <a href="#1226" id="1226">1226</a>
+<a href="#1227" id="1227">1227</a>
+<a href="#1228" id="1228">1228</a>
+<a href="#1229" id="1229">1229</a>
+<a href="#1230" id="1230">1230</a>
+<a href="#1231" id="1231">1231</a>
+<a href="#1232" id="1232">1232</a>
+<a href="#1233" id="1233">1233</a>
+<a href="#1234" id="1234">1234</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1297,7 +1305,7 @@
 <span class="kw">pub use </span>uniffi_meta::Radix;
 <span class="kw">use </span>uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
-    UNIFFI_CONTRACT_VERSION,
+    UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 <span class="kw">pub type </span>Literal = LiteralMetadata;
 
@@ -2028,7 +2036,15 @@
         <span class="self">self</span>.types.add_known_types(method.iter_types())<span class="question-mark">?</span>;
         method.object_impl = object.imp;
         object.methods.push(method);
+        <span class="prelude-val">Ok</span>(())
+    }
 
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_uniffitrait_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: UniffiTraitMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>object = get_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, meta.self_name())
+            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_uniffitrait_meta: object not found&quot;</span>))<span class="question-mark">?</span>;
+        <span class="kw">let </span>ut: UniffiTrait = meta.into();
+        <span class="self">self</span>.types.add_known_types(ut.iter_types())<span class="question-mark">?</span>;
+        object.uniffi_traits.push(ut);
         <span class="prelude-val">Ok</span>(())
     }
 

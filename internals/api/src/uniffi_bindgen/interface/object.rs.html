@@ -998,7 +998,7 @@
             imp: meta.imp,
             constructors: Default::default(),
             methods: Default::default(),
-            uniffi_traits: meta.uniffi_traits.into_iter().map(Into::into).collect(),
+            uniffi_traits: Default::default(),
             ffi_func_free: FfiFunction {
                 name: ffi_free_name,
                 ..Default::default()

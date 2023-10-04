@@ -140,6 +140,9 @@
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -250,6 +253,9 @@
                 imp: meta.imp,
             })<span class="question-mark">?</span>;
             iface.add_object_meta(meta)<span class="question-mark">?</span>;
+        }
+        Metadata::UniffiTrait(meta) =&gt; {
+            iface.add_uniffitrait_meta(meta)<span class="question-mark">?</span>;
         }
         Metadata::CallbackInterface(meta) =&gt; {
             iface.types.add_known_type(<span class="kw-2">&amp;</span>Type::CallbackInterface {
