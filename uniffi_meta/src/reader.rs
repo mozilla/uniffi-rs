@@ -57,6 +57,7 @@ impl<'a> MetadataReader<'a> {
             codes::INTERFACE => self.read_object()?.into(),
             codes::CALLBACK_INTERFACE => self.read_callback_interface()?.into(),
             codes::TRAIT_METHOD => self.read_trait_method()?.into(),
+            codes::UNIFFI_TRAIT => self.read_uniffi_trait()?.into(),
             _ => bail!("Unexpected metadata code: {value:?}"),
         })
     }
@@ -289,7 +290,31 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             imp: ObjectImpl::from_is_trait(self.read_bool()?),
-            uniffi_traits: vec![], // TODO: not yet emitted
+        })
+    }
+
+    fn read_uniffi_trait(&mut self) -> Result<UniffiTraitMetadata> {
+        let code = self.read_u8()?;
+        let mut read_metadata_method = || -> Result<MethodMetadata> {
+            let code = self.read_u8()?;
+            ensure!(code == codes::METHOD, "expected METHOD but read {code}");
+            self.read_method()
+        };
+
+        Ok(match UniffiTraitDiscriminants::from(code)? {
+            UniffiTraitDiscriminants::Debug => UniffiTraitMetadata::Debug {
+                fmt: read_metadata_method()?,
+            },
+            UniffiTraitDiscriminants::Display => UniffiTraitMetadata::Display {
+                fmt: read_metadata_method()?,
+            },
+            UniffiTraitDiscriminants::Eq => UniffiTraitMetadata::Eq {
+                eq: read_metadata_method()?,
+                ne: read_metadata_method()?,
+            },
+            UniffiTraitDiscriminants::Hash => UniffiTraitMetadata::Hash {
+                hash: read_metadata_method()?,
+            },
         })
     }
 

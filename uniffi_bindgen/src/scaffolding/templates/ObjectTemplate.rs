@@ -28,6 +28,18 @@ pub trait r#{{ obj.name() }} {
     {% endfor %}
 }
 {% when ObjectImpl::Struct %}
+{%- for tm in obj.uniffi_traits() %}
+{%      match tm %}
+{%          when UniffiTrait::Debug { fmt }%}
+#[uniffi::export(Debug)]
+{%          when UniffiTrait::Display { fmt }%}
+#[uniffi::export(Display)]
+{%          when UniffiTrait::Hash { hash }%}
+#[uniffi::export(Hash)]
+{%          when UniffiTrait::Eq { eq, ne }%}
+#[uniffi::export(Eq)]
+{%      endmatch %}
+{% endfor %}
 #[::uniffi::derive_object_for_udl]
 struct {{ obj.rust_name() }} { }
 
@@ -73,65 +85,3 @@ impl {{ obj.rust_name() }} {
 {%- endfor %}
 
 {% endmatch %}
-
-{%- for tm in obj.uniffi_traits() %}
-{#      All magic methods get an explicit shim #}
-{%      match tm %}
-{%          when UniffiTrait::Debug { fmt }%}
-    {% call rs::method_decl_prelude(fmt) %}
-        {
-            uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: std::fmt::Debug); // This object has a trait method which requires `Debug` be implemented.
-            format!(
-                "{:?}",
-                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
-                    Ok(ref val) => val,
-                    Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
-                }
-            )
-        }
-    {% call rs::method_decl_postscript(fmt) %}
-{%          when UniffiTrait::Display { fmt }%}
-    {% call rs::method_decl_prelude(fmt) %}
-        {
-            uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: std::fmt::Display); // This object has a trait method which requires `Display` be implemented.
-            format!(
-                "{}",
-                match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
-                    Ok(ref val) => val,
-                    Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
-                }
-            )
-        }
-    {% call rs::method_decl_postscript(fmt) %}
-{%          when UniffiTrait::Hash { hash }%}
-    {% call rs::method_decl_prelude(hash) %}
-            {
-                use ::std::hash::{Hash, Hasher};
-                uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: Hash); // This object has a trait method which requires `Hash` be implemented.
-                let mut s = ::std::collections::hash_map::DefaultHasher::new();
-                Hash::hash(match<std::sync::Arc<{{ obj.rust_name() }}> as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(r#ptr) {
-                    Ok(ref val) => val,
-                    Err(err) => panic!("Failed to convert arg '{}': {}", "ptr", err),
-                }, &mut s);
-                s.finish()
-            }
-    {% call rs::method_decl_postscript(hash) %}
-{%          when UniffiTrait::Eq { eq, ne }%}
-        {# PartialEq::Eq #}
-        {% call rs::method_decl_prelude(eq) %}
-            {
-                use ::std::cmp::PartialEq;
-                uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: PartialEq); // This object has a trait method which requires `PartialEq` be implemented.
-                PartialEq::eq({% call rs::_arg_list_rs_call(eq) -%})
-            }
-        {% call rs::method_decl_postscript(eq) %}
-        {# PartialEq::Ne #}
-        {% call rs::method_decl_prelude(ne) %}
-            {
-                use ::std::cmp::PartialEq;
-                uniffi::deps::static_assertions::assert_impl_all!({{ obj.rust_name() }}: PartialEq); // This object has a trait method which requires `PartialEq` be implemented.
-                PartialEq::ne({% call rs::_arg_list_rs_call(ne) -%})
-            }
-        {% call rs::method_decl_postscript(ne) %}
-{%      endmatch %}
-{% endfor %}

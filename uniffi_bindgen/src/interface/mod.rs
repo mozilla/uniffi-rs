@@ -71,7 +71,7 @@ pub use ffi::{FfiArgument, FfiFunction, FfiType};
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
-    UNIFFI_CONTRACT_VERSION,
+    UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
 
@@ -802,7 +802,15 @@ impl ComponentInterface {
         self.types.add_known_types(method.iter_types())?;
         method.object_impl = object.imp;
         object.methods.push(method);
+        Ok(())
+    }
 
+    pub(super) fn add_uniffitrait_meta(&mut self, meta: UniffiTraitMetadata) -> Result<()> {
+        let object = get_object(&mut self.objects, meta.self_name())
+            .ok_or_else(|| anyhow!("add_uniffitrait_meta: object not found"))?;
+        let ut: UniffiTrait = meta.into();
+        self.types.add_known_types(ut.iter_types())?;
+        object.uniffi_traits.push(ut);
         Ok(())
     }
 

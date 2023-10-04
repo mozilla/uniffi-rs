@@ -7,6 +7,7 @@ use proc_macro2::{Ident, Span};
 use quote::ToTokens;
 
 use super::attributes::{ExportAttributeArguments, ExportedImplFnAttributes};
+use uniffi_meta::UniffiTraitDiscriminants;
 
 pub(super) enum ExportItem {
     Function {
@@ -21,6 +22,10 @@ pub(super) enum ExportItem {
         items: Vec<ImplItem>,
         callback_interface: bool,
     },
+    Struct {
+        self_ident: Ident,
+        uniffi_traits: Vec<UniffiTraitDiscriminants>,
+    },
 }
 
 impl ExportItem {
@@ -32,6 +37,7 @@ impl ExportItem {
             }
             syn::Item::Impl(item) => Self::from_impl(item, args.constructor.is_some()),
             syn::Item::Trait(item) => Self::from_trait(item, args.callback_interface.is_some()),
+            syn::Item::Struct(item) => Self::from_struct(item, args),
             // FIXME: Support const / static?
             _ => Err(syn::Error::new(
                 Span::call_site(),
@@ -148,6 +154,26 @@ impl ExportItem {
             items,
             self_ident,
             callback_interface,
+        })
+    }
+
+    fn from_struct(item: syn::ItemStruct, args: &ExportAttributeArguments) -> syn::Result<Self> {
+        let mut uniffi_traits = Vec::new();
+        if args.trait_debug.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Debug);
+        }
+        if args.trait_display.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Display);
+        }
+        if args.trait_hash.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Hash);
+        }
+        if args.trait_eq.is_some() {
+            uniffi_traits.push(UniffiTraitDiscriminants::Eq);
+        }
+        Ok(Self::Struct {
+            self_ident: item.ident,
+            uniffi_traits,
         })
     }
 }

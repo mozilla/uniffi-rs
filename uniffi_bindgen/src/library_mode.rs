@@ -26,7 +26,9 @@ use std::{
     collections::{HashMap, HashSet},
     fs,
 };
-use uniffi_meta::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
+use uniffi_meta::{
+    create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
+};
 
 /// Generate foreign bindings
 ///
@@ -142,6 +144,10 @@ fn find_sources(
                 .items
                 .into_iter()
                 .map(|item| fixup_external_type(item, &metadata_groups))
+                // some items are both in UDL and library metadata. For many that's fine but
+                // uniffi-traits aren't trivial to compare meaning we end up with dupes.
+                // We filter out such problematic items here.
+                .filter(|item| !matches!(item, Metadata::UniffiTrait { .. }))
                 .collect();
             udl_items.insert(crate_name, metadata_group);
         };

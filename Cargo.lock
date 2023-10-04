@@ -1787,6 +1787,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-metadata"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+ "uniffi",
+ "uniffi_core",
+ "uniffi_meta",
+]
+
+[[package]]
 name = "uniffi-fixture-proc-macro"
 version = "0.22.0"
 dependencies = [
@@ -1975,16 +1985,6 @@ dependencies = [
  "oneshot",
  "paste",
  "static_assertions",
-]
-
-[[package]]
-name = "uniffi_fixture_metadata"
-version = "0.1.0"
-dependencies = [
- "thiserror",
- "uniffi",
- "uniffi_core",
- "uniffi_meta",
 ]
 
 [[package]]
