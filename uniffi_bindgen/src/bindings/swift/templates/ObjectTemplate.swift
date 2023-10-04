@@ -47,9 +47,10 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
-                    self.pointer,
-                    {%- for arg in meth.arguments() %}
-                    {{ arg|lower_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
+                    self.pointer
+                    {%- for arg in meth.arguments() -%}
+                    ,
+                    {{ arg|lower_fn }}({{ arg.name()|var_name }})
                     {%- endfor %}
                 )
             },
