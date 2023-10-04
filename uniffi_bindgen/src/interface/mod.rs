@@ -774,7 +774,7 @@ impl ComponentInterface {
         if self.functions.iter().any(|f| f.name == defn.name) {
             bail!("duplicate function definition: \"{}\"", defn.name);
         }
-        if !matches!(self.types.get_type_definition(defn.name()), None) {
+        if self.types.get_type_definition(defn.name()).is_some() {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
         self.types.add_known_types(defn.iter_types())?;
@@ -868,7 +868,7 @@ impl ComponentInterface {
         // Because functions aren't first class types, we need to check here that
         // a function name hasn't already been used as a type name.
         for f in self.functions.iter() {
-            if !matches!(self.types.get_type_definition(f.name()), None) {
+            if self.types.get_type_definition(f.name()).is_some() {
                 bail!("Conflicting type definition for \"{}\"", f.name());
             }
         }

@@ -261,7 +261,7 @@ mod test {
                 );
                 assert!(
                     matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin, ..}
-                                                                                     if name == "CustomType" && builtin == Box::new(Type::String))
+                                                                                     if name == "CustomType" && *builtin == Type::String)
                 );
             },
         );

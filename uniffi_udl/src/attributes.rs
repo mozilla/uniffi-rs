@@ -648,7 +648,7 @@ mod test {
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = FunctionAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.get_throws_err(), None));
+        assert!(attrs.get_throws_err().is_none());
     }
 
     #[test]
@@ -696,12 +696,12 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
         let attrs = ConstructorAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
-        assert!(matches!(attrs.get_name(), None));
+        assert!(attrs.get_name().is_none());
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Name=MyFactory]").unwrap();
         let attrs = ConstructorAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.get_throws_err(), None));
+        assert!(attrs.get_throws_err().is_none());
         assert!(matches!(attrs.get_name(), Some("MyFactory")));
 
         let (_, node) =

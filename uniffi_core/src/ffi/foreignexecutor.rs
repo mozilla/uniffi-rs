@@ -246,6 +246,8 @@ mod test {
         is_shutdown: bool,
     }
 
+    unsafe impl Send for MockEventLoopInner {}
+
     static FOREIGN_EXECUTOR_CALLBACK_INIT: Once = Once::new();
 
     impl MockEventLoop {

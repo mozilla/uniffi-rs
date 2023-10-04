@@ -10,14 +10,6 @@ error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
    = note: required for `Arc<Foo>` to implement `LowerReturn<UniFfiTag>`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-note: erroneous constant used
-  --> tests/ui/proc_macro_arc.rs:10:1
-   |
-10 | #[uniffi::export]
-   | ^^^^^^^^^^^^^^^^^
-   |
-   = note: this note originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
-
 error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not satisfied
   --> tests/ui/proc_macro_arc.rs:20:5
    |
@@ -28,11 +20,3 @@ error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not sa
    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
    = note: required for `Arc<child::Foo>` to implement `Lift<UniFfiTag>`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-note: erroneous constant used
-  --> tests/ui/proc_macro_arc.rs:20:5
-   |
-20 |     #[uniffi::export]
-   |     ^^^^^^^^^^^^^^^^^
-   |
-   = note: this note originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)

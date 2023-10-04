@@ -25,6 +25,11 @@ pub use uniffi_build::{generate_scaffolding, generate_scaffolding_for_crate};
 #[cfg(feature = "bindgen-tests")]
 pub use uniffi_macros::build_foreign_language_testcases;
 
+#[cfg(feature = "cli")]
+pub fn uniffi_bindgen_main() {
+    cli::run_main().unwrap();
+}
+
 #[cfg(test)]
 mod test {
     #[test]
@@ -32,9 +37,4 @@ mod test {
         let t = trybuild::TestCases::new();
         t.compile_fail("tests/ui/*.rs");
     }
-}
-
-#[cfg(feature = "cli")]
-pub fn uniffi_bindgen_main() {
-    cli::run_main().unwrap();
 }
