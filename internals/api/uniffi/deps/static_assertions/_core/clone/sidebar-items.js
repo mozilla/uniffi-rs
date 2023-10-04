@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["Clone"],"trait":["Clone"]};
+window.SIDEBAR_ITEMS = {"derive":["Clone"],"trait":["Clone"]};

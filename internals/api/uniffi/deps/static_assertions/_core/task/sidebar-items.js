@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Poll"],"macro":["ready"],"struct":["Context","RawWaker","RawWakerVTable","Ready","Waker"]};
+window.SIDEBAR_ITEMS = {"enum":["Poll"],"macro":["ready"],"struct":["Context","RawWaker","RawWakerVTable","Waker"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["escape_default"],"struct":["EscapeDefault"]};
+window.SIDEBAR_ITEMS = {"enum":["Char"],"fn":["escape_default"],"struct":["EscapeDefault"]};

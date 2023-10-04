@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["default"],"macro":["Default"],"trait":["Default"]};
+window.SIDEBAR_ITEMS = {"derive":["Default"],"fn":["default"],"trait":["Default"]};
