@@ -16,8 +16,8 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 use crate::{
-    bindings::{self, TargetLanguage},
-    macro_metadata, ComponentInterface, Config, Result,
+    bindings::TargetLanguage, load_initial_config, macro_metadata, BindingGenerator,
+    BindingGeneratorDefault, BindingsConfig, ComponentInterface, Result,
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
@@ -37,11 +37,33 @@ pub fn generate_bindings(
     target_languages: &[TargetLanguage],
     out_dir: &Utf8Path,
     try_format_code: bool,
-) -> Result<Vec<Source>> {
+) -> Result<Vec<Source<crate::Config>>> {
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages: target_languages.into(),
+            try_format_code,
+        },
+        library_path,
+        crate_name,
+        out_dir,
+    )
+}
+
+/// Generate foreign bindings
+///
+/// Returns the list of sources used to generate the bindings, in no particular order.
+pub fn generate_external_bindings<T: BindingGenerator>(
+    binding_generator: T,
+    library_path: &Utf8Path,
+    crate_name: Option<String>,
+    out_dir: &Utf8Path,
+) -> Result<Vec<Source<T::Config>>> {
     let cargo_metadata = MetadataCommand::new()
         .exec()
         .context("error running cargo metadata")?;
     let cdylib_name = calc_cdylib_name(library_path);
+    binding_generator.check_library_path(library_path, cdylib_name)?;
+
     let mut sources = find_sources(&cargo_metadata, library_path, cdylib_name)?;
     for i in 0..sources.len() {
         // Partition up the sources list because we're eventually going to call
@@ -53,7 +75,7 @@ pub fn generate_bindings(
         // Calculate which configs come from dependent crates
         let dependencies =
             HashSet::<&str>::from_iter(source.package.dependencies.iter().map(|d| d.name.as_str()));
-        let config_map: HashMap<&str, &Config> = other_sources
+        let config_map: HashMap<&str, &T::Config> = other_sources
             .filter_map(|s| {
                 dependencies
                     .contains(s.package.name.as_str())
@@ -77,18 +99,7 @@ pub fn generate_bindings(
     }
 
     for source in sources.iter() {
-        for &language in target_languages {
-            if cdylib_name.is_none() && language != TargetLanguage::Swift {
-                bail!("Generate bindings for {language} requires a cdylib, but {library_path} was given");
-            }
-            bindings::write_bindings(
-                &source.config.bindings,
-                &source.ci,
-                out_dir,
-                language,
-                try_format_code,
-            )?;
-        }
+        binding_generator.write_bindings(&source.ci, &source.config, out_dir)?;
     }
 
     Ok(sources)
@@ -96,7 +107,7 @@ pub fn generate_bindings(
 
 // A single source that we generate bindings for
 #[derive(Debug)]
-pub struct Source {
+pub struct Source<Config: BindingsConfig> {
     pub package: Package,
     pub crate_name: String,
     pub ci: ComponentInterface,
@@ -116,11 +127,11 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     None
 }
 
-fn find_sources(
+fn find_sources<Config: BindingsConfig>(
     cargo_metadata: &cargo_metadata::Metadata,
     library_path: &Utf8Path,
     cdylib_name: Option<&str>,
-) -> Result<Vec<Source>> {
+) -> Result<Vec<Source<Config>>> {
     let items = macro_metadata::extract_from_library(library_path)?;
     let mut metadata_groups = create_metadata_groups(&items);
     group_metadata(&mut metadata_groups, items)?;
@@ -161,7 +172,7 @@ fn find_sources(
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;
-            let mut config = Config::load_initial(crate_root, None)?;
+            let mut config = load_initial_config::<Config>(crate_root, None)?;
             if let Some(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
             }
