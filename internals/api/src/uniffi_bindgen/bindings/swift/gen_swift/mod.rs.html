@@ -626,8 +626,6 @@
 <a href="#626" id="626">626</a>
 <a href="#627" id="627">627</a>
 <a href="#628" id="628">628</a>
-<a href="#629" id="629">629</a>
-<a href="#630" id="630">630</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -834,8 +832,6 @@
 }
 
 <span class="kw">impl </span>BindingsConfig <span class="kw">for </span>Config {
-    <span class="kw">const </span>TOML_KEY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;swift&quot;</span>;
-
     <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
         <span class="self">self</span>.module_name
             .get_or_insert_with(|| ci.namespace().into());

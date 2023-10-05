@@ -274,6 +274,17 @@
 <a href="#274" id="274">274</a>
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -292,8 +303,8 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 </span><span class="kw">use crate</span>::{
-    bindings::{<span class="self">self</span>, TargetLanguage},
-    macro_metadata, ComponentInterface, Config, <span class="prelude-ty">Result</span>,
+    bindings::TargetLanguage, load_initial_config, macro_metadata, BindingGenerator,
+    BindingGeneratorDefault, BindingsConfig, ComponentInterface, <span class="prelude-ty">Result</span>,
 };
 <span class="kw">use </span>anyhow::{bail, Context};
 <span class="kw">use </span>camino::Utf8Path;
@@ -315,11 +326,33 @@
     target_languages: <span class="kw-2">&amp;</span>[TargetLanguage],
     out_dir: <span class="kw-2">&amp;</span>Utf8Path,
     try_format_code: bool,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&gt;&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;<span class="kw">crate</span>::Config&gt;&gt;&gt; {
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages: target_languages.into(),
+            try_format_code,
+        },
+        library_path,
+        crate_name,
+        out_dir,
+    )
+}
+
+<span class="doccomment">/// Generate foreign bindings
+///
+/// Returns the list of sources used to generate the bindings, in no particular order.
+</span><span class="kw">pub fn </span>generate_external_bindings&lt;T: BindingGenerator&gt;(
+    binding_generator: T,
+    library_path: <span class="kw-2">&amp;</span>Utf8Path,
+    crate_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;T::Config&gt;&gt;&gt; {
     <span class="kw">let </span>cargo_metadata = MetadataCommand::new()
         .exec()
         .context(<span class="string">&quot;error running cargo metadata&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>cdylib_name = calc_cdylib_name(library_path);
+    binding_generator.check_library_path(library_path, cdylib_name)<span class="question-mark">?</span>;
+
     <span class="kw">let </span><span class="kw-2">mut </span>sources = find_sources(<span class="kw-2">&amp;</span>cargo_metadata, library_path, cdylib_name)<span class="question-mark">?</span>;
     <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..sources.len() {
         <span class="comment">// Partition up the sources list because we&#39;re eventually going to call
@@ -331,7 +364,7 @@
         <span class="comment">// Calculate which configs come from dependent crates
         </span><span class="kw">let </span>dependencies =
             HashSet::&lt;<span class="kw-2">&amp;</span>str&gt;::from_iter(source.package.dependencies.iter().map(|d| d.name.as_str()));
-        <span class="kw">let </span>config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>Config&gt; = other_sources
+        <span class="kw">let </span>config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>T::Config&gt; = other_sources
             .filter_map(|s| {
                 dependencies
                     .contains(s.package.name.as_str())
@@ -355,18 +388,7 @@
     }
 
     <span class="kw">for </span>source <span class="kw">in </span>sources.iter() {
-        <span class="kw">for </span><span class="kw-2">&amp;</span>language <span class="kw">in </span>target_languages {
-            <span class="kw">if </span>cdylib_name.is_none() &amp;&amp; language != TargetLanguage::Swift {
-                <span class="macro">bail!</span>(<span class="string">&quot;Generate bindings for {language} requires a cdylib, but {library_path} was given&quot;</span>);
-            }
-            bindings::write_bindings(
-                <span class="kw-2">&amp;</span>source.config.bindings,
-                <span class="kw-2">&amp;</span>source.ci,
-                out_dir,
-                language,
-                try_format_code,
-            )<span class="question-mark">?</span>;
-        }
+        binding_generator.write_bindings(<span class="kw-2">&amp;</span>source.ci, <span class="kw-2">&amp;</span>source.config, out_dir)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(sources)
@@ -374,7 +396,7 @@
 
 <span class="comment">// A single source that we generate bindings for
 </span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>Source {
+</span><span class="kw">pub struct </span>Source&lt;Config: BindingsConfig&gt; {
     <span class="kw">pub </span>package: Package,
     <span class="kw">pub </span>crate_name: String,
     <span class="kw">pub </span>ci: ComponentInterface,
@@ -394,11 +416,11 @@
     <span class="prelude-val">None
 </span>}
 
-<span class="kw">fn </span>find_sources(
+<span class="kw">fn </span>find_sources&lt;Config: BindingsConfig&gt;(
     cargo_metadata: <span class="kw-2">&amp;</span>cargo_metadata::Metadata,
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&gt;&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;Config&gt;&gt;&gt; {
     <span class="kw">let </span>items = macro_metadata::extract_from_library(library_path)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_groups = create_metadata_groups(<span class="kw-2">&amp;</span>items);
     group_metadata(<span class="kw-2">&amp;mut </span>metadata_groups, items)<span class="question-mark">?</span>;
@@ -443,7 +465,7 @@
                 ci.add_metadata(metadata)<span class="question-mark">?</span>;
             };
             ci.add_metadata(group)<span class="question-mark">?</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>config = Config::load_initial(crate_root, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>config = load_initial_config::&lt;Config&gt;(crate_root, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
             <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
             }
