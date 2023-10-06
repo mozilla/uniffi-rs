@@ -7,7 +7,7 @@ enum EnumTest {
 }
 
 enum AssociatedEnumTest {
-    Test{},
+    Test {},
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -19,24 +19,21 @@ enum ErrorTest {
 #[derive(Debug, thiserror::Error)]
 enum AssociatedErrorTest {
     #[error("Test")]
-    Test{},
+    Test {},
 }
 
-struct ObjectTest {
-
-}
+struct ObjectTest {}
 
 impl ObjectTest {
     pub fn new() -> Self {
-        ObjectTest{}
+        ObjectTest {}
     }
 
     pub fn new_alternate() -> Self {
-        ObjectTest{}
+        ObjectTest {}
     }
 
-    pub fn test(&self) {
-    }
+    pub fn test(&self) {}
 }
 
 struct RecordTest {
@@ -48,7 +45,7 @@ pub fn test() {
 }
 
 pub trait CallbackTest {
-   fn test(&self); 
+    fn test(&self);
 }
 
 uniffi::include_scaffolding!("docstring");

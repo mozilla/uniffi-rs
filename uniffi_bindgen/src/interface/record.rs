@@ -95,7 +95,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
         Ok(Self {
             name: meta.name,
             fields: meta
-            .fields
+                .fields
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
