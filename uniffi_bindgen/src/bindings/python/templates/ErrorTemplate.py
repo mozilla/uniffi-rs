@@ -5,6 +5,7 @@
 # __dict__.  All of this happens in dummy class to avoid polluting the module
 # namespace.
 class {{ type_name }}(Exception):
+    {%- call py::docstring(e, 4) %}
     pass
 
 UniFFITemp{{ type_name }} = {{ type_name }}
@@ -14,10 +15,14 @@ class {{ type_name }}:  # type: ignore
     {%- let variant_type_name = variant.name()|class_name -%}
     {%- if e.is_flat() %}
     class {{ variant_type_name }}(UniFFITemp{{ type_name }}):
+        {%- call py::docstring(variant, 8) %}
+
         def __repr__(self):
             return "{{ type_name }}.{{ variant_type_name }}({})".format(repr(str(self)))
     {%- else %}
     class {{ variant_type_name }}(UniFFITemp{{ type_name }}):
+        {%- call py::docstring(variant, 8) %}
+
         def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name }}{% endfor %}):
             {%- if variant.has_fields() %}
             super().__init__(", ".join([

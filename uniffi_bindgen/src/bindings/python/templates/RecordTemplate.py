@@ -1,6 +1,6 @@
 {%- let rec = ci|get_record_definition(name) %}
 class {{ type_name }}:
-
+    {%- call py::docstring(rec, 4) %}
     def __init__(self, {% for field in rec.fields() %}
     {{- field.name()|var_name }}
     {%- if field.default_value().is_some() %} = DEFAULT{% endif %}
@@ -11,11 +11,14 @@ class {{ type_name }}:
         {%- match field.default_value() %}
         {%- when None %}
         self.{{ field_name }} = {{ field_name }}
+        {%- call py::docstring(field, 8) %}
         {%- when Some with(literal) %}
         if {{ field_name }} is DEFAULT:
             self.{{ field_name }} = {{ literal|literal_py(field) }}
+            {%- call py::docstring(field, 12) %}
         else:
             self.{{ field_name }} = {{ field_name }}
+            {%- call py::docstring(field, 12) %}
         {%- endmatch %}
         {%- endfor %}
 

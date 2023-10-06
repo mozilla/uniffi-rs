@@ -66,8 +66,6 @@ impl Config {
 }
 
 impl BindingsConfig for Config {
-    const TOML_KEY: &'static str = "kotlin";
-
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.package_name
             .get_or_insert_with(|| format!("uniffi.{}", ci.namespace()));
@@ -512,5 +510,14 @@ pub mod filters {
     /// display the name for the user.
     pub fn unquote(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.trim_matches('`').to_string())
+    }
+
+    /// Get the idiomatic Kotlin rendering of docstring
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+        let middle = textwrap::indent(&textwrap::dedent(docstring), " * ");
+        let wrapped = format!("/**\n{middle}\n */");
+
+        let spaces = usize::try_from(*spaces).unwrap_or_default();
+        Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
     }
 }

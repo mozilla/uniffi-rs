@@ -189,6 +189,8 @@ pub struct Enum {
     // * For an Enum not used as an error but which has no variants with data, `flat` will be
     //   false when generating the scaffolding but `true` when generating bindings.
     pub(super) flat: bool,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Enum {
@@ -208,6 +210,10 @@ impl Enum {
         Box::new(self.variants.iter().flat_map(Variant::iter_types))
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     // Sadly can't use TryFrom due to the 'is_flat' complication.
     pub fn try_from_meta(meta: uniffi_meta::EnumMetadata, flat: bool) -> Result<Self> {
         // This is messy - error enums are considered "flat" if the user
@@ -223,6 +229,7 @@ impl Enum {
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
             flat,
+            docstring: None,
         })
     }
 }
@@ -247,7 +254,8 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
                 .iter()
                 .map::<Result<_>, _>(|v| {
                     Ok(Variant {
-                        name: v.0.to_string(),
+                        name: v.value.0.to_string(),
+                        docstring: v.docstring.as_ref().map(|v| v.0.clone()),
                         ..Default::default()
                     })
                 })
@@ -256,6 +264,7 @@ impl APIConverter<Enum> for weedle::EnumDefinition<'_> {
             // So regardless of whether this enum has variants with fields or not, we lower it with
             // a string representation of itself.
             flat: true,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -283,6 +292,7 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
                 .collect::<Result<Vec<_>>>()?,
             // Enums declared using the `[Enum] interface` syntax might have variants with fields.
             flat: false,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -294,6 +304,8 @@ impl APIConverter<Enum> for weedle::InterfaceDefinition<'_> {
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Variant {
@@ -307,6 +319,10 @@ impl Variant {
 
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -325,6 +341,7 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
+            docstring: None,
         })
     }
 }
@@ -362,6 +379,7 @@ impl APIConverter<Variant> for weedle::interface::OperationInterfaceMember<'_> {
                 .iter()
                 .map(|arg| arg.convert(ci))
                 .collect::<Result<Vec<_>>>()?,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -393,6 +411,7 @@ impl APIConverter<Field> for weedle::argument::SingleArgument<'_> {
             name: self.identifier.0.to_string(),
             type_,
             default: None,
+            docstring: None, // TODO is it necessary to have docstrings for fields
         })
     }
 }
@@ -617,5 +636,77 @@ mod test {
         );
         assert!(!error.is_flat());
         assert!(ci.is_name_used_as_error(&error.name));
+    }
+
+    #[test]
+    fn test_docstring_enum() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            enum Testing { "foo" };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_enum_variant() {
+        const UDL: &str = r#"
+            namespace test{};
+            enum Testing {
+                ///informative docstring
+                "foo"
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing").unwrap().variants()[0]
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_associated_enum() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            [Enum]
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_associated_enum_variant() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Enum]
+            interface Testing {
+                ///informative docstring
+                testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing").unwrap().variants()[0]
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

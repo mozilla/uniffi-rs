@@ -9,6 +9,7 @@ public protocol {{ obj.name() }}Protocol {
     {% endfor %}
 }
 
+{%- call swift::docstring(obj, 0) %}
 public class {{ type_name }}: {{ obj.name() }}Protocol {
     fileprivate let pointer: UnsafeMutableRawPointer
 
@@ -21,6 +22,7 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+    {%- call swift::docstring(cons, 4) %}
     public convenience init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
         self.init(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
@@ -32,7 +34,7 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     }
 
     {% for cons in obj.alternate_constructors() %}
-
+    {%- call swift::docstring(cons, 4) %}
     public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ type_name }} {
         return {{ type_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
@@ -42,7 +44,7 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {# // TODO: Maybe merge the two templates (i.e the one with a return type and the one without) #}
     {% for meth in obj.methods() -%}
     {%- if meth.is_async() %}
-
+    {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
         // Suspend the function and call the scaffolding function, passing it a callback handler from
         // `AsyncTypes.swift`
@@ -70,7 +72,7 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) %}
-
+    {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
@@ -78,7 +80,7 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     }
 
     {%- when None %}
-
+    {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
         {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
     }

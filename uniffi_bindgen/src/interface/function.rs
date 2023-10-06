@@ -62,6 +62,8 @@ pub struct Function {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
     // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
@@ -116,6 +118,10 @@ impl Function {
         self.throws.as_ref()
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn derive_ffi_func(&mut self, ci_namespace: &str) -> Result<()> {
         // The name is already set if the function is defined through a proc-macro invocation
         // rather than in UDL. Don't overwrite it in that case.
@@ -168,6 +174,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
+            docstring: None,
             throws,
             checksum_fn_name,
             checksum_override: Some(meta.checksum),
@@ -209,6 +216,7 @@ impl APIConverter<Function> for weedle::namespace::OperationNamespaceMember<'_> 
             return_type,
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             throws,
             checksum_fn_name,
             checksum_override: None,
@@ -396,5 +404,23 @@ mod test {
             "TypeTestDict"
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_docstring_function() {
+        const UDL: &str = r#"
+            namespace test {
+                ///informative docstring
+                void testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_function_definition("testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

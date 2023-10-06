@@ -102,6 +102,8 @@ pub struct Object {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func_free: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Object {
@@ -113,6 +115,7 @@ impl Object {
             methods: Default::default(),
             uniffi_traits: Default::default(),
             ffi_func_free: Default::default(),
+            docstring: None,
         }
     }
 
@@ -166,6 +169,10 @@ impl Object {
 
     pub fn ffi_object_free(&self) -> &FfiFunction {
         &self.ffi_func_free
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
@@ -237,6 +244,8 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
         let object_impl = attributes.object_impl();
 
         let mut object = Object::new(name.to_string(), object_impl);
+        object.docstring = self.docstring.as_ref().map(|v| v.0.clone());
+
         // Convert each member into a constructor or method, guarding against duplicate names.
         let mut member_names = HashSet::new();
         for member in &self.members.body {
@@ -287,6 +296,7 @@ impl APIConverter<Object> for weedle::InterfaceDefinition<'_> {
                     arguments,
                     return_type,
                     ffi_func: Default::default(),
+                    docstring: None,
                     throws: None,
                     takes_self_by_arc: false,
                     checksum_override: None,
@@ -368,6 +378,8 @@ pub struct Constructor {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
     // Force a checksum value.  This is used for functions from the proc-macro code, which uses a
@@ -412,6 +424,10 @@ impl Constructor {
 
     pub fn throws_type(&self) -> Option<&Type> {
         self.throws.as_ref()
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn is_primary_constructor(&self) -> bool {
@@ -463,6 +479,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             object_name: meta.self_name,
             arguments,
             ffi_func,
+            docstring: None,
             throws: meta.throws.map(Into::into),
             checksum_fn_name,
             checksum_override: Some(meta.checksum),
@@ -487,6 +504,7 @@ impl APIConverter<Constructor> for weedle::interface::ConstructorInterfaceMember
             checksum_fn_name: Default::default(),
             arguments: self.args.body.list.convert(ci)?,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             throws,
             checksum_override: None,
         })
@@ -513,6 +531,8 @@ pub struct Method {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) throws: Option<Type>,
     pub(super) takes_self_by_arc: bool,
     pub(super) checksum_fn_name: String,
@@ -584,6 +604,10 @@ impl Method {
         self.throws.as_ref()
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn takes_self_by_arc(&self) -> bool {
         self.takes_self_by_arc
     }
@@ -645,6 +669,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
+            docstring: None,
             throws: meta.throws.map(Into::into),
             takes_self_by_arc: false, // not yet supported by procmacros?
             checksum_fn_name,
@@ -664,6 +689,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
             is_async: false,
             arguments,
             return_type,
+            docstring: None,
             throws: meta.throws.map(Into::into),
             takes_self_by_arc: false, // not yet supported by procmacros?
             checksum_fn_name,
@@ -719,6 +745,7 @@ impl APIConverter<Method> for weedle::interface::OperationInterfaceMember<'_> {
             arguments: self.args.body.list.convert(ci)?,
             return_type,
             ffi_func: Default::default(),
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             throws,
             takes_self_by_arc,
             checksum_override: None,
@@ -952,6 +979,64 @@ mod test {
         assert_eq!(
             err.to_string(),
             "Trait interfaces can not have constructors: \"new\""
+        );
+    }
+
+    #[test]
+    fn test_docstring_object() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_constructor() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                ///informative docstring
+                constructor();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .primary_constructor()
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_method() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                ///informative docstring
+                void testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .get_method("testing")
+                .docstring()
+                .unwrap(),
+            "informative docstring"
         );
     }
 }

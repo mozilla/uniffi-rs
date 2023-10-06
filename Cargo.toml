@@ -21,6 +21,7 @@ members = [
 
   "fixtures/benchmarks",
   "fixtures/coverall",
+  "fixtures/coverall-upstream-compatibility",
   "fixtures/callbacks",
 
   "fixtures/ext-types/guid",
@@ -32,6 +33,7 @@ members = [
   "fixtures/external-types/crate-two",
   "fixtures/external-types/lib",
 
+  "fixtures/docstring",
   "fixtures/foreign-executor",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",

@@ -91,7 +91,7 @@ pub struct ComponentInterface {
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
-    namespace: String,
+    namespace: Namespace,
     /// The high-level API provided by the component.
     enums: BTreeMap<String, Enum>,
     records: BTreeMap<String, Record>,
@@ -137,12 +137,17 @@ impl ComponentInterface {
         Ok(ci)
     }
 
+    ///
+    pub fn namespace_definition(&self) -> &Namespace {
+        &self.namespace
+    }
+
     /// The string namespace within which this API should be presented to the caller.
     ///
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
-        self.namespace.as_str()
+        self.namespace.name.as_str()
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -326,7 +331,7 @@ impl ComponentInterface {
     /// The value returned by this method is used as a prefix to namespace all UDL-defined FFI
     /// functions used in this ComponentInterface.
     pub fn ffi_namespace(&self) -> &str {
-        &self.namespace
+        self.namespace()
     }
 
     /// Builtin FFI function to get the current contract version
@@ -590,10 +595,10 @@ impl ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed namespace definition to the `ComponentInterface`.
     fn add_namespace_definition(&mut self, defn: Namespace) -> Result<()> {
-        if !self.namespace.is_empty() {
+        if !self.namespace.name.is_empty() {
             bail!("duplicate namespace definition");
         }
-        self.namespace = defn.name;
+        self.namespace = defn;
         Ok(())
     }
 
@@ -767,7 +772,7 @@ impl ComponentInterface {
     /// as a whole, and which can only be detected after we've finished defining
     /// the entire interface.
     pub fn check_consistency(&self) -> Result<()> {
-        if self.namespace.is_empty() {
+        if self.namespace.name.is_empty() {
             bail!("missing namespace definition");
         }
 
@@ -1086,19 +1091,23 @@ mod test {
         let err = ComponentInterface::from_webidl(UDL2).unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
+            "Mismatching definition for enum `Testing`!
+existing definition: Enum {
     name: \"Testing\",
     variants: [
         Variant {
             name: \"one\",
             fields: [],
+            docstring: None,
         },
         Variant {
             name: \"two\",
             fields: [],
+            docstring: None,
         },
     ],
     flat: true,
+    docstring: None,
 },
 new definition: Enum {
     name: \"Testing\",
@@ -1106,13 +1115,16 @@ new definition: Enum {
         Variant {
             name: \"three\",
             fields: [],
+            docstring: None,
         },
         Variant {
             name: \"four\",
             fields: [],
+            docstring: None,
         },
     ],
     flat: true,
+    docstring: None,
 }",
         );
 
@@ -1242,5 +1254,19 @@ new definition: Enum {
             name: "TestObj".into(),
             imp: ObjectImpl::Struct,
         }));
+    }
+
+    #[test]
+    fn test_multiline_docstring() {
+        const UDL: &str = r#"
+            ///informative
+            ///docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL).unwrap();
+        assert_eq!(
+            ci.namespace_definition().docstring().unwrap(),
+            "informative\ndocstring"
+        );
     }
 }

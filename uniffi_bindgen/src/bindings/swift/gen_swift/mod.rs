@@ -107,8 +107,6 @@ impl Config {
 }
 
 impl BindingsConfig for Config {
-    const TOML_KEY: &'static str = "swift";
-
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.module_name
             .get_or_insert_with(|| ci.namespace().into());
@@ -480,6 +478,15 @@ pub mod filters {
     /// Get the idiomatic Swift rendering of an individual enum variant.
     pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
+    }
+
+    /// Get the idiomatic Swift rendering of docstring
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+        let middle = textwrap::indent(&textwrap::dedent(docstring), " * ");
+        let wrapped = format!("/**\n{middle}\n */");
+
+        let spaces = usize::try_from(*spaces).unwrap_or_default();
+        Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
     }
 
     pub fn error_handler(result: &ResultType) -> Result<String, askama::Error> {

@@ -1,0 +1,27 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    container:
+        image: ghcr.io/nordsecurity/uniffi-rs-test-runner:v0.0.2
+        options: --user root
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set rust version
+        run: |
+          rustup show
+          rustup update
+      - uses: Swatinem/rust-cache@v2
+      # - name: Build
+      #   run: |
+      #     cargo build
+      - name: Run tests
+        shell: bash
+        env:
+          # Github sets HOME to /github/home and breaks dependencies in Docker image..
+          # https://github.com/actions/runner/issues/863
+          HOME: /root
+        run: |
+          source ~/.bashrc
+          cargo test
