@@ -31,7 +31,7 @@
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg|lower_fn }}({{ arg.name()|var_name }}),
+        {{- arg|lower_fn }}({{ arg.name()|var_name }}{{ arg|downcast_if_needed }}),
     {%- endfor %}
 {%- endmacro -%}
 
@@ -42,7 +42,7 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name }}: {%- if !ci.is_name_used_as_error(arg|type_name) %} {{ arg|type_name -}} {%- else %} {{ arg|error_type_name -}} {% endif -%}
+        {{ arg.name()|var_name }}: {%- if !ci.is_name_used_as_error(arg|type_name) %} {{ arg|type_or_iface_name -}} {%- else %} {{ arg|error_type_name -}} {% endif -%}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|render_literal(arg) }}
         {%- else %}
@@ -53,7 +53,7 @@
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name }}: {%- if !ci.is_name_used_as_error(arg|type_name) %} {{ arg|type_name -}} {%- else %} {{ arg|error_type_name -}} {% endif -%}
+        {{ arg.name()|var_name }}: {%- if !ci.is_name_used_as_error(arg|type_name) %} {{ arg|type_or_iface_name -}} {%- else %} {{ arg|error_type_name -}} {% endif -%}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}

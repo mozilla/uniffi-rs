@@ -71,4 +71,6 @@ pub trait CodeType: Debug {
     fn initialization_fn(&self) -> Option<String> {
         None
     }
+
+    fn has_abstraction(&self) -> bool { false }
 }

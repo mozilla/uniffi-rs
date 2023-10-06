@@ -398,12 +398,32 @@ pub mod filters {
         Ok(as_ct.as_codetype().type_label())
     }
 
+    pub fn type_or_iface_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        let codetype = as_ct.as_codetype();
+        let ret = if codetype.has_abstraction() {
+            codetype.type_label() + "Interface"
+        } else {
+            codetype.type_label()
+        };
+        Ok(ret)
+    }
+
     pub fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
     pub fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
+    }
+
+    pub fn downcast_if_needed(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        let codetype = as_ct.as_codetype();
+        let ret = if codetype.has_abstraction() {
+            format!(" as {}", codetype.type_label())
+        } else {
+            String::new()
+        };
+        Ok(ret)
     }
 
     pub fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {

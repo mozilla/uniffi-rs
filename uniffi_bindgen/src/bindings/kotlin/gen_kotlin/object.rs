@@ -38,4 +38,6 @@ impl CodeType for ObjectCodeType {
             ObjectImpl::Trait => Some(format!("uniffiCallbackInterface{}.register", self.name)),
         }
     }
+
+    fn has_abstraction(&self) -> bool { true }
 }

@@ -37,7 +37,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     {% else -%}
     data class {{ variant|enum_variant|type_name }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name }}: {{ field|type_or_iface_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
         companion object
@@ -85,7 +85,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
             (
                 4
                 {%- for field in variant.fields() %}
-                + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }})
+                + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }}{{ field|downcast_if_needed }})
                 {%- endfor %}
             )
         }
@@ -98,7 +98,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
             is {{ type_name }}.{{ variant|enum_variant|type_name }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
-                {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+                {{ field|write_fn }}(value.{{ field.name()|var_name }}{{ field|downcast_if_needed }}, buf)
                 {%- endfor %}
                 Unit
             }
