@@ -12,8 +12,8 @@ use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use crate::backend::{CodeType, TemplateExpression};
-use crate::interface::*;
 use crate::BindingsConfig;
+use crate::interface::*;
 
 mod callback_interface;
 mod compounds;
@@ -391,24 +391,15 @@ impl<T: AsType> AsCodeType for T {
 }
 
 pub mod filters {
-    use std::ops::Add;
-    use super::*;
     pub use crate::backend::filters::*;
+
+    use super::*;
 
     pub fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().type_label())
     }
 
-    pub fn type_or_iface_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
-        // let codetype = as_ct.as_codetype();
-        // let ret = if codetype.has_abstraction() && codetype.type_label() != "Object" {
-        //     let mut label = codetype.type_label();
-        //     let index = label.find("?").unwrap_or(label.len());
-        //     label.insert_str(index, "Interface");
-        //     label
-        // } else {
-        //     codetype.type_label()
-        // };
+    pub fn protocol_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().protocol_label())
     }
 
@@ -422,11 +413,12 @@ pub mod filters {
 
     pub fn downcast_if_needed(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         let codetype = as_ct.as_codetype();
-        let ret = if codetype.has_abstraction() && codetype.type_label() != codetype.protocol_label() {
-            format!(" as {}", codetype.type_label())
-        } else {
-            String::new()
-        };
+        let ret =
+            if codetype.has_protocol() && codetype.type_label() != codetype.protocol_label() {
+                format!(" as {}", codetype.type_label())
+            } else {
+                String::new()
+            };
         Ok(ret)
     }
 

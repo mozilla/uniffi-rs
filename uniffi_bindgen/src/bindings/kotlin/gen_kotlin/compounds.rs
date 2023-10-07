@@ -50,7 +50,7 @@ macro_rules! impl_code_type_for_compound {
                     render_literal(literal, self.inner())
                 }
 
-                fn has_abstraction(&self) -> bool { matches!(self.inner(), Type::Object { .. }) }
+                fn has_protocol(&self) -> bool { matches!(self.inner(), Type::Object { .. }) }
             }
         }
     }

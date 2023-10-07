@@ -2,7 +2,7 @@
 
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
-    var {{ field.name()|var_name }}: {{ field|type_or_iface_name -}}
+    var {{ field.name()|var_name }}: {{ field|protocol_name -}}
     {%- match field.default_value() %}
         {%- when Some with(literal) %} = {{ literal|render_literal(field) }}
         {%- else %}

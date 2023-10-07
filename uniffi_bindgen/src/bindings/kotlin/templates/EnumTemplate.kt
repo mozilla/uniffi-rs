@@ -37,7 +37,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     {% else -%}
     data class {{ variant|enum_variant|type_name }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name }}: {{ field|type_or_iface_name}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name }}: {{ field|protocol_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
         companion object
