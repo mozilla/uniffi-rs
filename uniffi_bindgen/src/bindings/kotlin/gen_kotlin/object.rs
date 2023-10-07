@@ -20,8 +20,20 @@ impl ObjectCodeType {
 }
 
 impl CodeType for ObjectCodeType {
+
     fn type_label(&self) -> String {
         super::KotlinCodeOracle.class_name(&self.name)
+    }
+
+    fn protocol_label(&self) -> String {
+        if self.id == "Object" {
+            self.type_label()
+        } else {
+            let mut label = self.type_label();
+            let index = self.type_label().find("?").unwrap_or(label.len());
+            label.insert_str(index, "Interface");
+            label
+        }
     }
 
     fn canonical_name(&self) -> String {

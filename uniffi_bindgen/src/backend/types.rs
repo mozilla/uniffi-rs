@@ -16,6 +16,8 @@ pub trait CodeType: Debug {
     /// method signatures and property declarations.
     fn type_label(&self) -> String;
 
+    fn protocol_label(&self) -> String { self.type_label() }
+
     /// A representation of this type label that can be used as part of another
     /// identifier. e.g. `read_foo()`, or `FooInternals`.
     ///

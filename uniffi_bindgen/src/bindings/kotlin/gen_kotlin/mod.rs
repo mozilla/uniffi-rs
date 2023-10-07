@@ -391,6 +391,7 @@ impl<T: AsType> AsCodeType for T {
 }
 
 pub mod filters {
+    use std::ops::Add;
     use super::*;
     pub use crate::backend::filters::*;
 
@@ -399,13 +400,16 @@ pub mod filters {
     }
 
     pub fn type_or_iface_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
-        let codetype = as_ct.as_codetype();
-        let ret = if codetype.has_abstraction() {
-            codetype.type_label() + "Interface"
-        } else {
-            codetype.type_label()
-        };
-        Ok(ret)
+        // let codetype = as_ct.as_codetype();
+        // let ret = if codetype.has_abstraction() && codetype.type_label() != "Object" {
+        //     let mut label = codetype.type_label();
+        //     let index = label.find("?").unwrap_or(label.len());
+        //     label.insert_str(index, "Interface");
+        //     label
+        // } else {
+        //     codetype.type_label()
+        // };
+        Ok(as_ct.as_codetype().protocol_label())
     }
 
     pub fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -418,7 +422,7 @@ pub mod filters {
 
     pub fn downcast_if_needed(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         let codetype = as_ct.as_codetype();
-        let ret = if codetype.has_abstraction() {
+        let ret = if codetype.has_abstraction() && codetype.type_label() != codetype.protocol_label() {
             format!(" as {}", codetype.type_label())
         } else {
             String::new()

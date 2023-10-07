@@ -38,6 +38,10 @@ macro_rules! impl_code_type_for_compound {
                     format!($type_label_pattern, super::KotlinCodeOracle.find(self.inner()).type_label())
                 }
 
+                fn protocol_label(&self) -> String {
+                    format!($type_label_pattern, super::KotlinCodeOracle.find(self.inner()).protocol_label())
+                }
+
                 fn canonical_name(&self) -> String {
                     format!($canonical_name_pattern, super::KotlinCodeOracle.find(self.inner()).canonical_name())
                 }
@@ -45,6 +49,8 @@ macro_rules! impl_code_type_for_compound {
                 fn literal(&self, literal: &Literal) -> String {
                     render_literal(literal, self.inner())
                 }
+
+                fn has_abstraction(&self) -> bool { matches!(self.inner(), Type::Object { .. }) }
             }
         }
     }
