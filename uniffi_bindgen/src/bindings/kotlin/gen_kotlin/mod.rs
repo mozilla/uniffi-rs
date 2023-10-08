@@ -12,8 +12,8 @@ use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use crate::backend::{CodeType, TemplateExpression};
-use crate::BindingsConfig;
 use crate::interface::*;
+use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -413,12 +413,11 @@ pub mod filters {
 
     pub fn downcast_if_needed(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         let codetype = as_ct.as_codetype();
-        let ret =
-            if codetype.has_protocol() && codetype.type_label() != codetype.protocol_label() {
-                format!(" as {}", codetype.type_label())
-            } else {
-                String::new()
-            };
+        let ret = if codetype.has_protocol() && codetype.type_label() != codetype.protocol_label() {
+            format!(" as {}", codetype.type_label())
+        } else {
+            String::new()
+        };
         Ok(ret)
     }
 

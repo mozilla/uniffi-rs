@@ -109,7 +109,7 @@ impl CodeType for MapCodeType {
     }
 
     fn has_protocol(&self) -> bool {
-        super::KotlinCodeOracle.find(self.key()).has_protocol() ||
-            super::KotlinCodeOracle.find(self.value()).has_protocol()
+        super::KotlinCodeOracle.find(self.key()).has_protocol()
+            || super::KotlinCodeOracle.find(self.value()).has_protocol()
     }
 }

@@ -27,7 +27,7 @@ impl CodeType for ObjectCodeType {
     fn protocol_label(&self) -> String {
         if self.has_protocol() {
             let mut label = self.type_label();
-            let index = self.type_label().find("?").unwrap_or(label.len());
+            let index = self.type_label().find('?').unwrap_or(label.len());
             label.insert_str(index, "Interface");
             label
         } else {

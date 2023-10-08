@@ -144,10 +144,14 @@ impl Type {
 
     pub fn needs_unchecked_upcast_in_return(&self) -> bool {
         match self {
-            Type::Map { key_type, value_type } => {
-                matches!(key_type.as_type(), Type::Object { .. }) || matches!(value_type.as_type(), Type::Object { .. })
+            Type::Map {
+                key_type,
+                value_type,
+            } => {
+                matches!(key_type.as_type(), Type::Object { .. })
+                    || matches!(value_type.as_type(), Type::Object { .. })
             }
-            _ => false
+            _ => false,
         }
     }
 }
