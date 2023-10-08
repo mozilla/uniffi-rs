@@ -88,6 +88,14 @@ impl CodeType for MapCodeType {
         )
     }
 
+    fn protocol_label(&self) -> String {
+        format!(
+            "Map<{}, {}>",
+            super::KotlinCodeOracle.find(self.key()).protocol_label(),
+            super::KotlinCodeOracle.find(self.value()).protocol_label(),
+        )
+    }
+
     fn canonical_name(&self) -> String {
         format!(
             "Map{}{}",
@@ -98,5 +106,10 @@ impl CodeType for MapCodeType {
 
     fn literal(&self, literal: &Literal) -> String {
         render_literal(literal, &self.value)
+    }
+
+    fn has_protocol(&self) -> bool {
+        super::KotlinCodeOracle.find(self.key()).has_protocol() ||
+            super::KotlinCodeOracle.find(self.value()).has_protocol()
     }
 }

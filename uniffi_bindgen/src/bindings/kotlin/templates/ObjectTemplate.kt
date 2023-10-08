@@ -72,7 +72,12 @@ class {{ impl_class_name }}(
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
+            {% if return_type.needs_unchecked_upcast_in_return() %}
+            @Suppress("UNCHECKED_CAST", "USELESS_CAST")
+            {{ return_type|lift_fn }}(it) as {{ return_type|protocol_name }}
+            {%- else -%}
             {{ return_type|lift_fn }}(it)
+            {% endif %}
         }
 
     {%- when None -%}

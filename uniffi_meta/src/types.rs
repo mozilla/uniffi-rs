@@ -141,6 +141,15 @@ impl Type {
         };
         Box::new(std::iter::once(self).chain(nested_types))
     }
+
+    pub fn needs_unchecked_upcast_in_return(&self) -> bool {
+        match self {
+            Type::Map { key_type, value_type } => {
+                matches!(key_type.as_type(), Type::Object { .. }) || matches!(value_type.as_type(), Type::Object { .. })
+            }
+            _ => false
+        }
+    }
 }
 
 // A trait so various things can turn into a type.

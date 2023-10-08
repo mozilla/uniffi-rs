@@ -161,6 +161,8 @@ interface Coveralls {
     /// integer->integer dictionary
     record<u32, u64> get_dict3(u32 key, u64 value);
 
+    record<u32, IFirst> get_dict4(u32 key, IFirst value);
+
     /// Adds a new repair at the current time.
     void add_patch(Patch patch);
 

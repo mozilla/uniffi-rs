@@ -363,6 +363,12 @@ impl Coveralls {
         map
     }
 
+    fn get_dict4(&self, key: u32, value: Arc<IFirst>) -> HashMap<u32, Arc<IFirst>> {
+        let mut map = HashMap::new();
+        map.insert(key, value);
+        map
+    }
+
     fn add_patch(&self, patch: Arc<Patch>) {
         let repair = Repair {
             when: SystemTime::now(),
