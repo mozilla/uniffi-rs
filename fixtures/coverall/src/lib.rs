@@ -386,6 +386,10 @@ impl Coveralls {
         value.reverse();
         value
     }
+
+    fn set_and_get_empty_struct(&self, empty_struct: EmptyStruct) -> EmptyStruct {
+        empty_struct
+    }
 }
 
 impl Drop for Coveralls {
@@ -479,5 +483,7 @@ impl ISecond {
         false
     }
 }
+
+pub struct EmptyStruct;
 
 uniffi::include_scaffolding!("coverall");

@@ -51,6 +51,7 @@
 
 - Updated the async functionality to correctly handle cancellation (#1669)
 - Kotlin: Fixed low-level issue with exported async APIs
+- Kotlin: Fixed empty records being exported as empty data classes in Kotlin. A class with a proper `equals` function should be used instead.
 
 ### What's changed?
 

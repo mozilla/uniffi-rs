@@ -74,6 +74,10 @@ impl Record {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
     }
+
+    pub fn has_fields(&self) -> bool {
+        !self.fields.is_empty()
+    }
 }
 
 impl AsType for Record {
