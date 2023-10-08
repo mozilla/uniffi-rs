@@ -4,6 +4,7 @@ class {{ type_name }}:
         {{- field.name()|var_name }}: "{{- field|type_name }}";
     {%- endfor %}
 
+    {%- if rec.has_fields() %}
     @typing.no_type_check
     def __init__(self, {% for field in rec.fields() %}
     {{- field.name()|var_name }}: "{{- field|type_name }}"
@@ -22,6 +23,7 @@ class {{ type_name }}:
             self.{{ field_name }} = {{ field_name }}
         {%- endmatch %}
         {%- endfor %}
+    {%- endif %}
 
     def __str__(self):
         return "{{ type_name }}({% for field in rec.fields() %}{{ field.name()|var_name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in rec.fields() %}self.{{ field.name()|var_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
@@ -44,6 +46,10 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
 
     @staticmethod
     def write(value, buf):
+        {%- if rec.has_fields() %}
         {%- for field in rec.fields() %}
         {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
         {%- endfor %}
+        {%- else %}
+        pass
+        {%- endif %}

@@ -34,12 +34,16 @@ extension {{ type_name }}: Equatable, Hashable {
 
 public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
-        return try {{ type_name }}(
+        return {%- if rec.has_fields() %}
+            try {{ type_name }}(
             {%- for field in rec.fields() %}
-            {{ field.name()|arg_name }}: {{ field|read_fn }}(from: &buf)
-            {%- if !loop.last %}, {% endif %}
+                {{ field.name()|arg_name }}: {{ field|read_fn }}(from: &buf)
+                {%- if !loop.last %}, {% endif %}
             {%- endfor %}
         )
+        {%- else %}
+            {{ type_name }}()
+        {%- endif %}
     }
 
     public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {

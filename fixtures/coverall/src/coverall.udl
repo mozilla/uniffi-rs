@@ -172,6 +172,8 @@ interface Coveralls {
 
     /// Reverses the bytes.
     bytes reverse(bytes value);
+
+    EmptyStruct set_and_get_empty_struct(EmptyStruct empty_struct);
 };
 
 // coveralls keep track of their repairs (an interface in a dict)
@@ -245,3 +247,5 @@ interface ISecond {
   // Default only
   boolean compare(IFirst? other);
 };
+
+dictionary EmptyStruct {};
