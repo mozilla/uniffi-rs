@@ -80,9 +80,6 @@ By default, UniFFI assumes that the Kotlin module name matches the Rust crate na
 rust-crate-name = "kotlin.package.name"
 ```
 
-See the [`ext-types` fixture](https://github.com/mozilla/uniffi-rs/blob/main/fixtures/ext-types/lib/uniffi.toml)
-for an example
-
 ### Swift
 
 For Swift, you must compile all generated `.swift` files together in a single
