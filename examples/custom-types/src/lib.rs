@@ -1,5 +1,10 @@
 use url::Url;
 
+// A custom guid defined via a proc-macro (ie, not referenced in the UDL)
+// By far the easiest way to define custom types.
+pub struct ExampleCustomType(String);
+uniffi::custom_newtype!(ExampleCustomType, String);
+
 // Custom Handle type which trivially wraps an i64.
 pub struct Handle(pub i64);
 
@@ -106,6 +111,11 @@ pub fn get_custom_types_demo(v: Option<CustomTypesDemo>) -> CustomTypesDemo {
         time_interval_sec_dbl: TimeIntervalSecDbl(456.0),
         time_interval_sec_flt: TimeIntervalSecFlt(777.0),
     })
+}
+
+#[uniffi::export]
+pub fn get_example_custom_type() -> ExampleCustomType {
+    ExampleCustomType("abadidea".to_string())
 }
 
 uniffi::include_scaffolding!("custom-types");

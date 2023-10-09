@@ -22,17 +22,26 @@
 - [Procedural Macros: Attributes and Derives](./proc_macro/index.md)
 - [Futures and async support](./futures.md)
 
-# Kotlin
+# Bindings
 
+- [Generating bindings](./bindings)
+- [Customizing binding generation](./bindings#customizing-the-binding-generation)
+
+## Kotlin
+
+- [Configuration](./kotlin/configuration)
 - [Integrating with Gradle](./kotlin/gradle.md)
 - [Kotlin Lifetimes](./kotlin/lifetimes.md)
 
-# Swift
+## Swift
 
 - [Overview](./swift/overview.md)
 - [Configuration](./swift/configuration.md)
 - [Building a Swift module](./swift/module.md)
 - [Integrating with Xcode](./swift/xcode.md)
+
+## Python
+- [Configuration](./python/configuration)
 
 # Internals
 - [Design Principles](./internals/design_principles.md)
