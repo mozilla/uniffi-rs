@@ -217,14 +217,18 @@ impl BindingGenerator for BindingGeneratorDefault {
 /// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate's root.
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
+/// - `crate_name`: Override the default crate name that is guessed from UDL file path.
 pub fn generate_external_bindings<T: BindingGenerator>(
     binding_generator: T,
     udl_file: impl AsRef<Utf8Path>,
     config_file_override: Option<impl AsRef<Utf8Path>>,
     out_dir_override: Option<impl AsRef<Utf8Path>>,
     library_file: Option<impl AsRef<Utf8Path>>,
+    crate_name: Option<&str>,
 ) -> Result<()> {
-    let crate_name = crate_name_from_cargo_toml(udl_file.as_ref())?;
+    let crate_name = crate_name
+        .map(|c| Ok(c.to_string()))
+        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file.as_ref()))?;
     let mut component = parse_udl(udl_file.as_ref(), &crate_name)?;
     if let Some(ref library_file) = library_file {
         macro_metadata::add_to_ci_from_library(&mut component, library_file.as_ref())?;
@@ -306,29 +310,17 @@ pub fn generate_bindings(
     crate_name: Option<&str>,
     try_format_code: bool,
 ) -> Result<()> {
-    let crate_name = crate_name
-        .map(|c| Ok(c.to_string()))
-        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file))?;
-    let mut component = parse_udl(udl_file, &crate_name)?;
-    if let Some(library_file) = library_file {
-        macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
-    }
-    let crate_root = &guess_crate_root(udl_file).context("Failed to guess crate root")?;
-
-    let mut config = load_initial_config::<Config>(crate_root, config_file_override)?;
-    config.update_from_ci(&component);
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
-    for language in target_languages {
-        bindings::write_bindings(
-            &config.bindings,
-            &component,
-            &out_dir,
-            language,
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages,
             try_format_code,
-        )?;
-    }
-
-    Ok(())
+        },
+        udl_file,
+        config_file_override,
+        out_dir_override,
+        library_file,
+        crate_name,
+    )
 }
 
 pub fn print_repr(library_path: &Utf8Path) -> Result<()> {
