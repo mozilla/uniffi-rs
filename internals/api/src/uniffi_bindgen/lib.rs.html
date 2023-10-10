@@ -517,14 +517,6 @@
 <a href="#517" id="517">517</a>
 <a href="#518" id="518">518</a>
 <a href="#519" id="519">519</a>
-<a href="#520" id="520">520</a>
-<a href="#521" id="521">521</a>
-<a href="#522" id="522">522</a>
-<a href="#523" id="523">523</a>
-<a href="#524" id="524">524</a>
-<a href="#525" id="525">525</a>
-<a href="#526" id="526">526</a>
-<a href="#527" id="527">527</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -744,14 +736,18 @@
 /// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate&#39;s root.
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it&#39;s [`None`]
+/// - `crate_name`: Override the default crate name that is guessed from UDL file path.
 </span><span class="kw">pub fn </span>generate_external_bindings&lt;T: BindingGenerator&gt;(
     binding_generator: T,
     udl_file: <span class="kw">impl </span>AsRef&lt;Utf8Path&gt;,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
     out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
     library_file: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
+    crate_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>crate_name = crate_name_from_cargo_toml(udl_file.as_ref())<span class="question-mark">?</span>;
+    <span class="kw">let </span>crate_name = crate_name
+        .map(|c| <span class="prelude-val">Ok</span>(c.to_string()))
+        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file.as_ref()))<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>component = parse_udl(udl_file.as_ref(), <span class="kw-2">&amp;</span>crate_name)<span class="question-mark">?</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>library_file) = library_file {
         macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>component, library_file.as_ref())<span class="question-mark">?</span>;
@@ -833,29 +829,17 @@
     crate_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
     try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>crate_name = crate_name
-        .map(|c| <span class="prelude-val">Ok</span>(c.to_string()))
-        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file))<span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>component = parse_udl(udl_file, <span class="kw-2">&amp;</span>crate_name)<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(library_file) = library_file {
-        macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>component, library_file)<span class="question-mark">?</span>;
-    }
-    <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file).context(<span class="string">&quot;Failed to guess crate root&quot;</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">let </span><span class="kw-2">mut </span>config = load_initial_config::&lt;Config&gt;(crate_root, config_file_override)<span class="question-mark">?</span>;
-    config.update_from_ci(<span class="kw-2">&amp;</span>component);
-    <span class="kw">let </span>out_dir = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>;
-    <span class="kw">for </span>language <span class="kw">in </span>target_languages {
-        bindings::write_bindings(
-            <span class="kw-2">&amp;</span>config.bindings,
-            <span class="kw-2">&amp;</span>component,
-            <span class="kw-2">&amp;</span>out_dir,
-            language,
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages,
             try_format_code,
-        )<span class="question-mark">?</span>;
-    }
-
-    <span class="prelude-val">Ok</span>(())
+        },
+        udl_file,
+        config_file_override,
+        out_dir_override,
+        library_file,
+        crate_name,
+    )
 }
 
 <span class="kw">pub fn </span>print_repr(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
