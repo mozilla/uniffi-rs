@@ -232,3 +232,77 @@ impl fmt::Display for UnexpectedUniFFICallbackError {
 }
 
 impl std::error::Error for UnexpectedUniFFICallbackError {}
+
+// Autoref-based specialization for converting UnexpectedUniFFICallbackError into error types.
+//
+// For more details, see:
+// https://github.com/dtolnay/case-studies/blob/master/autoref-specialization/README.md
+
+// Define two ZST types:
+//   - One implements `try_convert_unexpected_callback_error` by always returning an error value.
+//   - The specialized version implements it using `From<UnexpectedUniFFICallbackError>`
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct UnexpectedUniFFICallbackErrorConverterGeneric;
+
+impl UnexpectedUniFFICallbackErrorConverterGeneric {
+    pub fn try_convert_unexpected_callback_error<E>(
+        &self,
+        e: UnexpectedUniFFICallbackError,
+    ) -> anyhow::Result<E> {
+        Err(e.into())
+    }
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct UnexpectedUniFFICallbackErrorConverterSpecialized;
+
+impl UnexpectedUniFFICallbackErrorConverterSpecialized {
+    pub fn try_convert_unexpected_callback_error<E>(
+        &self,
+        e: UnexpectedUniFFICallbackError,
+    ) -> anyhow::Result<E>
+    where
+        E: From<UnexpectedUniFFICallbackError>,
+    {
+        Ok(E::from(e))
+    }
+}
+
+// Macro to convert an UnexpectedUniFFICallbackError value for a particular type.  This is used in
+// the `ConvertError` implementation.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! convert_unexpected_error {
+    ($error:ident, $ty:ty) => {{
+        // Trait for generic conversion, implemented for all &T.
+        pub trait GetConverterGeneric {
+            fn get_converter(&self) -> $crate::UnexpectedUniFFICallbackErrorConverterGeneric;
+        }
+
+        impl<T> GetConverterGeneric for &T {
+            fn get_converter(&self) -> $crate::UnexpectedUniFFICallbackErrorConverterGeneric {
+                $crate::UnexpectedUniFFICallbackErrorConverterGeneric
+            }
+        }
+        // Trait for specialized conversion, implemented for all T that implements
+        // `Into<ErrorType>`.  I.e. it's implemented for UnexpectedUniFFICallbackError when
+        // ErrorType implements From<UnexpectedUniFFICallbackError>.
+        pub trait GetConverterSpecialized {
+            fn get_converter(&self) -> $crate::UnexpectedUniFFICallbackErrorConverterSpecialized;
+        }
+
+        impl<T: Into<$ty>> GetConverterSpecialized for T {
+            fn get_converter(&self) -> $crate::UnexpectedUniFFICallbackErrorConverterSpecialized {
+                $crate::UnexpectedUniFFICallbackErrorConverterSpecialized
+            }
+        }
+        // Here's the hack.  Because of the auto-ref rules, this will use `GetConverterSpecialized`
+        // if it's implemented and `GetConverterGeneric` if not.
+        (&$error)
+            .get_converter()
+            .try_convert_unexpected_callback_error($error)
+    }};
+}

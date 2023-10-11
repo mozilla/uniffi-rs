@@ -347,6 +347,10 @@ pub unsafe trait LiftRef<UT> {
     type LiftType: Lift<UT> + Borrow<Self>;
 }
 
+pub trait ConvertError<UT>: Sized {
+    fn try_convert_unexpected_callback_error(e: UnexpectedUniFFICallbackError) -> Result<Self>;
+}
+
 /// Derive FFI traits
 ///
 /// This can be used to derive:
@@ -373,6 +377,7 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl<UT> LowerReturn<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> LiftReturn<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> LiftRef<UT> for $ty);
+        $crate::derive_ffi_traits!(impl<UT> ConvertError<UT> for $ty);
     };
 
     (local $ty:ty) => {
@@ -381,6 +386,7 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl LowerReturn<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl LiftReturn<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl LiftRef<crate::UniFfiTag> for $ty);
+        $crate::derive_ffi_traits!(impl ConvertError<crate::UniFfiTag> for $ty);
     };
 
     (impl $(<$($generic:ident),*>)? $(::uniffi::)? Lower<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
@@ -446,6 +452,15 @@ macro_rules! derive_ffi_traits {
         unsafe impl $(<$($generic),*>)* $crate::LiftRef<$ut> for $ty $(where $($where)*)*
         {
             type LiftType = Self;
+        }
+    };
+
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? ConvertError<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
+        impl $(<$($generic),*>)* $crate::ConvertError<$ut> for $ty $(where $($where)*)*
+        {
+            fn try_convert_unexpected_callback_error(e: $crate::UnexpectedUniFFICallbackError) -> $crate::deps::anyhow::Result<Self> {
+                $crate::convert_unexpected_error!(e, $ty)
+            }
         }
     };
 }

@@ -23,8 +23,8 @@
 /// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    FfiConverter, ForeignExecutor, Lift, LiftReturn, Lower, LowerReturn, MetadataBuffer, Result,
-    RustBuffer, UnexpectedUniFFICallbackError,
+    ConvertError, FfiConverter, ForeignExecutor, Lift, LiftReturn, Lower, LowerReturn,
+    MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -535,7 +535,7 @@ where
 unsafe impl<UT, R, E> LiftReturn<UT> for Result<R, E>
 where
     R: LiftReturn<UT>,
-    E: Lift<UT> + From<UnexpectedUniFFICallbackError>,
+    E: Lift<UT> + ConvertError<UT>,
 {
     fn lift_callback_return(buf: RustBuffer) -> Self {
         Ok(R::lift_callback_return(buf))
@@ -553,7 +553,7 @@ where
     }
 
     fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Self {
-        Err(E::from(e))
+        Err(E::try_convert_unexpected_callback_error(e).unwrap_or_else(|e| panic!("{e}")))
     }
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)

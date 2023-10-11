@@ -8,8 +8,8 @@ use syn::{
 use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
-        parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
+        chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw,
+        mod_path, parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
         AttributeSliceExt, UniffiAttributeArgs,
     },
 };
@@ -87,6 +87,7 @@ fn flat_error_ffi_converter_impl(
 ) -> TokenStream {
     let name = ident_to_string(ident);
     let lower_impl_spec = tagged_impl_header("Lower", ident, udl_mode);
+    let derive_ffi_traits = derive_ffi_traits(ident, udl_mode, &["ConvertError"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
@@ -161,6 +162,7 @@ fn flat_error_ffi_converter_impl(
     quote! {
         #lower_impl
         #lift_impl
+        #derive_ffi_traits
     }
 }
 

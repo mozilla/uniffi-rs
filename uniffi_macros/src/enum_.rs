@@ -3,7 +3,7 @@ use quote::quote;
 use syn::{Data, DataEnum, DeriveInput, Field, Index};
 
 use crate::util::{
-    create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
+    create_metadata_items, derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
     try_metadata_value_from_usize, try_read_field,
 };
 
@@ -64,7 +64,7 @@ fn enum_or_error_ffi_converter_impl(
 ) -> TokenStream {
     let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
+    let derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
