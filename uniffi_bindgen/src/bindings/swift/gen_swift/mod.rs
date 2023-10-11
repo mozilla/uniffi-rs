@@ -404,7 +404,7 @@ impl SwiftCodeOracle {
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum { name, .. } => Box::new(enum_::EnumCodeType::new(name)),
-            Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
+            Type::Object { name, imp, .. } => Box::new(object::ObjectCodeType::new(name, imp)),
             Type::Record { name, .. } => Box::new(record::RecordCodeType::new(name)),
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
@@ -489,6 +489,25 @@ impl SwiftCodeOracle {
 
     fn ffi_canonical_name(&self, ffi_type: &FfiType) -> String {
         self.ffi_type_label_raw(ffi_type)
+    }
+
+    /// Get the name of the protocol and class name for an object.
+    ///
+    /// For struct impls, the class name is the object name and the protocol name is derived from that.
+    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    ///
+    /// This split is needed because of the `FfiConverter` protocol.  For struct impls, `lower`
+    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
+    /// implement the protocol.
+    fn object_names(&self, obj: &Object) -> (String, String) {
+        let class_name = self.class_name(obj.name());
+        match obj.imp() {
+            ObjectImpl::Struct => (format!("{class_name}Protocol"), class_name),
+            ObjectImpl::Trait => {
+                let protocol_name = format!("{class_name}Impl");
+                (class_name, protocol_name)
+            }
+        }
     }
 }
 
@@ -624,5 +643,9 @@ pub mod filters {
                 None => "".into(),
             }
         ))
+    }
+
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+        Ok(SwiftCodeOracle.object_names(obj))
     }
 }

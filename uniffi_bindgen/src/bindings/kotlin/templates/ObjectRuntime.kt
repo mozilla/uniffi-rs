@@ -1,3 +1,5 @@
+{{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
+{{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
 // Interface implemented by anything that can contain an object reference.
 //
 // Such types expose a `destroy()` method that must be called to cleanly

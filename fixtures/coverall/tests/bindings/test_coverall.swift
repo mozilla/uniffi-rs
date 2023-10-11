@@ -248,11 +248,56 @@ do {
     assert(coveralls.reverse(value: Data("123".utf8)) == Data("321".utf8))
 }
 
+
+struct SomeOtherError: Error { }
+
+
+class SwiftGetters: Getters {
+    func getBool(v: Bool, arg2: Bool) -> Bool { v != arg2 }
+    func getString(v: String, arg2: Bool) throws -> String {
+        if v == "too-many-holes" {
+            throw CoverallError.TooManyHoles(message: "Too many")
+        }
+        if v == "unexpected-error" {
+            throw SomeOtherError()
+        }
+        return arg2 ? "HELLO" : v
+    }
+    func getOption(v: String, arg2: Bool) throws -> String? {
+        if v == "os-error" {
+            throw ComplexError.OsError(code: 100, extendedCode: 200)
+        }
+        if v == "unknown-error" {
+            throw ComplexError.UnknownError
+        }
+        if arg2 {
+            if !v.isEmpty {
+                return v.uppercased()
+            } else {
+                return nil
+            }
+        } else {
+            return v
+        }
+    }
+    func getList(v: [Int32], arg2: Bool) -> [Int32] { arg2 ? v : [] }
+    func getNothing(v: String) -> () {
+    }
+}
+
+
 // Test traits implemented in Rust
 do {
-    let rustGetters = makeRustGetters()
-    testGetters(g: rustGetters)
-    testGettersFromSwift(getters: rustGetters)
+    let getters = makeRustGetters()
+    testGetters(g: getters)
+    testGettersFromSwift(getters: getters)
+}
+
+// Test traits implemented in Swift
+do {
+    let getters = SwiftGetters()
+    testGetters(g: getters)
+    testGettersFromSwift(getters: getters)
 }
 
 func testGettersFromSwift(getters: Getters) {
@@ -283,7 +328,7 @@ func testGettersFromSwift(getters: Getters) {
     }
 
     do {
-        try getters.getOption(v: "os-error", arg2: true)
+        let _ = try getters.getOption(v: "os-error", arg2: true)
         fatalError("should have thrown")
     } catch ComplexError.OsError(let code, let extendedCode) {
         assert(code == 100)
@@ -293,7 +338,7 @@ func testGettersFromSwift(getters: Getters) {
     }
 
     do {
-        try getters.getOption(v: "unknown-error", arg2: true)
+        let _ = try getters.getOption(v: "unknown-error", arg2: true)
         fatalError("should have thrown")
     } catch ComplexError.UnknownError {
         // Expected
@@ -302,9 +347,29 @@ func testGettersFromSwift(getters: Getters) {
     }
 
     do {
-        try getters.getString(v: "unexpected-error", arg2: true)
+        let _ = try getters.getString(v: "unexpected-error", arg2: true)
     } catch {
         // Expected
+    }
+}
+
+class SwiftNode: NodeTrait {
+    var p: NodeTrait? = nil
+
+    func name() -> String {
+        return "node-swift"
+    }
+
+    func setParent(parent: NodeTrait?) {
+        self.p = parent
+    }
+
+    func getParent() -> NodeTrait? {
+        return self.p
+    }
+
+    func strongCount() -> UInt64 {
+        return 0 // TODO
     }
 }
 
@@ -319,10 +384,31 @@ do {
     assert(traits[1].name() == "node-2")
     assert(traits[1].strongCount() == 2)
 
+    // Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
+    // Swift impl before passing it to `set_parent()`
     traits[0].setParent(parent: traits[1])
     assert(ancestorNames(node: traits[0]) == ["node-2"])
     assert(ancestorNames(node: traits[1]) == [])
-    assert(traits[1].strongCount() == 3)
+    assert(traits[1].strongCount() == 2)
     assert(traits[0].getParent()!.name() == "node-2")
+
+    // Throw in a Swift implementation of the trait
+    // The ancestry chain now goes traits[0] -> traits[1] -> swiftNode
+    let swiftNode = SwiftNode()
+    traits[1].setParent(parent: swiftNode)
+    assert(ancestorNames(node: traits[0]) == ["node-2", "node-swift"])
+    assert(ancestorNames(node: traits[1]) == ["node-swift"])
+    assert(ancestorNames(node: swiftNode) == [])
+
+    // Rotating things.
+    // The ancestry chain now goes swiftNode -> traits[0] -> traits[1]
+    traits[1].setParent(parent: nil)
+    swiftNode.setParent(parent: traits[0])
+    assert(ancestorNames(node: swiftNode) == ["node-1", "node-2"])
+    assert(ancestorNames(node: traits[0]) == ["node-2"])
+    assert(ancestorNames(node: traits[1]) == [])
+
+    // Make sure we don't crash when undoing it all
+    swiftNode.setParent(parent: nil)
     traits[0].setParent(parent: nil)
 }

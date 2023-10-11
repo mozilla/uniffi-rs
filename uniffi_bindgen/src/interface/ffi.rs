@@ -150,6 +150,19 @@ pub struct FfiFunction {
 }
 
 impl FfiFunction {
+    pub fn callback_init(module_path: &str, trait_name: &str) -> Self {
+        Self {
+            name: uniffi_meta::init_callback_fn_symbol_name(module_path, trait_name),
+            arguments: vec![FfiArgument {
+                name: "handle".to_string(),
+                type_: FfiType::ForeignCallback,
+            }],
+            return_type: None,
+            has_rust_call_status_arg: false,
+            ..Self::default()
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

@@ -1,15 +1,10 @@
 {%- let obj = ci|get_object_definition(name) %}
-public protocol {{ obj.name() }}Protocol {
-    {% for meth in obj.methods() -%}
-    func {{ meth.name()|fn_name }}({% call swift::arg_list_protocol(meth) %}) {% call swift::async(meth) %} {% call swift::throws(meth) -%}
-    {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %} -> {{ return_type|type_name -}}
-    {%- else -%}
-    {%- endmatch %}
-    {% endfor %}
-}
+{%- let (protocol_name, impl_class_name) = obj|object_names %}
+{%- let methods = obj.methods() %}
 
-public class {{ type_name }}: {{ obj.name() }}Protocol {
+{% include "Protocol.swift" %}
+
+public class {{ impl_class_name }}: {{ protocol_name }} {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -33,8 +28,8 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
 
     {% for cons in obj.alternate_constructors() %}
 
-    public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ type_name }} {
-        return {{ type_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
+    public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
+        return {{ impl_class_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
 
     {% endfor %}
@@ -95,9 +90,36 @@ public class {{ type_name }}: {{ obj.name() }}Protocol {
     {% endfor %}
 }
 
+{%- if obj.is_trait_interface() %}
+{%- let callback_handler = format!("uniffiCallbackInterface{}", name) %}
+{%- let callback_init = format!("uniffiCallbackInit{}", name) %}
+{%- let ffi_init_callback = obj.ffi_init_callback() %}
+{% include "CallbackInterfaceImpl.swift" %}
+{%- endif %}
+
 public struct {{ ffi_converter_name }}: FfiConverter {
+    {%- if obj.is_trait_interface() %}
+    fileprivate static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
+    {%- endif %}
+
     typealias FfiType = UnsafeMutableRawPointer
     typealias SwiftType = {{ type_name }}
+
+    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
+        return {{ impl_class_name }}(unsafeFromRawPointer: pointer)
+    }
+
+    public static func lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
+        {%- match obj.imp() %}
+        {%- when ObjectImpl::Struct %}
+        return value.pointer
+        {%- when ObjectImpl::Trait %}
+        guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
+            fatalError("Cast to UnsafeMutableRawPointer failed")
+        }
+        return ptr
+        {%- endmatch %}
+    }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         let v: UInt64 = try readInt(&buf)
@@ -114,14 +136,6 @@ public struct {{ ffi_converter_name }}: FfiConverter {
         // This fiddling is because `Int` is the thing that's the same size as a pointer.
         // The Rust code won't compile if a pointer won't fit in a `UInt64`.
         writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
-    }
-
-    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
-        return {{ type_name}}(unsafeFromRawPointer: pointer)
-    }
-
-    public static func lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
-        return value.pointer
     }
 }
 

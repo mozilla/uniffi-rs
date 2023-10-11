@@ -36,6 +36,7 @@
 - Error types must now implement `Error + Send + Sync + 'static`.
 - Proc-macros: The `handle_unknown_callback_error` attribute is no longer needed for callback
   interface errors
+- Foreign types can now implement trait interfaces
 
 ### What's Fixed
 

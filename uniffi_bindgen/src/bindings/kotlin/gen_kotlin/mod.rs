@@ -313,6 +313,27 @@ impl KotlinCodeOracle {
             FfiType::RustFutureContinuationData => "USize".to_string(),
         }
     }
+
+    /// Get the name of the interface and class name for an object.
+    ///
+    /// This depends on the `ObjectImpl`:
+    ///
+    /// For struct impls, the class name is the object name and the interface name is derived from that.
+    /// For trait impls, the interface name is the object name, and the class name is derived from that.
+    ///
+    /// This split is needed because of the `FfiConverter` interface.  For struct impls, `lower`
+    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
+    /// implement the interface.
+    fn object_names(&self, obj: &Object) -> (String, String) {
+        let class_name = self.class_name(obj.name());
+        match obj.imp() {
+            ObjectImpl::Struct => (format!("{class_name}Interface"), class_name),
+            ObjectImpl::Trait => {
+                let interface_name = format!("{class_name}Impl");
+                (class_name, interface_name)
+            }
+        }
+    }
 }
 
 pub trait AsCodeType {
@@ -347,7 +368,7 @@ impl<T: AsType> AsCodeType for T {
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum { name, .. } => Box::new(enum_::EnumCodeType::new(name)),
-            Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
+            Type::Object { name, imp, .. } => Box::new(object::ObjectCodeType::new(name, imp)),
             Type::Record { name, .. } => Box::new(record::RecordCodeType::new(name)),
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
@@ -518,6 +539,10 @@ pub mod filters {
         Ok(KotlinCodeOracle
             .find_as_error(&as_type.as_type())
             .ffi_converter_name())
+    }
+
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+        Ok(KotlinCodeOracle.object_names(obj))
     }
 
     /// Remove the "`" chars we put around function/variable names

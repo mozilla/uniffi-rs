@@ -21,7 +21,7 @@ pub(super) fn trait_impl(
     let trait_impl_ident = trait_impl_ident(&trait_name);
     let internals_ident = internals_ident(&trait_name);
     let init_ident = Ident::new(
-        &uniffi_meta::init_callback_fn_symbol_name(&mod_path, &trait_name),
+        &uniffi_meta::init_callback_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
     );
 
@@ -38,7 +38,7 @@ pub(super) fn trait_impl(
 
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #init_ident(callback: ::uniffi::ForeignCallback, _: &mut ::uniffi::RustCallStatus) {
+        pub extern "C" fn #init_ident(callback: ::uniffi::ForeignCallback) {
             #internals_ident.set_callback(callback);
         }
 

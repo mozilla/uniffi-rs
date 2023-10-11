@@ -153,7 +153,9 @@ mod filters {
             FfiType::RustArcPtr(_) => ":pointer".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
-            FfiType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            // Callback interfaces are not yet implemented, but this needs to return something in
+            // order for the coverall tests to pass.
+            FfiType::ForeignCallback => ":pointer".to_string(),
             FfiType::ForeignExecutorCallback => {
                 unimplemented!("Foreign executors are not implemented")
             }
