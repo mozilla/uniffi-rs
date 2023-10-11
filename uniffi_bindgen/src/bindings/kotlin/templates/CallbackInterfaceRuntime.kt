@@ -1,7 +1,10 @@
+{{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
+{{- self.add_import("java.util.concurrent.locks.ReentrantLock") }}
+{{- self.add_import("kotlin.concurrent.withLock") }}
+
 internal typealias Handle = Long
 internal class ConcurrentHandleMap<T>(
     private val leftMap: MutableMap<Handle, T> = mutableMapOf(),
-    private val rightMap: MutableMap<T, Handle> = mutableMapOf()
 ) {
     private val lock = java.util.concurrent.locks.ReentrantLock()
     private val currentHandle = AtomicLong(0L)
@@ -9,16 +12,14 @@ internal class ConcurrentHandleMap<T>(
 
     fun insert(obj: T): Handle =
         lock.withLock {
-            rightMap[obj] ?:
-                currentHandle.getAndAdd(stride)
-                    .also { handle ->
-                        leftMap[handle] = obj
-                        rightMap[obj] = handle
-                    }
+            currentHandle.getAndAdd(stride)
+                .also { handle ->
+                    leftMap[handle] = obj
+                }
             }
 
     fun get(handle: Handle) = lock.withLock {
-        leftMap[handle]
+        leftMap[handle] ?: throw InternalException("No callback in handlemap; this is a Uniffi bug")
     }
 
     fun delete(handle: Handle) {
@@ -27,15 +28,12 @@ internal class ConcurrentHandleMap<T>(
 
     fun remove(handle: Handle): T? =
         lock.withLock {
-            leftMap.remove(handle)?.let { obj ->
-                rightMap.remove(obj)
-                obj
-            }
+            leftMap.remove(handle)
         }
 }
 
 interface ForeignCallback : com.sun.jna.Callback {
-    public fun callback(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int
+    public fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int
 }
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
@@ -46,29 +44,20 @@ internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
 internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
-public abstract class FfiConverterCallbackInterface<CallbackInterface>(
-    protected val foreignCallback: ForeignCallback
-): FfiConverter<CallbackInterface, Handle> {
-    private val handleMap = ConcurrentHandleMap<CallbackInterface>()
+public abstract class FfiConverterCallbackInterface<CallbackInterface>: FfiConverter<CallbackInterface, Handle> {
+    internal val handleMap = ConcurrentHandleMap<CallbackInterface>()
 
-    // Registers the foreign callback with the Rust side.
-    // This method is generated for each callback interface.
-    internal abstract fun register(lib: _UniFFILib)
-
-    fun drop(handle: Handle): RustBuffer.ByValue {
-        return handleMap.remove(handle).let { RustBuffer.ByValue() }
+    internal fun drop(handle: Handle) {
+        handleMap.remove(handle)
     }
 
     override fun lift(value: Handle): CallbackInterface {
-        return handleMap.get(value) ?: throw InternalException("No callback in handlemap; this is a Uniffi bug")
+        return handleMap.get(value)
     }
 
     override fun read(buf: ByteBuffer) = lift(buf.getLong())
 
-    override fun lower(value: CallbackInterface) =
-        handleMap.insert(value).also {
-            assert(handleMap.get(it) === value) { "Handle map is not returning the object we just placed there. This is a bug in the HandleMap." }
-        }
+    override fun lower(value: CallbackInterface) = handleMap.insert(value)
 
     override fun allocationSize(value: CallbackInterface) = 8
 

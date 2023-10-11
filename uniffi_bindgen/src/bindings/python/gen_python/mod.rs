@@ -314,6 +314,21 @@ impl PythonCodeOracle {
             FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
+
+    /// Get the name of the protocol and class name for an object.
+    ///
+    /// For struct impls, the class name is the object name and the protocol name is derived from that.
+    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    fn object_names(&self, obj: &Object) -> (String, String) {
+        let class_name = self.class_name(obj.name());
+        match obj.imp() {
+            ObjectImpl::Struct => (format!("{class_name}Protocol"), class_name),
+            ObjectImpl::Trait => {
+                let protocol_name = format!("{class_name}Impl");
+                (class_name, protocol_name)
+            }
+        }
+    }
 }
 
 pub trait AsCodeType {
@@ -433,5 +448,10 @@ pub mod filters {
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.enum_variant_name(nm))
+    }
+
+    /// Get the idiomatic Python rendering of an individual enum variant.
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+        Ok(PythonCodeOracle.object_names(obj))
     }
 }

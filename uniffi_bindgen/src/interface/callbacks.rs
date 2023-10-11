@@ -35,7 +35,7 @@
 
 use uniffi_meta::Checksum;
 
-use super::ffi::{FfiArgument, FfiFunction, FfiType};
+use super::ffi::FfiFunction;
 use super::object::Method;
 use super::{AsType, Type, TypeIterator};
 
@@ -77,13 +77,7 @@ impl CallbackInterface {
     }
 
     pub(super) fn derive_ffi_funcs(&mut self) {
-        self.ffi_init_callback.name =
-            uniffi_meta::init_callback_fn_symbol_name(&self.module_path, &self.name);
-        self.ffi_init_callback.arguments = vec![FfiArgument {
-            name: "callback_stub".to_string(),
-            type_: FfiType::ForeignCallback,
-        }];
-        self.ffi_init_callback.return_type = None;
+        self.ffi_init_callback = FfiFunction::callback_init(&self.module_path, &self.name);
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {

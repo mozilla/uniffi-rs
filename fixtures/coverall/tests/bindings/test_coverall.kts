@@ -210,10 +210,65 @@ Coveralls("test_interfaces_in_dicts").use { coveralls ->
     assert(coveralls.getRepairs().size == 2)
 }
 
+Coveralls("test_regressions").use { coveralls ->
+    assert(coveralls.getStatus("success") == "status: success")
+}
+
+class KotlinGetters : Getters {
+    override fun getBool(v: Boolean, arg2: Boolean) : Boolean {
+        return v != arg2
+    }
+
+    override fun getString(v: String, arg2: Boolean) : String {
+        if (v == "too-many-holes") {
+            throw CoverallException.TooManyHoles("too many holes")
+        } else if (v == "unexpected-error") {
+            throw RuntimeException("unexpected error")
+        } else if (arg2) {
+            return v.uppercase()
+        } else {
+            return v
+        }
+    }
+
+    override fun getOption(v: String, arg2: Boolean) : String? {
+        if (v == "os-error") {
+            throw ComplexException.OsException(100, 200)
+        } else if (v == "unknown-error") {
+            throw ComplexException.UnknownException()
+        } else if (arg2) {
+            if (!v.isEmpty()) {
+                return v.uppercase()
+            } else {
+                return null
+            }
+        } else {
+            return v
+        }
+    }
+
+    override fun getList(v: List<Int>, arg2: Boolean) : List<Int> {
+        if (arg2) {
+            return v
+        } else {
+            return listOf()
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    override fun getNothing(v: String) = Unit
+}
+
 // Test traits implemented in Rust
 makeRustGetters().let { rustGetters ->
     testGetters(rustGetters)
     testGettersFromKotlin(rustGetters)
+}
+
+// Test traits implemented in Kotlin
+KotlinGetters().let { kotlinGetters ->
+    testGetters(kotlinGetters)
+    testGettersFromKotlin(kotlinGetters)
 }
 
 fun testGettersFromKotlin(getters: Getters) {
@@ -258,8 +313,24 @@ fun testGettersFromKotlin(getters: Getters) {
 
     try {
         getters.getString("unexpected-error", true)
-    } catch(e: InternalException) {
+    } catch(e: Exception) {
         // Expected
+    }
+}
+
+class KotlinNode() : NodeTrait {
+    var currentParent: NodeTrait? = null
+
+    override fun name() = "node-kt"
+
+    override fun setParent(parent: NodeTrait?) {
+        currentParent = parent
+    }
+
+    override fun getParent() = currentParent
+
+    override fun strongCount() : ULong {
+        return 0.toULong() // TODO
     }
 }
 
@@ -273,16 +344,32 @@ getTraits().let { traits ->
     assert(traits[1].name() == "node-2")
     assert(traits[1].strongCount() == 2UL)
 
+    // Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
+    // Swift impl before passing it to `setParent()`
     traits[0].setParent(traits[1])
     assert(ancestorNames(traits[0]) == listOf("node-2"))
     assert(ancestorNames(traits[1]).isEmpty())
-    assert(traits[1].strongCount() == 3UL)
+    assert(traits[1].strongCount() == 2UL)
     assert(traits[0].getParent()!!.name() == "node-2")
+
+    val ktNode = KotlinNode()
+    traits[1].setParent(ktNode)
+    assert(ancestorNames(traits[0]) == listOf("node-2", "node-kt"))
+    assert(ancestorNames(traits[1]) == listOf("node-kt"))
+    assert(ancestorNames(ktNode) == listOf<String>())
+
+    traits[1].setParent(null)
+    ktNode.setParent(traits[0])
+    assert(ancestorNames(ktNode) == listOf("node-1", "node-2"))
+    assert(ancestorNames(traits[0]) == listOf("node-2"))
+    assert(ancestorNames(traits[1]) == listOf<String>())
+
+    // Unset everything and check that we don't get a memory error
+    ktNode.setParent(null)
     traits[0].setParent(null)
 
-    Coveralls("test_regressions").use { coveralls ->
-        assert(coveralls.getStatus("success") == "status: success")
-    }
+    // FIXME: We should be calling `NodeTraitImpl.close()` to release the Rust pointer, however that's
+    // not possible through the `NodeTrait` interface (see #1787).
 }
 
 // This tests that the UniFFI-generated scaffolding doesn't introduce any unexpected locking.

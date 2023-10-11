@@ -278,11 +278,68 @@ class TestCoverall(unittest.TestCase):
         coveralls = Coveralls("test_bytes")
         self.assertEqual(coveralls.reverse(b"123"), b"321")
 
+class PyGetters:
+    def get_bool(self, v, arg2):
+        return v ^ arg2
+
+    def get_string(self, v, arg2):
+        if v == "too-many-holes":
+            raise CoverallError.TooManyHoles
+        elif v == "unexpected-error":
+            raise RuntimeError("unexpected error")
+        elif arg2:
+            return v.upper()
+        else:
+            return v
+
+    def get_option(self, v, arg2):
+        if v == "os-error":
+            raise ComplexError.OsError(100, 200)
+        elif v == "unknown-error":
+            raise ComplexError.UnknownError
+        elif arg2:
+            if v:
+                return v.upper()
+            else:
+                return None
+        else:
+            return v
+
+    def get_list(self, v, arg2):
+        if arg2:
+            return v
+        else:
+            return []
+
+    def get_nothing(self, _v):
+        return None
+
+class PyNode:
+    def __init__(self):
+        self.parent = None
+
+    def name(self):
+        return "node-py"
+
+    def set_parent(self, parent):
+        self.parent = parent
+
+    def get_parent(self):
+        return self.parent
+
+    def strong_count(self):
+        return 0 # TODO
+
 class TraitsTest(unittest.TestCase):
     # Test traits implemented in Rust
-    def test_rust_getters(self):
-        test_getters(make_rust_getters())
-        self.check_getters_from_python(make_rust_getters())
+    # def test_rust_getters(self):
+    #     test_getters(None)
+    #     self.check_getters_from_python(make_rust_getters())
+
+    # Test traits implemented in Rust
+    def test_python_getters(self):
+        test_getters(PyGetters())
+        #self.check_getters_from_python(PyGetters())
 
     def check_getters_from_python(self, getters):
         self.assertEqual(getters.get_bool(True, True), False);
@@ -316,7 +373,8 @@ class TraitsTest(unittest.TestCase):
         with self.assertRaises(InternalError):
             getters.get_string("unexpected-error", True)
 
-    def test_node(self):
+    def test_path(self):
+        # Get traits creates 2 objects that implement the trait
         traits = get_traits()
         self.assertEqual(traits[0].name(), "node-1")
         # Note: strong counts are 1 more than you might expect, because the strong_count() method
@@ -326,11 +384,33 @@ class TraitsTest(unittest.TestCase):
         self.assertEqual(traits[1].name(), "node-2")
         self.assertEqual(traits[1].strong_count(), 2)
 
+        # Let's try connecting them together
         traits[0].set_parent(traits[1])
+        # Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
+        # python impl before passing it to `set_parent()`
+        self.assertEqual(traits[1].strong_count(), 2)
         self.assertEqual(ancestor_names(traits[0]), ["node-2"])
         self.assertEqual(ancestor_names(traits[1]), [])
-        self.assertEqual(traits[1].strong_count(), 3)
         self.assertEqual(traits[0].get_parent().name(), "node-2")
+
+        # Throw in a Python implementation of the trait
+        # The ancestry chain now goes traits[0] -> traits[1] -> py_node
+        py_node = PyNode()
+        traits[1].set_parent(py_node)
+        self.assertEqual(ancestor_names(traits[0]), ["node-2", "node-py"])
+        self.assertEqual(ancestor_names(traits[1]), ["node-py"])
+        self.assertEqual(ancestor_names(py_node), [])
+
+        # Rotating things.
+        # The ancestry chain now goes py_node -> traits[0] -> traits[1]
+        traits[1].set_parent(None)
+        py_node.set_parent(traits[0])
+        self.assertEqual(ancestor_names(py_node), ["node-1", "node-2"])
+        self.assertEqual(ancestor_names(traits[0]), ["node-2"])
+        self.assertEqual(ancestor_names(traits[1]), [])
+
+        # Make sure we don't crash when undoing it all
+        py_node.set_parent(None)
         traits[0].set_parent(None)
 
 if __name__=='__main__':

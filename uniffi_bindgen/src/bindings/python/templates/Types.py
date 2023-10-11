@@ -85,7 +85,7 @@
 {%- when Type::Map { key_type, value_type } %}
 {%- include "MapTemplate.py" %}
 
-{%- when Type::CallbackInterface { name: id, module_path } %}
+{%- when Type::CallbackInterface { name, module_path } %}
 {%- include "CallbackInterfaceTemplate.py" %}
 
 {%- when Type::Custom { name, module_path, builtin } %}

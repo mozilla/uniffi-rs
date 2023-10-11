@@ -122,11 +122,27 @@ fn get_buttons() -> Vec<Arc<dyn Button>> { ... }
 fn press(button: Arc<dyn Button>) -> Arc<dyn Button> { ... }
 ```
 
-See the ["traits" example](https://github.com/mozilla/uniffi-rs/tree/main/examples/traits) for more.
+### Foreign implementations
+
+Traits can also be implemented on the foreign side passed into Rust, for example:
+
+```python
+class PyButton(uniffi_module.Button):
+    def name(self):
+        return "PyButton"
+
+uniffi_module.press(PyButton())
+```
+
+Note: This is currently supported on Python, Kotlin, and Swift.
 
 ### Traits construction
 
 Because any number of `struct`s may implement a trait, they don't have constructors.
+
+### Traits example
+
+See the ["traits" example](https://github.com/mozilla/uniffi-rs/tree/main/examples/traits) for more.
 
 ## Alternate Named Constructors
 

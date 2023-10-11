@@ -241,13 +241,19 @@ impl ComponentInterface {
         let fielded = !e.is_flat();
         // For flat errors, we should only generate read() methods if we need them to support
         // callback interface errors
-        let used_in_callback_interface = self
+        let used_in_foreign_interface = self
             .callback_interface_definitions()
             .iter()
             .flat_map(|cb| cb.methods())
+            .chain(
+                self.object_definitions()
+                    .iter()
+                    .filter(|o| o.is_trait_interface())
+                    .flat_map(|o| o.methods()),
+            )
             .any(|m| m.throws_type() == Some(&e.as_type()));
 
-        self.is_name_used_as_error(&e.name) && (fielded || used_in_callback_interface)
+        self.is_name_used_as_error(&e.name) && (fielded || used_in_foreign_interface)
     }
 
     /// Get details about all `Type::External` types.

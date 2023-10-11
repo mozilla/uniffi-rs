@@ -125,20 +125,35 @@ impl ScaffoldingBits {
         udl_mode: bool,
     ) -> Self {
         let ident = &sig.ident;
-        let ffi_converter = if is_trait {
+        let lift_impl = if is_trait {
             quote! {
-                <::std::sync::Arc<dyn #self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+                <::std::sync::Arc<dyn #self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
             }
         } else {
             quote! {
-                <::std::sync::Arc<#self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+                <::std::sync::Arc<#self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
             }
         };
-        let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #ffi_converter::FfiType })
+        let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #lift_impl::FfiType })
             .chain(sig.scaffolding_params())
             .collect();
+        let try_lift_self = if is_trait {
+            // For trait interfaces we need to special case this.  Trait interfaces normally lift
+            // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
+            // pointer.
+            quote! {
+                {
+                    let foreign_arc = ::std::boxed::Box::leak(unsafe { Box::from_raw(uniffi_self_lowered as *mut ::std::sync::Arc<dyn #self_ident>) });
+                    // Take a clone for our own use.
+                    Ok(::std::sync::Arc::clone(foreign_arc))
+                }
+            }
+        } else {
+            quote! { #lift_impl::try_lift(uniffi_self_lowered) }
+        };
+
         let lift_closure = sig.lift_closure(Some(quote! {
-            match #ffi_converter::try_lift(uniffi_self_lowered) {
+            match #try_lift_self {
                 Ok(v) => v,
                 Err(e) => return Err(("self", e))
             }
