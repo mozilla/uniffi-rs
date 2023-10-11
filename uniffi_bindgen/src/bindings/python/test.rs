@@ -42,6 +42,7 @@ pub fn run_script(
         &cdylib_path,
         None,
         &[TargetLanguage::Python],
+        None,
         &out_dir,
         false,
     )?;
