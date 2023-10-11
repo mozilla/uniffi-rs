@@ -13,34 +13,48 @@ use std::iter;
 use syn::Ident;
 
 pub(super) fn trait_impl(
-    ident: &Ident,
+    mod_path: &str,
     trait_ident: &Ident,
-    internals_ident: &Ident,
     items: &[ImplItem],
 ) -> syn::Result<TokenStream> {
+    let trait_name = ident_to_string(trait_ident);
+    let trait_impl_ident = trait_impl_ident(&trait_name);
+    let internals_ident = internals_ident(&trait_name);
+    let init_ident = Ident::new(
+        &uniffi_meta::init_callback_fn_symbol_name(&mod_path, &trait_name),
+        Span::call_site(),
+    );
+
     let trait_impl_methods = items
         .iter()
         .map(|item| match item {
-            ImplItem::Method(sig) => gen_method_impl(sig, internals_ident),
+            ImplItem::Method(sig) => gen_method_impl(sig, &internals_ident),
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<TokenStream>>()?;
-    let ffi_converter_tokens = ffi_converter_callback_interface_impl(trait_ident, ident, false);
-
     Ok(quote! {
         #[doc(hidden)]
+        static #internals_ident: ::uniffi::ForeignCallbackInternals = ::uniffi::ForeignCallbackInternals::new();
+
+        #[doc(hidden)]
+        #[no_mangle]
+        pub extern "C" fn #init_ident(callback: ::uniffi::ForeignCallback, _: &mut ::uniffi::RustCallStatus) {
+            #internals_ident.set_callback(callback);
+        }
+
+        #[doc(hidden)]
         #[derive(Debug)]
-        struct #ident {
+        struct #trait_impl_ident {
             handle: u64,
         }
 
-        impl #ident {
+        impl #trait_impl_ident {
             fn new(handle: u64) -> Self {
                 Self { handle }
             }
         }
 
-        impl ::std::ops::Drop for #ident {
+        impl ::std::ops::Drop for #trait_impl_ident {
             fn drop(&mut self) {
                 #internals_ident.invoke_callback::<(), crate::UniFfiTag>(
                     self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
@@ -48,14 +62,29 @@ pub(super) fn trait_impl(
             }
         }
 
-        ::uniffi::deps::static_assertions::assert_impl_all!(#ident: Send);
+        ::uniffi::deps::static_assertions::assert_impl_all!(#trait_impl_ident: Send);
 
-        impl #trait_ident for #ident {
+        impl #trait_ident for #trait_impl_ident {
             #trait_impl_methods
         }
-
-        #ffi_converter_tokens
     })
+}
+
+pub fn trait_impl_ident(trait_name: &str) -> Ident {
+    Ident::new(
+        &format!("UniFFICallbackHandler{trait_name}"),
+        Span::call_site(),
+    )
+}
+
+pub fn internals_ident(trait_name: &str) -> Ident {
+    Ident::new(
+        &format!(
+            "UNIFFI_FOREIGN_CALLBACK_INTERNALS_{}",
+            trait_name.to_ascii_uppercase()
+        ),
+        Span::call_site(),
+    )
 }
 
 pub fn ffi_converter_callback_interface_impl(
@@ -63,7 +92,7 @@ pub fn ffi_converter_callback_interface_impl(
     trait_impl_ident: &Ident,
     udl_mode: bool,
 ) -> TokenStream {
-    let name = ident_to_string(trait_ident);
+    let trait_name = ident_to_string(trait_ident);
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
     let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, udl_mode);
@@ -93,7 +122,7 @@ pub fn ffi_converter_callback_interface_impl(
                 ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
             )
             .concat_str(#mod_path)
-            .concat_str(#name);
+            .concat_str(#trait_name);
         }
 
         unsafe #lift_ref_impl_spec {
