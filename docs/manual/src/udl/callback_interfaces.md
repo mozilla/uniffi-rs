@@ -47,20 +47,21 @@ It's currently allowed for callback interface methods to return a regular value
 rather than a `Result<>`.  However, this is means that any exception from the
 foreign bindings will lead to a panic.
 
-### Extra requirements for errors used in callback interfaces
+### Errors used in callback interfaces
 
 In order to support errors in callback interfaces, UniFFI must be able to
 properly [lift the error](../internals/lifting_and_lowering.md).  This means
 that the if the error is described by an `enum` rather than an `interface` in
 the UDL (see [Errors](./errors.md)) then all variants of the Rust enum must be unit variants.
 
-In addition to expected errors, a callback interface call can result in all kinds of
-unexpected errors.  Some examples are the foreign code throws an exception that's not part
-of the exception type or there was a problem marshalling the data for the call.  UniFFI
-uses `uniffi::UnexpectedUniFFICallbackError` for these cases.  Your code must include a
-`From<uniffi::UnexpectedUniFFICallbackError>` impl for your error type to handle those or
-the UniFFI scaffolding code will fail to compile.  See `example/callbacks` for an
-example of how to do this.
+### Unexpected errors
+
+When Rust code invokes a callback interface method, that call may result in all kinds of unexpected errors.
+Some examples are the foreign code throws an exception that's not part of the exception type or there was a problem marshalling the data for the call.
+UniFFI creates an `uniffi::UnexpectedUniFFICallbackError` for these cases.
+If your code defines a `From<uniffi::UnexpectedUniFFICallbackError>` impl for your error type, then those errors will be converted into your error type which will be returned to the Rust caller.
+If not, then any unexpected errors will result in a panic.
+See `example/callbacks` for an example of this.
 
 ## 3. Define a callback interface in the UDL
 

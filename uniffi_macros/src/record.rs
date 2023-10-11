@@ -6,8 +6,8 @@ use syn::{
 };
 
 use crate::util::{
-    create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw, mod_path,
-    tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, ident_to_string, kw,
+    mod_path, tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
     UniffiAttributeArgs,
 };
 
@@ -41,7 +41,7 @@ pub(crate) fn record_ffi_converter_impl(
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
+    let derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
     let write_impl: TokenStream = record.fields.iter().map(write_field).collect();

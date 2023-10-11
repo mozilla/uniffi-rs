@@ -42,6 +42,12 @@
 - Updated the async functionality to correctly handle cancellation (#1669)
 - Kotlin: Fixed low-level issue with exported async APIs
 
+### What's changed?
+
+- Implementing `From<uniffi::UnexpectedUniFFICallbackError` is now optional for callback interface error types.
+  If the error type implements that, things will continue to work as before.
+  If not, then any unexpected callback error will result in a Rust panic.
+
 ## v0.24.3 (backend crates: v0.24.3) - (_2023-08-01_)
 
 [All changes in v0.24.3](https://github.com/mozilla/uniffi-rs/compare/v0.24.2...v0.24.3).

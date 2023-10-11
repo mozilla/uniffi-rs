@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::util::{derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header};
+use crate::util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::Path;
@@ -15,7 +15,7 @@ pub(crate) fn expand_ffi_converter_custom_type(
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
+    let derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
 
