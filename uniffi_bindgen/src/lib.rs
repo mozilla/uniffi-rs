@@ -223,13 +223,19 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     udl_file: impl AsRef<Utf8Path>,
     config_file_override: Option<impl AsRef<Utf8Path>>,
     out_dir_override: Option<impl AsRef<Utf8Path>>,
+    library_file: Option<impl AsRef<Utf8Path>>,
 ) -> Result<()> {
     let out_dir_override = out_dir_override.as_ref().map(|p| p.as_ref());
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
+    let library_file = library_file.as_ref().map(|p| p.as_ref());
 
-    let crate_root = guess_crate_root(udl_file.as_ref())?;
+    let crate_root = guess_crate_root(udl_file.as_ref()).context("Failed to guess crate root")?;
     let out_dir = get_out_dir(udl_file.as_ref(), out_dir_override)?;
-    let component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
+
+    let mut component = parse_udl(udl_file.as_ref()).context("Error parsing UDL")?;
+    if let Some(library_file) = library_file {
+        macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
+    }
 
     let mut config = load_initial_config::<T::Config>(crate_root, config_file_override)?;
     config.update_from_ci(&component);
@@ -266,26 +272,16 @@ pub fn generate_bindings(
     library_file: Option<&Utf8Path>,
     try_format_code: bool,
 ) -> Result<()> {
-    let mut component = parse_udl(udl_file)?;
-    if let Some(library_file) = library_file {
-        macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
-    }
-    let crate_root = &guess_crate_root(udl_file).context("Failed to guess crate root")?;
-
-    let mut config = load_initial_config::<Config>(crate_root, config_file_override)?;
-    config.update_from_ci(&component);
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
-    for language in target_languages {
-        bindings::write_bindings(
-            &config.bindings,
-            &component,
-            &out_dir,
-            language,
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages,
             try_format_code,
-        )?;
-    }
-
-    Ok(())
+        },
+        udl_file,
+        config_file_override,
+        out_dir_override,
+        library_file,
+    )
 }
 
 pub fn dump_json(library_path: &Utf8Path) -> Result<String> {
