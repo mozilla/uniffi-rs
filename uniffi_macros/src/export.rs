@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use proc_macro2::{Ident, Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{visit_mut::VisitMut, Item, Type};
 
@@ -75,44 +75,18 @@ pub(crate) fn expand_export(
             callback_interface: true,
         } => {
             let trait_name = ident_to_string(&self_ident);
-            let trait_impl_ident = Ident::new(
-                &format!("UniFFICallbackHandler{trait_name}"),
-                Span::call_site(),
-            );
-            let internals_ident = Ident::new(
-                &format!(
-                    "UNIFFI_FOREIGN_CALLBACK_INTERNALS_{}",
-                    trait_name.to_ascii_uppercase()
-                ),
-                Span::call_site(),
-            );
-
-            let trait_impl = callback_interface::trait_impl(
-                &trait_impl_ident,
-                &self_ident,
-                &internals_ident,
-                &items,
-            )
-            .unwrap_or_else(|e| e.into_compile_error());
+            let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
+            let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items)
+                .unwrap_or_else(|e| e.into_compile_error());
             let metadata_items = callback_interface::metadata_items(&self_ident, &items, &mod_path)
                 .unwrap_or_else(|e| vec![e.into_compile_error()]);
-
-            let init_ident = Ident::new(
-                &uniffi_meta::init_callback_fn_symbol_name(&mod_path, &trait_name),
-                Span::call_site(),
-            );
+            let ffi_converter_tokens =
+                ffi_converter_callback_interface_impl(&self_ident, &trait_impl_ident, udl_mode);
 
             Ok(quote! {
-                #[doc(hidden)]
-                static #internals_ident: ::uniffi::ForeignCallbackInternals = ::uniffi::ForeignCallbackInternals::new();
-
-                #[doc(hidden)]
-                #[no_mangle]
-                pub extern "C" fn #init_ident(callback: ::uniffi::ForeignCallback, _: &mut ::uniffi::RustCallStatus) {
-                    #internals_ident.set_callback(callback);
-                }
-
                 #trait_impl
+
+                #ffi_converter_tokens
 
                 #(#metadata_items)*
             })
