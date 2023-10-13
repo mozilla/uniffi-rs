@@ -547,4 +547,56 @@ mod test {
         let not_a_crate_root = &this_crate_root.join("src/templates");
         assert!(guess_crate_root(&not_a_crate_root.join("src/example.udl")).is_err());
     }
+
+    #[test]
+    fn test_merge_toml() {
+        let default = r#"
+            foo = "foo"
+            bar = "bar"
+
+            [table1]
+            foo = "foo"
+            bar = "bar"
+        "#;
+        let mut default = toml::de::from_str(default).unwrap();
+
+        let override_toml = r#"
+            # update key
+            bar = "BAR"
+            # insert new key
+            baz = "BAZ"
+
+            [table1]
+            # update key
+            bar = "BAR"
+            # insert new key
+            baz = "BAZ"
+
+            # new table
+            [table1.table2]
+            bar = "BAR"
+            baz = "BAZ"
+        "#;
+        let override_toml = toml::de::from_str(override_toml).unwrap();
+
+        let expected = r#"
+            foo = "foo"
+            bar = "BAR"
+            baz = "BAZ"
+
+            [table1]
+            foo = "foo"
+            bar = "BAR"
+            baz = "BAZ"
+
+            [table1.table2]
+            bar = "BAR"
+            baz = "BAZ"
+        "#;
+        let expected: toml::value::Table = toml::de::from_str(expected).unwrap();
+
+        merge_toml(&mut default, override_toml);
+
+        assert_eq!(&expected, &default);
+    }
 }
