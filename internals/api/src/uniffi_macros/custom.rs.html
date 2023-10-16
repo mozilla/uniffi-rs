@@ -87,7 +87,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::util::{derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header};
+</span><span class="kw">use </span><span class="kw">crate</span>::util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header};
 <span class="kw">use </span>proc_macro2::{Ident, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::Path;
@@ -100,7 +100,7 @@
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, udl_mode);
-    <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
+    <span class="kw">let </span>derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
 

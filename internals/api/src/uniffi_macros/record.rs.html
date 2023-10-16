@@ -230,8 +230,8 @@
 };
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw, mod_path,
-    tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, ident_to_string, kw,
+    mod_path, tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
     UniffiAttributeArgs,
 };
 
@@ -265,7 +265,7 @@
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, udl_mode);
-    <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
+    <span class="kw">let </span>derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(write_field).collect();

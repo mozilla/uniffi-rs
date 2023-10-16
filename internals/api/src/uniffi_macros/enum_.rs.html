@@ -198,7 +198,7 @@
 <span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
+    create_metadata_items, derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
     try_metadata_value_from_usize, try_read_field,
 };
 
@@ -259,7 +259,7 @@
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverter&quot;</span>, ident, udl_mode);
-    <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(ident, udl_mode);
+    <span class="kw">let </span>derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
