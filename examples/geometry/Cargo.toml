@@ -11,10 +11,10 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_geometry"
 
 [dependencies]
-uniffi = {path = "../../uniffi", version = "0.24" }
+uniffi = {path = "../../uniffi", version = "0.25" }
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.24", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.24", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests"] }
