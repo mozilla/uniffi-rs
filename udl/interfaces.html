@@ -262,9 +262,19 @@ For example, this UDL:</p>
 fn press(button: Arc&lt;dyn Button&gt;) -&gt; Arc&lt;dyn Button&gt; { ... }
 <span class="boring">}
 </span></code></pre></pre>
-<p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/traits">&quot;traits&quot; example</a> for more.</p>
+<h3><a class="header" href="#foreign-implementations" id="foreign-implementations">Foreign implementations</a></h3>
+<p>Traits can also be implemented on the foreign side passed into Rust, for example:</p>
+<pre><code class="language-python">class PyButton(uniffi_module.Button):
+    def name(self):
+        return &quot;PyButton&quot;
+
+uniffi_module.press(PyButton())
+</code></pre>
+<p>Note: This is currently supported on Python, Kotlin, and Swift.</p>
 <h3><a class="header" href="#traits-construction" id="traits-construction">Traits construction</a></h3>
 <p>Because any number of <code>struct</code>s may implement a trait, they don't have constructors.</p>
+<h3><a class="header" href="#traits-example" id="traits-example">Traits example</a></h3>
+<p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/traits">&quot;traits&quot; example</a> for more.</p>
 <h2><a class="header" href="#alternate-named-constructors" id="alternate-named-constructors">Alternate Named Constructors</a></h2>
 <p>In addition to the default constructor connected to the <code>::new()</code> method, you can specify
 alternate named constructors to create object instances in different ways. Each such constructor

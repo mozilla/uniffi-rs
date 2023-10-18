@@ -272,6 +272,21 @@
 <a href="#272" id="272">272</a>
 <a href="#273" id="273">273</a>
 <a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -399,20 +414,35 @@
         udl_mode: bool,
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-        <span class="kw">let </span>ffi_converter = <span class="kw">if </span>is_trait {
+        <span class="kw">let </span>lift_impl = <span class="kw">if </span>is_trait {
             <span class="macro">quote! </span>{
-                &lt;::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+                &lt;::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt; <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
             }
         } <span class="kw">else </span>{
             <span class="macro">quote! </span>{
-                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::FfiConverter&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
             }
         };
-        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = iter::once(<span class="macro">quote! </span>{ uniffi_self_lowered: #ffi_converter::FfiType })
+        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = iter::once(<span class="macro">quote! </span>{ uniffi_self_lowered: #lift_impl::FfiType })
             .chain(sig.scaffolding_params())
             .collect();
+        <span class="kw">let </span>try_lift_self = <span class="kw">if </span>is_trait {
+            <span class="comment">// For trait interfaces we need to special case this.  Trait interfaces normally lift
+            // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
+            // pointer.
+            </span><span class="macro">quote! </span>{
+                {
+                    <span class="kw">let </span>foreign_arc = ::std::boxed::Box::leak(<span class="kw">unsafe </span>{ Box::from_raw(uniffi_self_lowered <span class="kw">as </span><span class="kw-2">*mut </span>::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt;) });
+                    <span class="comment">// Take a clone for our own use.
+                    </span><span class="prelude-val">Ok</span>(::std::sync::Arc::clone(foreign_arc))
+                }
+            }
+        } <span class="kw">else </span>{
+            <span class="macro">quote! </span>{ #lift_impl::try_lift(uniffi_self_lowered) }
+        };
+
         <span class="kw">let </span>lift_closure = sig.lift_closure(<span class="prelude-val">Some</span>(<span class="macro">quote! </span>{
-            <span class="kw">match </span>#ffi_converter::try_lift(uniffi_self_lowered) {
+            <span class="kw">match </span>#try_lift_self {
                 <span class="prelude-val">Ok</span>(v) =&gt; v,
                 <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>((<span class="string">&quot;self&quot;</span>, e))
             }

@@ -173,6 +173,35 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -188,34 +217,48 @@
 <span class="kw">use </span>syn::Ident;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>trait_impl(
-    ident: <span class="kw-2">&amp;</span>Ident,
+    mod_path: <span class="kw-2">&amp;</span>str,
     trait_ident: <span class="kw-2">&amp;</span>Ident,
-    internals_ident: <span class="kw-2">&amp;</span>Ident,
     items: <span class="kw-2">&amp;</span>[ImplItem],
 ) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>trait_name = ident_to_string(trait_ident);
+    <span class="kw">let </span>trait_impl_ident = trait_impl_ident(<span class="kw-2">&amp;</span>trait_name);
+    <span class="kw">let </span>internals_ident = internals_ident(<span class="kw-2">&amp;</span>trait_name);
+    <span class="kw">let </span>init_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::init_callback_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>trait_name),
+        Span::call_site(),
+    );
+
     <span class="kw">let </span>trait_impl_methods = items
         .iter()
         .map(|item| <span class="kw">match </span>item {
-            ImplItem::Method(sig) =&gt; gen_method_impl(sig, internals_ident),
+            ImplItem::Method(sig) =&gt; gen_method_impl(sig, <span class="kw-2">&amp;</span>internals_ident),
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
         })
         .collect::&lt;syn::Result&lt;TokenStream&gt;&gt;()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ffi_converter_tokens = ffi_converter_callback_interface_impl(trait_ident, ident, <span class="bool-val">false</span>);
-
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
+        </span><span class="kw">static </span>#internals_ident: ::uniffi::ForeignCallbackInternals = ::uniffi::ForeignCallbackInternals::new();
+
+        <span class="attr">#[doc(hidden)]
+        #[no_mangle]
+        </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#init_ident(callback: ::uniffi::ForeignCallback) {
+            #internals_ident.set_callback(callback);
+        }
+
+        <span class="attr">#[doc(hidden)]
         #[derive(Debug)]
-        </span><span class="kw">struct </span>#ident {
+        </span><span class="kw">struct </span>#trait_impl_ident {
             handle: u64,
         }
 
-        <span class="kw">impl </span>#ident {
+        <span class="kw">impl </span>#trait_impl_ident {
             <span class="kw">fn </span>new(handle: u64) -&gt; <span class="self">Self </span>{
                 <span class="self">Self </span>{ handle }
             }
         }
 
-        <span class="kw">impl </span>::std::ops::Drop <span class="kw">for </span>#ident {
+        <span class="kw">impl </span>::std::ops::Drop <span class="kw">for </span>#trait_impl_ident {
             <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
                 #internals_ident.invoke_callback::&lt;(), <span class="kw">crate</span>::UniFfiTag&gt;(
                     <span class="self">self</span>.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
@@ -223,14 +266,29 @@
             }
         }
 
-        <span class="macro">::uniffi::deps::static_assertions::assert_impl_all!</span>(#ident: Send);
+        <span class="macro">::uniffi::deps::static_assertions::assert_impl_all!</span>(#trait_impl_ident: Send);
 
-        <span class="kw">impl </span>#trait_ident <span class="kw">for </span>#ident {
+        <span class="kw">impl </span>#trait_ident <span class="kw">for </span>#trait_impl_ident {
             #trait_impl_methods
         }
-
-        #ffi_converter_tokens
     })
+}
+
+<span class="kw">pub fn </span>trait_impl_ident(trait_name: <span class="kw-2">&amp;</span>str) -&gt; Ident {
+    Ident::new(
+        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;UniFFICallbackHandler{trait_name}&quot;</span>),
+        Span::call_site(),
+    )
+}
+
+<span class="kw">pub fn </span>internals_ident(trait_name: <span class="kw-2">&amp;</span>str) -&gt; Ident {
+    Ident::new(
+        <span class="kw-2">&amp;</span><span class="macro">format!</span>(
+            <span class="string">&quot;UNIFFI_FOREIGN_CALLBACK_INTERNALS_{}&quot;</span>,
+            trait_name.to_ascii_uppercase()
+        ),
+        Span::call_site(),
+    )
 }
 
 <span class="kw">pub fn </span>ffi_converter_callback_interface_impl(
@@ -238,7 +296,7 @@
     trait_impl_ident: <span class="kw-2">&amp;</span>Ident,
     udl_mode: bool,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>name = ident_to_string(trait_ident);
+    <span class="kw">let </span>trait_name = ident_to_string(trait_ident);
     <span class="kw">let </span>dyn_trait = <span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident };
     <span class="kw">let </span>box_dyn_trait = <span class="macro">quote! </span>{ ::std::boxed::Box&lt;#dyn_trait&gt; };
     <span class="kw">let </span>lift_impl_spec = tagged_impl_header(<span class="string">&quot;Lift&quot;</span>, <span class="kw-2">&amp;</span>box_dyn_trait, udl_mode);
@@ -268,7 +326,7 @@
                 ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
             )
             .concat_str(#mod_path)
-            .concat_str(#name);
+            .concat_str(#trait_name);
         }
 
         <span class="kw">unsafe </span>#lift_ref_impl_spec {

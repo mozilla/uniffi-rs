@@ -225,6 +225,19 @@
 <a href="#225" id="225">225</a>
 <a href="#226" id="226">226</a>
 <a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -377,6 +390,19 @@
 }
 
 <span class="kw">impl </span>FfiFunction {
+    <span class="kw">pub fn </span>callback_init(module_path: <span class="kw-2">&amp;</span>str, trait_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: uniffi_meta::init_callback_fn_symbol_name(module_path, trait_name),
+            arguments: <span class="macro">vec!</span>[FfiArgument {
+                name: <span class="string">&quot;handle&quot;</span>.to_string(),
+                type_: FfiType::ForeignCallback,
+            }],
+            return_type: <span class="prelude-val">None</span>,
+            has_rust_call_status_arg: <span class="bool-val">false</span>,
+            ..<span class="self">Self</span>::default()
+        }
+    }
+
     <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }

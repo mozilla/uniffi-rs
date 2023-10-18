@@ -400,14 +400,6 @@
 <a href="#400" id="400">400</a>
 <a href="#401" id="401">401</a>
 <a href="#402" id="402">402</a>
-<a href="#403" id="403">403</a>
-<a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a>
-<a href="#408" id="408">408</a>
-<a href="#409" id="409">409</a>
-<a href="#410" id="410">410</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -665,14 +657,6 @@
 #[proc_macro_attribute]
 </span><span class="kw">pub fn </span>export_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     do_export(attrs, input, <span class="bool-val">true</span>)
-}
-
-<span class="doccomment">/// Generate various support elements, including the FfiConverter implementation,
-/// for a trait interface for the scaffolding code
-</span><span class="attr">#[doc(hidden)]
-#[proc_macro]
-</span><span class="kw">pub fn </span>expand_trait_interface_support(tokens: TokenStream) -&gt; TokenStream {
-    export::ffi_converter_trait_impl(<span class="kw-2">&amp;</span><span class="macro">syn::parse_macro_input!</span>(tokens), <span class="bool-val">true</span>).into()
 }
 
 <span class="doccomment">/// Generate the FfiConverter implementation for an trait interface for the scaffolding code

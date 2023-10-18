@@ -24,6 +24,10 @@
 <a href="#24" id="24">24</a>
 <a href="#25" id="25">25</a>
 <a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -32,22 +36,26 @@
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>CallbackInterfaceCodeType {
-    id: String,
+    name: String,
 }
 
 <span class="kw">impl </span>CallbackInterfaceCodeType {
-    <span class="kw">pub fn </span>new(id: String) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{ id }
+    <span class="kw">pub fn </span>new(name: String) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ name }
     }
 }
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>CallbackInterfaceCodeType {
     <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">super</span>::SwiftCodeOracle.class_name(<span class="kw-2">&amp;</span><span class="self">self</span>.id)
+        <span class="kw">super</span>::SwiftCodeOracle.class_name(<span class="kw-2">&amp;</span><span class="self">self</span>.name)
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{}&quot;</span>, <span class="self">self</span>.type_label())
+    }
+
+    <span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffiCallbackInit{}&quot;</span>, <span class="self">self</span>.name))
     }
 }
 </code></pre></div></section></main></body></html>

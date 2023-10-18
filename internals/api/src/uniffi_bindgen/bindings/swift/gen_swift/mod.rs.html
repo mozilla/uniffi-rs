@@ -626,6 +626,29 @@
 <a href="#626" id="626">626</a>
 <a href="#627" id="627">627</a>
 <a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1032,7 +1055,7 @@
             Type::Duration =&gt; Box::new(miscellany::DurationCodeType),
 
             Type::Enum { name, .. } =&gt; Box::new(enum_::EnumCodeType::new(name)),
-            Type::Object { name, .. } =&gt; Box::new(object::ObjectCodeType::new(name)),
+            Type::Object { name, imp, .. } =&gt; Box::new(object::ObjectCodeType::new(name, imp)),
             Type::Record { name, .. } =&gt; Box::new(record::RecordCodeType::new(name)),
             Type::CallbackInterface { name, .. } =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
@@ -1117,6 +1140,25 @@
 
     <span class="kw">fn </span>ffi_canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="self">self</span>.ffi_type_label_raw(ffi_type)
+    }
+
+    <span class="doccomment">/// Get the name of the protocol and class name for an object.
+    ///
+    /// For struct impls, the class name is the object name and the protocol name is derived from that.
+    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    ///
+    /// This split is needed because of the `FfiConverter` protocol.  For struct impls, `lower`
+    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
+    /// implement the protocol.
+    </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
+        <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(obj.name());
+        <span class="kw">match </span>obj.imp() {
+            ObjectImpl::Struct =&gt; (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Protocol&quot;</span>), class_name),
+            ObjectImpl::Trait =&gt; {
+                <span class="kw">let </span>protocol_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+                (class_name, protocol_name)
+            }
+        }
     }
 }
 
@@ -1252,6 +1294,10 @@
                 <span class="prelude-val">None </span>=&gt; <span class="string">&quot;&quot;</span>.into(),
             }
         ))
+    }
+
+    <span class="kw">pub fn </span>object_names(obj: <span class="kw-2">&amp;</span>Object) -&gt; <span class="prelude-ty">Result</span>&lt;(String, String), askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(SwiftCodeOracle.object_names(obj))
     }
 }
 </code></pre></div></section></main></body></html>

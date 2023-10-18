@@ -435,6 +435,26 @@
 <a href="#435" id="435">435</a>
 <a href="#436" id="436">436</a>
 <a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -751,6 +771,21 @@
             FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
         }
     }
+
+    <span class="doccomment">/// Get the name of the protocol and class name for an object.
+    ///
+    /// For struct impls, the class name is the object name and the protocol name is derived from that.
+    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
+        <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(obj.name());
+        <span class="kw">match </span>obj.imp() {
+            ObjectImpl::Struct =&gt; (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Protocol&quot;</span>), class_name),
+            ObjectImpl::Trait =&gt; {
+                <span class="kw">let </span>protocol_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+                (class_name, protocol_name)
+            }
+        }
+    }
 }
 
 <span class="kw">pub trait </span>AsCodeType {
@@ -870,6 +905,11 @@
     <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.
     </span><span class="kw">pub fn </span>enum_variant_py(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(PythonCodeOracle.enum_variant_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.
+    </span><span class="kw">pub fn </span>object_names(obj: <span class="kw-2">&amp;</span>Object) -&gt; <span class="prelude-ty">Result</span>&lt;(String, String), askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.object_names(obj))
     }
 }
 </code></pre></div></section></main></body></html>

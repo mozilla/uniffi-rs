@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["expand_export","ffi_converter_trait_impl","rewrite_self_type"],"mod":["attributes","callback_interface","item","scaffolding","utrait"]};
+window.SIDEBAR_ITEMS = {"fn":["expand_export","rewrite_self_type"],"mod":["attributes","callback_interface","item","scaffolding","trait_interface","utrait"]};

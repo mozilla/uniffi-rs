@@ -141,12 +141,6 @@
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
-<a href="#146" id="146">146</a>
-<a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -184,7 +178,7 @@
 
 </span><span class="kw">use </span>uniffi_meta::Checksum;
 
-<span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
+<span class="kw">use </span><span class="kw">super</span>::ffi::FfiFunction;
 <span class="kw">use </span><span class="kw">super</span>::object::Method;
 <span class="kw">use super</span>::{AsType, Type, TypeIterator};
 
@@ -226,13 +220,7 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="self">self</span>.ffi_init_callback.name =
-            uniffi_meta::init_callback_fn_symbol_name(<span class="kw-2">&amp;</span><span class="self">self</span>.module_path, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
-        <span class="self">self</span>.ffi_init_callback.arguments = <span class="macro">vec!</span>[FfiArgument {
-            name: <span class="string">&quot;callback_stub&quot;</span>.to_string(),
-            type_: FfiType::ForeignCallback,
-        }];
-        <span class="self">self</span>.ffi_init_callback.return_type = <span class="prelude-val">None</span>;
+        <span class="self">self</span>.ffi_init_callback = FfiFunction::callback_init(<span class="kw-2">&amp;</span><span class="self">self</span>.module_path, <span class="kw-2">&amp;</span><span class="self">self</span>.name);
     }
 
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
