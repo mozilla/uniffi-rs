@@ -11,12 +11,12 @@ name = "uniffi_proc_macro"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { path = "../../uniffi", version = "0.24" }
+uniffi = { path = "../../uniffi", version = "0.25" }
 thiserror = "1.0"
 lazy_static = "1.4"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.24", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.24", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests"] }

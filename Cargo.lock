@@ -1557,7 +1557,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi"
-version = "0.24.3"
+version = "0.25.0"
 dependencies = [
  "anyhow",
  "camino",
