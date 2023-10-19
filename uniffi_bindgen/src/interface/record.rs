@@ -121,6 +121,8 @@ impl Field {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
     }
+
+    pub fn type_(&self) -> &Type { &self.type_ }
 }
 
 impl AsType for Field {

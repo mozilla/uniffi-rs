@@ -24,17 +24,6 @@ impl CodeType for ObjectCodeType {
         super::KotlinCodeOracle.class_name(&self.name)
     }
 
-    fn protocol_label(&self) -> String {
-        if self.has_protocol() {
-            let mut label = self.type_label();
-            let index = self.type_label().find('?').unwrap_or(label.len());
-            label.insert_str(index, "Interface");
-            label
-        } else {
-            self.type_label()
-        }
-    }
-
     fn canonical_name(&self) -> String {
         format!("Type{}", self.name)
     }
@@ -48,9 +37,5 @@ impl CodeType for ObjectCodeType {
             ObjectImpl::Struct => None,
             ObjectImpl::Trait => Some(format!("uniffiCallbackInterface{}.register", self.name)),
         }
-    }
-
-    fn has_protocol(&self) -> bool {
-        matches!(self.imp, ObjectImpl::Struct)
     }
 }

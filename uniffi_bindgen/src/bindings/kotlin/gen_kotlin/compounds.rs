@@ -38,10 +38,6 @@ macro_rules! impl_code_type_for_compound {
                     format!($type_label_pattern, super::KotlinCodeOracle.find(self.inner()).type_label())
                 }
 
-                fn protocol_label(&self) -> String {
-                    format!($type_label_pattern, super::KotlinCodeOracle.find(self.inner()).protocol_label())
-                }
-
                 fn canonical_name(&self) -> String {
                     format!($canonical_name_pattern, super::KotlinCodeOracle.find(self.inner()).canonical_name())
                 }
@@ -49,8 +45,6 @@ macro_rules! impl_code_type_for_compound {
                 fn literal(&self, literal: &Literal) -> String {
                     render_literal(literal, self.inner())
                 }
-
-                fn has_protocol(&self) -> bool { matches!(self.inner(), Type::Object { .. }) }
             }
         }
     }
@@ -88,14 +82,6 @@ impl CodeType for MapCodeType {
         )
     }
 
-    fn protocol_label(&self) -> String {
-        format!(
-            "Map<{}, {}>",
-            super::KotlinCodeOracle.find(self.key()).protocol_label(),
-            super::KotlinCodeOracle.find(self.value()).protocol_label(),
-        )
-    }
-
     fn canonical_name(&self) -> String {
         format!(
             "Map{}{}",
@@ -106,10 +92,5 @@ impl CodeType for MapCodeType {
 
     fn literal(&self, literal: &Literal) -> String {
         render_literal(literal, &self.value)
-    }
-
-    fn has_protocol(&self) -> bool {
-        super::KotlinCodeOracle.find(self.key()).has_protocol()
-            || super::KotlinCodeOracle.find(self.value()).has_protocol()
     }
 }

@@ -334,6 +334,49 @@ impl KotlinCodeOracle {
             }
         }
     }
+
+    fn protocol_name(&self, type_: &Type) -> String {
+        match type_ {
+            Type::Object { module_path, name, imp } => {
+                if self.has_protocol(type_) {
+                    format!("{}Interface", self.class_name(name))
+                } else {
+                    self.class_name(name)
+                }
+            }
+            Type::Map { key_type, value_type} => {
+                let key_protocol_name = self.protocol_name(key_type);
+                let value_protocol_name = self.protocol_name(value_type);
+                format!("Map<{}, {}>", key_protocol_name, value_protocol_name)
+            }
+            Type::Optional { inner_type } => {
+                format!("{}?", self.protocol_name(inner_type))
+            }
+            Type::Sequence { inner_type } => {
+                format!("List<{}>", self.protocol_name(inner_type))
+            }
+            _ => type_.as_codetype().type_label(),
+        }
+    }
+
+    fn has_protocol(&self, type_: &Type) -> bool {
+        match type_ {
+            Type::Object { module_path, name, imp } => {
+                matches!(imp, ObjectImpl::Struct)
+            }
+            Type::Map { key_type, value_type} => {
+                self.has_protocol(key_type)
+                    || self.has_protocol(value_type)
+            }
+            Type::Optional { inner_type } => {
+                matches!(inner_type.as_type(), Type::Object { .. })
+            }
+            Type::Sequence { inner_type } => {
+                matches!(inner_type.as_type(), Type::Object { .. })
+            }
+            _ => false
+        }
+    }
 }
 
 pub trait AsCodeType {
@@ -399,8 +442,8 @@ pub mod filters {
         Ok(as_ct.as_codetype().type_label())
     }
 
-    pub fn protocol_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
-        Ok(as_ct.as_codetype().protocol_label())
+    pub fn protocol_name(type_: &Type) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.protocol_name(type_))
     }
 
     pub fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -411,9 +454,9 @@ pub mod filters {
         Ok(as_ct.as_codetype().ffi_converter_name())
     }
 
-    pub fn downcast_if_needed(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
-        let codetype = as_ct.as_codetype();
-        let ret = if codetype.has_protocol() && codetype.type_label() != codetype.protocol_label() {
+    pub fn downcast_if_needed(type_: &Type) -> Result<String, askama::Error> {
+        let codetype = type_.as_codetype();
+        let ret = if KotlinCodeOracle.has_protocol(type_) && codetype.type_label() != KotlinCodeOracle.protocol_name(type_) {
             format!(" as {}", codetype.type_label())
         } else {
             String::new()
