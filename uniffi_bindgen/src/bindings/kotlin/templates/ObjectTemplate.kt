@@ -2,6 +2,7 @@
 {%- if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
 {%- let (interface_name, impl_class_name) = obj|object_names %}
 {%- let methods = obj.methods() %}
+{%- let is_interface_disposable = true %}
 
 {% include "Interface.kt" %}
 

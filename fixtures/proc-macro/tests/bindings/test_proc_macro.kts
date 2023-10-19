@@ -69,7 +69,7 @@ class KtTestCallbackInterface : TestCallbackInterface {
         }
     }
 
-    override fun callbackHandler(o: Object): UInt {
+    override fun callbackHandler(o: ObjectInterface): UInt {
         val v = o.takeError(BasicException.InvalidInput());
         return v
     }

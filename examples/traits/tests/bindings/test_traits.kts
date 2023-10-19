@@ -11,6 +11,8 @@ for (button in getButtons()) {
 // Test a button implemented in Kotlin
 class KtButton : Button {
     override fun name() = "KtButton"
+
+    override fun destroy() {}
 }
 
 assert(press(KtButton()).name() == "KtButton")

@@ -257,6 +257,8 @@ class KotlinGetters : Getters {
 
     @Suppress("UNUSED_PARAMETER")
     override fun getNothing(v: String) = Unit
+
+    override fun destroy() {}
 }
 
 // Test traits implemented in Rust
@@ -332,6 +334,8 @@ class KotlinNode() : NodeTrait {
     override fun strongCount() : ULong {
         return 0.toULong() // TODO
     }
+
+    override fun destroy() {}
 }
 
 // Test NodeTrait

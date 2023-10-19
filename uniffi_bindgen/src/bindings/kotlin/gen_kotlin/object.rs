@@ -51,6 +51,6 @@ impl CodeType for ObjectCodeType {
     }
 
     fn has_protocol(&self) -> bool {
-        self.id != "Object"
+        matches!(self.imp, ObjectImpl::Struct)
     }
 }

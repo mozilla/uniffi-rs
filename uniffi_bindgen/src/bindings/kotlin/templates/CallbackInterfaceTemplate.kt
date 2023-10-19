@@ -3,6 +3,7 @@
 {%- let callback_handler_obj = format!("uniffiCallbackInterface{}", name) %}
 {%- let ffi_init_callback = cbi.ffi_init_callback() %}
 {%- let interface_name = cbi|type_name %}
+{%- let is_interface_disposable = false %}
 {%- let methods = cbi.methods() %}
 
 {% include "Interface.kt" %}
