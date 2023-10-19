@@ -37,7 +37,7 @@
 - Proc-macros: The `handle_unknown_callback_error` attribute is no longer needed for callback
   interface errors
 - Foreign types can now implement trait interfaces
-- Kotlin binginds now use interfaces wherever possible.
+- Kotlin bindings now use interfaces wherever possible.
 
 ### What's Fixed
 
