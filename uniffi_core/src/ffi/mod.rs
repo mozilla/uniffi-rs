@@ -12,6 +12,7 @@ pub mod foreignexecutor;
 pub mod rustbuffer;
 pub mod rustcalls;
 pub mod rustfuture;
+pub mod slab;
 
 pub use callbackinterface::*;
 pub use ffidefault::FfiDefault;
@@ -21,3 +22,4 @@ pub use foreignexecutor::*;
 pub use rustbuffer::*;
 pub use rustcalls::*;
 pub use rustfuture::*;
+pub use slab::*;

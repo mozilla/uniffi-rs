@@ -21,8 +21,20 @@ once_cell = "1.10.0"
 # Enable "async" so that receivers implement Future, no need for "std" since we don't block on them.
 oneshot = { version = "0.1", features = ["async"] }
 # Regular dependencies
+append-only-vec = "0.1"
 paste = "1.0"
 static_assertions = "1.1.0"
+
+[dev-dependencies]
+rand = "0.8"
+
+# We want to test the slab code with loom, but don't want to introduce it as a direct dependency
+# because that would cause issue with the mozilla-central Rust vendoring.  So, uncomment the `loom`
+# dopendency before running the tests, then run:
+#
+# cargo test -p uniffi_core --release --config build.rustflags='"--cfg loom"' slab_loom_test
+#
+# loom = "0.7.1"
 
 [features]
 default = []
