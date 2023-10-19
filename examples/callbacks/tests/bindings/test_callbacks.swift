@@ -33,17 +33,28 @@ class OnCallAnsweredImpl : CallAnswerer {
 }
 
 let telephone = Telephone()
+let sim = getSimCards()[0];
 
-assert(try! telephone.call(answerer: OnCallAnsweredImpl(withMode: "ready")) == "Bonjour")
+assert(try! telephone.call(sim: sim, answerer: OnCallAnsweredImpl(withMode: "ready")) == "Bonjour")
 
+// We can implement our own sim cards.
+class Sim : SimCard {
+    func name() -> String {
+        return "swift"
+    }
+}
+
+assert(try! telephone.call(sim: Sim(), answerer: OnCallAnsweredImpl(withMode: "ready")) == "swift est bon marché")
+
+// Error cases.
 do {
-    _ = try telephone.call(answerer: OnCallAnsweredImpl(withMode: "busy"))
+    _ = try telephone.call(sim: sim, answerer: OnCallAnsweredImpl(withMode: "busy"))
 } catch TelephoneError.Busy {
     // Expected error
 }
 
 do {
-    _ = try telephone.call(answerer: OnCallAnsweredImpl(withMode: "unexpected-value"))
+    _ = try telephone.call(sim: sim, answerer: OnCallAnsweredImpl(withMode: "unexpected-value"))
 } catch TelephoneError.InternalTelephoneError {
     // Expected error
 }

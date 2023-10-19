@@ -22,18 +22,27 @@ class CallAnswererImpl(val mode: String) : CallAnswerer {
 }
 
 val telephone = Telephone()
+val sim = getSimCards()[0]
 
-assert(telephone.call(CallAnswererImpl("normal")) == "Bonjour")
+assert(telephone.call(sim, CallAnswererImpl("normal")) == "Bonjour")
+
+// Our own sim.
+class Sim() : SimCard {
+    override fun name(): String {
+        return "kotlin"
+    }
+}
+assert(telephone.call(Sim(), CallAnswererImpl("normal")) == "kotlin est bon marché")
 
 try {
-    telephone.call(CallAnswererImpl("busy"))
+    telephone.call(sim, CallAnswererImpl("busy"))
     throw RuntimeException("Should have thrown a Busy exception!")
 } catch(e: TelephoneException.Busy) {
     // It's okay
 }
 
 try {
-    telephone.call(CallAnswererImpl("something-else"))
+    telephone.call(sim, CallAnswererImpl("something-else"))
     throw RuntimeException("Should have thrown an internal exception!")
 } catch(e: TelephoneException.InternalTelephoneException) {
     // It's okay
