@@ -13,10 +13,10 @@ internal object uniffiRustFutureContinuationCallback: UniFffiRustFutureContinuat
 }
 
 internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
-    rustFuture: Pointer,
-    pollFunc: (Pointer, UniFffiRustFutureContinuationCallbackType, USize) -> Unit,
-    completeFunc: (Pointer, RustCallStatus) -> F,
-    freeFunc: (Pointer) -> Unit,
+    rustFuture: UniffiHandle,
+    pollFunc: (UniffiHandle, UniFffiRustFutureContinuationCallbackType, USize) -> Unit,
+    completeFunc: (UniffiHandle, RustCallStatus) -> F,
+    freeFunc: (UniffiHandle) -> Unit,
     liftFunc: (F) -> T,
     errorHandler: CallStatusErrorHandler<E>
 ): T {

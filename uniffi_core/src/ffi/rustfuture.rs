@@ -12,7 +12,7 @@
 //!
 //! 0. At startup, register a [RustFutureContinuationCallback] by calling
 //!    rust_future_continuation_callback_set.
-//! 1. Call the scaffolding function to get a [RustFutureHandle]
+//! 1. Call the scaffolding function to get a [Handle]
 //! 2a. In a loop:
 //!   - Call [rust_future_poll]
 //!   - Suspend the function until the [rust_future_poll] continuation function is called
@@ -86,7 +86,10 @@ use std::{
     task::{Context, Poll, Wake},
 };
 
-use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
+use crate::{
+    derive_ffi_traits, rust_call_with_out_status, FfiDefault, Handle, HandleAlloc, LowerReturn,
+    RustCallStatus,
+};
 
 /// Result code for [rust_future_poll].  This is passed to the continuation function.
 #[repr(i8)]
@@ -104,37 +107,26 @@ pub enum RustFuturePoll {
 /// to continue progress on the future.
 pub type RustFutureContinuationCallback = extern "C" fn(callback_data: *const (), RustFuturePoll);
 
-/// Opaque handle for a Rust future that's stored by the foreign language code
-#[repr(transparent)]
-pub struct RustFutureHandle(*const ());
-
 // === Public FFI API ===
 
-/// Create a new [RustFutureHandle]
+/// Create a new [Handle] for a RustFuture
 ///
 /// For each exported async function, UniFFI will create a scaffolding function that uses this to
-/// create the [RustFutureHandle] to pass to the foreign code.
-pub fn rust_future_new<F, T, UT>(future: F, tag: UT) -> RustFutureHandle
+/// create the [Handle] to pass to the foreign code.
+pub fn rust_future_new<F, T, UT>(future: F, tag: UT) -> Handle
 where
-    // F is the future type returned by the exported async function.  It needs to be Send + `static
-    // since it will move between threads for an indeterminate amount of time as the foreign
-    // executor calls polls it and the Rust executor wakes it.  It does not need to by `Sync`,
-    // since we synchronize all access to the values.
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
-    // 'static for the same reason as F.
     T: LowerReturn<UT> + Send + 'static,
-    // The UniFfiTag ZST. The Send + 'static bound is to keep rustc happy.
     UT: Send + 'static,
+    // Needed to create a Handle
+    dyn RustFutureFfi<T::ReturnType>: HandleAlloc<UT>,
 {
     // Create a RustFuture and coerce to `Arc<dyn RustFutureFfi>`, which is what we use to
     // implement the FFI
-    let future_ffi = RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>;
-    // Box the Arc, to convert the wide pointer into a normal sized pointer so that we can pass it
-    // to the foreign code.
-    let boxed_ffi = Box::new(future_ffi);
-    // We can now create a RustFutureHandle
-    RustFutureHandle(Box::into_raw(boxed_ffi) as *mut ())
+    <dyn RustFutureFfi<T::ReturnType> as HandleAlloc<UT>>::new_handle(
+        RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>
+    )
 }
 
 /// Poll a Rust future
@@ -145,14 +137,15 @@ where
 ///
 /// # Safety
 ///
-/// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_poll<ReturnType>(
-    handle: RustFutureHandle,
+/// The [Handle] must not previously have been passed to [rust_future_free]
+pub unsafe fn rust_future_poll<ReturnType, UT>(
+    handle: Handle,
     callback: RustFutureContinuationCallback,
     data: *const (),
-) {
-    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
-    future.clone().ffi_poll(callback, data)
+) where
+    dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
+{
+    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_poll(callback, data)
 }
 
 /// Cancel a Rust future
@@ -164,10 +157,12 @@ pub unsafe fn rust_future_poll<ReturnType>(
 ///
 /// # Safety
 ///
-/// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_cancel<ReturnType>(handle: RustFutureHandle) {
-    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
-    future.clone().ffi_cancel()
+/// The [Handle] must not previously have been passed to [rust_future_free]
+pub unsafe fn rust_future_cancel<ReturnType, UT>(handle: Handle)
+where
+    dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
+{
+    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_cancel()
 }
 
 /// Complete a Rust future
@@ -177,15 +172,17 @@ pub unsafe fn rust_future_cancel<ReturnType>(handle: RustFutureHandle) {
 ///
 /// # Safety
 ///
-/// - The [RustFutureHandle] must not previously have been passed to [rust_future_free]
+/// - The [Handle] must not previously have been passed to [rust_future_free]
 /// - The `T` param must correctly correspond to the [rust_future_new] call.  It must
 ///   be `<Output as LowerReturn<UT>>::ReturnType`
-pub unsafe fn rust_future_complete<ReturnType>(
-    handle: RustFutureHandle,
+pub unsafe fn rust_future_complete<ReturnType, UT>(
+    handle: Handle,
     out_status: &mut RustCallStatus,
-) -> ReturnType {
-    let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
-    future.ffi_complete(out_status)
+) -> ReturnType
+where
+    dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
+{
+    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_complete(out_status)
 }
 
 /// Free a Rust future, dropping the strong reference and releasing all references held by the
@@ -193,11 +190,29 @@ pub unsafe fn rust_future_complete<ReturnType>(
 ///
 /// # Safety
 ///
-/// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_free<ReturnType>(handle: RustFutureHandle) {
-    let future = Box::from_raw(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
-    future.ffi_free()
+/// The [Handle] must not previously have been passed to [rust_future_free]
+pub unsafe fn rust_future_free<ReturnType, UT>(handle: Handle)
+where
+    dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
+{
+    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::consume_handle(handle).ffi_free()
 }
+
+// Derive HandleAlloc for dyn RustFutureFfi<T> for all FFI return types
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<u8>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<i8>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<u16>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<i16>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<u32>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<i32>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<u64>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<i64>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<f32>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<f64>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<Handle>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<crate::RustBuffer>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<()>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<*const ::std::ffi::c_void>);
 
 /// Thread-safe storage for [RustFutureContinuationCallback] data
 ///
@@ -282,7 +297,7 @@ unsafe impl Sync for ContinuationDataCell {}
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -296,7 +311,7 @@ where
 
 impl<F, T, UT> WrappedFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -375,7 +390,7 @@ where
 // that we will treat the raw pointer properly, for example by not returning it twice.
 unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -385,7 +400,16 @@ where
 /// Future that the foreign code is awaiting
 struct RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // F is the future type returned by the exported async function.  It needs to be Send + `static
+    // since it will move between threads for an indeterminate amount of time as the foreign
+    // executor calls polls it and the Rust executor wakes it.  It does not need to by `Sync`,
+    // since we synchronize all access to the values.
+    F: Future<Output = T> + Send + 'static,
+    // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
+    // 'static for the same reason as F.
+    T: LowerReturn<UT> + Send + 'static,
+    // The UniFfiTag ZST. The Send + 'static bound is to keep rustc happy.
+    UT: Send + 'static,
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -401,7 +425,7 @@ where
 
 impl<F, T, UT> RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -453,7 +477,7 @@ where
 
 impl<F, T, UT> Wake for RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -479,7 +503,7 @@ where
 /// x86-64 machine . By parametrizing on `T::ReturnType` we can instead monomorphize by hand and
 /// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
-trait RustFutureFfi<ReturnType> {
+pub trait RustFutureFfi<ReturnType> {
     fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ());
     fn ffi_cancel(&self);
     fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;
@@ -488,7 +512,7 @@ trait RustFutureFfi<ReturnType> {
 
 impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,

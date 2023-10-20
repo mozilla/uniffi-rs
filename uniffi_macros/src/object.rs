@@ -20,15 +20,11 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(
-            ptr: *const ::std::ffi::c_void,
+            handle: ::uniffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
             uniffi::rust_call(call_status, || {
-                assert!(!ptr.is_null());
-                let ptr = ptr.cast::<#ident>();
-                unsafe {
-                    ::std::sync::Arc::decrement_strong_count(ptr);
-                }
+                <#ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::consume_handle(handle);
                 Ok(())
             });
         }
@@ -58,61 +54,28 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         #[automatically_derived]
         /// Support for passing reference-counted shared objects via the FFI.
         ///
-        /// To avoid dealing with complex lifetime semantics over the FFI, any data passed
-        /// by reference must be encapsulated in an `Arc`, and must be safe to share
-        /// across threads.
+        /// Objects are `Arc<>` values in Rust and Handle values on the FFI.
+        /// The `HandleAlloc` trait doc string has usage guidelines for handles.
         unsafe #impl_spec {
-            // Don't use a pointer to <T> as that requires a `pub <T>`
-            type FfiType = *const ::std::os::raw::c_void;
+            type FfiType = ::uniffi::Handle;
 
-            /// When lowering, we have an owned `Arc` and we transfer that ownership
-            /// to the foreign-language code, "leaking" it out of Rust's ownership system
-            /// as a raw pointer. This works safely because we have unique ownership of `self`.
-            /// The foreign-language code is responsible for freeing this by calling the
-            /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
-            ///
-            /// Safety: when freeing the resulting pointer, the foreign-language code must
-            /// call the destructor function specific to the type `T`. Calling the destructor
-            /// function for other types may lead to undefined behaviour.
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                ::std::sync::Arc::into_raw(obj) as Self::FfiType
+                <#ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::new_handle(obj)
             }
 
-            /// When lifting, we receive a "borrow" of the `Arc` that is owned by
-            /// the foreign-language code, and make a clone of it for our own use.
-            ///
-            /// Safety: the provided value must be a pointer previously obtained by calling
-            /// the `lower()` or `write()` method of this impl.
-            fn try_lift(v: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                let v = v as *const #ident;
-                // We musn't drop the `Arc` that is owned by the foreign-language code.
-                let foreign_arc = ::std::mem::ManuallyDrop::new(unsafe { ::std::sync::Arc::<Self>::from_raw(v) });
-                // Take a clone for our own use.
-                Ok(::std::sync::Arc::clone(&*foreign_arc))
+            fn try_lift(handle: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
+                Ok(<#ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::get_arc(handle))
             }
 
-            /// When writing as a field of a complex structure, make a clone and transfer ownership
-            /// of it to the foreign-language code by writing its pointer into the buffer.
-            /// The foreign-language code is responsible for freeing this by calling the
-            /// `ffi_object_free` FFI function provided by the corresponding UniFFI type.
-            ///
-            /// Safety: when freeing the resulting pointer, the foreign-language code must
-            /// call the destructor function specific to the type `T`. Calling the destructor
-            /// function for other types may lead to undefined behaviour.
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj).as_raw())
             }
 
-            /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
-            /// that is owned by the foreign-language code, and make a clone for our own use.
-            ///
-            /// Safety: the buffer must contain a pointer previously obtained by calling
-            /// the `lower()` or `write()` method of this impl.
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(
+                    ::uniffi::Handle::from_raw_unchecked(::uniffi::deps::bytes::Buf::get_u64(buf))
+                )
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
