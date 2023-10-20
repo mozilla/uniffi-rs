@@ -159,10 +159,7 @@ mod filters {
             FfiType::ForeignExecutorCallback => {
                 unimplemented!("Foreign executors are not implemented")
             }
-            FfiType::ForeignExecutorHandle => {
-                unimplemented!("Foreign executors are not implemented")
-            }
-            FfiType::RustFutureContinuationCallback | FfiType::RustFutureContinuationData => {
+            FfiType::RustFutureContinuationCallback => {
                 unimplemented!("Async functions are not implemented")
             }
         })

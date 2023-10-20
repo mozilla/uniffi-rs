@@ -195,7 +195,7 @@ impl Object {
     pub fn derive_ffi_funcs(&mut self) -> Result<()> {
         assert!(!self.ffi_func_free.name().is_empty());
         self.ffi_func_free.arguments = vec![FfiArgument {
-            name: "ptr".to_string(),
+            name: "handle".to_string(),
             type_: FfiType::Handle,
         }];
         self.ffi_func_free.return_type = None;
@@ -424,7 +424,7 @@ impl Method {
     // hence `arguments` and `full_arguments` are different.
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
-            name: "ptr".to_string(),
+            name: "handle".to_string(),
             // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
             type_: Type::Object {

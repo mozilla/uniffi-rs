@@ -19,6 +19,12 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let ffi_rustbuffer_from_bytes_ident = format_ident!("ffi_{module_path}_rustbuffer_from_bytes");
     let ffi_rustbuffer_free_ident = format_ident!("ffi_{module_path}_rustbuffer_free");
     let ffi_rustbuffer_reserve_ident = format_ident!("ffi_{module_path}_rustbuffer_reserve");
+    let ffi_slab_new = format_ident!("ffi_{module_path}_slab_new");
+    let ffi_slab_free = format_ident!("ffi_{module_path}_slab_free");
+    let ffi_slab_insert = format_ident!("ffi_{module_path}_slab_insert");
+    let ffi_slab_check_handle = format_ident!("ffi_{module_path}_slab_check_handle");
+    let ffi_slab_inc_ref = format_ident!("ffi_{module_path}_slab_inc_ref");
+    let ffi_slab_dec_ref = format_ident!("ffi_{module_path}_slab_dec_ref");
     let reexport_hack_ident = format_ident!("{module_path}_uniffi_reexport_hack");
     let ffi_foreign_executor_callback_set_ident =
         format_ident!("ffi_{module_path}_foreign_executor_callback_set");
@@ -62,36 +68,78 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #ffi_rustbuffer_alloc_ident(size: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
-            uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
+        pub extern "C" fn #ffi_rustbuffer_alloc_ident(size: i32, call_status: &mut ::uniffi::RustCallStatus) -> ::uniffi::RustBuffer {
+            ::uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_from_bytes_ident(bytes: uniffi::ForeignBytes, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
-            uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status)
+        pub unsafe extern "C" fn #ffi_rustbuffer_from_bytes_ident(bytes: ::uniffi::ForeignBytes, call_status: &mut ::uniffi::RustCallStatus) -> ::uniffi::RustBuffer {
+            ::uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status)
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_free_ident(buf: uniffi::RustBuffer, call_status: &mut uniffi::RustCallStatus) {
-            uniffi::ffi::uniffi_rustbuffer_free(buf, call_status);
+        pub unsafe extern "C" fn #ffi_rustbuffer_free_ident(buf: ::uniffi::RustBuffer, call_status: &mut ::uniffi::RustCallStatus) {
+            ::uniffi::ffi::uniffi_rustbuffer_free(buf, call_status);
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
-            uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
+        pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(buf: ::uniffi::RustBuffer, additional: i32, call_status: &mut ::uniffi::RustCallStatus) -> ::uniffi::RustBuffer {
+            ::uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #ffi_foreign_executor_callback_set_ident(callback: uniffi::ffi::ForeignExecutorCallback) {
-            uniffi::ffi::foreign_executor_callback_set(callback)
+        pub unsafe extern "C" fn #ffi_slab_new() -> ::uniffi::Handle {
+            ::uniffi::uniffi_slab_new()
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub unsafe extern "C" fn #ffi_slab_free(handle: ::uniffi::Handle) {
+            ::uniffi::uniffi_slab_free(handle)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub unsafe extern "C" fn #ffi_slab_insert(slab: ::uniffi::Handle) -> i64 {
+            ::uniffi::uniffi_slab_insert(slab)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub unsafe extern "C" fn #ffi_slab_check_handle(slab: ::uniffi::Handle, handle: ::uniffi::Handle) -> i8 {
+            ::uniffi::uniffi_slab_check_handle(slab, handle)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub unsafe extern "C" fn #ffi_slab_inc_ref(slab: ::uniffi::Handle, handle: ::uniffi::Handle) -> i8 {
+            ::uniffi::uniffi_slab_inc_ref(slab, handle)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub unsafe extern "C" fn #ffi_slab_dec_ref(slab: ::uniffi::Handle, handle: ::uniffi::Handle) -> i8 {
+            ::uniffi::uniffi_slab_dec_ref(slab, handle)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[no_mangle]
+        pub extern "C" fn #ffi_foreign_executor_callback_set_ident(callback: ::uniffi::ffi::ForeignExecutorCallback) {
+            ::uniffi::ffi::foreign_executor_callback_set(callback)
         }
 
         #ffi_rust_future_scaffolding_fns
@@ -130,7 +178,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[doc(hidden)]
         pub trait UniffiCustomTypeConverter {
             type Builtin;
-            fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> where Self: Sized;
+            fn into_custom(val: Self::Builtin) -> ::uniffi::Result<Self> where Self: Sized;
             fn from_custom(obj: Self) -> Self::Builtin;
         }
     })
@@ -161,7 +209,6 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
         (quote! { f32 }, "f32"),
         (quote! { f64 }, "f64"),
         (quote! { ::uniffi::Handle }, "handle"),
-        (quote! { *const ::std::ffi::c_void }, "pointer"),
         (quote! { ::uniffi::RustBuffer }, "rust_buffer"),
         (quote! { () }, "void"),
     ];
@@ -176,7 +223,7 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: *const ()) {
+            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: ::uniffi::Handle) {
                 ::uniffi::ffi::rust_future_poll::<#return_type, crate::UniFfiTag>(handle, callback, data);
             }
 

@@ -104,7 +104,7 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
 
 public struct {{ ffi_converter_name }}: FfiConverter {
     {%- if obj.is_trait_interface() %}
-    fileprivate static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
+    fileprivate static var slab = UniffiSlab<{{ type_name }}>()
     {%- endif %}
 
     typealias FfiType = Int64
@@ -120,10 +120,7 @@ public struct {{ ffi_converter_name }}: FfiConverter {
         // inc-ref the current handle, then return the new reference.
         return value.uniffiCloneHandle()
         {%- when ObjectImpl::Trait %}
-        guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
-            fatalError("Cast to UnsafeMutableRawPointer failed")
-        }
-        return ptr
+        return try! slab.insert(value: value)
         {%- endmatch %}
     }
 

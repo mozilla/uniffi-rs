@@ -48,10 +48,10 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
 
     {% endfor %}
 
-    cb = {{ ffi_converter_name }}._handle_map.get(handle)
+    cb = {{ ffi_converter_name }}._slab.get(handle)
 
     if method == IDX_CALLBACK_FREE:
-        {{ ffi_converter_name }}._handle_map.remove(handle)
+        {{ ffi_converter_name }}._slab.remove(handle)
 
         # Successfull return
         # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`

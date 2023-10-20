@@ -37,11 +37,3 @@ runBlocking {
     assert(result.delayMs <= 200U)
     tester.close()
 }
-
-// Test that we cleanup when dropping a ForeignExecutor handles
-assert(FfiConverterForeignExecutor.handleCount() == 0)
-val tester = ForeignExecutorTester(coroutineScope)
-val tester2 = ForeignExecutorTester.newFromSequence(listOf(coroutineScope))
-tester.close()
-tester2.close()
-assert(FfiConverterForeignExecutor.handleCount() == 0)

@@ -3,18 +3,18 @@
 internal const val UNIFFI_RUST_FUTURE_POLL_READY = 0.toShort()
 internal const val UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1.toShort()
 
-internal val uniffiContinuationHandleMap = UniFfiHandleMap<CancellableContinuation<Short>>()
+internal val uniffiContinuationSlab = UniffiSlab<CancellableContinuation<Short>>()
 
 // FFI type for Rust future continuations
 internal object uniffiRustFutureContinuationCallback: UniFffiRustFutureContinuationCallbackType {
-    override fun callback(continuationHandle: USize, pollResult: Short) {
-        uniffiContinuationHandleMap.remove(continuationHandle)?.resume(pollResult)
+    override fun callback(continuationHandle: UniffiHandle, pollResult: Short) {
+        uniffiContinuationSlab.remove(continuationHandle).resume(pollResult)
     }
 }
 
 internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
     rustFuture: UniffiHandle,
-    pollFunc: (UniffiHandle, UniFffiRustFutureContinuationCallbackType, USize) -> Unit,
+    pollFunc: (UniffiHandle, UniFffiRustFutureContinuationCallbackType, UniffiHandle) -> Unit,
     completeFunc: (UniffiHandle, RustCallStatus) -> F,
     freeFunc: (UniffiHandle) -> Unit,
     liftFunc: (F) -> T,
@@ -26,7 +26,7 @@ internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
                 pollFunc(
                     rustFuture,
                     uniffiRustFutureContinuationCallback,
-                    uniffiContinuationHandleMap.insert(continuation)
+                    uniffiContinuationSlab.insert(continuation)
                 )
             }
         } while (pollResult != UNIFFI_RUST_FUTURE_POLL_READY);

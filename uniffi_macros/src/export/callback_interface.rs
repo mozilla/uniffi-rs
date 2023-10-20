@@ -45,11 +45,11 @@ pub(super) fn trait_impl(
         #[doc(hidden)]
         #[derive(Debug)]
         struct #trait_impl_ident {
-            handle: u64,
+            handle: ::uniffi::Handle,
         }
 
         impl #trait_impl_ident {
-            fn new(handle: u64) -> Self {
+            fn new(handle: ::uniffi::Handle) -> Self {
                 Self { handle }
             }
         }
@@ -106,16 +106,16 @@ pub fn ffi_converter_callback_interface_impl(
         #[doc(hidden)]
         #[automatically_derived]
         unsafe #lift_impl_spec {
-            type FfiType = u64;
+            type FfiType = i64;
 
             fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<Self> {
-                Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(v)))
+                Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(::uniffi::Handle::from_raw(v))))
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 use uniffi::deps::bytes::Buf;
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(buf.get_u64())
+                <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(buf.get_i64())
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(

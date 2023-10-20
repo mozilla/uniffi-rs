@@ -9,6 +9,7 @@ fileprivate enum UniffiInternalError: LocalizedError {
     case unexpectedRustCallStatusCode
     case unexpectedRustCallError
     case unexpectedStaleHandle
+    case slabError
     case rustPanic(_ message: String)
 
     public var errorDescription: String? {
@@ -21,6 +22,7 @@ fileprivate enum UniffiInternalError: LocalizedError {
         case .unexpectedRustCallStatusCode: return "Unexpected RustCallStatus code"
         case .unexpectedRustCallError: return "CALL_ERROR but no errorClass specified"
         case .unexpectedStaleHandle: return "The object in the handle map has been dropped already"
+        case .slabError: return "Slab error"
         case let .rustPanic(message): return message
         }
     }
@@ -99,3 +101,12 @@ private func uniffiCheckCallStatus(
             throw UniffiInternalError.unexpectedRustCallStatusCode
     }
 }
+
+fileprivate extension NSLock {
+    func withLock<T>(f: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+        return try f()
+    }
+}
+

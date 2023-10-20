@@ -29,7 +29,7 @@ typedef struct RustBuffer
     uint8_t *_Nullable data;
 } RustBuffer;
 
-typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const uint8_t *_Nonnull, int32_t, RustBuffer *_Nonnull);
+typedef int32_t (*ForeignCallback)(int64_t, int32_t, const uint8_t *_Nonnull, int32_t, RustBuffer *_Nonnull);
 
 // Task defined in Rust that Swift executes
 typedef void (*UniFfiRustTaskCallback)(const void * _Nullable, int8_t);
@@ -60,7 +60,7 @@ typedef struct RustCallStatus {
 #endif // def UNIFFI_SHARED_H
 
 // Continuation callback for UniFFI Futures
-typedef void (*UniFfiRustFutureContinuation)(void * _Nonnull, int8_t);
+typedef void (*UniFfiRustFutureContinuation)(int64_t, int8_t);
 
 // Scaffolding functions
 {%- for func in ci.iter_ffi_function_definitions() %}

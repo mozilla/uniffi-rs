@@ -9,33 +9,33 @@ _UNIFFI_FOREIGN_EXECUTOR_CALLBACK_CANCELED = 1
 _UNIFFI_FOREIGN_EXECUTOR_CALLBACK_ERROR = 2
 
 class {{ ffi_converter_name }}:
-    _pointer_manager = _UniffiPointerManager()
+    _slab = UniffiSlab()
 
     @classmethod
     def lower(cls, eventloop):
         if not isinstance(eventloop, asyncio.BaseEventLoop):
             raise TypeError("_uniffi_executor_callback: Expected EventLoop instance")
-        return cls._pointer_manager.new_pointer(eventloop)
+        return cls._slab.insert(eventloop)
 
     @classmethod
     def write(cls, eventloop, buf):
-        buf.write_c_size_t(cls.lower(eventloop))
+        buf.write_i64(cls.lower(eventloop))
 
     @classmethod
     def read(cls, buf):
-        return cls.lift(buf.read_c_size_t())
+        return cls.lift(buf.read_i64())
 
     @classmethod
     def lift(cls, value):
-        return cls._pointer_manager.lookup(value)
+        return cls._slab.get(value)
 
 @_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T
-def _uniffi_executor_callback(eventloop_address, delay, task_ptr, task_data):
+def _uniffi_executor_callback(handle, delay, task_ptr, task_data):
     if task_ptr is None:
-        {{ ffi_converter_name }}._pointer_manager.release_pointer(eventloop_address)
+        {{ ffi_converter_name }}._slab.remove(handle)
         return _UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
     else:
-        eventloop = {{ ffi_converter_name }}._pointer_manager.lookup(eventloop_address)
+        eventloop = {{ ffi_converter_name }}._slab.get(handle)
         if eventloop.is_closed():
             return _UNIFFI_FOREIGN_EXECUTOR_CALLBACK_CANCELED
 

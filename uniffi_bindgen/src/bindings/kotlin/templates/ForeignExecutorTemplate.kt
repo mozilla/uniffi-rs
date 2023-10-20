@@ -16,7 +16,7 @@ internal interface UniFfiRustTaskCallback : com.sun.jna.Callback {
 }
 
 internal object UniFfiForeignExecutorCallback : com.sun.jna.Callback {
-    fun callback(handle: USize, delayMs: Int, rustTask: UniFfiRustTaskCallback?, rustTaskData: Pointer?) : Byte {
+    fun callback(handle: UniffiHandle, delayMs: Int, rustTask: UniFfiRustTaskCallback?, rustTaskData: Pointer?) : Byte {
         if (rustTask == null) {
             FfiConverterForeignExecutor.drop(handle)
             return UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
@@ -42,11 +42,11 @@ internal object UniFfiForeignExecutorCallback : com.sun.jna.Callback {
     }
 }
 
-public object FfiConverterForeignExecutor: FfiConverter<CoroutineScope, USize> {
-    internal val handleMap = UniFfiHandleMap<CoroutineScope>()
+public object FfiConverterForeignExecutor: FfiConverter<CoroutineScope, UniffiHandle> {
+    internal val slab = UniffiSlab<CoroutineScope>()
 
-    internal fun drop(handle: USize) {
-        handleMap.remove(handle)
+    internal fun drop(handle: UniffiHandle) {
+        slab.remove(handle)
     }
 
     internal fun register(lib: _UniFFILib) {
@@ -58,26 +58,21 @@ public object FfiConverterForeignExecutor: FfiConverter<CoroutineScope, USize> {
         {% endmatch %}
     }
 
-    // Number of live handles, exposed so we can test the memory management
-    public fun handleCount() : Int {
-        return handleMap.size
-    }
+    override fun allocationSize(value: CoroutineScope) = 8
 
-    override fun allocationSize(value: CoroutineScope) = USize.size
-
-    override fun lift(value: USize): CoroutineScope {
-        return handleMap.get(value) ?: throw RuntimeException("unknown handle in FfiConverterForeignExecutor.lift")
+    override fun lift(value: UniffiHandle): CoroutineScope {
+        return slab.get(value)
     }
 
     override fun read(buf: ByteBuffer): CoroutineScope {
-        return lift(USize.readFromBuffer(buf))
+        return lift(buf.getLong())
     }
 
-    override fun lower(value: CoroutineScope): USize {
-        return handleMap.insert(value)
+    override fun lower(value: CoroutineScope): UniffiHandle {
+        return slab.insert(value)
     }
 
     override fun write(value: CoroutineScope, buf: ByteBuffer) {
-        lower(value).writeToBuffer(buf)
+        buf.putLong(lower(value))
     }
 }

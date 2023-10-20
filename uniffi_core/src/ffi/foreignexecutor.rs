@@ -6,20 +6,7 @@
 
 use std::panic;
 
-use crate::{ForeignExecutorCallback, ForeignExecutorCallbackCell};
-
-/// Opaque handle for a foreign task executor.
-///
-/// Foreign code can either use an actual pointer, or use an integer value casted to it.
-#[repr(transparent)]
-#[derive(Clone, Copy, Debug)]
-pub struct ForeignExecutorHandle(pub(crate) *const ());
-
-// Implement Send + Sync for `ForeignExecutor`.  The foreign bindings code is responsible for
-// making the `ForeignExecutorCallback` thread-safe.
-unsafe impl Send for ForeignExecutorHandle {}
-
-unsafe impl Sync for ForeignExecutorHandle {}
+use crate::{ForeignExecutorCallback, ForeignExecutorCallbackCell, Handle};
 
 /// Result code returned by `ForeignExecutorCallback`
 #[repr(i8)]
@@ -95,11 +82,11 @@ pub fn foreign_executor_callback_set(callback: ForeignExecutorCallback) {
 /// Schedule Rust calls using a foreign executor
 #[derive(Debug)]
 pub struct ForeignExecutor {
-    pub(crate) handle: ForeignExecutorHandle,
+    pub(crate) handle: Handle,
 }
 
 impl ForeignExecutor {
-    pub fn new(executor: ForeignExecutorHandle) -> Self {
+    pub fn new(executor: Handle) -> Self {
         Self { handle: executor }
     }
 
@@ -162,11 +149,11 @@ impl ForeignExecutor {
 /// Low-level schedule interface
 ///
 /// When using this function, take care to ensure that the `ForeignExecutor` that holds the
-/// `ForeignExecutorHandle` has not been dropped.
+/// `Handle` has not been dropped.
 ///
 /// Returns true if the callback was successfully scheduled
 pub(crate) fn schedule_raw(
-    handle: ForeignExecutorHandle,
+    handle: Handle,
     delay: u32,
     callback: RustTaskCallback,
     data: *const (),
@@ -249,6 +236,8 @@ mod test {
     unsafe impl Send for MockEventLoopInner {}
 
     static FOREIGN_EXECUTOR_CALLBACK_INIT: Once = Once::new();
+    static EVENT_LOOP_SLAB: crate::Slab<Arc<MockEventLoop>> =
+        crate::Slab::new_with_id_and_foreign(0, true);
 
     impl MockEventLoop {
         pub fn new() -> Arc<Self> {
@@ -264,11 +253,9 @@ mod test {
             })
         }
 
-        /// Create a new ForeignExecutorHandle
-        pub fn new_handle(self: &Arc<Self>) -> ForeignExecutorHandle {
-            // To keep the memory management simple, we simply leak an arc reference for this.  We
-            // only create a handful of these in the tests so there's no need for proper cleanup.
-            ForeignExecutorHandle(Arc::into_raw(Arc::clone(self)) as *const ())
+        /// Create a new Handle
+        pub fn new_handle(self: &Arc<Self>) -> Handle {
+            EVENT_LOOP_SLAB.insert_or_panic(Arc::clone(self))
         }
 
         pub fn new_executor(self: &Arc<Self>) -> ForeignExecutor {
@@ -314,13 +301,13 @@ mod test {
 
     // `ForeignExecutorCallback` that we install for testing
     extern "C" fn mock_executor_callback(
-        handle: ForeignExecutorHandle,
+        handle: Handle,
         delay: u32,
         task: Option<RustTaskCallback>,
         task_data: *const (),
     ) -> i8 {
-        let eventloop = handle.0 as *const MockEventLoop;
-        let mut inner = unsafe { (*eventloop).inner.lock().unwrap() };
+        let eventloop = EVENT_LOOP_SLAB.get_clone_or_panic(handle);
+        let mut inner = eventloop.inner.lock().unwrap();
         if inner.is_shutdown {
             ForeignExecutorCallbackResult::Cancelled as i8
         } else {

@@ -105,7 +105,7 @@ pub enum RustFuturePoll {
 ///
 /// The Rust side of things calls this when the foreign side should call [rust_future_poll] again
 /// to continue progress on the future.
-pub type RustFutureContinuationCallback = extern "C" fn(callback_data: *const (), RustFuturePoll);
+pub type RustFutureContinuationCallback = extern "C" fn(callback_data: Handle, RustFuturePoll);
 
 // === Public FFI API ===
 
@@ -138,8 +138,11 @@ where
 /// # Safety
 ///
 /// The [Handle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_poll<ReturnType, UT>(handle: Handle, callback: RustFutureContinuationCallback, data: *const ())
-where
+pub unsafe fn rust_future_poll<ReturnType, UT>(
+    handle: Handle,
+    callback: RustFutureContinuationCallback,
+    data: Handle,
+) where
     dyn RustFutureFfi<ReturnType>: SlabAlloc<UT>,
 {
     <dyn RustFutureFfi<ReturnType> as SlabAlloc<UT>>::get_clone(handle).ffi_poll(callback, data)
@@ -209,7 +212,6 @@ derive_ffi_traits!(impl<UT> SlabAlloc<UT> for dyn RustFutureFfi<f64>);
 derive_ffi_traits!(impl<UT> SlabAlloc<UT> for dyn RustFutureFfi<Handle>);
 derive_ffi_traits!(impl<UT> SlabAlloc<UT> for dyn RustFutureFfi<crate::RustBuffer>);
 derive_ffi_traits!(impl<UT> SlabAlloc<UT> for dyn RustFutureFfi<()>);
-derive_ffi_traits!(impl<UT> SlabAlloc<UT> for dyn RustFutureFfi<*const ::std::ffi::c_void>);
 
 /// Thread-safe storage for [RustFutureContinuationCallback] data
 ///
@@ -227,8 +229,8 @@ enum ContinuationDataCell {
     /// The future has been cancelled, any future `store` calls should immediately result in the
     /// continuation being called with `RustFuturePoll::Ready`.
     Cancelled,
-    /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
-    Set(RustFutureContinuationCallback, *const ()),
+    /// Continuation set, the next time `wake()` is called, we should invoke it.
+    Set(RustFutureContinuationCallback, Handle),
 }
 
 impl ContinuationDataCell {
@@ -238,7 +240,7 @@ impl ContinuationDataCell {
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    fn store(&mut self, callback: RustFutureContinuationCallback, data: *const ()) {
+    fn store(&mut self, callback: RustFutureContinuationCallback, data: Handle) {
         match self {
             Self::Empty => *self = Self::Set(callback, data),
             Self::Set(old_callback, old_data) => {
@@ -285,11 +287,6 @@ impl ContinuationDataCell {
         matches!(self, Self::Cancelled)
     }
 }
-
-// ContinuationDataCell is Send + Sync as long we handle the *const () pointer correctly
-
-unsafe impl Send for ContinuationDataCell {}
-unsafe impl Sync for ContinuationDataCell {}
 
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
@@ -435,7 +432,7 @@ where
         })
     }
 
-    fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
+    fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: Handle) {
         let ready = self.is_cancelled() || {
             let mut locked = self.future.lock().unwrap();
             let waker: std::task::Waker = Arc::clone(&self).into();
@@ -501,7 +498,7 @@ where
 /// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
 pub trait RustFutureFfi<ReturnType> {
-    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ());
+    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: Handle);
     fn ffi_cancel(&self);
     fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;
     fn ffi_free(self: Arc<Self>);
@@ -514,7 +511,7 @@ where
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
+    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: Handle) {
         self.poll(callback, data)
     }
 
@@ -595,16 +592,21 @@ mod tests {
         (Sender(channel), rust_future)
     }
 
+    // Use an Arc<OneCell> for the continuation data.  The callback will set the cell when the
+    // continuation is called
+    static CONTINUATION_DATA_SLAB: crate::Slab<Arc<OnceCell<RustFuturePoll>>> =
+        crate::Slab::new_with_id_and_foreign(0, true);
+
     /// Poll a Rust future and get an OnceCell that's set when the continuation is called
     fn poll(rust_future: &Arc<dyn RustFutureFfi<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
         let cell = Arc::new(OnceCell::new());
-        let cell_ptr = Arc::into_raw(cell.clone()) as *const ();
-        rust_future.clone().ffi_poll(poll_continuation, cell_ptr);
+        let handle = CONTINUATION_DATA_SLAB.insert_or_panic(Arc::clone(&cell));
+        rust_future.clone().ffi_poll(poll_continuation, handle);
         cell
     }
 
-    extern "C" fn poll_continuation(data: *const (), code: RustFuturePoll) {
-        let cell = unsafe { Arc::from_raw(data as *const OnceCell<RustFuturePoll>) };
+    extern "C" fn poll_continuation(data: Handle, code: RustFuturePoll) {
+        let cell = CONTINUATION_DATA_SLAB.get_clone_or_panic(data);
         cell.set(code).expect("Error setting OnceCell");
     }
 

@@ -5,14 +5,14 @@
 
 {% include "Interface.kt" %}
 
-class {{ impl_class_name }}(
-    internal val handle: UniffiHandle
-) : FFIObject(), {{ interface_name }}{
+class {{ impl_class_name }} internal constructor(handleWrapper: UniffiHandleWrapper)
+ : FFIObject(), {{ interface_name }} {
+    val handle = handleWrapper.handle
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
-        this({% call kt::to_ffi_call(cons) %})
+        this(UniffiHandleWrapper({% call kt::to_ffi_call(cons) %}))
     {%- when None %}
     {%- endmatch %}
 
@@ -89,7 +89,7 @@ class {{ impl_class_name }}(
     companion object {
         {% for cons in obj.alternate_constructors() -%}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
-            {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
+            {{ impl_class_name }}(UniffiHandleWrapper({% call kt::to_ffi_call(cons) %}))
         {% endfor %}
     }
     {% else %}
@@ -106,7 +106,7 @@ class {{ impl_class_name }}(
 
 public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, UniffiHandle> {
     {%- if obj.is_trait_interface() %}
-    internal val handleMap = ConcurrentHandleMap<{{ interface_name }}>()
+    internal val slab = UniffiSlab<{{ type_name }}>()
     {%- endif %}
 
     override fun lower(value: {{ type_name }}): UniffiHandle {
@@ -114,12 +114,12 @@ public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Uniffi
         {%- when ObjectImpl::Struct %}
         return value.uniffiCloneHandle()
         {%- when ObjectImpl::Trait %}
-        return UniffiHandle(handleMap.insert(value))
+        return slab.insert(value)
         {%- endmatch %}
     }
 
     override fun lift(value: UniffiHandle): {{ type_name }} {
-        return {{ impl_class_name }}(value)
+        return {{ impl_class_name }}(UniffiHandleWrapper(value))
     }
 
     override fun read(buf: ByteBuffer): {{ type_name }} {

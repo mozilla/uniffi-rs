@@ -80,29 +80,29 @@ class {{ impl_name }}:
 
 class {{ ffi_converter_name }}:
     {%- if obj.is_trait_interface() %}
-    _handle_map = ConcurrentHandleMap()
+    _slab = UniffiSlab()
     {%- endif %}
 
     @staticmethod
-    def lift(value: int):
+    def lift(value: UniffiHandle):
         return {{ impl_name }}._make_instance_(value)
 
     @staticmethod
-    def lower(value: {{ protocol_name }}):
+    def lower(value: {{ type_name }}):
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
         if not isinstance(value, {{ impl_name }}):
             raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
         return value._uniffi_clone_handle()
         {%- when ObjectImpl::Trait %}
-        return {{ ffi_converter_name }}._handle_map.insert(value)
+        return {{ ffi_converter_name }}._slab.insert(value)
         {%- endmatch %}
 
     @classmethod
     def read(cls, buf: _UniffiRustBuffer):
-        ptr = buf.read_u64()
+        ptr = buf.read_i64()
         return cls.lift(ptr)
 
     @classmethod
-    def write(cls, value: {{ protocol_name }}, buf: _UniffiRustBuffer):
-        buf.write_u64(cls.lower(value))
+    def write(cls, value: {{ type_name }}, buf: _UniffiRustBuffer):
+        buf.write_i64(cls.lower(value))

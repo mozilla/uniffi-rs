@@ -30,6 +30,16 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
+// Wraps `UniffiHandle` to pass to object constructors.
+//
+// This class exists because `UniffiHandle` is a typealias to `Long`.  If the object constructor
+// inputs `UniffiHandle` directly and the user defines a primary constructor than inputs a single
+// `Long` or `ULong` input, then we get JVM signature conflicts.  To avoid this, we pass this type
+// in instead.
+//
+// Let's try to remove this when we update the code based on ADR-0008.
+data class UniffiHandleWrapper(val handle: UniffiHandle)
+
 // The base class for all UniFFI Object types.
 //
 // This class provides core operations for working with the Rust handle to the live Rust struct on

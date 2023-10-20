@@ -435,6 +435,105 @@ impl ComponentInterface {
         }
     }
 
+    pub fn ffi_slab_new(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!("ffi_{}_slab_new", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![],
+            return_type: Some(FfiType::Handle),
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    pub fn ffi_slab_free(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!("ffi_{}_slab_free", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![FfiArgument {
+                name: "slab".to_owned(),
+                type_: FfiType::Handle,
+            }],
+            return_type: None,
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    pub fn ffi_slab_insert(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!("ffi_{}_slab_insert", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![FfiArgument {
+                name: "slab".to_owned(),
+                type_: FfiType::Handle,
+            }],
+            return_type: Some(FfiType::Int64),
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    pub fn ffi_slab_check_handle(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!("ffi_{}_slab_check_handle", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![
+                FfiArgument {
+                    name: "slab".to_owned(),
+                    type_: FfiType::Handle,
+                },
+                FfiArgument {
+                    name: "handle".to_owned(),
+                    type_: FfiType::Handle,
+                },
+            ],
+            return_type: Some(FfiType::Int8),
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    pub fn ffi_slab_inc_ref(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!("ffi_{}_slab_inc_ref", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![
+                FfiArgument {
+                    name: "slab".to_owned(),
+                    type_: FfiType::Handle,
+                },
+                FfiArgument {
+                    name: "handle".to_owned(),
+                    type_: FfiType::Handle,
+                },
+            ],
+            return_type: Some(FfiType::Int8),
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    pub fn ffi_slab_dec_ref(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!("ffi_{}_slab_dec_ref", self.ffi_namespace()),
+            is_async: false,
+            arguments: vec![
+                FfiArgument {
+                    name: "slab".to_owned(),
+                    type_: FfiType::Handle,
+                },
+                FfiArgument {
+                    name: "handle".to_owned(),
+                    type_: FfiType::Handle,
+                },
+            ],
+            return_type: Some(FfiType::Int8),
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
     /// Builtin FFI function to poll a Rust future.
     pub fn ffi_rust_future_poll(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
@@ -450,8 +549,8 @@ impl ComponentInterface {
                     type_: FfiType::RustFutureContinuationCallback,
                 },
                 FfiArgument {
-                    name: "callback_data".to_owned(),
-                    type_: FfiType::RustFutureContinuationData,
+                    name: "continuation_data".to_owned(),
+                    type_: FfiType::Handle,
                 },
             ],
             return_type: None,
@@ -561,6 +660,7 @@ impl ComponentInterface {
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
             .chain(self.iter_futures_ffi_function_definitons())
+            .chain(self.iter_slab_ffi_function_definitions())
             .chain(self.iter_checksum_ffi_functions())
             .chain(self.ffi_foreign_executor_callback_set())
             .chain([self.ffi_uniffi_contract_version()])
@@ -573,6 +673,7 @@ impl ComponentInterface {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
+            .chain(self.iter_slab_ffi_function_definitions())
             .chain(self.iter_checksum_ffi_functions())
             .chain([self.ffi_uniffi_contract_version()])
     }
@@ -605,6 +706,18 @@ impl ComponentInterface {
             self.ffi_rustbuffer_from_bytes(),
             self.ffi_rustbuffer_free(),
             self.ffi_rustbuffer_reserve(),
+        ]
+        .into_iter()
+    }
+
+    /// List all FFI functions definitions for Slab functionality.
+    pub fn iter_slab_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> {
+        [
+            self.ffi_slab_new(),
+            self.ffi_slab_free(),
+            self.ffi_slab_insert(),
+            self.ffi_slab_check_handle(),
+            self.ffi_slab_dec_ref(),
         ]
         .into_iter()
     }

@@ -33,8 +33,8 @@ import platform
 _DEFAULT = object()
 
 {% include "RustBufferTemplate.py" %}
+{% include "Slab.py" %}
 {% include "Helpers.py" %}
-{% include "PointerManager.py" %}
 {% include "RustBufferHelper.py" %}
 
 # Contains loading, initialization code, and the FFI Function declarations.
