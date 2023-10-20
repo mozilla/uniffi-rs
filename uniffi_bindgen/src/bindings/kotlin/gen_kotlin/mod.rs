@@ -342,7 +342,7 @@ impl KotlinCodeOracle {
                 name,
                 imp: _,
             } => {
-                if self.has_protocol(type_) {
+                if KotlinCodeOracle::has_protocol(type_) {
                     format!("{}Interface", self.class_name(name))
                 } else {
                     self.class_name(name)
@@ -366,7 +366,7 @@ impl KotlinCodeOracle {
         }
     }
 
-    fn has_protocol(&self, type_: &Type) -> bool {
+    fn has_protocol(type_: &Type) -> bool {
         match type_ {
             Type::Object {
                 module_path: _,
@@ -378,7 +378,10 @@ impl KotlinCodeOracle {
             Type::Map {
                 key_type,
                 value_type,
-            } => self.has_protocol(key_type) || self.has_protocol(value_type),
+            } => {
+                KotlinCodeOracle::has_protocol(key_type)
+                    || KotlinCodeOracle::has_protocol(value_type)
+            }
             Type::Optional { inner_type } => {
                 matches!(inner_type.as_type(), Type::Object { .. })
             }
@@ -467,7 +470,7 @@ pub mod filters {
 
     pub fn downcast_if_needed(type_: &Type) -> Result<String, askama::Error> {
         let codetype = type_.as_codetype();
-        let ret = if KotlinCodeOracle.has_protocol(type_)
+        let ret = if KotlinCodeOracle::has_protocol(type_)
             && codetype.type_label() != KotlinCodeOracle.protocol_name(type_)
         {
             format!(" as {}", codetype.type_label())
