@@ -7,18 +7,23 @@
 {% if e.is_flat() %}
 
 class {{ type_name }}(enum.Enum):
+    {%- call py::docstring(e, 4) %}
     {% for variant in e.variants() -%}
     {{ variant.name()|enum_variant_py }} = {{ loop.index }}
+    {%- call py::docstring(variant, 4) %}
     {% endfor %}
 {% else %}
 
 class {{ type_name }}:
+    {%- call py::docstring(e, 4) %}
     def __init__(self):
         raise RuntimeError("{{ type_name }} cannot be instantiated directly")
 
     # Each enum variant is a nested class of the enum itself.
     {% for variant in e.variants() -%}
     class {{ variant.name()|enum_variant_py }}:
+        {%- call py::docstring(variant, 8) %}
+
         {% for field in variant.fields() %}
             {{- field.name()|var_name }}: "{{- field|type_name }}";
         {%- endfor %}

@@ -1,3 +1,4 @@
+{%- call swift::docstring(e, 0) %}
 public enum {{ type_name }} {
 
     {% if e.is_flat() %}
@@ -8,6 +9,7 @@ public enum {{ type_name }} {
 
     {%- else %}
     {% for variant in e.variants() %}
+    {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|class_name }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
     {% endfor %}
 

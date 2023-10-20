@@ -7,8 +7,10 @@
 
 {%- if e.is_flat() %}
 
+{%- call kt::docstring(e, 0) %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
+    {%- call kt::docstring(variant, 4) %}
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
     companion object
@@ -30,8 +32,10 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 
 {% else %}
 
+{%- call kt::docstring(e, 0) %}
 sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
+    {%- call kt::docstring(variant, 4) %}
     {% if !variant.has_fields() -%}
     object {{ variant|enum_variant|type_name }} : {{ type_name }}()
     {% else -%}

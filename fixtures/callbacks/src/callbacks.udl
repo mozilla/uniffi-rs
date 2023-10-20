@@ -68,4 +68,5 @@ callback interface StoredForeignStringifier {
 interface RustStringifier {
   constructor(StoredForeignStringifier callback);
   string from_simple_type(i32 value);
+  string from_complex_type(sequence<f64?>? values);
 };

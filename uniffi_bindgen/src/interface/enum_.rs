@@ -189,6 +189,8 @@ pub struct Enum {
     // * For an Enum not used as an error but which has no variants with data, `flat` will be
     //   false when generating the scaffolding but `true` when generating bindings.
     pub(super) flat: bool,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Enum {
@@ -208,6 +210,10 @@ impl Enum {
         Box::new(self.variants.iter().flat_map(Variant::iter_types))
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     // Sadly can't use TryFrom due to the 'is_flat' complication.
     pub fn try_from_meta(meta: uniffi_meta::EnumMetadata, flat: bool) -> Result<Self> {
         // This is messy - error enums are considered "flat" if the user
@@ -224,6 +230,7 @@ impl Enum {
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
             flat,
+            docstring: meta.docstring.clone(),
         })
     }
 }
@@ -244,6 +251,8 @@ impl AsType for Enum {
 pub struct Variant {
     pub(super) name: String,
     pub(super) fields: Vec<Field>,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Variant {
@@ -257,6 +266,10 @@ impl Variant {
 
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -275,6 +288,7 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
+            docstring: meta.docstring.clone(),
         })
     }
 }
@@ -562,6 +576,78 @@ mod test {
                 .map(|v| v.name())
                 .collect::<Vec<_>>(),
             vec!["Normal", "Error"]
+        );
+    }
+
+    #[test]
+    fn test_docstring_enum() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            enum Testing { "foo" };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_enum_variant() {
+        const UDL: &str = r#"
+            namespace test{};
+            enum Testing {
+                ///informative docstring
+                "foo"
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing").unwrap().variants()[0]
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_associated_enum() {
+        const UDL: &str = r#"
+            namespace test{};
+            ///informative docstring
+            [Enum]
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_associated_enum_variant() {
+        const UDL: &str = r#"
+            namespace test{};
+            [Enum]
+            interface Testing {
+                ///informative docstring
+                testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_enum_definition("Testing").unwrap().variants()[0]
+                .docstring()
+                .unwrap(),
+            "informative docstring"
         );
     }
 }

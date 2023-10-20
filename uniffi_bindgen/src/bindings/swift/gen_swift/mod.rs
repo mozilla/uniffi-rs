@@ -604,6 +604,15 @@ pub mod filters {
         Ok(oracle().enum_variant_name(nm))
     }
 
+    /// Get the idiomatic Swift rendering of docstring
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+        let middle = textwrap::indent(&textwrap::dedent(docstring), " * ");
+        let wrapped = format!("/**\n{middle}\n */");
+
+        let spaces = usize::try_from(*spaces).unwrap_or_default();
+        Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
+    }
+
     pub fn error_handler(result: &ResultType) -> Result<String, askama::Error> {
         Ok(match &result.throws_type {
             Some(t) => format!("{}.lift", ffi_converter_name(t)?),

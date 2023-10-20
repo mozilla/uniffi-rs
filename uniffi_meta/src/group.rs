@@ -26,6 +26,7 @@ pub fn create_metadata_groups(items: &[Metadata]) -> MetadataGroupMap {
                 let namespace = NamespaceMetadata {
                     crate_name: udl.module_path.clone(),
                     name: udl.namespace.clone(),
+                    docstring: None,
                 };
                 let group = MetadataGroup {
                     namespace,

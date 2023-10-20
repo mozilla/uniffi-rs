@@ -37,6 +37,14 @@ _rust_call(
     {%- endfor %}
 {%- endmacro -%}
 
+{%- macro docstring(defn, indent_spaces) %}
+{%- match defn.docstring() %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}
+
 {#-
 // Arglist as used in Python declarations of methods, functions and constructors.
 // Note the var_name and type_name filters.
@@ -101,6 +109,7 @@ _rust_call(
 {%  if meth.is_async() %}
 
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+        {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         return _uniffi_rust_call_async(
             _UniffiLib.{{ meth.ffi_func().name() }}(
@@ -131,6 +140,7 @@ _rust_call(
 {%-         when Some with (return_type) %}
 
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
+        {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(
             {% call to_ffi_call_with_prefix("self._pointer", meth) %}
@@ -139,6 +149,7 @@ _rust_call(
 {%-         when None %}
 
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+        {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         {% call to_ffi_call_with_prefix("self._pointer", meth) %}
 {%      endmatch %}

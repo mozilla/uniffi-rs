@@ -1,7 +1,9 @@
 {%- let rec = ci|get_record_definition(name) %}
 
+{%- call kt::docstring(rec, 0) %}
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
+    {%- call kt::docstring(field, 4) %}
     var {{ field.name()|var_name }}: {{ field|type_name -}}
     {%- match field.default_value() %}
         {%- when Some with(literal) %} = {{ literal|render_literal(field) }}

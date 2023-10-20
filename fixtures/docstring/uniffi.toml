@@ -1,0 +1,9 @@
+[bindings.kotlin]
+package_name = "uniffi.fixture.docstring"
+cdylib_name = "uniffi_fixture_docstring"
+
+[bindings.python]
+cdylib_name = "uniffi_fixture_docstring"
+
+[bindings.swift]
+cdylib_name = "uniffi_fixture_docstring"

@@ -55,3 +55,20 @@ imports = ["urllib.parse"]
 # Functions to convert between strings and the ParsedUrl class
 into_custom = "urllib.parse.urlparse({})"
 from_custom = "urllib.parse.urlunparse({})"
+
+[bindings.csharp.custom_types.Url]
+imports = ["System"]
+type_name = "Uri"
+into_custom = "new Uri({})"
+from_custom = "{}.AbsoluteUri"
+
+[bindings.go.custom_types.Url]
+imports = ["net/url"]
+type_name = "url.URL"
+into_custom = """u, err := url.Parse({})
+    if err != nil {
+        panic(err)
+    }
+    return *u
+"""
+from_custom = "{}.String()"

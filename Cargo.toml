@@ -23,6 +23,7 @@ members = [
 
   "fixtures/benchmarks",
   "fixtures/coverall",
+  "fixtures/coverall-upstream-compatibility",
   "fixtures/callbacks",
 
   "fixtures/ext-types/guid",
@@ -31,6 +32,7 @@ members = [
   "fixtures/ext-types/lib",
   "fixtures/ext-types/proc-macro-lib",
 
+  "fixtures/docstring",
   "fixtures/foreign-executor",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",

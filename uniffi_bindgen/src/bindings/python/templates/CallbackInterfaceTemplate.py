@@ -6,8 +6,10 @@
 # Declaration and _UniffiConverters for {{ type_name }} Callback Interface
 
 class {{ type_name }}:
+    {%- call py::docstring(cbi, 4) %}
     {% for meth in cbi.methods() -%}
     def {{ meth.name()|fn_name }}(self, {% call py::arg_list_decl(meth) %}):
+        {%- call py::docstring(meth, 8) %}
         raise NotImplementedError
 
     {% endfor %}

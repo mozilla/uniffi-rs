@@ -120,6 +120,11 @@ impl RustStringifier {
     fn from_simple_type(&self, value: i32) -> String {
         self.callback.from_simple_type(value)
     }
+
+    #[allow(clippy::wrong_self_convention)]
+    fn from_complex_type(&self, value: Option<Vec<Option<f64>>>) -> String {
+        self.callback.from_complex_type(value)
+    }
 }
 
 uniffi::include_scaffolding!("callbacks");

@@ -23,11 +23,13 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
                 .iter()
                 .map::<Result<_>, _>(|v| {
                     Ok(VariantMetadata {
-                        name: v.0.to_string(),
+                        name: v.value.0.to_string(),
                         fields: vec![],
+                        docstring: v.docstring.as_ref().map(|v| v.0.clone()),
                     })
                 })
                 .collect::<Result<Vec<_>>>()?,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -45,11 +47,13 @@ impl APIConverter<ErrorMetadata> for weedle::EnumDefinition<'_> {
                     .iter()
                     .map::<Result<_>, _>(|v| {
                         Ok(VariantMetadata {
-                            name: v.0.to_string(),
+                            name: v.value.0.to_string(),
                             fields: vec![],
+                            docstring: v.docstring.as_ref().map(|v| v.0.clone()),
                         })
                     })
                     .collect::<Result<Vec<_>>>()?,
+                docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             },
             is_flat: true,
         })
@@ -78,6 +82,7 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
                     ),
                 })
                 .collect::<Result<Vec<_>>>()?,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             // Enums declared using the `[Enum] interface` syntax might have variants with fields.
             //flat: false,
         })
@@ -107,6 +112,7 @@ impl APIConverter<ErrorMetadata> for weedle::InterfaceDefinition<'_> {
                         ),
                     })
                     .collect::<Result<Vec<_>>>()?,
+                docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             },
             is_flat: false,
         })

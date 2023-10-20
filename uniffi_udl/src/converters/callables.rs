@@ -41,6 +41,7 @@ impl APIConverter<FieldMetadata> for weedle::argument::SingleArgument<'_> {
             name: self.identifier.0.to_string(),
             ty: type_,
             default: None,
+            docstring: None,
         })
     }
 }
@@ -103,6 +104,7 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
             return_type,
             inputs: self.args.body.list.convert(ci)?,
             throws,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
             checksum: None,
         })
     }
@@ -126,6 +128,7 @@ impl APIConverter<ConstructorMetadata> for weedle::interface::ConstructorInterfa
             inputs: self.args.body.list.convert(ci)?,
             throws,
             checksum: None,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -170,6 +173,7 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
             throws,
             takes_self_by_arc,
             checksum: None,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }
@@ -214,6 +218,7 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
             throws,
             takes_self_by_arc,
             checksum: None,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }

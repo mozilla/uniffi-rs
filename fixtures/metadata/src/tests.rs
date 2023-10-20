@@ -172,13 +172,16 @@ mod test_metadata {
                         name: "name".into(),
                         ty: Type::String,
                         default: Some(LiteralMetadata::String("test".to_owned())),
+                        docstring: None,
                     },
                     FieldMetadata {
                         name: "age".into(),
                         ty: Type::UInt16,
                         default: None,
+                        docstring: None,
                     },
                 ],
+                docstring: None,
             },
         );
     }
@@ -194,16 +197,20 @@ mod test_metadata {
                     VariantMetadata {
                         name: "Rock".into(),
                         fields: vec![],
+                        docstring: None,
                     },
                     VariantMetadata {
                         name: "Paper".into(),
                         fields: vec![],
+                        docstring: None,
                     },
                     VariantMetadata {
                         name: "Scissors".into(),
                         fields: vec![],
+                        docstring: None,
                     },
                 ],
+                docstring: None,
             },
         );
     }
@@ -219,6 +226,7 @@ mod test_metadata {
                     VariantMetadata {
                         name: "Uninitialized".into(),
                         fields: vec![],
+                        docstring: None,
                     },
                     VariantMetadata {
                         name: "Initialized".into(),
@@ -226,7 +234,9 @@ mod test_metadata {
                             name: "data".into(),
                             ty: Type::String,
                             default: None,
+                            docstring: None,
                         }],
+                        docstring: None,
                     },
                     VariantMetadata {
                         name: "Complete".into(),
@@ -237,9 +247,12 @@ mod test_metadata {
                                 name: "Person".into(),
                             },
                             default: None,
+                            docstring: None,
                         }],
+                        docstring: None,
                     },
                 ],
+                docstring: None,
             },
         );
     }
@@ -256,12 +269,15 @@ mod test_metadata {
                         VariantMetadata {
                             name: "Overflow".into(),
                             fields: vec![],
+                            docstring: None,
                         },
                         VariantMetadata {
                             name: "DivideByZero".into(),
                             fields: vec![],
+                            docstring: None,
                         },
                     ],
+                    docstring: None,
                 },
                 is_flat: true,
             },
@@ -280,6 +296,7 @@ mod test_metadata {
                         VariantMetadata {
                             name: "NotFound".into(),
                             fields: vec![],
+                            docstring: None,
                         },
                         VariantMetadata {
                             name: "PermissionDenied".into(),
@@ -287,7 +304,9 @@ mod test_metadata {
                                 name: "reason".into(),
                                 ty: Type::String,
                                 default: None,
+                                docstring: None,
                             }],
+                            docstring: None,
                         },
                         VariantMetadata {
                             name: "InvalidWeapon".into(),
@@ -298,9 +317,12 @@ mod test_metadata {
                                     name: "Weapon".into(),
                                 },
                                 default: None,
+                                docstring: None,
                             }],
+                            docstring: None,
                         },
                     ],
+                    docstring: None,
                 },
                 is_flat: false,
             },
@@ -315,6 +337,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
                 imp: ObjectImpl::Struct,
+                docstring: None,
             },
         );
     }
@@ -424,6 +447,7 @@ mod test_function_metadata {
                 return_type: Some(Type::String),
                 throws: None,
                 checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC.checksum()),
+                docstring: None,
             },
         );
     }
@@ -442,6 +466,7 @@ mod test_function_metadata {
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN.checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -466,6 +491,7 @@ mod test_function_metadata {
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS.checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -488,6 +514,7 @@ mod test_function_metadata {
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN_THAT_THROWS
                         .checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -511,6 +538,7 @@ mod test_function_metadata {
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD.checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -544,6 +572,7 @@ mod test_function_metadata {
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC.checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -569,6 +598,7 @@ mod test_function_metadata {
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC_THAT_THROWS
                         .checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -593,6 +623,7 @@ mod test_function_metadata {
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB
                         .checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -618,6 +649,7 @@ mod test_function_metadata {
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_GET_DISPLAY
                         .checksum(),
                 ),
+                docstring: None,
             },
         );
     }
@@ -640,6 +672,7 @@ mod test_function_metadata {
                 takes_self_by_arc: false,
                 checksum: Some(UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT
                     .checksum()),
+                docstring: None,
             },
         );
     }
@@ -651,6 +684,7 @@ mod test_function_metadata {
             CallbackInterfaceMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Logger".into(),
+                docstring: None,
             },
         );
         check_metadata(
@@ -668,6 +702,7 @@ mod test_function_metadata {
                 checksum: Some(
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
                 ),
+                docstring: None,
             },
         );
     }

@@ -5,29 +5,34 @@
 # This builds a docker image containing all the tools we need to run our
 # test suite in CI, including rust, kotlin, and swift.
 
-FROM cimg/rust:1.69.0
+FROM rust:1.69.0
 
-MAINTAINER Ryan Kelly "rfkelly@mozilla.com"
+MAINTAINER Jakub Janowski "jakub.janowski@nordsec.com"
+LABEL org.opencontainers.image.source=https://github.com/NordSecurity/uniffi-rs
 
 ENV \
     # Some APT packages like 'tzdata' wait for user input on install by default.
     # https://stackoverflow.com/questions/44331836/apt-get-install-tzdata-noninteractive
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    PATH=$PATH:/opt/swift/usr/bin \
+    CLASSPATH=$CLASSPATH:/opt/jna.jar
 
 SHELL ["/bin/bash", "-c"]
 
 # already installed in cimg: libcurl4, python3, git, curl, unzip, g++
-RUN sudo apt-get update -qq \
-    && sudo apt-get install -qy --no-install-recommends \
+RUN apt-get update -qq \
+    && apt-get install -qy --no-install-recommends \
         clang \
         openjdk-11-jdk-headless \
         ruby \
         ruby-dev \
+        zip \
+        unzip \
         # Swift dependencies
         libtinfo5 \
         libncurses5 \
         python3-pip \
-    && sudo apt-get clean
+    && apt-get clean
 
 # Use Cargo's sparse protocol
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
@@ -42,10 +47,9 @@ RUN mkdir -p /tmp/setup-swift \
     && cd /tmp/setup-swift \
     && curl -o swift.tar.gz https://download.swift.org/swift-5.5-release/ubuntu1804/swift-5.5-RELEASE/swift-5.5-RELEASE-ubuntu18.04.tar.gz \
     # XXX TODO: should check a sha256sum or something here...
+    && ls -la \
     && tar -xzf swift.tar.gz \
-    && sudo mv swift-5.5-RELEASE-ubuntu18.04 /opt/swift \
-    && echo "export PATH=\"\$PATH:/opt/swift/usr/bin\"" >> /home/circleci/.bashrc \
-    && echo "export PATH=\"\$PATH:/opt/swift/usr/bin\"" >> /home/circleci/.profile \
+    && mv swift-5.5-RELEASE-ubuntu18.04 /opt/swift \
     && cd ../ \
     && rm -rf ./setup-swift
 
@@ -54,9 +58,8 @@ RUN mkdir -p /tmp/setup-kotlin \
     && curl -o sdk.install.sh https://get.sdkman.io \
     # XXX TODO: should check a sha256sum or something here...
     && bash ./sdk.install.sh \
-    && . /home/circleci/.sdkman/bin/sdkman-init.sh \
-    && sdk install kotlin \
-    && echo ". /home/circleci/.sdkman/bin/sdkman-init.sh" >> /home/circleci/.profile \
+    && . /root/.sdkman/bin/sdkman-init.sh \
+    && sdk install kotlin 1.8.20 \
     && cd ../ \
     && rm -rf ./setup-kotlin
 
@@ -64,9 +67,7 @@ RUN mkdir -p /tmp/setup-jna \
     && cd /tmp/setup-jna \
     && curl -o jna.jar https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar \
     # XXX TODO: should check a sha256sum or something here...
-    && sudo mv jna.jar /opt \
-    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.bashrc \
-    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/jna.jar\"" >> /home/circleci/.profile \
+    && mv jna.jar /opt \
     && cd ../ \
     && rm -rf ./setup-jna
 
@@ -74,10 +75,10 @@ RUN mkdir -p /tmp/setup-kotlinx \
     && cd /tmp/setup-kotlinx \
     && curl -o kotlinx-coroutines-core-jvm.jar https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.6.4/kotlinx-coroutines-core-jvm-1.6.4.jar \
     # XXX TODO: should check a sha256sum or something here...
-    && sudo mv kotlinx-coroutines-core-jvm.jar /opt \
-    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /home/circleci/.bashrc \
-    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /home/circleci/.profile \
+    && mv kotlinx-coroutines-core-jvm.jar /opt \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /root/.bashrc \
+    && echo "export CLASSPATH=\"\$CLASSPATH:/opt/kotlinx-coroutines-core-jvm.jar\"" >> /root/.profile \
     && cd ../ \
     && rm -rf ./setup-kotlinx
 
-RUN sudo gem install ffi --no-document
+RUN gem install ffi --no-document

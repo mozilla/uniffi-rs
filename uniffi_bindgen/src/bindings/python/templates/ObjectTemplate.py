@@ -1,11 +1,14 @@
 {%- let obj = ci|get_object_definition(name) %}
 
 class {{ type_name }}:
+    {%- call py::docstring(obj, 4) %}
+
     _pointer: ctypes.c_void_p
 
 {%- match obj.primary_constructor() %}
 {%-     when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
+        {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         self._pointer = {% call py::to_ffi_call(cons) %}
 {%-     when None %}
@@ -30,6 +33,7 @@ class {{ type_name }}:
 
     @classmethod
     def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+        {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
         pointer = {% call py::to_ffi_call(cons) %}

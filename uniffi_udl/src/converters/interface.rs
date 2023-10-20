@@ -70,6 +70,7 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                 throws: None,
                 takes_self_by_arc: false,
                 checksum: None,
+                docstring: None,
             })
         };
         // Trait methods are in the Metadata.
@@ -130,6 +131,7 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
             module_path: ci.module_path(),
             name: object_name.to_string(),
             imp: object_impl,
+            docstring: self.docstring.as_ref().map(|v| v.0.clone()),
         })
     }
 }

@@ -129,7 +129,16 @@ impl ComponentInterface {
     }
 
     /// Add a metadata group to a `ComponentInterface`.
-    pub fn add_metadata(&mut self, group: uniffi_meta::MetadataGroup) -> Result<()> {
+    pub fn add_metadata(&mut self, mut group: uniffi_meta::MetadataGroup) -> Result<()> {
+        // Update namespace docstring if input is some, otherwise update
+        // the input docstring so that `NamespaceMetadata` structs are equal
+        // for the equality comparison below in this function.
+        if group.namespace.docstring.is_some() {
+            self.types.namespace.docstring = group.namespace.docstring.clone();
+        } else {
+            group.namespace.docstring = self.types.namespace.docstring.clone();
+        }
+
         if self.types.namespace.name.is_empty() {
             self.types.namespace = group.namespace.clone();
         } else if self.types.namespace != group.namespace {
@@ -143,6 +152,11 @@ impl ComponentInterface {
         self.types.add_known_type(&uniffi_meta::Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
         Ok(())
+    }
+
+    ///
+    pub fn namespace_definition(&self) -> &NamespaceMetadata {
+        &self.types.namespace
     }
 
     /// The string namespace within which this API should be presented to the caller.
@@ -1089,20 +1103,24 @@ mod test {
         let err = ComponentInterface::from_webidl(UDL2, "crate_name").unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
+            "Mismatching definition for enum `Testing`!
+existing definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
     variants: [
         Variant {
             name: \"one\",
             fields: [],
+            docstring: None,
         },
         Variant {
             name: \"two\",
             fields: [],
+            docstring: None,
         },
     ],
     flat: true,
+    docstring: None,
 },
 new definition: Enum {
     name: \"Testing\",
@@ -1111,13 +1129,16 @@ new definition: Enum {
         Variant {
             name: \"three\",
             fields: [],
+            docstring: None,
         },
         Variant {
             name: \"four\",
             fields: [],
+            docstring: None,
         },
     ],
     flat: true,
+    docstring: None,
 }",
         );
 
@@ -1230,5 +1251,32 @@ new definition: Enum {
             module_path: "".into(),
             imp: ObjectImpl::Struct,
         }));
+    }
+
+    #[test]
+    fn test_docstring_namespace() {
+        const UDL: &str = r#"
+            ///informative docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.namespace_definition().docstring().unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_multiline_docstring() {
+        const UDL: &str = r#"
+            ///informative
+            ///docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.namespace_definition().docstring().unwrap(),
+            "informative\ndocstring"
+        );
     }
 }
