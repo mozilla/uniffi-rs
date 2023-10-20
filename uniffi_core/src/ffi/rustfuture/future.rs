@@ -12,7 +12,7 @@
 //!
 //! 0. At startup, register a [RustFutureContinuationCallback] by calling
 //!    rust_future_continuation_callback_set.
-//! 1. Call the scaffolding function to get a [RustFutureHandle]
+//! 1. Call the scaffolding function to get a [Handle]
 //! 2a. In a loop:
 //!   - Call [rust_future_poll]
 //!   - Suspend the function until the [rust_future_poll] continuation function is called
@@ -91,7 +91,7 @@ use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -105,7 +105,7 @@ where
 
 impl<F, T, UT> WrappedFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -184,7 +184,7 @@ where
 // that we will treat the raw pointer properly, for example by not returning it twice.
 unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -194,9 +194,15 @@ where
 /// Future that the foreign code is awaiting
 pub(super) struct RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // F is the future type returned by the exported async function.  It needs to be Send + `static
+    // since it will move between threads for an indeterminate amount of time as the foreign
+    // executor calls polls it and the Rust executor wakes it.  It does not need to by `Sync`,
+    // since we synchronize all access to the values.
     F: Future<Output = T> + Send + 'static,
+    // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
+    // 'static for the same reason as F.
     T: LowerReturn<UT> + Send + 'static,
+    // The UniFfiTag ZST. The Send + 'static bound is to keep rustc happy.
     UT: Send + 'static,
 {
     // This Mutex should never block if our code is working correctly, since there should not be
@@ -210,7 +216,7 @@ where
 
 impl<F, T, UT> RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -262,7 +268,7 @@ where
 
 impl<F, T, UT> Wake for RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
@@ -297,7 +303,7 @@ pub trait RustFutureFfi<ReturnType> {
 
 impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
+    // See the [RustFuture] struct for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,

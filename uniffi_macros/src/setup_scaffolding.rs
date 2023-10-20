@@ -138,12 +138,12 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
 
 /// Generates the rust_future_* functions
 ///
-/// The foreign side uses a type-erased `RustFutureHandle` to interact with futures, which presents
+/// The foreign side uses a type-erased `Handle` to interact with futures, which presents
 /// a problem when creating scaffolding functions.  What is the `ReturnType` parameter of `RustFutureFfi`?
 ///
 /// Handle this by using some brute-force monomorphization.  For each possible ffi type, we
 /// generate a set of scaffolding functions.  The bindings code is responsible for calling the one
-/// corresponds the scaffolding function that created the `RustFutureHandle`.
+/// corresponds the scaffolding function that created the `Handle`.
 ///
 /// This introduces safety issues, but we do get some type checking.  If the bindings code calls
 /// the wrong rust_future_complete function, they should get an unexpected return type, which
@@ -160,6 +160,7 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
         (quote! { i64 }, "i64"),
         (quote! { f32 }, "f32"),
         (quote! { f64 }, "f64"),
+        (quote! { ::uniffi::Handle }, "handle"),
         (quote! { *const ::std::ffi::c_void }, "pointer"),
         (quote! { ::uniffi::RustBuffer }, "rust_buffer"),
         (quote! { () }, "void"),
@@ -175,32 +176,32 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: *const ()) {
-                ::uniffi::ffi::rust_future_poll::<#return_type>(handle, callback, data);
+            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: *const ()) {
+                ::uniffi::ffi::rust_future_poll::<#return_type, crate::UniFfiTag>(handle, callback, data);
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #ffi_rust_future_cancel(handle: ::uniffi::RustFutureHandle) {
-                ::uniffi::ffi::rust_future_cancel::<#return_type>(handle)
+            pub unsafe extern "C" fn #ffi_rust_future_cancel(handle: ::uniffi::Handle) {
+                ::uniffi::ffi::rust_future_cancel::<#return_type, crate::UniFfiTag>(handle)
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
             pub unsafe extern "C" fn #ffi_rust_future_complete(
-                handle: ::uniffi::RustFutureHandle,
+                handle: ::uniffi::Handle,
                 out_status: &mut ::uniffi::RustCallStatus
             ) -> #return_type {
-                ::uniffi::ffi::rust_future_complete::<#return_type>(handle, out_status)
+                ::uniffi::ffi::rust_future_complete::<#return_type, crate::UniFfiTag>(handle, out_status)
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #ffi_rust_future_free(handle: ::uniffi::RustFutureHandle) {
-                ::uniffi::ffi::rust_future_free::<#return_type>(handle)
+            pub unsafe extern "C" fn #ffi_rust_future_free(handle: ::uniffi::Handle) {
+                ::uniffi::ffi::rust_future_free::<#return_type, crate::UniFfiTag>(handle)
             }
         }
     })

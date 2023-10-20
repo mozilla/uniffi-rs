@@ -7,31 +7,30 @@
 
 class {{ impl_name }}:
     {%- call py::docstring(obj, 4) %}
-
-    _pointer: ctypes.c_void_p
+    _uniffi_handle: ctypes.c_int64
 
 {%- match obj.primary_constructor() %}
 {%-     when Some with (cons) %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
-        self._pointer = {% call py::to_ffi_call(cons) %}
+        self._uniffi_handle = {% call py::to_ffi_call(cons) %}
 {%-     when None %}
 {%- endmatch %}
 
     def __del__(self):
         # In case of partial initialization of instances.
-        pointer = getattr(self, "_pointer", None)
-        if pointer is not None:
-            _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
+        handle = getattr(self, "_uniffi_handle", None)
+        if handle is not None:
+            _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, handle)
 
     # Used by alternative constructors or any methods which return this type.
     @classmethod
-    def _make_instance_(cls, pointer):
+    def _make_instance_(cls, handle):
         # Lightly yucky way to bypass the usual __init__ logic
-        # and just create a new instance with the required pointer.
+        # and just create a new instance with the required handle.
         inst = cls.__new__(cls)
-        inst._pointer = pointer
+        inst._uniffi_handle = handle
         return inst
 
 {%- for cons in obj.alternate_constructors() %}
@@ -41,8 +40,8 @@ class {{ impl_name }}:
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
-        pointer = {% call py::to_ffi_call(cons) %}
-        return cls._make_instance_(pointer)
+        uniffi_handle = {% call py::to_ffi_call(cons) %}
+        return cls._make_instance_(uniffi_handle)
 {% endfor %}
 
 {%- for meth in obj.methods() -%}
@@ -60,13 +59,13 @@ class {{ impl_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
-        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", eq) %})
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_handle", eq) %})
 
     def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
-        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._pointer", ne) %})
+        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_handle", ne) %})
 {%-         when UniffiTrait::Hash { hash } %}
             {%- call py::method_decl("__hash__", hash) %}
 {%      endmatch %}
@@ -94,7 +93,7 @@ class {{ ffi_converter_name }}:
         {%- when ObjectImpl::Struct %}
         if not isinstance(value, {{ impl_name }}):
             raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
-        return value._pointer
+        return value._uniffi_handle
         {%- when ObjectImpl::Trait %}
         return {{ ffi_converter_name }}._handle_map.insert(value)
         {%- endmatch %}
@@ -102,8 +101,6 @@ class {{ ffi_converter_name }}:
     @classmethod
     def read(cls, buf: _UniffiRustBuffer):
         ptr = buf.read_u64()
-        if ptr == 0:
-            raise InternalError("Raw pointer value was null")
         return cls.lift(ptr)
 
     @classmethod

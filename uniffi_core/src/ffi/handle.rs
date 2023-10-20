@@ -36,6 +36,10 @@ impl Handle {
         }
     }
 
+    pub fn from_raw_unchecked(raw: u64) -> Self {
+        Self(raw)
+    }
+
     pub fn as_raw(&self) -> u64 {
         self.0
     }

@@ -196,7 +196,7 @@ impl Object {
         assert!(!self.ffi_func_free.name().is_empty());
         self.ffi_func_free.arguments = vec![FfiArgument {
             name: "ptr".to_string(),
-            type_: FfiType::RustArcPtr(self.name.to_string()),
+            type_: FfiType::Handle,
         }];
         self.ffi_func_free.return_type = None;
         self.ffi_func_free.is_object_free_function = true;
@@ -355,7 +355,7 @@ impl Constructor {
     fn derive_ffi_func(&mut self) {
         assert!(!self.ffi_func.name().is_empty());
         self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FfiType::RustArcPtr(self.object_name.clone()));
+        self.ffi_func.return_type = Some(FfiType::Handle);
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {

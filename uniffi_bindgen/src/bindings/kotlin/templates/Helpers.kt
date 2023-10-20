@@ -1,3 +1,8 @@
+// Handles are defined as unsigned in Rust, but that's doesn't work well with JNA.
+// We can pretend its signed since Rust handles are opaque values and Kotlin handles don't use all
+// 64 bits.
+typealias UniffiHandle = Long
+
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
 // Error runtime.

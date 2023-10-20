@@ -2,18 +2,18 @@
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
 // The base class for all UniFFI Object types.
 //
-// This class provides core operations for working with the Rust `Arc<T>` pointer to
-// the live Rust struct on the other side of the FFI.
+// This class provides core operations for working with the Rust handle to the live Rust struct on
+// the other side of the FFI.
 //
 // There's some subtlety here, because we have to be careful not to operate on a Rust
 // struct after it has been dropped, and because we must expose a public API for freeing
 // the Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
 //
-//   * Each `FFIObject` instance holds an opaque pointer to the underlying Rust struct.
-//     Method calls need to read this pointer from the object's state and pass it in to
+//   * Each `FFIObject` instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
 //     the Rust FFI.
 //
-//   * When an `FFIObject` is no longer needed, its pointer should be passed to a
+//   * When an `FFIObject` is no longer needed, its handle should be passed to a
 //     special destructor function provided by the Rust FFI, which will drop the
 //     underlying Rust struct.
 //
@@ -30,13 +30,13 @@
 //     the destructor has been called, and must never call the destructor more than once.
 //     Doing so may trigger memory unsafety.
 //
-// If we try to implement this with mutual exclusion on access to the pointer, there is the
+// If we try to implement this with mutual exclusion on access to the handle, there is the
 // possibility of a race between a method call and a concurrent call to `destroy`:
 //
-//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
-//      before it can pass the pointer over the FFI to Rust.
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
 //    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
 //      a use-after-free.
 //
 // One possible solution would be to use a `ReadWriteLock`, with each method call taking
@@ -83,24 +83,24 @@
 //
 abstract class FFIObject: Disposable, AutoCloseable {
 
-    constructor(pointer: Pointer) {
-        this.pointer = pointer
+    constructor(handle: UniffiHandle) {
+        this.handle = handle
     }
 
     /**
      * This constructor can be used to instantiate a fake object.
      *
      * **WARNING: Any object instantiated with this constructor cannot be passed to an actual Rust-backed object.**
-     * Since there isn't a backing [Pointer] the FFI lower functions will crash.
-     * @param noPointer Placeholder value so we can have a constructor separate from the default empty one that may be
+     * Since there isn't a backing [UniffiHandle] the FFI lower functions will crash.
+     * @param NoHandle Placeholder value so we can have a constructor separate from the default empty one that may be
      *   implemented for classes extending [FFIObject].
      */
     @Suppress("UNUSED_PARAMETER")
-    constructor(noPointer: NoPointer) {
-        this.pointer = null
+    constructor(noHandle: NoHandle) {
+        this.handle = null
     }
 
-    protected val pointer: Pointer?
+    protected val handle: UniffiHandle?
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)
@@ -125,7 +125,7 @@ abstract class FFIObject: Disposable, AutoCloseable {
         this.destroy()
     }
 
-    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
+    internal inline fun <R> callWithHandle(block: (handle: UniffiHandle) -> R): R {
         // Check and increment the call counter, to keep the object alive.
         // This needs a compare-and-set retry loop in case of concurrent updates.
         do {
@@ -137,9 +137,9 @@ abstract class FFIObject: Disposable, AutoCloseable {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
         } while (! this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the pointer being freed concurrently.
+        // Now we can safely do the method call without the handle being freed concurrently.
         try {
-            return block(this.pointer!!)
+            return block(this.handle!!)
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
@@ -150,4 +150,4 @@ abstract class FFIObject: Disposable, AutoCloseable {
 }
 
 /** Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly. */
-object NoPointer
+object NoHandle
