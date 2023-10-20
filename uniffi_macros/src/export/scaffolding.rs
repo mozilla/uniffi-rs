@@ -143,9 +143,7 @@ impl ScaffoldingBits {
             // pointer.
             quote! {
                 {
-                    let foreign_arc = ::std::boxed::Box::leak(unsafe { Box::from_raw(uniffi_self_lowered as *mut ::std::sync::Arc<dyn #self_ident>) });
-                    // Take a clone for our own use.
-                    Ok(::std::sync::Arc::clone(foreign_arc))
+                    Ok(<dyn #self_ident as ::uniffi::SlabAlloc<crate::UniFfiTag>>::get_clone(uniffi_self_lowered))
                 }
             }
         } else {
@@ -264,7 +262,7 @@ pub(super) fn gen_ffi_function(
         quote! {
             #[doc(hidden)]
             #[no_mangle]
-            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::RustFutureHandle {
+            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::Handle {
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 match uniffi_lift_args() {

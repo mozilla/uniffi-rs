@@ -672,6 +672,22 @@ mod entry_tests {
     }
 }
 
+/// Create a static Slab value with a random id
+#[macro_export]
+macro_rules! static_slab {
+    ($ident:ident, $($tt:tt)*) => {
+        #[cfg(not(loom))]
+        static $ident: $crate::Slab::<$($tt)*> = $crate::Slab::<$($tt)*>::new_with_id_and_foreign($crate::deps::const_random::const_random!(u8), false);
+
+        // If loom is configured, then new_with_id_and_foreign won't be const so we need to wrap
+        // everything in a once_cell `Lazy` instance.
+        #[cfg(loom)]
+        static $ident: ::once_cell::sync::Lazy<$crate::Slab::<$($tt)*>> = ::once_cell::sync::Lazy::new(|| {
+            $crate::Slab::<$($tt)*>::new_with_id_and_foreign($crate::deps::const_random::const_random!(u8), false)
+        });
+    };
+}
+
 #[cfg(test)]
 mod slab_tests {
     use super::*;

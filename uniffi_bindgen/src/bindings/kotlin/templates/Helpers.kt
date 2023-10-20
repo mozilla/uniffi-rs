@@ -1,3 +1,5 @@
+typealias UniffiHandle = Long
+
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
 // Error runtime.

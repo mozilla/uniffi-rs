@@ -5,31 +5,31 @@
 {% include "Protocol.swift" %}
 
 public class {{ impl_class_name }}: {{ protocol_name }} {
-    fileprivate let pointer: UnsafeMutableRawPointer
+    fileprivate let handle: Int64
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
-    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
-        self.pointer = pointer
+    required init(handle: Int64) {
+        self.handle = handle
     }
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     public convenience init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
-        self.init(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
+        self.init(handle: {% call swift::to_ffi_call(cons) %})
     }
     {%- when None %}
     {%- endmatch %}
 
     deinit {
-        try! rustCall { {{ obj.ffi_object_free().name() }}(pointer, $0) }
+        try! rustCall { {{ obj.ffi_object_free().name() }}(handle, $0) }
     }
 
     {% for cons in obj.alternate_constructors() %}
 
     public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
-        return {{ impl_class_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
+        return {{ impl_class_name }}(handle: {% call swift::to_ffi_call(cons) %})
     }
 
     {% endfor %}
@@ -42,7 +42,7 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
-                    self.pointer
+                    self.handle
                     {%- for arg in meth.arguments() -%}
                     ,
                     {{ arg|lower_fn }}({{ arg.name()|var_name }})
@@ -75,14 +75,14 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
 
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
+            {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
         )
     }
 
     {%- when None %}
 
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
-        {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
+        {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
     }
 
     {%- endmatch -%}
@@ -102,17 +102,17 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     fileprivate static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
     {%- endif %}
 
-    typealias FfiType = UnsafeMutableRawPointer
+    typealias FfiType = Int64
     typealias SwiftType = {{ type_name }}
 
-    public static func lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
-        return {{ impl_class_name }}(unsafeFromRawPointer: pointer)
+    public static func lift(_ handle: Int64) throws -> {{ type_name }} {
+        return {{ impl_class_name }}(handle: handle)
     }
 
-    public static func lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
+    public static func lower(_ value: {{ type_name }}) -> Int64 {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.pointer
+        return value.handle
         {%- when ObjectImpl::Trait %}
         guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
             fatalError("Cast to UnsafeMutableRawPointer failed")
@@ -122,20 +122,11 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
-        let v: UInt64 = try readInt(&buf)
-        // The Rust code won't compile if a pointer won't fit in a UInt64.
-        // We have to go via `UInt` because that's the thing that's the size of a pointer.
-        let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: v))
-        if (ptr == nil) {
-            throw UniffiInternalError.unexpectedNullPointer
-        }
-        return try lift(ptr!)
+        return try lift(try readInt(&buf))
     }
 
     public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
-        // This fiddling is because `Int` is the thing that's the same size as a pointer.
-        // The Rust code won't compile if a pointer won't fit in a `UInt64`.
-        writeInt(&buf, UInt64(bitPattern: Int64(Int(bitPattern: lower(value)))))
+        writeInt(&buf, lower(value))
     }
 }
 
@@ -143,10 +134,10 @@ public struct {{ ffi_converter_name }}: FfiConverter {
 We always write these public functions just in case the enum is used as
 an external type by another crate.
 #}
-public func {{ ffi_converter_name }}_lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
-    return try {{ ffi_converter_name }}.lift(pointer)
+public func {{ ffi_converter_name }}_lift(_ handle: Int64) throws -> {{ type_name }} {
+    return try {{ ffi_converter_name }}.lift(handle)
 }
 
-public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
+public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> Int64 {
     return {{ ffi_converter_name }}.lower(value)
 }

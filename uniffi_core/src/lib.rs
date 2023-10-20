@@ -46,6 +46,7 @@ pub mod metadata;
 pub use ffi::*;
 pub use ffi_converter_traits::{
     ConvertError, FfiConverter, FfiConverterArc, Lift, LiftRef, LiftReturn, Lower, LowerReturn,
+    SlabAlloc,
 };
 pub use metadata::*;
 
@@ -56,6 +57,7 @@ pub mod deps {
     #[cfg(feature = "tokio")]
     pub use async_compat;
     pub use bytes;
+    pub use const_random;
     pub use log;
     pub use static_assertions;
 }

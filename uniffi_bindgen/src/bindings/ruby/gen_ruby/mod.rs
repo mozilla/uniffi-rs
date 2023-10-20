@@ -150,7 +150,7 @@ mod filters {
             FfiType::UInt64 => ":uint64".to_string(),
             FfiType::Float32 => ":float".to_string(),
             FfiType::Float64 => ":double".to_string(),
-            FfiType::RustArcPtr(_) => ":pointer".to_string(),
+            FfiType::Handle => ":int64".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             // Callback interfaces are not yet implemented, but this needs to return something in
@@ -162,9 +162,7 @@ mod filters {
             FfiType::ForeignExecutorHandle => {
                 unimplemented!("Foreign executors are not implemented")
             }
-            FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationCallback
-            | FfiType::RustFutureContinuationData => {
+            FfiType::RustFutureContinuationCallback | FfiType::RustFutureContinuationData => {
                 unimplemented!("Async functions are not implemented")
             }
         })

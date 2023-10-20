@@ -443,7 +443,7 @@ impl ComponentInterface {
             arguments: vec![
                 FfiArgument {
                     name: "handle".to_owned(),
-                    type_: FfiType::RustFutureHandle,
+                    type_: FfiType::Handle,
                 },
                 FfiArgument {
                     name: "callback".to_owned(),
@@ -469,7 +469,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: return_ffi_type,
             has_rust_call_status_arg: true,
@@ -484,7 +484,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: None,
             has_rust_call_status_arg: false,
@@ -499,7 +499,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: None,
             has_rust_call_status_arg: false,
@@ -521,7 +521,7 @@ impl ComponentInterface {
                 FfiType::Int64 => format!("ffi_{namespace}_{base_name}_i64"),
                 FfiType::Float32 => format!("ffi_{namespace}_{base_name}_f32"),
                 FfiType::Float64 => format!("ffi_{namespace}_{base_name}_f64"),
-                FfiType::RustArcPtr(_) => format!("ffi_{namespace}_{base_name}_pointer"),
+                FfiType::Handle => format!("ffi_{namespace}_{base_name}_handle"),
                 FfiType::RustBuffer(_) => format!("ffi_{namespace}_{base_name}_rust_buffer"),
                 _ => unimplemented!("FFI return type: {t:?}"),
             },
@@ -622,9 +622,9 @@ impl ComponentInterface {
             Some(FfiType::Int64),
             Some(FfiType::Float32),
             Some(FfiType::Float64),
-            // RustBuffer and RustArcPtr have an inner field which doesn't affect the rust future
+            Some(FfiType::Handle),
+            // RustBuffer has an inner field which doesn't affect the rust future
             // complete scaffolding function, so we just use a placeholder value here.
-            Some(FfiType::RustArcPtr("".to_owned())),
             Some(FfiType::RustBuffer(None)),
             None,
         ];

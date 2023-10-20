@@ -51,7 +51,9 @@ use std::{borrow::Borrow, sync::Arc};
 use anyhow::bail;
 use bytes::Buf;
 
-use crate::{FfiDefault, MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError};
+use crate::{
+    FfiDefault, Handle, MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError,
+};
 
 /// Generalized FFI conversions
 ///
@@ -351,6 +353,23 @@ pub trait ConvertError<UT>: Sized {
     fn try_convert_unexpected_callback_error(e: UnexpectedUniFFICallbackError) -> Result<Self>;
 }
 
+/// Store instances `Arc<Self>` in a [crate::Slab] and generate handles to pass to the foreign code
+///
+/// ## Safety
+///
+/// All traits are unsafe (implementing it requires `unsafe impl`) because we can't guarantee
+/// that it's safe to pass your type out to foreign-language code and back again. Buggy
+/// implementations of this trait might violate some assumptions made by the generated code,
+/// or might not match with the corresponding code in the generated foreign-language bindings.
+/// These traits should not be used directly, only in generated code, and the generated code should
+/// have fixture tests to test that everything works correctly together.
+/// `&T` using the Arc.
+pub unsafe trait SlabAlloc<UT> {
+    fn insert(value: Arc<Self>) -> Handle;
+    fn get_clone(handle: Handle) -> Arc<Self>;
+    fn remove(handle: Handle) -> Arc<Self>;
+}
+
 /// Derive FFI traits
 ///
 /// This can be used to derive:
@@ -462,5 +481,27 @@ macro_rules! derive_ffi_traits {
                 $crate::convert_unexpected_error!(e, $ty)
             }
         }
+    };
+
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? SlabAlloc<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
+        // Using an anonymous const here creates a new namespace so that our `SLAB` static doesn't
+        // conflict with other names.
+        const _: () = {
+            $crate::static_slab!(SLAB, ::std::sync::Arc<$ty>);
+
+            unsafe impl $(<$($generic),*>)* $crate::SlabAlloc<$ut> for $ty $(where $($where)*)*
+            {
+                fn insert(value: ::std::sync::Arc<Self>) -> $crate::Handle {
+                    SLAB.insert_or_panic(value)
+                }
+                fn get_clone(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
+                    SLAB.get_clone_or_panic(handle)
+                }
+
+                fn remove(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
+                    SLAB.remove_or_panic(handle).0
+                }
+            }
+        };
     };
 }

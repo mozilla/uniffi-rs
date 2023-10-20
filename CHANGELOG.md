@@ -18,6 +18,8 @@
 
 - The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now
   inputs the callback pointer.  External bindings authors will need to update their code.
+- The object handle FFI has changed.  External bindings generators will need to update their code to
+  use the new slab/handle system.
 
 ## v0.25.0 (backend crates: v0.25.0) - (_2023-10-18_)
 
