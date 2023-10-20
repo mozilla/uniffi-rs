@@ -337,14 +337,21 @@ impl KotlinCodeOracle {
 
     fn protocol_name(&self, type_: &Type) -> String {
         match type_ {
-            Type::Object { module_path, name, imp } => {
+            Type::Object {
+                module_path: _,
+                name,
+                imp: _,
+            } => {
                 if self.has_protocol(type_) {
                     format!("{}Interface", self.class_name(name))
                 } else {
                     self.class_name(name)
                 }
             }
-            Type::Map { key_type, value_type} => {
+            Type::Map {
+                key_type,
+                value_type,
+            } => {
                 let key_protocol_name = self.protocol_name(key_type);
                 let value_protocol_name = self.protocol_name(value_type);
                 format!("Map<{}, {}>", key_protocol_name, value_protocol_name)
@@ -361,20 +368,24 @@ impl KotlinCodeOracle {
 
     fn has_protocol(&self, type_: &Type) -> bool {
         match type_ {
-            Type::Object { module_path, name, imp } => {
+            Type::Object {
+                module_path: _,
+                name: _,
+                imp,
+            } => {
                 matches!(imp, ObjectImpl::Struct)
             }
-            Type::Map { key_type, value_type} => {
-                self.has_protocol(key_type)
-                    || self.has_protocol(value_type)
-            }
+            Type::Map {
+                key_type,
+                value_type,
+            } => self.has_protocol(key_type) || self.has_protocol(value_type),
             Type::Optional { inner_type } => {
                 matches!(inner_type.as_type(), Type::Object { .. })
             }
             Type::Sequence { inner_type } => {
                 matches!(inner_type.as_type(), Type::Object { .. })
             }
-            _ => false
+            _ => false,
         }
     }
 }
@@ -456,7 +467,9 @@ pub mod filters {
 
     pub fn downcast_if_needed(type_: &Type) -> Result<String, askama::Error> {
         let codetype = type_.as_codetype();
-        let ret = if KotlinCodeOracle.has_protocol(type_) && codetype.type_label() != KotlinCodeOracle.protocol_name(type_) {
+        let ret = if KotlinCodeOracle.has_protocol(type_)
+            && codetype.type_label() != KotlinCodeOracle.protocol_name(type_)
+        {
             format!(" as {}", codetype.type_label())
         } else {
             String::new()

@@ -122,7 +122,9 @@ impl Field {
         self.type_.iter_types()
     }
 
-    pub fn type_(&self) -> &Type { &self.type_ }
+    pub fn type_(&self) -> &Type {
+        &self.type_
+    }
 }
 
 impl AsType for Field {
