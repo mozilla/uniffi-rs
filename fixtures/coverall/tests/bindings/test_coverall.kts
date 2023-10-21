@@ -210,6 +210,16 @@ Coveralls("test_interfaces_in_dicts").use { coveralls ->
     assert(coveralls.getRepairs().size == 2)
 }
 
+Coveralls("test_passing_sequences").use { coveralls ->
+    val patches: List<PatchInterface> = listOf(
+        Patch(Color.RED),
+        Patch(Color.GREEN),
+        Patch(Color.BLUE)
+    )
+    coveralls.addPatches(patches)
+    assert(coveralls.getRepairs().size == 3)
+}
+
 Coveralls("test_regressions").use { coveralls ->
     assert(coveralls.getStatus("success") == "status: success")
 }
@@ -423,4 +433,77 @@ assert(d.integer == 42UL)
 // Test bytes
 Coveralls("test_bytes").use { coveralls ->
     assert(coveralls.reverse("123".toByteArray(Charsets.UTF_8)).toString(Charsets.UTF_8) == "321")
+}
+
+class FakeCoveralls(
+    private val name: String,
+) : CoverallsInterface {
+
+    private val patches = mutableListOf<PatchInterface>()
+    private val repairs = mutableListOf<Repair>()
+
+    override fun `addPatch`(`patch`: PatchInterface) { patches += patch }
+    override fun `addPatches`(`patches`: List<PatchInterface>) { this.patches += patches }
+    override fun `addRepair`(`repair`: Repair) { repairs += repair }
+    override fun `cloneMe`(): CoverallsInterface { return FakeCoveralls(name) }
+    override fun `falliblePanic`(`message`: String) {}
+    override fun `getDict`(`key`: String, `value`: ULong): Map<String, ULong> { return mapOf() }
+    override fun `getDict2`(`key`: String, `value`: ULong): Map<String, ULong> { return mapOf() }
+    override fun `getDict3`(`key`: UInt, `value`: ULong): Map<UInt, ULong> { return mapOf() }
+    override fun `getDict4`(`key`: UInt, `value`: IFirstInterface): Map<UInt, IFirstInterface> { return mapOf() }
+    override fun `getName`(): String { return name }
+    override fun `getOther`(): CoverallsInterface? { return FakeCoveralls("other") }
+    override fun `getPatches`(): List<PatchInterface> { return patches }
+    override fun `getRepairs`(): List<Repair> { return repairs }
+    override fun `getStatus`(`status`: String): String { return status }
+    override fun `maybeThrow`(`shouldThrow`: Boolean): Boolean { return shouldThrow }
+    override fun `maybeThrowComplex`(`input`: Byte): Boolean { return input != 0.toByte() }
+    override fun `maybeThrowInto`(`shouldThrow`: Boolean): Boolean { return shouldThrow }
+    override fun `panic`(`message`: String) {}
+    override fun `reverse`(`value`: ByteArray): ByteArray { return byteArrayOf() }
+    override fun `strongCount`(): ULong { return 0uL }
+    override fun `takeOther`(`other`: CoverallsInterface?) {}
+    override fun `takeOtherFallible`() {}
+    override fun `takeOtherPanic`(`message`: String) {}
+
+    override fun destroy() = Unit
+}
+
+class FakePatch(
+    private val color: Color,
+) : PatchInterface {
+
+    override fun `getColor`(): Color {
+        return color
+    }
+
+    override fun destroy() {}
+}
+
+// Passing fakes to Rust concrete classes will fail, as they can't be casted to their concrete types
+// And they wouldn't have an associated pointer anyway
+Coveralls("test_passing_fakes_to_rust_fails").use { coveralls ->
+    val fakePatch = FakePatch(Color.RED)
+    var failed = false
+    try {
+        coveralls.addPatch(fakePatch)
+    } catch (e: ClassCastException) {
+        failed = true
+    }
+    assert(failed)
+}
+
+// Fakes can only be used with fakes
+FakeCoveralls("test_using_fakes_works").use { coveralls ->
+    val fakePatch = FakePatch(Color.RED)
+    coveralls.addPatch(fakePatch)
+
+    val repair = Repair(Instant.now(), fakePatch)
+    coveralls.addRepair(repair)
+    assert(coveralls.getRepairs().first() === repair)
+
+    val clone = coveralls.cloneMe()
+    assert(clone.getName() == coveralls.getName())
+    val other = coveralls.getOther()
+    clone.takeOther(other)
 }

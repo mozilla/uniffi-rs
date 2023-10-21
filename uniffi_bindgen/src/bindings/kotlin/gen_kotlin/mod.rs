@@ -480,6 +480,25 @@ pub mod filters {
         Ok(ret)
     }
 
+    pub fn upcast_if_needed(type_: &Type) -> Result<String, askama::Error> {
+        let ret = if needs_upcast(type_) {
+            format!(" as {}", KotlinCodeOracle.protocol_name(type_))
+        } else {
+            String::new()
+        };
+        Ok(ret)
+    }
+
+    pub fn unchecked_cast_annotation_if_needed(type_: &Type) -> Result<String, askama::Error> {
+        if needs_upcast(type_) {
+            Ok(String::from(
+                "@Suppress(\"UNCHECKED_CAST\", \"USELESS_CAST\")\n",
+            ))
+        } else {
+            Ok(String::new())
+        }
+    }
+
     pub fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.lower",
@@ -626,5 +645,19 @@ pub mod filters {
     /// display the name for the user.
     pub fn unquote(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.trim_matches('`').to_string())
+    }
+
+    fn needs_upcast(type_: &Type) -> bool {
+        match type_ {
+            Type::Map {
+                key_type,
+                value_type,
+            } => {
+                KotlinCodeOracle::has_protocol(key_type)
+                    || KotlinCodeOracle::has_protocol(value_type)
+            }
+            Type::Sequence { inner_type } => KotlinCodeOracle::has_protocol(inner_type),
+            _ => false,
+        }
     }
 }

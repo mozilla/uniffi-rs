@@ -166,11 +166,17 @@ interface Coveralls {
     /// Adds a new repair at the current time.
     void add_patch(Patch patch);
 
+    /// Adds several repairs at the current time.
+    void add_patches(sequence<Patch> patches);
+
     /// Adds a new repair at the specified time.
     void add_repair(Repair repair);
 
     /// Returns all repairs made.
     sequence<Repair> get_repairs();
+
+    /// Returns all patches added.
+    sequence<Patch> get_patches();
 
     /// Reverses the bytes.
     bytes reverse(bytes value);

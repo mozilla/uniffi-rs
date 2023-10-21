@@ -31,6 +31,7 @@
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
+        {{ arg.type_()|unchecked_cast_annotation_if_needed -}}
         {{- arg|lower_fn }}({{ arg.name()|var_name }}{{ arg.type_()|downcast_if_needed }}),
     {%- endfor %}
 {%- endmacro -%}

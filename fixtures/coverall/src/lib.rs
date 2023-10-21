@@ -9,8 +9,9 @@ use std::time::SystemTime;
 
 use once_cell::sync::Lazy;
 
-mod traits;
 pub use traits::{ancestor_names, get_traits, make_rust_getters, test_getters, Getters, NodeTrait};
+
+mod traits;
 
 static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
@@ -378,9 +379,28 @@ impl Coveralls {
         repairs.push(repair);
     }
 
+    fn add_patches(&self, patches: Vec<Arc<Patch>>) {
+        let now = SystemTime::now();
+        let mut new_repairs: Vec<Repair> = patches
+            .into_iter()
+            .map(|patch| Repair { when: now, patch })
+            .collect();
+        let mut repairs = self.repairs.lock().unwrap();
+        repairs.append(&mut new_repairs);
+    }
+
     fn add_repair(&self, repair: Repair) {
         let mut repairs = self.repairs.lock().unwrap();
         repairs.push(repair);
+    }
+
+    fn get_patches(&self) -> Vec<Arc<Patch>> {
+        self.repairs
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|repair| repair.patch.clone())
+            .collect()
     }
 
     fn get_repairs(&self) -> Vec<Repair> {

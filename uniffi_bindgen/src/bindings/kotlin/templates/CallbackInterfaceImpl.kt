@@ -65,9 +65,7 @@ internal class {{ callback_handler_class }} : ForeignCallback {
                 {% if !loop.last %}, {% endif %}
                 {%- endfor %}
             )
-            {% if return_type.needs_unchecked_upcast_in_return() -%}
-            @Suppress("UNCHECKED_CAST", "USELESS_CAST")
-            {% endif -%}
+            {{ return_type|unchecked_cast_annotation_if_needed -}}
             outBuf.setValue({{ return_type|ffi_converter_name }}.lowerIntoRustBuffer(returnValue{{ return_type|downcast_if_needed }}))
             return UNIFFI_CALLBACK_SUCCESS
         }
