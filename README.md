@@ -2,19 +2,24 @@
 
 UniFFI is a toolkit for building cross-platform software components in Rust.
 
-By writing your core business logic in Rust and describing its interface in a special
-[interface definition file](https://mozilla.github.io/uniffi-rs/udl_file_spec.html),
+For the impatient, see [**the UniFFI user guide**](https://mozilla.github.io/uniffi-rs/)
+or [**the UniFFI examples**](https://github.com/mozilla/uniffi-rs/tree/main/examples#example-uniffi-components).
+
+By writing your core business logic in Rust and describing its interface in an "object model",
 you can use UniFFI to help you:
 
 * Compile your Rust code into a shared library for use on different target platforms.
 * Generate bindings to load and use the library from different target languages.
 
-For example, UniFFI is currently used in the [mozilla/application-services](https://github.com/mozilla/application-services)
-project to build browser storage and syncing functionality for Firefox mobile browsers. Core functionality is
-written once in Rust, and auto-generated bindings allow that functionality to be called from both Kotlin (for Android apps)
-and Swift (for iOS apps).
+You can describe your object model in an [interface definition file](https://mozilla.github.io/uniffi-rs/udl_file_spec.html)
+or [by using proc-macros](https://mozilla.github.io/uniffi-rs/proc_macro/index.html).
 
-Currently first-party supported foreign languages include Kotlin, Swift, Python and Ruby.
+UniFFI is currently extensively by Mozilla in Firefox mobile and desktop browsers;
+written once in Rust, auto-generated bindings allow that functionality to be called
+from both Kotlin (for Android apps) and Swift (for iOS apps).
+It also has a growing community of users shipping various cool things to many users.
+
+UniFII comes with support for **Kotlin**, **Swift**, **Python** and **Ruby** with 3rd party bindings available for **C#** and **Golang**.
 Additional foreign language bindings can be developed externally and we welcome contributions to list them here.
 See [Third-party foreign language bindings](#third-party-foreign-language-bindings).
 
@@ -22,9 +27,8 @@ See [Third-party foreign language bindings](#third-party-foreign-language-bindin
 
 You can read more about using the tool in [**the UniFFI user guide**](https://mozilla.github.io/uniffi-rs/).
 
-Please be aware that UniFFI is being developed concurrently with its initial consumers, so it is changing rapidly and there
-are a number of sharp edges to the user experience. Still, we consider is developed enough for production use in Mozilla
-products and we welcome any feedback you may have about making it more broadly useful.
+We consider it ready for production use, but UniFFI is a long way from a 1.0 release with lots of internal work still going on.
+We try hard to avoid breaking simple consumers, but more advanced things might break as you upgrade over time.
 
 ### Etymology and Pronunciation
 

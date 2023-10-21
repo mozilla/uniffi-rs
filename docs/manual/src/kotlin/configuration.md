@@ -8,8 +8,8 @@ The generated Kotlin modules can be configured using a `uniffi.toml` configurati
 | ------------------ | -------  |------------ |
 | `package_name`     |  `uniffi` | The Kotlin package name - ie, the value used in the `package` statement at the top of generated files. |
 | `cdylib_name`      | `uniffi_{namespace}`[^1] | The name of the compiled Rust library containing the FFI implementation (not needed when using `generate --library`). |
-| `custom_types`      | | A map which controls how custom types are exposed to Kotlin. See the [custom types section of the manual](../udl/custom_types#custom-types-in-the-bindings-code)|
-| `external_packages` | | A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the [external types section of the manual](../udl/ext_types_external#kotlin)
+| `custom_types`      | | A map which controls how custom types are exposed to Kotlin. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code)|
+| `external_packages` | | A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the [external types section of the manual](../udl/ext_types_external.md#kotlin)
 
 
 ## Example

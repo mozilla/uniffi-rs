@@ -16,7 +16,7 @@ Lifting and lowering simple types such as integers is done by directly casting t
 value to and from an appropriate type. For complex types such as optionals and
 records we currently implement lifting and lowering by serializing into a byte
 buffer, but this is an implementation detail that may change in future. (See
-[ADR-0002](/docs/adr/0002-serialize-complex-datatypes.md) for the reasoning
+[ADR-0002](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0002-serialize-complex-datatypes.md) for the reasoning
 behind this choice.)
 
 As a concrete example, consider this interface for accumulating a list of integers:

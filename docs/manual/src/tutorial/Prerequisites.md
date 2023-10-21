@@ -12,7 +12,7 @@ uniffi = { version = "[latest-version]" }
 uniffi = { version = "[latest-version]", features = [ "build" ] }
 ```
 
-UniFFI has not reached version `1.0` yet.  Versions are typically specified as "0.[minor-version]".
+UniFFI has not reached version `1.0` yet.  Versions are typically specified as `0.[minor-version]`.
 
 ## Build your crate as a cdylib
 

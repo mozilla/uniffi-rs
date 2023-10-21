@@ -1,7 +1,7 @@
 # Callback interfaces
 
 Callback interfaces are a special implementation of
-[Rust traits implemented by foreign languages](../foreign_traits).
+[Rust traits implemented by foreign languages](../foreign_traits.md).
 
 These are described in both UDL and proc-macros as an explict "callback interface".
 They are (soft) deprecated, remain now for backwards compatibility, but probably
@@ -29,7 +29,7 @@ from multiple threads at once, but Rust can not enforce this in the foreign code
 
 ## Rust signature differences
 
-Consider the examples in [Rust traits implemented by foreign languages](../foreign_traits).
+Consider the examples in [Rust traits implemented by foreign languages](../foreign_traits.md).
 
 If the traits in question are defined as a "callback" interface, the `Arc<dyn Keychain>` types
 would actually be `Box<dyn Keychain>` - eg, the Rust implementation of the `Authenticator`
