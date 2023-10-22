@@ -1,5 +1,8 @@
 UniffiHandle = typing.NewType('UniffiHandle', int)
 
+def uniffi_handle_is_from_rust(handle: int) -> bool:
+    return (handle & 0x0001_0000_0000) == 0
+
 # TODO: it would be nice to make this a generic class, however let's wait until python 3.11 is the
 # minimum version, so we can do that without having to add a `TypeVar` to the top-level namespace.
 class UniffiSlab:
@@ -32,6 +35,11 @@ class UniffiSlab:
         if result < 0:
             raise InternalError("Slab get error")
         return self.items[self._index(handle)]
+
+    def inc_ref(self, handle: UniffiHandle):
+        result = _UniffiLib.{{ ci.ffi_slab_inc_ref().name() }}(self.slab_handle, handle)
+        if result < 0:
+            raise InternalError("Slab inc-ref error")
 
     def remove(self, handle: UniffiHandle) -> object:
         result = _UniffiLib.{{ ci.ffi_slab_dec_ref().name() }}(self.slab_handle, handle)

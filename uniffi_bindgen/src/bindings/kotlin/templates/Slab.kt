@@ -1,3 +1,7 @@
+fun uniffiHandleIsFromRust(handle: UniffiHandle): Boolean {
+    return (handle and 0x0001_0000_0000) == 0.toLong()
+}
+
 internal class UniffiSlab<T> {
     val slabHandle = _UniFFILib.INSTANCE.{{ ci.ffi_slab_new().name() }}()
     var lock = ReentrantReadWriteLock()
@@ -26,6 +30,13 @@ internal class UniffiSlab<T> {
             throw InternalException("Slab get error")
         }
         return lock.readLock().withLock { items[index(handle)]!! }
+    }
+
+    internal fun incRef(handle: UniffiHandle) {
+        val result = _UniFFILib.INSTANCE.{{ ci.ffi_slab_inc_ref().name() }}(slabHandle, handle)
+        if (result < 0) {
+            throw InternalException("Slab inc-ref error")
+        }
     }
 
     internal fun remove(handle: UniffiHandle): T {

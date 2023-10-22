@@ -110,16 +110,29 @@ public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Uniffi
     {%- endif %}
 
     override fun lower(value: {{ type_name }}): UniffiHandle {
-        {%- match obj.imp() %}
-        {%- when ObjectImpl::Struct %}
+        {%- if obj.is_trait_interface() %}
+        if (value is {{ impl_class_name }}) {
+            // If we're wrapping a trait implemented in Rust, return that handle directly rather
+            // than wrapping it again in Kotlin.
+            return value.uniffiCloneHandle()
+        } else {
+            return slab.insert(value)
+        }
+        {%- else %}
         return value.uniffiCloneHandle()
-        {%- when ObjectImpl::Trait %}
-        return slab.insert(value)
-        {%- endmatch %}
+        {%- endif %}
     }
 
     override fun lift(value: UniffiHandle): {{ type_name }} {
+        {%- if obj.is_trait_interface() %}
+        if (uniffiHandleIsFromRust(value)) {
+            return {{ impl_class_name }}(UniffiHandleWrapper(value))
+        } else {
+            return slab.remove(value)
+        }
+        {%- else %}
         return {{ impl_class_name }}(UniffiHandleWrapper(value))
+        {%- endif %}
     }
 
     override fun read(buf: ByteBuffer): {{ type_name }} {

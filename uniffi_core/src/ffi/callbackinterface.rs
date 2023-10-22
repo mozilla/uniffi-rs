@@ -116,9 +116,11 @@
 use crate::{ForeignCallback, ForeignCallbackCell, Handle, Lift, LiftReturn, RustBuffer};
 use std::fmt;
 
-/// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
-/// and it can be deleted from the handle map.
+/// Decrement the reference count for the object on the foreign side.
 pub const IDX_CALLBACK_FREE: u32 = 0;
+/// Increment the reference count for the object on the foreign side.
+/// This is i32::MAX because Kotlin/Swift currently uses signed integers for the method index.
+pub const IDX_CALLBACK_INC_REF: u32 = i32::MAX as u32;
 
 /// Result of a foreign callback invocation
 #[repr(i32)]

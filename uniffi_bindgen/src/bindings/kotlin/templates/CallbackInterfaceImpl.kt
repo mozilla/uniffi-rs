@@ -8,9 +8,10 @@ internal class {{ callback_handler_class }} : ForeignCallback {
         return when (method) {
             IDX_CALLBACK_FREE -> {
                 {{ ffi_converter_name }}.slab.remove(handle)
-
-                // Successful return
-                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+                UNIFFI_CALLBACK_SUCCESS
+            }
+            IDX_CALLBACK_INC_REF -> {
+                {{ ffi_converter_name }}.slab.incRef(handle)
                 UNIFFI_CALLBACK_SUCCESS
             }
             {% for meth in methods.iter() -%}

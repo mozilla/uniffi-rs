@@ -344,12 +344,10 @@ getTraits().let { traits ->
     assert(traits[1].name() == "node-2")
     assert(traits[1].strongCount() == 2UL)
 
-    // Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
-    // Swift impl before passing it to `setParent()`
     traits[0].setParent(traits[1])
     assert(ancestorNames(traits[0]) == listOf("node-2"))
     assert(ancestorNames(traits[1]).isEmpty())
-    assert(traits[1].strongCount() == 2UL)
+    assert(traits[1].strongCount() == 3UL)
     assert(traits[0].getParent()!!.name() == "node-2")
 
     val ktNode = KotlinNode()
@@ -357,6 +355,10 @@ getTraits().let { traits ->
     assert(ancestorNames(traits[0]) == listOf("node-2", "node-kt"))
     assert(ancestorNames(traits[1]) == listOf("node-kt"))
     assert(ancestorNames(ktNode) == listOf<String>())
+
+    // If we get the node back from Rust, we should get the original object, not an object that's
+    // been wrapped again.
+    assert(traits[1].getParent() === ktNode)
 
     traits[1].setParent(null)
     ktNode.setParent(traits[0])

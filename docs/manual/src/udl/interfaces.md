@@ -87,9 +87,10 @@ interface Button {
 
 ```
 
-With the following Rust implementation:
+The Rust implementation needs to be wrapped in `#[uniffi::trait_interface]`:
 
 ```rust
+#[uniffi::trait_interface]
 pub trait Button: Send + Sync {
     fn name(&self) -> String;
 }

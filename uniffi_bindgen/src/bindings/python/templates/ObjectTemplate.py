@@ -85,18 +85,30 @@ class {{ ffi_converter_name }}:
 
     @staticmethod
     def lift(value: UniffiHandle):
+        {%- if obj.is_trait_interface() %}
+        if uniffi_handle_is_from_rust(value):
+            return {{ impl_name }}._make_instance_(value)
+        else:
+            return {{ ffi_converter_name }}._slab.remove(value)
+        {%- else %}
         return {{ impl_name }}._make_instance_(value)
+        {%- endif %}
 
     @staticmethod
     def lower(value: {{ type_name }}):
-        {%- match obj.imp() %}
-        {%- when ObjectImpl::Struct %}
+        {%- if obj.is_trait_interface() %}
+        _uniffi_clone_handle = getattr(value, '_uniffi_clone_handle', None)
+        if _uniffi_clone_handle is not None:
+            # If we're wrapping a trait implemented in Rust, return that handle directly rather than
+            # wrapping it again in Python.
+            return _uniffi_clone_handle()
+        else:
+            return {{ ffi_converter_name }}._slab.insert(value)
+        {%- else %}
         if not isinstance(value, {{ impl_name }}):
             raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
         return value._uniffi_clone_handle()
-        {%- when ObjectImpl::Trait %}
-        return {{ ffi_converter_name }}._slab.insert(value)
-        {%- endmatch %}
+        {%- endif %}
 
     @classmethod
     def read(cls, buf: _UniffiRustBuffer):

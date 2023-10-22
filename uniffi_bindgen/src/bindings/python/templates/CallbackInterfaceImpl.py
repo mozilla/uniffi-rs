@@ -52,9 +52,9 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
 
     if method == IDX_CALLBACK_FREE:
         {{ ffi_converter_name }}._slab.remove(handle)
-
-        # Successfull return
-        # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+        return _UNIFFI_CALLBACK_SUCCESS
+    if method == IDX_CALLBACK_INC_REF:
+        {{ ffi_converter_name }}._slab.inc_ref(handle)
         return _UNIFFI_CALLBACK_SUCCESS
 
     {% for meth in methods.iter() -%}

@@ -717,6 +717,7 @@ impl ComponentInterface {
             self.ffi_slab_free(),
             self.ffi_slab_insert(),
             self.ffi_slab_check_handle(),
+            self.ffi_slab_inc_ref(),
             self.ffi_slab_dec_ref(),
         ]
         .into_iter()

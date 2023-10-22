@@ -111,17 +111,30 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     typealias SwiftType = {{ type_name }}
 
     public static func lift(_ handle: Int64) throws -> {{ type_name }} {
+        {%- if obj.is_trait_interface() %}
+        if uniffiHandleIsFromRust(handle) {
+            return {{ impl_class_name }}(handle: handle)
+        } else {
+            return try! slab.remove(handle: handle)
+        }
+        {%- else %}
         return {{ impl_class_name }}(handle: handle)
+        {%- endif %}
     }
 
     public static func lower(_ value: {{ type_name }}) -> Int64 {
-        {%- match obj.imp() %}
-        {%- when ObjectImpl::Struct %}
+        {%- if obj.is_trait_interface() %}
+        if let rustImpl = value as? {{ impl_class_name }} {
+            // If we're wrapping a trait implemented in Rust, return that handle directly rather
+            // than wrapping it again in Swift.
+            return rustImpl.uniffiCloneHandle()
+        } else {
+            return try! slab.insert(value: value)
+        }
+        {%- else %}
         // inc-ref the current handle, then return the new reference.
         return value.uniffiCloneHandle()
-        {%- when ObjectImpl::Trait %}
-        return try! slab.insert(value: value)
-        {%- endmatch %}
+        {%- endif %}
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {

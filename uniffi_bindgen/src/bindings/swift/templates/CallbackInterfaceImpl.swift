@@ -55,8 +55,14 @@ fileprivate let {{ callback_handler }} : ForeignCallback =
 
     switch method {
         case IDX_CALLBACK_FREE:
-            // Call remove and swallow any errors.  There's not much any way to recover.
+            // Call remove and swallow any errors.  There's not any way to recover.
             let _ = try? {{ ffi_converter_name }}.slab.remove(handle: handle)
+            // Sucessful return
+            // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+            return UNIFFI_CALLBACK_SUCCESS
+        case IDX_CALLBACK_INC_REF:
+            // Call inc_ref and swallow any errors.  There's not any way to recover.
+            let _ = try? {{ ffi_converter_name }}.slab.incRef(handle: handle)
             // Sucessful return
             // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
             return UNIFFI_CALLBACK_SUCCESS

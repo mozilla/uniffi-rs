@@ -23,6 +23,9 @@
   inputs the callback pointer.  External bindings authors will need to update their code.
 - The object handle FFI has changed.  External bindings generators will need to update their code to
   use the new slab/handle system.
+- Trait interfaces defined in UDL need to be wrapped with `#[uniffi::trait_interface]`.
+- Trait interfaces performance has been improved.  If a trait interface handle is passed across the
+  FFI multiple times, UniFFI will only wrap the object once rather than each time it's passed.
 
 ## v0.25.0 (backend crates: v0.25.0) - (_2023-10-18_)
 

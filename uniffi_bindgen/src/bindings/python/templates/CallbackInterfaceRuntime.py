@@ -1,8 +1,12 @@
 import threading
 
-# Magic number for the Rust proxy to call using the same mechanism as every other method,
-# to free the callback once it's dropped by Rust.
+# Magic numbers for the Rust proxy to call using the same mechanism as every other method.
+
+# Dec-ref the callback object
 IDX_CALLBACK_FREE = 0
+# Inc-ref the callback object
+IDX_CALLBACK_INC_REF = 0x7FFF_FFFF
+
 # Return codes for callback calls
 _UNIFFI_CALLBACK_SUCCESS = 0
 _UNIFFI_CALLBACK_ERROR = 1

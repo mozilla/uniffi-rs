@@ -1,3 +1,7 @@
+func uniffiHandleIsFromRust(_ handle: Int64) -> Bool {
+    return (handle & 0x0001_0000_0000) == 0
+}
+
 fileprivate class UniffiSlab<T> {
     private let slabHandle = {{ ci.ffi_slab_new().name() }}()
     // TODO: use a read-write lock.
@@ -34,6 +38,13 @@ fileprivate class UniffiSlab<T> {
         }
         return lock.withLock {
             return items[index(handle)]!
+        }
+    }
+
+    internal func incRef(handle: Int64) throws {
+        let result = {{ ci.ffi_slab_inc_ref().name() }}(slabHandle, handle)
+        if (result < 0) {
+            throw UniffiInternalError.slabError
         }
     }
 
