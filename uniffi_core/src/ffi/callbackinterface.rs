@@ -116,9 +116,10 @@
 use crate::{ForeignCallback, ForeignCallbackCell, Handle, Lift, LiftReturn, RustBuffer};
 use std::fmt;
 
-/// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
-/// and it can be deleted from the handle map.
+/// Free the foreign callback object.
 pub const IDX_CALLBACK_FREE: u32 = 0;
+/// Clone the foreign callback object and get a new handle.
+pub const IDX_CALLBACK_CLONE: u32 = i32::MAX as u32;
 
 /// Result of a foreign callback invocation
 #[repr(i32)]

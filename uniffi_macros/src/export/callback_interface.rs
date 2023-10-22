@@ -16,6 +16,7 @@ pub(super) fn trait_impl(
     mod_path: &str,
     trait_ident: &Ident,
     items: &[ImplItem],
+    trait_interface: bool,
 ) -> syn::Result<TokenStream> {
     let trait_name = ident_to_string(trait_ident);
     let trait_impl_ident = trait_impl_ident(&trait_name);
@@ -32,6 +33,20 @@ pub(super) fn trait_impl(
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<TokenStream>>()?;
+
+    let uniffi_foreign_handle = trait_interface.then(|| {
+        quote! {
+            fn uniffi_foreign_handle(&self) -> Option<::uniffi::Handle> {
+                let raw_clone = #internals_ident.invoke_callback::<u64, crate::UniFfiTag>(
+                    self.handle, uniffi::IDX_CALLBACK_CLONE, Default::default()
+                );
+                let handle = ::uniffi::Handle::from_raw(raw_clone)
+                    .unwrap_or_else(|| panic!("{} IDX_CALLBACK_CLONE returned null handle", #trait_name));
+                Some(handle)
+            }
+        }
+    });
+
     Ok(quote! {
         #[doc(hidden)]
         static #internals_ident: ::uniffi::ForeignCallbackInternals = ::uniffi::ForeignCallbackInternals::new();
@@ -66,6 +81,7 @@ pub(super) fn trait_impl(
 
         impl #trait_ident for #trait_impl_ident {
             #trait_impl_methods
+            #uniffi_foreign_handle
         }
     })
 }

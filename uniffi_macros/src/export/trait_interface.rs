@@ -4,6 +4,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
+use syn::ItemTrait;
 
 use crate::{
     export::{
@@ -25,7 +26,7 @@ pub(super) fn gen_trait_scaffolding(
         return Err(syn::Error::new_spanned(rt, "not supported for traits"));
     }
     let trait_name = ident_to_string(&self_ident);
-    let trait_impl = callback_interface::trait_impl(mod_path, &self_ident, &items)
+    let trait_impl = callback_interface::trait_impl(mod_path, &self_ident, &items, true)
         .unwrap_or_else(|e| e.into_compile_error());
     let clone_fn_ident = Ident::new(
         &uniffi_meta::clone_fn_symbol_name(mod_path, &trait_name),
@@ -36,7 +37,7 @@ pub(super) fn gen_trait_scaffolding(
         Span::call_site(),
     );
 
-    let free_tokens = quote! {
+    let helper_ffi_fn_tokens = quote! {
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #clone_fn_ident(
@@ -85,7 +86,7 @@ pub(super) fn gen_trait_scaffolding(
 
     Ok(quote_spanned! { self_ident.span() =>
         #meta_static_var
-        #free_tokens
+        #helper_ffi_fn_tokens
         #trait_impl
         #impl_tokens
         #ffi_converter_tokens
@@ -113,11 +114,24 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
             type FfiType = ::uniffi::Handle;
 
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                <dyn #trait_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::new_handle(obj)
+                // If obj wraps a foreign implementation, then `uniffi_foreign_handle` will return
+                // the handle here and we can use that rather than wrapping it again with Rust.
+                let handle = match obj.uniffi_foreign_handle() {
+                    Some(handle) => handle,
+                    None => <dyn #trait_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::new_handle(obj),
+                };
+                handle
             }
 
             fn try_lift(handle: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
-                Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(handle)))
+                Ok(if handle.is_foreign() {
+                    // For foreign handles, construct a struct that implements the trait by calling
+                    // the handle
+                    ::std::sync::Arc::new(<#trait_impl_ident>::new(handle))
+                } else {
+                    // For Rust handles, consume handle that the foreign side cloned.
+                    <dyn #trait_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::consume_handle(handle)
+                })
             }
 
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
@@ -142,6 +156,34 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
 
         unsafe #lift_ref_impl_spec {
             type LiftType = ::std::sync::Arc<dyn #trait_ident>;
+        }
+    }
+}
+
+pub fn alter_trait(item: &ItemTrait) -> TokenStream {
+    let ItemTrait {
+        attrs,
+        vis,
+        unsafety,
+        auto_token,
+        trait_token,
+        ident,
+        generics,
+        colon_token,
+        supertraits,
+        items,
+        ..
+    } = item;
+
+    quote! {
+        #(#attrs)*
+        #vis #unsafety #auto_token #trait_token #ident #generics #colon_token #supertraits {
+            #(#items)*
+
+            #[doc(hidden)]
+            fn uniffi_foreign_handle(&self) -> Option<::uniffi::Handle> {
+                None
+            }
         }
     }
 }

@@ -8,9 +8,11 @@ internal class {{ callback_handler_class }} : ForeignCallback {
         return when (method) {
             IDX_CALLBACK_FREE -> {
                 {{ ffi_converter_name }}.handleMap.consumeHandle(handle)
-
-                // Successful return
-                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+                UNIFFI_CALLBACK_SUCCESS
+            }
+            IDX_CALLBACK_CLONE -> {
+                val obj = {{ ffi_converter_name }}.handleMap.get(handle)
+                outBuf.setValue({{ ffi_converter_name }}.lowerIntoRustBuffer(obj))
                 UNIFFI_CALLBACK_SUCCESS
             }
             {% for meth in methods.iter() -%}

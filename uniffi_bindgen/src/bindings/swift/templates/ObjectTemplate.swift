@@ -115,25 +115,25 @@ public class {{ impl_class_name }}:
     {%-         when UniffiTrait::Display { fmt } %}
     public var description: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.handle", fmt) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", fmt) %}
         )
     }
     {%-         when UniffiTrait::Debug { fmt } %}
     public var debugDescription: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.handle", fmt) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", fmt) %}
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
     public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
         return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("lhs.handle", eq) %}
+            {% call swift::to_ffi_call_with_prefix("lhs.uniffiCloneHandle()", eq) %}
         )
     }
     {%-         when UniffiTrait::Hash { hash } %}
     public func hash(into hasher: inout Hasher) {
         let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.handle", hash) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", hash) %}
         )
         hasher.combine(val)
     }
@@ -159,16 +159,29 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     typealias SwiftType = {{ type_name }}
 
     public static func lift(_ handle: UInt64) throws -> {{ type_name }} {
+        {%- if obj.is_trait_interface() %}
+        if uniffiHandleIsFromRust(handle) {
+            return {{ impl_class_name }}(handle: handle)
+        } else {
+            return handleMap.consumeHandle(handle: handle)
+        }
+        {%- else %}
         return {{ impl_class_name }}(handle: handle)
+        {%- endif %}
     }
 
     public static func lower(_ value: {{ type_name }}) -> UInt64 {
-        {%- match obj.imp() %}
-        {%- when ObjectImpl::Struct %}
+        {%- if obj.is_trait_interface() %}
+        if let rustImpl = value as? {{ impl_class_name }} {
+            // If we're wrapping a trait implemented in Rust, return that handle directly rather
+            // than wrapping it again in Swift.
+            return rustImpl.uniffiCloneHandle()
+        } else {
+            return handleMap.newHandle(obj: value)
+        }
+        {%- else %}
         return value.uniffiCloneHandle()
-        {%- when ObjectImpl::Trait %}
-        return handleMap.newHandle(obj: value)
-        {%- endmatch %}
+        {%- endif %}
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {

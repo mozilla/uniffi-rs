@@ -39,7 +39,6 @@ members = [
   "fixtures/keywords/swift",
   "fixtures/metadata",
   "fixtures/proc-macro",
-  "fixtures/reexport-scaffolding-macro",
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/fully-qualified-types",
   "fixtures/regressions/kotlin-experimental-unsigned-types",

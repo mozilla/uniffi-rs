@@ -820,16 +820,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
-name = "libloading"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
-dependencies = [
- "cfg-if",
- "winapi",
-]
-
-[[package]]
 name = "linux-raw-sys"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1854,18 +1844,6 @@ dependencies = [
  "lazy_static",
  "thiserror",
  "uniffi",
-]
-
-[[package]]
-name = "uniffi-fixture-reexport-scaffolding-macro"
-version = "0.22.0"
-dependencies = [
- "cargo_metadata",
- "libloading",
- "uniffi",
- "uniffi-fixture-callbacks",
- "uniffi-fixture-coverall",
- "uniffi_bindgen",
 ]
 
 [[package]]

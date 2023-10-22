@@ -62,3 +62,6 @@ class UniffiHandleMap:
                 return self._map.pop(self._key(handle))
         except KeyError:
             raise InternalError("handlemap key error: was the handle used after being freed?")
+
+def uniffi_handle_is_from_rust(handle: int) -> bool:
+    return (handle & 1) == 0

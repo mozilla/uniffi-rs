@@ -73,3 +73,7 @@ fileprivate class UniffiHandleMap<T> {
         }
     }
 }
+
+fileprivate func uniffiHandleIsFromRust(_ handle: UInt64) -> Bool {
+    return (handle & 1) == 0
+}

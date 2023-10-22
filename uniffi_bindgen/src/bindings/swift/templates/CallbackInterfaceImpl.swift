@@ -3,11 +3,11 @@
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
 
 fileprivate let {{ callback_handler }} : ForeignCallback =
-    { (handle: UInt64, method: Int32, argsData: UnsafePointer<UInt8>, argsLen: Int32, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+    { (handle: UInt64, method: Int32, argsData: UnsafePointer<UInt8>, argsLen: Int32, outBuf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
     {% for meth in methods.iter() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name %}
 
-    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ argsData: UnsafePointer<UInt8>, _ argsLen: Int32, _ out_buf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
+    func {{ method_name }}(_ swiftCallbackInterface: {{ type_name }}, _ argsData: UnsafePointer<UInt8>, _ argsLen: Int32, _ outBuf: UnsafeMutablePointer<RustBuffer>) throws -> Int32 {
         {%- if meth.arguments().len() > 0 %}
         var reader = createReader(data: Data(bytes: argsData, count: Int(argsLen)))
         {%- endif %}
@@ -23,7 +23,7 @@ fileprivate let {{ callback_handler }} : ForeignCallback =
                 )
             var writer = [UInt8]()
             {{ return_type|write_fn }}(result, into: &writer)
-            out_buf.pointee = RustBuffer(bytes: writer)
+            outBuf.pointee = RustBuffer(bytes: writer)
             return UNIFFI_CALLBACK_SUCCESS
         }
         {%- when None %}
@@ -45,7 +45,7 @@ fileprivate let {{ callback_handler }} : ForeignCallback =
         do {
             return try makeCall()
         } catch let error as {{ error_type|type_name }} {
-            out_buf.pointee = {{ error_type|lower_fn }}(error)
+            outBuf.pointee = {{ error_type|lower_fn }}(error)
             return UNIFFI_CALLBACK_ERROR
         }
         {%- endmatch %}
@@ -56,17 +56,19 @@ fileprivate let {{ callback_handler }} : ForeignCallback =
     switch method {
         case IDX_CALLBACK_FREE:
             let _ = {{ ffi_converter_name }}.handleMap.consumeHandle(handle: handle)
-            // Sucessful return
-            // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+            return UNIFFI_CALLBACK_SUCCESS
+        case IDX_CALLBACK_CLONE:
+            let obj = {{ ffi_converter_name }}.handleMap.get(handle: handle)
+            outBuf.pointee = {{ ffi_converter_name }}.lowerIntoRustBuffer(obj)
             return UNIFFI_CALLBACK_SUCCESS
         {% for meth in methods.iter() -%}
         {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
         case {{ loop.index }}:
             do {
                 let cb = {{ ffi_converter_name }}.handleMap.get(handle: handle)
-                return try {{ method_name }}(cb, argsData, argsLen, out_buf)
+                return try {{ method_name }}(cb, argsData, argsLen, outBuf)
             } catch let error {
-                out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
+                outBuf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
                 return UNIFFI_CALLBACK_UNEXPECTED_ERROR
             }
         {% endfor %}

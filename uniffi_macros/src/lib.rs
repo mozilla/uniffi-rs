@@ -104,20 +104,28 @@ pub fn export(attr_args: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 fn do_export(attr_args: TokenStream, input: TokenStream, udl_mode: bool) -> TokenStream {
-    let copied_input = (!udl_mode).then(|| proc_macro2::TokenStream::from(input.clone()));
-
     let gen_output = || {
         let args = syn::parse(attr_args)?;
         let item = syn::parse(input)?;
-        expand_export(item, args, udl_mode)
+        let altered_input = if udl_mode {
+            quote! {}
+        } else {
+            export::alter_input(&item)
+        };
+        let output = expand_export(item, args, udl_mode)?;
+        Ok(quote! {
+            #altered_input
+            #output
+        })
     };
-    let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
+    gen_output()
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
 
-    quote! {
-        #copied_input
-        #output
-    }
-    .into()
+#[proc_macro_attribute]
+pub fn trait_interface(_attr_args: TokenStream, input: TokenStream) -> TokenStream {
+    export::alter_trait(&parse_macro_input!(input)).into()
 }
 
 #[proc_macro_derive(Record, attributes(uniffi))]

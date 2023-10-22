@@ -51,3 +51,6 @@ internal class UniffiHandleMap<T> {
     }
 }
 
+internal fun uniffiHandleIsFromRust(handle: Long): Boolean {
+    return handle.and(1L) == 0L
+}

@@ -420,12 +420,10 @@ do {
     assert(traits[1].name() == "node-2")
     assert(traits[1].strongCount() == 2)
 
-    // Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
-    // Swift impl before passing it to `set_parent()`
     traits[0].setParent(parent: traits[1])
     assert(ancestorNames(node: traits[0]) == ["node-2"])
     assert(ancestorNames(node: traits[1]) == [])
-    assert(traits[1].strongCount() == 2)
+    assert(traits[1].strongCount() == 3)
     assert(traits[0].getParent()!.name() == "node-2")
 
     // Throw in a Swift implementation of the trait
@@ -435,6 +433,10 @@ do {
     assert(ancestorNames(node: traits[0]) == ["node-2", "node-swift"])
     assert(ancestorNames(node: traits[1]) == ["node-swift"])
     assert(ancestorNames(node: swiftNode) == [])
+
+    // If we get the node back from Rust, we should get the original object, not an object that's
+    // been wrapped again.
+    assert(traits[1].getParent() === swiftNode)
 
     // Rotating things.
     // The ancestry chain now goes swiftNode -> traits[0] -> traits[1]

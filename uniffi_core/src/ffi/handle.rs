@@ -50,4 +50,10 @@ impl Handle {
     pub fn as_raw(&self) -> u64 {
         self.0
     }
+
+    /// Check if a handle belongs to the foreign side of the FFI
+    pub fn is_foreign(&self) -> bool {
+        // Foreign handles have the lowest bit set
+        (self.0 & 1) == 1
+    }
 }

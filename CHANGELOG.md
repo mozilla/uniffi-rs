@@ -16,13 +16,9 @@
 
 ### What's changed?
 
-- The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now
-  inputs the callback pointer.  External bindings authors will need to update their code.
-- The object handle FFI has changed.  External bindings generators will need to update their code to
-  use the new handle system:
-    * A single `FfiType::Handle` is used for all object handles.
-    * `FfiType::Handle` is always a 64-bit int.
-    * Foreign handles must always set the lowest bit of that int.
+- Trait interfaces defined in UDL need to be wrapped with `#[uniffi::trait_interface]`.
+- Trait interfaces performance has been improved.  If a trait interface handle is passed across the
+  FFI multiple times, UniFFI will only wrap the object once rather than each time it's passed.
 - The `NoPointer` singleton was renamed to `NoHandle`
 
 ### What's new?
@@ -34,6 +30,16 @@
 - UDL files can reference types defined in procmacros in this crate - see
   [the external types docs](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
 - Add support for [docstrings in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
+
+### Breaking changes for external bindings
+
+- The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now
+  inputs the callback pointer.  External bindings authors will need to update their code.
+- The object handle FFI has changed.  External bindings generators will need to update their code to
+  use the new handle system:
+    * A single `FfiType::Handle` is used for all object handles.
+    * `FfiType::Handle` is always a 64-bit int.
+    * Foreign handles must always set the lowest bit of that int.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
 

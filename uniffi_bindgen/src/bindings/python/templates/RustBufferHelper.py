@@ -35,11 +35,17 @@ class _UniffiConverterPrimitiveFloat(_UniffiConverterPrimitive):
 class _UniffiConverterRustBuffer:
     @classmethod
     def lift(cls, rbuf):
-        with rbuf.consume_with_stream() as stream:
-            return cls.read(stream)
+        return uniffi_lift_from_rust_buffer(cls, rbuf)
 
     @classmethod
     def lower(cls, value):
-        with _UniffiRustBuffer.alloc_with_builder() as builder:
-            cls.write(value, builder)
-            return builder.finalize()
+        return uniffi_lower_into_rust_buffer(cls, value)
+
+def uniffi_lift_from_rust_buffer(ffi_converter, rbuf):
+    with rbuf.consume_with_stream() as stream:
+        return ffi_converter.read(stream)
+
+def uniffi_lower_into_rust_buffer(ffi_converter, value):
+    with _UniffiRustBuffer.alloc_with_builder() as builder:
+        ffi_converter.write(value, builder)
+        return builder.finalize()

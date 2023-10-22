@@ -354,14 +354,14 @@ class PyNode:
 
 class TraitsTest(unittest.TestCase):
     # Test traits implemented in Rust
-    # def test_rust_getters(self):
-    #     test_getters(None)
-    #     self.check_getters_from_python(make_rust_getters())
+    def test_rust_getters(self):
+        test_getters(make_rust_getters())
+        self.check_getters_from_python(make_rust_getters())
 
-    # Test traits implemented in Rust
+    # Test traits implemented in Python
     def test_python_getters(self):
         test_getters(PyGetters())
-        #self.check_getters_from_python(PyGetters())
+        self.check_getters_from_python(PyGetters())
 
     def check_getters_from_python(self, getters):
         self.assertEqual(getters.get_bool(True, True), False);
@@ -392,7 +392,11 @@ class TraitsTest(unittest.TestCase):
         with self.assertRaises(ComplexError.UnknownError):
             getters.get_option("unknown-error", True)
 
-        with self.assertRaises(InternalError):
+        # If the trait is implmented in Rust, we should see an `InternalError`.
+
+        # If it's implemented in Python, we see a `RuntimeError` since it's a direct call with no
+        # UniFFI wrapping.
+        with self.assertRaises((InternalError, RuntimeError)):
             getters.get_string("unexpected-error", True)
 
     def test_path(self):
@@ -408,9 +412,7 @@ class TraitsTest(unittest.TestCase):
 
         # Let's try connecting them together
         traits[0].set_parent(traits[1])
-        # Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
-        # python impl before passing it to `set_parent()`
-        self.assertEqual(traits[1].strong_count(), 2)
+        self.assertEqual(traits[1].strong_count(), 3)
         self.assertEqual(ancestor_names(traits[0]), ["node-2"])
         self.assertEqual(ancestor_names(traits[1]), [])
         self.assertEqual(traits[0].get_parent().name(), "node-2")
@@ -422,6 +424,10 @@ class TraitsTest(unittest.TestCase):
         self.assertEqual(ancestor_names(traits[0]), ["node-2", "node-py"])
         self.assertEqual(ancestor_names(traits[1]), ["node-py"])
         self.assertEqual(ancestor_names(py_node), [])
+
+        # If we get the node back from Rust, we should get the original object, not an object that's
+        # been wrapped again.
+        self.assertIs(traits[1].get_parent(), py_node)
 
         # Rotating things.
         # The ancestry chain now goes py_node -> traits[0] -> traits[1]

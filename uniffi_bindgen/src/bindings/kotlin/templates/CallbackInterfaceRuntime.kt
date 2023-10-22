@@ -5,10 +5,12 @@ interface ForeignCallback : com.sun.jna.Callback {
     public fun invoke(handle: UniffiHandle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int
 }
 
-// Magic number for the Rust proxy to call using the same mechanism as every other method,
-// to free the callback once it's dropped by Rust.
+// Magic numbers for the Rust proxy to call using the same mechanism as every other method.
+
 internal const val IDX_CALLBACK_FREE = 0
-// Callback return codes
+internal const val IDX_CALLBACK_CLONE = 0x7FFF_FFFF;
+
+// Callback return values
 internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
 internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2

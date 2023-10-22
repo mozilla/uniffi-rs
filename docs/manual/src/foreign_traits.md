@@ -22,6 +22,7 @@ a [compatible error type](./udl/errors.md) - see below for more on error handlin
 For example:
 
 ```rust,no_run
+#[uniffi::trait_interface]
 pub trait Keychain: Send + Sync + Debug {
   fn get(&self, key: String) -> Result<Option<String>, KeyChainError>;
   fn put(&self, key: String, value: String) -> Result<(), KeyChainError>;

@@ -52,9 +52,10 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
 
     if method == IDX_CALLBACK_FREE:
         {{ ffi_converter_name }}._handle_map.consume_handle(handle)
-
-        # Successfull return
-        # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
+        return _UNIFFI_CALLBACK_SUCCESS
+    if method == IDX_CALLBACK_CLONE:
+        obj = {{ ffi_converter_name }}._handle_map.get(handle)
+        buf_ptr[0] = uniffi_lower_into_rust_buffer({{ ffi_converter_name }}, obj)
         return _UNIFFI_CALLBACK_SUCCESS
 
     {% for meth in methods.iter() -%}

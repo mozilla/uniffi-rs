@@ -13,6 +13,7 @@ fn press(button: Arc<dyn Button>) -> Arc<dyn Button> {
     button
 }
 
+#[uniffi::trait_interface]
 pub trait Button: Send + Sync {
     fn name(&self) -> String;
 }

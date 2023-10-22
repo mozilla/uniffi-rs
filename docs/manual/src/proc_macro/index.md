@@ -84,6 +84,8 @@ impl MyObject {
 // Corresponding UDL:
 // [Trait]
 // interface MyTrait {};
+//
+// Note: `[uniffi::trait_interface]` is not needed when the trait is exported via a proc-macro.
 #[uniffi::export]
 trait MyTrait {
     // ...

@@ -22,6 +22,7 @@ use self::{
 use crate::util::{ident_to_string, mod_path};
 pub use attributes::ExportAttributeArguments;
 pub use callback_interface::ffi_converter_callback_interface_impl;
+pub use trait_interface::alter_trait;
 
 // TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
@@ -76,7 +77,7 @@ pub(crate) fn expand_export(
         } => {
             let trait_name = ident_to_string(&self_ident);
             let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
-            let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items)
+            let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items, false)
                 .unwrap_or_else(|e| e.into_compile_error());
             let metadata_items = callback_interface::metadata_items(&self_ident, &items, &mod_path)
                 .unwrap_or_else(|e| vec![e.into_compile_error()]);
@@ -98,6 +99,14 @@ pub(crate) fn expand_export(
             assert!(!udl_mode);
             utrait::expand_uniffi_trait_export(self_ident, uniffi_traits)
         }
+    }
+}
+
+/// Alter the tokens wrapped with the `[uniffi::export]` if needed
+pub fn alter_input(item: &Item) -> TokenStream {
+    match item {
+        Item::Trait(item_trait) => alter_trait(item_trait),
+        _ => quote! { #item },
     }
 }
 

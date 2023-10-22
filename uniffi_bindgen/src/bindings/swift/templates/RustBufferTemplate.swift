@@ -147,6 +147,24 @@ fileprivate protocol FfiConverter {
     static func write(_ value: SwiftType, into buf: inout [UInt8])
 }
 
+fileprivate extension FfiConverter {
+    static func liftFromRustBuffer(_ buf: RustBuffer) throws -> SwiftType {
+        var reader = createReader(data: Data(rustBuffer: buf))
+        let value = try read(from: &reader)
+        if hasRemaining(reader) {
+            throw UniffiInternalError.incompleteData
+        }
+        buf.deallocate()
+        return value
+    }
+
+    static func lowerIntoRustBuffer(_ value: SwiftType) -> RustBuffer {
+          var writer = createWriter()
+          write(value, into: &writer)
+          return RustBuffer(bytes: writer)
+    }
+}
+
 // Types conforming to `Primitive` pass themselves directly over the FFI.
 fileprivate protocol FfiConverterPrimitive: FfiConverter where FfiType == SwiftType { }
 
@@ -166,18 +184,10 @@ fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustB
 
 extension FfiConverterRustBuffer {
     public static func lift(_ buf: RustBuffer) throws -> SwiftType {
-        var reader = createReader(data: Data(rustBuffer: buf))
-        let value = try read(from: &reader)
-        if hasRemaining(reader) {
-            throw UniffiInternalError.incompleteData
-        }
-        buf.deallocate()
-        return value
+        return try liftFromRustBuffer(buf)
     }
 
     public static func lower(_ value: SwiftType) -> RustBuffer {
-          var writer = createWriter()
-          write(value, into: &writer)
-          return RustBuffer(bytes: writer)
+        return lowerIntoRustBuffer(value)
     }
 }

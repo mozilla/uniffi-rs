@@ -137,21 +137,8 @@ impl ScaffoldingBits {
         let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #lift_impl::FfiType })
             .chain(sig.scaffolding_params())
             .collect();
-        let try_lift_self = if is_trait {
-            // For trait interfaces we need to special case this.  Trait interfaces normally lift
-            // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
-            // pointer.
-            quote! {
-                {
-                    Ok(<dyn #self_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::consume_handle(uniffi_self_lowered))
-                }
-            }
-        } else {
-            quote! { #lift_impl::try_lift(uniffi_self_lowered) }
-        };
-
         let lift_closure = sig.lift_closure(Some(quote! {
-            match #try_lift_self {
+            match #lift_impl::try_lift(uniffi_self_lowered) {
                 Ok(v) => v,
                 Err(e) => return Err(("self", e))
             }
