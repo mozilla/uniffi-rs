@@ -4,23 +4,28 @@
 
 enum EnumTest {
     One,
+    Two,
 }
 
-enum AssociatedEnumTest {
-    Test {},
-    Test2 {},
+pub enum AssociatedEnumTest {
+    Test { code: i16 },
+    Test2 { code: i16 },
 }
 
 #[derive(Debug, thiserror::Error)]
 enum ErrorTest {
     #[error("Test")]
     One,
+    #[error("Two")]
+    Two,
 }
 
 #[derive(Debug, thiserror::Error)]
 enum AssociatedErrorTest {
     #[error("Test")]
-    Test {},
+    Test { code: i16 },
+    #[error("Test2")]
+    Test2 { code: i16 },
 }
 
 struct ObjectTest {}
@@ -43,6 +48,7 @@ struct RecordTest {
 
 pub fn test() {
     let _ = ErrorTest::One;
+    let _ = ErrorTest::Two;
 }
 
 pub trait CallbackTest {

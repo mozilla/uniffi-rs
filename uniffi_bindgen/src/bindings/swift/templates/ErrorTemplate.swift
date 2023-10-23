@@ -3,7 +3,7 @@ public enum {{ type_name }} {
 
     {% if e.is_flat() %}
     {% for variant in e.variants() %}
-    // Simple error enums only carry a message
+    {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|class_name }}(message: String)
     {% endfor %}
 

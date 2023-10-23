@@ -7,12 +7,16 @@ import uniffi_docstring
 test()
 
 var _ = EnumTest.one
+var _ = EnumTest.two
 
-var _ = AssociatedEnumTest.test
+var _ = AssociatedEnumTest.test(code: 0)
+var _ = AssociatedEnumTest.test2(code: 0)
 
 var _ = ErrorTest.One(message: "hello")
+var _ = ErrorTest.Two(message: "hello")
 
-var _ = AssociatedErrorTest.Test
+var _ = AssociatedErrorTest.Test(code: 0)
+var _ = AssociatedErrorTest.Test2(code: 0)
 
 var obj1 = ObjectTest()
 var obj2 = ObjectTest.newAlternate()
