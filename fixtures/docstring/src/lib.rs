@@ -6,22 +6,28 @@ include!(concat!(env!("OUT_DIR"), "/docstring.uniffi.rs"));
 
 pub enum EnumTest {
     One,
+    Two,
 }
 
 pub enum AssociatedEnumTest {
     Test{ code: i16 },
+    Test2{ code: i16 },
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum ErrorTest {
     #[error("Test")]
     One,
+    #[error("Two")]
+    Two,
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum AssociatedErrorTest {
     #[error("Test")]
     Test{ code: i16 },
+    #[error("Test2")]
+    Test2{ code: i16 },
 }
 
 pub struct ObjectTest {
@@ -47,6 +53,7 @@ pub struct RecordTest {
 
 pub fn test() {
     let _ = ErrorTest::One;
+    let _ = ErrorTest::Two;
 }
 
 pub trait CallbackTest {

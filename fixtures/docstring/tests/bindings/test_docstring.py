@@ -15,16 +15,20 @@ val = test()
 # Test enums
 assert EnumTest.__doc__
 val = EnumTest.ONE
+val = EnumTest.TWO
 
 assert AssociatedEnumTest.__doc__
 val = AssociatedEnumTest.TEST(0)
+val = AssociatedEnumTest.TEST2(0)
 
 # Test errors
 assert ErrorTest.__doc__
 val = ErrorTest.One("hello")
+val = ErrorTest.Two("hello")
 
 assert AssociatedErrorTest.__doc__
 val = AssociatedErrorTest.Test(0)
+val = AssociatedErrorTest.Test2(0)
 
 # Test objects
 assert ObjectTest.__doc__
