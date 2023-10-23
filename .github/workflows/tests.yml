@@ -13,9 +13,10 @@ jobs:
           rustup show
           rustup update
       - uses: Swatinem/rust-cache@v2
-      # - name: Build
-      #   run: |
-      #     cargo build
+      - name: Build
+        run: |
+           # Disable debug info, because the job runs out of disk space
+           RUSTFLAGS="-C debuginfo=0" cargo build
       - name: Run tests
         shell: bash
         env:
@@ -24,4 +25,5 @@ jobs:
           HOME: /root
         run: |
           source ~/.bashrc
-          cargo test
+          # Disable debug info, because the job runs out of disk space
+          RUSTFLAGS="-C debuginfo=0" cargo test

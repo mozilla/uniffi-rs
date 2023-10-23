@@ -5,7 +5,10 @@ namespace uniffi_docstring {
 };
 
 /// <docstring-enum>
-enum EnumTest { "One" };
+enum EnumTest {
+    /// <docstring-enum-variant>
+    "One"
+};
 
 /// <docstring-associated-enum>
 [Enum]

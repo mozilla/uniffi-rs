@@ -10,6 +10,7 @@
 {%- call kt::docstring(e, 0) %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
+    {%- call kt::docstring(variant, 4) %}
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
 }
