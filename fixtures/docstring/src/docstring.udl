@@ -7,25 +7,36 @@ namespace uniffi_docstring {
 /// <docstring-enum>
 enum EnumTest {
     /// <docstring-enum-variant>
-    "One"
+    "One",
+    /// <docstring-enum-variant-2>
+    "Two"
 };
 
 /// <docstring-associated-enum>
 [Enum]
 interface AssociatedEnumTest {
     /// <docstring-associated-enum-variant>
-    Test();
+    Test(i16 code);
+    /// <docstring-associated-enum-variant-2>
+    Test2(i16 code);
 };
 
 /// <docstring-error>
 [Error]
-enum ErrorTest { "One" };
+enum ErrorTest {
+    /// <docstring-error-variant>
+    "One",
+    /// <docstring-error-variant-2>
+    "Two",
+};
 
 /// <docstring-associated-error>
 [Error]
 interface AssociatedErrorTest {
     /// <docstring-associated-error-variant>
-    Test();
+    Test(i16 code);
+    /// <docstring-associated-error-variant-2>
+    Test2(i16 code);
 };
 
 /// <docstring-object>

@@ -7,12 +7,16 @@ import uniffi.fixture.docstring.*;
 test()
 
 EnumTest.ONE
+EnumTest.TWO
 
-AssociatedEnumTest.Test
+AssociatedEnumTest.Test(0)
+AssociatedEnumTest.Test2(0)
 
 ErrorTest.One("hello")
+ErrorTest.Two("hello")
 
-AssociatedErrorTest.Test()
+AssociatedErrorTest.Test(0)
+AssociatedErrorTest.Test2(0)
 
 val obj1 = ObjectTest
 val obj2 = ObjectTest.newAlternate()

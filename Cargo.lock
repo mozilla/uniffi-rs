@@ -921,8 +921,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "camino",
- "uniffi 0.24.1",
- "uniffi_testing 0.24.1",
+ "uniffi 0.24.3",
+ "uniffi_testing 0.24.3",
 ]
 
 [[package]]
@@ -1040,7 +1040,7 @@ name = "unary-result-alias"
 version = "0.1.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1088,12 +1088,9 @@ checksum = "e51733f11c9c4f72aa0c160008246859e340b00807569a0da0e7a1079b27ba85"
 [[package]]
 name = "uniffi"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
 dependencies = [
  "anyhow",
- "camino",
- "clap",
- "trybuild",
- "uniffi_bindgen 0.24.1",
  "uniffi_build 0.24.1",
  "uniffi_core 0.24.1",
  "uniffi_macros 0.24.1",
@@ -1101,20 +1098,23 @@ dependencies = [
 
 [[package]]
 name = "uniffi"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+version = "0.24.3"
 dependencies = [
  "anyhow",
- "uniffi_build 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
- "uniffi_core 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
- "uniffi_macros 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
+ "camino",
+ "clap",
+ "trybuild",
+ "uniffi_bindgen 0.24.3",
+ "uniffi_build 0.24.3",
+ "uniffi_core 0.24.3",
+ "uniffi_macros 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-bindgen-cli"
 version = "0.1.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1122,7 +1122,7 @@ name = "uniffi-example-arithmetic"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1130,7 +1130,7 @@ name = "uniffi-example-callbacks"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1140,7 +1140,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "serde_json",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
  "url",
 ]
 
@@ -1148,21 +1148,21 @@ dependencies = [
 name = "uniffi-example-geometry"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-example-rondpoint"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-example-sprites"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1171,7 +1171,7 @@ version = "0.22.0"
 dependencies = [
  "once_cell",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1179,7 +1179,7 @@ name = "uniffi-example-traits"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1188,8 +1188,8 @@ version = "0.22.0"
 dependencies = [
  "clap",
  "criterion",
- "uniffi 0.24.1",
- "uniffi_bindgen 0.24.1",
+ "uniffi 0.24.3",
+ "uniffi_bindgen 0.24.3",
 ]
 
 [[package]]
@@ -1197,7 +1197,7 @@ name = "uniffi-fixture-callbacks"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1206,7 +1206,7 @@ version = "0.22.0"
 dependencies = [
  "once_cell",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1216,7 +1216,7 @@ dependencies = [
  "once_cell",
  "thiserror",
  "uniffi 0.24.1",
- "uniffi 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1226,9 +1226,9 @@ dependencies = [
  "camino",
  "glob",
  "thiserror",
- "uniffi 0.24.1",
- "uniffi_bindgen 0.24.1",
- "uniffi_testing 0.24.1",
+ "uniffi 0.24.3",
+ "uniffi_bindgen 0.24.3",
+ "uniffi_testing 0.24.3",
 ]
 
 [[package]]
@@ -1237,7 +1237,7 @@ version = "0.22.0"
 dependencies = [
  "anyhow",
  "bytes",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
  "uniffi-example-custom-types",
  "uniffi-fixture-ext-types-guid",
  "uniffi-fixture-ext-types-lib-one",
@@ -1252,7 +1252,7 @@ dependencies = [
  "bytes",
  "serde_json",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1261,7 +1261,7 @@ version = "0.22.0"
 dependencies = [
  "anyhow",
  "bytes",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1272,14 +1272,14 @@ dependencies = [
  "bytes",
  "crate_one",
  "crate_two",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-foreign-executor"
 version = "0.23.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1287,7 +1287,7 @@ name = "uniffi-fixture-futures"
 version = "0.21.0"
 dependencies = [
  "tokio",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1295,7 +1295,7 @@ name = "uniffi-fixture-keywords-kotlin"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1303,7 +1303,7 @@ name = "uniffi-fixture-keywords-rust"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1311,7 +1311,7 @@ name = "uniffi-fixture-keywords-swift"
 version = "0.22.0"
 dependencies = [
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1319,7 +1319,7 @@ name = "uniffi-fixture-logging-callback-interface"
 version = "0.22.0"
 dependencies = [
  "log",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1328,7 +1328,7 @@ version = "0.22.0"
 dependencies = [
  "lazy_static",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1337,17 +1337,17 @@ version = "0.22.0"
 dependencies = [
  "cargo_metadata",
  "libloading",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
  "uniffi-fixture-callbacks",
  "uniffi-fixture-coverall",
- "uniffi_bindgen 0.24.1",
+ "uniffi_bindgen 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-regression-callbacks-omit-labels"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1358,7 +1358,7 @@ version = "0.22.0"
 name = "uniffi-fixture-regression-cdylib-dependency-ffi-crate"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
  "uniffi-fixture-regression-cdylib-dependency",
 ]
 
@@ -1366,42 +1366,42 @@ dependencies = [
 name = "uniffi-fixture-regression-i1015-fully-qualified-types"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-regression-i356-enum-without-int-helpers"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-regression-kotlin-experimental-unsigned-types"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-regression-missing-newline"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-regression-swift-dictionary-nesting"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-simple-fns"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1410,14 +1410,14 @@ version = "0.22.0"
 dependencies = [
  "lazy_static",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-swift-omit-argument-labels"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1426,7 +1426,7 @@ version = "0.22.0"
 dependencies = [
  "chrono",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
@@ -1435,26 +1435,49 @@ version = "0.22.0"
 dependencies = [
  "once_cell",
  "thiserror",
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-type-limits"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi-fixture-version-mismatch"
 version = "0.22.0"
 dependencies = [
- "uniffi 0.24.1",
+ "uniffi 0.24.3",
 ]
 
 [[package]]
 name = "uniffi_bindgen"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+dependencies = [
+ "anyhow",
+ "askama",
+ "camino",
+ "cargo_metadata",
+ "fs-err",
+ "glob",
+ "goblin",
+ "heck",
+ "once_cell",
+ "paste",
+ "serde",
+ "serde_json",
+ "toml",
+ "uniffi_meta 0.24.1",
+ "uniffi_testing 0.24.1",
+ "weedle2 4.0.0 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
+]
+
+[[package]]
+name = "uniffi_bindgen"
+version = "0.24.3"
 dependencies = [
  "anyhow",
  "askama",
@@ -1471,37 +1494,15 @@ dependencies = [
  "serde_json",
  "textwrap",
  "toml",
- "uniffi_meta 0.24.1",
- "uniffi_testing 0.24.1",
+ "uniffi_meta 0.24.3",
+ "uniffi_testing 0.24.3",
  "weedle2 4.0.0",
-]
-
-[[package]]
-name = "uniffi_bindgen"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
-dependencies = [
- "anyhow",
- "askama",
- "camino",
- "cargo_metadata",
- "fs-err",
- "glob",
- "goblin",
- "heck",
- "once_cell",
- "paste",
- "serde",
- "serde_json",
- "toml",
- "uniffi_meta 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
- "uniffi_testing 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
- "weedle2 4.0.0 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
 ]
 
 [[package]]
 name = "uniffi_build"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
 dependencies = [
  "anyhow",
  "camino",
@@ -1510,17 +1511,17 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+version = "0.24.3"
 dependencies = [
  "anyhow",
  "camino",
- "uniffi_bindgen 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
+ "uniffi_bindgen 0.24.3",
 ]
 
 [[package]]
 name = "uniffi_checksum_derive"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
 dependencies = [
  "quote",
  "syn",
@@ -1528,8 +1529,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_checksum_derive"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+version = "0.24.3"
 dependencies = [
  "quote",
  "syn",
@@ -1538,6 +1538,21 @@ dependencies = [
 [[package]]
 name = "uniffi_core"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "camino",
+ "cargo_metadata",
+ "log",
+ "once_cell",
+ "paste",
+ "static_assertions",
+]
+
+[[package]]
+name = "uniffi_core"
+version = "0.24.3"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -1551,32 +1566,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "uniffi_core"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
-dependencies = [
- "anyhow",
- "bytes",
- "camino",
- "cargo_metadata",
- "log",
- "once_cell",
- "paste",
- "static_assertions",
-]
-
-[[package]]
 name = "uniffi_fixture_metadata"
 version = "0.1.0"
 dependencies = [
- "uniffi 0.24.1",
- "uniffi_core 0.24.1",
- "uniffi_meta 0.24.1",
+ "uniffi 0.24.3",
+ "uniffi_core 0.24.3",
+ "uniffi_meta 0.24.3",
 ]
 
 [[package]]
 name = "uniffi_macros"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
 dependencies = [
  "bincode",
  "camino",
@@ -1593,8 +1594,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+version = "0.24.3"
 dependencies = [
  "bincode",
  "camino",
@@ -1605,13 +1605,14 @@ dependencies = [
  "serde",
  "syn",
  "toml",
- "uniffi_build 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
- "uniffi_meta 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
+ "uniffi_build 0.24.3",
+ "uniffi_meta 0.24.3",
 ]
 
 [[package]]
 name = "uniffi_meta"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
 dependencies = [
  "anyhow",
  "bytes",
@@ -1623,20 +1624,19 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+version = "0.24.3"
 dependencies = [
  "anyhow",
  "bytes",
  "serde",
  "siphasher",
- "uniffi_checksum_derive 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
- "uniffi_core 0.24.1 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1)",
+ "uniffi_checksum_derive 0.24.3",
 ]
 
 [[package]]
 name = "uniffi_testing"
 version = "0.24.1"
+source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
 dependencies = [
  "anyhow",
  "camino",
@@ -1649,8 +1649,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.24.1"
-source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.24.1#c0e64b839018728d8153ce1758d391b7782e2e21"
+version = "0.24.3"
 dependencies = [
  "anyhow",
  "camino",
@@ -1666,8 +1665,8 @@ name = "uniffi_uitests"
 version = "0.22.0"
 dependencies = [
  "trybuild",
- "uniffi 0.24.1",
- "uniffi_macros 0.24.1",
+ "uniffi 0.24.3",
+ "uniffi_macros 0.24.3",
 ]
 
 [[package]]
