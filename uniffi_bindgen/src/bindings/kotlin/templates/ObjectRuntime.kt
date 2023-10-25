@@ -111,9 +111,18 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
 //
 // [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
 //
-abstract class FFIObject(
-    protected val pointer: Pointer
-): Disposable, AutoCloseable {
+abstract class FFIObject: Disposable, AutoCloseable {
+
+    constructor(pointer: Pointer) {
+        this.pointer = pointer
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    protected constructor(noPointer: NoPointer) {
+        this.pointer = null
+    }
+
+    protected val pointer: Pointer?
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)
@@ -152,7 +161,7 @@ abstract class FFIObject(
         } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
-            return block(this.pointer)
+            return block(this.pointer!!)
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
@@ -161,3 +170,5 @@ abstract class FFIObject(
         }
     }
 }
+
+object NoPointer
