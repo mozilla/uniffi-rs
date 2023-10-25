@@ -1,7 +1,7 @@
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
-internal func uniffiRustCallAsync<F, T>(
+fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UnsafeMutableRawPointer,
     pollFunc: (UnsafeMutableRawPointer, UnsafeMutableRawPointer) -> (),
     completeFunc: (UnsafeMutableRawPointer, UnsafeMutablePointer<RustCallStatus>) -> F,
@@ -37,7 +37,7 @@ fileprivate func uniffiFutureContinuationCallback(ptr: UnsafeMutableRawPointer, 
 
 // Wraps UnsafeContinuation in a class so that we can use reference counting when passing it across
 // the FFI
-class ContinuationHolder {
+fileprivate class ContinuationHolder {
     let continuation: UnsafeContinuation<Int8, Never>
 
     init(_ continuation: UnsafeContinuation<Int8, Never>) {

@@ -520,6 +520,47 @@ pub mod filters {
             .ffi_converter_name())
     }
 
+    pub fn async_poll(
+        callable: impl Callable,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        let ffi_func = callable.ffi_rust_future_poll(ci);
+        Ok(format!(
+            "{{ future, continuation -> _UniFFILib.INSTANCE.{ffi_func}(future, continuation) }}"
+        ))
+    }
+
+    pub fn async_complete(
+        callable: impl Callable,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        let ffi_func = callable.ffi_rust_future_complete(ci);
+        let call = format!("_UniFFILib.INSTANCE.{ffi_func}(future, continuation)");
+        let call = match callable.return_type() {
+            Some(Type::External {
+                kind: ExternalKind::DataClass,
+                name,
+                ..
+            }) => {
+                // Need to convert the RustBuffer from our package to the RustBuffer of the external package
+                let suffix = KotlinCodeOracle.class_name(&name);
+                format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity, it.len, it.data) }}")
+            }
+            _ => call,
+        };
+        Ok(format!("{{ future, continuation -> {call} }}"))
+    }
+
+    pub fn async_free(
+        callable: impl Callable,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        let ffi_func = callable.ffi_rust_future_free(ci);
+        Ok(format!(
+            "{{ future -> _UniFFILib.INSTANCE.{ffi_func}(future) }}"
+        ))
+    }
+
     /// Remove the "`" chars we put around function/variable names
     ///
     /// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to
