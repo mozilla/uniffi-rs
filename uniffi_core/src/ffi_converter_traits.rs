@@ -366,6 +366,7 @@ pub trait ConvertError<UT>: Sized {
 /// `&T` using the Arc.
 pub unsafe trait SlabAlloc<UT> {
     fn insert(value: Arc<Self>) -> Handle;
+    fn inc_ref(handle: Handle);
     fn get_clone(handle: Handle) -> Arc<Self>;
     fn remove(handle: Handle) -> Arc<Self>;
 }
@@ -494,6 +495,10 @@ macro_rules! derive_ffi_traits {
                 fn insert(value: ::std::sync::Arc<Self>) -> $crate::Handle {
                     SLAB.insert_or_panic(value)
                 }
+                fn inc_ref(handle: $crate::Handle) {
+                    SLAB.inc_ref_or_panic(handle)
+                }
+
                 fn get_clone(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
                     SLAB.get_clone_or_panic(handle)
                 }

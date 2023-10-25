@@ -21,6 +21,10 @@ class {{ impl_name }}:
         if handle is not None:
             _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, handle)
 
+    def _uniffi_clone_handle(self):
+        _rust_call(_UniffiLib.{{ obj.ffi_object_inc_ref().name() }}, self._uniffi_handle)
+        return self._uniffi_handle
+
     # Used by alternative constructors or any methods which return this type.
     @classmethod
     def _make_instance_(cls, handle):
@@ -89,7 +93,7 @@ class {{ ffi_converter_name }}:
         {%- when ObjectImpl::Struct %}
         if not isinstance(value, {{ impl_name }}):
             raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
-        return value._uniffi_handle
+        return value._uniffi_clone_handle()
         {%- when ObjectImpl::Trait %}
         return {{ ffi_converter_name }}._handle_map.insert(value)
         {%- endmatch %}

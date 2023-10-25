@@ -14,6 +14,9 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.0...HEAD).
 
+### What's Fixed
+- Fixed potential use-after-free error when lowering object handles (#1797)
+
 ### What's changed?
 
 - The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now

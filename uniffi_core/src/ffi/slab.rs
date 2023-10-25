@@ -575,6 +575,10 @@ impl<T: Clone> Slab<T> {
         self.insert(value).unwrap_or_else(|e| panic!("{e}"))
     }
 
+    pub fn inc_ref_or_panic(&self, handle: Handle) {
+        self.inc_ref(handle).unwrap_or_else(|e| panic!("{e}"))
+    }
+
     pub fn get_clone_or_panic(&self, handle: Handle) -> T {
         self.get_clone(handle).unwrap_or_else(|e| panic!("{e}"))
     }

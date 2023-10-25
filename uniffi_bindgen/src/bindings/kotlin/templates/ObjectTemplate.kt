@@ -6,8 +6,8 @@
 {% include "Interface.kt" %}
 
 class {{ impl_class_name }}(
-    handle: UniffiHandle
-) : FFIObject(handle), {{ interface_name }}{
+    internal val handle: UniffiHandle
+) : FFIObject(), {{ interface_name }}{
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -30,6 +30,13 @@ class {{ impl_class_name }}(
         }
     }
 
+    internal fun uniffiCloneHandle(): UniffiHandle {
+        rustCall() { status ->
+            _UniFFILib.INSTANCE.{{ obj.ffi_object_inc_ref().name() }}(handle, status)
+        }
+        return handle
+    }
+
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
@@ -40,12 +47,10 @@ class {{ impl_class_name }}(
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_decl(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
         return uniffiRustCallAsync(
-            callWithHandle { uniffiHandle ->
-                _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
-                    uniffiHandle,
-                    {% call kt::arg_list_lowered(meth) %}
-                )
-            },
+            _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
+                uniffiCloneHandle(),
+                {% call kt::arg_list_lowered(meth) %}
+            ),
             {{ meth|async_poll(ci) }},
             {{ meth|async_complete(ci) }},
             {{ meth|async_free(ci) }},
@@ -69,17 +74,13 @@ class {{ impl_class_name }}(
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) -%}
     override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_name }} =
-        callWithHandle {
-            {%- call kt::to_ffi_call_with_prefix("it", meth) %}
-        }.let {
+        {%- call kt::to_ffi_call_with_prefix("uniffiCloneHandle()", meth) %}.let {
             {{ return_type|lift_fn }}(it)
         }
 
     {%- when None -%}
     override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}) =
-        callWithHandle {
-            {%- call kt::to_ffi_call_with_prefix("it", meth) %}
-        }
+        {%- call kt::to_ffi_call_with_prefix("uniffiCloneHandle()", meth) %}
     {% endmatch %}
     {% endif %}
     {% endfor %}
@@ -111,7 +112,7 @@ public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Uniffi
     override fun lower(value: {{ type_name }}): UniffiHandle {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.handle
+        return value.uniffiCloneHandle()
         {%- when ObjectImpl::Trait %}
         return UniffiHandle(handleMap.insert(value))
         {%- endmatch %}

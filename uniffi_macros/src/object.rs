@@ -1,7 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::DeriveInput;
-use uniffi_meta::free_fn_symbol_name;
 
 use crate::util::{
     create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
@@ -11,7 +10,14 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
     let module_path = mod_path()?;
     let ident = &input.ident;
     let name = ident_to_string(ident);
-    let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
+    let inc_ref_fn_ident = Ident::new(
+        &uniffi_meta::inc_ref_fn_symbol_name(&module_path, &name),
+        Span::call_site(),
+    );
+    let free_fn_ident = Ident::new(
+        &uniffi_meta::free_fn_symbol_name(&module_path, &name),
+        Span::call_site(),
+    );
     let meta_static_var = (!udl_mode).then(|| {
         interface_meta_static_var(ident, false, &module_path)
             .unwrap_or_else(syn::Error::into_compile_error)
@@ -19,6 +25,18 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
     let interface_impl = interface_impl(ident, udl_mode);
 
     Ok(quote! {
+        #[doc(hidden)]
+        #[no_mangle]
+        pub extern "C" fn #inc_ref_fn_ident(
+            handle: ::uniffi::Handle,
+            call_status: &mut ::uniffi::RustCallStatus
+        ) {
+            uniffi::rust_call(call_status, || {
+                <#ident as ::uniffi::SlabAlloc<crate::UniFfiTag>>::inc_ref(handle);
+                Ok(())
+            });
+        }
+
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(
@@ -84,7 +102,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
             /// Safety: the provided value must be a pointer previously obtained by calling
             /// the `lower()` or `write()` method of this impl.
             fn try_lift(v: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                Ok(<#ident as ::uniffi::SlabAlloc<crate::UniFfiTag>>::get_clone(v))
+                Ok(<#ident as ::uniffi::SlabAlloc<crate::UniFfiTag>>::remove(v))
             }
 
             /// When writing as a field of a complex structure, make a clone and transfer ownership

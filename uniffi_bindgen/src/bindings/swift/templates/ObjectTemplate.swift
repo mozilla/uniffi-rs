@@ -26,6 +26,11 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
         try! rustCall { {{ obj.ffi_object_free().name() }}(handle, $0) }
     }
 
+    internal func uniffiCloneHandle() -> Int64 {
+        try! rustCall { {{ obj.ffi_object_inc_ref().name() }}(handle, $0) }
+        return handle
+    }
+
     {% for cons in obj.alternate_constructors() %}
 
     public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
@@ -42,7 +47,7 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
-                    self.handle
+                    self.uniffiCloneHandle()
                     {%- for arg in meth.arguments() -%}
                     ,
                     {{ arg|lower_fn }}({{ arg.name()|var_name }})
@@ -75,14 +80,14 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
 
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", meth) %}
         )
     }
 
     {%- when None %}
 
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
-        {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
+        {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", meth) %}
     }
 
     {%- endmatch -%}
@@ -112,7 +117,8 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     public static func lower(_ value: {{ type_name }}) -> Int64 {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.handle
+        // inc-ref the current handle, then return the new reference.
+        return value.uniffiCloneHandle()
         {%- when ObjectImpl::Trait %}
         guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
             fatalError("Cast to UnsafeMutableRawPointer failed")

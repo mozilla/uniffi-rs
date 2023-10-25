@@ -57,8 +57,6 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use std::iter;
-
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
@@ -100,6 +98,9 @@ pub struct Object {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func_free: FfiFunction,
+    // Increment the reference count for this object.  Call this before lowering a handle.
+    #[checksum_ignore]
+    pub(super) ffi_func_inc_ref: FfiFunction,
     // Ffi function to initialize the foreign callback for trait interfaces
     #[checksum_ignore]
     pub(super) ffi_init_callback: Option<FfiFunction>,
@@ -162,6 +163,10 @@ impl Object {
         &self.ffi_func_free
     }
 
+    pub fn ffi_object_inc_ref(&self) -> &FfiFunction {
+        &self.ffi_func_inc_ref
+    }
+
     pub fn ffi_init_callback(&self) -> &FfiFunction {
         self.ffi_init_callback
             .as_ref()
@@ -169,7 +174,8 @@ impl Object {
     }
 
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
-        iter::once(&self.ffi_func_free)
+        [&self.ffi_func_free, &self.ffi_func_inc_ref]
+            .into_iter()
             .chain(&self.ffi_init_callback)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
             .chain(self.methods.iter().map(|f| &f.ffi_func))
@@ -236,7 +242,8 @@ impl AsType for Object {
 
 impl From<uniffi_meta::ObjectMetadata> for Object {
     fn from(meta: uniffi_meta::ObjectMetadata) -> Self {
-        let ffi_free_name = meta.free_ffi_symbol_name();
+        let ffi_func_inc_ref = FfiFunction::ffi_inc_ref(meta.inc_ref_ffi_symbol_name());
+        let ffi_func_free = FfiFunction::ffi_free(meta.free_ffi_symbol_name());
         Object {
             module_path: meta.module_path,
             name: meta.name,
@@ -244,10 +251,8 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
-            ffi_func_free: FfiFunction {
-                name: ffi_free_name,
-                ..Default::default()
-            },
+            ffi_func_inc_ref,
+            ffi_func_free,
             ffi_init_callback: None,
         }
     }

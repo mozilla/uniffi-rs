@@ -143,7 +143,7 @@ impl ScaffoldingBits {
             // pointer.
             quote! {
                 {
-                    Ok(<dyn #self_ident as ::uniffi::SlabAlloc<crate::UniFfiTag>>::get_clone(uniffi_self_lowered))
+                    Ok(<dyn #self_ident as ::uniffi::SlabAlloc<crate::UniFfiTag>>::remove(uniffi_self_lowered))
                 }
             }
         } else {

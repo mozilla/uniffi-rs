@@ -21,6 +21,14 @@ class {{ obj.name()|class_name_rb }}
     end
   end
 
+  def _uniffi_clone_handle()
+    {{ ci.namespace()|class_name_rb }}.rust_call(
+      :{{ obj.ffi_object_inc_ref().name() }},
+      @handle
+    )
+    return @handle
+  end
+
   # A private helper for lowering instances into a handle.
   # This does an explicit typecheck, because accidentally lowering a different type of
   # object in a place where this type is expected, could lead to memory unsafety.
@@ -28,7 +36,7 @@ class {{ obj.name()|class_name_rb }}
     if not inst.is_a? self
       raise TypeError.new "Expected a {{ obj.name()|class_name_rb }} instance, got #{inst}"
     end
-    return inst.instance_variable_get :@handle
+    return inst._uniffi_clone_handle()
   end
 
   {%- match obj.primary_constructor() %}
@@ -58,14 +66,14 @@ class {{ obj.name()|class_name_rb }}
   {%- when Some with (return_type) -%}
   def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
     {%- call rb::coerce_args_extra_indent(meth) %}
-    result = {% call rb::to_ffi_call_with_prefix("@handle", meth) %}
+    result = {% call rb::to_ffi_call_with_prefix("_uniffi_clone_handle()", meth) %}
     return {{ "result"|lift_rb(return_type) }}
   end
 
   {%- when None -%}
   def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
       {%- call rb::coerce_args_extra_indent(meth) %}
-      {% call rb::to_ffi_call_with_prefix("@handle", meth) %}
+      {% call rb::to_ffi_call_with_prefix("_uniffi_clone_handle()", meth) %}
   end
   {% endmatch %}
   {% endfor %}
