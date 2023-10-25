@@ -34,4 +34,9 @@ fn get_my_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
     t
 }
 
+#[uniffi::export]
+async fn get_uniffi_one_async() -> UniffiOneEnum {
+    UniffiOneEnum::One
+}
+
 uniffi::include_scaffolding!("uniffi-one");

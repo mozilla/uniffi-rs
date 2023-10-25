@@ -46,9 +46,9 @@ class {{ impl_class_name }}(
                     {% call kt::arg_list_lowered(meth) %}
                 )
             },
-            { future, continuation -> _UniFFILib.INSTANCE.{{ meth.ffi_rust_future_poll(ci) }}(future, continuation) },
-            { future, status -> _UniFFILib.INSTANCE.{{ meth.ffi_rust_future_complete(ci) }}(future, status) },
-            { future -> _UniFFILib.INSTANCE.{{ meth.ffi_rust_future_free(ci) }}(future) },
+            {{ meth|async_poll(ci) }},
+            {{ meth|async_complete(ci) }},
+            {{ meth|async_free(ci) }},
             // lift function
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
