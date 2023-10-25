@@ -89,6 +89,11 @@ fn get_uniffi_one_type(t: UniffiOneType) -> UniffiOneType {
     t
 }
 
+#[uniffi::export]
+async fn get_uniffi_one_type_async(t: UniffiOneType) -> UniffiOneType {
+    t
+}
+
 // Test using a type defined in a proc-macro in another crate
 #[uniffi::export]
 fn get_uniffi_one_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
