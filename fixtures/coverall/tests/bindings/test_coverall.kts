@@ -7,6 +7,8 @@ import java.util.concurrent.*
 
 import uniffi.coverall.*
 
+import com.sun.jna.Pointer
+
 // TODO: use an actual test runner.
 
 // Test some_dict().
@@ -424,4 +426,28 @@ assert(d.integer == 42UL)
 // Test bytes
 Coveralls("test_bytes").use { coveralls ->
     assert(coveralls.reverse("123".toByteArray(Charsets.UTF_8)).toString(Charsets.UTF_8) == "321")
+}
+
+// Test fakes using open classes
+
+class FakePatch(private val color: Color): Patch(NoPointer) {
+    override fun `getColor`(): Color = color
+}
+
+class FakeCoveralls(private val name: String) : Coveralls(NoPointer) {
+    private val repairs = mutableListOf<Repair>()
+
+    override fun `addPatch`(patch: Patch) {
+        repairs += Repair(Instant.now(), patch)
+    }
+
+    override fun `getRepairs`(): List<Repair> {
+        return repairs
+    }
+}
+
+FakeCoveralls("using_fakes").use { coveralls ->
+    val patch = FakePatch(Color.RED)
+    coveralls.addPatch(patch)
+    assert(!coveralls.getRepairs().isEmpty())
 }
