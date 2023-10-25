@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import kotlinx.coroutines.runBlocking
 import uniffi.imported_types_lib.*
 import uniffi.uniffi_one_ns.*
 
@@ -26,6 +27,10 @@ assert(getMaybeUniffiOneType(uot)!! == uot)
 assert(getMaybeUniffiOneType(null) == null)
 assert(getUniffiOneTypes(listOf(uot)) == listOf(uot))
 assert(getMaybeUniffiOneTypes(listOf(uot, null)) == listOf(uot, null))
+
+runBlocking {
+    assert(getUniffiOneTypeAsync(uot) == uot)
+}
 
 val uopmt = UniffiOneProcMacroType("hello from proc-macro world")
 assert(getUniffiOneProcMacroType(uopmt) == uopmt)

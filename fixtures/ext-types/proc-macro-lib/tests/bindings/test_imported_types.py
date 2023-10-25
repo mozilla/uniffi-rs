@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import asyncio
 import unittest
 import urllib
 from ext_types_guid import *
@@ -35,6 +36,9 @@ class TestIt(unittest.TestCase):
         self.assertEqual(None, get_maybe_uniffi_one_type(None))
         self.assertEqual([t1], get_uniffi_one_types([t1]))
         self.assertEqual([t1, None], get_maybe_uniffi_one_types([t1, None]))
+        async def test_async():
+            self.assertEqual(t1, await get_uniffi_one_type_async(t1))
+        asyncio.run(test_async())
 
     def test_get_uniffi_one_proc_macro_type(self):
         t1 = UniffiOneProcMacroType("hello")

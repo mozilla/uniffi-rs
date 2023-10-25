@@ -26,6 +26,16 @@ assert(getMaybeUniffiOneType(t: nil) == nil)
 assert(getUniffiOneTypes(ts: [UniffiOneType(sval: "hello")]) == [UniffiOneType(sval: "hello")])
 assert(getMaybeUniffiOneTypes(ts: [UniffiOneType(sval: "hello"), nil]) == [UniffiOneType(sval: "hello"), nil])
 
+var counter = DispatchGroup()
+counter.enter()
+Task {
+    let t = await getUniffiOneTypeAsync(t: UniffiOneType(sval: "hello"))
+    assert(t.sval == "hello")
+    counter.leave()
+}
+counter.wait()
+
+
 assert(getUniffiOneProcMacroType(t: UniffiOneProcMacroType(sval: "hello from proc-macro world")).sval == "hello from proc-macro world")
 assert(getMyProcMacroType(t: UniffiOneProcMacroType(sval: "proc-macros all the way down")).sval == "proc-macros all the way down")
 
