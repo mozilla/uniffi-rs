@@ -26,5 +26,5 @@ toml = "0.5"
 uniffi_meta = { path = "../uniffi_meta", version = "=0.25.0" }
 uniffi_testing = { path = "../uniffi_testing", version = "=0.25.0" }
 uniffi_udl = { path = "../uniffi_udl", version = "=0.25.0" }
-uniffi_docs = { path = "../uniffi_docs", version = "=0.24.3" }
+uniffi_docs = { path = "../uniffi_docs", version = "=0.25.0" }
 clap = { version = "4", default-features = false, features = ["std", "derive"], optional = true }

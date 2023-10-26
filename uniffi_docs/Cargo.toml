@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_docs"
-version = "0.24.3"
+version = "0.25.0"
 edition = "2021"
 description = "uniffi_meta"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -12,7 +12,7 @@ keywords = ["ffi", "bindgen", "docs"]
 anyhow = "1"
 syn = { version = "1.0", features = ["full"] }
 pulldown-cmark = { version = "0.9.2"}
-uniffi_meta = { path = "../uniffi_meta", version = "=0.24.3" }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.25.0" }
 
 [dev-dependencies]
 indoc = "2"
