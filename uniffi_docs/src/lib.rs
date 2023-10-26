@@ -67,7 +67,7 @@ impl FromStr for Function {
         let mut arguments_descriptions = HashMap::with_capacity(args_keys_buff.len());
         args_keys_buff
             .into_iter()
-            .zip(args_values_buff.into_iter())
+            .zip(args_values_buff)
             .for_each(|(k, v)| {
                 arguments_descriptions.insert(k, v.replace('-', "").trim().to_string());
             });
