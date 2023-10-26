@@ -29,7 +29,7 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
     }
 
     {% for cons in obj.alternate_constructors() %}
-
+    {%- let func = cons -%}
     {%- include "FunctionDocsTemplate.swift" %}
     public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
         return {{ impl_class_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})

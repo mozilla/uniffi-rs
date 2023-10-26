@@ -116,6 +116,9 @@ use scaffolding::RustScaffolding;
 /// BindingsConfigs are initially loaded from `uniffi.toml` file.  Then the trait methods are used
 /// to fill in missing values.
 pub trait BindingsConfig: DeserializeOwned {
+    /// attaches documentation if set to do so
+    fn update_documentation(&mut self, ci: &mut ComponentInterface, udl_file: &Utf8Path) -> Result<()>;
+
     /// Update missing values using the `ComponentInterface`
     fn update_from_ci(&mut self, ci: &ComponentInterface);
 
@@ -136,6 +139,7 @@ pub trait BindingsConfig: DeserializeOwned {
 pub struct EmptyBindingsConfig;
 
 impl BindingsConfig for EmptyBindingsConfig {
+    fn update_documentation(&mut self, ci: &mut ComponentInterface, udl_file: &Utf8Path) -> Result<()> { Ok(()) }
     fn update_from_ci(&mut self, _ci: &ComponentInterface) {}
     fn update_from_cdylib_name(&mut self, _cdylib_name: &str) {}
     fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
@@ -241,11 +245,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
         let mut config = load_initial_config::<T::Config>(crate_root, config_file_override)?;
         config.update_from_ci(&component);
 
-        if config.bindings.doc_comments.unwrap_or_default() {
-            let path = udl_file.with_file_name("lib.rs");
-            let documentation = uniffi_docs::extract_documentation_from_path(path)?;
-            component.attach_documentation(documentation);
-        };
+        let _ = config.update_documentation(&mut component, udl_file.as_ref())?;
 
         if let Some(ref library_file) = library_file {
             if let Some(cdylib_name) = crate::library_mode::calc_cdylib_name(library_file.as_ref())
@@ -449,6 +449,15 @@ pub struct Config {
 }
 
 impl BindingsConfig for Config {
+    fn update_documentation(&mut self, ci: &mut ComponentInterface, udl_file: &Utf8Path) -> Result<()> {
+        if self.bindings.doc_comments.unwrap_or_default() {
+            let path = udl_file.with_file_name("lib.rs");
+            let documentation = uniffi_docs::extract_documentation_from_path(path)?;
+            ci.attach_documentation(documentation);
+        }
+        Ok(())
+    }
+
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.bindings.kotlin.update_from_ci(ci);
         self.bindings.swift.update_from_ci(ci);
