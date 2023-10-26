@@ -89,6 +89,7 @@ class {{ impl_class_name }}(
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
+        {%- let func = cons -%}
         {%- include "FunctionDocsTemplate.kt" %}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
             {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
