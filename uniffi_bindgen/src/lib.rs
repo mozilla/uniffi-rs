@@ -139,7 +139,7 @@ pub trait BindingsConfig: DeserializeOwned {
 pub struct EmptyBindingsConfig;
 
 impl BindingsConfig for EmptyBindingsConfig {
-    fn update_documentation(&mut self, ci: &mut ComponentInterface, udl_file: &Utf8Path) -> Result<()> { Ok(()) }
+    fn update_documentation(&mut self, _ci: &mut ComponentInterface, _udl_file: &Utf8Path) -> Result<()> { Ok(()) }
     fn update_from_ci(&mut self, _ci: &ComponentInterface) {}
     fn update_from_cdylib_name(&mut self, _cdylib_name: &str) {}
     fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}

@@ -935,19 +935,19 @@ impl ComponentInterface {
     ///
     /// Documentation comments in the resulting bindings are based on this information.
     pub fn attach_documentation(&mut self, mut documentation: uniffi_docs::Documentation) {
-        for object in self.objects.iter_mut() {
+        for object in &mut self.objects {
             if let Some(doc) = documentation.structures.remove(object.name()) {
                 let mut methods = doc.methods.clone();
 
                 object.documentation = Some(doc);
 
-                for constructor in object.constructors.iter_mut() {
+                for constructor in &mut object.constructors {
                     if let Some(function) = methods.remove(constructor.name()) {
                         constructor.documentation = Some(function);
                     }
                 }
 
-                for method in object.methods.iter_mut() {
+                for method in &mut object.methods {
                     if let Some(function) = methods.remove(method.name()) {
                         method.documentation = Some(function);
                     }
@@ -955,13 +955,13 @@ impl ComponentInterface {
             }
         }
 
-        for (_, record) in self.records.iter_mut() {
+        for (_, record) in &mut self.records {
             if let Some(doc) = documentation.structures.remove(record.name()) {
                 let mut members = doc.members.clone();
 
                 record.documentation = Some(doc);
 
-                for field in record.fields.iter_mut() {
+                for field in &mut record.fields {
                     if let Some(member) = members.remove(field.name()) {
                         field.documentation = Some(member);
                     }
@@ -969,13 +969,13 @@ impl ComponentInterface {
             }
         }
 
-        for (_, enum_) in self.enums.iter_mut() {
+        for (_, enum_) in &mut self.enums {
             if let Some(doc) = documentation.structures.remove(enum_.name()) {
                 let mut members = doc.members.clone();
 
                 enum_.documentation = Some(doc);
 
-                for variant in enum_.variants.iter_mut() {
+                for variant in &mut enum_.variants {
                     if let Some(member) = members.remove(variant.name()) {
                         variant.documentation = Some(member);
                     }
@@ -983,7 +983,7 @@ impl ComponentInterface {
             }
         }
 
-        for function in self.functions.iter_mut() {
+        for function in &mut self.functions {
             if let Some(doc) = documentation.functions.remove(function.name()) {
                 function.documentation = Some(doc);
             }
