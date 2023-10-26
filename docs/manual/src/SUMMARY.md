@@ -40,6 +40,7 @@
 - [Configuration](./swift/configuration.md)
 - [Building a Swift module](./swift/module.md)
 - [Integrating with Xcode](./swift/xcode.md)
+- [Wrapped in Framework](./swift/framework.md)
 
 ## Python
 - [Configuration](./python/configuration)

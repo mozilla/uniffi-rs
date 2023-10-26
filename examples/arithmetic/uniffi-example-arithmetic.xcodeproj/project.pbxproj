@@ -1,0 +1,323 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 53;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CA60EF77A13D32DE2C7E5A9F /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60ABAEDDD63EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--lib"; }; };
+		CA60EF77A13DDFF35BF96DEC /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60ABAEDDD63EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--lib"; }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		CA60ABAEDDD6AC6C1400ACA8 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			dependencyFile = "$(DERIVED_FILE_DIR)/$(CARGO_XCODE_TARGET_ARCH)-$(EXECUTABLE_NAME).d";
+			filePatterns = "*/Cargo.toml";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 0;
+			name = "Cargo project build";
+			outputFiles = (
+				"$(OBJECT_FILE_DIR)/$(CARGO_XCODE_TARGET_ARCH)-$(EXECUTABLE_NAME)",
+			);
+			script = "# generated with cargo-xcode 1.5.0\n\nset -eu; export PATH=\"$PATH:$HOME/.cargo/bin:/usr/local/bin\";\nif [ \"${IS_MACCATALYST-NO}\" = YES ]; then\n    CARGO_XCODE_TARGET_TRIPLE=\"${CARGO_XCODE_TARGET_ARCH}-apple-ios-macabi\"\nelse\n    CARGO_XCODE_TARGET_TRIPLE=\"${CARGO_XCODE_TARGET_ARCH}-apple-${CARGO_XCODE_TARGET_OS}\"\nfi\nif [ \"$CARGO_XCODE_TARGET_OS\" != \"darwin\" ]; then\n    PATH=\"${PATH/\\/Contents\\/Developer\\/Toolchains\\/XcodeDefault.xctoolchain\\/usr\\/bin:/xcode-provided-ld-cant-link-lSystem-for-the-host-build-script:}\"\nfi\nPATH=\"$PATH:/opt/homebrew/bin\" # Rust projects often depend on extra tools like nasm, which Xcode lacks\nif [ \"$CARGO_XCODE_BUILD_MODE\" == release ]; then\n    OTHER_INPUT_FILE_FLAGS=\"${OTHER_INPUT_FILE_FLAGS} --release\"\nfi\nif command -v rustup &> /dev/null; then\n    if ! rustup target list --installed | egrep -q \"${CARGO_XCODE_TARGET_TRIPLE}\"; then\n        echo \"warning: this build requires rustup toolchain for $CARGO_XCODE_TARGET_TRIPLE, but it isn't installed\"\n        rustup target add \"${CARGO_XCODE_TARGET_TRIPLE}\" || echo >&2 \"warning: can't install $CARGO_XCODE_TARGET_TRIPLE\"\n    fi\nfi\nif [ \"$ACTION\" = clean ]; then\n ( set -x; cargo clean --manifest-path=\"$SCRIPT_INPUT_FILE\" ${OTHER_INPUT_FILE_FLAGS} --target=\"${CARGO_XCODE_TARGET_TRIPLE}\"; );\nelse\n ( set -x; cargo build --manifest-path=\"$SCRIPT_INPUT_FILE\" --features=\"${CARGO_XCODE_FEATURES:-}\" ${OTHER_INPUT_FILE_FLAGS} --target=\"${CARGO_XCODE_TARGET_TRIPLE}\"; );\nfi\n# it's too hard to explain Cargo's actual exe path to Xcode build graph, so hardlink to a known-good path instead\nBUILT_SRC=\"${CARGO_TARGET_DIR}/${CARGO_XCODE_TARGET_TRIPLE}/${CARGO_XCODE_BUILD_MODE}/${CARGO_XCODE_CARGO_FILE_NAME}\"\nln -f -- \"$BUILT_SRC\" \"$SCRIPT_OUTPUT_FILE_0\"\n\n# xcode generates dep file, but for its own path, so append our rename to it\nDEP_FILE_SRC=\"${CARGO_TARGET_DIR}/${CARGO_XCODE_TARGET_TRIPLE}/${CARGO_XCODE_BUILD_MODE}/${CARGO_XCODE_CARGO_DEP_FILE_NAME}\"\nif [ -f \"$DEP_FILE_SRC\" ]; then\n    DEP_FILE_DST=\"${DERIVED_FILE_DIR}/${CARGO_XCODE_TARGET_ARCH}-${EXECUTABLE_NAME}.d\"\n    cp -f \"$DEP_FILE_SRC\" \"$DEP_FILE_DST\"\n    echo >> \"$DEP_FILE_DST\" \"$SCRIPT_OUTPUT_FILE_0: $BUILT_SRC\"\nfi\n\n# lipo script needs to know all the platform-specific files that have been built\n# archs is in the file name, so that paths don't stay around after archs change\n# must match input for LipoScript\nFILE_LIST=\"${DERIVED_FILE_DIR}/${ARCHS}-${EXECUTABLE_NAME}.xcfilelist\"\ntouch \"$FILE_LIST\"\nif ! egrep -q \"$SCRIPT_OUTPUT_FILE_0\" \"$FILE_LIST\" ; then\n    echo >> \"$FILE_LIST\" \"$SCRIPT_OUTPUT_FILE_0\"\nfi\n";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXFileReference section */
+		ADDEDBA66A6E1 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		CA60788175FB47D27A557773 /* arithmetical.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = arithmetical.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA60ABAEDDD63EF4668187A5 /* Cargo.toml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cargo.toml; sourceTree = "<group>"; };
+		CA60EB84DE7515CCAA24E439 /* libarithmetical_static.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libarithmetical_static.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		ADDEDBA66A6E2 /* Required for static linking */ = {
+			isa = PBXGroup;
+			children = (
+				ADDEDBA66A6E1 /* libresolv.tbd */,
+			);
+			name = "Required for static linking";
+			sourceTree = "<group>";
+		};
+		CA60ABAEDDD622869D176AE5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CA60788175FB47D27A557773 /* arithmetical.dylib */,
+				CA60EB84DE7515CCAA24E439 /* libarithmetical_static.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CA60ABAEDDD698AF0B5890DB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ADDEDBA66A6E2 /* Required for static linking */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CA60ABAEDDD6D65BC3C892A8 = {
+			isa = PBXGroup;
+			children = (
+				CA60ABAEDDD63EF4668187A5 /* Cargo.toml */,
+				CA60ABAEDDD622869D176AE5 /* Products */,
+				CA60ABAEDDD698AF0B5890DB /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CA60788175FB32DE2C7E5A9F /* arithmetical-cdylib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA60AB3B365E32DE2C7E5A9F /* Build configuration list for PBXNativeTarget "arithmetical-cdylib" */;
+			buildPhases = (
+				CA60205076DB32DE2C7E5A9F /* Sources */,
+				CA60ABAEDDD6AF6EBB7F357C /* Universal Binary lipo */,
+			);
+			buildRules = (
+				CA60ABAEDDD6AC6C1400ACA8 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "arithmetical-cdylib";
+			productName = arithmetical.dylib;
+			productReference = CA60788175FB47D27A557773 /* arithmetical.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		CA60EB84DE75DFF35BF96DEC /* arithmetical-staticlib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA60AB3B365EDFF35BF96DEC /* Build configuration list for PBXNativeTarget "arithmetical-staticlib" */;
+			buildPhases = (
+				CA60205076DBDFF35BF96DEC /* Sources */,
+				CA60ABAEDDD6AF6EBB7F357C /* Universal Binary lipo */,
+			);
+			buildRules = (
+				CA60ABAEDDD6AC6C1400ACA8 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "arithmetical-staticlib";
+			productName = libarithmetical_static.a;
+			productReference = CA60EB84DE7515CCAA24E439 /* libarithmetical_static.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CA60ABAEDDD6E04653AD465F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1300;
+				TargetAttributes = {
+					CA60788175FB32DE2C7E5A9F = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					CA60EB84DE75DFF35BF96DEC = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = CA60ABAEDDD680E02D6C7F57 /* Build configuration list for PBXProject "uniffi-example-arithmetic" */;
+			compatibilityVersion = "Xcode 11.4";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CA60ABAEDDD6D65BC3C892A8;
+			productRefGroup = CA60ABAEDDD622869D176AE5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CA60788175FB32DE2C7E5A9F /* arithmetical-cdylib */,
+				CA60EB84DE75DFF35BF96DEC /* arithmetical-staticlib */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		CA60ABAEDDD6AF6EBB7F357C /* Universal Binary lipo */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(DERIVED_FILE_DIR)/$(ARCHS)-$(EXECUTABLE_NAME).xcfilelist",
+			);
+			name = "Universal Binary lipo";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# generated with cargo-xcode 1.5.0\n\n            set -eux; cat \"$DERIVED_FILE_DIR/$ARCHS-$EXECUTABLE_NAME.xcfilelist\" | tr '\\n' '\\0' | xargs -0 lipo -create -output \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"\n            if [ ${LD_DYLIB_INSTALL_NAME:+1} ]; then\n                install_name_tool -id \"$LD_DYLIB_INSTALL_NAME\" \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"\n            fi\n        ";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CA60205076DB32DE2C7E5A9F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA60EF77A13D32DE2C7E5A9F /* Cargo.toml in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CA60205076DBDFF35BF96DEC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA60EF77A13DDFF35BF96DEC /* Cargo.toml in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		CA600CBD1ABB228BE02872F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CARGO_TARGET_DIR = "$(PROJECT_TEMP_DIR)/cargo_target";
+				CARGO_XCODE_BUILD_MODE = debug;
+				CARGO_XCODE_FEATURES = "";
+				"CARGO_XCODE_TARGET_ARCH[arch=arm64*]" = aarch64;
+				"CARGO_XCODE_TARGET_ARCH[arch=i386]" = i686;
+				"CARGO_XCODE_TARGET_ARCH[arch=x86_64*]" = x86_64;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvos*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvsimulator*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=iphoneos*]" = ios;
+				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*]" = "ios-sim";
+				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*][arch=x86_64*]" = ios;
+				"CARGO_XCODE_TARGET_OS[sdk=macosx*]" = darwin;
+				CURRENT_PROJECT_VERSION = 0.22;
+				MARKETING_VERSION = 0.22.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "uniffi-example-arithmetic";
+				SDKROOT = macosx;
+				SUPPORTS_MACCATALYST = YES;
+			};
+			name = Debug;
+		};
+		CA600CBD1ABB3CC16B37690B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CARGO_TARGET_DIR = "$(PROJECT_TEMP_DIR)/cargo_target";
+				CARGO_XCODE_BUILD_MODE = release;
+				CARGO_XCODE_FEATURES = "";
+				"CARGO_XCODE_TARGET_ARCH[arch=arm64*]" = aarch64;
+				"CARGO_XCODE_TARGET_ARCH[arch=i386]" = i686;
+				"CARGO_XCODE_TARGET_ARCH[arch=x86_64*]" = x86_64;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvos*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvsimulator*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=iphoneos*]" = ios;
+				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*]" = "ios-sim";
+				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*][arch=x86_64*]" = ios;
+				"CARGO_XCODE_TARGET_OS[sdk=macosx*]" = darwin;
+				CURRENT_PROJECT_VERSION = 0.22;
+				MARKETING_VERSION = 0.22.0;
+				PRODUCT_NAME = "uniffi-example-arithmetic";
+				SDKROOT = macosx;
+				SUPPORTS_MACCATALYST = YES;
+			};
+			name = Release;
+		};
+		CA604E7D374832DE2C7E5A9F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libarithmetical.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libarithmetical.dylib;
+				DYLIB_COMPATIBILITY_VERSION = 0;
+				PRODUCT_NAME = arithmetical;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Release;
+		};
+		CA604E7D3748DFF35BF96DEC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libarithmetical.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libarithmetical.a;
+				INSTALL_GROUP = "";
+				INSTALL_MODE_FLAG = "";
+				INSTALL_OWNER = "";
+				PRODUCT_NAME = arithmetical_static;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+			};
+			name = Release;
+		};
+		CA60502B5E5D32DE2C7E5A9F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libarithmetical.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libarithmetical.dylib;
+				DYLIB_COMPATIBILITY_VERSION = 0;
+				PRODUCT_NAME = arithmetical;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Debug;
+		};
+		CA60502B5E5DDFF35BF96DEC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libarithmetical.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libarithmetical.a;
+				INSTALL_GROUP = "";
+				INSTALL_MODE_FLAG = "";
+				INSTALL_OWNER = "";
+				PRODUCT_NAME = arithmetical_static;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CA60AB3B365E32DE2C7E5A9F /* Build configuration list for PBXNativeTarget "arithmetical-cdylib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA604E7D374832DE2C7E5A9F /* Release */,
+				CA60502B5E5D32DE2C7E5A9F /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CA60AB3B365EDFF35BF96DEC /* Build configuration list for PBXNativeTarget "arithmetical-staticlib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA604E7D3748DFF35BF96DEC /* Release */,
+				CA60502B5E5DDFF35BF96DEC /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CA60ABAEDDD680E02D6C7F57 /* Build configuration list for PBXProject "uniffi-example-arithmetic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA600CBD1ABB3CC16B37690B /* Release */,
+				CA600CBD1ABB228BE02872F8 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CA60ABAEDDD6E04653AD465F /* Project object */;
+}
