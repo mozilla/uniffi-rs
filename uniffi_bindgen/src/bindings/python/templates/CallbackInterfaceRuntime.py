@@ -19,6 +19,10 @@ class UniffiCallbackInterfaceFfiConverter:
         cls.lift(handle)
 
     @classmethod
+    def check(cls, cb):
+        pass
+
+    @classmethod
     def lower(cls, cb):
         handle = cls._handle_map.new_handle(cb)
         return handle

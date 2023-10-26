@@ -452,6 +452,10 @@ pub mod filters {
         Ok(format!("{}.lift", ffi_converter_name(as_ct)?))
     }
 
+    pub(super) fn check_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+        Ok(format!("{}.check", ffi_converter_name(as_ct)?))
+    }
+
     pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!("{}.lower", ffi_converter_name(as_ct)?))
     }
