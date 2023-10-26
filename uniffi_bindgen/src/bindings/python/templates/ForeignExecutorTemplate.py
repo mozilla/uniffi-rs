@@ -12,9 +12,12 @@ class {{ ffi_converter_name }}:
     _pointer_manager = _UniffiPointerManager()
 
     @classmethod
-    def lower(cls, eventloop):
+    def check_lower(cls, eventloop):
         if not isinstance(eventloop, asyncio.BaseEventLoop):
             raise TypeError("_uniffi_executor_callback: Expected EventLoop instance")
+
+    @classmethod
+    def lower(cls, eventloop):
         return cls._pointer_manager.new_pointer(eventloop)
 
     @classmethod
