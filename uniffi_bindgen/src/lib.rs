@@ -98,7 +98,7 @@ use fs_err::{self as fs, File};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::io::prelude::*;
 use std::io::ErrorKind;
-use std::{collections::HashMap, process::Command, str::FromStr};
+use std::{collections::HashMap, process::Command};
 
 pub mod backend;
 pub mod bindings;
@@ -116,9 +116,6 @@ use scaffolding::RustScaffolding;
 /// BindingsConfigs are initially loaded from `uniffi.toml` file.  Then the trait methods are used
 /// to fill in missing values.
 pub trait BindingsConfig: DeserializeOwned {
-    /// key in the `bindings` table from `uniffi.toml` for this configuration
-    const TOML_KEY: &'static str;
-
     /// Update missing values using the `ComponentInterface`
     fn update_from_ci(&mut self, ci: &ComponentInterface);
 
@@ -134,61 +131,14 @@ pub trait BindingsConfig: DeserializeOwned {
     fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>);
 }
 
-fn load_bindings_config<BC: BindingsConfig>(
-    ci: &ComponentInterface,
-    crate_root: &Utf8Path,
-    config_file_override: Option<&Utf8Path>,
-) -> Result<BC> {
-    // Load the config from the TOML value, falling back to an empty map if it doesn't exist
-    let toml_config = load_bindings_config_toml(crate_root, config_file_override)?
-        .and_then(|mut v| v.as_table_mut().and_then(|t| t.remove(BC::TOML_KEY)))
-        .unwrap_or_else(|| toml::Value::from(toml::value::Table::default()));
-
-    let mut config: BC = toml_config.try_into()?;
-    config.update_from_ci(ci);
-    Ok(config)
-}
-
 /// Binding generator config with no members
 #[derive(Clone, Debug, Deserialize, Hash, PartialEq, PartialOrd, Ord, Eq)]
 pub struct EmptyBindingsConfig;
 
 impl BindingsConfig for EmptyBindingsConfig {
-    const TOML_KEY: &'static str = "";
-
     fn update_from_ci(&mut self, _ci: &ComponentInterface) {}
     fn update_from_cdylib_name(&mut self, _cdylib_name: &str) {}
     fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
-}
-
-// Load the binding-specific config
-//
-// This function calculates the location of the config TOML file, parses it, and returns the result
-// as a toml::Value
-//
-// If there is an error parsing the file then Err will be returned. If the file is missing or the
-// entry for the bindings is missing, then Ok(None) will be returned.
-fn load_bindings_config_toml(
-    crate_root: &Utf8Path,
-    config_file_override: Option<&Utf8Path>,
-) -> Result<Option<toml::Value>> {
-    let config_path = match config_file_override {
-        Some(cfg) => cfg.to_owned(),
-        None => crate_root.join("uniffi.toml"),
-    };
-
-    if !config_path.exists() {
-        return Ok(None);
-    }
-
-    let contents = fs::read_to_string(&config_path)
-        .with_context(|| format!("Failed to read config file from {config_path}"))?;
-    let mut full_config = toml::Value::from_str(&contents)
-        .with_context(|| format!("Failed to parse config file {config_path}"))?;
-
-    Ok(full_config
-        .as_table_mut()
-        .and_then(|t| t.remove("bindings")))
 }
 
 /// A trait representing a UniFFI Binding Generator
@@ -207,10 +157,49 @@ pub trait BindingGenerator: Sized {
     /// - `out_dir`: The path to where the binding generator should write the output bindings
     fn write_bindings(
         &self,
-        ci: ComponentInterface,
-        config: Self::Config,
+        ci: &ComponentInterface,
+        config: &Self::Config,
         out_dir: &Utf8Path,
     ) -> Result<()>;
+
+    /// Check if `library_path` used by library mode is valid for this generator
+    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()>;
+}
+
+struct BindingGeneratorDefault {
+    target_languages: Vec<TargetLanguage>,
+    try_format_code: bool,
+}
+
+impl BindingGenerator for BindingGeneratorDefault {
+    type Config = Config;
+
+    fn write_bindings(
+        &self,
+        ci: &ComponentInterface,
+        config: &Self::Config,
+        out_dir: &Utf8Path,
+    ) -> Result<()> {
+        for &language in &self.target_languages {
+            bindings::write_bindings(
+                &config.bindings,
+                ci,
+                out_dir,
+                language,
+                self.try_format_code,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()> {
+        for &language in &self.target_languages {
+            if cdylib_name.is_none() && language != TargetLanguage::Swift {
+                bail!("Generate bindings for {language} requires a cdylib, but {library_path} was given");
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Generate bindings for an external binding generator
@@ -228,14 +217,18 @@ pub trait BindingGenerator: Sized {
 /// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate's root.
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
+/// - `crate_name`: Override the default crate name that is guessed from UDL file path.
 pub fn generate_external_bindings<T: BindingGenerator>(
     binding_generator: T,
     udl_file: impl AsRef<Utf8Path>,
     config_file_override: Option<impl AsRef<Utf8Path>>,
     out_dir_override: Option<impl AsRef<Utf8Path>>,
     library_file: Option<impl AsRef<Utf8Path>>,
+    crate_name: Option<&str>,
 ) -> Result<()> {
-    let crate_name = crate_name_from_cargo_toml(udl_file.as_ref())?;
+    let crate_name = crate_name
+        .map(|c| Ok(c.to_string()))
+        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file.as_ref()))?;
     let mut component = parse_udl(udl_file.as_ref(), &crate_name)?;
     if let Some(ref library_file) = library_file {
         macro_metadata::add_to_ci_from_library(&mut component, library_file.as_ref())?;
@@ -243,14 +236,17 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let crate_root = &guess_crate_root(udl_file.as_ref()).context("Failed to guess crate root")?;
 
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
-    let mut config =
-        load_bindings_config::<T::Config>(&component, crate_root, config_file_override)?;
-    config.update_from_ci(&component);
 
     let config = {
-        let mut config =
-            load_bindings_config::<T::Config>(&component, crate_root, config_file_override)?;
+        let mut config = load_initial_config::<T::Config>(crate_root, config_file_override)?;
         config.update_from_ci(&component);
+
+        if config.bindings.doc_comments.unwrap_or_default() {
+            let path = udl_file.with_file_name("lib.rs");
+            let documentation = uniffi_docs::extract_documentation_from_path(path)?;
+            component.attach_documentation(documentation);
+        };
+
         if let Some(ref library_file) = library_file {
             if let Some(cdylib_name) = crate::library_mode::calc_cdylib_name(library_file.as_ref())
             {
@@ -264,7 +260,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
         udl_file.as_ref(),
         out_dir_override.as_ref().map(|p| p.as_ref()),
     )?;
-    binding_generator.write_bindings(component, config, &out_dir)
+    binding_generator.write_bindings(&component, &config, &out_dir)
 }
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
@@ -321,37 +317,17 @@ pub fn generate_bindings(
     crate_name: Option<&str>,
     try_format_code: bool,
 ) -> Result<()> {
-    let crate_name = crate_name
-        .map(|c| Ok(c.to_string()))
-        .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file))?;
-    let mut component = parse_udl(udl_file, &crate_name)?;
-    if let Some(library_file) = library_file {
-        macro_metadata::add_to_ci_from_library(&mut component, library_file)?;
-    }
-    let crate_root = &guess_crate_root(udl_file).context("Failed to guess crate root")?;
-
-    let mut config = Config::load_initial(crate_root, config_file_override)?;
-
-    config.update_from_ci(&component);
-
-    if config.bindings.doc_comments.unwrap_or_default() {
-        let path = udl_file.with_file_name("lib.rs");
-        let documentation = uniffi_docs::extract_documentation_from_path(path)?;
-        component.attach_documentation(documentation);
-    }
-
-    let out_dir = get_out_dir(udl_file, out_dir_override)?;
-    for language in target_languages {
-        bindings::write_bindings(
-            &config.bindings,
-            &component,
-            &out_dir,
-            language,
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages,
             try_format_code,
-        )?;
-    }
-
-    Ok(())
+        },
+        udl_file,
+        config_file_override,
+        out_dir_override,
+        library_file,
+        crate_name,
+    )
 }
 
 pub fn print_repr(library_path: &Utf8Path) -> Result<()> {
@@ -448,31 +424,31 @@ fn format_code_with_rustfmt(path: &Utf8Path) -> Result<()> {
     Ok(())
 }
 
+fn load_initial_config<Config: DeserializeOwned>(
+    crate_root: &Utf8Path,
+    config_file_override: Option<&Utf8Path>,
+) -> Result<Config> {
+    let path = match config_file_override {
+        Some(cfg) => Some(cfg.to_owned()),
+        None => crate_root.join("uniffi.toml").canonicalize_utf8().ok(),
+    };
+    let toml_config = match path {
+        Some(path) => {
+            let contents = fs::read_to_string(path).context("Failed to read config file")?;
+            toml::de::from_str(&contents)?
+        }
+        None => toml::Value::from(toml::value::Table::default()),
+    };
+    Ok(toml_config.try_into()?)
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
     bindings: bindings::Config,
 }
 
-impl Config {
-    fn load_initial(
-        crate_root: &Utf8Path,
-        config_file_override: Option<&Utf8Path>,
-    ) -> Result<Self> {
-        let path = match config_file_override {
-            Some(cfg) => Some(cfg.to_owned()),
-            None => crate_root.join("uniffi.toml").canonicalize_utf8().ok(),
-        };
-        let toml_config = match path {
-            Some(path) => {
-                let contents = fs::read_to_string(path).context("Failed to read config file")?;
-                toml::de::from_str(&contents)?
-            }
-            None => toml::Value::from(toml::value::Table::default()),
-        };
-        Ok(toml_config.try_into()?)
-    }
-
+impl BindingsConfig for Config {
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.bindings.kotlin.update_from_ci(ci);
         self.bindings.swift.update_from_ci(ci);

@@ -104,8 +104,6 @@ impl Config {
 }
 
 impl BindingsConfig for Config {
-    const TOML_KEY: &'static str = "ruby";
-
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.cdylib_name
             .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
@@ -155,14 +153,18 @@ mod filters {
             FfiType::RustArcPtr(_) => ":pointer".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
-            FfiType::ForeignCallback => unimplemented!("Callback interfaces are not implemented"),
+            // Callback interfaces are not yet implemented, but this needs to return something in
+            // order for the coverall tests to pass.
+            FfiType::ForeignCallback => ":pointer".to_string(),
             FfiType::ForeignExecutorCallback => {
                 unimplemented!("Foreign executors are not implemented")
             }
             FfiType::ForeignExecutorHandle => {
                 unimplemented!("Foreign executors are not implemented")
             }
-            FfiType::FutureCallback { .. } | FfiType::FutureCallbackData => {
+            FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationCallback
+            | FfiType::RustFutureContinuationData => {
                 unimplemented!("Async functions are not implemented")
             }
         })

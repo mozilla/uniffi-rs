@@ -151,6 +151,12 @@ pub async fn async_maybe_new_megaphone(y: bool) -> Option<Arc<Megaphone>> {
     }
 }
 
+/// Async function that inputs `Megaphone`.
+#[uniffi::export]
+pub async fn say_after_with_megaphone(megaphone: Arc<Megaphone>, ms: u16, who: String) -> String {
+    megaphone.say_after(ms, who).await
+}
+
 /// A megaphone. Be careful with the neighbours.
 #[derive(uniffi::Object)]
 pub struct Megaphone;
@@ -162,7 +168,12 @@ impl Megaphone {
         say_after(ms, who).await.to_uppercase()
     }
 
-    // An async method that can throw.
+    /// An async method without any extra arguments.
+    pub async fn silence(&self) -> String {
+        String::new()
+    }
+
+    /// An async method that can throw.
     pub async fn fallible_me(self: Arc<Self>, do_fail: bool) -> Result<u8, MyError> {
         if do_fail {
             Err(MyError::Foo)

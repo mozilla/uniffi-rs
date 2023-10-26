@@ -196,4 +196,4 @@ fn get_guid_procmacro(g: Option<Guid>) -> Guid {
     ext_types_guid::get_guid(g)
 }
 
-uniffi::include_scaffolding!("ext-types-lib");
+uniffi::setup_scaffolding!("imported_types_lib");

@@ -123,11 +123,13 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                 })
             })
             .collect::<Result<Vec<_>>>()?;
+        for ut in uniffi_traits {
+            ci.items.insert(ut.into());
+        }
         Ok(ObjectMetadata {
             module_path: ci.module_path(),
             name: object_name.to_string(),
             imp: object_impl,
-            uniffi_traits,
         })
     }
 }

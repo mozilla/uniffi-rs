@@ -13,6 +13,7 @@ enum class {{ type_name }} {
     {% include "EnumVariantDocsTemplate.kt" %}
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+    companion object
 }
 
 public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
@@ -41,7 +42,9 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
         {% for field in variant.fields() -%}
         val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
-    ) : {{ type_name }}()
+    ) : {{ type_name }}() {
+        companion object
+    }
     {%- endif %}
     {% endfor %}
 
@@ -61,6 +64,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+    companion object
 }
 
 public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}>{

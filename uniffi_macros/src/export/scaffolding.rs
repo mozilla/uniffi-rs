@@ -92,9 +92,9 @@ pub(super) fn gen_method_scaffolding(
 struct ScaffoldingBits {
     /// Parameters for the scaffolding function
     params: Vec<TokenStream>,
-    /// Statements to execute before `rust_fn_call`
-    pre_fn_call: TokenStream,
-    /// Tokenstream for the call to the actual Rust function
+    /// Lift closure.  See `FnSignature::lift_closure` for an explanation of this.
+    lift_closure: TokenStream,
+    /// Expression to call the Rust function after a successful lift.
     rust_fn_call: TokenStream,
 }
 
@@ -102,17 +102,18 @@ impl ScaffoldingBits {
     fn new_for_function(sig: &FnSignature, udl_mode: bool) -> Self {
         let ident = &sig.ident;
         let params: Vec<_> = sig.args.iter().map(NamedArg::scaffolding_param).collect();
-        let param_lifts = sig.lift_exprs();
-        let simple_rust_fn_call = quote! { #ident(#(#param_lifts,)*) };
+        let call_params = sig.rust_call_params(false);
+        let rust_fn_call = quote! { #ident(#call_params) };
+        // UDL mode adds an extra conversion (#1749)
         let rust_fn_call = if udl_mode && sig.looks_like_result {
-            quote! { #simple_rust_fn_call.map_err(::std::convert::Into::into) }
+            quote! { #rust_fn_call.map_err(::std::convert::Into::into) }
         } else {
-            simple_rust_fn_call
+            rust_fn_call
         };
 
         Self {
             params,
-            pre_fn_call: quote! {},
+            lift_closure: sig.lift_closure(None),
             rust_fn_call,
         }
     }
@@ -124,35 +125,51 @@ impl ScaffoldingBits {
         udl_mode: bool,
     ) -> Self {
         let ident = &sig.ident;
-        let ffi_converter = if is_trait {
+        let lift_impl = if is_trait {
             quote! {
-                <::std::sync::Arc<dyn #self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+                <::std::sync::Arc<dyn #self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
             }
         } else {
             quote! {
-                <::std::sync::Arc<#self_ident> as ::uniffi::FfiConverter<crate::UniFfiTag>>
+                <::std::sync::Arc<#self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
             }
         };
-        let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #ffi_converter::FfiType })
+        let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #lift_impl::FfiType })
             .chain(sig.scaffolding_params())
             .collect();
-        let param_lifts = sig.lift_exprs();
-        let simple_rust_fn_call = quote! { uniffi_self.#ident(#(#param_lifts,)*) };
-        let rust_fn_call = if udl_mode && sig.looks_like_result {
-            quote! { #simple_rust_fn_call.map_err(::std::convert::Into::into) }
+        let try_lift_self = if is_trait {
+            // For trait interfaces we need to special case this.  Trait interfaces normally lift
+            // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
+            // pointer.
+            quote! {
+                {
+                    let foreign_arc = ::std::boxed::Box::leak(unsafe { Box::from_raw(uniffi_self_lowered as *mut ::std::sync::Arc<dyn #self_ident>) });
+                    // Take a clone for our own use.
+                    Ok(::std::sync::Arc::clone(foreign_arc))
+                }
+            }
         } else {
-            simple_rust_fn_call
+            quote! { #lift_impl::try_lift(uniffi_self_lowered) }
         };
-        let return_ffi_converter = sig.return_ffi_converter();
+
+        let lift_closure = sig.lift_closure(Some(quote! {
+            match #try_lift_self {
+                Ok(v) => v,
+                Err(e) => return Err(("self", e))
+            }
+        }));
+        let call_params = sig.rust_call_params(true);
+        let rust_fn_call = quote! { uniffi_args.0.#ident(#call_params) };
+        // UDL mode adds an extra conversion (#1749)
+        let rust_fn_call = if udl_mode && sig.looks_like_result {
+            quote! { #rust_fn_call.map_err(::std::convert::Into::into) }
+        } else {
+            rust_fn_call
+        };
 
         Self {
             params,
-            pre_fn_call: quote! {
-                let uniffi_self = match #ffi_converter::try_lift(uniffi_self_lowered) {
-                    Ok(v) => v,
-                    Err(e) => return Err(#return_ffi_converter::handle_failed_lift("self", e)),
-                };
-            },
+            lift_closure,
             rust_fn_call,
         }
     }
@@ -160,20 +177,21 @@ impl ScaffoldingBits {
     fn new_for_constructor(sig: &FnSignature, self_ident: &Ident, udl_mode: bool) -> Self {
         let ident = &sig.ident;
         let params: Vec<_> = sig.args.iter().map(NamedArg::scaffolding_param).collect();
-        let param_lifts = sig.lift_exprs();
-        let simple_rust_fn_call = quote! { #self_ident::#ident(#(#param_lifts,)*) };
+        let call_params = sig.rust_call_params(false);
+        let rust_fn_call = quote! { #self_ident::#ident(#call_params) };
+        // UDL mode adds extra conversions (#1749)
         let rust_fn_call = match (udl_mode, sig.looks_like_result) {
             // For UDL
-            (true, false) => quote! { ::std::sync::Arc::new(#simple_rust_fn_call) },
+            (true, false) => quote! { ::std::sync::Arc::new(#rust_fn_call) },
             (true, true) => {
-                quote! { #simple_rust_fn_call.map(::std::sync::Arc::new).map_err(::std::convert::Into::into) }
+                quote! { #rust_fn_call.map(::std::sync::Arc::new).map_err(::std::convert::Into::into) }
             }
-            (false, _) => simple_rust_fn_call,
+            (false, _) => rust_fn_call,
         };
 
         Self {
             params,
-            pre_fn_call: quote! {},
+            lift_closure: sig.lift_closure(None),
             rust_fn_call,
         }
     }
@@ -183,14 +201,14 @@ impl ScaffoldingBits {
 ///
 /// `pre_fn_call` is the statements that we should execute before the rust call
 /// `rust_fn` is the Rust function to call.
-fn gen_ffi_function(
+pub(super) fn gen_ffi_function(
     sig: &FnSignature,
     arguments: &ExportAttributeArguments,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
         params,
-        pre_fn_call,
+        lift_closure,
         rust_fn_call,
     } = match &sig.kind {
         FnKind::Function => ScaffoldingBits::new_for_function(sig, udl_mode),
@@ -213,7 +231,7 @@ fn gen_ffi_function(
 
     let ffi_ident = sig.scaffolding_fn_ident()?;
     let name = &sig.name;
-    let return_ty = &sig.return_ty;
+    let return_impl = &sig.return_impl();
 
     Ok(if !sig.is_async {
         quote! {
@@ -222,12 +240,17 @@ fn gen_ffi_function(
             #vis extern "C" fn #ffi_ident(
                 #(#params,)*
                 call_status: &mut ::uniffi::RustCallStatus,
-            ) -> <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::ReturnType {
+            ) -> #return_impl::ReturnType {
                 ::uniffi::deps::log::debug!(#name);
+                let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
-                    #pre_fn_call
-                    <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::lower_return(
-                        #rust_fn_call
+                    #return_impl::lower_return(
+                        match uniffi_lift_args() {
+                            Ok(uniffi_args) => #rust_fn_call,
+                            Err((arg_name, anyhow_error)) => {
+                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
+                            },
+                        }
                     )
                 })
             }
@@ -241,25 +264,25 @@ fn gen_ffi_function(
         quote! {
             #[doc(hidden)]
             #[no_mangle]
-            #vis extern "C" fn #ffi_ident(
-                #(#params,)*
-                uniffi_executor_handle: ::uniffi::ForeignExecutorHandle,
-                uniffi_callback: <#return_ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::FutureCallback,
-                uniffi_callback_data: *const (),
-                uniffi_call_status: &mut ::uniffi::RustCallStatus,
-            ) {
+            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::RustFutureHandle {
                 ::uniffi::deps::log::debug!(#name);
-                ::uniffi::rust_call(uniffi_call_status, || {
-                    #pre_fn_call;
-                    let uniffi_rust_future = ::uniffi::RustFuture::<_, #return_ty, crate::UniFfiTag>::new(
-                        #future_expr,
-                        uniffi_executor_handle,
-                        uniffi_callback,
-                        uniffi_callback_data
-                    );
-                    uniffi_rust_future.wake();
-                    Ok(())
-                });
+                let uniffi_lift_args = #lift_closure;
+                match uniffi_lift_args() {
+                    Ok(uniffi_args) => {
+                        ::uniffi::rust_future_new(
+                            async move { #future_expr.await },
+                            crate::UniFfiTag
+                        )
+                    },
+                    Err((arg_name, anyhow_error)) => {
+                        ::uniffi::rust_future_new(
+                            async move {
+                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
+                            },
+                            crate::UniFfiTag,
+                        )
+                    },
+                }
             }
         }
     })

@@ -114,7 +114,10 @@ pub enum Type {
     External {
         module_path: String,
         name: String,
+        #[checksum_ignore] // The namespace is not known generating scaffolding.
+        namespace: String,
         kind: ExternalKind,
+        tagged: bool, // does its FfiConverter use <UniFFITag>?
     },
     // Custom type on the scaffolding side
     Custom {

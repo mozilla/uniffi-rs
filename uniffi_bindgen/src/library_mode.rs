@@ -16,8 +16,8 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 use crate::{
-    bindings::{self, TargetLanguage},
-    macro_metadata, ComponentInterface, Config, Result,
+    bindings::TargetLanguage, load_initial_config, macro_metadata, BindingGenerator,
+    BindingGeneratorDefault, BindingsConfig, ComponentInterface, Result,
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
@@ -26,7 +26,9 @@ use std::{
     collections::{HashMap, HashSet},
     fs,
 };
-use uniffi_meta::{group_metadata, MetadataGroup};
+use uniffi_meta::{
+    create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
+};
 
 /// Generate foreign bindings
 ///
@@ -37,11 +39,33 @@ pub fn generate_bindings(
     target_languages: &[TargetLanguage],
     out_dir: &Utf8Path,
     try_format_code: bool,
-) -> Result<Vec<Source>> {
+) -> Result<Vec<Source<crate::Config>>> {
+    generate_external_bindings(
+        BindingGeneratorDefault {
+            target_languages: target_languages.into(),
+            try_format_code,
+        },
+        library_path,
+        crate_name,
+        out_dir,
+    )
+}
+
+/// Generate foreign bindings
+///
+/// Returns the list of sources used to generate the bindings, in no particular order.
+pub fn generate_external_bindings<T: BindingGenerator>(
+    binding_generator: T,
+    library_path: &Utf8Path,
+    crate_name: Option<String>,
+    out_dir: &Utf8Path,
+) -> Result<Vec<Source<T::Config>>> {
     let cargo_metadata = MetadataCommand::new()
         .exec()
         .context("error running cargo metadata")?;
     let cdylib_name = calc_cdylib_name(library_path);
+    binding_generator.check_library_path(library_path, cdylib_name)?;
+
     let mut sources = find_sources(&cargo_metadata, library_path, cdylib_name)?;
     for i in 0..sources.len() {
         // Partition up the sources list because we're eventually going to call
@@ -53,7 +77,7 @@ pub fn generate_bindings(
         // Calculate which configs come from dependent crates
         let dependencies =
             HashSet::<&str>::from_iter(source.package.dependencies.iter().map(|d| d.name.as_str()));
-        let config_map: HashMap<&str, &Config> = other_sources
+        let config_map: HashMap<&str, &T::Config> = other_sources
             .filter_map(|s| {
                 dependencies
                     .contains(s.package.name.as_str())
@@ -77,18 +101,7 @@ pub fn generate_bindings(
     }
 
     for source in sources.iter() {
-        for &language in target_languages {
-            if cdylib_name.is_none() && language != TargetLanguage::Swift {
-                bail!("Generate bindings for {language} requires a cdylib, but {library_path} was given");
-            }
-            bindings::write_bindings(
-                &source.config.bindings,
-                &source.ci,
-                out_dir,
-                language,
-                try_format_code,
-            )?;
-        }
+        binding_generator.write_bindings(&source.ci, &source.config, out_dir)?;
     }
 
     Ok(sources)
@@ -96,7 +109,7 @@ pub fn generate_bindings(
 
 // A single source that we generate bindings for
 #[derive(Debug)]
-pub struct Source {
+pub struct Source<Config: BindingsConfig> {
     pub package: Package,
     pub crate_name: String,
     pub ci: ComponentInterface,
@@ -116,13 +129,43 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     None
 }
 
-fn find_sources(
+fn find_sources<Config: BindingsConfig>(
     cargo_metadata: &cargo_metadata::Metadata,
     library_path: &Utf8Path,
     cdylib_name: Option<&str>,
-) -> Result<Vec<Source>> {
-    group_metadata(macro_metadata::extract_from_library(library_path)?)?
-        .into_iter()
+) -> Result<Vec<Source<Config>>> {
+    let items = macro_metadata::extract_from_library(library_path)?;
+    let mut metadata_groups = create_metadata_groups(&items);
+    group_metadata(&mut metadata_groups, items)?;
+
+    // Collect and process all UDL from all groups at the start - the fixups
+    // of external types makes this tricky to do as we finalize the group.
+    let mut udl_items: HashMap<String, MetadataGroup> = HashMap::new();
+
+    for group in metadata_groups.values() {
+        let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
+        let crate_root = package
+            .manifest_path
+            .parent()
+            .context("manifest path has no parent")?;
+        let crate_name = group.namespace.crate_name.clone();
+        if let Some(mut metadata_group) = load_udl_metadata(group, crate_root, &crate_name)? {
+            // fixup the items.
+            metadata_group.items = metadata_group
+                .items
+                .into_iter()
+                .map(|item| fixup_external_type(item, &metadata_groups))
+                // some items are both in UDL and library metadata. For many that's fine but
+                // uniffi-traits aren't trivial to compare meaning we end up with dupes.
+                // We filter out such problematic items here.
+                .filter(|item| !matches!(item, Metadata::UniffiTrait { .. }))
+                .collect();
+            udl_items.insert(crate_name, metadata_group);
+        };
+    }
+
+    metadata_groups
+        .into_values()
         .map(|group| {
             let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
             let crate_root = package
@@ -131,11 +174,11 @@ fn find_sources(
                 .context("manifest path has no parent")?;
             let crate_name = group.namespace.crate_name.clone();
             let mut ci = ComponentInterface::new(&crate_name);
-            if let Some(metadata) = load_udl_metadata(&group, crate_root, &crate_name)? {
+            if let Some(metadata) = udl_items.remove(&crate_name) {
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;
-            let mut config = Config::load_initial(crate_root, None)?;
+            let mut config = load_initial_config::<Config>(crate_root, None)?;
             if let Some(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
             }

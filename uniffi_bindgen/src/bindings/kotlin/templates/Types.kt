@@ -94,7 +94,7 @@
 {%- when Type::Custom { module_path, name, builtin } %}
 {% include "CustomTypeTemplate.kt" %}
 
-{%- when Type::External { module_path, name, kind } %}
+{%- when Type::External { module_path, name, namespace, kind, tagged } %}
 {% include "ExternalTypeTemplate.kt" %}
 
 {%- else %}
@@ -102,5 +102,8 @@
 {%- endfor %}
 
 {%- if ci.has_async_fns() %}
-{% include "AsyncTypes.kt" %}
+{# Import types needed for async support #}
+{{ self.add_import("kotlin.coroutines.resume") }}
+{{ self.add_import("kotlinx.coroutines.suspendCancellableCoroutine") }}
+{{ self.add_import("kotlinx.coroutines.CancellableContinuation") }}
 {%- endif %}

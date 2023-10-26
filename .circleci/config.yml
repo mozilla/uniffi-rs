@@ -39,7 +39,7 @@ orbs:
 jobs:
   Check Rust formatting:
     docker:
-      - image: cimg/rust:1.69
+      - image: cimg/rust:1.72
     resource_class: small
     steps:
       - checkout
@@ -49,7 +49,7 @@ jobs:
       - run: cargo fmt -- --check
   Lint Rust with clippy:
     docker:
-      - image: cimg/rust:1.69
+      - image: cimg/rust:1.72
     resource_class: small
     steps:
       - checkout
@@ -59,7 +59,7 @@ jobs:
       - run: cargo clippy --all --all-targets -- -D warnings
   Lint Rust Docs:
     docker:
-      - image: cimg/rust:1.69
+      - image: cimg/rust:1.72
     resource_class: small
     steps:
       - checkout
@@ -117,7 +117,7 @@ jobs:
       - run: cargo test -- --skip trybuild_ui_tests
   Deploy website:
     docker:
-      - image: cimg/rust:1.69
+      - image: cimg/rust:1.72
     resource_class: small
     steps:
       - checkout

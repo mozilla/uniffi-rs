@@ -66,8 +66,6 @@ impl Config {
 }
 
 impl BindingsConfig for Config {
-    const TOML_KEY: &'static str = "kotlin";
-
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.package_name
             .get_or_insert_with(|| format!("uniffi.{}", ci.namespace()));
@@ -144,11 +142,13 @@ impl<'a> TypeRenderer<'a> {
     }
 
     // Get the package name for an external type
-    fn external_type_package_name(&self, module_path: &str) -> String {
+    fn external_type_package_name(&self, module_path: &str, namespace: &str) -> String {
+        // config overrides are keyed by the crate name, default fallback is the namespace.
         let crate_name = module_path.split("::").next().unwrap();
         match self.kotlin_config.external_packages.get(crate_name) {
             Some(name) => name.clone(),
-            None => crate_name.to_string(),
+            // unreachable in library mode - all deps are in our config with correct namespace.
+            None => format!("uniffi.{namespace}"),
         }
     }
 
@@ -196,6 +196,7 @@ pub struct KotlinWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
+    has_async_fns: bool,
 }
 
 impl<'a> KotlinWrapper<'a> {
@@ -208,6 +209,7 @@ impl<'a> KotlinWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
+            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -216,6 +218,10 @@ impl<'a> KotlinWrapper<'a> {
             .iter_types()
             .map(|t| KotlinCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
+            .chain(
+                self.has_async_fns
+                    .then(|| "uniffiRustFutureContinuationCallback.register".into()),
+            )
             .collect()
     }
 
@@ -300,10 +306,32 @@ impl KotlinCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
             FfiType::ForeignExecutorHandle => "USize".to_string(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
-            FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", Self::ffi_type_label(return_type))
+            FfiType::RustFutureHandle => "Pointer".to_string(),
+            FfiType::RustFutureContinuationCallback => {
+                "UniFffiRustFutureContinuationCallbackType".to_string()
             }
-            FfiType::FutureCallbackData => "USize".to_string(),
+            FfiType::RustFutureContinuationData => "USize".to_string(),
+        }
+    }
+
+    /// Get the name of the interface and class name for an object.
+    ///
+    /// This depends on the `ObjectImpl`:
+    ///
+    /// For struct impls, the class name is the object name and the interface name is derived from that.
+    /// For trait impls, the interface name is the object name, and the class name is derived from that.
+    ///
+    /// This split is needed because of the `FfiConverter` interface.  For struct impls, `lower`
+    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
+    /// implement the interface.
+    fn object_names(&self, obj: &Object) -> (String, String) {
+        let class_name = self.class_name(obj.name());
+        match obj.imp() {
+            ObjectImpl::Struct => (format!("{class_name}Interface"), class_name),
+            ObjectImpl::Trait => {
+                let interface_name = format!("{class_name}Impl");
+                (class_name, interface_name)
+            }
         }
     }
 }
@@ -340,7 +368,7 @@ impl<T: AsType> AsCodeType for T {
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum { name, .. } => Box::new(enum_::EnumCodeType::new(name)),
-            Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
+            Type::Object { name, imp, .. } => Box::new(object::ObjectCodeType::new(name, imp)),
             Type::Record { name, .. } => Box::new(record::RecordCodeType::new(name)),
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
@@ -511,6 +539,10 @@ pub mod filters {
         Ok(KotlinCodeOracle
             .find_as_error(&as_type.as_type())
             .ffi_converter_name())
+    }
+
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+        Ok(KotlinCodeOracle.object_names(obj))
     }
 
     /// Remove the "`" chars we put around function/variable names

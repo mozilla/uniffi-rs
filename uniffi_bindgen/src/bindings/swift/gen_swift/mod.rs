@@ -204,8 +204,6 @@ impl Config {
 }
 
 impl BindingsConfig for Config {
-    const TOML_KEY: &'static str = "swift";
-
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.module_name
             .get_or_insert_with(|| ci.namespace().into());
@@ -342,6 +340,7 @@ pub struct SwiftWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<String>,
+    has_async_fns: bool,
 }
 impl<'a> SwiftWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -353,6 +352,7 @@ impl<'a> SwiftWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
+            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -365,6 +365,10 @@ impl<'a> SwiftWrapper<'a> {
             .iter_types()
             .map(|t| SwiftCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
+            .chain(
+                self.has_async_fns
+                    .then(|| "uniffiInitContinuationCallback".into()),
+            )
             .collect()
     }
 }
@@ -400,7 +404,7 @@ impl SwiftCodeOracle {
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
             Type::Enum { name, .. } => Box::new(enum_::EnumCodeType::new(name)),
-            Type::Object { name, .. } => Box::new(object::ObjectCodeType::new(name)),
+            Type::Object { name, imp, .. } => Box::new(object::ObjectCodeType::new(name, imp)),
             Type::Record { name, .. } => Box::new(record::RecordCodeType::new(name)),
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
@@ -463,10 +467,10 @@ impl SwiftCodeOracle {
             FfiType::ForeignCallback => "ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
-            FfiType::FutureCallback { return_type } => {
-                format!("UniFfiFutureCallback{}", self.ffi_type_label(return_type))
+            FfiType::RustFutureContinuationCallback => "UniFfiRustFutureContinuation".into(),
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+                "UnsafeMutableRawPointer".into()
             }
-            FfiType::FutureCallbackData => "UnsafeMutableRawPointer".into(),
         }
     }
 
@@ -474,7 +478,9 @@ impl SwiftCodeOracle {
         match ffi_type {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
-            | FfiType::FutureCallback { .. } => {
+            | FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationCallback
+            | FfiType::RustFutureContinuationData => {
                 format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
             }
             _ => self.ffi_type_label_raw(ffi_type),
@@ -483,6 +489,25 @@ impl SwiftCodeOracle {
 
     fn ffi_canonical_name(&self, ffi_type: &FfiType) -> String {
         self.ffi_type_label_raw(ffi_type)
+    }
+
+    /// Get the name of the protocol and class name for an object.
+    ///
+    /// For struct impls, the class name is the object name and the protocol name is derived from that.
+    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    ///
+    /// This split is needed because of the `FfiConverter` protocol.  For struct impls, `lower`
+    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
+    /// implement the protocol.
+    fn object_names(&self, obj: &Object) -> (String, String) {
+        let class_name = self.class_name(obj.name());
+        match obj.imp() {
+            ObjectImpl::Struct => (format!("{class_name}Protocol"), class_name),
+            ObjectImpl::Trait => {
+                let protocol_name = format!("{class_name}Impl");
+                (class_name, protocol_name)
+            }
+        }
     }
 }
 
@@ -558,11 +583,12 @@ pub mod filters {
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "size_t".into(),
-            FfiType::FutureCallback { return_type } => format!(
-                "UniFfiFutureCallback{} _Nonnull",
-                SwiftCodeOracle.ffi_type_label_raw(return_type)
-            ),
-            FfiType::FutureCallbackData => "void* _Nonnull".into(),
+            FfiType::RustFutureContinuationCallback => {
+                "UniFfiRustFutureContinuation _Nonnull".into()
+            }
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+                "void* _Nonnull".into()
+            }
         })
     }
 
@@ -619,13 +645,7 @@ pub mod filters {
         ))
     }
 
-    pub fn future_continuation_type(result: &ResultType) -> Result<String, askama::Error> {
-        Ok(format!(
-            "CheckedContinuation<{}, Error>",
-            match &result.return_type {
-                Some(return_type) => type_name(return_type)?,
-                None => "()".into(),
-            }
-        ))
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+        Ok(SwiftCodeOracle.object_names(obj))
     }
 }

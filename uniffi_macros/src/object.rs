@@ -64,8 +64,6 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         unsafe #impl_spec {
             // Don't use a pointer to <T> as that requires a `pub <T>`
             type FfiType = *const ::std::os::raw::c_void;
-            type ReturnType = *const ::std::os::raw::c_void;
-            type FutureCallback = ::uniffi::FutureCallback<Self::ReturnType>;
 
             /// When lowering, we have an owned `Arc` and we transfer that ownership
             /// to the foreign-language code, "leaking" it out of Rust's ownership system
@@ -117,26 +115,13 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
                 <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
-            fn lower_return(v: ::std::sync::Arc<Self>) -> ::std::result::Result<Self::FfiType, ::uniffi::RustBuffer> {
-                Ok(<Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(v))
-            }
-
-            fn invoke_future_callback(
-                callback: Self::FutureCallback,
-                callback_data: *const (),
-                return_value: Self::ReturnType,
-                call_status: ::uniffi::RustCallStatus,
-            ) {
-                callback(callback_data, return_value, call_status);
-            }
-
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(false);
         }
 
-        #lift_ref_impl_spec {
+        unsafe #lift_ref_impl_spec {
             type LiftType = ::std::sync::Arc<Self>;
         }
     }

@@ -80,7 +80,7 @@ pub fn try_read_field(f: &syn::Field) -> TokenStream {
     let ty = &f.ty;
 
     quote! {
-        #ident: <#ty as ::uniffi::FfiConverter<crate::UniFfiTag>>::try_read(buf)?,
+        #ident: <#ty as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?,
     }
 }
 
@@ -216,6 +216,33 @@ pub(crate) fn tagged_impl_header(
     }
 }
 
+pub(crate) fn derive_all_ffi_traits(ty: &Ident, udl_mode: bool) -> TokenStream {
+    if udl_mode {
+        quote! { ::uniffi::derive_ffi_traits!(local #ty); }
+    } else {
+        quote! { ::uniffi::derive_ffi_traits!(blanket #ty); }
+    }
+}
+
+pub(crate) fn derive_ffi_traits(ty: &Ident, udl_mode: bool, trait_names: &[&str]) -> TokenStream {
+    let trait_idents = trait_names
+        .iter()
+        .map(|name| Ident::new(name, Span::call_site()));
+    if udl_mode {
+        quote! {
+            #(
+                ::uniffi::derive_ffi_traits!(impl #trait_idents<crate::UniFfiTag> for #ty);
+            )*
+        }
+    } else {
+        quote! {
+            #(
+                ::uniffi::derive_ffi_traits!(impl<UT> #trait_idents<UT> for #ty);
+            )*
+        }
+    }
+}
+
 /// Custom keywords
 pub mod kw {
     syn::custom_keyword!(async_runtime);
@@ -223,9 +250,14 @@ pub mod kw {
     syn::custom_keyword!(constructor);
     syn::custom_keyword!(default);
     syn::custom_keyword!(flat_error);
-    syn::custom_keyword!(handle_unknown_callback_error);
     syn::custom_keyword!(None);
     syn::custom_keyword!(with_try_read);
+    syn::custom_keyword!(Debug);
+    syn::custom_keyword!(Display);
+    syn::custom_keyword!(Eq);
+    syn::custom_keyword!(Hash);
+    // Not used anymore
+    syn::custom_keyword!(handle_unknown_callback_error);
 }
 
 /// Specifies a type from a dependent crate

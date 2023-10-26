@@ -257,14 +257,6 @@ pub fn export_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
     do_export(attrs, input, true)
 }
 
-/// Generate various support elements, including the FfiConverter implementation,
-/// for a trait interface for the scaffolding code
-#[doc(hidden)]
-#[proc_macro]
-pub fn expand_trait_interface_support(tokens: TokenStream) -> TokenStream {
-    export::ffi_converter_trait_impl(&syn::parse_macro_input!(tokens), true).into()
-}
-
 /// Generate the FfiConverter implementation for an trait interface for the scaffolding code
 #[doc(hidden)]
 #[proc_macro]

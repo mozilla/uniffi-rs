@@ -1,11 +1,25 @@
 {%- if func.is_async() %}
 
-async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
-    {%- call py::setup_args(func) %}
-    return await _rust_call_async(
-        _UniffiLib.{{ func.ffi_func().name() }},
-        {{ func.result_type().borrow()|async_callback_fn }},
-        {% call py::arg_list_lowered(func) %}
+def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
+    return _uniffi_rust_call_async(
+        _UniffiLib.{{ func.ffi_func().name() }}({% call py::arg_list_lowered(func) %}),
+        _UniffiLib.{{func.ffi_rust_future_poll(ci) }},
+        _UniffiLib.{{func.ffi_rust_future_complete(ci) }},
+        _UniffiLib.{{func.ffi_rust_future_free(ci) }},
+        # lift function
+        {%- match func.return_type() %}
+        {%- when Some(return_type) %}
+        {{ return_type|lift_fn }},
+        {%- when None %}
+        lambda val: None,
+        {% endmatch %}
+        # Error FFI converter
+        {%- match func.throws_type() %}
+        {%- when Some(e) %}
+        {{ e|ffi_converter_name }},
+        {%- when None %}
+        None,
+        {%- endmatch %}
     )
 
 {%- else %}

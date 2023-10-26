@@ -1,5 +1,5 @@
 [package]
-name = "uniffi_fixture_metadata"
+name = "uniffi-fixture-metadata"
 version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"

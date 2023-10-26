@@ -94,7 +94,7 @@ pub struct Object {
     // a regular method (albeit with a generated name)
     // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
     pub(super) uniffi_traits: Vec<UniffiTrait>,
-    // We don't include the FfiFunc in the hash calculation, because:
+    // We don't include the FfiFuncs in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
@@ -102,6 +102,9 @@ pub struct Object {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func_free: FfiFunction,
+    // Ffi function to initialize the foreign callback for trait interfaces
+    #[checksum_ignore]
+    pub(super) ffi_init_callback: Option<FfiFunction>,
 }
 
 impl Object {
@@ -122,6 +125,10 @@ impl Object {
 
     pub fn documentation(&self) -> Option<&uniffi_docs::Structure> {
         self.documentation.as_ref()
+    }
+
+    pub fn is_trait_interface(&self) -> bool {
+        matches!(self.imp, ObjectImpl::Trait)
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -161,8 +168,15 @@ impl Object {
         &self.ffi_func_free
     }
 
+    pub fn ffi_init_callback(&self) -> &FfiFunction {
+        self.ffi_init_callback
+            .as_ref()
+            .unwrap_or_else(|| panic!("No ffi_init_callback set for {}", &self.name))
+    }
+
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
         iter::once(&self.ffi_func_free)
+            .chain(&self.ffi_init_callback)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
             .chain(self.methods.iter().map(|f| &f.ffi_func))
             .chain(
@@ -186,6 +200,10 @@ impl Object {
         }];
         self.ffi_func_free.return_type = None;
         self.ffi_func_free.is_object_free_function = true;
+        if self.is_trait_interface() {
+            self.ffi_init_callback =
+                Some(FfiFunction::callback_init(&self.module_path, &self.name));
+        }
 
         for cons in self.constructors.iter_mut() {
             cons.derive_ffi_func();
@@ -232,11 +250,12 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             documentation: None,
             constructors: Default::default(),
             methods: Default::default(),
-            uniffi_traits: meta.uniffi_traits.into_iter().map(Into::into).collect(),
+            uniffi_traits: Default::default(),
             ffi_func_free: FfiFunction {
                 name: ffi_free_name,
                 ..Default::default()
             },
+            ffi_init_callback: None,
         }
     }
 }
@@ -602,6 +621,10 @@ impl Callable for Constructor {
     fn throws_type(&self) -> Option<Type> {
         self.throws_type().cloned()
     }
+
+    fn is_async(&self) -> bool {
+        false
+    }
 }
 
 impl Callable for Method {
@@ -615,6 +638,10 @@ impl Callable for Method {
 
     fn throws_type(&self) -> Option<Type> {
         self.throws_type().cloned()
+    }
+
+    fn is_async(&self) -> bool {
+        self.is_async
     }
 }
 

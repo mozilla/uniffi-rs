@@ -6,10 +6,10 @@ use syn::{
 };
 
 use crate::{
-    enum_::{handle_callback_unexpected_error_fn, rich_error_ffi_converter_impl, variant_metadata},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
-        parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
+        chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw,
+        mod_path, parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
         AttributeSliceExt, UniffiAttributeArgs,
     },
 };
@@ -69,20 +69,9 @@ fn error_ffi_converter_impl(
     udl_mode: bool,
 ) -> TokenStream {
     if attr.flat.is_some() {
-        flat_error_ffi_converter_impl(
-            ident,
-            enum_,
-            udl_mode,
-            attr.with_try_read.is_some(),
-            attr.handle_unknown_callback_error.is_some(),
-        )
+        flat_error_ffi_converter_impl(ident, enum_, udl_mode, attr.with_try_read.is_some())
     } else {
-        rich_error_ffi_converter_impl(
-            ident,
-            enum_,
-            udl_mode,
-            attr.handle_unknown_callback_error.is_some(),
-        )
+        rich_error_ffi_converter_impl(ident, enum_, udl_mode)
     }
 }
 
@@ -94,18 +83,17 @@ fn flat_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     udl_mode: bool,
-    implement_try_read: bool,
-    handle_unknown_callback_error: bool,
+    implement_lift: bool,
 ) -> TokenStream {
     let name = ident_to_string(ident);
-    let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
+    let lower_impl_spec = tagged_impl_header("Lower", ident, udl_mode);
+    let derive_ffi_traits = derive_ffi_traits(ident, udl_mode, &["ConvertError"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
     };
 
-    let write_impl = {
+    let lower_impl = {
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
             let v_ident = &v.ident;
             let idx = Index::from(i + 1);
@@ -113,18 +101,34 @@ fn flat_error_ffi_converter_impl(
             quote! {
                 Self::#v_ident { .. } => {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    <::std::string::String as ::uniffi::FfiConverter<crate::UniFfiTag>>::write(error_msg, buf);
+                    <::std::string::String as ::uniffi::Lower<crate::UniFfiTag>>::write(error_msg, buf);
                 }
             }
         });
 
         quote! {
-            let error_msg = ::std::string::ToString::to_string(&obj);
-            match obj { #(#match_arms)* }
+            #[automatically_derived]
+            unsafe #lower_impl_spec {
+                type FfiType = ::uniffi::RustBuffer;
+
+                fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
+                    let error_msg = ::std::string::ToString::to_string(&obj);
+                    match obj { #(#match_arms)* }
+                }
+
+                fn lower(obj: Self) -> ::uniffi::RustBuffer {
+                    <Self as ::uniffi::Lower<crate::UniFfiTag>>::lower_into_rust_buffer(obj)
+                }
+
+                const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
+                    .concat_str(#mod_path)
+                    .concat_str(#name);
+            }
         }
     };
 
-    let try_read_impl = if implement_try_read {
+    let lift_impl = implement_lift.then(|| {
+        let lift_impl_spec = tagged_impl_header("Lift", ident, udl_mode);
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
             let v_ident = &v.ident;
             let idx = Index::from(i + 1);
@@ -134,42 +138,31 @@ fn flat_error_ffi_converter_impl(
             }
         });
         quote! {
-            Ok(match ::uniffi::deps::bytes::Buf::get_i32(buf) {
-                #(#match_arms)*
-                v => ::uniffi::deps::anyhow::bail!("Invalid #ident enum value: {}", v),
-            })
-        }
-    } else {
-        quote! { ::std::panic!("try_read not supported for flat errors") }
-    };
+            #[automatically_derived]
+            unsafe #lift_impl_spec {
+                type FfiType = ::uniffi::RustBuffer;
 
-    let handle_callback_unexpected_error =
-        handle_callback_unexpected_error_fn(handle_unknown_callback_error);
+                fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
+                    Ok(match ::uniffi::deps::bytes::Buf::get_i32(buf) {
+                        #(#match_arms)*
+                        v => ::uniffi::deps::anyhow::bail!("Invalid #ident enum value: {}", v),
+                    })
+                }
+
+                fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
+                    <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(v)
+                }
+
+                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META;
+            }
+
+        }
+    });
 
     quote! {
-        #[automatically_derived]
-        unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
-            ::uniffi::ffi_converter_default_return!(crate::UniFfiTag);
-
-            fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
-                #write_impl
-            }
-
-            fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
-                #try_read_impl
-            }
-
-            #handle_callback_unexpected_error
-
-            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
-                .concat_str(#mod_path)
-                .concat_str(#name);
-        }
-
-        #lift_ref_impl_spec {
-            type LiftType = Self;
-        }
+        #lower_impl
+        #lift_impl
+        #derive_ffi_traits
     }
 }
 
@@ -211,8 +204,6 @@ pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStr
 pub struct ErrorAttr {
     flat: Option<kw::flat_error>,
     with_try_read: Option<kw::with_try_read>,
-    /// Can this error be used in a callback interface?
-    handle_unknown_callback_error: Option<kw::handle_unknown_callback_error>,
 }
 
 impl UniffiAttributeArgs for ErrorAttr {
@@ -229,10 +220,8 @@ impl UniffiAttributeArgs for ErrorAttr {
                 ..Self::default()
             })
         } else if lookahead.peek(kw::handle_unknown_callback_error) {
-            Ok(Self {
-                handle_unknown_callback_error: input.parse()?,
-                ..Self::default()
-            })
+            // Not used anymore, but still lallowed
+            Ok(Self::default())
         } else {
             Err(lookahead.error())
         }
@@ -242,10 +231,6 @@ impl UniffiAttributeArgs for ErrorAttr {
         Ok(Self {
             flat: either_attribute_arg(self.flat, other.flat)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
-            handle_unknown_callback_error: either_attribute_arg(
-                self.handle_unknown_callback_error,
-                other.handle_unknown_callback_error,
-            )?,
         })
     }
 }

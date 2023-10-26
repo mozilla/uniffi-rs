@@ -75,6 +75,8 @@ pub struct Config {
     cdylib_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    external_packages: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -94,11 +96,19 @@ impl Config {
             "uniffi".into()
         }
     }
+
+    /// Get the package name for a given external namespace.
+    pub fn module_for_namespace(&self, ns: &str) -> String {
+        let ns = ns.to_string().to_snake_case();
+        match self.external_packages.get(&ns) {
+            None => format!(".{ns}"),
+            Some(value) if value.is_empty() => ns,
+            Some(value) => format!("{value}.{ns}"),
+        }
+    }
 }
 
 impl BindingsConfig for Config {
-    const TOML_KEY: &'static str = "python";
-
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.cdylib_name
             .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
@@ -311,13 +321,24 @@ impl PythonCodeOracle {
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
             FfiType::ForeignExecutorCallback => "_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
-            FfiType::FutureCallback { return_type } => {
-                format!(
-                    "_uniffi_future_callback_t({})",
-                    Self::ffi_type_label(return_type),
-                )
+            FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
+            FfiType::RustFutureContinuationCallback => "_UNIFFI_FUTURE_CONTINUATION_T".to_string(),
+            FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
+        }
+    }
+
+    /// Get the name of the protocol and class name for an object.
+    ///
+    /// For struct impls, the class name is the object name and the protocol name is derived from that.
+    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    fn object_names(&self, obj: &Object) -> (String, String) {
+        let class_name = self.class_name(obj.name());
+        match obj.imp() {
+            ObjectImpl::Struct => (format!("{class_name}Protocol"), class_name),
+            ObjectImpl::Trait => {
+                let protocol_name = format!("{class_name}Impl");
+                (class_name, protocol_name)
             }
-            FfiType::FutureCallbackData => "ctypes.c_size_t".to_string(),
         }
     }
 }
@@ -408,23 +429,12 @@ pub mod filters {
         Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
-    // Name of the callback function we pass to Rust to complete an async call
-    pub fn async_callback_fn(result_type: &ResultType) -> Result<String, askama::Error> {
-        let return_string = match &result_type.return_type {
-            Some(t) => PythonCodeOracle.find(t).canonical_name().to_snake_case(),
-            None => "void".into(),
-        };
-        let throws_string = match &result_type.throws_type {
-            Some(t) => PythonCodeOracle.find(t).canonical_name().to_snake_case(),
-            None => "void".into(),
-        };
-        Ok(format!(
-            "_uniffi_async_callback_{return_string}__{throws_string}"
-        ))
-    }
-
     pub fn literal_py(literal: &Literal, as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().literal(literal))
+    }
+
+    pub fn ffi_type(type_: &Type) -> Result<FfiType, askama::Error> {
+        Ok(type_.into())
     }
 
     /// Get the Python syntax for representing a given low-level `FfiType`.
@@ -450,5 +460,10 @@ pub mod filters {
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.enum_variant_name(nm))
+    }
+
+    /// Get the idiomatic Python rendering of an individual enum variant.
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+        Ok(PythonCodeOracle.object_names(obj))
     }
 }

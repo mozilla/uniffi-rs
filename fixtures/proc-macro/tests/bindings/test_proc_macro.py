@@ -33,6 +33,11 @@ three = Three(obj)
 assert(make_zero().inner == "ZERO")
 assert(make_record_with_bytes().some_bytes == bytes([0, 1, 2, 3, 4]))
 
+assert(make_hashmap(1, 2) == {1: 2})
+# fails with AttributeError!? - https://github.com/mozilla/uniffi-rs/issues/1774
+# d = {1, 2}
+# assert(return_hashmap(d) == d)
+
 try:
     always_fails()
 except BasicError.OsError:
@@ -77,4 +82,4 @@ class PyTestCallbackInterface(TestCallbackInterface):
         v = h.take_error(BasicError.InvalidInput())
         return v
 
-test_callback_interface(PyTestCallbackInterface())
+call_callback_interface(PyTestCallbackInterface())

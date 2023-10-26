@@ -231,8 +231,8 @@ pub struct Uuid {
     val: String,
 }
 
-// Use `url::Url` as a custom type, with `String` as the Builtin
-uniffi::custom_type!(Url, String);
+// Use `Uuid` as a custom type, with `String` as the Builtin
+uniffi::custom_type!(Uuid, String);
 
 impl UniffiCustomTypeConverter for Uuid {
     type Builtin = String;
@@ -329,35 +329,6 @@ pub trait Person {
 //     string name();
 //     u32 age();
 // }
-```
-
-### Exception handling in callback interfaces
-
-Most languages allow arbitrary exceptions to be thrown, which presents issues for callback
-interfaces.  If a callback interface function returns a non-Result type, then any exception will
-result in a panic on the Rust side.
-
-To avoid panics, callback interfaces can use `Result<T, E>` types for all return values.  If the callback
-interface implementation throws the exception that corresponds to the `E` parameter, `Err(E)` will
-be returned to the Rust code.  However, in most languages it's still possible for the implementation
-to throw other exceptions.  To avoid panics in those cases, the error type must be wrapped
-with the `#[uniffi(handle_unknown_callback_error)]` attribute and
-`From<UnexpectedUniFFICallbackError>` must be implemented:
-
-```rust
-#[derive(uniffi::Error)]
-#[uniffi(handle_unknown_callback_error)]
-pub enum MyApiError {
-    IOError,
-    ValueError,
-    UnexpectedError { reason: String },
-}
-
-impl From<UnexpectedUniFFICallbackError> for MyApiError {
-    fn from(e: UnexpectedUniFFICallbackError) -> Self {
-        Self::UnexpectedError { reason: e.reason }
-    }
-}
 ```
 
 ## Types from dependent crates

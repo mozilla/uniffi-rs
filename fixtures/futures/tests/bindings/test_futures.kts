@@ -92,6 +92,17 @@ runBlocking {
     assertApproximateTime(time, 200, "async methods")
 }
 
+runBlocking {
+    val megaphone = newMegaphone()
+    val time = measureTimeMillis {
+        val resultAlice = sayAfterWithMegaphone(megaphone, 200U, "Alice")
+
+        assert(resultAlice == "HELLO, ALICE!")
+    }
+
+    assertApproximateTime(time, 200, "async methods")
+}
+
 // Test async method returning optional object
 runBlocking {
     val megaphone = asyncMaybeNewMegaphone(true)
@@ -209,7 +220,7 @@ runBlocking {
 runBlocking {
     val time = measureTimeMillis {
         val job = launch {
-            useSharedResource(SharedResourceOptions(releaseAfterMs=100U, timeoutMs=1000U))
+            useSharedResource(SharedResourceOptions(releaseAfterMs=5000U, timeoutMs=100U))
         }
 
         // Wait some time to ensure the task has locked the shared resource
@@ -233,6 +244,3 @@ runBlocking {
     }
     println("useSharedResource (not canceled): ${time}ms")
 }
-
-// Test that we properly cleaned up future callback references
-assert(uniffiActiveFutureCallbacks.size == 0)

@@ -71,7 +71,7 @@ pub use ffi::{FfiArgument, FfiFunction, FfiType};
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
-    UNIFFI_CONTRACT_VERSION,
+    UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
 
@@ -241,27 +241,38 @@ impl ComponentInterface {
         let fielded = !e.is_flat();
         // For flat errors, we should only generate read() methods if we need them to support
         // callback interface errors
-        let used_in_callback_interface = self
+        let used_in_foreign_interface = self
             .callback_interface_definitions()
             .iter()
             .flat_map(|cb| cb.methods())
+            .chain(
+                self.object_definitions()
+                    .iter()
+                    .filter(|o| o.is_trait_interface())
+                    .flat_map(|o| o.methods()),
+            )
             .any(|m| m.throws_type() == Some(&e.as_type()));
 
-        self.is_name_used_as_error(&e.name) && (fielded || used_in_callback_interface)
+        self.is_name_used_as_error(&e.name) && (fielded || used_in_foreign_interface)
     }
 
     /// Get details about all `Type::External` types.
     /// Returns an iterator of (name, crate_name, kind)
-    pub fn iter_external_types(&self) -> impl Iterator<Item = (&String, String, ExternalKind)> {
+    pub fn iter_external_types(
+        &self,
+    ) -> impl Iterator<Item = (&String, String, ExternalKind, bool)> {
         self.types.iter_known_types().filter_map(|t| match t {
             Type::External {
                 name,
                 module_path,
                 kind,
+                tagged,
+                ..
             } => Some((
                 name,
                 module_path.split("::").next().unwrap().to_string(),
                 *kind,
+                *tagged,
             )),
             _ => None,
         })
@@ -283,10 +294,6 @@ impl ComponentInterface {
     /// Get a specific type
     pub fn get_type(&self, name: &str) -> Option<Type> {
         self.types.get_type_definition(name)
-    }
-
-    pub fn is_callback_interface_throws_type(&self, type_: Type) -> bool {
-        self.callback_interface_throws_types.contains(&type_)
     }
 
     /// Iterate over all types contained in the given item.
@@ -428,6 +435,115 @@ impl ComponentInterface {
         }
     }
 
+    /// Builtin FFI function to set the Rust Future continuation callback
+    pub fn ffi_rust_future_continuation_callback_set(&self) -> FfiFunction {
+        FfiFunction {
+            name: format!(
+                "ffi_{}_rust_future_continuation_callback_set",
+                self.ffi_namespace()
+            ),
+            arguments: vec![FfiArgument {
+                name: "callback".to_owned(),
+                type_: FfiType::RustFutureContinuationCallback,
+            }],
+            return_type: None,
+            is_async: false,
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    /// Builtin FFI function to poll a Rust future.
+    pub fn ffi_rust_future_poll(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+        FfiFunction {
+            name: self.rust_future_ffi_fn_name("rust_future_poll", return_ffi_type),
+            is_async: false,
+            arguments: vec![
+                FfiArgument {
+                    name: "handle".to_owned(),
+                    type_: FfiType::RustFutureHandle,
+                },
+                // Data to pass to the continuation
+                FfiArgument {
+                    name: "uniffi_callback".to_owned(),
+                    type_: FfiType::RustFutureContinuationData,
+                },
+            ],
+            return_type: None,
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    /// Builtin FFI function to complete a Rust future and get it's result.
+    ///
+    /// We generate one of these for each FFI return type.
+    pub fn ffi_rust_future_complete(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+        FfiFunction {
+            name: self.rust_future_ffi_fn_name("rust_future_complete", return_ffi_type.clone()),
+            is_async: false,
+            arguments: vec![FfiArgument {
+                name: "handle".to_owned(),
+                type_: FfiType::RustFutureHandle,
+            }],
+            return_type: return_ffi_type,
+            has_rust_call_status_arg: true,
+            is_object_free_function: false,
+        }
+    }
+
+    /// Builtin FFI function for cancelling a Rust Future
+    pub fn ffi_rust_future_cancel(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+        FfiFunction {
+            name: self.rust_future_ffi_fn_name("rust_future_cancel", return_ffi_type),
+            is_async: false,
+            arguments: vec![FfiArgument {
+                name: "handle".to_owned(),
+                type_: FfiType::RustFutureHandle,
+            }],
+            return_type: None,
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    /// Builtin FFI function for freeing a Rust Future
+    pub fn ffi_rust_future_free(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+        FfiFunction {
+            name: self.rust_future_ffi_fn_name("rust_future_free", return_ffi_type),
+            is_async: false,
+            arguments: vec![FfiArgument {
+                name: "handle".to_owned(),
+                type_: FfiType::RustFutureHandle,
+            }],
+            return_type: None,
+            has_rust_call_status_arg: false,
+            is_object_free_function: false,
+        }
+    }
+
+    fn rust_future_ffi_fn_name(&self, base_name: &str, return_ffi_type: Option<FfiType>) -> String {
+        let namespace = self.ffi_namespace();
+        match return_ffi_type {
+            Some(t) => match t {
+                FfiType::UInt8 => format!("ffi_{namespace}_{base_name}_u8"),
+                FfiType::Int8 => format!("ffi_{namespace}_{base_name}_i8"),
+                FfiType::UInt16 => format!("ffi_{namespace}_{base_name}_u16"),
+                FfiType::Int16 => format!("ffi_{namespace}_{base_name}_i16"),
+                FfiType::UInt32 => format!("ffi_{namespace}_{base_name}_u32"),
+                FfiType::Int32 => format!("ffi_{namespace}_{base_name}_i32"),
+                FfiType::UInt64 => format!("ffi_{namespace}_{base_name}_u64"),
+                FfiType::Int64 => format!("ffi_{namespace}_{base_name}_i64"),
+                FfiType::Float32 => format!("ffi_{namespace}_{base_name}_f32"),
+                FfiType::Float64 => format!("ffi_{namespace}_{base_name}_f64"),
+                FfiType::RustArcPtr(_) => format!("ffi_{namespace}_{base_name}_pointer"),
+                FfiType::RustBuffer(_) => format!("ffi_{namespace}_{base_name}_rust_buffer"),
+                _ => unimplemented!("FFI return type: {t:?}"),
+            },
+            None => format!("ffi_{namespace}_{base_name}_void"),
+        }
+    }
+
     /// Does this interface contain async functions?
     pub fn has_async_fns(&self) -> bool {
         self.iter_ffi_function_definitions().any(|f| f.is_async())
@@ -459,8 +575,20 @@ impl ComponentInterface {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
+            .chain(self.iter_futures_ffi_function_definitons())
             .chain(self.iter_checksum_ffi_functions())
             .chain(self.ffi_foreign_executor_callback_set())
+            .chain([self.ffi_uniffi_contract_version()])
+    }
+
+    /// Alternate version of iter_ffi_function_definitions for languages that don't support async
+    pub fn iter_ffi_function_definitions_non_async(
+        &self,
+    ) -> impl Iterator<Item = FfiFunction> + '_ {
+        self.iter_user_ffi_function_definitions()
+            .cloned()
+            .chain(self.iter_rust_buffer_ffi_function_definitions())
+            .chain(self.iter_checksum_ffi_functions())
             .chain([self.ffi_uniffi_contract_version()])
     }
 
@@ -494,6 +622,40 @@ impl ComponentInterface {
             self.ffi_rustbuffer_reserve(),
         ]
         .into_iter()
+    }
+
+    /// List all FFI functions definitions for async functionality.
+    pub fn iter_futures_ffi_function_definitons(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+        let all_possible_return_ffi_types = [
+            Some(FfiType::UInt8),
+            Some(FfiType::Int8),
+            Some(FfiType::UInt16),
+            Some(FfiType::Int16),
+            Some(FfiType::UInt32),
+            Some(FfiType::Int32),
+            Some(FfiType::UInt64),
+            Some(FfiType::Int64),
+            Some(FfiType::Float32),
+            Some(FfiType::Float64),
+            // RustBuffer and RustArcPtr have an inner field which doesn't affect the rust future
+            // complete scaffolding function, so we just use a placeholder value here.
+            Some(FfiType::RustArcPtr("".to_owned())),
+            Some(FfiType::RustBuffer(None)),
+            None,
+        ];
+
+        iter::once(self.ffi_rust_future_continuation_callback_set()).chain(
+            all_possible_return_ffi_types
+                .into_iter()
+                .flat_map(|return_type| {
+                    [
+                        self.ffi_rust_future_poll(return_type.clone()),
+                        self.ffi_rust_future_cancel(return_type.clone()),
+                        self.ffi_rust_future_free(return_type.clone()),
+                        self.ffi_rust_future_complete(return_type),
+                    ]
+                }),
+        )
     }
 
     /// The ffi_foreign_executor_callback_set FFI function
@@ -618,14 +780,10 @@ impl ComponentInterface {
         if self.functions.iter().any(|f| f.name == defn.name) {
             bail!("duplicate function definition: \"{}\"", defn.name);
         }
-        if !matches!(self.types.get_type_definition(defn.name()), None) {
+        if self.types.get_type_definition(defn.name()).is_some() {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
         self.types.add_known_types(defn.iter_types())?;
-        if defn.is_async() {
-            // Async functions depend on the foreign executor
-            self.types.add_known_type(&Type::ForeignExecutor)?;
-        }
         self.functions.push(defn);
 
         Ok(())
@@ -648,13 +806,17 @@ impl ComponentInterface {
             .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &method.object_name))?;
 
         self.types.add_known_types(method.iter_types())?;
-        if method.is_async() {
-            // Async functions depend on the foreign executor
-            self.types.add_known_type(&Type::ForeignExecutor)?;
-        }
         method.object_impl = object.imp;
         object.methods.push(method);
+        Ok(())
+    }
 
+    pub(super) fn add_uniffitrait_meta(&mut self, meta: UniffiTraitMetadata) -> Result<()> {
+        let object = get_object(&mut self.objects, meta.self_name())
+            .ok_or_else(|| anyhow!("add_uniffitrait_meta: object not found"))?;
+        let ut: UniffiTrait = meta.into();
+        self.types.add_known_types(ut.iter_types())?;
+        object.uniffi_traits.push(ut);
         Ok(())
     }
 
@@ -720,7 +882,7 @@ impl ComponentInterface {
         // Because functions aren't first class types, we need to check here that
         // a function name hasn't already been used as a type name.
         for f in self.functions.iter() {
-            if !matches!(self.types.get_type_definition(f.name()), None) {
+            if self.types.get_type_definition(f.name()).is_some() {
                 bail!("Conflicting type definition for \"{}\"", f.name());
             }
         }

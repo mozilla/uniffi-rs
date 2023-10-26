@@ -1,0 +1,37 @@
+error[E0277]: the trait bound `Result<(), ErrorType>: Lift<UniFfiTag>` is not satisfied
+  --> tests/ui/invalid_types_in_signatures.rs:17:1
+   |
+17 | #[uniffi::export]
+   | ^^^^^^^^^^^^^^^^^ the trait `Lift<UniFfiTag>` is not implemented for `Result<(), ErrorType>`
+   |
+   = help: the following other types implement trait `Lift<UT>`:
+             bool
+             i8
+             i16
+             i32
+             i64
+             u8
+             u16
+             u32
+           and $N others
+   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `Result<(), ErrorType>: Lower<UniFfiTag>` is not satisfied
+  --> tests/ui/invalid_types_in_signatures.rs:20:1
+   |
+20 | #[uniffi::export]
+   | ^^^^^^^^^^^^^^^^^ the trait `Lower<UniFfiTag>` is not implemented for `Result<(), ErrorType>`
+   |
+   = help: the following other types implement trait `Lower<UT>`:
+             bool
+             i8
+             i16
+             i32
+             i64
+             u8
+             u16
+             u32
+           and $N others
+   = note: required for `Option<Result<(), ErrorType>>` to implement `Lower<UniFfiTag>`
+   = note: required for `Option<Result<(), ErrorType>>` to implement `LowerReturn<UniFfiTag>`
+   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)

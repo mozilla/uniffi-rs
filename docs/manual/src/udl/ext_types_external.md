@@ -29,6 +29,9 @@ dictionary ConsumingDict {
 
 ```
 
+If in the above example, `DemoDict` was actually "exported" via a procmacro
+you should instead use `ExternExport`
+
 (Note the special type `extern` used on the `typedef`. It is not currently enforced that the
 literal `extern` is used, but we hope to enforce this later, so please use it!)
 
@@ -76,9 +79,6 @@ By default, UniFFI assumes that the Kotlin module name matches the Rust crate na
 # Map the crate names from [External={name}] into Kotlin package names
 rust-crate-name = "kotlin.package.name"
 ```
-
-See the [`ext-types` fixture](https://github.com/mozilla/uniffi-rs/blob/main/fixtures/ext-types/lib/uniffi.toml)
-for an example
 
 ### Swift
 

@@ -31,7 +31,7 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(d.signed64, 9223372036854775807)
         self.assertEqual(d.maybe_signed64, 0)
         self.assertEqual(d.coveralls.get_name(), "some_dict")
-        self.assertEqual(d.test_trait.name(), "trait 2")
+        self.assertEqual(d.test_trait.name(), "node-2")
 
         # floats should be "close enough" - although it's mildly surprising that
         # we need to specify `places=6` whereas the default is 7.
@@ -278,21 +278,140 @@ class TestCoverall(unittest.TestCase):
         coveralls = Coveralls("test_bytes")
         self.assertEqual(coveralls.reverse(b"123"), b"321")
 
+class PyGetters:
+    def get_bool(self, v, arg2):
+        return v ^ arg2
+
+    def get_string(self, v, arg2):
+        if v == "too-many-holes":
+            raise CoverallError.TooManyHoles
+        elif v == "unexpected-error":
+            raise RuntimeError("unexpected error")
+        elif arg2:
+            return v.upper()
+        else:
+            return v
+
+    def get_option(self, v, arg2):
+        if v == "os-error":
+            raise ComplexError.OsError(100, 200)
+        elif v == "unknown-error":
+            raise ComplexError.UnknownError
+        elif arg2:
+            if v:
+                return v.upper()
+            else:
+                return None
+        else:
+            return v
+
+    def get_list(self, v, arg2):
+        if arg2:
+            return v
+        else:
+            return []
+
+    def get_nothing(self, _v):
+        return None
+
+class PyNode:
+    def __init__(self):
+        self.parent = None
+
+    def name(self):
+        return "node-py"
+
+    def set_parent(self, parent):
+        self.parent = parent
+
+    def get_parent(self):
+        return self.parent
+
+    def strong_count(self):
+        return 0 # TODO
+
 class TraitsTest(unittest.TestCase):
-    def test_simple(self):
+    # Test traits implemented in Rust
+    # def test_rust_getters(self):
+    #     test_getters(None)
+    #     self.check_getters_from_python(make_rust_getters())
+
+    # Test traits implemented in Rust
+    def test_python_getters(self):
+        test_getters(PyGetters())
+        #self.check_getters_from_python(PyGetters())
+
+    def check_getters_from_python(self, getters):
+        self.assertEqual(getters.get_bool(True, True), False);
+        self.assertEqual(getters.get_bool(True, False), True);
+        self.assertEqual(getters.get_bool(False, True), True);
+        self.assertEqual(getters.get_bool(False, False), False);
+
+        self.assertEqual(getters.get_string("hello", False), "hello");
+        self.assertEqual(getters.get_string("hello", True), "HELLO");
+
+        self.assertEqual(getters.get_option("hello", True), "HELLO");
+        self.assertEqual(getters.get_option("hello", False), "hello");
+        self.assertEqual(getters.get_option("", True), None);
+
+        self.assertEqual(getters.get_list([1, 2, 3], True), [1, 2, 3]);
+        self.assertEqual(getters.get_list([1, 2, 3], False), [])
+
+        self.assertEqual(getters.get_nothing("hello"), None);
+
+        with self.assertRaises(CoverallError.TooManyHoles):
+            getters.get_string("too-many-holes", True)
+
+        with self.assertRaises(ComplexError.OsError) as cm:
+            getters.get_option("os-error", True)
+        self.assertEqual(cm.exception.code, 100)
+        self.assertEqual(cm.exception.extended_code, 200)
+
+        with self.assertRaises(ComplexError.UnknownError):
+            getters.get_option("unknown-error", True)
+
+        with self.assertRaises(InternalError):
+            getters.get_string("unexpected-error", True)
+
+    def test_path(self):
+        # Get traits creates 2 objects that implement the trait
         traits = get_traits()
-        self.assertEqual(traits[0].name(), "trait 1")
-        self.assertEqual(traits[0].number(), 1)
+        self.assertEqual(traits[0].name(), "node-1")
+        # Note: strong counts are 1 more than you might expect, because the strong_count() method
+        # holds a strong ref.
         self.assertEqual(traits[0].strong_count(), 2)
 
-        self.assertEqual(traits[1].name(), "trait 2")
-        self.assertEqual(traits[1].number(), 2)
+        self.assertEqual(traits[1].name(), "node-2")
         self.assertEqual(traits[1].strong_count(), 2)
 
-        traits[0].take_other(traits[1])
-        self.assertEqual(traits[1].strong_count(), 3)
-        self.assertEqual(traits[0].get_other().name(), "trait 2")
-        traits[0].take_other(None)
+        # Let's try connecting them together
+        traits[0].set_parent(traits[1])
+        # Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
+        # python impl before passing it to `set_parent()`
+        self.assertEqual(traits[1].strong_count(), 2)
+        self.assertEqual(ancestor_names(traits[0]), ["node-2"])
+        self.assertEqual(ancestor_names(traits[1]), [])
+        self.assertEqual(traits[0].get_parent().name(), "node-2")
+
+        # Throw in a Python implementation of the trait
+        # The ancestry chain now goes traits[0] -> traits[1] -> py_node
+        py_node = PyNode()
+        traits[1].set_parent(py_node)
+        self.assertEqual(ancestor_names(traits[0]), ["node-2", "node-py"])
+        self.assertEqual(ancestor_names(traits[1]), ["node-py"])
+        self.assertEqual(ancestor_names(py_node), [])
+
+        # Rotating things.
+        # The ancestry chain now goes py_node -> traits[0] -> traits[1]
+        traits[1].set_parent(None)
+        py_node.set_parent(traits[0])
+        self.assertEqual(ancestor_names(py_node), ["node-1", "node-2"])
+        self.assertEqual(ancestor_names(traits[0]), ["node-2"])
+        self.assertEqual(ancestor_names(traits[1]), [])
+
+        # Make sure we don't crash when undoing it all
+        py_node.set_parent(None)
+        traits[0].set_parent(None)
 
 if __name__=='__main__':
     unittest.main()

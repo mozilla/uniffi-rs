@@ -77,11 +77,11 @@
 
 
 {%- macro async(func) %}
-{%- if func.is_async() %}async{% endif %}
+{%- if func.is_async() %}async {% endif %}
 {%- endmacro -%}
 
 {%- macro throws(func) %}
-{%- if func.throws() %}throws{% endif %}
+{%- if func.throws() %}throws {% endif %}
 {%- endmacro -%}
 
 {%- macro try(func) %}

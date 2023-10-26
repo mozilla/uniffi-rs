@@ -1,6 +1,10 @@
 {%- let obj = ci|get_object_definition(name) %}
+{%- let (protocol_name, impl_name) = obj|object_names %}
+{%- let methods = obj.methods() %}
 
-class {{ type_name }}: {% let struct = obj %}{% include "StructureDocsTemplate.py" %}
+{% include "Protocol.py" %}
+
+class {{ impl_name }}:
     _pointer: ctypes.c_void_p
 
 {%- match obj.primary_constructor() %}
@@ -68,25 +72,40 @@ class {{ type_name }}: {% let struct = obj %}{% include "StructureDocsTemplate.p
 {%      endmatch %}
 {% endfor %}
 
+{%- if obj.is_trait_interface() %}
+{%- let callback_handler_class = format!("UniffiCallbackInterface{}", name) %}
+{%- let callback_handler_obj = format!("uniffiCallbackInterface{}", name) %}
+{%- let ffi_init_callback = obj.ffi_init_callback() %}
+{% include "CallbackInterfaceImpl.py" %}
+{%- endif %}
 
 class {{ ffi_converter_name }}:
+    {%- if obj.is_trait_interface() %}
+    _handle_map = ConcurrentHandleMap()
+    {%- endif %}
+
+    @staticmethod
+    def lift(value: int):
+        return {{ impl_name }}._make_instance_(value)
+
+    @staticmethod
+    def lower(value: {{ protocol_name }}):
+        {%- match obj.imp() %}
+        {%- when ObjectImpl::Struct %}
+        if not isinstance(value, {{ impl_name }}):
+            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
+        return value._pointer
+        {%- when ObjectImpl::Trait %}
+        return {{ ffi_converter_name }}._handle_map.insert(value)
+        {%- endmatch %}
+
     @classmethod
-    def read(cls, buf):
+    def read(cls, buf: _UniffiRustBuffer):
         ptr = buf.read_u64()
         if ptr == 0:
             raise InternalError("Raw pointer value was null")
         return cls.lift(ptr)
 
     @classmethod
-    def write(cls, value, buf):
-        if not isinstance(value, {{ type_name }}):
-            raise TypeError("Expected {{ type_name }} instance, {} found".format(type(value).__name__))
+    def write(cls, value: {{ protocol_name }}, buf: _UniffiRustBuffer):
         buf.write_u64(cls.lower(value))
-
-    @staticmethod
-    def lift(value):
-        return {{ type_name }}._make_instance_(value)
-
-    @staticmethod
-    def lower(value):
-        return value._pointer

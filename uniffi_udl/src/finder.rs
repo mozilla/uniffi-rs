@@ -130,7 +130,8 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 },
             )
         } else {
-            let kind = attrs.external_kind().expect("ExternalKind missing");
+            let kind = attrs.external_kind().expect("External missing");
+            let tagged = attrs.external_tagged().expect("External missing");
             // A crate which can supply an `FfiConverter`.
             // We don't reference `self._type`, so ideally we could insist on it being
             // the literal 'extern' but that's tricky
@@ -138,8 +139,10 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 name,
                 Type::External {
                     name: name.to_string(),
+                    namespace: "".to_string(), // we don't know this yet
                     module_path: attrs.get_crate_name(),
                     kind,
+                    tagged,
                 },
             )
         }
@@ -249,16 +252,16 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass }
+                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass, .. }
                                                                                  if name == "ExternalType" && module_path == "crate-name")
                 );
                 assert!(
-                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface }
+                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface, .. }
                                                                                  if name == "ExternalInterfaceType" && module_path == "crate-name")
                 );
                 assert!(
                     matches!(types.get_type_definition("CustomType").unwrap(), Type::Custom { name, builtin, ..}
-                                                                                     if name == "CustomType" && builtin == Box::new(Type::String))
+                                                                                     if name == "CustomType" && *builtin == Type::String)
                 );
             },
         );

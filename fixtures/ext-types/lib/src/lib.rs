@@ -2,7 +2,7 @@ use custom_types::Handle;
 use ext_types_external_crate::{ExternalCrateDictionary, ExternalCrateInterface};
 use ext_types_guid::Guid;
 use std::sync::Arc;
-use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneType};
+use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneType};
 use url::Url;
 
 pub struct CombinedType {
@@ -111,6 +111,10 @@ fn get_maybe_uniffi_one_enums(es: Vec<Option<UniffiOneEnum>>) -> Vec<Option<Unif
 
 fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
+}
+
+fn get_uniffi_one_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
+    t
 }
 
 fn get_external_crate_interface(val: String) -> Arc<ExternalCrateInterface> {

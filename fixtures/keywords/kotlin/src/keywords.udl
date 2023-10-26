@@ -9,7 +9,7 @@ interface break {
 
 callback interface continue {
     return return(return v);
-    continue? continue(sequence<continue> continue);
+    continue? continue();
     record<u8, break> break(break? v);
     while while(sequence<while> while);
     record<u8, sequence<class>>? class(record<u8, sequence<class>> v);
@@ -32,7 +32,6 @@ interface false {
     true(u8 object);
 };
 
-[Error]
 enum class {
     "object",
 };

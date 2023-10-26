@@ -54,14 +54,11 @@ pub enum FfiType {
     ForeignExecutorHandle,
     /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
     ForeignExecutorCallback,
-    /// Pointer to a callback function to complete an async Rust function
-    FutureCallback {
-        /// Note: `return_type` is not optional because we have a void callback parameter like we
-        /// can have a void return.  Instead, we use `UInt8` as a placeholder value.
-        return_type: Box<FfiType>,
-    },
-    /// Opaque pointer passed to the FutureCallback
-    FutureCallbackData,
+    /// Pointer to a Rust future
+    RustFutureHandle,
+    /// Continuation function for a Rust future
+    RustFutureContinuationCallback,
+    RustFutureContinuationData,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }
@@ -153,6 +150,19 @@ pub struct FfiFunction {
 }
 
 impl FfiFunction {
+    pub fn callback_init(module_path: &str, trait_name: &str) -> Self {
+        Self {
+            name: uniffi_meta::init_callback_fn_symbol_name(module_path, trait_name),
+            arguments: vec![FfiArgument {
+                name: "handle".to_string(),
+                type_: FfiType::ForeignCallback,
+            }],
+            return_type: None,
+            has_rust_call_status_arg: false,
+            ..Self::default()
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -184,28 +194,8 @@ impl FfiFunction {
     ) {
         self.arguments = args.into_iter().collect();
         if self.is_async() {
-            self.arguments.extend([
-                // Used to schedule polls
-                FfiArgument {
-                    name: "uniffi_executor".into(),
-                    type_: FfiType::ForeignExecutorHandle,
-                },
-                // Invoked when the future is ready
-                FfiArgument {
-                    name: "uniffi_callback".into(),
-                    type_: FfiType::FutureCallback {
-                        return_type: Box::new(return_type.unwrap_or(FfiType::UInt8)),
-                    },
-                },
-                // Data pointer passed to the callback
-                FfiArgument {
-                    name: "uniffi_callback_data".into(),
-                    type_: FfiType::FutureCallbackData,
-                },
-            ]);
-            // Async scaffolding functions never return values.  Instead, the callback is invoked
-            // when the Future is ready.
-            self.return_type = None;
+            self.return_type = Some(FfiType::RustFutureHandle);
+            self.has_rust_call_status_arg = false;
         } else {
             self.return_type = return_type;
         }

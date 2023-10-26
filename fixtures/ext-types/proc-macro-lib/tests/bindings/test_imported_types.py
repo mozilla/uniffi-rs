@@ -6,7 +6,7 @@ import unittest
 import urllib
 from ext_types_guid import *
 from imported_types_lib import *
-from uniffi_one import *
+from uniffi_one_ns import *
 
 class TestIt(unittest.TestCase):
     def test_it(self):

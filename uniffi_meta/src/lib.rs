@@ -12,7 +12,7 @@ mod ffi_names;
 pub use ffi_names::*;
 
 mod group;
-pub use group::{group_metadata, MetadataGroup};
+pub use group::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
 
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
@@ -26,7 +26,7 @@ mod metadata;
 // `docs/uniffi-versioning.md` for details.
 //
 // Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-pub const UNIFFI_CONTRACT_VERSION: u32 = 23;
+pub const UNIFFI_CONTRACT_VERSION: u32 = 24;
 
 /// Similar to std::hash::Hash.
 ///
@@ -323,7 +323,6 @@ pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
     pub imp: types::ObjectImpl,
-    pub uniffi_traits: Vec<UniffiTraitMetadata>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -357,6 +356,48 @@ pub enum UniffiTraitMetadata {
     Hash {
         hash: MethodMetadata,
     },
+}
+
+impl UniffiTraitMetadata {
+    fn module_path(&self) -> &String {
+        &match self {
+            UniffiTraitMetadata::Debug { fmt } => fmt,
+            UniffiTraitMetadata::Display { fmt } => fmt,
+            UniffiTraitMetadata::Eq { eq, .. } => eq,
+            UniffiTraitMetadata::Hash { hash } => hash,
+        }
+        .module_path
+    }
+
+    pub fn self_name(&self) -> &String {
+        &match self {
+            UniffiTraitMetadata::Debug { fmt } => fmt,
+            UniffiTraitMetadata::Display { fmt } => fmt,
+            UniffiTraitMetadata::Eq { eq, .. } => eq,
+            UniffiTraitMetadata::Hash { hash } => hash,
+        }
+        .self_name
+    }
+}
+
+#[repr(u8)]
+pub enum UniffiTraitDiscriminants {
+    Debug,
+    Display,
+    Eq,
+    Hash,
+}
+
+impl UniffiTraitDiscriminants {
+    pub fn from(v: u8) -> anyhow::Result<Self> {
+        Ok(match v {
+            0 => UniffiTraitDiscriminants::Debug,
+            1 => UniffiTraitDiscriminants::Display,
+            2 => UniffiTraitDiscriminants::Eq,
+            3 => UniffiTraitDiscriminants::Hash,
+            _ => anyhow::bail!("invalid trait discriminant {v}"),
+        })
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -410,11 +451,30 @@ pub enum Metadata {
     Method(MethodMetadata),
     TraitMethod(TraitMethodMetadata),
     CustomType(CustomTypeMetadata),
+    UniffiTrait(UniffiTraitMetadata),
 }
 
 impl Metadata {
     pub fn read(data: &[u8]) -> anyhow::Result<Self> {
         read_metadata(data)
+    }
+
+    pub(crate) fn module_path(&self) -> &String {
+        match self {
+            Metadata::Namespace(meta) => &meta.crate_name,
+            Metadata::UdlFile(meta) => &meta.module_path,
+            Metadata::Func(meta) => &meta.module_path,
+            Metadata::Constructor(meta) => &meta.module_path,
+            Metadata::Method(meta) => &meta.module_path,
+            Metadata::Record(meta) => &meta.module_path,
+            Metadata::Enum(meta) => &meta.module_path,
+            Metadata::Object(meta) => &meta.module_path,
+            Metadata::CallbackInterface(meta) => &meta.module_path,
+            Metadata::TraitMethod(meta) => &meta.module_path,
+            Metadata::Error(meta) => meta.module_path(),
+            Metadata::CustomType(meta) => &meta.module_path,
+            Metadata::UniffiTrait(meta) => meta.module_path(),
+        }
     }
 }
 
@@ -487,5 +547,11 @@ impl From<TraitMethodMetadata> for Metadata {
 impl From<CustomTypeMetadata> for Metadata {
     fn from(v: CustomTypeMetadata) -> Self {
         Self::CustomType(v)
+    }
+}
+
+impl From<UniffiTraitMetadata> for Metadata {
+    fn from(v: UniffiTraitMetadata) -> Self {
+        Self::UniffiTrait(v)
     }
 }

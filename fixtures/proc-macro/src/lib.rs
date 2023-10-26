@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 mod callback_interface;
 
@@ -117,12 +117,23 @@ fn take_two(two: Two) -> String {
 }
 
 #[uniffi::export]
+fn make_hashmap(k: i8, v: u64) -> HashMap<i8, u64> {
+    HashMap::from([(k, v)])
+}
+
+// XXX - fails to call this from python - https://github.com/mozilla/uniffi-rs/issues/1774
+#[uniffi::export]
+fn return_hashmap(h: HashMap<i8, u64>) -> HashMap<i8, u64> {
+    h
+}
+
+#[uniffi::export]
 fn take_record_with_bytes(rwb: RecordWithBytes) -> Vec<u8> {
     rwb.some_bytes
 }
 
 #[uniffi::export]
-fn test_callback_interface(cb: Box<dyn TestCallbackInterface>) {
+fn call_callback_interface(cb: Box<dyn TestCallbackInterface>) {
     cb.do_nothing();
     assert_eq!(cb.add(1, 1), 2);
     assert_eq!(cb.optional(Some(1)), 1);
@@ -177,7 +188,6 @@ fn enum_identity(value: MaybeBool) -> MaybeBool {
 }
 
 #[derive(thiserror::Error, uniffi::Error, Debug, PartialEq, Eq)]
-#[uniffi(handle_unknown_callback_error)]
 pub enum BasicError {
     #[error("InvalidInput")]
     InvalidInput,

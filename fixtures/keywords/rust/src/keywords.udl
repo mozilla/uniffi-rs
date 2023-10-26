@@ -7,7 +7,7 @@ namespace keywords_rust {
 
 interface break {
     return return(return v);
-    sequence<continue>? continue(sequence<continue> continue);
+    void continue(sequence<continue> continue);
     record<u8, break>? break(record<u8, break> v);
     void yield(u8 async);
     void async(u8? yield);
@@ -15,7 +15,7 @@ interface break {
 
 callback interface continue {
     return return(return v);
-    continue? continue(sequence<continue> continue);
+    continue? continue();
     record<u8, break> break(break? v);
     while while(sequence<while> while);
     record<u8, sequence<yield>>? yield(record<u8, sequence<yield>> v);
@@ -28,7 +28,7 @@ dictionary return {
 
 dictionary while {
     return return;
-    sequence<continue> continue;
+    sequence<yield> yield;
     record<u8, break> break;
     break? for;
     sequence<return> async;
@@ -39,7 +39,6 @@ interface async {
     as(u8 async);
 };
 
-[Error]
 enum yield {
     "async",
 };
