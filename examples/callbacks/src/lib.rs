@@ -21,6 +21,7 @@ impl From<uniffi::UnexpectedUniFFICallbackError> for TelephoneError {
 }
 
 // SIM cards.
+#[uniffi::trait_interface]
 pub trait SimCard: Send + Sync {
     fn name(&self) -> String;
 }
@@ -39,6 +40,7 @@ fn get_sim_cards() -> Vec<Arc<dyn SimCard>> {
 }
 
 // The call-answer, callback interface.
+#[uniffi::trait_interface]
 pub trait CallAnswerer {
     fn answer(&self) -> Result<String, TelephoneError>;
 }

@@ -6,9 +6,10 @@ mod tests {
     use cargo_metadata::Message;
     use libloading::{Library, Symbol};
     use std::ffi::CString;
-    use std::os::raw::c_void;
     use std::process::{Command, Stdio};
-    use uniffi::{FfiConverter, ForeignCallback, RustBuffer, RustCallStatus, RustCallStatusCode};
+    use uniffi::{
+        FfiConverter, ForeignCallback, Handle, RustBuffer, RustCallStatus, RustCallStatusCode,
+    };
     use uniffi_bindgen::ComponentInterface;
 
     struct UniFfiTag;
@@ -149,26 +150,27 @@ mod tests {
                 .ffi_func()
                 .name(),
         );
-        let coveralls_new: Symbol<
-            unsafe extern "C" fn(RustBuffer, &mut RustCallStatus) -> *const c_void,
-        > = get_symbol(
-            &library,
-            object_def.primary_constructor().unwrap().ffi_func().name(),
-        );
+        let coveralls_new: Symbol<unsafe extern "C" fn(RustBuffer, &mut RustCallStatus) -> Handle> =
+            get_symbol(
+                &library,
+                object_def.primary_constructor().unwrap().ffi_func().name(),
+            );
         let coveralls_get_name: Symbol<
-            unsafe extern "C" fn(*const c_void, &mut RustCallStatus) -> RustBuffer,
+            unsafe extern "C" fn(Handle, &mut RustCallStatus) -> RustBuffer,
         > = get_symbol(
             &library,
             object_def.get_method("get_name").ffi_func().name(),
         );
-        let coveralls_free: Symbol<unsafe extern "C" fn(*const c_void, &mut RustCallStatus) -> ()> =
+        let coveralls_inc_ref: Symbol<unsafe extern "C" fn(Handle, &mut RustCallStatus) -> ()> =
+            get_symbol(&library, object_def.ffi_object_inc_ref().name());
+        let coveralls_free: Symbol<unsafe extern "C" fn(Handle, &mut RustCallStatus) -> ()> =
             get_symbol(&library, object_def.ffi_object_free().name());
 
         let num_alive = unsafe { get_num_alive(&mut call_status) };
         assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(num_alive, 0);
 
-        let obj_id = unsafe {
+        let obj_handle = unsafe {
             coveralls_new(
                 <String as FfiConverter<UniFfiTag>>::lower("TestName".into()),
                 &mut call_status,
@@ -176,7 +178,10 @@ mod tests {
         };
         assert_eq!(call_status.code, RustCallStatusCode::Success);
 
-        let name_buf = unsafe { coveralls_get_name(obj_id, &mut call_status) };
+        unsafe { coveralls_inc_ref(obj_handle, &mut call_status) };
+        assert_eq!(call_status.code, RustCallStatusCode::Success);
+
+        let name_buf = unsafe { coveralls_get_name(obj_handle, &mut call_status) };
         assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(
             <String as FfiConverter<UniFfiTag>>::try_lift(name_buf).unwrap(),
@@ -187,7 +192,7 @@ mod tests {
         assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(num_alive, 1);
 
-        unsafe { coveralls_free(obj_id, &mut call_status) };
+        unsafe { coveralls_free(obj_handle, &mut call_status) };
         assert_eq!(call_status.code, RustCallStatusCode::Success);
 
         let num_alive = unsafe { get_num_alive(&mut call_status) };

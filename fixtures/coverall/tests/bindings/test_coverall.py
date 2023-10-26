@@ -242,16 +242,13 @@ class TestCoverall(unittest.TestCase):
         coveralls = None
         self.assertEqual(get_num_alive(), 0)
 
-    # FIXME: since we're now inc-refing the handle, Python will leak objects if another lower fails.
-    # For now, let's disable this test.
-    #
-    # def test_bad_objects(self):
-    #     coveralls = Coveralls("test_bad_objects")
-    #     patch = Patch(Color.RED)
-    #     # `coveralls.take_other` wants `Coveralls` not `Patch`
-    #     with self.assertRaisesRegex(TypeError, "Coveralls.*Patch"):
-    #         coveralls.take_other(patch)
-    #
+    def test_bad_objects(self):
+        coveralls = Coveralls("test_bad_objects")
+        patch = Patch(Color.RED)
+        # `coveralls.take_other` wants `Coveralls` not `Patch`
+        with self.assertRaisesRegex(TypeError, "Coveralls.*Patch"):
+            coveralls.take_other(patch)
+
     def test_dict_with_defaults(self):
         """ This does not call Rust code. """
 

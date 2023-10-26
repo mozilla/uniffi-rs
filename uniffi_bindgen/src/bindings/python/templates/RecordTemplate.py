@@ -43,6 +43,16 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         )
 
     @staticmethod
+    def check(value):
+        {%- if rec.fields().is_empty() %}
+        pass
+        {%- else %}
+        {%- for field in rec.fields() %}
+        {{ field|check_fn }}(value.{{ field.name()|var_name }})
+        {%- endfor %}
+        {%- endif %}
+
+    @staticmethod
     def write(value, buf):
         {%- for field in rec.fields() %}
         {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)

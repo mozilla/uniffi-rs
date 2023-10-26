@@ -70,6 +70,7 @@ _rust_call(
  #}
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
+    {{ arg|check_fn }}({{ arg.name()|var_name }})
     {%- match arg.default_value() %}
     {%- when None %}
     {%- when Some with(literal) %}
@@ -85,6 +86,7 @@ _rust_call(
  #}
 {%- macro setup_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
+        {{ arg|check_fn }}({{ arg.name()|var_name }})
         {%- match arg.default_value() %}
         {%- when None %}
         {%- when Some with(literal) %}

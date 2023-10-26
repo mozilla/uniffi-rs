@@ -265,6 +265,22 @@ mod filters {
         })
     }
 
+    pub fn check_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+        Ok(match type_ {
+            Type::Object { name, .. } => format!("({}._uniffi_check {nm})", class_name_rb(name)?),
+            Type::Enum { .. }
+            | Type::Record { .. }
+            | Type::Optional { .. }
+            | Type::Sequence { .. }
+            | Type::Map { .. } => format!(
+                "RustBuffer.check_{}({})",
+                class_name_rb(&canonical_name(type_))?,
+                nm
+            ),
+            _ => "".to_owned(),
+        })
+    }
+
     pub fn lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8

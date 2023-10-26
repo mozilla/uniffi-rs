@@ -1,6 +1,7 @@
 {%- if func.is_async() %}
 
 def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
+    {%- call py::setup_args(func) %}
     return _uniffi_rust_call_async(
         _UniffiLib.{{ func.ffi_func().name() }}({% call py::arg_list_lowered(func) %}),
         _UniffiLib.{{func.ffi_rust_future_poll(ci) }},

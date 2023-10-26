@@ -244,17 +244,14 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal Coverall.get_num_alive(), 0
   end
 
-  # FIXME: since we're now inc-refing the handle, Ruby will leak objects if another lower fails.
-  # For now, let's disable this test.
-  #
-  # def test_bad_objects
-  #   coveralls = Coverall::Coveralls.new "test_bad_objects"
-  #   patch = Coverall::Patch.new Coverall::Color::RED
-  #   # `coveralls.take_other` wants `Coveralls` not `Patch`
-  #   assert_raise_message /Expected a Coveralls instance, got.*Patch/ do
-  #     coveralls.take_other patch
-  #   end
-  # end
+  def test_bad_objects
+    coveralls = Coverall::Coveralls.new "test_bad_objects"
+    patch = Coverall::Patch.new Coverall::Color::RED
+    # `coveralls.take_other` wants `Coveralls` not `Patch`
+    assert_raise_message /Expected a Coveralls instance, got.*Patch/ do
+      coveralls.take_other patch
+    end
+  end
 
   def test_bytes
     coveralls = Coverall::Coveralls.new "test_bytes"

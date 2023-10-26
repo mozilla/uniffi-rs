@@ -39,7 +39,6 @@ class {{ impl_name }}:
     @classmethod
     def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::setup_args_extra_indent(cons) %}
-        # Call the (fallible) function before creating any half-baked object instances.
         uniffi_handle = {% call py::to_ffi_call(cons) %}
         return cls._make_instance_(uniffi_handle)
 {% endfor %}
@@ -95,6 +94,15 @@ class {{ ffi_converter_name }}:
         {%- endif %}
 
     @staticmethod
+    def check(value: {{ type_name }}):
+        {%- if obj.is_trait_interface() %}
+        pass
+        {%- else %}
+        if not isinstance(value, {{ impl_name }}):
+            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
+        {%- endif %}
+
+    @staticmethod
     def lower(value: {{ type_name }}):
         {%- if obj.is_trait_interface() %}
         _uniffi_clone_handle = getattr(value, '_uniffi_clone_handle', None)
@@ -105,8 +113,6 @@ class {{ ffi_converter_name }}:
         else:
             return {{ ffi_converter_name }}._slab.insert(value)
         {%- else %}
-        if not isinstance(value, {{ impl_name }}):
-            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
         return value._uniffi_clone_handle()
         {%- endif %}
 

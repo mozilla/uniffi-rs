@@ -1,4 +1,4 @@
-func uniffiHandleIsFromRust(_ handle: Int64) -> Bool {
+fileprivate func uniffiHandleIsFromRust(_ handle: Int64) -> Bool {
     return (handle & 0x0001_0000_0000) == 0
 }
 

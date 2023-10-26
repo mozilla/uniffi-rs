@@ -16,7 +16,7 @@ s.destroy()
 try {
     s.moveBy(Vector(0.0, 0.0))
     assert(false) { "Should not be able to call anything after `destroy`" }
-} catch(e: IllegalStateException) {
+} catch(e: InternalException) {
     assert(true)
 }
 

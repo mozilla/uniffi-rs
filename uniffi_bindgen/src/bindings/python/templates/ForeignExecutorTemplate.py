@@ -12,9 +12,12 @@ class {{ ffi_converter_name }}:
     _slab = UniffiSlab()
 
     @classmethod
-    def lower(cls, eventloop):
+    def check(cls, eventloop):
         if not isinstance(eventloop, asyncio.BaseEventLoop):
             raise TypeError("_uniffi_executor_callback: Expected EventLoop instance")
+
+    @classmethod
+    def lower(cls, eventloop):
         return cls._slab.insert(eventloop)
 
     @classmethod
