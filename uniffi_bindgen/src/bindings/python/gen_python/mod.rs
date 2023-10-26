@@ -110,7 +110,13 @@ impl Config {
 use crate::Utf8Path;
 
 impl BindingsConfig for Config {
-    fn update_documentation(&mut self, _ci: &mut ComponentInterface, _udl_file: &Utf8Path) -> Result<()> { Ok(()) }
+    fn update_documentation(
+        &mut self,
+        _ci: &mut ComponentInterface,
+        _udl_file: &Utf8Path,
+    ) -> Result<()> {
+        Ok(())
+    }
 
     fn update_from_ci(&mut self, ci: &ComponentInterface) {
         self.cdylib_name

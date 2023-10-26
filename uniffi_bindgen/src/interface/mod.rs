@@ -955,7 +955,7 @@ impl ComponentInterface {
             }
         }
 
-        for (_, record) in &mut self.records {
+        for record in self.records.values_mut() {
             if let Some(doc) = documentation.structures.remove(record.name()) {
                 let mut members = doc.members.clone();
 
@@ -969,7 +969,7 @@ impl ComponentInterface {
             }
         }
 
-        for (_, enum_) in &mut self.enums {
+        for enum_ in self.enums.values_mut() {
             if let Some(doc) = documentation.structures.remove(enum_.name()) {
                 let mut members = doc.members.clone();
 
