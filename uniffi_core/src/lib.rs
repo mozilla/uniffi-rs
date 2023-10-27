@@ -58,6 +58,8 @@ pub mod deps {
     pub use bytes;
     pub use log;
     pub use static_assertions;
+    // Export this dependency for the 0.25 branch so that we can use it in `setup_scaffolding.rs`
+    pub use once_cell;
 }
 
 mod panichook;

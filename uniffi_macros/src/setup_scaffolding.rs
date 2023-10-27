@@ -25,6 +25,10 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let ffi_rust_future_continuation_callback_set =
         format_ident!("ffi_{module_path}_rust_future_continuation_callback_set");
     let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&module_path);
+    let continuation_cell = format_ident!(
+        "RUST_FUTURE_CONTINUATION_CALLBACK_CELL_{}",
+        module_path.to_uppercase()
+    );
 
     Ok(quote! {
         // Unit struct to parameterize the FfiConverter trait.
@@ -89,6 +93,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
         }
 
+        static #continuation_cell: ::uniffi::deps::once_cell::sync::OnceCell<::uniffi::RustFutureContinuationCallback> = ::uniffi::deps::once_cell::sync::OnceCell::new();
+
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
@@ -100,7 +106,12 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[doc(hidden)]
         #[no_mangle]
         pub unsafe extern "C" fn #ffi_rust_future_continuation_callback_set(callback: ::uniffi::RustFutureContinuationCallback) {
-            ::uniffi::ffi::rust_future_continuation_callback_set(callback);
+            if let Err(existing) = #continuation_cell.set(callback) {
+                // Don't panic if this to be called multiple times with the same callback.
+                if existing != callback {
+                    panic!("Attempt to set the RustFuture continuation callback twice");
+                }
+            }
         }
 
         #ffi_rust_future_scaffolding_fns
@@ -179,13 +190,17 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
         let ffi_rust_future_cancel = format_ident!("ffi_{module_path}_rust_future_cancel_{fn_suffix}");
         let ffi_rust_future_complete = format_ident!("ffi_{module_path}_rust_future_complete_{fn_suffix}");
         let ffi_rust_future_free = format_ident!("ffi_{module_path}_rust_future_free_{fn_suffix}");
+        let continuation_cell = format_ident!("RUST_FUTURE_CONTINUATION_CALLBACK_CELL_{}", module_path.to_uppercase());
 
         quote! {
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
             pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, data: *const ()) {
-                ::uniffi::ffi::rust_future_poll::<#return_type>(handle, data);
+                let callback = #continuation_cell
+                    .get()
+                    .expect("RustFuture continuation callback not set.  This is likely a uniffi bug.");
+                ::uniffi::ffi::rust_future_poll::<#return_type>(handle, *callback, data);
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
