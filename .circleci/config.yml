@@ -130,7 +130,7 @@ jobs:
       - install-mdbook
       - run: mdbook build docs/manual
       - gh-pages/deploy:
-          build-dir: docs/manual/book
+          build-dir: docs/manual/book/html
           ssh-fingerprints: "ac:68:a3:78:ea:ee:00:05:30:e1:dc:1f:2e:2f:7c:81"
 
   Deploy Docker:
