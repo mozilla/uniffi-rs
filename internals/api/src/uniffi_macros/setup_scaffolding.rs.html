@@ -206,15 +206,6 @@
 <a href="#206" id="206">206</a>
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -239,8 +230,6 @@
     <span class="kw">let </span>reexport_hack_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;{module_path}_uniffi_reexport_hack&quot;</span>);
     <span class="kw">let </span>ffi_foreign_executor_callback_set_ident =
         <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_foreign_executor_callback_set&quot;</span>);
-    <span class="kw">let </span>ffi_rust_future_continuation_callback_set =
-        <span class="macro">format_ident!</span>(<span class="string">&quot;ffi_{module_path}_rust_future_continuation_callback_set&quot;</span>);
     <span class="kw">let </span>ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(<span class="kw-2">&amp;</span>module_path);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
@@ -311,13 +300,6 @@
         #[no_mangle]
         </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_foreign_executor_callback_set_ident(callback: uniffi::ffi::ForeignExecutorCallback) {
             uniffi::ffi::foreign_executor_callback_set(callback)
-        }
-
-        <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
-        #[doc(hidden)]
-        #[no_mangle]
-        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_continuation_callback_set(callback: ::uniffi::RustFutureContinuationCallback) {
-            ::uniffi::ffi::rust_future_continuation_callback_set(callback);
         }
 
         #ffi_rust_future_scaffolding_fns
@@ -401,8 +383,8 @@
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, data: <span class="kw-2">*const </span>()) {
-                ::uniffi::ffi::rust_future_poll::&lt;#return_type&gt;(handle, data);
+            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: <span class="kw-2">*const </span>()) {
+                ::uniffi::ffi::rust_future_poll::&lt;#return_type&gt;(handle, callback, data);
             }
 
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]

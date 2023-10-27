@@ -1221,23 +1221,6 @@
 <a href="#1221" id="1221">1221</a>
 <a href="#1222" id="1222">1222</a>
 <a href="#1223" id="1223">1223</a>
-<a href="#1224" id="1224">1224</a>
-<a href="#1225" id="1225">1225</a>
-<a href="#1226" id="1226">1226</a>
-<a href="#1227" id="1227">1227</a>
-<a href="#1228" id="1228">1228</a>
-<a href="#1229" id="1229">1229</a>
-<a href="#1230" id="1230">1230</a>
-<a href="#1231" id="1231">1231</a>
-<a href="#1232" id="1232">1232</a>
-<a href="#1233" id="1233">1233</a>
-<a href="#1234" id="1234">1234</a>
-<a href="#1235" id="1235">1235</a>
-<a href="#1236" id="1236">1236</a>
-<a href="#1237" id="1237">1237</a>
-<a href="#1238" id="1238">1238</a>
-<a href="#1239" id="1239">1239</a>
-<a href="#1240" id="1240">1240</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1675,24 +1658,6 @@
         }
     }
 
-    <span class="doccomment">/// Builtin FFI function to set the Rust Future continuation callback
-    </span><span class="kw">pub fn </span>ffi_rust_future_continuation_callback_set(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
-        FfiFunction {
-            name: <span class="macro">format!</span>(
-                <span class="string">&quot;ffi_{}_rust_future_continuation_callback_set&quot;</span>,
-                <span class="self">self</span>.ffi_namespace()
-            ),
-            arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;callback&quot;</span>.to_owned(),
-                type_: FfiType::RustFutureContinuationCallback,
-            }],
-            return_type: <span class="prelude-val">None</span>,
-            is_async: <span class="bool-val">false</span>,
-            has_rust_call_status_arg: <span class="bool-val">false</span>,
-            is_object_free_function: <span class="bool-val">false</span>,
-        }
-    }
-
     <span class="doccomment">/// Builtin FFI function to poll a Rust future.
     </span><span class="kw">pub fn </span>ffi_rust_future_poll(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; FfiFunction {
         FfiFunction {
@@ -1703,9 +1668,12 @@
                     name: <span class="string">&quot;handle&quot;</span>.to_owned(),
                     type_: FfiType::RustFutureHandle,
                 },
-                <span class="comment">// Data to pass to the continuation
-                </span>FfiArgument {
-                    name: <span class="string">&quot;uniffi_callback&quot;</span>.to_owned(),
+                FfiArgument {
+                    name: <span class="string">&quot;callback&quot;</span>.to_owned(),
+                    type_: FfiType::RustFutureContinuationCallback,
+                },
+                FfiArgument {
+                    name: <span class="string">&quot;callback_data&quot;</span>.to_owned(),
                     type_: FfiType::RustFutureContinuationData,
                 },
             ],
@@ -1884,18 +1852,16 @@
             <span class="prelude-val">None</span>,
         ];
 
-        iter::once(<span class="self">self</span>.ffi_rust_future_continuation_callback_set()).chain(
-            all_possible_return_ffi_types
-                .into_iter()
-                .flat_map(|return_type| {
-                    [
-                        <span class="self">self</span>.ffi_rust_future_poll(return_type.clone()),
-                        <span class="self">self</span>.ffi_rust_future_cancel(return_type.clone()),
-                        <span class="self">self</span>.ffi_rust_future_free(return_type.clone()),
-                        <span class="self">self</span>.ffi_rust_future_complete(return_type),
-                    ]
-                }),
-        )
+        all_possible_return_ffi_types
+            .into_iter()
+            .flat_map(|return_type| {
+                [
+                    <span class="self">self</span>.ffi_rust_future_poll(return_type.clone()),
+                    <span class="self">self</span>.ffi_rust_future_cancel(return_type.clone()),
+                    <span class="self">self</span>.ffi_rust_future_free(return_type.clone()),
+                    <span class="self">self</span>.ffi_rust_future_complete(return_type),
+                ]
+            })
     }
 
     <span class="doccomment">/// The ffi_foreign_executor_callback_set FFI function

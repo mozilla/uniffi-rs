@@ -643,12 +643,6 @@
 <a href="#643" id="643">643</a>
 <a href="#644" id="644">644</a>
 <a href="#645" id="645">645</a>
-<a href="#646" id="646">646</a>
-<a href="#647" id="647">647</a>
-<a href="#648" id="648">648</a>
-<a href="#649" id="649">649</a>
-<a href="#650" id="650">650</a>
-<a href="#651" id="651">651</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -991,7 +985,6 @@
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet&lt;String&gt;,
-    has_async_fns: bool,
 }
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; SwiftWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
@@ -1003,7 +996,6 @@
             ci,
             type_helper_code,
             type_imports,
-            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -1016,10 +1008,6 @@
             .iter_types()
             .map(|t| SwiftCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
-            .chain(
-                <span class="self">self</span>.has_async_fns
-                    .then(|| <span class="string">&quot;uniffiInitContinuationCallback&quot;</span>.into()),
-            )
             .collect()
     }
 }

@@ -589,12 +589,6 @@
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
 <a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -793,7 +787,6 @@
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet&lt;ImportRequirement&gt;,
-    has_async_fns: bool,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; KotlinWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
@@ -806,7 +799,6 @@
             ci,
             type_helper_code,
             type_imports,
-            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -815,10 +807,6 @@
             .iter_types()
             .map(|t| KotlinCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
-            .chain(
-                <span class="self">self</span>.has_async_fns
-                    .then(|| <span class="string">&quot;uniffiRustFutureContinuationCallback.register&quot;</span>.into()),
-            )
             .collect()
     }
 
@@ -1148,7 +1136,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_poll(ci);
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{{ future, continuation -&gt; _UniFFILib.INSTANCE.{ffi_func}(future, continuation) }}&quot;
+            <span class="string">&quot;{{ future, callback, continuation -&gt; _UniFFILib.INSTANCE.{ffi_func}(future, callback, continuation) }}&quot;
         </span>))
     }
 
