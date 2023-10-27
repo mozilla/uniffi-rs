@@ -7,7 +7,7 @@ _UniffiContinuationPointerManager = _UniffiPointerManager()
 
 # Continuation callback for async functions
 # lift the return value or error and resolve the future, causing the async function to resume.
-@_UNIFFI_FUTURE_CONTINUATION_T
+@UNIFFI_RUST_FUTURE_CONTINUATION_CALLBACK
 def _uniffi_continuation_callback(future_ptr, poll_code):
     (eventloop, future) = _UniffiContinuationPointerManager.release_pointer(future_ptr)
     eventloop.call_soon_threadsafe(_uniffi_set_future_result, future, poll_code)

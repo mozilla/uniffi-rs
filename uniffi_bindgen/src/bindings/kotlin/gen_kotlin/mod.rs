@@ -318,14 +318,19 @@ impl KotlinCodeOracle {
         nm.to_string().to_shouty_snake_case()
     }
 
-    fn ffi_type_label_by_value(ffi_type: &FfiType) -> String {
+    /// Get the idiomatic Python rendering of an FFI callback function
+    fn ffi_callback_name(&self, nm: &str) -> String {
+        format!("Uniffi{}", nm.to_upper_camel_case())
+    }
+
+    fn ffi_type_label_by_value(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
-            FfiType::RustBuffer(_) => format!("{}.ByValue", Self::ffi_type_label(ffi_type)),
-            _ => Self::ffi_type_label(ffi_type),
+            FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type)),
+            _ => self.ffi_type_label(ffi_type),
         }
     }
 
-    fn ffi_type_label(ffi_type: &FfiType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
@@ -341,11 +346,9 @@ impl KotlinCodeOracle {
                 format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
             }
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
             FfiType::RustFutureHandle => "Pointer".to_string(),
-            FfiType::RustFutureContinuationCallback => {
-                "UniFffiRustFutureContinuationCallbackType".to_string()
-            }
             FfiType::RustFutureContinuationData => "USize".to_string(),
         }
     }
@@ -479,7 +482,7 @@ mod filters {
     }
 
     pub fn ffi_type_name_by_value(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle::ffi_type_label_by_value(type_))
+        Ok(KotlinCodeOracle.ffi_type_label_by_value(type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
@@ -505,6 +508,11 @@ mod filters {
     pub fn error_variant_name(v: &Variant) -> Result<String, askama::Error> {
         let name = v.name().to_string().to_upper_camel_case();
         Ok(KotlinCodeOracle.convert_error_suffix(&name))
+    }
+
+    /// Get the idiomatic Kotlin rendering of an FFI callback function name
+    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_callback_name(nm))
     }
 
     pub fn object_names(

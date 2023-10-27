@@ -6,15 +6,15 @@ internal const val UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1.toByte()
 internal val uniffiContinuationHandleMap = UniFfiHandleMap<CancellableContinuation<Byte>>()
 
 // FFI type for Rust future continuations
-internal object uniffiRustFutureContinuationCallback: UniFffiRustFutureContinuationCallbackType {
-    override fun callback(continuationHandle: USize, pollResult: Byte) {
-        uniffiContinuationHandleMap.remove(continuationHandle)?.resume(pollResult)
+internal object uniffiRustFutureContinuationCallback: UniffiRustFutureContinuationCallback {
+    override fun callback(data: USize, pollResult: Byte) {
+        uniffiContinuationHandleMap.remove(data)?.resume(pollResult)
     }
 }
 
 internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
     rustFuture: Pointer,
-    pollFunc: (Pointer, UniFffiRustFutureContinuationCallbackType, USize) -> Unit,
+    pollFunc: (Pointer, UniffiRustFutureContinuationCallback, USize) -> Unit,
     completeFunc: (Pointer, UniffiRustCallStatus) -> F,
     freeFunc: (Pointer) -> Unit,
     liftFunc: (F) -> T,

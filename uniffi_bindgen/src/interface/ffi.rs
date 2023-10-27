@@ -47,12 +47,13 @@ pub enum FfiType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
+    /// Pointer to a callback function.  The inner type is the name of the callback, which matches
+    /// one of the items in [crate::ComponentInterface::ffi_callback_definitions].
+    Callback(String),
     /// Pointer to a callback function that handles all callbacks on the foreign language side.
     ForeignCallback,
     /// Pointer to a Rust future
     RustFutureHandle,
-    /// Continuation function for a Rust future
-    RustFutureContinuationCallback,
     RustFutureContinuationData,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
@@ -224,11 +225,49 @@ pub struct FfiArgument {
 }
 
 impl FfiArgument {
+    pub fn new(name: impl Into<String>, type_: FfiType) -> Self {
+        Self {
+            name: name.into(),
+            type_,
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }
+
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
+    }
+}
+
+/// Represents an "extern C"-style callback function
+///
+/// These are defined in the foreign code and passed to Rust as a function pointer.
+#[derive(Debug, Default, Clone)]
+pub struct FfiCallbackFunction {
+    // Name for this function type. This matches the value inside `FfiType::Callback`
+    pub(super) name: String,
+    pub(super) arguments: Vec<FfiArgument>,
+    pub(super) return_type: Option<FfiType>,
+    pub(super) has_rust_call_status_arg: bool,
+}
+
+impl FfiCallbackFunction {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn arguments(&self) -> Vec<&FfiArgument> {
+        self.arguments.iter().collect()
+    }
+
+    pub fn return_type(&self) -> Option<&FfiType> {
+        self.return_type.as_ref()
+    }
+
+    pub fn has_rust_call_status_arg(&self) -> bool {
+        self.has_rust_call_status_arg
     }
 }
 

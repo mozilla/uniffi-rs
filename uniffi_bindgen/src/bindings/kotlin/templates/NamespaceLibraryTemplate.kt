@@ -13,6 +13,22 @@ private inline fun <reified Lib : Library> loadIndirect(
     return Native.load<Lib>(findLibraryName(componentName), Lib::class.java)
 }
 
+// Define FFI callback types
+{%- for callback in ci.ffi_callback_definitions() %}
+internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(
+        {%- for arg in callback.arguments() -%}
+        {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
+        {%- endfor -%}
+    )
+    {%- match callback.return_type() %}
+    {%- when Some(return_type) %}: {{ return_type|ffi_type_name_by_value }}
+    {%- when None %}
+    {%- endmatch %}
+}
+
+{%- endfor %}
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
