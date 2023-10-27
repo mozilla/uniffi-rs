@@ -340,7 +340,6 @@ pub struct SwiftWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<String>,
-    has_async_fns: bool,
 }
 impl<'a> SwiftWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -352,7 +351,6 @@ impl<'a> SwiftWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
-            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -365,10 +363,6 @@ impl<'a> SwiftWrapper<'a> {
             .iter_types()
             .map(|t| SwiftCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
-            .chain(
-                self.has_async_fns
-                    .then(|| "uniffiInitContinuationCallback".into()),
-            )
             .collect()
     }
 }

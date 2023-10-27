@@ -14,6 +14,11 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.0...HEAD).
 
+### What's changed?
+
+- The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now
+  inputs the callback pointer.  External bindings authors will need to update their code.
+
 ## v0.25.0 (backend crates: v0.25.0) - (_2023-10-18_)
 
 [All changes in v0.25.0](https://github.com/mozilla/uniffi-rs/compare/v0.24.3...v0.25.0).

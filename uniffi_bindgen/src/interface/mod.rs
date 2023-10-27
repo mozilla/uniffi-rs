@@ -435,24 +435,6 @@ impl ComponentInterface {
         }
     }
 
-    /// Builtin FFI function to set the Rust Future continuation callback
-    pub fn ffi_rust_future_continuation_callback_set(&self) -> FfiFunction {
-        FfiFunction {
-            name: format!(
-                "ffi_{}_rust_future_continuation_callback_set",
-                self.ffi_namespace()
-            ),
-            arguments: vec![FfiArgument {
-                name: "callback".to_owned(),
-                type_: FfiType::RustFutureContinuationCallback,
-            }],
-            return_type: None,
-            is_async: false,
-            has_rust_call_status_arg: false,
-            is_object_free_function: false,
-        }
-    }
-
     /// Builtin FFI function to poll a Rust future.
     pub fn ffi_rust_future_poll(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
@@ -463,9 +445,12 @@ impl ComponentInterface {
                     name: "handle".to_owned(),
                     type_: FfiType::RustFutureHandle,
                 },
-                // Data to pass to the continuation
                 FfiArgument {
-                    name: "uniffi_callback".to_owned(),
+                    name: "callback".to_owned(),
+                    type_: FfiType::RustFutureContinuationCallback,
+                },
+                FfiArgument {
+                    name: "callback_data".to_owned(),
                     type_: FfiType::RustFutureContinuationData,
                 },
             ],
@@ -644,18 +629,16 @@ impl ComponentInterface {
             None,
         ];
 
-        iter::once(self.ffi_rust_future_continuation_callback_set()).chain(
-            all_possible_return_ffi_types
-                .into_iter()
-                .flat_map(|return_type| {
-                    [
-                        self.ffi_rust_future_poll(return_type.clone()),
-                        self.ffi_rust_future_cancel(return_type.clone()),
-                        self.ffi_rust_future_free(return_type.clone()),
-                        self.ffi_rust_future_complete(return_type),
-                    ]
-                }),
-        )
+        all_possible_return_ffi_types
+            .into_iter()
+            .flat_map(|return_type| {
+                [
+                    self.ffi_rust_future_poll(return_type.clone()),
+                    self.ffi_rust_future_cancel(return_type.clone()),
+                    self.ffi_rust_future_free(return_type.clone()),
+                    self.ffi_rust_future_complete(return_type),
+                ]
+            })
     }
 
     /// The ffi_foreign_executor_callback_set FFI function

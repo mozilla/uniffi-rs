@@ -25,6 +25,7 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
             future = eventloop.create_future()
             ffi_poll(
                 rust_future,
+                _uniffi_continuation_callback,
                 _UniffiContinuationPointerManager.new_pointer((eventloop, future)),
             )
             poll_code = await future
@@ -36,5 +37,3 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
         )
     finally:
         ffi_free(rust_future)
-
-_UniffiLib.{{ ci.ffi_rust_future_continuation_callback_set().name() }}(_uniffi_continuation_callback)

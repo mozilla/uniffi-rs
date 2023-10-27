@@ -196,7 +196,6 @@ pub struct KotlinWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
-    has_async_fns: bool,
 }
 
 impl<'a> KotlinWrapper<'a> {
@@ -209,7 +208,6 @@ impl<'a> KotlinWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
-            has_async_fns: ci.has_async_fns(),
         }
     }
 
@@ -218,10 +216,6 @@ impl<'a> KotlinWrapper<'a> {
             .iter_types()
             .map(|t| KotlinCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
-            .chain(
-                self.has_async_fns
-                    .then(|| "uniffiRustFutureContinuationCallback.register".into()),
-            )
             .collect()
     }
 
@@ -551,7 +545,7 @@ pub mod filters {
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_poll(ci);
         Ok(format!(
-            "{{ future, continuation -> _UniFFILib.INSTANCE.{ffi_func}(future, continuation) }}"
+            "{{ future, callback, continuation -> _UniFFILib.INSTANCE.{ffi_func}(future, callback, continuation) }}"
         ))
     }
 
