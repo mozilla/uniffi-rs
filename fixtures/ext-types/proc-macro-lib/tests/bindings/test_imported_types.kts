@@ -29,6 +29,9 @@ assert(getUniffiOneTypes(listOf(uot)) == listOf(uot))
 assert(getMaybeUniffiOneTypes(listOf(uot, null)) == listOf(uot, null))
 
 runBlocking {
+    // This async function comes from the `uniffi-one` crate
+    assert(getUniffiOneAsync() == UniffiOneEnum.ONE)
+    // This async function comes from the `proc-macro-lib` crate
     assert(getUniffiOneTypeAsync(uot) == uot)
 }
 

@@ -29,8 +29,14 @@ assert(getMaybeUniffiOneTypes(ts: [UniffiOneType(sval: "hello"), nil]) == [Uniff
 var counter = DispatchGroup()
 counter.enter()
 Task {
-    let t = await getUniffiOneTypeAsync(t: UniffiOneType(sval: "hello"))
-    assert(t.sval == "hello")
+    // This async function comes from the `uniffi-one` crate
+    let uniffiOneEnum = await getUniffiOneAsync()
+    assert(uniffiOneEnum == UniffiOneEnum.one)
+
+    // This async function comes from the `proc-macro-lib` crate
+    let uniffiOneType = await getUniffiOneTypeAsync(t: UniffiOneType(sval: "hello"))
+    assert(uniffiOneType.sval == "hello")
+
     counter.leave()
 }
 counter.wait()
