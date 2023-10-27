@@ -111,10 +111,17 @@ impl FnSignature {
         })
     }
 
-    pub fn return_impl(&self) -> TokenStream {
+    pub fn lower_return_impl(&self) -> TokenStream {
         let return_ty = &self.return_ty;
         quote! {
             <#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>
+        }
+    }
+
+    pub fn lift_return_impl(&self) -> TokenStream {
+        let return_ty = &self.return_ty;
+        quote! {
+            <#return_ty as ::uniffi::LiftReturn<crate::UniFfiTag>>
         }
     }
 
@@ -160,14 +167,6 @@ impl FnSignature {
             }
         });
         quote! { #(#args),* }
-    }
-
-    /// Write expressions for each of our arguments
-    pub fn write_exprs<'a>(
-        &'a self,
-        buf_ident: &'a Ident,
-    ) -> impl Iterator<Item = TokenStream> + 'a {
-        self.args.iter().map(|a| a.write_expr(buf_ident))
     }
 
     /// Parameters expressions for each of our arguments
@@ -499,13 +498,6 @@ impl NamedArg {
         let ident = &self.ident;
         let lift_impl = self.lift_impl();
         quote! { #ident: #lift_impl::FfiType }
-    }
-
-    /// Generate the expression to write the scaffolding parameter for this arg
-    pub(crate) fn write_expr(&self, buf_ident: &Ident) -> TokenStream {
-        let ident = &self.ident;
-        let lower_impl = self.lower_impl();
-        quote! { #lower_impl::write(#ident, &mut #buf_ident) }
     }
 
     pub(crate) fn arg_metadata(&self) -> TokenStream {

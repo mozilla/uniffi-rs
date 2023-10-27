@@ -310,7 +310,12 @@ impl KotlinCodeOracle {
 
     /// Get the idiomatic Kotlin rendering of a variable name.
     fn var_name(&self, nm: &str) -> String {
-        format!("`{}`", nm.to_string().to_lower_camel_case())
+        format!("`{}`", self.var_name_raw(nm))
+    }
+
+    /// `var_name` without the backticks.  Useful for using in `@Structure.FieldOrder`.
+    pub fn var_name_raw(&self, nm: &str) -> String {
+        nm.to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Kotlin rendering of an individual enum variant.
@@ -318,8 +323,13 @@ impl KotlinCodeOracle {
         nm.to_string().to_shouty_snake_case()
     }
 
-    /// Get the idiomatic Python rendering of an FFI callback function
+    /// Get the idiomatic Kotlin rendering of an FFI callback function name
     fn ffi_callback_name(&self, nm: &str) -> String {
+        format!("Uniffi{}", nm.to_upper_camel_case())
+    }
+
+    /// Get the idiomatic Kotlin rendering of an FFI struct name
+    fn ffi_struct_name(&self, nm: &str) -> String {
         format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
@@ -327,6 +337,25 @@ impl KotlinCodeOracle {
         match ffi_type {
             FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type)),
             _ => self.ffi_type_label(ffi_type),
+        }
+    }
+
+    fn ffi_type_label_by_reference(&self, ffi_type: &FfiType) -> String {
+        match ffi_type {
+            FfiType::Int8
+            | FfiType::UInt8
+            | FfiType::Int16
+            | FfiType::UInt16
+            | FfiType::Int32
+            | FfiType::UInt32
+            | FfiType::Int64
+            | FfiType::UInt64
+            | FfiType::Float32
+            | FfiType::Float64 => format!("{}ByReference", self.ffi_type_label(ffi_type)),
+            FfiType::RustArcPtr(_) => "PointerByReference".to_owned(),
+            // JNA structs default to ByReference
+            FfiType::RustBuffer(_) | FfiType::Struct(_) => self.ffi_type_label(ffi_type),
+            _ => panic!("{ffi_type:?} by reference is not implemented"),
         }
     }
 
@@ -347,8 +376,9 @@ impl KotlinCodeOracle {
             }
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
-            FfiType::ForeignCallback => "ForeignCallback".to_string(),
-            FfiType::RustFutureHandle => "Pointer".to_string(),
+            FfiType::Struct(name) => self.ffi_struct_name(name),
+            FfiType::Reference(inner) => self.ffi_type_label_by_reference(inner),
+            FfiType::VoidPointer | FfiType::RustFutureHandle => "Pointer".to_string(),
             FfiType::RustFutureContinuationData => "USize".to_string(),
         }
     }
@@ -500,6 +530,11 @@ mod filters {
         Ok(KotlinCodeOracle.var_name(nm))
     }
 
+    /// Get the idiomatic Kotlin rendering of a variable name.
+    pub fn var_name_raw(nm: &str) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.var_name_raw(nm))
+    }
+
     /// Get a String representing the name used for an individual enum variant.
     pub fn variant_name(v: &Variant) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
@@ -513,6 +548,11 @@ mod filters {
     /// Get the idiomatic Kotlin rendering of an FFI callback function name
     pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_callback_name(nm))
+    }
+
+    /// Get the idiomatic Kotlin rendering of an FFI struct name
+    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_struct_name(nm))
     }
 
     pub fn object_names(

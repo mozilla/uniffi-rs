@@ -56,6 +56,13 @@ pub struct RustCallStatus {
 }
 
 impl RustCallStatus {
+    pub fn new() -> Self {
+        Self {
+            code: RustCallStatusCode::Success,
+            error_buf: MaybeUninit::new(RustBuffer::new()),
+        }
+    }
+
     pub fn cancelled() -> Self {
         Self {
             code: RustCallStatusCode::Cancelled,

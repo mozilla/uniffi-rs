@@ -337,9 +337,16 @@ impl PythonCodeOracle {
         fixup_keyword(nm.to_string().to_shouty_snake_case())
     }
 
-    /// Get the idiomatic Python rendering of an FFI callback function
+    /// Get the idiomatic Python rendering of an FFI callback function name
     fn ffi_callback_name(&self, nm: &str) -> String {
         format!("UNIFFI_{}", nm.to_shouty_snake_case())
+    }
+
+    /// Get the idiomatic Python rendering of an FFI struct name
+    fn ffi_struct_name(&self, nm: &str) -> String {
+        // The ctypes docs use both SHOUTY_SNAKE_CASE AND UpperCamelCase for structs. Let's use
+        // UpperCamelCase and reserve shouting for global variables
+        format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
@@ -361,9 +368,10 @@ impl PythonCodeOracle {
             },
             FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
-            FfiType::ForeignCallback => "_UNIFFI_FOREIGN_CALLBACK_T".to_string(),
+            FfiType::Struct(name) => self.ffi_struct_name(name),
             // Pointer to an `asyncio.EventLoop` instance
-            FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
+            FfiType::Reference(inner) => format!("ctypes.POINTER({})", self.ffi_type_label(inner)),
+            FfiType::VoidPointer | FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
             FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
@@ -513,9 +521,14 @@ pub mod filters {
         Ok(PythonCodeOracle.enum_variant_name(nm))
     }
 
-    /// Get the idiomatic Python rendering of a FFI callback function name
+    /// Get the idiomatic Python rendering of an FFI callback function name
     pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.ffi_callback_name(nm))
+    }
+
+    /// Get the idiomatic Python rendering of an FFI struct name
+    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.ffi_struct_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.

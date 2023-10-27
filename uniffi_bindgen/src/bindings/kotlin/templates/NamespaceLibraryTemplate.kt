@@ -20,13 +20,25 @@ internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callbac
         {%- for arg in callback.arguments() -%}
         {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
         {%- endfor -%}
+        {%- if callback.has_rust_call_status_arg() -%}
+        uniffiCallStatus: UniffiRustCallStatus,
+        {%- endif -%}
     )
     {%- match callback.return_type() %}
     {%- when Some(return_type) %}: {{ return_type|ffi_type_name_by_value }}
     {%- when None %}
     {%- endmatch %}
 }
+{%- endfor %}
 
+// Define FFI structs
+{%- for ffi_struct in ci.ffi_struct_definitions() %}
+@Structure.FieldOrder({% for field in ffi_struct.fields() %}"{{ field.name()|var_name_raw }}"{% if !loop.last %}, {% endif %}{% endfor %})
+internal class {{ ffi_struct.name()|ffi_struct_name }}(
+    {%- for field in ffi_struct.fields() %}
+    @JvmField internal var {{ field.name()|var_name }}: {{ field.type_().borrow()|ffi_type_name_by_value }},
+    {%- endfor %}
+) : Structure() { }
 {%- endfor %}
 
 // A JNA Library to expose the extern-C FFI definitions.

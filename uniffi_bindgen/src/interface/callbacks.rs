@@ -33,9 +33,11 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
+use std::iter;
+
 use uniffi_meta::Checksum;
 
-use super::ffi::FfiFunction;
+use super::ffi::{FfiArgument, FfiCallbackFunction, FfiField, FfiFunction, FfiStruct, FfiType};
 use super::object::Method;
 use super::{AsType, Type, TypeIterator};
 
@@ -70,7 +72,32 @@ impl CallbackInterface {
     }
 
     pub(super) fn derive_ffi_funcs(&mut self) {
-        self.ffi_init_callback = FfiFunction::callback_init(&self.module_path, &self.name);
+        self.ffi_init_callback =
+            FfiFunction::callback_init(&self.module_path, &self.name, vtable_name(&self.name));
+    }
+
+    /// FfiCallbacks to define for our methods.
+    pub fn ffi_callbacks(&self) -> Vec<FfiCallbackFunction> {
+        ffi_callbacks(&self.name, &self.methods)
+    }
+
+    /// The VTable FFI type
+    pub fn vtable(&self) -> FfiType {
+        FfiType::Struct(vtable_name(&self.name))
+    }
+
+    /// the VTable struct to define.
+    pub fn vtable_definition(&self) -> FfiStruct {
+        vtable_struct(&self.name, &self.methods)
+    }
+
+    /// Vec of (ffi_callback, method) pairs
+    pub fn vtable_methods(&self) -> Vec<(FfiCallbackFunction, &Method)> {
+        self.methods
+            .iter()
+            .enumerate()
+            .map(|(i, method)| (method_ffi_callback(&self.name, method, i), method))
+            .collect()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -103,6 +130,62 @@ impl TryFrom<uniffi_meta::CallbackInterfaceMetadata> for CallbackInterface {
             docstring: meta.docstring.clone(),
         })
     }
+}
+
+/// [FfiCallbackFunction] functions for the methods of a callback/trait interface
+pub fn ffi_callbacks(trait_name: &str, methods: &[Method]) -> Vec<FfiCallbackFunction> {
+    methods
+        .iter()
+        .enumerate()
+        .map(|(i, method)| method_ffi_callback(trait_name, method, i))
+        .collect()
+}
+
+pub fn method_ffi_callback(trait_name: &str, method: &Method, index: usize) -> FfiCallbackFunction {
+    FfiCallbackFunction {
+        name: method_ffi_callback_name(trait_name, index),
+        arguments: iter::once(FfiArgument::new("uniffi_handle", FfiType::UInt64))
+            .chain(method.arguments().into_iter().map(Into::into))
+            .chain(iter::once(match method.return_type() {
+                Some(t) => FfiArgument::new("uniffi_out_return", FfiType::from(t).reference()),
+                None => FfiArgument::new("uniffi_out_return", FfiType::VoidPointer),
+            }))
+            .collect(),
+        has_rust_call_status_arg: true,
+        return_type: None,
+    }
+}
+
+/// [FfiStruct] for a callback/trait interface VTable
+///
+/// This struct has a FfiCallbackFunction field for each method, plus extra fields for special
+/// methods
+pub fn vtable_struct(trait_name: &str, methods: &[Method]) -> FfiStruct {
+    FfiStruct {
+        name: vtable_name(trait_name),
+        fields: methods
+            .iter()
+            .enumerate()
+            .map(|(i, method)| {
+                FfiField::new(
+                    method.name(),
+                    FfiType::Callback(format!("CallbackInterface{trait_name}Method{i}")),
+                )
+            })
+            .chain([FfiField::new(
+                "uniffi_free",
+                FfiType::Callback("CallbackInterfaceFree".to_owned()),
+            )])
+            .collect(),
+    }
+}
+
+pub fn method_ffi_callback_name(trait_name: &str, index: usize) -> String {
+    format!("CallbackInterface{trait_name}Method{index}")
+}
+
+pub fn vtable_name(trait_name: &str) -> String {
+    format!("VTableCallbackInterface{trait_name}")
 }
 
 #[cfg(test)]

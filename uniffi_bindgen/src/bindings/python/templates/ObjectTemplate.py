@@ -76,9 +76,9 @@ class {{ impl_name }}:
 {% endfor %}
 
 {%- if obj.has_callback_interface() %}
-{%- let callback_handler_class = format!("UniffiCallbackInterface{}", name) %}
-{%- let callback_handler_obj = format!("uniffiCallbackInterface{}", name) %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
+{%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
+{%- let vtable_methods = obj.vtable_methods() %}
 {% include "CallbackInterfaceImpl.py" %}
 {%- endif %}
 

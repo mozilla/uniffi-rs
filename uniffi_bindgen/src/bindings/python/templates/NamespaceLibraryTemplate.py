@@ -63,7 +63,20 @@ def _uniffi_check_api_checksums(lib):
     {%- for arg in callback.arguments() -%}
     {{ arg.type_().borrow()|ffi_type_name }},
     {%- endfor -%}
+    {%- if callback.has_rust_call_status_arg() %}
+    ctypes.POINTER(_UniffiRustCallStatus),
+    {%- endif %}
 )
+{%- endfor %}
+
+# Define FFI structs
+{%- for ffi_struct in ci.ffi_struct_definitions() %}
+class {{ ffi_struct.name()|ffi_struct_name }}(ctypes.Structure):
+    _fields_ = [
+        {%- for field in ffi_struct.fields() %}
+        ("{{ field.name()|var_name }}", {{ field.type_().borrow()|ffi_type_name }}),
+        {%- endfor %}
+    ]
 {%- endfor %}
 
 # A ctypes library to expose the extern-C FFI definitions.

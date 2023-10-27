@@ -60,7 +60,8 @@
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
-use super::ffi::{FfiArgument, FfiFunction, FfiType};
+use super::callbacks;
+use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
 use super::function::{Argument, Callable};
 use super::{AsType, ObjectImpl, Type, TypeIterator};
 
@@ -219,8 +220,11 @@ impl Object {
         self.ffi_func_free.return_type = None;
         self.ffi_func_free.is_object_free_function = true;
         if self.has_callback_interface() {
-            self.ffi_init_callback =
-                Some(FfiFunction::callback_init(&self.module_path, &self.name));
+            self.ffi_init_callback = Some(FfiFunction::callback_init(
+                &self.module_path,
+                &self.name,
+                callbacks::vtable_name(&self.name),
+            ));
         }
 
         for cons in self.constructors.iter_mut() {
@@ -234,6 +238,41 @@ impl Object {
         }
 
         Ok(())
+    }
+
+    /// For trait interfaces, FfiCallbacks to define for our methods, otherwise an empty vec.
+    pub fn ffi_callbacks(&self) -> Vec<FfiCallbackFunction> {
+        if self.is_trait_interface() {
+            callbacks::ffi_callbacks(&self.name, &self.methods)
+        } else {
+            vec![]
+        }
+    }
+
+    /// For trait interfaces, the VTable FFI type
+    pub fn vtable(&self) -> Option<FfiType> {
+        self.is_trait_interface()
+            .then(|| FfiType::Struct(callbacks::vtable_name(&self.name)))
+    }
+
+    /// For trait interfaces, the VTable struct to define.  Otherwise None.
+    pub fn vtable_definition(&self) -> Option<FfiStruct> {
+        self.is_trait_interface()
+            .then(|| callbacks::vtable_struct(&self.name, &self.methods))
+    }
+
+    /// Vec of (ffi_callback_name, method) pairs
+    pub fn vtable_methods(&self) -> Vec<(FfiCallbackFunction, &Method)> {
+        self.methods
+            .iter()
+            .enumerate()
+            .map(|(i, method)| {
+                (
+                    callbacks::method_ffi_callback(&self.name, method, i),
+                    method,
+                )
+            })
+            .collect()
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {

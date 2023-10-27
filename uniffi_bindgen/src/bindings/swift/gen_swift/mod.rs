@@ -507,12 +507,17 @@ impl SwiftCodeOracle {
         nm.to_string().to_lower_camel_case()
     }
 
-    /// Get the idiomatic Python rendering of an FFI callback function
+    /// Get the idiomatic Swift rendering of an FFI callback function name
     fn ffi_callback_name(&self, nm: &str) -> String {
         format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
-    fn ffi_type_label_raw(&self, ffi_type: &FfiType) -> String {
+    /// Get the idiomatic Swift rendering of an FFI struct name
+    fn ffi_struct_name(&self, nm: &str) -> String {
+        format!("Uniffi{}", nm.to_upper_camel_case())
+    }
+
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8 => "Int8".into(),
             FfiType::UInt8 => "UInt8".into(),
@@ -528,26 +533,18 @@ impl SwiftCodeOracle {
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
-            FfiType::ForeignCallback => "ForeignCallback".into(),
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
-                "UnsafeMutableRawPointer".into()
+            FfiType::Struct(name) => self.ffi_struct_name(name),
+            FfiType::Reference(inner) => {
+                format!("UnsafeMutablePointer<{}>", self.ffi_type_label(inner))
             }
-        }
-    }
-
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
-        match ffi_type {
-            FfiType::ForeignCallback
+            FfiType::VoidPointer
             | FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationData => {
-                format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
-            }
-            _ => self.ffi_type_label_raw(ffi_type),
+            | FfiType::RustFutureContinuationData => "UnsafeMutableRawPointer".into(),
         }
     }
 
     fn ffi_canonical_name(&self, ffi_type: &FfiType) -> String {
-        self.ffi_type_label_raw(ffi_type)
+        self.ffi_type_label(ffi_type)
     }
 
     /// Get the name of the protocol and class name for an object.
@@ -641,10 +638,11 @@ pub mod filters {
             FfiType::Callback(name) => {
                 format!("{} _Nonnull", SwiftCodeOracle.ffi_callback_name(name))
             }
-            FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
-                "void* _Nonnull".into()
-            }
+            FfiType::Struct(name) => SwiftCodeOracle.ffi_struct_name(name),
+            FfiType::Reference(inner) => format!("{}* _Nonnull", header_ffi_type_name(inner)?),
+            FfiType::VoidPointer
+            | FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationData => "void* _Nonnull".into(),
         })
     }
 
@@ -679,9 +677,14 @@ pub mod filters {
         Ok(oracle().enum_variant_name(nm))
     }
 
-    /// Get the idiomatic Swift rendering of an ffi callback function name
+    /// Get the idiomatic Swift rendering of an FFI callback function name
     pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().ffi_callback_name(nm))
+    }
+
+    /// Get the idiomatic Swift rendering of an FFI struct name
+    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(oracle().ffi_struct_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of docstring

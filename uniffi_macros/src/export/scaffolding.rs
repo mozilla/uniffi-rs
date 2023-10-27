@@ -231,7 +231,7 @@ pub(super) fn gen_ffi_function(
 
     let ffi_ident = sig.scaffolding_fn_ident()?;
     let name = &sig.name;
-    let return_impl = &sig.return_impl();
+    let return_impl = &sig.lower_return_impl();
 
     Ok(if !sig.is_async {
         quote! {
