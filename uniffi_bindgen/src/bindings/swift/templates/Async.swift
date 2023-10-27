@@ -3,7 +3,7 @@ private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
 fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UnsafeMutableRawPointer,
-    pollFunc: (UnsafeMutableRawPointer, @escaping UniFfiRustFutureContinuation, UnsafeMutableRawPointer) -> (),
+    pollFunc: (UnsafeMutableRawPointer, @escaping UniffiRustFutureContinuationCallback, UnsafeMutableRawPointer) -> (),
     completeFunc: (UnsafeMutableRawPointer, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UnsafeMutableRawPointer) -> (),
     liftFunc: (F) throws -> T,

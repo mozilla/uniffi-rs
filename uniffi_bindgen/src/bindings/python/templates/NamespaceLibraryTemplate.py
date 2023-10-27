@@ -68,6 +68,20 @@ def _uniffi_check_api_checksums(lib):
     pass
     {%- endfor %}
 
+
+# Define FFI callback types
+{%- for callback in ci.ffi_callback_definitions() %}
+{{ callback.name()|ffi_callback_name }} = ctypes.CFUNCTYPE(
+    {%- match callback.return_type() %}
+    {%- when Some(return_type) %}{{ return_type|ffi_type_name }},
+    {%- when None %}None,
+    {%- endmatch %}
+    {%- for arg in callback.arguments() -%}
+    {{ arg.type_().borrow()|ffi_type_name }},
+    {%- endfor -%}
+)
+{%- endfor %}
+
 # A ctypes library to expose the extern-C FFI definitions.
 # This is an implementation detail which will be called internally by the public API.
 

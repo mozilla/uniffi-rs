@@ -67,7 +67,7 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
-pub use ffi::{FfiArgument, FfiFunction, FfiType};
+pub use ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiType};
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
@@ -202,6 +202,21 @@ impl ComponentInterface {
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
         self.objects.iter().find(|o| o.name == name)
+    }
+
+    /// Get the definitions for callback FFI functions
+    ///
+    /// These are defined by the foreign code and invoked by Rust.
+    pub fn ffi_callback_definitions(&self) -> impl IntoIterator<Item = FfiCallbackFunction> {
+        [FfiCallbackFunction {
+            name: "RustFutureContinuationCallback".to_owned(),
+            arguments: vec![
+                FfiArgument::new("data", FfiType::RustFutureContinuationData),
+                FfiArgument::new("poll_result", FfiType::Int8),
+            ],
+            return_type: None,
+            has_rust_call_status_arg: false,
+        }]
     }
 
     /// Get the definitions for every Callback Interface type in the interface.
@@ -447,7 +462,7 @@ impl ComponentInterface {
                 },
                 FfiArgument {
                     name: "callback".to_owned(),
-                    type_: FfiType::RustFutureContinuationCallback,
+                    type_: FfiType::Callback("RustFutureContinuationCallback".to_owned()),
                 },
                 FfiArgument {
                     name: "callback_data".to_owned(),

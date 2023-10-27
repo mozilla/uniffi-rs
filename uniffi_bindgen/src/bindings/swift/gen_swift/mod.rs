@@ -443,6 +443,11 @@ impl SwiftCodeOracle {
         nm.to_string().to_lower_camel_case()
     }
 
+    /// Get the idiomatic Python rendering of an FFI callback function
+    fn ffi_callback_name(&self, nm: &str) -> String {
+        format!("Uniffi{}", nm.to_upper_camel_case())
+    }
+
     fn ffi_type_label_raw(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8 => "Int8".into(),
@@ -458,10 +463,10 @@ impl SwiftCodeOracle {
             FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
+            FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::ForeignCallback => "ForeignCallback".into(),
             FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
-            FfiType::RustFutureContinuationCallback => "UniFfiRustFutureContinuation".into(),
             FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
                 "UnsafeMutableRawPointer".into()
             }
@@ -473,7 +478,6 @@ impl SwiftCodeOracle {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
             | FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationCallback
             | FfiType::RustFutureContinuationData => {
                 format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
             }
@@ -574,12 +578,12 @@ pub mod filters {
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
+            FfiType::Callback(name) => {
+                format!("{} _Nonnull", SwiftCodeOracle.ffi_callback_name(name))
+            }
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
             FfiType::ForeignExecutorHandle => "size_t".into(),
-            FfiType::RustFutureContinuationCallback => {
-                "UniFfiRustFutureContinuation _Nonnull".into()
-            }
             FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
                 "void* _Nonnull".into()
             }
@@ -615,6 +619,11 @@ pub mod filters {
     /// Get the idiomatic Swift rendering of an individual enum variant, for contexts (for use in non-declaration contexts where quoting is not needed)
     pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().enum_variant_name(nm))
+    }
+
+    /// Get the idiomatic Swift rendering of an ffi callback function name
+    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(oracle().ffi_callback_name(nm))
     }
 
     pub fn error_handler(result: &ResultType) -> Result<String, askama::Error> {
