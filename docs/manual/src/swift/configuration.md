@@ -12,7 +12,7 @@ The generated Swift module can be configured using a `uniffi.toml` configuration
 | `ffi_module_filename` | `{ffi_module_name}` | The filename stem for the lower-level C module containing the FFI declarations. |
 | `generate_module_map` | `true` | Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations. |
 | `omit_argument_labels` | `false` | Whether to omit argument labels in Swift function definitions. |
-| `custom_types`      | | A map which controls how custom types are exposed to Swift. See the [custom types section of the manual](../udl/custom_types#custom-types-in-the-bindings-code)|
+| `custom_types`      | | A map which controls how custom types are exposed to Swift. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code)|
 
 
 [^1]: `namespace` is the top-level namespace from your UDL file.

@@ -314,7 +314,7 @@ fn do_http_request() -> Result<(), MyApiError> {
 
 ## The `#[uniffi::export(callback_interface)]` attribute
 
-`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.html) definition.
+`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.md) definition.
 This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
 
 ```rust
