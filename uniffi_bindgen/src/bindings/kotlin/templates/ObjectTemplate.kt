@@ -304,8 +304,8 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 }
 
 {%- if obj.has_callback_interface() %}
-{%- let callback_handler_class = format!("UniffiCallbackInterface{}", name) %}
-{%- let callback_handler_obj = format!("uniffiCallbackInterface{}", name) %}
+{%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
+{%- let vtable_methods = obj.vtable_methods() %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
 {% include "CallbackInterfaceImpl.kt" %}
 {%- endif %}

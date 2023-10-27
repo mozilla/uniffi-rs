@@ -29,8 +29,6 @@ typedef struct RustBuffer
     uint8_t *_Nullable data;
 } RustBuffer;
 
-typedef int32_t (*ForeignCallback)(uint64_t, int32_t, const uint8_t *_Nonnull, int32_t, RustBuffer *_Nonnull);
-
 typedef struct ForeignBytes
 {
     int32_t len;
@@ -50,13 +48,25 @@ typedef struct RustCallStatus {
 // Define FFI callback types
 {%- for callback in ci.ffi_callback_definitions() %}
 typedef
-    {%- match callback.return_type() %}{% when Some(return_type) %} {{ return_type|ffi_type_name }} {% when None %} void {% endmatch -%}
+    {%- match callback.return_type() %}{% when Some(return_type) %} {{ return_type|header_ffi_type_name }} {% when None %} void {% endmatch -%}
     (*{{ callback.name()|ffi_callback_name }})(
         {%- for arg in callback.arguments() -%}
         {{ arg.type_().borrow()|header_ffi_type_name }}
-        {%- if !loop.last %}, {% endif %}
+        {%- if !loop.last || callback.has_rust_call_status_arg() %}, {% endif %}
         {%- endfor -%}
+        {%- if callback.has_rust_call_status_arg() %}
+        RustCallStatus *_Nonnull uniffiCallStatus
+        {%- endif %}
     );
+{%- endfor %}
+
+// Define FFI structs
+{%- for struct in ci.ffi_struct_definitions() %}
+typedef struct {{ struct.name()|ffi_struct_name }} {
+    {%- for field in struct.fields() %}
+    {{ field.type_().borrow()|header_ffi_type_name }} {{ field.name()|var_name }};
+    {%- endfor %}
+} {{ struct.name()|ffi_struct_name }};
 {%- endfor %}
 
 // Scaffolding functions

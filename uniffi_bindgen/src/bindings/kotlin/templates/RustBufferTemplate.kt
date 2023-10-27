@@ -11,6 +11,12 @@ open class RustBuffer : Structure() {
     class ByValue: RustBuffer(), Structure.ByValue
     class ByReference: RustBuffer(), Structure.ByReference
 
+   internal fun setValue(other: RustBuffer) {
+        capacity = other.capacity
+        len = other.len
+        data = other.data
+    }
+
     companion object {
         internal fun alloc(size: Int = 0) = uniffiRustCall() { status ->
             UniffiLib.INSTANCE.{{ ci.ffi_rustbuffer_alloc().name() }}(size, status)

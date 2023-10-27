@@ -1,107 +1,70 @@
 {% if self.include_once_check("CallbackInterfaceRuntime.kt") %}{% include "CallbackInterfaceRuntime.kt" %}{% endif %}
 
-// Implement the foreign callback handler for {{ interface_name }}
-internal class {{ callback_handler_class }} : ForeignCallback {
-    @Suppress("TooGenericExceptionCaught")
-    override fun invoke(handle: UniffiHandle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
-        val cb = {{ ffi_converter_name }}.handleMap.get(handle)
-        return when (method) {
-            IDX_CALLBACK_FREE -> {
-                {{ ffi_converter_name }}.handleMap.remove(handle)
+{%- let trait_impl=format!("uniffiCallbackInterface{}", name) %}
 
-                // Successful return
-                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
-                UNIFFI_CALLBACK_SUCCESS
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object {{ trait_impl }} {
+    {%- for (ffi_callback, meth) in vtable_methods.iter() %}
+    internal object {{ meth.name()|var_name }}: {{ ffi_callback.name()|ffi_callback_name }} {
+        override fun callback(
+            {%- for arg in ffi_callback.arguments() -%}
+            {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
+            {%- endfor -%}
+            {%- if ffi_callback.has_rust_call_status_arg() -%}
+            uniffiCallStatus: UniffiRustCallStatus,
+            {%- endif -%}
+        )
+        {%- match ffi_callback.return_type() %}
+        {%- when Some(return_type) %}: {{ return_type|ffi_type_name_by_value }},
+        {%- when None %}
+        {%- endmatch %} {
+            val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.{{ meth.name()|fn_name() }}(
+                    {%- for arg in meth.arguments() %}
+                    {{ arg|lift_fn }}({{ arg.name()|var_name }}),
+                    {%- endfor %}
+                )
             }
-            {% for meth in methods.iter() -%}
-            {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
-            {{ loop.index }} -> {
-                // Call the method, write to outBuf and return a status code
-                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs` for info
-                try {
-                    this.{{ method_name }}(cb, argsData, argsLen, outBuf)
-                } catch (e: Throwable) {
-                    // Unexpected error
-                    try {
-                        // Try to serialize the error into a string
-                        outBuf.setValue({{ Type::String.borrow()|ffi_converter_name }}.lower(e.toString()))
-                    } catch (e: Throwable) {
-                        // If that fails, then it's time to give up and just return
-                    }
-                    UNIFFI_CALLBACK_UNEXPECTED_ERROR
-                }
-            }
-            {% endfor %}
-            else -> {
-                // An unexpected error happened.
-                // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
-                try {
-                    // Try to serialize the error into a string
-                    outBuf.setValue({{ Type::String.borrow()|ffi_converter_name }}.lower("Invalid Callback index"))
-                } catch (e: Throwable) {
-                    // If that fails, then it's time to give up and just return
-                }
-                UNIFFI_CALLBACK_UNEXPECTED_ERROR
-            }
+
+            {%- match meth.return_type() %}
+            {%- when Some(return_type) %}
+            val writeReturn = { value: {{ return_type|type_name(ci) }} -> uniffiOutReturn.setValue({{ return_type|lower_fn }}(value)) }
+            {%- when None %}
+            val writeReturn = { _: Unit -> Unit }
+            {%- endmatch %}
+
+            {%- match meth.throws_type() %}
+            {%- when None %}
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+            {%- when Some(error_type) %}
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) }
+            )
+            {%- endmatch %}
+        }
+    }
+    {%- endfor %}
+
+    internal object uniffiFree: {{ "CallbackInterfaceFree"|ffi_callback_name }} {
+        override fun callback(handle: Long) {
+            {{ ffi_converter_name }}.handleMap.remove(handle)
         }
     }
 
-    {% for meth in methods.iter() -%}
-    {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
-    @Suppress("UNUSED_PARAMETER")
-    private fun {{ method_name }}(kotlinCallbackInterface: {{ interface_name }}, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
-        {%- if meth.arguments().len() > 0 %}
-        val argsBuf = argsData.getByteBuffer(0, argsLen.toLong()).also {
-            it.order(ByteOrder.BIG_ENDIAN)
-        }
-        {%- endif %}
-
-        {%- match meth.return_type() %}
-        {%- when Some with (return_type) %}
-        fun makeCall() : Int {
-            val returnValue = kotlinCallbackInterface.{{ meth.name()|fn_name }}(
-                {%- for arg in meth.arguments() %}
-                {{ arg|read_fn }}(argsBuf)
-                {% if !loop.last %}, {% endif %}
-                {%- endfor %}
-            )
-            outBuf.setValue({{ return_type|ffi_converter_name }}.lowerIntoRustBuffer(returnValue))
-            return UNIFFI_CALLBACK_SUCCESS
-        }
-        {%- when None %}
-        fun makeCall() : Int {
-            kotlinCallbackInterface.{{ meth.name()|fn_name }}(
-                {%- for arg in meth.arguments() %}
-                {{ arg|read_fn }}(argsBuf)
-                {%- if !loop.last %}, {% endif %}
-                {%- endfor %}
-            )
-            return UNIFFI_CALLBACK_SUCCESS
-        }
-        {%- endmatch %}
-
-        {%- match meth.throws_type() %}
-        {%- when None %}
-        fun makeCallAndHandleError() : Int = makeCall()
-        {%- when Some(error_type) %}
-        fun makeCallAndHandleError()  : Int = try {
-            makeCall()
-        } catch (e: {{ error_type|type_name(ci) }}) {
-            // Expected error, serialize it into outBuf
-            outBuf.setValue({{ error_type|ffi_converter_name }}.lowerIntoRustBuffer(e))
-            UNIFFI_CALLBACK_ERROR
-        }
-        {%- endmatch %}
-
-        return makeCallAndHandleError()
-    }
-    {% endfor %}
+    internal var vtable = {{ vtable|ffi_type_name_by_value }}(
+        {%- for (ffi_callback, meth) in vtable_methods.iter() %}
+        {{ meth.name()|var_name() }},
+        {%- endfor %}
+        uniffiFree
+    )
 
     // Registers the foreign callback with the Rust side.
     // This method is generated for each callback interface.
     internal fun register(lib: UniffiLib) {
-        lib.{{ ffi_init_callback.name() }}(this)
+        lib.{{ ffi_init_callback.name() }}(vtable)
     }
 }
-
-internal val {{ callback_handler_obj }} = {{ callback_handler_class }}()

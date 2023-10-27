@@ -1,6 +1,10 @@
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
-// Error runtime.
+
+internal const val UNIFFI_CALL_SUCCESS = 0.toByte()
+internal const val UNIFFI_CALL_ERROR = 1.toByte()
+internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
+
 @Structure.FieldOrder("code", "error_buf")
 internal open class UniffiRustCallStatus : Structure() {
     @JvmField var code: Byte = 0
@@ -9,15 +13,15 @@ internal open class UniffiRustCallStatus : Structure() {
     class ByValue: UniffiRustCallStatus(), Structure.ByValue
 
     fun isSuccess(): Boolean {
-        return code == 0.toByte()
+        return code == UNIFFI_CALL_SUCCESS
     }
 
     fun isError(): Boolean {
-        return code == 1.toByte()
+        return code == UNIFFI_CALL_ERROR
     }
 
     fun isPanic(): Boolean {
-        return code == 2.toByte()
+        return code == UNIFFI_CALL_UNEXPECTED_ERROR
     }
 }
 
@@ -118,6 +122,37 @@ public class USize(value: Long = 0) : IntegerType(Native.SIZE_T_SIZE, value, tru
     }
 }
 
+internal inline fun<T> uniffiTraitInterfaceCall(
+    callStatus: UniffiRustCallStatus,
+    makeCall: () -> T,
+    writeReturn: (T) -> Unit,
+) {
+    try {
+        writeReturn(makeCall())
+    } catch(e: Exception) {
+        callStatus.code = UNIFFI_CALL_UNEXPECTED_ERROR
+        callStatus.error_buf = {{ Type::String.borrow()|lower_fn }}(e.toString())
+    }
+}
+
+internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallWithError(
+    callStatus: UniffiRustCallStatus,
+    makeCall: () -> T,
+    writeReturn: (T) -> Unit,
+    lowerError: (E) -> RustBuffer.ByValue
+) {
+    try {
+        writeReturn(makeCall())
+    } catch(e: Exception) {
+        if (e is E) {
+            callStatus.code = UNIFFI_CALL_ERROR
+            callStatus.error_buf = lowerError(e)
+        } else {
+            callStatus.code = UNIFFI_CALL_UNEXPECTED_ERROR
+            callStatus.error_buf = {{ Type::String.borrow()|lower_fn }}(e.toString())
+        }
+    }
+}
 
 // Map handles to objects
 //

@@ -10,10 +10,16 @@ use crate::{
     },
 };
 use proc_macro2::{Span, TokenStream};
-use quote::quote;
+use quote::{format_ident, quote};
 use std::iter;
 use syn::Ident;
 
+/// Generate a trait impl that calls foreign callbacks
+///
+/// This generates:
+///    * A `repr(C)` VTable struct where each field is the FFI function for the trait method.
+///    * A FFI function for foreign code to set their VTable for the interface
+///    * An implementation of the trait using that VTable
 pub(super) fn trait_impl(
     mod_path: &str,
     trait_ident: &Ident,
@@ -21,30 +27,51 @@ pub(super) fn trait_impl(
 ) -> syn::Result<TokenStream> {
     let trait_name = ident_to_string(trait_ident);
     let trait_impl_ident = trait_impl_ident(&trait_name);
-    let internals_ident = internals_ident(&trait_name);
+    let vtable_type = format_ident!("UniFfiTraitVtable{trait_name}");
+    let vtable_cell = format_ident!("UNIFFI_TRAIT_CELL_{}", trait_name.to_uppercase());
     let init_ident = Ident::new(
-        &uniffi_meta::init_callback_fn_symbol_name(mod_path, &trait_name),
+        &uniffi_meta::init_callback_vtable_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
     );
-
-    let trait_impl_methods = items
+    let methods = items
         .iter()
         .map(|item| match item {
-            ImplItem::Method(sig) => gen_method_impl(sig, &internals_ident),
-            _ => unreachable!("traits have no constructors"),
+            ImplItem::Constructor(sig) => Err(syn::Error::new(
+                sig.span,
+                "Constructors not allowed in trait interfaces",
+            )),
+            ImplItem::Method(sig) => Ok(sig),
         })
-        .collect::<syn::Result<TokenStream>>()?;
-    Ok(quote! {
-        #[doc(hidden)]
-        static #internals_ident: ::uniffi::ForeignCallbackInternals = ::uniffi::ForeignCallbackInternals::new();
+        .collect::<syn::Result<Vec<_>>>()?;
 
-        #[doc(hidden)]
-        #[no_mangle]
-        pub extern "C" fn #init_ident(callback: ::uniffi::ForeignCallback) {
-            #internals_ident.set_callback(callback);
+    let vtable_fields = methods.iter()
+        .map(|sig| {
+            let ident = &sig.ident;
+            let params = sig.scaffolding_params();
+            let lift_return = sig.lift_return_impl();
+            quote! {
+                #ident: extern "C" fn(handle: u64, #(#params,)* &mut #lift_return::ReturnType, &mut ::uniffi::RustCallStatus),
+            }
+        });
+
+    let trait_impl_methods = methods
+        .iter()
+        .map(|sig| gen_method_impl(sig, &vtable_cell))
+        .collect::<syn::Result<Vec<_>>>()?;
+
+    Ok(quote! {
+        struct #vtable_type {
+            #(#vtable_fields)*
+            uniffi_free: extern "C" fn(handle: u64),
         }
 
-        #[doc(hidden)]
+        static #vtable_cell: ::uniffi::UniffiForeignPointerCell::<#vtable_type> = ::uniffi::UniffiForeignPointerCell::<#vtable_type>::new();
+
+        #[no_mangle]
+        extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
+            #vtable_cell.set(vtable);
+        }
+
         #[derive(Debug)]
         struct #trait_impl_ident {
             handle: u64,
@@ -56,18 +83,17 @@ pub(super) fn trait_impl(
             }
         }
 
-        impl ::std::ops::Drop for #trait_impl_ident {
-            fn drop(&mut self) {
-                #internals_ident.invoke_callback::<(), crate::UniFfiTag>(
-                    self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
-                )
-            }
-        }
-
         ::uniffi::deps::static_assertions::assert_impl_all!(#trait_impl_ident: ::core::marker::Send);
 
         impl #trait_ident for #trait_impl_ident {
-            #trait_impl_methods
+            #(#trait_impl_methods)*
+        }
+
+        impl ::std::ops::Drop for #trait_impl_ident {
+            fn drop(&mut self) {
+                let vtable = #vtable_cell.get();
+                (vtable.uniffi_free)(self.handle);
+            }
         }
     })
 }
@@ -75,16 +101,6 @@ pub(super) fn trait_impl(
 pub fn trait_impl_ident(trait_name: &str) -> Ident {
     Ident::new(
         &format!("UniFFICallbackHandler{trait_name}"),
-        Span::call_site(),
-    )
-}
-
-pub fn internals_ident(trait_name: &str) -> Ident {
-    Ident::new(
-        &format!(
-            "UNIFFI_FOREIGN_CALLBACK_INTERNALS_{}",
-            trait_name.to_ascii_uppercase()
-        ),
         Span::call_site(),
     )
 }
@@ -131,49 +147,55 @@ pub fn ffi_converter_callback_interface_impl(
     }
 }
 
-fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<TokenStream> {
+/// Generate a single method for [trait_impl].  This implements a trait method by invoking a
+/// foreign-supplied callback.
+fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenStream> {
     let FnSignature {
         ident,
         return_ty,
         kind,
         receiver,
+        name,
+        span,
         ..
     } = sig;
-    let index = match kind {
-        // Note: the callback index is 1-based, since 0 is reserved for the free function
-        FnKind::TraitMethod { index, .. } => index + 1,
-        k => {
-            return Err(syn::Error::new(
-                sig.span,
-                format!(
-                    "Internal UniFFI error: Unexpected function kind for callback interface {k:?}"
-                ),
-            ));
-        }
-    };
+
+    if !matches!(kind, FnKind::TraitMethod { .. }) {
+        return Err(syn::Error::new(
+            *span,
+            format!(
+                "Internal UniFFI error: Unexpected function kind for callback interface {name}: {kind:?}",
+            ),
+        ));
+    }
 
     let self_param = match receiver {
+        Some(ReceiverArg::Ref) => quote! { &self },
+        Some(ReceiverArg::Arc) => quote! { self: Arc<Self> },
         None => {
             return Err(syn::Error::new(
-                sig.span,
+                *span,
                 "callback interface methods must take &self as their first argument",
             ));
         }
-        Some(ReceiverArg::Ref) => quote! { &self },
-        Some(ReceiverArg::Arc) => quote! { self: Arc<Self> },
     };
+
     let params = sig.params();
-    let buf_ident = Ident::new("uniffi_args_buf", Span::call_site());
-    let write_exprs = sig.write_exprs(&buf_ident);
+    let lower_exprs = sig.args.iter().map(|a| {
+        let lower_impl = a.lower_impl();
+        let ident = &a.ident;
+        quote! { #lower_impl::lower(#ident) }
+    });
+
+    let lift_return = sig.lift_return_impl();
 
     Ok(quote! {
         fn #ident(#self_param, #(#params),*) -> #return_ty {
-            #[allow(unused_mut)]
-            let mut #buf_ident = ::std::vec::Vec::new();
-            #(#write_exprs;)*
-            let uniffi_args_rbuf = uniffi::RustBuffer::from_vec(#buf_ident);
-
-            #internals_ident.invoke_callback::<#return_ty, crate::UniFfiTag>(self.handle, #index, uniffi_args_rbuf)
+            let vtable = #vtable_cell.get();
+            let mut uniffi_call_status = ::uniffi::RustCallStatus::new();
+            let mut return_value: #lift_return::ReturnType = ::uniffi::FfiDefault::ffi_default();
+            (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut return_value, &mut uniffi_call_status);
+            #lift_return::lift_foreign_return(return_value, uniffi_call_status)
         }
     })
 }

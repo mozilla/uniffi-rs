@@ -47,16 +47,25 @@ pub enum FfiType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
-    /// Pointer to a callback function.  The inner type is the name of the callback, which matches
-    /// one of the items in [crate::ComponentInterface::ffi_callback_definitions].
+    /// Pointer to a callback function.  The inner value which matches one of the items in
+    /// [crate::ComponentInterface::ffi_callback_definitions].
     Callback(String),
-    /// Pointer to a callback function that handles all callbacks on the foreign language side.
-    ForeignCallback,
+    /// Pointer to a FFI struct (e.g. a VTable).  The inner value matches one of the items in
+    /// [crate::ComponentInterface::ffi_struct_definitions].
+    Struct(String),
     /// Pointer to a Rust future
     RustFutureHandle,
     RustFutureContinuationData,
-    // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
-    // We don't need that yet and it's possible we never will, so it isn't here for now.
+    /// Pointer to an FfiType.
+    Reference(Box<FfiType>),
+    /// Opaque pointer
+    VoidPointer,
+}
+
+impl FfiType {
+    pub fn reference(self) -> FfiType {
+        FfiType::Reference(Box::new(self))
+    }
 }
 
 /// When passing data across the FFI, each `Type` value will be lowered into a corresponding
@@ -150,12 +159,12 @@ pub struct FfiFunction {
 }
 
 impl FfiFunction {
-    pub fn callback_init(module_path: &str, trait_name: &str) -> Self {
+    pub fn callback_init(module_path: &str, trait_name: &str, vtable_name: String) -> Self {
         Self {
-            name: uniffi_meta::init_callback_fn_symbol_name(module_path, trait_name),
+            name: uniffi_meta::init_callback_vtable_fn_symbol_name(module_path, trait_name),
             arguments: vec![FfiArgument {
-                name: "handle".to_string(),
-                type_: FfiType::ForeignCallback,
+                name: "vtable".to_string(),
+                type_: FfiType::Struct(vtable_name).reference(),
             }],
             return_type: None,
             has_rust_call_status_arg: false,
@@ -268,6 +277,49 @@ impl FfiCallbackFunction {
 
     pub fn has_rust_call_status_arg(&self) -> bool {
         self.has_rust_call_status_arg
+    }
+}
+
+/// Represents a repr(C) struct used in the FFI
+#[derive(Debug, Default, Clone)]
+pub struct FfiStruct {
+    pub(super) name: String,
+    pub(super) fields: Vec<FfiField>,
+}
+
+impl FfiStruct {
+    /// Get the name of this struct
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Get the fields for this struct
+    pub fn fields(&self) -> &[FfiField] {
+        &self.fields
+    }
+}
+
+/// Represents a field of an [FfiStruct]
+#[derive(Debug, Clone)]
+pub struct FfiField {
+    pub(super) name: String,
+    pub(super) type_: FfiType,
+}
+
+impl FfiField {
+    pub fn new(name: impl Into<String>, type_: FfiType) -> Self {
+        Self {
+            name: name.into(),
+            type_,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn type_(&self) -> FfiType {
+        self.type_.clone()
     }
 }
 

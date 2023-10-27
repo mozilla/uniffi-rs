@@ -146,6 +146,8 @@ public class {{ impl_class_name }}:
 {%- if obj.has_callback_interface() %}
 {%- let callback_handler = format!("uniffiCallbackInterface{}", name) %}
 {%- let callback_init = format!("uniffiCallbackInit{}", name) %}
+{%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
+{%- let vtable_methods = obj.vtable_methods() %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
 {% include "CallbackInterfaceImpl.swift" %}
 {%- endif %}

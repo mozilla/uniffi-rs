@@ -51,7 +51,10 @@ use std::{borrow::Borrow, sync::Arc};
 use anyhow::bail;
 use bytes::Buf;
 
-use crate::{FfiDefault, MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError};
+use crate::{
+    FfiDefault, MetadataBuffer, Result, RustBuffer, RustCallStatus, RustCallStatusCode,
+    UnexpectedUniFFICallbackError,
+};
 
 /// Generalized FFI conversions
 ///
@@ -302,14 +305,41 @@ pub unsafe trait LowerReturn<UT>: Sized {
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
 pub unsafe trait LiftReturn<UT>: Sized {
-    /// Lift a Rust value for a callback interface method result
-    fn lift_callback_return(buf: RustBuffer) -> Self;
+    /// FFI return type for trait interfaces
+    type ReturnType;
+
+    /// Lift a successfully returned value from a trait interface
+    fn try_lift_successful_return(v: Self::ReturnType) -> Result<Self>;
+
+    /// Lift a foreign returned value from a trait interface
+    ///
+    /// When we call a foreign-implemented trait interface method, we pass a &mut RustCallStatus
+    /// and get [Self::ReturnType] returned.  This method takes both of those and lifts `Self` from
+    /// it.
+    fn lift_foreign_return(ffi_return: Self::ReturnType, call_status: RustCallStatus) -> Self {
+        match call_status.code {
+            RustCallStatusCode::Success => Self::try_lift_successful_return(ffi_return)
+                .unwrap_or_else(|e| {
+                    Self::handle_callback_unexpected_error(UnexpectedUniFFICallbackError::new(e))
+                }),
+            RustCallStatusCode::Error => {
+                Self::lift_error(unsafe { call_status.error_buf.assume_init() })
+            }
+            _ => {
+                let e = <String as FfiConverter<crate::UniFfiTag>>::try_lift(unsafe {
+                    call_status.error_buf.assume_init()
+                })
+                .unwrap_or_else(|e| format!("(Error lifting message: {e}"));
+                Self::handle_callback_unexpected_error(UnexpectedUniFFICallbackError::new(e))
+            }
+        }
+    }
 
     /// Lift a Rust value for a callback interface method error result
     ///
     /// This is called for "expected errors" -- the callback method returns a Result<> type and the
     /// foreign code throws an exception that corresponds to the error type.
-    fn lift_callback_error(_buf: RustBuffer) -> Self {
+    fn lift_error(_buf: RustBuffer) -> Self {
         panic!("Callback interface method returned unexpected error")
     }
 
@@ -439,9 +469,10 @@ macro_rules! derive_ffi_traits {
     (impl $(<$($generic:ident),*>)? $(::uniffi::)? LiftReturn<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
         unsafe impl $(<$($generic),*>)* $crate::LiftReturn<$ut> for $ty $(where $($where)*)*
         {
-            fn lift_callback_return(buf: $crate::RustBuffer) -> Self {
-                <Self as $crate::Lift<$ut>>::try_lift_from_rust_buffer(buf)
-                    .expect("Error reading callback interface result")
+            type ReturnType = <Self as $crate::Lift<$ut>>::FfiType;
+
+            fn try_lift_successful_return(v: Self::ReturnType) -> $crate::Result<Self> {
+                <Self as $crate::Lift<$ut>>::try_lift(v)
             }
 
             const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::Lift<$ut>>::TYPE_ID_META;

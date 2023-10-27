@@ -84,8 +84,7 @@ class SwiftTestCallbackInterface : TestCallbackInterface {
     }
 
     func callbackHandler(h: Object) -> UInt32 {
-        var v = h.takeError(e: BasicError.InvalidInput)
-        return v
+        return h.takeError(e: BasicError.InvalidInput)
     }
 
     func getOtherCallbackInterface() -> OtherCallbackInterface {

@@ -67,7 +67,7 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
-pub use ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiType};
+pub use ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
@@ -216,16 +216,47 @@ impl ComponentInterface {
     /// Get the definitions for callback FFI functions
     ///
     /// These are defined by the foreign code and invoked by Rust.
-    pub fn ffi_callback_definitions(&self) -> impl IntoIterator<Item = FfiCallbackFunction> {
-        [FfiCallbackFunction {
-            name: "RustFutureContinuationCallback".to_owned(),
-            arguments: vec![
-                FfiArgument::new("data", FfiType::RustFutureContinuationData),
-                FfiArgument::new("poll_result", FfiType::Int8),
-            ],
-            return_type: None,
-            has_rust_call_status_arg: false,
-        }]
+    pub fn ffi_callback_definitions(&self) -> impl IntoIterator<Item = FfiCallbackFunction> + '_ {
+        self.builtin_ffi_callback_definitions().into_iter().chain(
+            self.callback_interfaces
+                .iter()
+                .flat_map(|cbi| cbi.ffi_callbacks())
+                .chain(self.objects.iter().flat_map(|o| o.ffi_callbacks())),
+        )
+    }
+
+    fn builtin_ffi_callback_definitions(&self) -> impl IntoIterator<Item = FfiCallbackFunction> {
+        [
+            FfiCallbackFunction {
+                name: "RustFutureContinuationCallback".to_owned(),
+                arguments: vec![
+                    FfiArgument::new("data", FfiType::RustFutureContinuationData),
+                    FfiArgument::new("poll_result", FfiType::Int8),
+                ],
+                return_type: None,
+                has_rust_call_status_arg: false,
+            },
+            FfiCallbackFunction {
+                name: "CallbackInterfaceFree".to_owned(),
+                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
+                return_type: None,
+                has_rust_call_status_arg: false,
+            },
+        ]
+    }
+
+    /// Get the definitions for callback FFI functions
+    ///
+    /// These are defined by the foreign code and invoked by Rust.
+    pub fn ffi_struct_definitions(&self) -> impl IntoIterator<Item = FfiStruct> + '_ {
+        self.callback_interface_definitions()
+            .iter()
+            .map(|cbi| cbi.vtable_definition())
+            .chain(
+                self.object_definitions()
+                    .iter()
+                    .flat_map(|o| o.vtable_definition()),
+            )
     }
 
     /// Get the definitions for every Callback Interface type in the interface.
