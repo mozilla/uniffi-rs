@@ -1,0 +1,270 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Python - The UniFFI user guide</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html"><strong aria-hidden="true">4.</strong> Procedural Macros: Attributes and Derives</a></li><li class="chapter-item expanded "><a href="../futures.html"><strong aria-hidden="true">5.</strong> Futures and async support</a></li><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.</strong> Bindings</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.1.</strong> Customizing binding generation</a></li><li class="chapter-item expanded "><a href="../foreign_traits.html"><strong aria-hidden="true">6.2.</strong> Implementing Rust traits in foreign bindings</a></li><li class="chapter-item expanded "><a href="../kotlin/configuration.html"><strong aria-hidden="true">6.3.</strong> Kotlin</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">6.3.1.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded "><a href="../kotlin/lifetimes.html"><strong aria-hidden="true">6.3.2.</strong> Kotlin Lifetimes</a></li></ol></li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.4.</strong> Swift</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">6.4.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.4.2.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">6.4.3.</strong> Integrating with Xcode</a></li></ol></li><li class="chapter-item expanded "><a href="../python/configuration.html" class="active"><strong aria-hidden="true">6.5.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">7.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">8.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">9.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">10.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html"><strong aria-hidden="true">11.</strong> Rendering Foreign Bindings</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The UniFFI user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<p>The generated Python modules can be configured using a <code>uniffi.toml</code> configuration file.</p>
+<h2 id="available-options"><a class="header" href="#available-options">Available options</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Configuration name</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td></tr>
+<tr><td><code>custom_types</code></td><td></td><td>A map which controls how custom types are exposed to Python. See the <a href="../udl/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td></tr>
+<tr><td><code>external_packages</code></td><td></td><td>A map which controls the package name used by external packages. See below for more.</td></tr>
+</tbody></table>
+</div>
+<h2 id="external-packages"><a class="header" href="#external-packages">External Packages</a></h2>
+<p>When you reference external modules, uniffi will generate statements like <code>from module import Type</code>
+in the referencing module. The <code>external_packages</code> configuration value allows you to specify how <code>module</code>
+is formed in such statements.</p>
+<p>The value is a map, keyed by the crate-name and the value is the package name which will be used by
+Python for that crate. The default value is an empty map.</p>
+<p>When looking up crate-name, the following behavior is implemented.</p>
+<h3 id="default-value"><a class="header" href="#default-value">Default value</a></h3>
+<p>If no value for the crate is found, it is assumed that you will be packaging up your library
+as a simple Python package, so the statement will be of the form <code>from .module import Type</code>,
+where <code>module</code> is the namespace specified in that crate.</p>
+<p>Note that this is invalid syntax unless the module lives in a package - attempting to
+use the module as a stand-alone module will fail. UniFFI just generates flat .py files; the
+packaging is up to you. Eg, a build process might create a directory, create an <code>__init__.py</code>
+file in that directory (maybe including <code>from subpackage import *</code>) and have <code>uniffi-bindgen</code>
+generate the bindings into this directory.</p>
+<h3 id="specified-value"><a class="header" href="#specified-value">Specified value</a></h3>
+<p>If the crate-name is found in the map, the specified entry used as a package name, so the statement will be of the form
+<code>from package.module import Type</code> (again, where <code>module</code> is the namespace specified in that crate)</p>
+<p>An exception is when the specified value is an empty string, in which case you will see
+<code>from module import Type</code>, so each generated module functions outside a package.
+This is used by some UniFFI tests to avoid the test code needing to create a Python package.</p>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<p>Custom Types</p>
+<pre><code class="language-toml"># Assuming a Custom Type named URL using a String as the builtin.
+[bindings.python.custom_types.Url]
+imports = [&quot;urllib.parse&quot;]
+# Functions to convert between strings and the ParsedUrl class
+into_custom = &quot;urllib.parse.urlparse({})&quot;
+from_custom = &quot;urllib.parse.urlunparse({})&quot;
+</code></pre>
+<p>External Packages</p>
+<pre><code class="language-toml">[bindings.python.external_packages]
+# An external type `Foo` in `crate-name` (which specifies a namespace of `my_module`) will be referenced via `from MyPackageName.my_module import Foo`
+crate-name = &quot;MyPackageName&quot;
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../swift/xcode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../internals/design_principles.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../swift/xcode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../internals/design_principles.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

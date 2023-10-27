@@ -1,0 +1,301 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Rendering Foreign Bindings - The UniFFI user guide</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html"><strong aria-hidden="true">4.</strong> Procedural Macros: Attributes and Derives</a></li><li class="chapter-item expanded "><a href="../futures.html"><strong aria-hidden="true">5.</strong> Futures and async support</a></li><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.</strong> Bindings</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.1.</strong> Customizing binding generation</a></li><li class="chapter-item expanded "><a href="../foreign_traits.html"><strong aria-hidden="true">6.2.</strong> Implementing Rust traits in foreign bindings</a></li><li class="chapter-item expanded "><a href="../kotlin/configuration.html"><strong aria-hidden="true">6.3.</strong> Kotlin</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">6.3.1.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded "><a href="../kotlin/lifetimes.html"><strong aria-hidden="true">6.3.2.</strong> Kotlin Lifetimes</a></li></ol></li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.4.</strong> Swift</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">6.4.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.4.2.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">6.4.3.</strong> Integrating with Xcode</a></li></ol></li><li class="chapter-item expanded "><a href="../python/configuration.html"><strong aria-hidden="true">6.5.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">7.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">8.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">9.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">10.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html" class="active"><strong aria-hidden="true">11.</strong> Rendering Foreign Bindings</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The UniFFI user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="rendering-foreign-bindings"><a class="header" href="#rendering-foreign-bindings">Rendering Foreign Bindings</a></h1>
+<p>This document details the general system that UniFFI uses to render the foreign bindings code.</p>
+<h2 id="the-askama-template-engine"><a class="header" href="#the-askama-template-engine">The Askama template engine</a></h2>
+<p>Our foreign bindings generation uses the <a href="https://djc.github.io/askama/">Askama</a> template rendering engine. Askama uses
+a compile-time macro system that allows the template code to use Rust types directly, calling their methods passing them
+to normal Rust functions.</p>
+<p>The task of the templates is to render the <code>ComponentInterface</code>, which is the Rust representation of the UDL file, into
+a bindings source file.  This mainly consists of rendering source code for each <code>Type</code> from the UDL.</p>
+<h2 id="type-matching"><a class="header" href="#type-matching">Type matching</a></h2>
+<p>One of the main sources of complexity when generating the bindings is handling types.  UniFFI supports a large number of
+types, each of which corresponds to a variant of the <a href="./api/uniffi_bindgen/interface/types/enum.Type.html"><code>Type enum</code></a>.
+At one point there was a fairly large number of &quot;mega-match&quot; functions, each one matching against all <code>Type</code> variants.
+This made the code difficult to understand, because the functionality for one kind of type was split up.</p>
+<p>Our current system for handling this is to have exactly 2 matches against <code>Type</code>:</p>
+<ul>
+<li>One match lives in the template code.  We map each <code>Type</code> variant to a template file that renders definitions and
+helper code, including:
+<ul>
+<li>Class definitions for records, enums, and objects.</li>
+<li>Base classes and helper classes, for example
+<a href="https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/bindings/kotlin/templates/ObjectRuntime.kt"><code>ObjectRuntime.kt</code></a>
+contains shared functionality for all the <code>Type::Object</code> types.</li>
+<li>The FfiConverter class definition.  This handles <a href="./lifting_and_lowering.html">lifting and lowering
+types across the FFI</a> for the type.</li>
+<li>Initialization functions</li>
+<li>Importing dependencies</li>
+<li>See
+<a href="https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/bindings/kotlin/templates/Types.kt"><code>Types.kt</code></a>
+for an example.</li>
+</ul>
+</li>
+<li>The other match lives in the Rust code.  We map each <code>Type</code> variant to a implementation of the <code>CodeType</code> trait that
+renders identifiers and names related to the type, including:
+<ul>
+<li>The name of the type in the foreign language</li>
+<li>The name of the <code>FfiConverter</code> class</li>
+<li>The name of the initialization function</li>
+<li>See
+<a href="https://github.com/mozilla/uniffi-rs/blob/470740289258e1f06171a976d8e15978f028e391/uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs#L198-L230"><code>KotlinCodeOracle::create_code_type()</code></a>
+for an example.</li>
+</ul>
+</li>
+</ul>
+<p>Why is the code organized like this?  For a few reasons:</p>
+<ul>
+<li><strong>Defining Askama templates in Rust required a lot of boilerplate.</strong>  When the Rust code was responsible for
+rendering the class definitions, helper classes, etc., it needed to define a lot of <code>Askama</code> template structs which
+lead to a lot of extra lines of code (see PR <a href="https://github.com/mozilla/uniffi-rs/pull/1189">#1189</a>)</li>
+<li><strong>It's easier to access global state from the template code.</strong>  Since the Rust code only handles names and
+identifiers, it only needs access to the <code>Type</code> instance itself, not the
+<a href="./api/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a> or the
+<a href="./api/uniffi_bindgen/struct.Config.html"><code>Config</code></a>.  This simplifies the Rust side of things (see PR <a href="https://github.com/mozilla/uniffi-rs/pull/1191">#1191</a>).
+Accessing the <code>ComponentInterface</code> and <code>Config</code> from the template code is easy, we simply define these as fields on
+the top-level template Struct then they are accessible from all child templates.</li>
+<li><strong>Putting logic in the template code makes it easier to implement <a href="../udl/ext_types_external.html">external types</a>.</strong>  For
+example, at one point the logic to lift/lower a type lived in the Rust code as a function that generated the
+expression in the foreign language.  However, it was not clear at all how to make this work for external types,
+it would probably require parsing multiple UDL files and managing multiple ComponentInterfaces.  Putting the logic
+to lift/lower the type in the <code>FfiConverter</code> class simplifies this, because we can import the external
+<code>FfiConverter</code> class and use that. We only need to know the name of the <code>FfiConverter</code> class which is a simpler
+task.</li>
+</ul>
+<h2 id="askama-extensions"><a class="header" href="#askama-extensions">Askama extensions</a></h2>
+<p>A couple parts of this system require us to &quot;extend&quot; the functionality of Askama (i.e. adding hacks to workaround its
+limitations).</p>
+<h3 id="adding-imports"><a class="header" href="#adding-imports">Adding imports</a></h3>
+<p>We want our type template files to specify what needs to be imported, but we don't want it to render the import
+statements directly. The imports should be rendered at the top of the file and de-duped in case multiple types require
+the same import. We handle this by:</p>
+<ul>
+<li>Defining a separate Askama template struct that loops over all types and renders the definition/helper code for them.</li>
+<li>That struct also stores a <code>BTreeSet</code> that contains the needed import statements and has an <code>add_import()</code> method that
+the template code calls.  Using a <code>BTreeSet</code> ensures the imports stay de-duped and sorted.</li>
+<li>Rendering this template as a separate pass.  The rendered string and the list of imports get passed to the main
+template which arranges for them to be placed in the correct location.</li>
+</ul>
+<h3 id="including-templates-once"><a class="header" href="#including-templates-once">Including templates once</a></h3>
+<p>We want our type template files to render runtime code, but only once.  For example, we only want to render
+<code>ObjectRuntime.kt</code> once, even if there are multiple Object types defined in the UDL file.  To handle this the type
+template defines an <code>include_once_check()</code> method, which tests if we've included a file before.  The template code then
+uses that to guard the Askama <code>{% include %}</code> statement.  See <a href="https://github.com/mozilla/uniffi-rs/blob/470740289258e1f06171a976d8e15978f028e391/uniffi_bindgen/src/bindings/kotlin/templates/ObjectTemplate.kt#L2"><code>Object.kt</code> for an
+example</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../internals/object_references.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../internals/object_references.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

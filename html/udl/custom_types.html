@@ -1,0 +1,367 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Declaring Custom Types - The UniFFI user guide</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html" class="active"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html"><strong aria-hidden="true">4.</strong> Procedural Macros: Attributes and Derives</a></li><li class="chapter-item expanded "><a href="../futures.html"><strong aria-hidden="true">5.</strong> Futures and async support</a></li><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.</strong> Bindings</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.1.</strong> Customizing binding generation</a></li><li class="chapter-item expanded "><a href="../foreign_traits.html"><strong aria-hidden="true">6.2.</strong> Implementing Rust traits in foreign bindings</a></li><li class="chapter-item expanded "><a href="../kotlin/configuration.html"><strong aria-hidden="true">6.3.</strong> Kotlin</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">6.3.1.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded "><a href="../kotlin/lifetimes.html"><strong aria-hidden="true">6.3.2.</strong> Kotlin Lifetimes</a></li></ol></li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.4.</strong> Swift</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">6.4.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.4.2.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">6.4.3.</strong> Integrating with Xcode</a></li></ol></li><li class="chapter-item expanded "><a href="../python/configuration.html"><strong aria-hidden="true">6.5.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">7.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">8.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">9.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">10.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html"><strong aria-hidden="true">11.</strong> Rendering Foreign Bindings</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The UniFFI user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="custom-types"><a class="header" href="#custom-types">Custom types</a></h1>
+<p>Custom types allow you to extend the UniFFI type system to support types from your Rust crate or 3rd
+party libraries.  This relies on a <a href="./builtin_types.html">builtin</a> UDL type move data across the
+FFI, followed by a conversion to your custom type.</p>
+<h2 id="custom-types-in-the-scaffolding-code"><a class="header" href="#custom-types-in-the-scaffolding-code">Custom types in the scaffolding code</a></h2>
+<p>Consider the following trivial Rust abstraction for a &quot;handle&quot; which wraps an integer:</p>
+<pre><code class="language-rust">pub struct Handle(i64);</code></pre>
+<p>You can use this type in your udl by declaring it via a <code>typedef</code> with a <code>Custom</code> attribute,
+defining the builtin type that it's based on.</p>
+<pre><code class="language-idl">[Custom]
+typedef i64 Handle;
+</code></pre>
+<p>For this to work, your Rust code must also implement a special trait named
+<code>UniffiCustomTypeConverter</code>. This trait is generated by UniFFI and can be found in the generated
+Rust scaffolding - it is defined as:</p>
+<pre><code class="language-Rust">trait UniffiCustomTypeConverter {
+    type Builtin;
+
+    fn into_custom(val: Self::Builtin) -&gt; uniffi::Result&lt;Self&gt;
+    where
+        Self: Sized;
+    fn from_custom(obj: Self) -&gt; Self::Builtin;
+}
+</code></pre>
+<p>where <code>Builtin</code> is the Rust type corresponding to the UniFFI builtin-type - <code>i64</code> in the example above. Thus, the trait
+implementation for <code>Handle</code> would look something like:</p>
+<pre><code class="language-rust">impl UniffiCustomTypeConverter for Handle {
+    type Builtin = i64;
+
+    fn into_custom(val: Self::Builtin) -&gt; uniffi::Result&lt;Self&gt; {
+        Ok(Handle(val))
+    }
+
+    fn from_custom(obj: Self) -&gt; Self::Builtin {
+        obj.0
+    }
+}</code></pre>
+<p>Because <code>UniffiCustomTypeConverter</code> is defined in each crate, this means you can use custom types even
+if they are not defined in your crate - see the 'custom_types' example which demonstrates
+<code>url::Url</code> as a custom type.</p>
+<h2 id="error-handling-during-conversion"><a class="header" href="#error-handling-during-conversion">Error handling during conversion</a></h2>
+<p>You might have noticed that the <code>into_custom</code> function returns a <code>uniffi::Result&lt;Self&gt;</code> (which is an
+alias for <code>anyhow::Result</code>) and might be wondering what happens if you return an <code>Err</code>.</p>
+<p>It depends on the context. In short:</p>
+<ul>
+<li>
+<p>If the value is being used as an argument to a function/constructor that does not return
+a <code>Result</code> (ie, does not have the <code>throws</code> attribute in the .udl), then the uniffi generated
+scaffolding code will <code>panic!()</code></p>
+</li>
+<li>
+<p>If the value is being used as an argument to a function/constructor that <em>does</em> return a
+<code>Result</code> (ie, does have a <code>throws</code> attribute in the .udl), then the uniffi generated
+scaffolding code will use <code>anyhow::Error::downcast()</code> to try and convert the failure into
+that declared error type and:</p>
+<ul>
+<li>If that conversion succeeds, it will be used as the <code>Err</code> for the function.</li>
+<li>If that conversion fails, it will <code>panic()</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="example"><a class="header" href="#example">Example</a></h3>
+<p>For example, consider the following UDL:</p>
+<pre><code class="language-idl">[Custom]
+typedef i64 Handle;
+
+[Error]
+enum ExampleError {
+    &quot;InvalidHandle&quot;
+};
+
+namespace errors_example {
+    take_handle_1(Handle handle);
+
+    [Throws=ExampleError]
+    take_handle_2(Handle handle);
+}
+</code></pre>
+<p>and the following Rust:</p>
+<pre><code class="language-rust">#[derive(Debug, thiserror::Error)]
+pub enum ExampleError {
+    #[error(&quot;The handle is invalid&quot;)]
+    InvalidHandle,
+}
+
+impl UniffiCustomTypeConverter for ExampleHandle {
+    type Builtin = i64;
+
+    fn into_custom(val: Self::Builtin) -&gt; uniffi::Result&lt;Self&gt; {
+        if val == 0 {
+            Err(ExampleErrors::InvalidHandle.into())
+        } else if val == -1 {
+            Err(SomeOtherError.into()) // SomeOtherError decl. not shown.
+        } else {
+            Ok(Handle(val))
+        }
+    }
+    // ...
+}</code></pre>
+<p>The behavior of the generated scaffolding will be:</p>
+<ul>
+<li>Calling <code>take_handle_1</code> with a value of <code>0</code> or <code>-1</code> will always panic.</li>
+<li>Calling <code>take_handle_2</code> with a value of <code>0</code> will throw an <code>ExampleError</code> exception</li>
+<li>Calling <code>take_handle_2</code> with a value of <code>-1</code> will always panic.</li>
+<li>All other values will return <code>Ok(ExampleHandle)</code></li>
+</ul>
+<h2 id="custom-types-in-the-bindings-code"><a class="header" href="#custom-types-in-the-bindings-code">Custom types in the bindings code</a></h2>
+<p><em>Note: The facility described in this document is not yet available for the Ruby bindings.</em></p>
+<p>By default, the foreign bindings just see the builtin type - eg, the bindings will get an integer
+for the <code>Handle</code>.</p>
+<p>However, custom types can also be converted on the bindings side.  For example, a Url type could be
+configured to use the <code>java.net.URL</code> class in Kotlin by adding code like this to <code>uniffi.toml</code>:</p>
+<pre><code class="language-toml">[bindings.kotlin.custom_types.Url]
+# Name of the type in the Kotlin code
+type_name = &quot;URL&quot;
+# Classes that need to be imported
+imports = [ &quot;java.net.URL&quot; ]
+# Expression to convert the builtin type the custom type.  In this example, `{}` will be replaced with the int value.
+into_custom = &quot;URL({})&quot;
+# Expression to convert the custom type to the builtin type.  In this example, `{}` will be replaced with the URL value.
+from_custom = &quot;{}.toString()&quot;
+</code></pre>
+<p>Here's how the configuration works in <code>uniffi.toml</code>.</p>
+<ul>
+<li>Create a <code>[bindings.{language}.custom_types.{CustomTypeName}]</code> table to enable a custom type on a bindings side.  This has several subkeys:
+<ul>
+<li><code>type_name</code> (Optional, Typed languages only): Type/class name for the
+custom type.  Defaults to the type name used in the UDL.  Note: The UDL
+type name will still be used in generated function signatures, however it
+will be defined as a typealias to this type.</li>
+<li><code>into_custom</code>: Expression to convert the UDL type to the custom type.  <code>{}</code> will be replaced with the value of the UDL type.</li>
+<li><code>from_custom</code>: Expression to convert the custom type to the UDL type.  <code>{}</code> will be replaced with the value of the custom type.</li>
+<li><code>imports</code> (Optional) list of modules to import for your <code>into_custom</code>/<code>from_custom</code> functions.</li>
+</ul>
+</li>
+</ul>
+<h2 id="using-custom-types-from-other-crates"><a class="header" href="#using-custom-types-from-other-crates">Using Custom Types from other crates</a></h2>
+<p>To use the <code>Handle</code> example above from another crate, these other crates just refer to the type
+as a regular <code>External</code> type - for example, another crate might use <code>udl</code> such as:</p>
+<pre><code class="language-idl">[External=&quot;crate_defining_handle_name&quot;]
+typedef extern Handle;
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../udl/ext_types_external.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../proc_macro/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../udl/ext_types_external.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../proc_macro/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Declaring External Types - The UniFFI user guide</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html" class="active"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html"><strong aria-hidden="true">4.</strong> Procedural Macros: Attributes and Derives</a></li><li class="chapter-item expanded "><a href="../futures.html"><strong aria-hidden="true">5.</strong> Futures and async support</a></li><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.</strong> Bindings</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.1.</strong> Customizing binding generation</a></li><li class="chapter-item expanded "><a href="../foreign_traits.html"><strong aria-hidden="true">6.2.</strong> Implementing Rust traits in foreign bindings</a></li><li class="chapter-item expanded "><a href="../kotlin/configuration.html"><strong aria-hidden="true">6.3.</strong> Kotlin</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">6.3.1.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded "><a href="../kotlin/lifetimes.html"><strong aria-hidden="true">6.3.2.</strong> Kotlin Lifetimes</a></li></ol></li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.4.</strong> Swift</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">6.4.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.4.2.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">6.4.3.</strong> Integrating with Xcode</a></li></ol></li><li class="chapter-item expanded "><a href="../python/configuration.html"><strong aria-hidden="true">6.5.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">7.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">8.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">9.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">10.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html"><strong aria-hidden="true">11.</strong> Rendering Foreign Bindings</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The UniFFI user guide</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="declaring-external-types"><a class="header" href="#declaring-external-types">Declaring External Types</a></h1>
+<p><em>Note: The facility described in this document is not yet available for all foreign language
+bindings.</em></p>
+<p>It is possible to use types defined by UniFFI in an external crate. For example, let's assume
+that you have an existing crate named <code>demo_crate</code> with the following UDL:</p>
+<pre><code class="language-idl">dictionary DemoDict {
+  string string_val;
+  boolean bool_val;
+};
+</code></pre>
+<p>And further, assume that you have another crate called <code>consuming_crate</code> which would like to use
+this dictionary. Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
+<code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
+<pre><code class="language-idl">[External=&quot;demo_crate&quot;]
+typedef extern DemoDict;
+
+// Now define our own dictionary which references the imported type.
+dictionary ConsumingDict {
+  DemoDict demo_dict;
+  boolean another_bool;
+};
+
+</code></pre>
+<p>If in the above example, <code>DemoDict</code> was actually &quot;exported&quot; via a procmacro
+you should instead use <code>ExternExport</code></p>
+<p>(Note the special type <code>extern</code> used on the <code>typedef</code>. It is not currently enforced that the
+literal <code>extern</code> is used, but we hope to enforce this later, so please use it!)</p>
+<p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
+<code>consuming_crate</code>'s <code>lib.rs</code> might look like:</p>
+<pre><code class="language-rust">use demo_crate::DemoDict;
+
+pub struct ConsumingDict {
+    demo_dict: DemoDict,
+    another_bool: bool,
+}
+
+uniffi::include_scaffolding!(&quot;consuming_crate&quot;);</code></pre>
+<p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
+<p>The <code>External</code> attribute can be specified on dictionaries, enums and errors.</p>
+<h2 id="external-interface-types"><a class="header" href="#external-interface-types">External interface types</a></h2>
+<p>If the external type is an <a href="./interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
+<pre><code class="language-idl">[ExternalInterface=&quot;demo_crate&quot;]
+typedef extern DemoInterface;
+</code></pre>
+<h2 id="foreign-bindings"><a class="header" href="#foreign-bindings">Foreign bindings</a></h2>
+<p>The foreign bindings will also need to know how to access the external type,
+which varies slightly for each language:</p>
+<h3 id="kotlin"><a class="header" href="#kotlin">Kotlin</a></h3>
+<p>For Kotlin, &quot;library mode&quot; generation with <code>generate --library [path-to-cdylib]</code> is recommended when using external types.
+If you use <code>generate [udl-path]</code> then the generated code needs to know how to import
+the external types from the Kotlin module that corresponds to the Rust crate.
+By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in <code>uniffi.toml</code> with an entry like this:</p>
+<pre><code>[bindings.kotlin.external_packages]
+# Map the crate names from [External={name}] into Kotlin package names
+rust-crate-name = &quot;kotlin.package.name&quot;
+</code></pre>
+<h3 id="swift"><a class="header" href="#swift">Swift</a></h3>
+<p>For Swift, you must compile all generated <code>.swift</code> files together in a single
+module since the generate code expects that it can access external types
+without importing them.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../udl/ext_types.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../udl/custom_types.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../udl/ext_types.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../udl/custom_types.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
