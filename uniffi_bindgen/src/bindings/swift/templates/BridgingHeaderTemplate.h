@@ -47,8 +47,17 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-// Continuation callback for UniFFI Futures
-typedef void (*UniFfiRustFutureContinuation)(void * _Nonnull, int8_t);
+// Define FFI callback types
+{%- for callback in ci.ffi_callback_definitions() %}
+typedef
+    {%- match callback.return_type() %}{% when Some(return_type) %} {{ return_type|ffi_type_name }} {% when None %} void {% endmatch -%}
+    (*{{ callback.name()|ffi_callback_name }})(
+        {%- for arg in callback.arguments() -%}
+        {{ arg.type_().borrow()|header_ffi_type_name }}
+        {%- if !loop.last %}, {% endif %}
+        {%- endfor -%}
+    );
+{%- endfor %}
 
 // Scaffolding functions
 {%- for func in ci.iter_ffi_function_definitions() %}

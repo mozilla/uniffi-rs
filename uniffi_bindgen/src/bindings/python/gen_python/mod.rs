@@ -337,7 +337,12 @@ impl PythonCodeOracle {
         fixup_keyword(nm.to_string().to_shouty_snake_case())
     }
 
-    fn ffi_type_label(ffi_type: &FfiType) -> String {
+    /// Get the idiomatic Python rendering of an FFI callback function
+    fn ffi_callback_name(&self, nm: &str) -> String {
+        format!("UNIFFI_{}", nm.to_shouty_snake_case())
+    }
+
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8 => "ctypes.c_int8".to_string(),
             FfiType::UInt8 => "ctypes.c_uint8".to_string(),
@@ -355,10 +360,10 @@ impl PythonCodeOracle {
                 None => "_UniffiRustBuffer".to_string(),
             },
             FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
+            FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::ForeignCallback => "_UNIFFI_FOREIGN_CALLBACK_T".to_string(),
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
-            FfiType::RustFutureContinuationCallback => "_UNIFFI_FUTURE_CONTINUATION_T".to_string(),
             FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
@@ -485,7 +490,7 @@ pub mod filters {
     }
 
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle::ffi_type_label(type_))
+        Ok(PythonCodeOracle.ffi_type_label(type_))
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
@@ -506,6 +511,11 @@ pub mod filters {
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.enum_variant_name(nm))
+    }
+
+    /// Get the idiomatic Python rendering of a FFI callback function name
+    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.ffi_callback_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.

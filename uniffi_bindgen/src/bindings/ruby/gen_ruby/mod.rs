@@ -152,12 +152,11 @@ mod filters {
             FfiType::RustArcPtr(_) => ":pointer".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
+            FfiType::Callback(_) => unimplemented!("FFI Callbacks not implemented"),
             // Callback interfaces are not yet implemented, but this needs to return something in
             // order for the coverall tests to pass.
             FfiType::ForeignCallback => ":pointer".to_string(),
-            FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationCallback
-            | FfiType::RustFutureContinuationData => {
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
                 unimplemented!("Async functions are not implemented")
             }
         })
