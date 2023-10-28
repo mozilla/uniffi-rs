@@ -117,8 +117,16 @@ abstract class FFIObject: Disposable, AutoCloseable {
         this.pointer = pointer
     }
 
+    /**
+     * This constructor can be used to instantiate a fake object.
+     *
+     * **WARNING: Any object instantiated with this constructor cannot be passed to an actual Rust-backed object.**
+     * Since there isn't a backing [Pointer] the FFI lower functions will crash.
+     * @param noPointer Placeholder value so we can have a constructor separate from the default empty one that may be
+     *   implemented for classes extending [FFIObject].
+     */
     @Suppress("UNUSED_PARAMETER")
-    protected constructor(noPointer: NoPointer) {
+    constructor(noPointer: NoPointer) {
         this.pointer = null
     }
 
@@ -171,4 +179,5 @@ abstract class FFIObject: Disposable, AutoCloseable {
     }
 }
 
+/** Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly. */
 object NoPointer

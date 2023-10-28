@@ -7,8 +7,6 @@ import java.util.concurrent.*
 
 import uniffi.coverall.*
 
-import com.sun.jna.Pointer
-
 // TODO: use an actual test runner.
 
 // Test some_dict().
@@ -450,4 +448,25 @@ FakeCoveralls("using_fakes").use { coveralls ->
     val patch = FakePatch(Color.RED)
     coveralls.addPatch(patch)
     assert(!coveralls.getRepairs().isEmpty())
+}
+
+FakeCoveralls("using_fakes_and_calling_methods_without_override_crashes").use { coveralls ->
+    var exception: Throwable? = null
+    try {
+        coveralls.cloneMe()
+    } catch (e: Throwable) {
+        exception = e
+    }
+    assert(exception != null)
+}
+
+Coveralls("using_fakes_with_real_objects_crashes").use { coveralls ->
+    val patch = FakePatch(Color.RED)
+    var exception: Throwable? = null
+    try {
+        coveralls.addPatch(patch)
+    } catch (e: Throwable) {
+        exception = e
+    }
+    assert(exception != null)
 }
