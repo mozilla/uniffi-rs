@@ -82,9 +82,12 @@ pub(crate) fn expand_export(
             let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
             let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items)
                 .unwrap_or_else(|e| e.into_compile_error());
-            let metadata_items =
-                callback_interface::metadata_items(&self_ident, &items, &mod_path, docstring)
-                    .unwrap_or_else(|e| vec![e.into_compile_error()]);
+            let metadata_items = (!udl_mode).then(|| {
+                let items =
+                    callback_interface::metadata_items(&self_ident, &items, &mod_path, docstring)
+                        .unwrap_or_else(|e| vec![e.into_compile_error()]);
+                quote! { #(#items)* }
+            });
             let ffi_converter_tokens =
                 ffi_converter_callback_interface_impl(&self_ident, &trait_impl_ident, udl_mode);
 
@@ -93,7 +96,7 @@ pub(crate) fn expand_export(
 
                 #ffi_converter_tokens
 
-                #(#metadata_items)*
+                #metadata_items
             })
         }
         ExportItem::Struct {

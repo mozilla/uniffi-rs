@@ -15,10 +15,10 @@
 #[::uniffi::export_for_udl]
 pub trait r#{{ obj.name() }} {
     {%- for meth in obj.methods() %}
-    fn {% if meth.is_async() %}async {% endif %}{{ meth.name() }}(
+    fn {% if meth.is_async() %}async {% endif %}r#{{ meth.name() }}(
         {% if meth.takes_self_by_arc()%}self: Arc<Self>{% else %}&self{% endif %},
         {%- for arg in meth.arguments() %}
-        {{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
+        r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
         {%- endfor %}
     )
     {%- match (meth.return_type(), meth.throws_type()) %}

@@ -33,20 +33,6 @@ use self::{
     record::expand_record,
 };
 
-struct IdentPair {
-    lhs: Ident,
-    rhs: Ident,
-}
-
-impl Parse for IdentPair {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let lhs = input.parse()?;
-        input.parse::<Token![,]>()?;
-        let rhs = input.parse()?;
-        Ok(Self { lhs, rhs })
-    }
-}
-
 struct CustomTypeInfo {
     ident: Ident,
     builtin: Path,
@@ -255,14 +241,6 @@ pub fn derive_object_for_udl(_attrs: TokenStream, input: TokenStream) -> TokenSt
 #[proc_macro_attribute]
 pub fn export_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
     do_export(attrs, input, true)
-}
-
-/// Generate the FfiConverter implementation for an trait interface for the scaffolding code
-#[doc(hidden)]
-#[proc_macro]
-pub fn scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -> TokenStream {
-    let input: IdentPair = syn::parse_macro_input!(tokens);
-    export::ffi_converter_callback_interface_impl(&input.lhs, &input.rhs, true).into()
 }
 
 /// A helper macro to include generated component scaffolding.
