@@ -53,8 +53,10 @@ pub enum FfiType {
     /// Pointer to a FFI struct (e.g. a VTable).  The inner value matches one of the items in
     /// [crate::ComponentInterface::ffi_struct_definitions].
     Struct(String),
-    /// Pointer to a Rust future
-    RustFutureHandle,
+    /// Opaque 64-bit handle
+    ///
+    /// These are used to pass objects across the FFI.
+    Handle,
     /// Pointer to an FfiType.
     Reference(Box<FfiType>),
     /// Opaque pointer
@@ -202,7 +204,7 @@ impl FfiFunction {
     ) {
         self.arguments = args.into_iter().collect();
         if self.is_async() {
-            self.return_type = Some(FfiType::RustFutureHandle);
+            self.return_type = Some(FfiType::Handle);
             self.has_rust_call_status_arg = false;
         } else {
             self.return_type = return_type;

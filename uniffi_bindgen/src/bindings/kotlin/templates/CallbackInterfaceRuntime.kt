@@ -6,14 +6,14 @@ internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
 internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
-public abstract class FfiConverterCallbackInterface<CallbackInterface: Any>: FfiConverter<CallbackInterface, UniffiHandle> {
+public abstract class FfiConverterCallbackInterface<CallbackInterface: Any>: FfiConverter<CallbackInterface, Long> {
     internal val handleMap = UniffiHandleMap<CallbackInterface>()
 
-    internal fun drop(handle: UniffiHandle) {
+    internal fun drop(handle: Long) {
         handleMap.remove(handle)
     }
 
-    override fun lift(value: UniffiHandle): CallbackInterface {
+    override fun lift(value: Long): CallbackInterface {
         return handleMap.get(value)
     }
 

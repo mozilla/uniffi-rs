@@ -514,7 +514,7 @@ impl ComponentInterface {
             arguments: vec![
                 FfiArgument {
                     name: "handle".to_owned(),
-                    type_: FfiType::RustFutureHandle,
+                    type_: FfiType::Handle,
                 },
                 FfiArgument {
                     name: "callback".to_owned(),
@@ -522,7 +522,7 @@ impl ComponentInterface {
                 },
                 FfiArgument {
                     name: "callback_data".to_owned(),
-                    type_: FfiType::UInt64,
+                    type_: FfiType::Handle,
                 },
             ],
             return_type: None,
@@ -540,7 +540,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: return_ffi_type,
             has_rust_call_status_arg: true,
@@ -555,7 +555,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: None,
             has_rust_call_status_arg: false,
@@ -570,7 +570,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "handle".to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: None,
             has_rust_call_status_arg: false,

@@ -529,6 +529,7 @@ impl SwiftCodeOracle {
             FfiType::UInt64 => "UInt64".into(),
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
+            FfiType::Handle => "UInt64".into(),
             FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
@@ -537,7 +538,7 @@ impl SwiftCodeOracle {
             FfiType::Reference(inner) => {
                 format!("UnsafeMutablePointer<{}>", self.ffi_type_label(inner))
             }
-            FfiType::VoidPointer | FfiType::RustFutureHandle => "UnsafeMutableRawPointer".into(),
+            FfiType::VoidPointer => "UnsafeMutableRawPointer".into(),
         }
     }
 
@@ -630,6 +631,7 @@ pub mod filters {
             FfiType::UInt64 => "uint64_t".into(),
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
+            FfiType::Handle => "uint64_t".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
@@ -638,7 +640,7 @@ pub mod filters {
             }
             FfiType::Struct(name) => SwiftCodeOracle.ffi_struct_name(name),
             FfiType::Reference(inner) => format!("{}* _Nonnull", header_ffi_type_name(inner)?),
-            FfiType::VoidPointer | FfiType::RustFutureHandle => "void* _Nonnull".into(),
+            FfiType::VoidPointer => "void* _Nonnull".into(),
         })
     }
 

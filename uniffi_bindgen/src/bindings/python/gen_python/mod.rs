@@ -361,6 +361,7 @@ impl PythonCodeOracle {
             FfiType::UInt64 => "ctypes.c_uint64".to_string(),
             FfiType::Float32 => "ctypes.c_float".to_string(),
             FfiType::Float64 => "ctypes.c_double".to_string(),
+            FfiType::Handle => "ctypes.c_uint64".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
                 Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
@@ -371,7 +372,7 @@ impl PythonCodeOracle {
             FfiType::Struct(name) => self.ffi_struct_name(name),
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::Reference(inner) => format!("ctypes.POINTER({})", self.ffi_type_label(inner)),
-            FfiType::VoidPointer | FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
+            FfiType::VoidPointer => "ctypes.c_void_p".to_string(),
         }
     }
 

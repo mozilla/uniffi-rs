@@ -52,7 +52,7 @@ use anyhow::bail;
 use bytes::Buf;
 
 use crate::{
-    FfiDefault, MetadataBuffer, Result, RustBuffer, RustCallStatus, RustCallStatusCode,
+    FfiDefault, Handle, MetadataBuffer, Result, RustBuffer, RustCallStatus, RustCallStatusCode,
     UnexpectedUniFFICallbackError,
 };
 
@@ -381,6 +381,66 @@ pub trait ConvertError<UT>: Sized {
     fn try_convert_unexpected_callback_error(e: UnexpectedUniFFICallbackError) -> Result<Self>;
 }
 
+/// Manage handles for `Arc<Self>` instances
+///
+/// Handles are used to manage objects that are passed across the FFI.  They general usage is:
+///
+/// * Rust creates an `Arc<>`
+/// * Rust uses `new_handle` to create a handle that represents the Arc reference
+/// * Rust passes the handle to the foreign code as a `u64`
+/// * The foreign code passes the handle back to `Rust` to refer to the object:
+///   * Handle are usually passed as borrowed values.  When an FFI function inputs a handle as an
+///     argument, the foreign code simply passes a copy of the `u64` to Rust, which calls `get_arc`
+///     to get a new `Arc<>` clone for it.
+///   * Handles are returned as owned values.  When an FFI function returns a handle, the foreign
+///     code either stops using the handle after returning it or calls `clone_handle` and returns
+///     the clone.
+/// * Eventually the foreign code may destroy their handle by passing it into a "free" FFI
+///   function. This functions input an owned handle and consume it.
+///
+/// The foreign code also defines their own handles.  These represent foreign objects that are
+/// passed to Rust.  Using foreign handles is essentially the same as above, but in reverse.
+///
+/// Handles must always be `Send` and the objects they reference must always be `Sync`.
+/// This means that it must be safe to send handles to other threads and use them there.
+///
+/// Note: this only needs to be derived for unsized types, there's a blanket impl for `T: Sized`.
+///
+/// ## Safety
+///
+/// All traits are unsafe (implementing it requires `unsafe impl`) because we can't guarantee
+/// that it's safe to pass your type out to foreign-language code and back again. Buggy
+/// implementations of this trait might violate some assumptions made by the generated code,
+/// or might not match with the corresponding code in the generated foreign-language bindings.
+/// These traits should not be used directly, only in generated code, and the generated code should
+/// have fixture tests to test that everything works correctly together.
+/// `&T` using the Arc.
+pub unsafe trait HandleAlloc<UT>: Send + Sync {
+    /// Create a new handle for an Arc value
+    ///
+    /// Use this to lower an Arc into a handle value before passing it across the FFI.
+    /// The newly-created handle will have reference count = 1.
+    fn new_handle(value: Arc<Self>) -> Handle;
+
+    /// Clone a handle
+    ///
+    /// This creates a new handle from an existing one.
+    /// It's used when the foreign code wants to pass back an owned handle and still keep a copy
+    /// for themselves.
+    fn clone_handle(handle: Handle) -> Handle;
+
+    /// Get a clone of the `Arc<>` using a "borrowed" handle.
+    ///
+    /// Take care that the handle can not be destroyed between when it's passed and when
+    /// `get_arc()` is called.  #1797 is a cautionary tale.
+    fn get_arc(handle: Handle) -> Arc<Self> {
+        Self::consume_handle(Self::clone_handle(handle))
+    }
+
+    /// Consume a handle, getting back the initial `Arc<>`
+    fn consume_handle(handle: Handle) -> Arc<Self>;
+}
+
 /// Derive FFI traits
 ///
 /// This can be used to derive:
@@ -494,4 +554,50 @@ macro_rules! derive_ffi_traits {
             }
         }
     };
+
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? HandleAlloc<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
+        // Derived HandleAlloc implementation.
+        //
+        // This is only needed for !Sized types like `dyn Trait`, below is a blanket implementation
+        // for any sized type.
+        unsafe impl $(<$($generic),*>)* $crate::HandleAlloc<$ut> for $ty $(where $($where)*)*
+        {
+            // To implement HandleAlloc for an unsized type, wrap it with a second Arc which
+            // converts the wide pointer into a normal pointer.
+
+            fn new_handle(value: ::std::sync::Arc<Self>) -> $crate::Handle {
+                $crate::Handle::from_pointer(::std::sync::Arc::into_raw(::std::sync::Arc::new(value)))
+            }
+
+            fn clone_handle(handle: $crate::Handle) -> $crate::Handle {
+                unsafe {
+                    ::std::sync::Arc::<::std::sync::Arc<Self>>::increment_strong_count(handle.as_pointer::<::std::sync::Arc<Self>>());
+                }
+                handle
+            }
+
+            fn consume_handle(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
+                unsafe {
+                    ::std::sync::Arc::<Self>::clone(
+                        &std::sync::Arc::<::std::sync::Arc::<Self>>::from_raw(handle.as_pointer::<::std::sync::Arc<Self>>())
+                    )
+                }
+            }
+        }
+    };
+}
+
+unsafe impl<T: Send + Sync, UT> HandleAlloc<UT> for T {
+    fn new_handle(value: Arc<Self>) -> Handle {
+        Handle::from_pointer(Arc::into_raw(value))
+    }
+
+    fn clone_handle(handle: Handle) -> Handle {
+        unsafe { Arc::increment_strong_count(handle.as_pointer::<T>()) };
+        handle
+    }
+
+    fn consume_handle(handle: Handle) -> Arc<Self> {
+        unsafe { Arc::from_raw(handle.as_pointer()) }
+    }
 }

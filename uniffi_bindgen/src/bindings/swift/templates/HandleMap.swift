@@ -1,10 +1,9 @@
-fileprivate typealias UniffiHandle = UInt64
 fileprivate class UniffiHandleMap<T> {
-    private var map: [UniffiHandle: T] = [:]
+    private var map: [UInt64: T] = [:]
     private let lock = NSLock()
-    private var currentHandle: UniffiHandle = 1
+    private var currentHandle: UInt64 = 1
 
-    func insert(obj: T) -> UniffiHandle {
+    func insert(obj: T) -> UInt64 {
         lock.withLock {
             let handle = currentHandle
             currentHandle += 1
@@ -13,7 +12,7 @@ fileprivate class UniffiHandleMap<T> {
         }
     }
 
-     func get(handle: UniffiHandle) throws -> T {
+     func get(handle: UInt64) throws -> T {
         try lock.withLock {
             guard let obj = map[handle] else {
                 throw UniffiInternalError.unexpectedStaleHandle
@@ -23,7 +22,7 @@ fileprivate class UniffiHandleMap<T> {
     }
 
     @discardableResult
-    func remove(handle: UniffiHandle) throws -> T {
+    func remove(handle: UInt64) throws -> T {
         try lock.withLock {
             guard let obj = map.removeValue(forKey: handle) else {
                 throw UniffiInternalError.unexpectedStaleHandle

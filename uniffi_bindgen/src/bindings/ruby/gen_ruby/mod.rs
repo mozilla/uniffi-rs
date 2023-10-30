@@ -149,6 +149,7 @@ mod filters {
             FfiType::UInt64 => ":uint64".to_string(),
             FfiType::Float32 => ":float".to_string(),
             FfiType::Float64 => ":double".to_string(),
+            FfiType::Handle => ":uint64".to_string(),
             FfiType::RustArcPtr(_) => ":pointer".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
@@ -161,9 +162,6 @@ mod filters {
             FfiType::VoidPointer => ":pointer".to_string(),
             FfiType::Struct(_) => {
                 unimplemented!("Structs are not implemented")
-            }
-            FfiType::RustFutureHandle => {
-                unimplemented!("Async functions are not implemented")
             }
         })
     }
