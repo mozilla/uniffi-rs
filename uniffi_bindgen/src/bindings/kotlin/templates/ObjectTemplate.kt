@@ -84,6 +84,37 @@ class {{ impl_class_name }}(
     {% endif %}
     {% endfor %}
 
+    {%- for tm in obj.uniffi_traits() %}
+    {%-     match tm %}
+    {%-         when UniffiTrait::Display { fmt } %}
+    override fun toString(): String =
+        callWithPointer {
+            {%- call kt::to_ffi_call_with_prefix("it", fmt) %}
+        }.let {
+            {{ fmt.return_type().unwrap()|lift_fn }}(it)
+        }
+    {%-         when UniffiTrait::Eq { eq, ne } %}
+    {# only equals used #}
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is {{ impl_class_name}}) return false
+        return callWithPointer {
+            {%- call kt::to_ffi_call_with_prefix("it", eq) %}
+        }.let {
+            {{ eq.return_type().unwrap()|lift_fn }}(it)
+        }
+    }
+    {%-         when UniffiTrait::Hash { hash } %}
+    override fun hashCode(): Int =
+        callWithPointer {
+            {%- call kt::to_ffi_call_with_prefix("it", hash) %}
+        }.let {
+            {{ hash.return_type().unwrap()|lift_fn }}(it).toInt()
+        }
+    {%-         else %}
+    {%-     endmatch %}
+    {%- endfor %}
+
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
