@@ -370,6 +370,7 @@ impl KotlinCodeOracle {
             FfiType::Int64 | FfiType::UInt64 => "Long".to_string(),
             FfiType::Float32 => "Float".to_string(),
             FfiType::Float64 => "Double".to_string(),
+            FfiType::Handle => "Long".to_string(),
             FfiType::RustArcPtr(_) => "Pointer".to_string(),
             FfiType::RustBuffer(maybe_suffix) => {
                 format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
@@ -378,7 +379,7 @@ impl KotlinCodeOracle {
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) => self.ffi_type_label_by_reference(inner),
-            FfiType::VoidPointer | FfiType::RustFutureHandle => "Pointer".to_string(),
+            FfiType::VoidPointer => "Pointer".to_string(),
         }
     }
 

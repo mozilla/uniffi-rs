@@ -12,7 +12,7 @@
 //!
 //! 0. At startup, register a [RustFutureContinuationCallback] by calling
 //!    rust_future_continuation_callback_set.
-//! 1. Call the scaffolding function to get a [RustFutureHandle]
+//! 1. Call the scaffolding function to get a [Handle]
 //! 2a. In a loop:
 //!   - Call [rust_future_poll]
 //!   - Suspend the function until the [rust_future_poll] continuation function is called
@@ -288,7 +288,7 @@ where
 /// x86-64 machine . By parametrizing on `T::ReturnType` we can instead monomorphize by hand and
 /// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
-pub trait RustFutureFfi<ReturnType> {
+pub trait RustFutureFfi<ReturnType>: Send + Sync {
     fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64);
     fn ffi_cancel(&self);
     fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;

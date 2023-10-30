@@ -16,7 +16,11 @@
 
 - The callback interface code was reworked to use vtables rather than a single callback method.
   See https://github.com/mozilla/uniffi-rs/pull/1818 for details and how the other bindings were updated.
-- Removed `FfiType::RustFutureContinuationData`.  `RustFutureContinuation` callbacks now take a `u64` handle.
+- Added the `FfiType::Handle` variant.  This is a general-purpose opaque handle type used for
+  passing objects cross the FFI.  This type is always 64 bits and replaces the various older handle
+  types including:
+  - Rust futures (replacing `FfiType::RustFutureHandle` which was removed)
+  - Rust future continuation data (Replacing `FfiType::RustFutureContinuationData` which was moved).
 
 ## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 

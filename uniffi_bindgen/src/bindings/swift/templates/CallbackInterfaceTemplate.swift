@@ -18,19 +18,18 @@ fileprivate struct {{ ffi_converter_name }} {
 
 extension {{ ffi_converter_name }} : FfiConverter {
     typealias SwiftType = {{ type_name }}
-    // We can use Handle as the FfiType because it's a typealias to UInt64
-    typealias FfiType = UniffiHandle
+    typealias FfiType = UInt64
 
-    public static func lift(_ handle: UniffiHandle) throws -> SwiftType {
+    public static func lift(_ handle: UInt64) throws -> SwiftType {
         try handleMap.get(handle: handle)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        let handle: UniffiHandle = try readInt(&buf)
+        let handle: UInt64 = try readInt(&buf)
         return try lift(handle)
     }
 
-    public static func lower(_ v: SwiftType) -> UniffiHandle {
+    public static func lower(_ v: SwiftType) -> UInt64 {
         return handleMap.insert(obj: v)
     }
 

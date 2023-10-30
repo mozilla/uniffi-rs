@@ -264,7 +264,7 @@ pub(super) fn gen_ffi_function(
         quote! {
             #[doc(hidden)]
             #[no_mangle]
-            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::RustFutureHandle {
+            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::Handle {
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 match uniffi_lift_args() {
