@@ -417,22 +417,53 @@ fn format_code_with_rustfmt(path: &Utf8Path) -> Result<()> {
     Ok(())
 }
 
+/// Load TOML from file if the file exists.
+fn load_toml_file(source: Option<&Utf8Path>) -> Result<Option<toml::value::Table>> {
+    if let Some(source) = source {
+        if source.exists() {
+            let contents =
+                fs::read_to_string(source).with_context(|| format!("read file: {:?}", source))?;
+            return Ok(Some(
+                toml::de::from_str(&contents)
+                    .with_context(|| format!("parse toml: {:?}", source))?,
+            ));
+        }
+    }
+
+    Ok(None)
+}
+
+/// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
 fn load_initial_config<Config: DeserializeOwned>(
     crate_root: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<Config> {
-    let path = match config_file_override {
-        Some(cfg) => Some(cfg.to_owned()),
-        None => crate_root.join("uniffi.toml").canonicalize_utf8().ok(),
-    };
-    let toml_config = match path {
-        Some(path) => {
-            let contents = fs::read_to_string(path).context("Failed to read config file")?;
-            toml::de::from_str(&contents)?
+    let mut config = load_toml_file(Some(crate_root.join("uniffi.toml").as_path()))
+        .context("default config")?
+        .unwrap_or(toml::value::Table::default());
+
+    let override_config = load_toml_file(config_file_override).context("override config")?;
+    if let Some(override_config) = override_config {
+        merge_toml(&mut config, override_config);
+    }
+
+    Ok(toml::Value::from(config).try_into()?)
+}
+
+fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
+    for (key, value) in b.into_iter() {
+        match a.get_mut(&key) {
+            Some(existing_value) => match (existing_value, value) {
+                (toml::Value::Table(ref mut t0), toml::Value::Table(t1)) => {
+                    merge_toml(t0, t1);
+                }
+                (v, value) => *v = value,
+            },
+            None => {
+                a.insert(key, value);
+            }
         }
-        None => toml::Value::from(toml::value::Table::default()),
-    };
-    Ok(toml_config.try_into()?)
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -515,5 +546,57 @@ mod test {
 
         let not_a_crate_root = &this_crate_root.join("src/templates");
         assert!(guess_crate_root(&not_a_crate_root.join("src/example.udl")).is_err());
+    }
+
+    #[test]
+    fn test_merge_toml() {
+        let default = r#"
+            foo = "foo"
+            bar = "bar"
+
+            [table1]
+            foo = "foo"
+            bar = "bar"
+        "#;
+        let mut default = toml::de::from_str(default).unwrap();
+
+        let override_toml = r#"
+            # update key
+            bar = "BAR"
+            # insert new key
+            baz = "BAZ"
+
+            [table1]
+            # update key
+            bar = "BAR"
+            # insert new key
+            baz = "BAZ"
+
+            # new table
+            [table1.table2]
+            bar = "BAR"
+            baz = "BAZ"
+        "#;
+        let override_toml = toml::de::from_str(override_toml).unwrap();
+
+        let expected = r#"
+            foo = "foo"
+            bar = "BAR"
+            baz = "BAZ"
+
+            [table1]
+            foo = "foo"
+            bar = "BAR"
+            baz = "BAZ"
+
+            [table1.table2]
+            bar = "BAR"
+            baz = "BAZ"
+        "#;
+        let expected: toml::value::Table = toml::de::from_str(expected).unwrap();
+
+        merge_toml(&mut default, override_toml);
+
+        assert_eq!(&expected, &default);
     }
 }
