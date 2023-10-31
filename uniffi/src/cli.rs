@@ -35,9 +35,7 @@ enum Commands {
         #[clap(long, short)]
         no_format: bool,
 
-        /// Path to optional uniffi config file. This config will be merged on top of default
-        /// `uniffi.toml` config in crate root. The merge recursively upserts TOML keys into
-        /// the default config.
+        /// Path to optional uniffi config file. This config is merged with the `uniffi.toml` config present in each crate, with its values taking precedence.
         #[clap(long, short)]
         config: Option<Utf8PathBuf>,
 
