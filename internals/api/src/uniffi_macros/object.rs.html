@@ -199,7 +199,7 @@
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn&#39;t being met.
-        </span><span class="macro">uniffi::deps::static_assertions::assert_impl_all!</span>(#ident: Sync, Send);
+        </span><span class="macro">uniffi::deps::static_assertions::assert_impl_all!</span>(#ident: ::core::marker::Sync, ::core::marker::Send);
 
         <span class="attr">#[doc(hidden)]
         #[automatically_derived]

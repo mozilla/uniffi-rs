@@ -266,7 +266,7 @@
             }
         }
 
-        <span class="macro">::uniffi::deps::static_assertions::assert_impl_all!</span>(#trait_impl_ident: Send);
+        <span class="macro">::uniffi::deps::static_assertions::assert_impl_all!</span>(#trait_impl_ident: ::core::marker::Send);
 
         <span class="kw">impl </span>#trait_ident <span class="kw">for </span>#trait_impl_ident {
             #trait_impl_methods
