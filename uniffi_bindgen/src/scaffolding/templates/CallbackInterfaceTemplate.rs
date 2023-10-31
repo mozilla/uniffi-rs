@@ -46,7 +46,7 @@ impl Drop for {{ trait_impl }} {
     }
 }
 
-uniffi::deps::static_assertions::assert_impl_all!({{ trait_impl }}: Send);
+uniffi::deps::static_assertions::assert_impl_all!({{ trait_impl }}: ::core::marker::Send);
 
 impl r#{{ trait_name }} for {{ trait_impl }} {
     {%- for meth in cbi.methods() %}
