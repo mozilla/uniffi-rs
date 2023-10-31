@@ -17,9 +17,11 @@ import os
 import sys
 import ctypes
 import enum
+import itertools
 import struct
 import contextlib
 import datetime
+import threading
 import typing
 {%- if ci.has_async_fns() %}
 import asyncio
@@ -33,8 +35,8 @@ import platform
 _DEFAULT = object()
 
 {% include "RustBufferTemplate.py" %}
+{% include "HandleMap.py" %}
 {% include "Helpers.py" %}
-{% include "PointerManager.py" %}
 {% include "RustBufferHelper.py" %}
 
 # Contains loading, initialization code, and the FFI Function declarations.

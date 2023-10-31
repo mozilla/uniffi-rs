@@ -298,12 +298,10 @@ impl KotlinCodeOracle {
             }
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
-            FfiType::ForeignExecutorHandle => "USize".to_string(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
             FfiType::RustFutureContinuationCallback => {
                 "UniFffiRustFutureContinuationCallbackType".to_string()
             }
-            FfiType::RustFutureContinuationData => "USize".to_string(),
         }
     }
 

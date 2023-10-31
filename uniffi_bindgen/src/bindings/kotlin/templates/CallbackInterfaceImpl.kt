@@ -3,11 +3,11 @@
 // Implement the foreign callback handler for {{ interface_name }}
 internal class {{ callback_handler_class }} : ForeignCallback {
     @Suppress("TooGenericExceptionCaught")
-    override fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
+    override fun invoke(handle: UniffiHandle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int {
         val cb = {{ ffi_converter_name }}.handleMap.get(handle)
         return when (method) {
             IDX_CALLBACK_FREE -> {
-                {{ ffi_converter_name }}.handleMap.remove(handle)
+                {{ ffi_converter_name }}.handleMap.consumeHandle(handle)
 
                 // Successful return
                 // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`

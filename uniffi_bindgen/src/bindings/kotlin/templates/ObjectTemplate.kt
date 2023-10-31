@@ -7,7 +7,7 @@
 
 open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
-    constructor(handle: UniffiHandle): super(handle)
+    constructor(handleWrapper: UniffiHandleWrapper): super(handleWrapper.handle)
 
     /**
      * This constructor can be used to instantiate a fake object.
@@ -22,7 +22,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
-        this({% call kt::to_ffi_call(cons) %})
+        this(UniffiHandleWrapper({% call kt::to_ffi_call(cons) %}))
     {%- when None %}
     {%- endmatch %}
 
@@ -102,7 +102,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%-     match tm %}
     {%-         when UniffiTrait::Display { fmt } %}
     override fun toString(): String =
-        callWithPointer {
+        callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", fmt) %}
         }.let {
             {{ fmt.return_type().unwrap()|lift_fn }}(it)
@@ -112,7 +112,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is {{ impl_class_name}}) return false
-        return callWithPointer {
+        return callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", eq) %}
         }.let {
             {{ eq.return_type().unwrap()|lift_fn }}(it)
@@ -120,7 +120,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     }
     {%-         when UniffiTrait::Hash { hash } %}
     override fun hashCode(): Int =
-        callWithPointer {
+        callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", hash) %}
         }.let {
             {{ hash.return_type().unwrap()|lift_fn }}(it).toInt()
@@ -133,7 +133,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     companion object {
         {% for cons in obj.alternate_constructors() -%}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
-            {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
+            {{ impl_class_name }}(UniffiHandleWrapper({% call kt::to_ffi_call(cons) %}))
         {% endfor %}
     }
     {% else %}
@@ -150,20 +150,20 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
 public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, UniffiHandle> {
     {%- if obj.is_trait_interface() %}
-    internal val handleMap = ConcurrentHandleMap<{{ interface_name }}>()
+    internal val handleMap = UniffiHandleMap<{{ type_name }}>()
     {%- endif %}
 
     override fun lower(value: {{ type_name }}): UniffiHandle {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.handle
+        return value.handle!!
         {%- when ObjectImpl::Trait %}
-        return UniffiHandle(handleMap.insert(value))
+        return handleMap.newHandle(value)
         {%- endmatch %}
     }
 
     override fun lift(value: UniffiHandle): {{ type_name }} {
-        return {{ impl_class_name }}(value)
+        return {{ impl_class_name }}(UniffiHandleWrapper(value))
     }
 
     override fun read(buf: ByteBuffer): {{ type_name }} {

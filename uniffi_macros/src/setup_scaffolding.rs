@@ -130,7 +130,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[doc(hidden)]
         pub trait UniffiCustomTypeConverter {
             type Builtin;
-            fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> where Self: Sized;
+            fn into_custom(val: Self::Builtin) -> ::uniffi::Result<Self> where Self: Sized;
             fn from_custom(obj: Self) -> Self::Builtin;
         }
     })
@@ -161,7 +161,6 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
         (quote! { f32 }, "f32"),
         (quote! { f64 }, "f64"),
         (quote! { ::uniffi::Handle }, "handle"),
-        (quote! { *const ::std::ffi::c_void }, "pointer"),
         (quote! { ::uniffi::RustBuffer }, "rust_buffer"),
         (quote! { () }, "void"),
     ];
@@ -176,7 +175,7 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: *const ()) {
+            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: ::uniffi::Handle) {
                 ::uniffi::ffi::rust_future_poll::<#return_type, crate::UniFfiTag>(handle, callback, data);
             }
 

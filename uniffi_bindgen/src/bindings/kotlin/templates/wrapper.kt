@@ -29,12 +29,15 @@ import java.nio.ByteOrder
 import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.withLock
 
 {%- for req in self.imports() %}
 {{ req.render() }}
 {%- endfor %}
 
 {% include "RustBufferTemplate.kt" %}
+{% include "HandleMap.kt" %}
 {% include "FfiConverterTemplate.kt" %}
 {% include "Helpers.kt" %}
 

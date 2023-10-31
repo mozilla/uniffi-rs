@@ -19,7 +19,11 @@
 - The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now
   inputs the callback pointer.  External bindings authors will need to update their code.
 - The object handle FFI has changed.  External bindings generators will need to update their code to
-  use the new handle system.
+  use the new handle system:
+    * A single `FfiType::Handle` is used for all object handles.
+    * `FfiType::Handle` is always a 64-bit int.
+    * Foreign handles must always set the lowest bit of that int.
+- The `NoPointer` singleton was renamed to `NoHandle`
 
 ### What's new?
 

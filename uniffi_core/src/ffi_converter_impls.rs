@@ -23,7 +23,7 @@
 /// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, ForeignExecutor, Lift, LiftReturn, Lower, LowerReturn,
+    ConvertError, FfiConverter, ForeignExecutor, Handle, Lift, LiftReturn, Lower, LowerReturn,
     MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
@@ -411,7 +411,7 @@ where
 /// The foreign bindings may use an actual pointer to the executor object, or a usized integer
 /// handle.
 unsafe impl<UT> FfiConverter<UT> for ForeignExecutor {
-    type FfiType = crate::ForeignExecutorHandle;
+    type FfiType = Handle;
 
     // Passing these back to the foreign bindings is currently not supported
     fn lower(executor: Self) -> Self::FfiType {
@@ -419,13 +419,7 @@ unsafe impl<UT> FfiConverter<UT> for ForeignExecutor {
     }
 
     fn write(executor: Self, buf: &mut Vec<u8>) {
-        // Use native endian when writing these values, so they can be casted to pointer values
-        match std::mem::size_of::<usize>() {
-            // Use native endian when reading these values, so they can be casted to pointer values
-            4 => buf.put_u32_ne(executor.handle.0 as u32),
-            8 => buf.put_u64_ne(executor.handle.0 as u64),
-            n => panic!("Invalid usize width: {n}"),
-        };
+        buf.put_u64(executor.handle.as_raw())
     }
 
     fn try_lift(executor: Self::FfiType) -> Result<Self> {
@@ -433,13 +427,7 @@ unsafe impl<UT> FfiConverter<UT> for ForeignExecutor {
     }
 
     fn try_read(buf: &mut &[u8]) -> Result<Self> {
-        let usize_val = match std::mem::size_of::<usize>() {
-            // Use native endian when reading these values, so they can be casted to pointer values
-            4 => buf.get_u32_ne() as usize,
-            8 => buf.get_u64_ne() as usize,
-            n => panic!("Invalid usize width: {n}"),
-        };
-        <Self as FfiConverter<UT>>::try_lift(crate::ForeignExecutorHandle(usize_val as *const ()))
+        <Self as FfiConverter<UT>>::try_lift(Handle::from_raw(buf.get_u64()).unwrap())
     }
 
     const TYPE_ID_META: MetadataBuffer =

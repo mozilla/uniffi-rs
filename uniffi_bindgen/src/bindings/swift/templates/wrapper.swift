@@ -14,6 +14,7 @@ import {{ config.ffi_module_name() }}
 #endif
 
 {% include "RustBufferTemplate.swift" %}
+{% include "HandleMap.swift" %}
 {% include "Helpers.swift" %}
 
 // Public interface members begin here.
