@@ -50,6 +50,13 @@
 <a href="#50" id="50">50</a>
 <a href="#51" id="51">51</a>
 <a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -86,7 +93,14 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     <span class="kw">let </span>test_helper = UniFFITestHelper::new(fixture_name)<span class="question-mark">?</span>;
     <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>cdylib_path = test_helper.copy_cdylib_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
-    generate_bindings(<span class="kw-2">&amp;</span>cdylib_path, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>[TargetLanguage::Ruby], <span class="kw-2">&amp;</span>out_dir, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+    generate_bindings(
+        <span class="kw-2">&amp;</span>cdylib_path,
+        <span class="prelude-val">None</span>,
+        <span class="kw-2">&amp;</span>[TargetLanguage::Ruby],
+        <span class="prelude-val">None</span>,
+        <span class="kw-2">&amp;</span>out_dir,
+        <span class="bool-val">false</span>,
+    )<span class="question-mark">?</span>;
 
     <span class="kw">let </span>rubypath = env::var_os(<span class="string">&quot;RUBYLIB&quot;</span>).unwrap_or_else(|| OsString::from(<span class="string">&quot;&quot;</span>));
     <span class="kw">let </span>rubypath = env::join_paths(

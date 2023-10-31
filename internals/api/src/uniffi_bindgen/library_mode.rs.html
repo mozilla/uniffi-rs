@@ -285,6 +285,15 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -324,6 +333,7 @@
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     crate_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     target_languages: <span class="kw-2">&amp;</span>[TargetLanguage],
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     out_dir: <span class="kw-2">&amp;</span>Utf8Path,
     try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;<span class="kw">crate</span>::Config&gt;&gt;&gt; {
@@ -334,6 +344,7 @@
         },
         library_path,
         crate_name,
+        config_file_override,
         out_dir,
     )
 }
@@ -345,6 +356,7 @@
     binding_generator: T,
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     crate_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     out_dir: <span class="kw-2">&amp;</span>Utf8Path,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;T::Config&gt;&gt;&gt; {
     <span class="kw">let </span>cargo_metadata = MetadataCommand::new()
@@ -353,7 +365,12 @@
     <span class="kw">let </span>cdylib_name = calc_cdylib_name(library_path);
     binding_generator.check_library_path(library_path, cdylib_name)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>sources = find_sources(<span class="kw-2">&amp;</span>cargo_metadata, library_path, cdylib_name)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>sources = find_sources(
+        <span class="kw-2">&amp;</span>cargo_metadata,
+        library_path,
+        cdylib_name,
+        config_file_override,
+    )<span class="question-mark">?</span>;
     <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..sources.len() {
         <span class="comment">// Partition up the sources list because we&#39;re eventually going to call
         // `update_from_dependency_configs()` which requires an exclusive reference to one source and
@@ -420,6 +437,7 @@
     cargo_metadata: <span class="kw-2">&amp;</span>cargo_metadata::Metadata,
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;Config&gt;&gt;&gt; {
     <span class="kw">let </span>items = macro_metadata::extract_from_library(library_path)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_groups = create_metadata_groups(<span class="kw-2">&amp;</span>items);
@@ -465,7 +483,7 @@
                 ci.add_metadata(metadata)<span class="question-mark">?</span>;
             };
             ci.add_metadata(group)<span class="question-mark">?</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>config = load_initial_config::&lt;Config&gt;(crate_root, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>config = load_initial_config::&lt;Config&gt;(crate_root, config_file_override)<span class="question-mark">?</span>;
             <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
             }

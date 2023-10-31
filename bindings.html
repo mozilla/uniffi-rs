@@ -181,6 +181,8 @@ information, see <a href="./tutorial/foreign_language_bindings.html">Foreign Lan
 <p>Each of the bindings reads a file <code>uniffi.toml</code> in the root of a crate which supports
 various options which influence how the bindings are generated. Default options will be used
 if this file is missing.</p>
+<p><code>--config</code> option can be used to specify additional uniffi config file. This config is merged with
+the <code>uniffi.toml</code> config present in each crate, with its values taking precedence.</p>
 <p>Each binding supports different options, so please see the documentation for each binding language.</p>
 
                     </main>
