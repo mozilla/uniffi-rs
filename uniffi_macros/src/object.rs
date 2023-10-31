@@ -52,7 +52,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn't being met.
-        uniffi::deps::static_assertions::assert_impl_all!(#ident: Sync, Send);
+        uniffi::deps::static_assertions::assert_impl_all!(#ident: ::core::marker::Sync, ::core::marker::Send);
 
         #[doc(hidden)]
         #[automatically_derived]
