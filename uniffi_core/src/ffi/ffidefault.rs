@@ -45,21 +45,9 @@ impl FfiDefault for crate::Handle {
     }
 }
 
-impl FfiDefault for *const std::ffi::c_void {
-    fn ffi_default() -> Self {
-        std::ptr::null()
-    }
-}
-
 impl FfiDefault for crate::RustBuffer {
     fn ffi_default() -> Self {
         unsafe { Self::from_raw_parts(std::ptr::null_mut(), 0, 0) }
-    }
-}
-
-impl FfiDefault for crate::ForeignExecutorHandle {
-    fn ffi_default() -> Self {
-        Self(std::ptr::null())
     }
 }
 

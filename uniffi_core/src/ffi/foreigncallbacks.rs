@@ -10,7 +10,7 @@
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use crate::{ForeignExecutorHandle, RustBuffer, RustTaskCallback};
+use crate::{Handle, RustBuffer, RustTaskCallback};
 
 /// ForeignCallback is the Rust representation of a foreign language function.
 /// It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,
@@ -30,7 +30,7 @@ use crate::{ForeignExecutorHandle, RustBuffer, RustTaskCallback};
 /// * Callbacks return one of the `CallbackResult` values
 ///   Note: The output buffer might still contain 0 bytes of data.
 pub type ForeignCallback = unsafe extern "C" fn(
-    handle: u64,
+    handle: Handle,
     method: u32,
     args_data: *const u8,
     args_len: i32,
@@ -50,7 +50,7 @@ pub type ForeignCallback = unsafe extern "C" fn(
 ///
 /// The callback should return one of the `ForeignExecutorCallbackResult` values.
 pub type ForeignExecutorCallback = extern "C" fn(
-    executor: ForeignExecutorHandle,
+    executor: Handle,
     delay: u32,
     task: Option<RustTaskCallback>,
     task_data: *const (),

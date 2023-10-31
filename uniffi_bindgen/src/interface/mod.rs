@@ -45,7 +45,8 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{btree_map::Entry, BTreeMap, BTreeSet, HashSet},
+    collections::{btree_map::Entry, hash_map::DefaultHasher, BTreeMap, BTreeSet, HashSet},
+    hash::{Hash, Hasher},
     iter,
 };
 
@@ -160,6 +161,15 @@ impl ComponentInterface {
 
     pub fn namespace_docstring(&self) -> Option<&str> {
         self.types.namespace_docstring.as_deref()
+    }
+
+    /// Get the checksum value for our namespace.
+    ///
+    /// This is highly likely to be unique for each `ComponentInterface`
+    pub fn namespace_hash(&self) -> u32 {
+        let mut hasher = DefaultHasher::new();
+        self.types.namespace.name.hash(&mut hasher);
+        hasher.finish() as u32
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -468,8 +478,8 @@ impl ComponentInterface {
                     type_: FfiType::RustFutureContinuationCallback,
                 },
                 FfiArgument {
-                    name: "callback_data".to_owned(),
-                    type_: FfiType::RustFutureContinuationData,
+                    name: "continuation_data".to_owned(),
+                    type_: FfiType::Handle,
                 },
             ],
             return_type: None,

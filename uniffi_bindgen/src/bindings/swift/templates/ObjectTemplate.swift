@@ -111,25 +111,25 @@ public class {{ impl_class_name }}:
     {%-         when UniffiTrait::Display { fmt } %}
     public var description: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", fmt) %}
+            {% call swift::to_ffi_call_with_prefix("self.handle", fmt) %}
         )
     }
     {%-         when UniffiTrait::Debug { fmt } %}
     public var debugDescription: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", fmt) %}
+            {% call swift::to_ffi_call_with_prefix("self.handle", fmt) %}
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
     public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
         return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("lhs.pointer", eq) %}
+            {% call swift::to_ffi_call_with_prefix("lhs.handle", eq) %}
         )
     }
     {%-         when UniffiTrait::Hash { hash } %}
     public func hash(into hasher: inout Hasher) {
         let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", hash) %}
+            {% call swift::to_ffi_call_with_prefix("self.handle", hash) %}
         )
         hasher.combine(val)
     }
@@ -148,7 +148,7 @@ public class {{ impl_class_name }}:
 
 public struct {{ ffi_converter_name }}: FfiConverter {
     {%- if obj.is_trait_interface() %}
-    fileprivate static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
+    fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
     {%- endif %}
 
     typealias FfiType = UInt64
@@ -163,10 +163,7 @@ public struct {{ ffi_converter_name }}: FfiConverter {
         {%- when ObjectImpl::Struct %}
         return value.handle
         {%- when ObjectImpl::Trait %}
-        guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
-            fatalError("Cast to UnsafeMutableRawPointer failed")
-        }
-        return ptr
+        return handleMap.newHandle(obj: value)
         {%- endmatch %}
     }
 

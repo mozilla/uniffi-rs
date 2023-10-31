@@ -530,10 +530,8 @@ impl SwiftCodeOracle {
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback".into(),
-            FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
             FfiType::RustFutureContinuationCallback => "UniFfiRustFutureContinuation".into(),
-            FfiType::RustFutureContinuationData => "UnsafeMutableRawPointer".into(),
         }
     }
 
@@ -541,8 +539,7 @@ impl SwiftCodeOracle {
         match ffi_type {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
-            | FfiType::RustFutureContinuationCallback
-            | FfiType::RustFutureContinuationData => {
+            | FfiType::RustFutureContinuationCallback => {
                 format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
             }
             _ => self.ffi_type_label_raw(ffi_type),
@@ -644,11 +641,9 @@ pub mod filters {
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
-            FfiType::ForeignExecutorHandle => "size_t".into(),
             FfiType::RustFutureContinuationCallback => {
                 "UniFfiRustFutureContinuation _Nonnull".into()
             }
-            FfiType::RustFutureContinuationData => "void* _Nonnull".into(),
         })
     }
 

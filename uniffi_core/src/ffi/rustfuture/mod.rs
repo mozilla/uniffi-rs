@@ -28,7 +28,7 @@ pub enum RustFuturePoll {
 ///
 /// The Rust side of things calls this when the foreign side should call [rust_future_poll] again
 /// to continue progress on the future.
-pub type RustFutureContinuationCallback = extern "C" fn(callback_data: *const (), RustFuturePoll);
+pub type RustFutureContinuationCallback = extern "C" fn(callback_data: Handle, RustFuturePoll);
 
 // === Public FFI API ===
 
@@ -64,7 +64,7 @@ where
 pub unsafe fn rust_future_poll<ReturnType, UT>(
     handle: Handle,
     callback: RustFutureContinuationCallback,
-    data: *const (),
+    data: Handle,
 ) where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
@@ -135,4 +135,3 @@ derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<f64>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<Handle>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<crate::RustBuffer>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<()>);
-derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<*const ::std::ffi::c_void>);

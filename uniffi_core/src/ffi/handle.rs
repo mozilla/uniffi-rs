@@ -14,6 +14,13 @@
 /// * The lowest bit will always be set for foreign handles and never set for Rust ones (since the
 ///   leaked pointer will be aligned).
 ///
+/// Foreign handles for internal bindings languages look like this:
+///   * Bits 0-48 are the map key.  Keys are always odd, so the lowest bit is always set.
+///   * Bits 48-64 are the map identifier, used to detect using a handle with the wrong map
+///
+/// External bindings authors are free to use any form they want for their handles, as long the lowest bit is set.
+/// In particular, they don't need to implement the map identifier.
+///
 /// Rust handles are mainly managed is through the [crate::HandleAlloc] trait.
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
 #[repr(transparent)]

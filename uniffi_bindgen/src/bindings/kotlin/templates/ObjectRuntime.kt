@@ -1,5 +1,16 @@
 {{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
+
+// Wraps `UniffiHandle` to pass to object constructors.
+//
+// This class exists because `UniffiHandle` is a typealias to `Long`.  If the object constructor
+// inputs `UniffiHandle` directly and the user defines a primary constructor than inputs a single
+// `Long` or `ULong` input, then we get JVM signature conflicts.  To avoid this, we pass this type
+// in instead.
+//
+// Let's try to remove this when we update the code based on ADR-0008.
+data class UniffiHandleWrapper(val handle: UniffiHandle)
+
 // The base class for all UniFFI Object types.
 //
 // This class provides core operations for working with the Rust handle to the live Rust struct on
@@ -100,7 +111,7 @@ abstract class FFIObject: Disposable, AutoCloseable {
         this.handle = null
     }
 
-    protected val handle: UniffiHandle?
+    internal val handle: UniffiHandle?
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)

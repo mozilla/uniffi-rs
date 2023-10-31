@@ -99,3 +99,11 @@ private func uniffiCheckCallStatus(
             throw UniffiInternalError.unexpectedRustCallStatusCode
     }
 }
+
+fileprivate extension NSLock {
+    func withLock<T>(f: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+        return try f()
+    }
+}

@@ -60,7 +60,7 @@ typedef struct RustCallStatus {
 #endif // def UNIFFI_SHARED_H
 
 // Continuation callback for UniFFI Futures
-typedef void (*UniFfiRustFutureContinuation)(void * _Nonnull, int8_t);
+typedef void (*UniFfiRustFutureContinuation)(uint64_t, int8_t);
 
 // Scaffolding functions
 {%- for func in ci.iter_ffi_function_definitions() %}

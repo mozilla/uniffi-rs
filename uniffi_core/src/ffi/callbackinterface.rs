@@ -113,7 +113,7 @@
 //! type and then returns to client code.
 //!
 
-use crate::{ForeignCallback, ForeignCallbackCell, Lift, LiftReturn, RustBuffer};
+use crate::{ForeignCallback, ForeignCallbackCell, Handle, Lift, LiftReturn, RustBuffer};
 use std::fmt;
 
 /// The method index used by the Drop trait to communicate to the foreign language side that Rust has finished with it,
@@ -167,7 +167,7 @@ impl ForeignCallbackInternals {
     }
 
     /// Invoke a callback interface method on the foreign side and return the result
-    pub fn invoke_callback<R, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> R
+    pub fn invoke_callback<R, UniFfiTag>(&self, handle: Handle, method: u32, args: RustBuffer) -> R
     where
         R: LiftReturn<UniFfiTag>,
     {
