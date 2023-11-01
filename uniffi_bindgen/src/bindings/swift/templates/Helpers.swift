@@ -93,7 +93,7 @@ private func uniffiCheckCallStatus(
             }
 
         case CALL_CANCELLED:
-                throw CancellationError()
+                throw fatalError("Cancellation not supported yet")
 
         default:
             throw UniffiInternalError.unexpectedRustCallStatusCode
