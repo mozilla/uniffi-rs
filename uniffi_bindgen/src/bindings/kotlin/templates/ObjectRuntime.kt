@@ -120,6 +120,12 @@ abstract class FFIObject: Disposable, AutoCloseable {
         // To be overridden in subclasses.
     }
 
+    fun uniffiCloneHandle(): UniffiHandle {
+        return rustCall() { status ->
+            _UniFFILib.INSTANCE.{{ obj.ffi_object_clone().name() }}(handle!!, status)
+        }
+    }
+
     override fun destroy() {
         // Only allow a single call to this method.
         // TODO: maybe we should log a warning if called more than once?
@@ -150,7 +156,7 @@ abstract class FFIObject: Disposable, AutoCloseable {
         } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the handle being freed concurrently.
         try {
-            return block(this.handle!!)
+            return block(this.uniffiCloneHandle())
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {

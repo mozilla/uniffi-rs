@@ -333,6 +333,9 @@ class PyGetters:
     def get_nothing(self, _v):
         return None
 
+    def round_trip_object(self, coveralls):
+        return coveralls
+
 class PyNode:
     def __init__(self):
         self.parent = None
@@ -431,6 +434,14 @@ class TraitsTest(unittest.TestCase):
         # Make sure we don't crash when undoing it all
         py_node.set_parent(None)
         traits[0].set_parent(None)
+
+    def test_round_tripping(self):
+        rust_getters = make_rust_getters();
+        coveralls = Coveralls("test_round_tripping")
+        # Check that these don't cause use-after-free bugs
+        test_round_trip_through_rust(rust_getters)
+
+        test_round_trip_through_foreign(PyGetters())
 
 if __name__=='__main__':
     unittest.main()

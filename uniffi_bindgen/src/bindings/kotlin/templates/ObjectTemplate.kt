@@ -161,7 +161,7 @@ public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Uniffi
     override fun lower(value: {{ type_name }}): UniffiHandle {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.handle!!
+        return value.uniffiCloneHandle()
         {%- when ObjectImpl::Trait %}
         return handleMap.newHandle(value)
         {%- endmatch %}

@@ -30,6 +30,10 @@ public class {{ impl_class_name }}:
         self.handle = handle
     }
 
+    public func uniffiCloneHandle() -> UInt64 {
+        return try! rustCall { {{ obj.ffi_object_clone().name() }}(self.handle, $0) }
+    }
+
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     {%- call swift::docstring(cons, 4) %}
@@ -59,7 +63,7 @@ public class {{ impl_class_name }}:
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
-                    self.handle
+                    self.uniffiCloneHandle()
                     {%- for arg in meth.arguments() -%}
                     ,
                     {{ arg|lower_fn }}({{ arg.name()|var_name }})
@@ -92,14 +96,14 @@ public class {{ impl_class_name }}:
     {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", meth) %}
         )
     }
 
     {%- when None %}
     {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
-        {% call swift::to_ffi_call_with_prefix("self.handle", meth) %}
+        {% call swift::to_ffi_call_with_prefix("self.uniffiCloneHandle()", meth) %}
     }
 
     {%- endmatch -%}
@@ -161,7 +165,7 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     public static func lower(_ value: {{ type_name }}) -> UInt64 {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.handle
+        return value.uniffiCloneHandle()
         {%- when ObjectImpl::Trait %}
         return handleMap.newHandle(obj: value)
         {%- endmatch %}

@@ -39,6 +39,12 @@ pub fn free_fn_symbol_name(namespace: &str, object_name: &str) -> String {
     format!("uniffi_{namespace}_fn_free_{object_name}")
 }
 
+/// FFI symbol name for the `clone` function for an object.
+pub fn clone_fn_symbol_name(namespace: &str, object_name: &str) -> String {
+    let object_name = object_name.to_ascii_lowercase();
+    format!("uniffi_{namespace}_fn_clone_{object_name}")
+}
+
 /// FFI symbol name for the `init_callback` function for a callback interface
 pub fn init_callback_fn_symbol_name(namespace: &str, callback_interface_name: &str) -> String {
     let callback_interface_name = callback_interface_name.to_ascii_lowercase();

@@ -24,6 +24,9 @@ class {{ impl_name }}:
         if handle is not None:
             _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, handle)
 
+    def uniffi_clone_handle(self):
+        return _rust_call(_UniffiLib.{{ obj.ffi_object_clone().name() }}, self._uniffi_handle)
+
     # Used by alternative constructors or any methods which return this type.
     @classmethod
     def _make_instance_(cls, handle):
@@ -58,13 +61,13 @@ class {{ impl_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
-        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_handle", eq) %})
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self.uniffi_clone_handle()", eq) %})
 
     def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
-        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_handle", ne) %})
+        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self.uniffi_clone_handle()", ne) %})
 {%-         when UniffiTrait::Hash { hash } %}
             {%- call py::method_decl("__hash__", hash) %}
 {%      endmatch %}
@@ -99,9 +102,7 @@ class {{ ffi_converter_name }}:
     def lower(value: {{ type_name }}):
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        if not isinstance(value, {{ impl_name }}):
-            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
-        return value._uniffi_handle
+        return value.uniffi_clone_handle()
         {%- when ObjectImpl::Trait %}
         return {{ ffi_converter_name }}._handle_map.new_handle(value)
         {%- endmatch %}

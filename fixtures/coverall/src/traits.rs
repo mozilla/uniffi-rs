@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use super::{ComplexError, CoverallError};
+use super::{ComplexError, CoverallError, Coveralls};
 use std::sync::{Arc, Mutex};
 
 // namespace functions.
@@ -41,6 +41,16 @@ pub trait Getters: Send + Sync {
     fn get_option(&self, v: String, arg2: bool) -> Result<Option<String>, ComplexError>;
     fn get_list(&self, v: Vec<i32>, arg2: bool) -> Vec<i32>;
     fn get_nothing(&self, v: String);
+    fn round_trip_object(&self, coveralls: Arc<Coveralls>) -> Arc<Coveralls>;
+}
+
+pub fn test_round_trip_through_rust(getters: Arc<dyn Getters>) -> Arc<dyn Getters> {
+    getters
+}
+
+pub fn test_round_trip_through_foreign(getters: Arc<dyn Getters>) {
+    let coveralls = getters.round_trip_object(Arc::new(Coveralls::new("round-trip".to_owned())));
+    assert_eq!(coveralls.get_name(), "round-trip");
 }
 
 struct RustGetters;
@@ -90,6 +100,10 @@ impl Getters for RustGetters {
     }
 
     fn get_nothing(&self, _v: String) {}
+
+    fn round_trip_object(&self, coveralls: Arc<Coveralls>) -> Arc<Coveralls> {
+        coveralls
+    }
 }
 
 pub fn make_rust_getters() -> Arc<dyn Getters> {

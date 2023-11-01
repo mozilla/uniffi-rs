@@ -120,7 +120,7 @@ _rust_call(
         {%- call setup_args_extra_indent(meth) %}
         return _uniffi_rust_call_async(
             _UniffiLib.{{ meth.ffi_func().name() }}(
-                self._uniffi_handle, {% call arg_list_lowered(meth) %}
+                self.uniffi_clone_handle(), {% call arg_list_lowered(meth) %}
             ),
             _UniffiLib.{{ meth.ffi_rust_future_poll(ci) }},
             _UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
@@ -150,7 +150,7 @@ _rust_call(
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(
-            {% call to_ffi_call_with_prefix("self._uniffi_handle", meth) %}
+            {% call to_ffi_call_with_prefix("self.uniffi_clone_handle()", meth) %}
         )
 
 {%-         when None %}
@@ -158,7 +158,7 @@ _rust_call(
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
-        {% call to_ffi_call_with_prefix("self._uniffi_handle", meth) %}
+        {% call to_ffi_call_with_prefix("self.uniffi_clone_handle()", meth) %}
 {%      endmatch %}
 {%  endif %}
 

@@ -143,14 +143,13 @@ impl ScaffoldingBits {
             // pointer.
             quote! {
                 {
-                    let foreign_arc = ::std::boxed::Box::leak(unsafe { Box::from_raw(uniffi_self_lowered.as_raw() as *mut ::std::sync::Arc<dyn #self_ident>) });
-                    // Take a clone for our own use.
-                    Ok(::std::sync::Arc::clone(foreign_arc))
+                    Ok(<dyn #self_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::consume_handle(uniffi_self_lowered))
                 }
             }
         } else {
             quote! { #lift_impl::try_lift(uniffi_self_lowered) }
         };
+
         let lift_closure = sig.lift_closure(Some(quote! {
             match #try_lift_self {
                 Ok(v) => v,

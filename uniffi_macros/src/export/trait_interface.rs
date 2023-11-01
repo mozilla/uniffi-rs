@@ -13,7 +13,6 @@ use crate::{
     object::interface_meta_static_var,
     util::{derive_ffi_traits, ident_to_string, tagged_impl_header},
 };
-use uniffi_meta::free_fn_symbol_name;
 
 pub(super) fn gen_trait_scaffolding(
     mod_path: &str,
@@ -28,12 +27,27 @@ pub(super) fn gen_trait_scaffolding(
     let trait_name = ident_to_string(&self_ident);
     let trait_impl = callback_interface::trait_impl(mod_path, &self_ident, &items)
         .unwrap_or_else(|e| e.into_compile_error());
+    let clone_fn_ident = Ident::new(
+        &uniffi_meta::clone_fn_symbol_name(mod_path, &trait_name),
+        Span::call_site(),
+    );
     let free_fn_ident = Ident::new(
-        &free_fn_symbol_name(mod_path, &trait_name),
+        &uniffi_meta::free_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
     );
 
     let free_tokens = quote! {
+        #[doc(hidden)]
+        #[no_mangle]
+        pub extern "C" fn #clone_fn_ident(
+            handle: ::uniffi::Handle,
+            call_status: &mut ::uniffi::RustCallStatus
+        ) -> ::uniffi::Handle {
+            uniffi::rust_call(call_status, || {
+                Ok(<dyn #self_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::clone_handle(handle))
+            })
+        }
+
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(

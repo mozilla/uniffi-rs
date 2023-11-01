@@ -32,7 +32,14 @@ class {{ obj.name()|class_name_rb }}
   end
 
   def self._uniffi_lower(inst)
-    return inst.instance_variable_get :@handle
+    return inst._uniffi_clone_handle()
+  end
+
+  def _uniffi_clone_handle()
+    return {{ ci.namespace()|class_name_rb }}.rust_call(
+      :{{ obj.ffi_object_clone().name() }},
+      @handle
+    )
   end
 
   {%- match obj.primary_constructor() %}
@@ -62,14 +69,14 @@ class {{ obj.name()|class_name_rb }}
   {%- when Some with (return_type) -%}
   def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
     {%- call rb::setup_args_extra_indent(meth) %}
-    result = {% call rb::to_ffi_call_with_prefix("@handle", meth) %}
+    result = {% call rb::to_ffi_call_with_prefix("_uniffi_clone_handle()", meth) %}
     return {{ "result"|lift_rb(return_type) }}
   end
 
   {%- when None -%}
   def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
       {%- call rb::setup_args_extra_indent(meth) %}
-      {% call rb::to_ffi_call_with_prefix("@handle", meth) %}
+      {% call rb::to_ffi_call_with_prefix("_uniffi_clone_handle()", meth) %}
   end
   {% endmatch %}
   {% endfor %}

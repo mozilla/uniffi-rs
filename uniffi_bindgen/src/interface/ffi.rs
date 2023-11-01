@@ -141,6 +141,29 @@ pub struct FfiFunction {
 }
 
 impl FfiFunction {
+    pub fn ffi_clone(name: String) -> Self {
+        Self {
+            name,
+            arguments: vec![FfiArgument {
+                name: "handle".to_owned(),
+                type_: FfiType::Handle,
+            }],
+            return_type: Some(FfiType::Handle),
+            ..Default::default()
+        }
+    }
+
+    pub fn ffi_free(name: String) -> Self {
+        Self {
+            name,
+            arguments: vec![FfiArgument {
+                name: "handle".to_owned(),
+                type_: FfiType::Handle,
+            }],
+            ..Default::default()
+        }
+    }
+
     pub fn callback_init(module_path: &str, trait_name: &str) -> Self {
         Self {
             name: uniffi_meta::init_callback_fn_symbol_name(module_path, trait_name),

@@ -57,8 +57,6 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use std::iter;
-
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
@@ -98,6 +96,8 @@ pub struct Object {
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we're trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
+    #[checksum_ignore]
+    pub(super) ffi_func_clone: FfiFunction,
     #[checksum_ignore]
     pub(super) ffi_func_free: FfiFunction,
     // Ffi function to initialize the foreign callback for trait interfaces
@@ -160,6 +160,10 @@ impl Object {
         self.uniffi_traits.iter().collect()
     }
 
+    pub fn ffi_object_clone(&self) -> &FfiFunction {
+        &self.ffi_func_clone
+    }
+
     pub fn ffi_object_free(&self) -> &FfiFunction {
         &self.ffi_func_free
     }
@@ -175,7 +179,8 @@ impl Object {
     }
 
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
-        iter::once(&self.ffi_func_free)
+        [&self.ffi_func_clone, &self.ffi_func_free]
+            .into_iter()
             .chain(&self.ffi_init_callback)
             .chain(self.constructors.iter().map(|f| &f.ffi_func))
             .chain(self.methods.iter().map(|f| &f.ffi_func))
@@ -242,7 +247,8 @@ impl AsType for Object {
 
 impl From<uniffi_meta::ObjectMetadata> for Object {
     fn from(meta: uniffi_meta::ObjectMetadata) -> Self {
-        let ffi_free_name = meta.free_ffi_symbol_name();
+        let ffi_func_clone = FfiFunction::ffi_clone(meta.clone_ffi_symbol_name());
+        let ffi_func_free = FfiFunction::ffi_free(meta.free_ffi_symbol_name());
         Object {
             module_path: meta.module_path,
             name: meta.name,
@@ -250,10 +256,8 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
-            ffi_func_free: FfiFunction {
-                name: ffi_free_name,
-                ..Default::default()
-            },
+            ffi_func_clone,
+            ffi_func_free,
             ffi_init_callback: None,
             docstring: meta.docstring.clone(),
         }

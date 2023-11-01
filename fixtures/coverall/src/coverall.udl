@@ -27,6 +27,9 @@ namespace coverall {
     ReturnOnlyEnum output_return_only_enum();
 
     void try_input_return_only_dict(ReturnOnlyDict d);
+
+    Getters test_round_trip_through_rust(Getters getters);
+    void test_round_trip_through_foreign(Getters getters);
 };
 
 dictionary SimpleDict {
@@ -229,6 +232,7 @@ interface Getters {
     string? get_option(string v, boolean arg2);
     sequence<i32> get_list(sequence<i32> v, boolean arg2);
     void get_nothing(string v);
+    Coveralls round_trip_object(Coveralls coveralls);
 };
 
 // Test trait #2

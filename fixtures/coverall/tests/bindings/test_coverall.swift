@@ -315,6 +315,10 @@ class SwiftGetters: Getters {
     func getList(v: [Int32], arg2: Bool) -> [Int32] { arg2 ? v : [] }
     func getNothing(v: String) -> () {
     }
+
+    func roundTripObject(coveralls: Coveralls) -> Coveralls {
+        return coveralls
+    }
 }
 
 
@@ -443,4 +447,13 @@ do {
     // Make sure we don't crash when undoing it all
     swiftNode.setParent(parent: nil)
     traits[0].setParent(parent: nil)
+}
+
+// Test round tripping
+do {
+    let rustGetters = makeRustGetters()
+    // Check that these don't cause use-after-free bugs
+    let _ = testRoundTripThroughRust(getters: rustGetters)
+
+    testRoundTripThroughForeign(getters: SwiftGetters())
 }

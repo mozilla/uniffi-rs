@@ -280,6 +280,10 @@ class KotlinGetters : Getters {
 
     @Suppress("UNUSED_PARAMETER")
     override fun getNothing(v: String) = Unit
+
+    override fun roundTripObject(coveralls: Coveralls): Coveralls {
+        return coveralls
+    }
 }
 
 // Test traits implemented in Rust
@@ -393,6 +397,13 @@ getTraits().let { traits ->
 
     // FIXME: We should be calling `NodeTraitImpl.close()` to release the Rust pointer, however that's
     // not possible through the `NodeTrait` interface (see #1787).
+}
+
+makeRustGetters().let { rustGetters ->
+    // Check that these don't cause use-after-free bugs
+    testRoundTripThroughRust(rustGetters)
+
+    testRoundTripThroughForeign(KotlinGetters())
 }
 
 // This tests that the UniFFI-generated scaffolding doesn't introduce any unexpected locking.
