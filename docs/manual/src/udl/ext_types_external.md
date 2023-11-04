@@ -1,8 +1,5 @@
 # Declaring External Types
 
-*Note: The facility described in this document is not yet available for all foreign language
-bindings.*
-
 It is possible to use types defined by UniFFI in an external crate. For example, let's assume
 that you have an existing crate named `demo_crate` with the following UDL:
 
@@ -13,8 +10,8 @@ dictionary DemoDict {
 };
 ```
 
-And further, assume that you have another crate called `consuming_crate` which would like to use
-this dictionary. Inside `consuming_crate`'s UDL file you can reference `DemoDict` by using a
+Inside another crate,  `consuming_crate`, you'd like to use this dictionary.
+Inside `consuming_crate`'s UDL file you can reference `DemoDict` by using a
 `typedef` with an `External` attribute, as shown below.
 
 ```idl
@@ -28,12 +25,6 @@ dictionary ConsumingDict {
 };
 
 ```
-
-If in the above example, `DemoDict` was actually "exported" via a procmacro
-you should instead use `ExternExport`
-
-(Note the special type `extern` used on the `typedef`. It is not currently enforced that the
-literal `extern` is used, but we hope to enforce this later, so please use it!)
 
 Inside `consuming_crate`'s Rust code you must `use` that struct as normal - for example,
 `consuming_crate`'s `lib.rs` might look like:
@@ -51,7 +42,7 @@ uniffi::include_scaffolding!("consuming_crate");
 
 Your `Cargo.toml` must reference the external crate as normal.
 
-The `External` attribute can be specified on dictionaries, enums and errors.
+The `External` attribute can be specified on dictionaries, enums, errors.
 
 ## External interface types
 
@@ -61,6 +52,15 @@ If the external type is an [Interface](./interfaces.md), then use the `[External
 [ExternalInterface="demo_crate"]
 typedef extern DemoInterface;
 ```
+
+## External procmacro types
+
+The above examples assume the external types were defined via UDL.
+If they were defined by procmacros, you need different attribute names:
+* if `DemoDict` is implemented by a procmacro in `demo_crate`, you'd use `[ExternalExport=...]`
+* for `DemoInterface` you'd use `[ExternalInterfaceExport=...]`
+
+For types defined by procmacros in *this* crate, see the []`[Rust=...]` attribute](../ext_types.md)
 
 ## Foreign bindings
 

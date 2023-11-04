@@ -1,16 +1,42 @@
 # External types
 
-*Note: The facility described in this document is not yet available for all foreign language
-bindings.*
+External types are types implemented by UniFFI but outside of this UDL file.
 
-UniFFI supports referring to types defined outside of the UDL file. These types must be
-either:
+They are similar to, but different from [custom types](./custom_types.md) which wrap UniFFI primitive types.
 
-1) A locally defined type which [wraps a UniFFI primitive type](./custom_types.md).
-2) A "UniFFI compatible" type [in another crate](./ext_types_external.md).
+But like custom types, external types are all declared using a `typedef` with attributes
+giving more detail.
 
-Specifically, "UniFFI compatible" means either a type defined in `udl` in an external crate, or
-a type defined in another crate that satisfies (1).
+## Types in another crate
 
-These types are all declared using a `typedef`, with attributes specifying how the type is
-handled. See the links for details.
+[There's a whole page about that!](./ext_types_external.md)
+
+## Types from procmacros in this crate.
+
+If your crate has types defined via `#[uniffi::export]` etc you can make them available
+to the UDL file in your own crate via a `typedef` with a `[Rust=]` attribute. Eg, your Rust
+might have:
+
+```rust
+#[derive(uniffi::Record)]
+pub struct One {
+    inner: i32,
+}
+```
+you can use it in your UDL:
+
+```idl
+[Rust="record"]
+typedef extern One;
+
+namespace app {
+    // use the procmacro type.
+    One get_one(One? one);
+}
+
+```
+
+Supported values:
+*  "enum", "trait", "callback"
+* For records, either "record" or "dictionary"
+* For objects, either "object" or "interface"

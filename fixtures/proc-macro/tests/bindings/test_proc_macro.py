@@ -83,3 +83,10 @@ class PyTestCallbackInterface(TestCallbackInterface):
         return v
 
 call_callback_interface(PyTestCallbackInterface())
+
+# udl exposed functions with procmacro types.
+assert get_one(None).inner == 0
+assert get_bool(None) == MaybeBool.UNCERTAIN
+assert get_object(None).is_heavy() == MaybeBool.UNCERTAIN
+assert get_trait(None).name() == "TraitImpl"
+assert get_externals(None).one is None

@@ -25,6 +25,8 @@
 - Foreign types can now implement trait interfaces [#1791](https://github.com/mozilla/uniffi-rs/pull/1791)
 - Generated Python code is able to specify a package name for the module [#1784](https://github.com/mozilla/uniffi-rs/pull/1784)
 - UDL can describe async function [#1834](https://github.com/mozilla/uniffi-rs/pull/1834)
+- UDL files can reference types defined in procmacros in this crate - see
+  [the external types docs](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
 
