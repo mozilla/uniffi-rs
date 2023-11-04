@@ -2,7 +2,10 @@ use custom_types::Handle;
 use ext_types_external_crate::{ExternalCrateDictionary, ExternalCrateInterface};
 use ext_types_guid::Guid;
 use std::sync::Arc;
-use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneType};
+use uniffi_one::{
+    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
+};
+use uniffi_sublib::SubLibType;
 use url::Url;
 
 pub struct CombinedType {
@@ -58,6 +61,23 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
     })
 }
 
+// Not part of CombinedType as (a) object refs prevent equality testing and
+// (b) it's not currently possible to refer to external traits in UDL.
+#[derive(Default, uniffi::Record)]
+pub struct ObjectsType {
+    pub maybe_trait: Option<Arc<dyn UniffiOneTrait>>,
+    // XXX - can't refer to UniffiOneInterface here - #1854
+    //pub maybe_interface: Option<Arc<UniffiOneInterface>>,
+    // Use this in the meantime so the tests can still refer to it.
+    pub maybe_interface: Option<u8>,
+    pub sub: SubLibType,
+}
+
+#[uniffi::export]
+fn get_objects_type(value: Option<ObjectsType>) -> ObjectsType {
+    value.unwrap_or_default()
+}
+
 // A Custom type
 fn get_url(url: Url) -> Url {
     url
@@ -111,6 +131,11 @@ fn get_maybe_uniffi_one_enums(es: Vec<Option<UniffiOneEnum>>) -> Vec<Option<Unif
 
 fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
+}
+
+#[uniffi::export]
+fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn UniffiOneTrait>> {
+    t
 }
 
 fn get_uniffi_one_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {

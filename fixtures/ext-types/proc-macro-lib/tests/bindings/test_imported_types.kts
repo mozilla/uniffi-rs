@@ -14,6 +14,10 @@ assert(ct.url ==  java.net.URL("http://example.com/"))
 val ct2 = getCombinedType(ct)
 assert(ct == ct2)
 
+assert(getObjectsType(null).maybeInterface == null)
+assert(getObjectsType(null).maybeTrait == null)
+assert(getUniffiOneTrait(null) == null)
+
 val url = java.net.URL("http://example.com/")
 assert(getUrl(url) ==  url)
 assert(getMaybeUrl(url)!! ==  url)

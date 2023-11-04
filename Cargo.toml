@@ -30,6 +30,7 @@ members = [
   "fixtures/ext-types/uniffi-one",
   "fixtures/ext-types/lib",
   "fixtures/ext-types/proc-macro-lib",
+  "fixtures/ext-types/sub-lib",
 
   "fixtures/foreign-executor",
   "fixtures/keywords/kotlin",

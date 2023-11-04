@@ -1,5 +1,5 @@
 [package]
-name = "uniffi-fixture-ext-types"
+name = "uniffi-fixture-ext-types-sub-lib"
 edition = "2021"
 version = "0.22.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
@@ -8,31 +8,17 @@ publish = false
 
 [package.metadata.uniffi.testing]
 external-crates = [
-    "uniffi-fixture-ext-types-guid",
     "uniffi-fixture-ext-types-lib-one",
-    "uniffi-fixture-ext-types-external-crate",
-    "uniffi-fixture-ext-types-sub-lib",
-    "uniffi-example-custom-types",
 ]
 
 [lib]
 crate-type = ["lib", "cdylib"]
-name = "uniffi_ext_types_lib"
+name = "uniffi_sublib"
 
 [dependencies]
 anyhow = "1"
-bytes = "1.3"
 uniffi = {path = "../../../uniffi", version = "0.25" }
-
-uniffi-fixture-ext-types-external-crate = {path = "../external-crate"}
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
-uniffi-fixture-ext-types-guid = {path = "../guid"}
-uniffi-fixture-ext-types-sub-lib = {path = "../sub-lib"}
-
-# Reuse one of our examples.
-uniffi-example-custom-types = {path = "../../../examples/custom-types"}
-
-url = "2.2"
 
 [build-dependencies]
 uniffi = {path = "../../../uniffi", version = "0.25", features = ["build"] }
