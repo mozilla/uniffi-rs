@@ -102,7 +102,7 @@ fn flat_error_ffi_converter_impl(
             quote! {
                 Self::#v_ident { .. } => {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    <::std::string::String as ::uniffi::Lower<crate::UniFfiTag>>::write(error_msg, buf);
+                    <::std::string::String as ::uniffi::Lower>::write(error_msg, buf);
                 }
             }
         });
@@ -118,7 +118,7 @@ fn flat_error_ffi_converter_impl(
                 }
 
                 fn lower(obj: Self) -> ::uniffi::RustBuffer {
-                    <Self as ::uniffi::Lower<crate::UniFfiTag>>::lower_into_rust_buffer(obj)
+                    <Self as ::uniffi::Lower>::lower_into_rust_buffer(obj)
                 }
 
                 const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
@@ -150,10 +150,10 @@ fn flat_error_ffi_converter_impl(
                 }
 
                 fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
-                    <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(v)
+                    <Self as ::uniffi::Lift>::try_lift_from_rust_buffer(v)
                 }
 
-                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META;
+                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower>::TYPE_ID_META;
             }
 
         }
@@ -178,7 +178,7 @@ fn flat_error_ffi_converter_impl(
                     panic!("Can't lift flat errors")
                 }
 
-                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META;
+                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower>::TYPE_ID_META;
             }
         }
     };

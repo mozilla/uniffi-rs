@@ -101,7 +101,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
             /// function for other types may lead to undefined behaviour.
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, <Self as ::uniffi::FfiConverterArc>::lower(obj) as u64);
             }
 
             /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
@@ -112,7 +112,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                <Self as ::uniffi::FfiConverterArc>::try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)

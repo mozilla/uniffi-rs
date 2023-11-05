@@ -11,7 +11,7 @@
 //!    - Adapting the result of `Return::lower_return()` into either a return value or an
 //!      exception
 
-use crate::{FfiDefault, Lower, RustBuffer, UniFfiTag};
+use crate::{FfiDefault, Lower, RustBuffer};
 use std::mem::MaybeUninit;
 use std::panic;
 
@@ -66,7 +66,7 @@ impl RustCallStatus {
     pub fn error(message: impl Into<String>) -> Self {
         Self {
             code: RustCallStatusCode::UnexpectedError,
-            error_buf: MaybeUninit::new(<String as Lower<UniFfiTag>>::lower(message.into())),
+            error_buf: MaybeUninit::new(<String as Lower>::lower(message.into())),
         }
     }
 }
@@ -172,7 +172,7 @@ where
                     "Unknown panic!".to_string()
                 };
                 log::error!("Caught a panic calling rust code: {:?}", message);
-                <String as Lower<UniFfiTag>>::lower(message)
+                <String as Lower>::lower(message)
             }));
             if let Ok(buf) = message_result {
                 unsafe {
@@ -213,31 +213,31 @@ mod test {
     fn test_rust_call() {
         let mut status = create_call_status();
         let return_value = rust_call(&mut status, || {
-            <Result<i8, TestError> as LowerReturn<UniFfiTag>>::lower_return(test_callback(0))
+            <Result<i8, TestError> as LowerReturn>::lower_return(test_callback(0))
         });
 
         assert_eq!(status.code, RustCallStatusCode::Success);
         assert_eq!(return_value, 100);
 
         rust_call(&mut status, || {
-            <Result<i8, TestError> as LowerReturn<UniFfiTag>>::lower_return(test_callback(1))
+            <Result<i8, TestError> as LowerReturn>::lower_return(test_callback(1))
         });
         assert_eq!(status.code, RustCallStatusCode::Error);
         unsafe {
             assert_eq!(
-                <TestError as Lift<UniFfiTag>>::try_lift(status.error_buf.assume_init()).unwrap(),
+                <TestError as Lift>::try_lift(status.error_buf.assume_init()).unwrap(),
                 TestError("Error".to_owned())
             );
         }
 
         let mut status = create_call_status();
         rust_call(&mut status, || {
-            <Result<i8, TestError> as LowerReturn<UniFfiTag>>::lower_return(test_callback(2))
+            <Result<i8, TestError> as LowerReturn>::lower_return(test_callback(2))
         });
         assert_eq!(status.code, RustCallStatusCode::UnexpectedError);
         unsafe {
             assert_eq!(
-                <String as Lift<UniFfiTag>>::try_lift(status.error_buf.assume_init()).unwrap(),
+                <String as Lift>::try_lift(status.error_buf.assume_init()).unwrap(),
                 "Unexpected value: 2"
             );
         }

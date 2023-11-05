@@ -7,5 +7,3 @@
 /// on all the functionality.
 #[cfg(test)]
 mod tests;
-
-pub struct UniFfiTag;

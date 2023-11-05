@@ -265,28 +265,6 @@ impl ComponentInterface {
         self.is_name_used_as_error(&e.name) && (fielded || used_in_foreign_interface)
     }
 
-    /// Get details about all `Type::External` types.
-    /// Returns an iterator of (name, crate_name, kind)
-    pub fn iter_external_types(
-        &self,
-    ) -> impl Iterator<Item = (&String, String, ExternalKind, bool)> {
-        self.types.iter_known_types().filter_map(|t| match t {
-            Type::External {
-                name,
-                module_path,
-                kind,
-                tagged,
-                ..
-            } => Some((
-                name,
-                module_path.split("::").next().unwrap().to_string(),
-                *kind,
-                *tagged,
-            )),
-            _ => None,
-        })
-    }
-
     /// Get details about all `Type::Custom` types
     pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
         self.types.iter_known_types().filter_map(|t| match t {

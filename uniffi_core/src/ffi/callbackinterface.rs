@@ -167,9 +167,9 @@ impl ForeignCallbackInternals {
     }
 
     /// Invoke a callback interface method on the foreign side and return the result
-    pub fn invoke_callback<R, UniFfiTag>(&self, handle: u64, method: u32, args: RustBuffer) -> R
+    pub fn invoke_callback<R>(&self, handle: u64, method: u32, args: RustBuffer) -> R
     where
-        R: LiftReturn<UniFfiTag>,
+        R: LiftReturn,
     {
         let mut ret_rbuf = RustBuffer::new();
         let callback = self.callback_cell.get();
@@ -189,7 +189,7 @@ impl ForeignCallbackInternals {
             CallbackResult::Error => R::lift_callback_error(ret_rbuf),
             CallbackResult::UnexpectedError => {
                 let reason = if !ret_rbuf.is_empty() {
-                    match <String as Lift<UniFfiTag>>::try_lift(ret_rbuf) {
+                    match <String as Lift>::try_lift(ret_rbuf) {
                         Ok(s) => s,
                         Err(e) => {
                             log::error!("{{ trait_name }} Error reading ret_buf: {e}");

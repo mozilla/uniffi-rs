@@ -131,9 +131,6 @@ macro_rules! assert_compatible_version {
     };
 }
 
-/// Struct to use when we want to lift/lower/serialize types inside the `uniffi` crate.
-struct UniFfiTag;
-
 /// A helper function to ensure we don't read past the end of a buffer.
 ///
 /// Rust won't actually let us read past the end of a buffer, but the `Buf` trait does not support
@@ -158,19 +155,19 @@ pub fn check_remaining(buf: &[u8], num_bytes: usize) -> Result<()> {
 /// This macro implements the boilerplate needed to define `lower`, `lift` and `FFIType`.
 #[macro_export]
 macro_rules! ffi_converter_rust_buffer_lift_and_lower {
-    ($uniffi_tag:ty) => {
+    () => {
         type FfiType = $crate::RustBuffer;
 
         fn lower(v: Self) -> $crate::RustBuffer {
             let mut buf = ::std::vec::Vec::new();
-            <Self as $crate::FfiConverter<$uniffi_tag>>::write(v, &mut buf);
+            <Self as $crate::FfiConverter>::write(v, &mut buf);
             $crate::RustBuffer::from_vec(buf)
         }
 
         fn try_lift(buf: $crate::RustBuffer) -> $crate::Result<Self> {
             let vec = buf.destroy_into_vec();
             let mut buf = vec.as_slice();
-            let value = <Self as $crate::FfiConverter<$uniffi_tag>>::try_read(&mut buf)?;
+            let value = <Self as $crate::FfiConverter>::try_read(&mut buf)?;
             match $crate::deps::bytes::Buf::remaining(&buf) {
                 0 => Ok(value),
                 n => $crate::deps::anyhow::bail!(
@@ -181,86 +178,17 @@ macro_rules! ffi_converter_rust_buffer_lift_and_lower {
     };
 }
 
-/// Macro to implement `FfiConverter<T>` for a UniFfiTag using a different UniFfiTag
-///
-/// This is used for external types
-#[macro_export]
-macro_rules! ffi_converter_forward {
-    // Forward a `FfiConverter` implementation
-    ($T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
-        ::uniffi::do_ffi_converter_forward!(
-            FfiConverter,
-            $T,
-            $T,
-            $existing_impl_tag,
-            $new_impl_tag
-        );
-
-        $crate::derive_ffi_traits!(local $T);
-    };
-}
-
-/// Macro to implement `FfiConverterArc<T>` for a UniFfiTag using a different UniFfiTag
-///
-/// This is used for external types
-#[macro_export]
-macro_rules! ffi_converter_arc_forward {
-    ($T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
-        ::uniffi::do_ffi_converter_forward!(
-            FfiConverterArc,
-            ::std::sync::Arc<$T>,
-            $T,
-            $existing_impl_tag,
-            $new_impl_tag
-        );
-
-        // Note: no need to call derive_ffi_traits! because there is a blanket impl for all Arc<T>
-    };
-}
-
-// Generic code between the two macros above
-#[doc(hidden)]
-#[macro_export]
-macro_rules! do_ffi_converter_forward {
-    ($trait:ident, $rust_type:ty, $T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
-        unsafe impl $crate::$trait<$new_impl_tag> for $T {
-            type FfiType = <$T as $crate::$trait<$existing_impl_tag>>::FfiType;
-
-            fn lower(obj: $rust_type) -> Self::FfiType {
-                <$T as $crate::$trait<$existing_impl_tag>>::lower(obj)
-            }
-
-            fn try_lift(v: Self::FfiType) -> $crate::Result<$rust_type> {
-                <$T as $crate::$trait<$existing_impl_tag>>::try_lift(v)
-            }
-
-            fn write(obj: $rust_type, buf: &mut Vec<u8>) {
-                <$T as $crate::$trait<$existing_impl_tag>>::write(obj, buf)
-            }
-
-            fn try_read(buf: &mut &[u8]) -> $crate::Result<$rust_type> {
-                <$T as $crate::$trait<$existing_impl_tag>>::try_read(buf)
-            }
-
-            const TYPE_ID_META: ::uniffi::MetadataBuffer =
-                <$T as $crate::$trait<$existing_impl_tag>>::TYPE_ID_META;
-        }
-    };
-}
-
 #[cfg(test)]
 mod test {
-    use super::{FfiConverter, UniFfiTag};
+    use super::FfiConverter;
     use std::time::{Duration, SystemTime};
 
     #[test]
     fn timestamp_roundtrip_post_epoch() {
         let expected = SystemTime::UNIX_EPOCH + Duration::new(100, 100);
         let result =
-            <SystemTime as FfiConverter<UniFfiTag>>::try_lift(<SystemTime as FfiConverter<
-                UniFfiTag,
-            >>::lower(expected))
-            .expect("Failed to lift!");
+            <SystemTime as FfiConverter>::try_lift(<SystemTime as FfiConverter>::lower(expected))
+                .expect("Failed to lift!");
         assert_eq!(expected, result)
     }
 
@@ -268,10 +196,8 @@ mod test {
     fn timestamp_roundtrip_pre_epoch() {
         let expected = SystemTime::UNIX_EPOCH - Duration::new(100, 100);
         let result =
-            <SystemTime as FfiConverter<UniFfiTag>>::try_lift(<SystemTime as FfiConverter<
-                UniFfiTag,
-            >>::lower(expected))
-            .expect("Failed to lift!");
+            <SystemTime as FfiConverter>::try_lift(<SystemTime as FfiConverter>::lower(expected))
+                .expect("Failed to lift!");
         assert_eq!(
             expected, result,
             "Expected results after lowering and lifting to be equal"
@@ -289,15 +215,15 @@ pub mod test_util {
     pub struct TestError(pub String);
 
     // Use FfiConverter to simplify lifting TestError out of RustBuffer to check it
-    unsafe impl<UT> FfiConverter<UT> for TestError {
-        ffi_converter_rust_buffer_lift_and_lower!(UniFfiTag);
+    unsafe impl FfiConverter for TestError {
+        ffi_converter_rust_buffer_lift_and_lower!();
 
         fn write(obj: TestError, buf: &mut Vec<u8>) {
-            <String as FfiConverter<UniFfiTag>>::write(obj.0, buf);
+            <String as FfiConverter>::write(obj.0, buf);
         }
 
         fn try_read(buf: &mut &[u8]) -> Result<TestError> {
-            <String as FfiConverter<UniFfiTag>>::try_read(buf).map(TestError)
+            <String as FfiConverter>::try_read(buf).map(TestError)
         }
 
         // Use a dummy value here since we don't actually need TYPE_ID_META

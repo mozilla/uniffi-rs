@@ -32,11 +32,6 @@
 //! * If a type needs special-case handling, like `Result<>` and `()`, we implement the traits
 //!   directly.
 //!
-//! FfiConverter has a generic parameter, that's filled in with a type local to the UniFFI consumer crate.
-//! This allows us to work around the Rust orphan rules for remote types. See
-//! `https://mozilla.github.io/uniffi-rs/internals/lifting_and_lowering.html#code-generation-and-the-fficonverter-trait`
-//! for details.
-//!
 //! ## Safety
 //!
 //! All traits are unsafe (implementing it requires `unsafe impl`) because we can't guarantee
@@ -66,7 +61,7 @@ use crate::{FfiDefault, MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICall
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
-pub unsafe trait FfiConverter<UT>: Sized {
+pub unsafe trait FfiConverter: Sized {
     /// The low-level type used for passing values of this type over the FFI.
     ///
     /// This must be a C-compatible type (e.g. a numeric primitive, a `#[repr(C)]` struct) into
@@ -146,7 +141,7 @@ pub unsafe trait FfiConverter<UT>: Sized {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
-pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+pub unsafe trait FfiConverterArc: Send + Sync {
     type FfiType: FfiDefault;
 
     fn lower(obj: Arc<Self>) -> Self::FfiType;
@@ -157,9 +152,9 @@ pub unsafe trait FfiConverterArc<UT>: Send + Sync {
     const TYPE_ID_META: MetadataBuffer;
 }
 
-unsafe impl<T, UT> FfiConverter<UT> for Arc<T>
+unsafe impl<T> FfiConverter for Arc<T>
 where
-    T: FfiConverterArc<UT> + ?Sized,
+    T: FfiConverterArc + ?Sized,
 {
     type FfiType = T::FfiType;
 
@@ -197,7 +192,7 @@ where
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
-pub unsafe trait Lift<UT>: Sized {
+pub unsafe trait Lift: Sized {
     type FfiType;
 
     fn try_lift(v: Self::FfiType) -> Result<Self>;
@@ -233,7 +228,7 @@ pub unsafe trait Lift<UT>: Sized {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
-pub unsafe trait Lower<UT>: Sized {
+pub unsafe trait Lower: Sized {
     type FfiType: FfiDefault;
 
     fn lower(obj: Self) -> Self::FfiType;
@@ -262,7 +257,7 @@ pub unsafe trait Lower<UT>: Sized {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
-pub unsafe trait LowerReturn<UT>: Sized {
+pub unsafe trait LowerReturn: Sized {
     /// The type that should be returned by scaffolding functions for this type.
     ///
     /// When derived, it's the same as `FfiType`.
@@ -301,7 +296,7 @@ pub unsafe trait LowerReturn<UT>: Sized {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
-pub unsafe trait LiftReturn<UT>: Sized {
+pub unsafe trait LiftReturn: Sized {
     /// Lift a Rust value for a callback interface method result
     fn lift_callback_return(buf: RustBuffer) -> Self;
 
@@ -343,11 +338,11 @@ pub unsafe trait LiftReturn<UT>: Sized {
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
 /// `&T` using the Arc.
-pub unsafe trait LiftRef<UT> {
-    type LiftType: Lift<UT> + Borrow<Self>;
+pub unsafe trait LiftRef {
+    type LiftType: Lift + Borrow<Self>;
 }
 
-pub trait ConvertError<UT>: Sized {
+pub trait ConvertError: Sized {
     fn try_convert_unexpected_callback_error(e: UnexpectedUniFFICallbackError) -> Result<Self>;
 }
 
@@ -372,14 +367,15 @@ pub trait ConvertError<UT>: Sized {
 #[allow(clippy::crate_in_macro_def)]
 macro_rules! derive_ffi_traits {
     (blanket $ty:ty) => {
-        $crate::derive_ffi_traits!(impl<UT> Lower<UT> for $ty);
-        $crate::derive_ffi_traits!(impl<UT> Lift<UT> for $ty);
-        $crate::derive_ffi_traits!(impl<UT> LowerReturn<UT> for $ty);
-        $crate::derive_ffi_traits!(impl<UT> LiftReturn<UT> for $ty);
-        $crate::derive_ffi_traits!(impl<UT> LiftRef<UT> for $ty);
-        $crate::derive_ffi_traits!(impl<UT> ConvertError<UT> for $ty);
+        $crate::derive_ffi_traits!(impl Lower for $ty);
+        $crate::derive_ffi_traits!(impl Lift for $ty);
+        $crate::derive_ffi_traits!(impl LowerReturn for $ty);
+        $crate::derive_ffi_traits!(impl LiftReturn for $ty);
+        $crate::derive_ffi_traits!(impl LiftRef for $ty);
+        $crate::derive_ffi_traits!(impl ConvertError for $ty);
     };
 
+/*
     (local $ty:ty) => {
         $crate::derive_ffi_traits!(impl Lower<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl Lift<crate::UniFfiTag> for $ty);
@@ -388,75 +384,76 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl LiftRef<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl ConvertError<crate::UniFfiTag> for $ty);
     };
+*/
 
-    (impl $(<$($generic:ident),*>)? $(::uniffi::)? Lower<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
-        unsafe impl $(<$($generic),*>)* $crate::Lower<$ut> for $ty $(where $($where)*)*
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? Lower for $ty:ty $(where $($where:tt)*)?) => {
+        unsafe impl $(<$($generic),*>)* $crate::Lower for $ty $(where $($where)*)*
         {
-            type FfiType = <Self as $crate::FfiConverter<$ut>>::FfiType;
+            type FfiType = <Self as $crate::FfiConverter>::FfiType;
 
             fn lower(obj: Self) -> Self::FfiType {
-                <Self as $crate::FfiConverter<$ut>>::lower(obj)
+                <Self as $crate::FfiConverter>::lower(obj)
             }
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
-                <Self as $crate::FfiConverter<$ut>>::write(obj, buf)
+                <Self as $crate::FfiConverter>::write(obj, buf)
             }
 
-            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter<$ut>>::TYPE_ID_META;
+            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter>::TYPE_ID_META;
         }
     };
 
-    (impl $(<$($generic:ident),*>)? $(::uniffi::)? Lift<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
-        unsafe impl $(<$($generic),*>)* $crate::Lift<$ut> for $ty $(where $($where)*)*
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? Lift for $ty:ty $(where $($where:tt)*)?) => {
+        unsafe impl $(<$($generic),*>)* $crate::Lift for $ty $(where $($where)*)*
         {
-            type FfiType = <Self as $crate::FfiConverter<$ut>>::FfiType;
+            type FfiType = <Self as $crate::FfiConverter>::FfiType;
 
             fn try_lift(v: Self::FfiType) -> $crate::deps::anyhow::Result<Self> {
-                <Self as $crate::FfiConverter<$ut>>::try_lift(v)
+                <Self as $crate::FfiConverter>::try_lift(v)
             }
 
             fn try_read(buf: &mut &[u8]) -> $crate::deps::anyhow::Result<Self> {
-                <Self as $crate::FfiConverter<$ut>>::try_read(buf)
+                <Self as $crate::FfiConverter>::try_read(buf)
             }
 
-            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter<$ut>>::TYPE_ID_META;
+            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter>::TYPE_ID_META;
         }
     };
 
-    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LowerReturn<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
-        unsafe impl $(<$($generic),*>)* $crate::LowerReturn<$ut> for $ty $(where $($where)*)*
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LowerReturn for $ty:ty $(where $($where:tt)*)?) => {
+        unsafe impl $(<$($generic),*>)* $crate::LowerReturn for $ty $(where $($where)*)*
         {
-            type ReturnType = <Self as $crate::Lower<$ut>>::FfiType;
+            type ReturnType = <Self as $crate::Lower>::FfiType;
 
             fn lower_return(obj: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustBuffer> {
-                Ok(<Self as $crate::Lower<$ut>>::lower(obj))
+                Ok(<Self as $crate::Lower>::lower(obj))
             }
 
-            const TYPE_ID_META: $crate::MetadataBuffer =<Self as $crate::Lower<$ut>>::TYPE_ID_META;
+            const TYPE_ID_META: $crate::MetadataBuffer =<Self as $crate::Lower>::TYPE_ID_META;
         }
     };
 
-    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LiftReturn<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
-        unsafe impl $(<$($generic),*>)* $crate::LiftReturn<$ut> for $ty $(where $($where)*)*
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LiftReturn for $ty:ty $(where $($where:tt)*)?) => {
+        unsafe impl $(<$($generic),*>)* $crate::LiftReturn for $ty $(where $($where)*)*
         {
             fn lift_callback_return(buf: $crate::RustBuffer) -> Self {
-                <Self as $crate::Lift<$ut>>::try_lift_from_rust_buffer(buf)
+                <Self as $crate::Lift>::try_lift_from_rust_buffer(buf)
                     .expect("Error reading callback interface result")
             }
 
-            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::Lift<$ut>>::TYPE_ID_META;
+            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::Lift>::TYPE_ID_META;
         }
     };
 
-    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LiftRef<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
-        unsafe impl $(<$($generic),*>)* $crate::LiftRef<$ut> for $ty $(where $($where)*)*
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LiftRef for $ty:ty $(where $($where:tt)*)?) => {
+        unsafe impl $(<$($generic),*>)* $crate::LiftRef for $ty $(where $($where)*)*
         {
             type LiftType = Self;
         }
     };
 
-    (impl $(<$($generic:ident),*>)? $(::uniffi::)? ConvertError<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
-        impl $(<$($generic),*>)* $crate::ConvertError<$ut> for $ty $(where $($where)*)*
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? ConvertError for $ty:ty $(where $($where:tt)*)?) => {
+        impl $(<$($generic),*>)* $crate::ConvertError for $ty $(where $($where)*)*
         {
             fn try_convert_unexpected_callback_error(e: $crate::UnexpectedUniFFICallbackError) -> $crate::deps::anyhow::Result<Self> {
                 $crate::convert_unexpected_error!(e, $ty)

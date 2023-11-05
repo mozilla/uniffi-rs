@@ -103,7 +103,7 @@ impl FnSignature {
     pub fn return_impl(&self) -> TokenStream {
         let return_ty = &self.return_ty;
         quote! {
-            <#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>
+            <#return_ty as ::uniffi::LowerReturn>
         }
     }
 
@@ -211,7 +211,7 @@ impl FnSignature {
                     .concat_bool(#is_async)
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
-                    .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                    .concat(<#return_ty as ::uniffi::LowerReturn>::TYPE_ID_META)
             }),
 
             FnKind::Method { self_ident } => {
@@ -224,7 +224,7 @@ impl FnSignature {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(<#return_ty as ::uniffi::LowerReturn>::TYPE_ID_META)
                 })
             }
 
@@ -239,7 +239,7 @@ impl FnSignature {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(<#return_ty as ::uniffi::LowerReturn>::TYPE_ID_META)
                 })
             }
 
@@ -252,7 +252,7 @@ impl FnSignature {
                         .concat_str(#name)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(<#return_ty as ::uniffi::LowerReturn>::TYPE_ID_META)
                 })
             }
         }
@@ -389,7 +389,7 @@ impl NamedArg {
                 Self {
                     name: ident_to_string(&ident),
                     ident,
-                    ty: quote! { <#inner as ::uniffi::LiftRef<crate::UniFfiTag>>::LiftType },
+                    ty: quote! { <#inner as ::uniffi::LiftRef>::LiftType },
                     ref_type: Some(*inner.clone()),
                 }
             }
@@ -404,12 +404,12 @@ impl NamedArg {
 
     pub(crate) fn lift_impl(&self) -> TokenStream {
         let ty = &self.ty;
-        quote! { <#ty as ::uniffi::Lift<crate::UniFfiTag>> }
+        quote! { <#ty as ::uniffi::Lift> }
     }
 
     pub(crate) fn lower_impl(&self) -> TokenStream {
         let ty = &self.ty;
-        quote! { <#ty as ::uniffi::Lower<crate::UniFfiTag>> }
+        quote! { <#ty as ::uniffi::Lower> }
     }
 
     /// Generate the parameter for this Arg

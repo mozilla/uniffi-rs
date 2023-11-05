@@ -50,7 +50,7 @@ pub(crate) fn record_ffi_converter_impl(
     Ok(quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!();
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -74,7 +74,7 @@ fn write_field(f: &Field) -> TokenStream {
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(obj.#ident, buf);
+        <#ty as ::uniffi::Lower>::write(obj.#ident, buf);
     }
 }
 
@@ -160,7 +160,7 @@ pub(crate) fn record_meta_static_var(
             // TYPE_ID_META should be the same for both traits.
             Ok(quote! {
                 .concat_str(#name)
-                .concat(<#ty as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
+                .concat(<#ty as ::uniffi::Lower>::TYPE_ID_META)
                 #default
             })
         })

@@ -118,4 +118,9 @@ pub fn get_example_custom_type() -> ExampleCustomType {
     ExampleCustomType("abadidea".to_string())
 }
 
+#[uniffi::export]
+pub fn get_url(url: Option<Url>) -> Url {
+    url.unwrap_or_else(|| Url::parse("https://mozilla.org").unwrap())
+}
+
 uniffi::include_scaffolding!("custom-types");

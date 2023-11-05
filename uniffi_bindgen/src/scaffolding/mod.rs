@@ -70,7 +70,7 @@ mod filters {
 
     // Map a type to Rust code that specifies the FfiConverter implementation.
     //
-    // This outputs something like `<MyStruct as Lift<crate::UniFfiTag>>`
+    // This outputs something like `<MyStruct as Lift>`
     pub fn ffi_trait(type_: &Type, trait_name: &str) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::External {
@@ -78,12 +78,9 @@ mod filters {
                 kind: ExternalKind::Interface,
                 ..
             } => {
-                format!("<::std::sync::Arc<r#{name}> as ::uniffi::{trait_name}<crate::UniFfiTag>>")
+                format!("<::std::sync::Arc<r#{name}> as ::uniffi::{trait_name}>")
             }
-            _ => format!(
-                "<{} as ::uniffi::{trait_name}<crate::UniFfiTag>>",
-                type_rs(type_)?
-            ),
+            _ => format!("<{} as ::uniffi::{trait_name}>", type_rs(type_)?),
         })
     }
 
