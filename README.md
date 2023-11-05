@@ -54,6 +54,7 @@ Other tools we know of which try and solve a similarly shaped problem are:
 * [Kotlin Multiplatform support](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
 * [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
 * [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
+* [Dart bindings](https://github.com/NiallBunting/uniffi-rs-dart)
 
 ### External resources
 
