@@ -174,7 +174,6 @@
                         <h1 id="asyncfuture-support"><a class="header" href="#asyncfuture-support">Async/Future support</a></h1>
 <p>UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust <code>Future</code>/<code>async fn</code> to and from foreign native futures (<code>async</code>/<code>await</code> in Python/Swift, <code>suspend fun</code> in Kotlin etc.)</p>
 <p>Check out the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/futures">examples</a> or the more terse and thorough <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures">fixtures</a>.</p>
-<p>Note that currently async functions are only supported by proc-macros, UDL support is being planned in https://github.com/mozilla/uniffi-rs/issues/1716.</p>
 <h2 id="example"><a class="header" href="#example">Example</a></h2>
 <p>This is a short &quot;async sleep()&quot; example:</p>
 <pre><code class="language-Rust">use std::time::Duration;
@@ -197,6 +196,12 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+</code></pre>
+<p>Async functions can also be defined in UDL:</p>
+<pre><code class="language-idl">namespace example {
+    [Async]
+    string say_after(u64 ms, string who);
+}
 </code></pre>
 <p>This code uses <code>asyncio</code> to drive the future to completion, while our exposed function is used with <code>await</code>.</p>
 <p>In Rust <code>Future</code> terminology this means the foreign bindings supply the &quot;executor&quot; - think event-loop, or async runtime. In this example it's <code>asyncio</code>. There's no requirement for a Rust event loop.</p>

@@ -200,6 +200,14 @@ This works for the Kotlin, Swift and Python targets.</p>
     // ...
 }
 </code></pre>
+<h2 id="async"><a class="header" href="#async">Async</a></h2>
+<p>Async functions can be exposed using the <code>[Async]</code> attribute:</p>
+<pre><code class="language-idl">namespace Example {
+    [Async]
+    string async_hello();
+}
+</code></pre>
+<p>See the <a href="../futures.html">Async/Future support section</a> for details.</p>
 
                     </main>
 
