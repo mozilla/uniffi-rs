@@ -1,5 +1,5 @@
 #[::uniffi::export_for_udl]
-pub fn r#{{ func.name() }}(
+pub {% if func.is_async() %}async {% endif %}fn r#{{ func.name() }}(
     {%- for arg in func.arguments() %}
     r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
     {%- endfor %}
