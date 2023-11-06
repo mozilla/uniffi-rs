@@ -4,8 +4,6 @@ UniFFI supports exposing async Rust functions over the FFI. It can convert a Rus
 
 Check out the [examples](https://github.com/mozilla/uniffi-rs/tree/main/examples/futures) or the more terse and thorough [fixtures](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures).
 
-Note that currently async functions are only supported by proc-macros, UDL support is being planned in https://github.com/mozilla/uniffi-rs/issues/1716.
-
 ## Example
 
 This is a short "async sleep()" example:
@@ -32,6 +30,14 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+```
+
+Async functions can also be defined in UDL:
+```idl
+namespace example {
+    [Async]
+    string say_after(u64 ms, string who);
+}
 ```
 
 This code uses `asyncio` to drive the future to completion, while our exposed function is used with `await`.

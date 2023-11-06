@@ -15,7 +15,7 @@
 #[::uniffi::export_for_udl]
 pub trait r#{{ obj.name() }} {
     {%- for meth in obj.methods() %}
-    fn {{ meth.name() }}(
+    fn {% if meth.is_async() %}async {% endif %}{{ meth.name() }}(
         {% if meth.takes_self_by_arc()%}self: Arc<Self>{% else %}&self{% endif %},
         {%- for arg in meth.arguments() %}
         {{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
@@ -68,7 +68,7 @@ impl {{ obj.rust_name() }} {
 {%- for meth in obj.methods() %}
 #[::uniffi::export_for_udl]
 impl {{ obj.rust_name() }} {
-    pub fn r#{{ meth.name() }}(
+    pub {% if meth.is_async() %}async {% endif %}fn r#{{ meth.name() }}(
         {% if meth.takes_self_by_arc()%}self: Arc<Self>{% else %}&self{% endif %},
         {%- for arg in meth.arguments() %}
         r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
