@@ -3,7 +3,9 @@
 {%- let (interface_name, impl_class_name) = obj|object_names %}
 {%- let methods = obj.methods() %}
 
-open class {{ impl_class_name }} : FFIObject{% if obj.is_trait_interface() %}, {{ interface_name }} {% endif %} {
+{% include "Interface.kt" %}
+
+open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
     constructor(pointer: Pointer): super(pointer)
 
@@ -48,8 +50,8 @@ open class {{ impl_class_name }} : FFIObject{% if obj.is_trait_interface() %}, {
     {%- endmatch -%}
     {%- if meth.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    {% if obj.is_trait_interface() %}override {% else %}open {% endif %}suspend fun {{ meth.name()|fn_name }}(
-        {%- if obj.is_trait_interface() %}{% call kt::arg_list_protocol(meth) %}{% else %}{% call kt::arg_list_decl(meth) %}{% endif -%}
+    override suspend fun {{ meth.name()|fn_name }}(
+        {%- call kt::arg_list_decl(meth) -%}
     ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
@@ -80,8 +82,8 @@ open class {{ impl_class_name }} : FFIObject{% if obj.is_trait_interface() %}, {
     {%- else -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) -%}
-    {% if obj.is_trait_interface() %}override {% else %}open {% endif %}fun {{ meth.name()|fn_name }}(
-        {%- if obj.is_trait_interface() %}{% call kt::arg_list_protocol(meth) %}{% else %}{% call kt::arg_list_decl(meth) %}{% endif -%}
+    override fun {{ meth.name()|fn_name }}(
+        {%- call kt::arg_list_protocol(meth) -%}
     ): {{ return_type|type_name }} =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
@@ -90,8 +92,8 @@ open class {{ impl_class_name }} : FFIObject{% if obj.is_trait_interface() %}, {
         }
 
     {%- when None -%}
-    {% if obj.is_trait_interface() %}override {% else %}open {% endif %}fun {{ meth.name()|fn_name }}(
-        {%- if obj.is_trait_interface() %}{% call kt::arg_list_protocol(meth) %}{% else %}{% call kt::arg_list_decl(meth) %}{% endif -%}
+    override fun {{ meth.name()|fn_name }}(
+        {%- call kt::arg_list_protocol(meth) -%}
     ) =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
@@ -147,7 +149,6 @@ open class {{ impl_class_name }} : FFIObject{% if obj.is_trait_interface() %}, {
 {%- let callback_handler_class = format!("UniffiCallbackInterface{}", name) %}
 {%- let callback_handler_obj = format!("uniffiCallbackInterface{}", name) %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
-{% include "Interface.kt" %}
 {% include "CallbackInterfaceImpl.kt" %}
 {%- endif %}
 
