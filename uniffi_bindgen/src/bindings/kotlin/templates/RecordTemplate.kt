@@ -3,9 +3,9 @@
 {%- if rec.has_fields() %}
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
-    var {{ field.name()|var_name }}: {{ field|type_name -}}
+    var {{ field.name()|var_name }}: {{ field|type_name(ci) -}}
     {%- match field.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|render_literal(field) }}
+        {%- when Some with(literal) %} = {{ literal|render_literal(field, ci) }}
         {%- else %}
     {%- endmatch -%}
     {% if !loop.last %}, {% endif %}

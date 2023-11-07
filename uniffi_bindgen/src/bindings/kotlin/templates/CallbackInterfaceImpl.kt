@@ -86,7 +86,7 @@ internal class {{ callback_handler_class }} : ForeignCallback {
         {%- when Some(error_type) %}
         fun makeCallAndHandleError()  : Int = try {
             makeCall()
-        } catch (e: {{ error_type|error_type_name }}) {
+        } catch (e: {{ error_type|type_name(ci) }}) {
             // Expected error, serialize it into outBuf
             outBuf.setValue({{ error_type|ffi_converter_name }}.lowerIntoRustBuffer(e))
             UNIFFI_CALLBACK_ERROR

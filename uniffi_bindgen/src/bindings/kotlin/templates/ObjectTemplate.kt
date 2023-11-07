@@ -1,6 +1,6 @@
 {%- let obj = ci|get_object_definition(name) %}
 {%- if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
-{%- let (interface_name, impl_class_name) = obj|object_names %}
+{%- let (interface_name, impl_class_name) = obj|object_names(ci) %}
 {%- let methods = obj.methods() %}
 
 {% include "Interface.kt" %}
@@ -45,14 +45,14 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {% for meth in obj.methods() -%}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
-    @Throws({{ throwable|error_type_name }}::class)
+    @Throws({{ throwable|type_name(ci) }}::class)
     {%- else -%}
     {%- endmatch -%}
     {%- if meth.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun {{ meth.name()|fn_name }}(
         {%- call kt::arg_list_decl(meth) -%}
-    ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
+    ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
@@ -73,7 +73,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
             // Error FFI converter
             {%- match meth.throws_type() %}
             {%- when Some(e) %}
-            {{ e|error_type_name }}.ErrorHandler,
+            {{ e|type_name(ci) }}.ErrorHandler,
             {%- when None %}
             NullCallStatusErrorHandler,
             {%- endmatch %}
@@ -84,7 +84,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%- when Some with (return_type) -%}
     override fun {{ meth.name()|fn_name }}(
         {%- call kt::arg_list_protocol(meth) -%}
-    ): {{ return_type|type_name }} =
+    ): {{ return_type|type_name(ci) }} =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
