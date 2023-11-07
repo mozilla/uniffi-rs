@@ -196,6 +196,7 @@ pub struct Config {
     ffi_module_filename: Option<String>,
     generate_module_map: Option<bool>,
     omit_argument_labels: Option<bool>,
+    generate_immutable_records: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
 }
@@ -260,6 +261,11 @@ impl Config {
     /// Whether to omit argument labels in Swift function definitions.
     pub fn omit_argument_labels(&self) -> bool {
         self.omit_argument_labels.unwrap_or(false)
+    }
+
+    /// Whether to generate immutable records (`let` instead of `var`)
+    pub fn generate_immutable_records(&self) -> bool {
+        self.generate_immutable_records.unwrap_or(false)
     }
 }
 

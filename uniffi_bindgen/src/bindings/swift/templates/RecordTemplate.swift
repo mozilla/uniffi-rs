@@ -1,7 +1,7 @@
 {%- let rec = ci|get_record_definition(name) %}
 public struct {{ type_name }} {
     {%- for field in rec.fields() %}
-    public var {{ field.name()|var_name }}: {{ field|type_name }}
+    public {% if config.generate_immutable_records() %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
     {%- endfor %}
 
     // Default memberwise initializers are never public by default, so we
