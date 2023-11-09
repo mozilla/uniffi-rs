@@ -23,6 +23,16 @@
 
 - Rust traits `Display`, `Hash` and `Eq` exposed to Kotlin and Swift.
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
+
+## v0.25.1 (backend crates: v0.25.1) - (_2023-11-09_)
+
+[All changes in v0.25.1](https://github.com/mozilla/uniffi-rs/compare/v0.25.0...v0.25.1).
+
+### What's fixed?
+
+- Fixed several bugs with async functions were defined in multiple crates that get built together.
+
 ## v0.25.0 (backend crates: v0.25.0) - (_2023-10-18_)
 
 [All changes in v0.25.0](https://github.com/mozilla/uniffi-rs/compare/v0.24.3...v0.25.0).
