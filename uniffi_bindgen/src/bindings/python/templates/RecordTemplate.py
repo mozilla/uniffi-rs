@@ -8,7 +8,7 @@ class {{ type_name }}:
 
     {%- if rec.has_fields() %}
     @typing.no_type_check
-    def __init__(self, {% for field in rec.fields() %}
+    def __init__(self, *, {% for field in rec.fields() %}
     {{- field.name()|var_name }}: "{{- field|type_name }}"
     {%- if field.default_value().is_some() %} = _DEFAULT{% endif %}
     {%- if !loop.last %}, {% endif %}

@@ -1795,6 +1795,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-struct-default-values"
+version = "0.22.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-swift-omit-argument-labels"
 version = "0.22.0"
 dependencies = [

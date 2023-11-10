@@ -1,0 +1,10 @@
+namespace struct_default_values {
+};
+
+dictionary Bookmark {
+    string? guid = null;
+    i32 position;
+    i32? last_modified = null;
+    string url;
+    string? title = null;
+};
