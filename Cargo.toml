@@ -59,6 +59,7 @@ members = [
   "fixtures/version-mismatch",
   "fixtures/simple-fns",
   "fixtures/simple-iface",
+  "fixtures/struct-default-values",
   "fixtures/swift-omit-labels",
   "fixtures/futures",
   "fixtures/swift-bridging-header-compile",

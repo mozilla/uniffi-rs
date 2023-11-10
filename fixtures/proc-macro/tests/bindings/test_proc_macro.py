@@ -8,10 +8,10 @@ one = make_one(123)
 assert one.inner == 123
 assert one_inner_by_ref(one) == 123
 
-two = Two("a")
+two = Two(a="a")
 assert take_two(two) == "a"
 
-rwb = RecordWithBytes(bytes([1,2,3]))
+rwb = RecordWithBytes(some_bytes=bytes([1,2,3]))
 assert take_record_with_bytes(rwb) == bytes([1,2,3])
 
 obj = Object()
@@ -36,7 +36,7 @@ assert obj.get_trait_with_foreign(trait_impl2).name() == "RustTraitImpl"
 assert enum_identity(MaybeBool.TRUE) == MaybeBool.TRUE
 
 # just make sure this works / doesn't crash
-three = Three(obj)
+three = Three(obj=obj)
 
 assert(make_zero().inner == "ZERO")
 assert(make_record_with_bytes().some_bytes == bytes([0, 1, 2, 3, 4]))

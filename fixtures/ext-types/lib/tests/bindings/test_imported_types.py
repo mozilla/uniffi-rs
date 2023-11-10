@@ -41,7 +41,7 @@ class TestIt(unittest.TestCase):
         self.assertEqual(get_maybe_urls([url, None]), [url, None])
 
     def test_get_uniffi_one_type(self):
-        t1 = UniffiOneType("hello")
+        t1 = UniffiOneType(sval="hello")
         self.assertEqual(t1, get_uniffi_one_type(t1))
         self.assertEqual(t1, get_maybe_uniffi_one_type(t1))
         self.assertEqual(None, get_maybe_uniffi_one_type(None))
@@ -62,7 +62,7 @@ class TestIt(unittest.TestCase):
         self.assertEqual(get_external_crate_interface("foo").value(), "foo")
 
     def test_procmacro_types(self):
-        t1 = UniffiOneProcMacroType("hello")
+        t1 = UniffiOneProcMacroType(sval="hello")
         self.assertEqual(t1, get_uniffi_one_proc_macro_type(t1))
         self.assertEqual(t1, get_my_proc_macro_type(t1))
 

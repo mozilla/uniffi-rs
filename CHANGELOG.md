@@ -23,6 +23,10 @@
  
 - Fixed a memory leak in callback interface handling.
 
+### ⚠️ Breaking Changes ⚠️
+
+- Python: Force named parameters for struct constructors ([#1840](https://github.com/mozilla/uniffi-rs/pull/1840))
+
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
 - The callback interface code was reworked to use vtables rather than a single callback method.
