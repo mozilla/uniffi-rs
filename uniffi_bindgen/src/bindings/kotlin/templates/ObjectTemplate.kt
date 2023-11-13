@@ -5,9 +5,19 @@
 
 {% include "Interface.kt" %}
 
-class {{ impl_class_name }}(
-    pointer: Pointer
-) : FFIObject(pointer), {{ interface_name }}{
+open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
+
+    constructor(pointer: Pointer): super(pointer)
+
+    /**
+     * This constructor can be used to instantiate a fake object.
+     *
+     * **WARNING: Any object instantiated with this constructor cannot be passed to an actual Rust-backed object.**
+     * Since there isn't a backing [Pointer] the FFI lower functions will crash.
+     * @param noPointer Placeholder value so we can have a constructor separate from the default empty one that may be
+     *   implemented for classes extending [FFIObject].
+     */
+    constructor(noPointer: NoPointer): super(noPointer)
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
@@ -27,8 +37,10 @@ class {{ impl_class_name }}(
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
     override protected fun freeRustArcPtr() {
-        rustCall() { status ->
-            _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(this.pointer, status)
+        this.pointer?.let { ptr ->
+            rustCall() { status ->
+                _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(ptr, status)
+            }
         }
     }
 
@@ -40,7 +52,9 @@ class {{ impl_class_name }}(
     {%- endmatch -%}
     {%- if meth.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun {{ meth.name()|fn_name }}({%- call kt::arg_list_decl(meth) -%}){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
+    override suspend fun {{ meth.name()|fn_name }}(
+        {%- call kt::arg_list_decl(meth) -%}
+    ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name }}{% when None %}{%- endmatch %} {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
@@ -70,7 +84,9 @@ class {{ impl_class_name }}(
     {%- else -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) -%}
-    override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_name }} =
+    override fun {{ meth.name()|fn_name }}(
+        {%- call kt::arg_list_protocol(meth) -%}
+    ): {{ return_type|type_name }} =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
@@ -78,13 +94,46 @@ class {{ impl_class_name }}(
         }
 
     {%- when None -%}
-    override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}) =
+    override fun {{ meth.name()|fn_name }}(
+        {%- call kt::arg_list_protocol(meth) -%}
+    ) =
         callWithPointer {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }
     {% endmatch %}
     {% endif %}
     {% endfor %}
+
+    {%- for tm in obj.uniffi_traits() %}
+    {%-     match tm %}
+    {%-         when UniffiTrait::Display { fmt } %}
+    override fun toString(): String =
+        callWithPointer {
+            {%- call kt::to_ffi_call_with_prefix("it", fmt) %}
+        }.let {
+            {{ fmt.return_type().unwrap()|lift_fn }}(it)
+        }
+    {%-         when UniffiTrait::Eq { eq, ne } %}
+    {# only equals used #}
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is {{ impl_class_name}}) return false
+        return callWithPointer {
+            {%- call kt::to_ffi_call_with_prefix("it", eq) %}
+        }.let {
+            {{ eq.return_type().unwrap()|lift_fn }}(it)
+        }
+    }
+    {%-         when UniffiTrait::Hash { hash } %}
+    override fun hashCode(): Int =
+        callWithPointer {
+            {%- call kt::to_ffi_call_with_prefix("it", hash) %}
+        }.let {
+            {{ hash.return_type().unwrap()|lift_fn }}(it).toInt()
+        }
+    {%-         else %}
+    {%-     endmatch %}
+    {%- endfor %}
 
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {

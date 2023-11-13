@@ -7,7 +7,7 @@ The generated Python modules can be configured using a `uniffi.toml` configurati
 | Configuration name | Default  | Description |
 | ------------------ | -------  |------------ |
 | `cdylib_name`      | `uniffi_{namespace}`[^1] | The name of the compiled Rust library containing the FFI implementation (not needed when using `generate --library`). |
-| `custom_types`      | | A map which controls how custom types are exposed to Python. See the [custom types section of the manual](../udl/custom_types#custom-types-in-the-bindings-code)|
+| `custom_types`      | | A map which controls how custom types are exposed to Python. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code)|
 | `external_packages` | | A map which controls the package name used by external packages. See below for more.
 
 ## External Packages

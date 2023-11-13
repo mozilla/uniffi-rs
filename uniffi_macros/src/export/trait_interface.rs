@@ -91,7 +91,7 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn't being met.
-        uniffi::deps::static_assertions::assert_impl_all!(dyn #trait_ident: Sync, Send);
+        uniffi::deps::static_assertions::assert_impl_all!(dyn #trait_ident: ::core::marker::Sync, ::core::marker::Send);
 
         unsafe #impl_spec {
             type FfiType = *const ::std::os::raw::c_void;

@@ -7,3 +7,10 @@ title = "The UniFFI user guide"
 
 [output.html.playground]
 runnable = false
+
+[output.linkcheck]
+exclude = [
+    # To get this `api` directory, CI does, roughly , `cargo doc && cp -r ./target/doc ./docs/manual/src/internals/api`
+    # so at the time we build the mdBook this isn't available.
+    './api' # Used for rustdoc links to the source.
+]

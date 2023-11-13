@@ -67,8 +67,9 @@ pub fn greet(who: String) -> String {
     format!("Hello, {who}")
 }
 
-/// Async function that is immediatly ready.
-#[uniffi::export]
+/// Async function that is immediately ready.
+///
+/// (This one is defined in the UDL to test UDL support)
 pub async fn always_ready() -> bool {
     true
 }

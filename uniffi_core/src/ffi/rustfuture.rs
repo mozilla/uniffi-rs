@@ -86,8 +86,6 @@ use std::{
     task::{Context, Poll, Wake},
 };
 
-use once_cell::sync::OnceCell;
-
 use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
 
 /// Result code for [rust_future_poll].  This is passed to the continuation function.
@@ -109,27 +107,6 @@ pub type RustFutureContinuationCallback = extern "C" fn(callback_data: *const ()
 /// Opaque handle for a Rust future that's stored by the foreign language code
 #[repr(transparent)]
 pub struct RustFutureHandle(*const ());
-
-/// Stores the global continuation callback
-static RUST_FUTURE_CONTINUATION_CALLBACK_CELL: OnceCell<RustFutureContinuationCallback> =
-    OnceCell::new();
-
-/// Set the global RustFutureContinuationCallback.
-pub fn rust_future_continuation_callback_set(callback: RustFutureContinuationCallback) {
-    if let Err(existing) = RUST_FUTURE_CONTINUATION_CALLBACK_CELL.set(callback) {
-        // Don't panic if this to be called multiple times with the same callback.
-        if existing != callback {
-            panic!("Attempt to set the RustFuture continuation callback twice");
-        }
-    }
-}
-
-fn call_continuation(data: *const (), poll_code: RustFuturePoll) {
-    let callback = RUST_FUTURE_CONTINUATION_CALLBACK_CELL
-        .get()
-        .expect("RustFuture continuation callback not set.  This is likely a uniffi bug.");
-    callback(data, poll_code)
-}
 
 // === Public FFI API ===
 
@@ -169,9 +146,13 @@ where
 /// # Safety
 ///
 /// The [RustFutureHandle] must not previously have been passed to [rust_future_free]
-pub unsafe fn rust_future_poll<ReturnType>(handle: RustFutureHandle, data: *const ()) {
+pub unsafe fn rust_future_poll<ReturnType>(
+    handle: RustFutureHandle,
+    callback: RustFutureContinuationCallback,
+    data: *const (),
+) {
     let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
-    future.clone().ffi_poll(data)
+    future.clone().ffi_poll(callback, data)
 }
 
 /// Cancel a Rust future
@@ -234,9 +215,8 @@ enum ContinuationDataCell {
     /// The future has been cancelled, any future `store` calls should immediately result in the
     /// continuation being called with `RustFuturePoll::Ready`.
     Cancelled,
-    /// Continuation data set, the next time `wake()`  is called is called, we should invoke the
-    /// continuation with it.
-    Set(*const ()),
+    /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
+    Set(RustFutureContinuationCallback, *const ()),
 }
 
 impl ContinuationDataCell {
@@ -246,22 +226,22 @@ impl ContinuationDataCell {
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    fn store(&mut self, data: *const ()) {
+    fn store(&mut self, callback: RustFutureContinuationCallback, data: *const ()) {
         match self {
-            Self::Empty => *self = Self::Set(data),
-            Self::Set(old_data) => {
+            Self::Empty => *self = Self::Set(callback, data),
+            Self::Set(old_callback, old_data) => {
                 log::error!(
                     "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
                 );
-                call_continuation(*old_data, RustFuturePoll::Ready);
-                *self = Self::Set(data);
+                old_callback(*old_data, RustFuturePoll::Ready);
+                *self = Self::Set(callback, data);
             }
             Self::Waked => {
                 *self = Self::Empty;
-                call_continuation(data, RustFuturePoll::MaybeReady);
+                callback(data, RustFuturePoll::MaybeReady);
             }
             Self::Cancelled => {
-                call_continuation(data, RustFuturePoll::Ready);
+                callback(data, RustFuturePoll::Ready);
             }
         }
     }
@@ -269,10 +249,11 @@ impl ContinuationDataCell {
     fn wake(&mut self) {
         match self {
             // If we had a continuation set, then call it and transition to the `Empty` state.
-            Self::Set(old_data) => {
+            Self::Set(callback, old_data) => {
                 let old_data = *old_data;
+                let callback = *callback;
                 *self = Self::Empty;
-                call_continuation(old_data, RustFuturePoll::MaybeReady);
+                callback(old_data, RustFuturePoll::MaybeReady);
             }
             // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
             // is called, we will immediately call the continuation.
@@ -283,8 +264,8 @@ impl ContinuationDataCell {
     }
 
     fn cancel(&mut self) {
-        if let Self::Set(old_data) = mem::replace(self, Self::Cancelled) {
-            call_continuation(old_data, RustFuturePoll::Ready);
+        if let Self::Set(callback, old_data) = mem::replace(self, Self::Cancelled) {
+            callback(old_data, RustFuturePoll::Ready);
         }
     }
 
@@ -433,16 +414,16 @@ where
         })
     }
 
-    fn poll(self: Arc<Self>, data: *const ()) {
+    fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
         let ready = self.is_cancelled() || {
             let mut locked = self.future.lock().unwrap();
             let waker: std::task::Waker = Arc::clone(&self).into();
             locked.poll(&mut Context::from_waker(&waker))
         };
         if ready {
-            call_continuation(data, RustFuturePoll::Ready)
+            callback(data, RustFuturePoll::Ready)
         } else {
-            self.continuation_data.lock().unwrap().store(data);
+            self.continuation_data.lock().unwrap().store(callback, data);
         }
     }
 
@@ -499,7 +480,7 @@ where
 /// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
 trait RustFutureFfi<ReturnType> {
-    fn ffi_poll(self: Arc<Self>, data: *const ());
+    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ());
     fn ffi_cancel(&self);
     fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;
     fn ffi_free(self: Arc<Self>);
@@ -512,8 +493,8 @@ where
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    fn ffi_poll(self: Arc<Self>, data: *const ()) {
-        self.poll(data)
+    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
+        self.poll(callback, data)
     }
 
     fn ffi_cancel(&self) {
@@ -597,12 +578,8 @@ mod tests {
     fn poll(rust_future: &Arc<dyn RustFutureFfi<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
         let cell = Arc::new(OnceCell::new());
         let cell_ptr = Arc::into_raw(cell.clone()) as *const ();
-        rust_future.clone().ffi_poll(cell_ptr);
+        rust_future.clone().ffi_poll(poll_continuation, cell_ptr);
         cell
-    }
-
-    fn setup_continuation_callback() {
-        let _ = RUST_FUTURE_CONTINUATION_CALLBACK_CELL.set(poll_continuation);
     }
 
     extern "C" fn poll_continuation(data: *const (), code: RustFuturePoll) {
@@ -618,7 +595,6 @@ mod tests {
 
     #[test]
     fn test_success() {
-        setup_continuation_callback();
         let (sender, rust_future) = channel();
 
         // Test polling the rust future before it's ready
@@ -648,7 +624,6 @@ mod tests {
 
     #[test]
     fn test_error() {
-        setup_continuation_callback();
         let (sender, rust_future) = channel();
 
         let continuation_result = poll(&rust_future);
@@ -676,7 +651,6 @@ mod tests {
     // reference to the RustFuture
     #[test]
     fn test_cancel() {
-        setup_continuation_callback();
         let (_sender, rust_future) = channel();
 
         let continuation_result = poll(&rust_future);
@@ -697,7 +671,6 @@ mod tests {
     // reference to the RustFuture
     #[test]
     fn test_release_future() {
-        setup_continuation_callback();
         let (sender, rust_future) = channel();
         // Create a weak reference to the channel to use to check if rust_future has dropped its
         // future.
@@ -720,7 +693,6 @@ mod tests {
     // This shouldn't happen in practice, but it seems like good defensive programming
     #[test]
     fn test_complete_with_stored_continuation() {
-        setup_continuation_callback();
         let (_sender, rust_future) = channel();
 
         let continuation_result = poll(&rust_future);
@@ -733,7 +705,6 @@ mod tests {
     // schedule another poll of the future in this case.
     #[test]
     fn test_wake_during_poll() {
-        setup_continuation_callback();
         let mut first_time = true;
         let future = std::future::poll_fn(move |ctx| {
             if first_time {

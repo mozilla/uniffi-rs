@@ -22,27 +22,20 @@
 - [Procedural Macros: Attributes and Derives](./proc_macro/index.md)
 - [Futures and async support](./futures.md)
 
-# Bindings
+- [Bindings](./bindings.md)
+  - [Customizing binding generation](./bindings.md)
+  - [Implementing Rust traits in foreign bindings](./foreign_traits.md)
 
-- [Generating bindings](./bindings)
-- [Customizing binding generation](./bindings#customizing-the-binding-generation)
-- [Implementing Rust traits in foreign bindings](./foreign_traits)
+  - [Kotlin](./kotlin/configuration.md)
+    - [Integrating with Gradle](./kotlin/gradle.md)
+    - [Kotlin Lifetimes](./kotlin/lifetimes.md)
 
-## Kotlin
+  - [Swift](./swift/overview.md)
+    - [Configuration](./swift/configuration.md)
+    - [Building a Swift module](./swift/module.md)
+    - [Integrating with Xcode](./swift/xcode.md)
 
-- [Configuration](./kotlin/configuration)
-- [Integrating with Gradle](./kotlin/gradle.md)
-- [Kotlin Lifetimes](./kotlin/lifetimes.md)
-
-## Swift
-
-- [Overview](./swift/overview.md)
-- [Configuration](./swift/configuration.md)
-- [Building a Swift module](./swift/module.md)
-- [Integrating with Xcode](./swift/xcode.md)
-
-## Python
-- [Configuration](./python/configuration)
+  - [Python](./python/configuration.md)
 
 # Internals
 - [Design Principles](./internals/design_principles.md)
