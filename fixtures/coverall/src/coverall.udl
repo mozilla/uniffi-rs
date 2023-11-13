@@ -22,6 +22,11 @@ namespace coverall {
     void test_getters(Getters g);
 
     sequence<string> ancestor_names(NodeTrait node);
+
+    ReturnOnlyDict output_return_only_dict();
+    ReturnOnlyEnum output_return_only_enum();
+
+    void try_input_return_only_dict(ReturnOnlyDict d);
 };
 
 dictionary SimpleDict {
@@ -47,6 +52,21 @@ dictionary SimpleDict {
     double? maybe_float64;
     Coveralls? coveralls;
     NodeTrait? test_trait;
+};
+
+// Create a type that stores `CoverallFlatError` and therefore can only be lowered but not lifted.
+// UniFFI should define a `Lower` implemenation but not try to define `Lift`.
+dictionary ReturnOnlyDict {
+    CoverallFlatError e;
+};
+
+// More complicated version of the above, each variant is return-only for different reasons
+[Enum]
+interface ReturnOnlyEnum {
+    One(CoverallFlatError e);
+    Two(ReturnOnlyDict d);
+    Three(sequence<CoverallFlatError> l);
+    Four(record<string, CoverallFlatError> m);
 };
 
 dictionary DictWithDefaults {

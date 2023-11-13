@@ -87,6 +87,7 @@ fn flat_error_ffi_converter_impl(
 ) -> TokenStream {
     let name = ident_to_string(ident);
     let lower_impl_spec = tagged_impl_header("Lower", ident, udl_mode);
+    let lift_impl_spec = tagged_impl_header("Lift", ident, udl_mode);
     let derive_ffi_traits = derive_ffi_traits(ident, udl_mode, &["ConvertError"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -127,8 +128,7 @@ fn flat_error_ffi_converter_impl(
         }
     };
 
-    let lift_impl = implement_lift.then(|| {
-        let lift_impl_spec = tagged_impl_header("Lift", ident, udl_mode);
+    let lift_impl = if implement_lift {
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
             let v_ident = &v.ident;
             let idx = Index::from(i + 1);
@@ -157,7 +157,31 @@ fn flat_error_ffi_converter_impl(
             }
 
         }
-    });
+    } else {
+        quote! {
+            // Lifting flat errors is not currently supported, but we still define the trait so
+            // that dicts containing flat errors don't cause compile errors (see ReturnOnlyDict in
+            // coverall.rs).
+            //
+            // Note: it would be better to not derive `Lift` for dictionaries containing flat
+            // errors, but getting the trait bounds and derived impls there would be much harder.
+            // For now, we just fail at runtime.
+            #[automatically_derived]
+            unsafe #lift_impl_spec {
+                type FfiType = ::uniffi::RustBuffer;
+
+                fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
+                    panic!("Can't lift flat errors")
+                }
+
+                fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
+                    panic!("Can't lift flat errors")
+                }
+
+                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META;
+            }
+        }
+    };
 
     quote! {
         #lower_impl
