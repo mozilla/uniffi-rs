@@ -660,9 +660,8 @@
 //!
 //! ### 3) Generate and include component scaffolding from the UDL file
 //!
-//! First you will need to install `uniffi-bindgen` on your system using `cargo install uniffi_bindgen`.
-//! Then add to your crate `uniffi_build` under `[build-dependencies]`.
-//! Finally, add a `build.rs` script to your crate and have it call `uniffi_build::generate_scaffolding`
+//! Add to your crate `uniffi_build` under `[build-dependencies]`,
+//! then add a `build.rs` script to your crate and have it call `uniffi_build::generate_scaffolding`
 //! to process your `.udl` file. This will generate some Rust code to be included in the top-level source
 //! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
 //!
@@ -679,12 +678,13 @@
 //!
 //! ### 4) Generate foreign language bindings for the library
 //!
-//! The `uniffi-bindgen` utility provides a command-line tool that can produce code to
+//! You will need ensure a local `uniffi-bindgen` - see &lt;https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html&gt;
+//! This utility provides a command-line tool that can produce code to
 //! consume the Rust library in any of several supported languages.
 //! It is done by calling (in kotlin for example):
 //!
 //! ```text
-//! uniffi-bindgen --language kotlin ./src/example.udl
+//! cargo run --bin -p uniffi-bindgen --language kotlin ./src/example.udl
 //! ```
 //!
 //! This will produce a file `example.kt` in the same directory as the .udl file, containing kotlin bindings

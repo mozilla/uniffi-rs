@@ -37,9 +37,8 @@ struct MyData {
   has_a_bar: bool
 }
 </code></pre></div><h4 id="3-generate-and-include-component-scaffolding-from-the-udl-file"><a href="#3-generate-and-include-component-scaffolding-from-the-udl-file">3) Generate and include component scaffolding from the UDL file</a></h4>
-<p>First you will need to install <code>uniffi-bindgen</code> on your system using <code>cargo install uniffi_bindgen</code>.
-Then add to your crate <code>uniffi_build</code> under <code>[build-dependencies]</code>.
-Finally, add a <code>build.rs</code> script to your crate and have it call <code>uniffi_build::generate_scaffolding</code>
+<p>Add to your crate <code>uniffi_build</code> under <code>[build-dependencies]</code>,
+then add a <code>build.rs</code> script to your crate and have it call <code>uniffi_build::generate_scaffolding</code>
 to process your <code>.udl</code> file. This will generate some Rust code to be included in the top-level source
 code of your crate. If your UDL file is named <code>example.udl</code>, then your build script would call:</p>
 <div class="example-wrap"><pre class="language-text"><code>uniffi_build::generate_scaffolding(&quot;src/example.udl&quot;)
@@ -48,10 +47,11 @@ code of your crate. If your UDL file is named <code>example.udl</code>, then you
 included into the code of your rust crate like this:</p>
 <div class="example-wrap"><pre class="language-text"><code>include_scaffolding!(&quot;example&quot;);
 </code></pre></div><h4 id="4-generate-foreign-language-bindings-for-the-library"><a href="#4-generate-foreign-language-bindings-for-the-library">4) Generate foreign language bindings for the library</a></h4>
-<p>The <code>uniffi-bindgen</code> utility provides a command-line tool that can produce code to
+<p>You will need ensure a local <code>uniffi-bindgen</code> - see <a href="https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html">https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html</a>
+This utility provides a command-line tool that can produce code to
 consume the Rust library in any of several supported languages.
 It is done by calling (in kotlin for example):</p>
-<div class="example-wrap"><pre class="language-text"><code>uniffi-bindgen --language kotlin ./src/example.udl
+<div class="example-wrap"><pre class="language-text"><code>cargo run --bin -p uniffi-bindgen --language kotlin ./src/example.udl
 </code></pre></div>
 <p>This will produce a file <code>example.kt</code> in the same directory as the .udl file, containing kotlin bindings
 to load and use the compiled rust code via its C-compatible FFI.</p>
