@@ -41,6 +41,7 @@ pub(super) enum Attribute {
     Custom,
     // The interface described is implemented as a trait.
     Trait,
+    Async,
 }
 
 impl Attribute {
@@ -67,6 +68,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Error" => Ok(Attribute::Error),
                 "Custom" => Ok(Attribute::Custom),
                 "Trait" => Ok(Attribute::Trait),
+                "Async" => Ok(Attribute::Async),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -196,8 +198,9 @@ impl<T: TryInto<EnumAttributes, Error = anyhow::Error>> TryFrom<Option<T>> for E
 
 /// Represents UDL attributes that might appear on a function.
 ///
-/// This supports the `[Throws=ErrorName]` attribute for functions that
-/// can produce an error.
+/// This supports:
+///   * `[Throws=ErrorName]` attribute for functions that can produce an error.
+///   * `[Async] for async functions
 #[derive(Debug, Clone, Checksum, Default)]
 pub(super) struct FunctionAttributes(Vec<Attribute>);
 
@@ -209,6 +212,10 @@ impl FunctionAttributes {
             Attribute::Throws(inner) => Some(inner.as_ref()),
             _ => None,
         })
+    }
+
+    pub(super) fn is_async(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Async))
     }
 }
 
@@ -224,7 +231,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for FunctionAttribut
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::Throws(_) => Ok(()),
+            Attribute::Throws(_) | Attribute::Async => Ok(()),
             _ => bail!(format!("{attr:?} not supported for functions")),
         })?;
         Ok(Self(attrs))
@@ -406,6 +413,10 @@ impl MethodAttributes {
         })
     }
 
+    pub(super) fn is_async(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Async))
+    }
+
     pub(super) fn get_self_by_arc(&self) -> bool {
         self.0
             .iter()
@@ -425,8 +436,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for MethodAttributes
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::SelfType(_) => Ok(()),
-            Attribute::Throws(_) => Ok(()),
+            Attribute::SelfType(_) | Attribute::Throws(_) | Attribute::Async => Ok(()),
             _ => bail!(format!("{attr:?} not supported for methods")),
         })?;
         Ok(Self(attrs))
@@ -641,14 +651,22 @@ mod test {
     }
 
     #[test]
-    fn test_throws_attribute() {
+    fn test_function_attributes() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Throws=Error]").unwrap();
         let attrs = FunctionAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
+        assert!(!attrs.is_async());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = FunctionAttributes::try_from(&node).unwrap();
         assert!(attrs.get_throws_err().is_none());
+        assert!(!attrs.is_async());
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Throws=Error, Async]").unwrap();
+        let attrs = FunctionAttributes::try_from(&node).unwrap();
+        assert!(matches!(attrs.get_throws_err(), Some("Error")));
+        assert!(attrs.is_async());
     }
 
     #[test]
@@ -673,22 +691,34 @@ mod test {
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(!attrs.get_self_by_arc());
         assert!(matches!(attrs.get_throws_err(), Some("Error")));
+        assert!(!attrs.is_async());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(!attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_none());
+        assert!(!attrs.is_async());
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc, Throws=Error]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_some());
+        assert!(!attrs.is_async());
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc, Throws=Error, Async]")
+                .unwrap();
+        let attrs = MethodAttributes::try_from(&node).unwrap();
+        assert!(attrs.get_self_by_arc());
+        assert!(attrs.get_throws_err().is_some());
+        assert!(attrs.is_async());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Self=ByArc]").unwrap();
         let attrs = MethodAttributes::try_from(&node).unwrap();
         assert!(attrs.get_self_by_arc());
         assert!(attrs.get_throws_err().is_none());
+        assert!(!attrs.is_async());
     }
 
     #[test]

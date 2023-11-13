@@ -4,7 +4,21 @@
 
 {% include "Protocol.swift" %}
 
-public class {{ impl_class_name }}: {{ protocol_name }} {
+public class {{ impl_class_name }}:
+    {%- for tm in obj.uniffi_traits() %}
+    {%-     match tm %}
+    {%-         when UniffiTrait::Display { fmt } %}
+    CustomStringConvertible,
+    {%-         when UniffiTrait::Debug { fmt } %}
+    CustomDebugStringConvertible,
+    {%-         when UniffiTrait::Eq { eq, ne } %}
+    Equatable,
+    {%-         when UniffiTrait::Hash { hash } %}
+    Hashable,
+    {%-         else %}
+    {%-    endmatch %}
+    {%- endfor %}
+    {{ protocol_name }} {
     fileprivate let pointer: UnsafeMutableRawPointer
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
@@ -91,6 +105,38 @@ public class {{ impl_class_name }}: {{ protocol_name }} {
     {%- endmatch -%}
     {%- endif -%}
     {% endfor %}
+
+    {%- for tm in obj.uniffi_traits() %}
+    {%-     match tm %}
+    {%-         when UniffiTrait::Display { fmt } %}
+    public var description: String {
+        return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
+            {% call swift::to_ffi_call_with_prefix("self.pointer", fmt) %}
+        )
+    }
+    {%-         when UniffiTrait::Debug { fmt } %}
+    public var debugDescription: String {
+        return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
+            {% call swift::to_ffi_call_with_prefix("self.pointer", fmt) %}
+        )
+    }
+    {%-         when UniffiTrait::Eq { eq, ne } %}
+    public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
+        return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
+            {% call swift::to_ffi_call_with_prefix("lhs.pointer", eq) %}
+        )
+    }
+    {%-         when UniffiTrait::Hash { hash } %}
+    public func hash(into hasher: inout Hasher) {
+        let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
+            {% call swift::to_ffi_call_with_prefix("self.pointer", hash) %}
+        )
+        hasher.combine(val)
+    }
+    {%-         else %}
+    {%-    endmatch %}
+    {%- endfor %}
+
 }
 
 {%- if obj.is_trait_interface() %}

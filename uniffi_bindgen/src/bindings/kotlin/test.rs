@@ -41,6 +41,7 @@ pub fn run_script(
         &cdylib_path,
         None,
         &[TargetLanguage::Kotlin],
+        None,
         &out_dir,
         false,
     )?;

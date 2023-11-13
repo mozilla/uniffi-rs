@@ -1,6 +1,7 @@
 {%- let rec = ci|get_record_definition(name) %}
 
 {% let struct = rec %}{% include "RecordDocsTemplate.kt" %}
+{%- if rec.has_fields() %}
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
     var {{ field.name()|var_name }}: {{ field|type_name -}}
@@ -19,21 +20,38 @@ data class {{ type_name }} (
     {% endif %}
     companion object
 }
+{%- else -%}
+class {{ type_name }} {
+    override fun equals(other: Any?): Boolean {
+        return other is {{ type_name }}
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
+    companion object
+}
+{%- endif %}
 
 public object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
+        {%- if rec.has_fields() %}
         return {{ type_name }}(
         {%- for field in rec.fields() %}
             {{ field|read_fn }}(buf),
         {%- endfor %}
         )
+        {%- else %}
+        return {{ type_name }}()
+        {%- endif %}
     }
 
-    override fun allocationSize(value: {{ type_name }}) = (
+    override fun allocationSize(value: {{ type_name }}) = {%- if rec.has_fields() %} (
         {%- for field in rec.fields() %}
-            {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }}){% if !loop.last %} +{% endif%}
+            {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }}){% if !loop.last %} +{% endif %}
         {%- endfor %}
-    )
+    ) {%- else %} 0 {%- endif %}
 
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         {%- for field in rec.fields() %}

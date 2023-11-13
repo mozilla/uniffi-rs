@@ -10,15 +10,11 @@ internal object uniffiRustFutureContinuationCallback: UniFffiRustFutureContinuat
     override fun callback(continuationHandle: USize, pollResult: Short) {
         uniffiContinuationHandleMap.remove(continuationHandle)?.resume(pollResult)
     }
-
-    internal fun register(lib: _UniFFILib) {
-        lib.{{ ci.ffi_rust_future_continuation_callback_set().name() }}(this)
-    }
 }
 
 internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
     rustFuture: Pointer,
-    pollFunc: (Pointer, USize) -> Unit,
+    pollFunc: (Pointer, UniFffiRustFutureContinuationCallbackType, USize) -> Unit,
     completeFunc: (Pointer, RustCallStatus) -> F,
     freeFunc: (Pointer) -> Unit,
     liftFunc: (F) -> T,
@@ -29,6 +25,7 @@ internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
             val pollResult = suspendCancellableCoroutine<Short> { continuation ->
                 pollFunc(
                     rustFuture,
+                    uniffiRustFutureContinuationCallback,
                     uniffiContinuationHandleMap.insert(continuation)
                 )
             }

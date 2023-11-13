@@ -15,3 +15,7 @@ Here you can note multiple things:
 - Rust's `u32` is also UDL's `u32`, but it is not always true! (TODO table correspondence)
 
 **Note:** If any of the things you expose in the `udl` file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the `u32` result type to `u64` and see what happens!
+
+**Note** It's also possible to use [Rust procmacros](../proc_macro/index.md) to describe your interface and you can avoid
+UDL files entirely if you choose.
+Unfortunately the docs aren't quite as good for that yet though.

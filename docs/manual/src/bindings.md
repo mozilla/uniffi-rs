@@ -13,4 +13,7 @@ Each of the bindings reads a file `uniffi.toml` in the root of a crate which sup
 various options which influence how the bindings are generated. Default options will be used
 if this file is missing.
 
+`--config` option can be used to specify additional uniffi config file. This config is merged with
+the `uniffi.toml` config present in each crate, with its values taking precedence.
+
 Each binding supports different options, so please see the documentation for each binding language.

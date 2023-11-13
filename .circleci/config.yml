@@ -10,7 +10,10 @@ commands:
           command: |
             mkdir -p $HOME/.bin
             pushd $HOME/.bin
-            curl -sfSL --retry 5 --retry-delay 10 https://github.com/rust-lang-nursery/mdBook/releases/download/v0.4.2/mdbook-v0.4.2-x86_64-unknown-linux-gnu.tar.gz | tar xz
+            # mdbook
+            curl -sfSL --retry 5 --retry-delay 10 https://github.com/rust-lang-nursery/mdBook/releases/download/v0.4.35/mdbook-v0.4.35-x86_64-unknown-linux-gnu.tar.gz | tar xz
+            # mdbook-link-check
+            curl -sfSL --retry 5 --retry-delay 10 https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/download/v0.7.7/mdbook-linkcheck.x86_64-unknown-linux-gnu.zip -o mdbook-linkcheck.zip && unzip mdbook-linkcheck.zip && chmod +x mdbook-linkcheck
             echo 'export PATH="$HOME/.bin:$PATH"' >> $BASH_ENV
             popd
   # Our policy for updating rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
@@ -127,7 +130,7 @@ jobs:
       - install-mdbook
       - run: mdbook build docs/manual
       - gh-pages/deploy:
-          build-dir: docs/manual/book
+          build-dir: docs/manual/book/html
           ssh-fingerprints: "ac:68:a3:78:ea:ee:00:05:30:e1:dc:1f:2e:2f:7c:81"
 
   Deploy Docker:

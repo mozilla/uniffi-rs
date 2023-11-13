@@ -3,7 +3,7 @@ private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
 fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UnsafeMutableRawPointer,
-    pollFunc: (UnsafeMutableRawPointer, UnsafeMutableRawPointer) -> (),
+    pollFunc: (UnsafeMutableRawPointer, @escaping UniFfiRustFutureContinuation, UnsafeMutableRawPointer) -> (),
     completeFunc: (UnsafeMutableRawPointer, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UnsafeMutableRawPointer) -> (),
     liftFunc: (F) throws -> T,
@@ -19,7 +19,7 @@ fileprivate func uniffiRustCallAsync<F, T>(
     var pollResult: Int8;
     repeat {
         pollResult = await withUnsafeContinuation {
-            pollFunc(rustFuture, ContinuationHolder($0).toOpaque())
+            pollFunc(rustFuture, uniffiFutureContinuationCallback, ContinuationHolder($0).toOpaque())
         }
     } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
 
@@ -55,8 +55,4 @@ fileprivate class ContinuationHolder {
     static func fromOpaque(_ ptr: UnsafeRawPointer) -> ContinuationHolder {
         return Unmanaged<ContinuationHolder>.fromOpaque(ptr).takeRetainedValue()
     }
-}
-
-fileprivate func uniffiInitContinuationCallback() {
-    {{ ci.ffi_rust_future_continuation_callback_set().name() }}(uniffiFutureContinuationCallback)
 }

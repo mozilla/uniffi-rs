@@ -62,7 +62,7 @@ pub(super) fn trait_impl(
             }
         }
 
-        ::uniffi::deps::static_assertions::assert_impl_all!(#trait_impl_ident: Send);
+        ::uniffi::deps::static_assertions::assert_impl_all!(#trait_impl_ident: ::core::marker::Send);
 
         impl #trait_ident for #trait_impl_ident {
             #trait_impl_methods

@@ -86,6 +86,10 @@ impl Record {
             .iter()
             .any(|field| field.documentation.is_some())
     }
+
+    pub fn has_fields(&self) -> bool {
+        !self.fields.is_empty()
+    }
 }
 
 impl AsType for Record {

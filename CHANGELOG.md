@@ -14,6 +14,25 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.0...HEAD).
 
+### What's changed?
+
+- The `rust_future_continuation_callback_set` FFI function was removed.  `rust_future_poll` now
+  inputs the callback pointer.  External bindings authors will need to update their code.
+
+### What's new?
+
+- Rust traits `Display`, `Hash` and `Eq` exposed to Kotlin and Swift.
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
+
+## v0.25.1 (backend crates: v0.25.1) - (_2023-11-09_)
+
+[All changes in v0.25.1](https://github.com/mozilla/uniffi-rs/compare/v0.25.0...v0.25.1).
+
+### What's fixed?
+
+- Fixed several bugs with async functions were defined in multiple crates that get built together.
+
 ## v0.25.0 (backend crates: v0.25.0) - (_2023-10-18_)
 
 [All changes in v0.25.0](https://github.com/mozilla/uniffi-rs/compare/v0.24.3...v0.25.0).
@@ -46,6 +65,7 @@
 
 - Updated the async functionality to correctly handle cancellation (#1669)
 - Kotlin: Fixed low-level issue with exported async APIs
+- Kotlin: Fixed empty records being exported as empty data classes in Kotlin. A class with a proper `equals` function should be used instead.
 
 ### What's changed?
 

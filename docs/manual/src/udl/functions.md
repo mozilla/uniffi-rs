@@ -47,3 +47,16 @@ fun helloName(name: String = "world" ): String {
     // ...
 }
 ```
+
+## Async
+
+Async functions can be exposed using the `[Async]` attribute:
+
+```idl
+namespace Example {
+    [Async]
+    string async_hello();
+}
+```
+
+See the [Async/Future support section](../futures.md) for details.
