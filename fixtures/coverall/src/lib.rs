@@ -191,6 +191,44 @@ pub struct SimpleDict {
     test_trait: Option<Arc<dyn TestTrait>>,
 }
 
+pub struct ReturnOnlyDict {
+    e: CoverallFlatError,
+}
+
+pub enum ReturnOnlyEnum {
+    One {
+        e: CoverallFlatError,
+    },
+    Two {
+        d: ReturnOnlyDict,
+    },
+    Three {
+        l: Vec<CoverallFlatError>,
+    },
+    Four {
+        m: HashMap<String, CoverallFlatError>,
+    },
+}
+
+fn output_return_only_dict() -> ReturnOnlyDict {
+    ReturnOnlyDict {
+        e: CoverallFlatError::TooManyVariants { num: 1 },
+    }
+}
+
+fn output_return_only_enum() -> ReturnOnlyEnum {
+    ReturnOnlyEnum::One {
+        e: CoverallFlatError::TooManyVariants { num: 2 },
+    }
+}
+
+fn try_input_return_only_dict(_d: ReturnOnlyDict) {
+    // This function can't work because ReturnOnlyDict contains a flat error and therefore
+    // can't be lifted by Rust.  There's a Python test that the UniFFI code panics before we get here.
+    //
+    // FIXME: should be a compile-time error rather than a runtime error (#1850)
+}
+
 #[derive(Debug, Clone)]
 pub struct DictWithDefaults {
     name: String,
