@@ -247,7 +247,7 @@ impl AsType for Enum {
 /// Represents an individual variant in an Enum.
 ///
 /// Each variant has a name and zero or more fields.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Checksum)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
 pub struct Variant {
     pub(super) name: String,
     #[checksum_ignore]
