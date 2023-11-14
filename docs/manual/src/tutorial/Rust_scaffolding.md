@@ -14,7 +14,12 @@ uniffi = "0.XX.0"
 uniffi = { version = "0.XX.0", features = ["build"] }
 ```
 
-Then create a `build.rs` file next to `Cargo.toml` that uses `uniffi` to generate the Rust scaffolding code.
+As noted in [Describing the interface](udl_file.md), UniFFI currently supports two methods of interface definitions: UDL files and proc macros.
+If you are using only proc macros, you can skip some boilerplate in your crate setup as well.
+
+### Setup for crates using UDL
+
+Crates using UDL need a `build.rs` file next to `Cargo.toml`. This uses `uniffi` to generate the Rust scaffolding code.
 
 ```rust
 fn main() {
@@ -30,7 +35,16 @@ uniffi::include_scaffolding!("math");
 
 **Note:** The file name is always `<namespace>.uniffi.rs`.
 
-Great! `add` is ready to see the outside world!
+### Setup for crates using only proc macros
+
+If you are only using proc macros, you can skip `build.rs` entirely!
+All you need to do is add this to the top of `lib.rs`:
+
+```rust
+uniffi::setup_scaffolding!();
+```
+
+**⚠ Warning ⚠** Do not call both `uniffi::setup_scaffolding!()` and `uniffi::include_scaffolding!!()` in the same crate.
 
 ### Libraries that depend on UniFFI components
 

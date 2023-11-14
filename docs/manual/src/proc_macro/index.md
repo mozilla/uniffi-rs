@@ -23,7 +23,7 @@ true for all of UniFFI, so proceed with caution and the knowledge that things ma
 
 ## Build workflow
 
-Library mode is recommended when using UniFFI proc-macros (See the [Foreign language bindings docs](../tutorial/foreign_language_bindings.md) for more info).
+Be sure to use library mode when using UniFFI proc-macros (See the [Foreign language bindings docs](../tutorial/foreign_language_bindings.md) for more info).
 
 If your crate's API is declared using only proc-macros and not UDL files, call the `uniffi::setup_scaffolding` macro at the top of your source code:
 
