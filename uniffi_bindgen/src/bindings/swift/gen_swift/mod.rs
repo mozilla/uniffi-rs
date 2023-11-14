@@ -6,6 +6,7 @@ use once_cell::sync::Lazy;
 use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
+use std::fmt::Debug;
 
 use anyhow::{Context, Result};
 use askama::Template;
@@ -13,7 +14,7 @@ use heck::{ToLowerCamelCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
-use crate::backend::{CodeType, TemplateExpression};
+use crate::backend::TemplateExpression;
 use crate::interface::*;
 use crate::BindingsConfig;
 
@@ -27,6 +28,65 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
+
+/// A trait tor the implementation.
+trait CodeType: Debug {
+    /// The language specific label used to reference this type. This will be used in
+    /// method signatures and property declarations.
+    fn type_label(&self) -> String;
+
+    /// A representation of this type label that can be used as part of another
+    /// identifier. e.g. `read_foo()`, or `FooInternals`.
+    ///
+    /// This is especially useful when creating specialized objects or methods to deal
+    /// with this type only.
+    fn canonical_name(&self) -> String {
+        self.type_label()
+    }
+
+    fn literal(&self, _literal: &Literal) -> String {
+        unimplemented!("Unimplemented for {}", self.type_label())
+    }
+
+    /// Name of the FfiConverter
+    ///
+    /// This is the object that contains the lower, write, lift, and read methods for this type.
+    fn ffi_converter_name(&self) -> String {
+        format!("FfiConverter{}", self.canonical_name())
+    }
+
+    // XXX - the below should be removed and replace with the ffi_converter_name reference in the template.
+    /// An expression for lowering a value into something we can pass over the FFI.
+    fn lower(&self) -> String {
+        format!("{}.lower", self.ffi_converter_name())
+    }
+
+    /// An expression for writing a value into a byte buffer.
+    fn write(&self) -> String {
+        format!("{}.write", self.ffi_converter_name())
+    }
+
+    /// An expression for lifting a value from something we received over the FFI.
+    fn lift(&self) -> String {
+        format!("{}.lift", self.ffi_converter_name())
+    }
+
+    /// An expression for reading a value from a byte buffer.
+    fn read(&self) -> String {
+        format!("{}.read", self.ffi_converter_name())
+    }
+
+    /// A list of imports that are needed if this type is in use.
+    /// Classes are imported exactly once.
+    fn imports(&self) -> Option<Vec<String>> {
+        None
+    }
+
+    /// Function to run at startup
+    fn initialization_fn(&self) -> Option<String> {
+        None
+    }
+}
 
 /// From <https://docs.swift.org/swift-book/documentation/the-swift-programming-language/lexicalstructure/#Keywords-and-Punctuation>
 static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
