@@ -179,6 +179,38 @@ do {
 
 }
 
+// Test error values, including error enums with error variants.
+do {
+    do {
+        let _ = try throwRootError()
+        fatalError("should have thrown")
+    } catch let e as RootError {
+        if case let .Complex(error) = e {
+            if case let .OsError(code, extendedCode) = error {
+                assert(code == 1)
+                assert(extendedCode == 2)
+            } else {
+                fatalError("wrong error variant: \(e)")
+            }
+        } else {
+            fatalError("wrong error variant: \(e)")
+        }
+    }
+    let e = getRootError();
+    if case let .Other(error) = e {
+        assert(error == OtherError.unexpected)
+    } else {
+        fatalError("wrong error variant: \(e)")
+    }
+    let e2 = getComplexError(e: nil);
+    if case let .PermissionDenied(error) = e2 {
+        assert(error == "too complex")
+    } else {
+        fatalError("wrong error variant: \(e)")
+    }
+    assert(getErrorDict(d: nil).complexError == nil)
+}
+
 // Swift GC is deterministic, `coveralls` is freed when it goes out of scope.
 assert(getNumAlive() == 0);
 

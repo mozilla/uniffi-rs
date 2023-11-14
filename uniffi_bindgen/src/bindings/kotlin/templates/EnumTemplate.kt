@@ -33,11 +33,11 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {% if !variant.has_fields() -%}
-    object {{ variant|enum_variant|type_name }} : {{ type_name }}()
+    object {{ variant|type_name(ci) }} : {{ type_name }}()
     {% else -%}
-    data class {{ variant|enum_variant|type_name }}(
+    data class {{ variant|type_name(ci) }}(
         {% for field in variant.fields() -%}
-        val {{ field.name()|var_name }}: {{ field|type_name}}{% if loop.last %}{% else %}, {% endif %}
+        val {{ field.name()|var_name }}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
         companion object
@@ -50,7 +50,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|enum_variant|type_name }} -> {
+            is {{ type_name }}.{{ variant|type_name(ci) }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}
@@ -68,7 +68,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant|enum_variant|type_name }}{% if variant.has_fields() %}(
+            {{ loop.index }} -> {{ type_name }}.{{ variant|type_name(ci) }}{% if variant.has_fields() %}(
                 {% for field in variant.fields() -%}
                 {{ field|read_fn }}(buf),
                 {% endfor -%}
@@ -80,7 +80,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
 
     override fun allocationSize(value: {{ type_name }}) = when(value) {
         {%- for variant in e.variants() %}
-        is {{ type_name }}.{{ variant|enum_variant|type_name }} -> {
+        is {{ type_name }}.{{ variant|type_name(ci) }} -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4
@@ -95,7 +95,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         when(value) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|enum_variant|type_name }} -> {
+            is {{ type_name }}.{{ variant|type_name(ci) }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
                 {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)

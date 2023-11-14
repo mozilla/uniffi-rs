@@ -179,6 +179,17 @@ class TestCoverall(unittest.TestCase):
         with self.assertRaises(InternalError) as cm:
             coveralls.maybe_throw_complex(4)
 
+    def test_error_values(self):
+        with self.assertRaises(RootError.Complex) as cm:
+            throw_root_error()
+        self.assertEqual(cm.exception.error.code, 1)
+
+        e = get_root_error()
+        self.assertEqual(e.error, OtherError.UNEXPECTED)
+
+        self.assertTrue(isinstance(get_complex_error(None), ComplexError.PermissionDenied))
+        self.assertIsNone(get_error_dict(None).complex_error)
+
     def test_enums(self):
         e = get_simple_flat_macro_enum(0)
         self.assertTrue(isinstance(e, SimpleFlatMacroEnum.FIRST))

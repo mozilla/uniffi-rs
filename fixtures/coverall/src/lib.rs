@@ -80,7 +80,7 @@ impl From<InternalCoverallError> for CoverallError {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Clone, Debug, thiserror::Error, PartialEq, Eq)]
 pub enum ComplexError {
     #[error("OsError: {code} ({extended_code})")]
     OsError { code: i16, extended_code: i16 },
@@ -106,6 +106,63 @@ fn throw_complex_macro_error() -> Result<(), ComplexMacroError> {
         code: 1,
         extended_code: 2,
     })
+}
+
+// Note: intentionally *does not* derive `uniffi::Error`, yet ends with `Error`, just to
+// mess with Kotlin etc.
+#[derive(Clone, Debug, uniffi::Enum)]
+pub enum OtherError {
+    Unexpected,
+}
+
+#[derive(Clone, Debug, thiserror::Error, uniffi::Error)]
+pub enum RootError {
+    #[error(transparent)]
+    // XXX - note Kotlin fails if this variant was called ComplexError
+    // (ie, the variant name can't match an existing type)
+    Complex {
+        #[from]
+        error: ComplexError,
+    },
+    #[error("Other Error")]
+    Other { error: OtherError },
+}
+
+// For Kotlin, we throw a variant which itself is a plain enum.
+#[uniffi::export]
+fn throw_root_error() -> Result<(), RootError> {
+    Err(RootError::Complex {
+        error: ComplexError::OsError {
+            code: 1,
+            extended_code: 2,
+        },
+    })
+}
+
+#[uniffi::export]
+fn get_root_error() -> RootError {
+    RootError::Other {
+        error: OtherError::Unexpected,
+    }
+}
+
+#[uniffi::export]
+fn get_complex_error(e: Option<ComplexError>) -> ComplexError {
+    e.unwrap_or(ComplexError::PermissionDenied {
+        reason: "too complex".to_string(),
+    })
+}
+
+#[uniffi::export]
+fn get_error_dict(d: Option<ErrorDict>) -> ErrorDict {
+    d.unwrap_or(Default::default())
+}
+
+#[derive(Default, Debug, uniffi::Record)]
+pub struct ErrorDict {
+    complex_error: Option<ComplexError>,
+    root_error: Option<RootError>,
+    errors: Vec<RootError>,
 }
 
 #[derive(Clone, Debug, Default)]

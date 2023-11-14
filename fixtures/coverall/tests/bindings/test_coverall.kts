@@ -202,6 +202,24 @@ Coveralls("test_complex_errors").use { coveralls ->
     }
 }
 
+Coveralls("test_error_values").use { _coveralls ->
+    try {
+        throwRootError()
+        throw RuntimeException("Expected method to throw exception")
+    } catch(e: RootException.Complex) {
+        assert(e.error is ComplexException.OsException)
+    }
+    val e = getRootError()
+    if (e is RootException.Other)
+        assert(e.error == OtherError.UNEXPECTED) {
+    } else {
+        throw RuntimeException("Unexpected error subclass")
+    }
+    val ce = getComplexError(null)
+    assert(ce is ComplexException.PermissionDenied)
+    assert(getErrorDict(null).complexError == null)
+}
+
 Coveralls("test_interfaces_in_dicts").use { coveralls ->
     coveralls.addPatch(Patch(Color.RED))
     coveralls.addRepair(
