@@ -79,15 +79,21 @@
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
 <a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, Literal};
-<span class="kw">use </span><span class="kw">crate</span>::interface::{Radix, Type};
+</span><span class="kw">use </span><span class="kw">super</span>::CodeType;
+<span class="kw">use </span><span class="kw">crate</span>::backend::Literal;
+<span class="kw">use </span><span class="kw">crate</span>::interface::{ComponentInterface, Radix, Type};
 <span class="kw">use </span>paste::paste;
 
-<span class="kw">fn </span>render_literal(literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
+<span class="kw">fn </span>render_literal(literal: <span class="kw-2">&amp;</span>Literal, _ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
     <span class="kw">fn </span>typed_number(type_: <span class="kw-2">&amp;</span>Type, num_str: String) -&gt; String {
         <span class="kw">match </span>type_ {
             <span class="comment">// Bytes, Shorts and Ints can all be inferred from the type.
@@ -135,12 +141,16 @@
             </span><span class="kw">pub struct </span><span class="macro-nonterminal">$T</span>;
 
             <span class="kw">impl </span>CodeType <span class="kw">for </span><span class="macro-nonterminal">$T  </span>{
-                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
                     <span class="macro-nonterminal">$class_name</span>.into()
                 }
 
-                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-                    render_literal(<span class="kw-2">&amp;</span>literal)
+                <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+                    <span class="macro-nonterminal">$class_name</span>.into()
+                }
+
+                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+                    render_literal(<span class="kw-2">&amp;</span>literal, ci)
                 }
             }
         }

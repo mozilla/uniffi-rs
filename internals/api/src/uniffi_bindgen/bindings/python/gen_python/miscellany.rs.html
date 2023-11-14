@@ -31,11 +31,13 @@
 <a href="#31" id="31">31</a>
 <a href="#32" id="32">32</a>
 <a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, Literal};
+</span><span class="kw">use </span><span class="kw">super</span>::CodeType;
+<span class="kw">use </span><span class="kw">crate</span>::backend::Literal;
 <span class="kw">use </span>paste::paste;
 
 <span class="macro">macro_rules! </span>impl_code_type_for_miscellany {

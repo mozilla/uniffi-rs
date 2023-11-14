@@ -33,20 +33,12 @@
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
-<a href="#36" id="36">36</a>
-<a href="#37" id="37">37</a>
-<a href="#38" id="38">38</a>
-<a href="#39" id="39">39</a>
-<a href="#40" id="40">40</a>
-<a href="#41" id="41">41</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use crate</span>::{
-    backend::{CodeType, Literal},
-    interface::ObjectImpl,
-};
+</span><span class="kw">use </span><span class="kw">super</span>::CodeType;
+<span class="kw">use crate</span>::{interface::ObjectImpl, ComponentInterface};
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ObjectCodeType {
@@ -61,16 +53,12 @@
 }
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>ObjectCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">super</span>::KotlinCodeOracle.class_name(<span class="kw-2">&amp;</span><span class="self">self</span>.name)
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        <span class="kw">super</span>::KotlinCodeOracle.class_name(ci, <span class="kw-2">&amp;</span><span class="self">self</span>.name)
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="macro">format!</span>(<span class="string">&quot;Type{}&quot;</span>, <span class="self">self</span>.name)
-    }
-
-    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-        <span class="macro">unreachable!</span>();
     }
 
     <span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {

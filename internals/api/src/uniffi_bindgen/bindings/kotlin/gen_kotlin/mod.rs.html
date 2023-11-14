@@ -550,45 +550,6 @@
 <a href="#550" id="550">550</a>
 <a href="#551" id="551">551</a>
 <a href="#552" id="552">552</a>
-<a href="#553" id="553">553</a>
-<a href="#554" id="554">554</a>
-<a href="#555" id="555">555</a>
-<a href="#556" id="556">556</a>
-<a href="#557" id="557">557</a>
-<a href="#558" id="558">558</a>
-<a href="#559" id="559">559</a>
-<a href="#560" id="560">560</a>
-<a href="#561" id="561">561</a>
-<a href="#562" id="562">562</a>
-<a href="#563" id="563">563</a>
-<a href="#564" id="564">564</a>
-<a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a>
-<a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -596,13 +557,14 @@
 </span><span class="kw">use </span>std::borrow::Borrow;
 <span class="kw">use </span>std::cell::RefCell;
 <span class="kw">use </span>std::collections::{BTreeSet, HashMap, HashSet};
+<span class="kw">use </span>std::fmt::Debug;
 
 <span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>askama::Template;
 <span class="kw">use </span>heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, TemplateExpression};
+<span class="kw">use </span><span class="kw">crate</span>::backend::TemplateExpression;
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
@@ -610,7 +572,6 @@
 <span class="kw">mod </span>compounds;
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
-<span class="kw">mod </span>error;
 <span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
@@ -618,6 +579,46 @@
 <span class="kw">mod </span>primitives;
 <span class="kw">mod </span>record;
 <span class="kw">mod </span>variant;
+
+<span class="kw">trait </span>CodeType: Debug {
+    <span class="doccomment">/// The language specific label used to reference this type. This will be used in
+    /// method signatures and property declarations.
+    </span><span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String;
+
+    <span class="doccomment">/// A representation of this type label that can be used as part of another
+    /// identifier. e.g. `read_foo()`, or `FooInternals`.
+    ///
+    /// This is especially useful when creating specialized objects or methods to deal
+    /// with this type only.
+    </span><span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String;
+
+    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(ci))
+    }
+
+    <span class="doccomment">/// Name of the FfiConverter
+    ///
+    /// This is the object that contains the lower, write, lift, and read methods for this type.
+    /// Depending on the binding this will either be a singleton or a class with static methods.
+    ///
+    /// This is the newer way of handling these methods and replaces the lower, write, lift, and
+    /// read CodeType methods.  Currently only used by Kotlin, but the plan is to move other
+    /// backends to using this.
+    </span><span class="kw">fn </span>ffi_converter_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.canonical_name())
+    }
+
+    <span class="doccomment">/// A list of imports that are needed if this type is in use.
+    /// Classes are imported exactly once.
+    </span><span class="kw">fn </span>imports(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt; {
+        <span class="prelude-val">None
+    </span>}
+
+    <span class="doccomment">/// Function to run at startup
+    </span><span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">None
+    </span>}
+}
 
 <span class="comment">// config options to customize the generated Kotlin.
 </span><span class="attr">#[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -714,7 +715,7 @@
 </span><span class="attr">#[derive(Template)]
 #[template(syntax = <span class="string">&quot;kt&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.kt&quot;</span>)]
 </span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    kotlin_config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
+    config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
     ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
     <span class="comment">// Track included modules for the `include_once()` macro
     </span>include_once_names: RefCell&lt;HashSet&lt;String&gt;&gt;,
@@ -723,9 +724,9 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>new(kotlin_config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+    <span class="kw">fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            kotlin_config,
+            config,
             ci,
             include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
@@ -736,7 +737,7 @@
     </span><span class="kw">fn </span>external_type_package_name(<span class="kw-2">&amp;</span><span class="self">self</span>, module_path: <span class="kw-2">&amp;</span>str, namespace: <span class="kw-2">&amp;</span>str) -&gt; String {
         <span class="comment">// config overrides are keyed by the crate name, default fallback is the namespace.
         </span><span class="kw">let </span>crate_name = module_path.split(<span class="string">&quot;::&quot;</span>).next().unwrap();
-        <span class="kw">match </span><span class="self">self</span>.kotlin_config.external_packages.get(crate_name) {
+        <span class="kw">match </span><span class="self">self</span>.config.external_packages.get(crate_name) {
             <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
             <span class="comment">// unreachable in library mode - all deps are in our config with correct namespace.
             </span><span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;uniffi.{namespace}&quot;</span>),
@@ -823,17 +824,20 @@
         type_.clone().as_type().as_codetype()
     }
 
-    <span class="kw">fn </span>find_as_error(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span>Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
-        <span class="kw">match </span>type_ {
-            Type::Enum { name, .. } =&gt; Box::new(error::ErrorCodeType::new(name.clone())),
-            <span class="comment">// XXX - not sure how we are supposed to return askama::Error?
-            </span><span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unsupported type for error: {type_:?}&quot;</span>),
-        }
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
+    </span><span class="kw">fn </span>class_name(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="kw">let </span>name = nm.to_string().to_upper_camel_case();
+        <span class="comment">// fixup errors.
+        </span>ci.is_name_used_as_error(nm)
+            .then(|| <span class="self">self</span>.convert_error_suffix(<span class="kw-2">&amp;</span>name))
+            .unwrap_or(name)
     }
 
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a class name (for enums, records, errors, etc).
-    </span><span class="kw">fn </span>class_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        nm.to_string().to_upper_camel_case()
+    <span class="kw">fn </span>convert_error_suffix(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="kw">match </span>nm.strip_suffix(<span class="string">&quot;Error&quot;</span>) {
+            <span class="prelude-val">None </span>=&gt; nm.to_string(),
+            <span class="prelude-val">Some</span>(stripped) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{stripped}Exception&quot;</span>),
+        }
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
@@ -849,20 +853,6 @@
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.
     </span><span class="kw">fn </span>enum_variant_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
         nm.to_string().to_shouty_snake_case()
-    }
-
-    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an exception name
-    ///
-    /// This replaces &quot;Error&quot; at the end of the name with &quot;Exception&quot;.  Rust code typically uses
-    /// &quot;Error&quot; for any type of error but in the Java world, &quot;Error&quot; means a non-recoverable error
-    /// and is distinguished from an &quot;Exception&quot;.
-    </span><span class="kw">fn </span>error_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="comment">// errors are a class in kotlin.
-        </span><span class="kw">let </span>name = <span class="self">self</span>.class_name(nm);
-        <span class="kw">match </span>name.strip_suffix(<span class="string">&quot;Error&quot;</span>) {
-            <span class="prelude-val">None </span>=&gt; name,
-            <span class="prelude-val">Some</span>(stripped) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{stripped}Exception&quot;</span>),
-        }
     }
 
     <span class="kw">fn </span>ffi_type_label_by_value(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
@@ -909,8 +899,8 @@
     /// This split is needed because of the `FfiConverter` interface.  For struct impls, `lower`
     /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
     /// implement the interface.
-    </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
-        <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(obj.name());
+    </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
+        <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(ci, obj.name());
         <span class="kw">match </span>obj.imp() {
             ObjectImpl::Struct =&gt; (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Interface&quot;</span>), class_name),
             ObjectImpl::Trait =&gt; {
@@ -921,7 +911,7 @@
     }
 }
 
-<span class="kw">pub trait </span>AsCodeType {
+<span class="kw">trait </span>AsCodeType {
     <span class="kw">fn </span>as_codetype(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt;;
 }
 
@@ -975,110 +965,64 @@
     }
 }
 
-<span class="kw">pub mod </span>filters {
+<span class="kw">mod </span>filters {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">pub use </span><span class="kw">crate</span>::backend::filters::<span class="kw-2">*</span>;
 
-    <span class="kw">pub fn </span>type_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(as_ct.as_codetype().type_label())
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>type_name(
+        as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType,
+        ci: <span class="kw-2">&amp;</span>ComponentInterface,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(as_ct.as_codetype().type_label(ci))
     }
 
-    <span class="kw">pub fn </span>canonical_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>canonical_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(as_ct.as_codetype().canonical_name())
     }
 
-    <span class="kw">pub fn </span>ffi_converter_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>ffi_converter_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(as_ct.as_codetype().ffi_converter_name())
     }
 
-    <span class="kw">pub fn </span>lower_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lower_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
             <span class="string">&quot;{}.lower&quot;</span>,
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    <span class="kw">pub fn </span>allocation_size_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>allocation_size_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
             <span class="string">&quot;{}.allocationSize&quot;</span>,
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    <span class="kw">pub fn </span>write_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>write_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
             <span class="string">&quot;{}.write&quot;</span>,
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    <span class="kw">pub fn </span>lift_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lift_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, as_ct.as_codetype().ffi_converter_name()))
     }
 
-    <span class="kw">pub fn </span>read_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>read_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, as_ct.as_codetype().ffi_converter_name()))
-    }
-
-    <span class="kw">pub fn </span>error_handler(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.throws_type {
-            <span class="prelude-val">Some</span>(error_type) =&gt; <span class="prelude-val">Ok</span>(KotlinCodeOracle.error_name(<span class="kw-2">&amp;</span>type_name(error_type)<span class="question-mark">?</span>)),
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="string">&quot;NullCallStatusErrorHandler&quot;</span>.into()),
-        }
-    }
-
-    <span class="kw">pub fn </span>future_callback_handler(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>return_component = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.return_type {
-            <span class="prelude-val">Some</span>(return_type) =&gt; KotlinCodeOracle.find(return_type).canonical_name(),
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Void&quot;</span>.into(),
-        };
-        <span class="kw">let </span>throws_component = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.throws_type {
-            <span class="prelude-val">Some</span>(throws_type) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;_{}&quot;</span>, KotlinCodeOracle.find(throws_type).canonical_name())
-            }
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;&quot;</span>.into(),
-        };
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;UniFfiFutureCallbackHandler{return_component}{throws_component}&quot;
-        </span>))
-    }
-
-    <span class="kw">pub fn </span>future_continuation_type(result_type: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>return_type_name = <span class="kw">match </span><span class="kw-2">&amp;</span>result_type.return_type {
-            <span class="prelude-val">Some</span>(t) =&gt; type_name(t)<span class="question-mark">?</span>,
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Unit&quot;</span>.into(),
-        };
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;Continuation&lt;{return_type_name}&gt;&quot;</span>))
     }
 
     <span class="kw">pub fn </span>render_literal(
         literal: <span class="kw-2">&amp;</span>Literal,
-        as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType,
+        as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType,
+        ci: <span class="kw-2">&amp;</span>ComponentInterface,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(as_ct.as_codetype().literal(literal))
-    }
-
-    <span class="doccomment">/// Get the Kotlin syntax for representing a given low-level `FfiType`.
-    </span><span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(KotlinCodeOracle::ffi_type_label(type_))
+        <span class="prelude-val">Ok</span>(as_ct.as_codetype().literal(literal, ci))
     }
 
     <span class="kw">pub fn </span>ffi_type_name_by_value(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(KotlinCodeOracle::ffi_type_label_by_value(type_))
-    }
-
-    <span class="comment">// Some FfiTypes have the same ffi_type_label - this makes a vec of them unique.
-    </span><span class="kw">pub fn </span>unique_ffi_types(
-        types: <span class="kw">impl </span>Iterator&lt;Item = FfiType&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Iterator&lt;Item = FfiType&gt;, askama::Error&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>seen = HashSet::new();
-        <span class="kw">let </span><span class="kw-2">mut </span>result = Vec::new();
-        <span class="kw">for </span>t <span class="kw">in </span>types {
-            <span class="kw">if </span>seen.insert(KotlinCodeOracle::ffi_type_label(<span class="kw-2">&amp;</span>t)) {
-                result.push(t)
-            }
-        }
-        <span class="prelude-val">Ok</span>(result.into_iter())
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
@@ -1091,43 +1035,21 @@
         <span class="prelude-val">Ok</span>(KotlinCodeOracle.var_name(nm))
     }
 
-    <span class="kw">pub fn </span>variant_name(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+    <span class="doccomment">/// Get a String representing the name used for an individual enum variant.
+    </span><span class="kw">pub fn </span>variant_name(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(KotlinCodeOracle.enum_variant_name(v.name()))
     }
 
-    <span class="doccomment">/// Get a codetype for idiomatic Kotlin rendering of an individual enum variant.
-    </span><span class="kw">pub fn </span>enum_variant(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>AsCodeType, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(v.clone())
+    <span class="kw">pub fn </span>error_variant_name(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>name = v.name().to_string().to_upper_camel_case();
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.convert_error_suffix(<span class="kw-2">&amp;</span>name))
     }
 
-    <span class="doccomment">/// Get a codetype for idiomatic Kotlin rendering of an individual enum variant
-    /// when used in an error.
-    </span><span class="kw">pub fn </span>error_variant(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>AsCodeType, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(variant::ErrorVariantCodeTypeProvider { v: v.clone() })
-    }
-
-    <span class="doccomment">/// Some of the above filters have different versions to help when the type
-    /// is used as an error.
-    </span><span class="kw">pub fn </span>error_type_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(KotlinCodeOracle
-            .find_as_error(<span class="kw-2">&amp;</span>as_type.as_type())
-            .type_label())
-    }
-
-    <span class="kw">pub fn </span>error_canonical_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(KotlinCodeOracle
-            .find_as_error(<span class="kw-2">&amp;</span>as_type.as_type())
-            .canonical_name())
-    }
-
-    <span class="kw">pub fn </span>error_ffi_converter_name(as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(KotlinCodeOracle
-            .find_as_error(<span class="kw-2">&amp;</span>as_type.as_type())
-            .ffi_converter_name())
-    }
-
-    <span class="kw">pub fn </span>object_names(obj: <span class="kw-2">&amp;</span>Object) -&gt; <span class="prelude-ty">Result</span>&lt;(String, String), askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(KotlinCodeOracle.object_names(obj))
+    <span class="kw">pub fn </span>object_names(
+        obj: <span class="kw-2">&amp;</span>Object,
+        ci: <span class="kw-2">&amp;</span>ComponentInterface,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(String, String), askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.object_names(ci, obj))
     }
 
     <span class="kw">pub fn </span>async_poll(
@@ -1153,7 +1075,7 @@
                 ..
             }) =&gt; {
                 <span class="comment">// Need to convert the RustBuffer from our package to the RustBuffer of the external package
-                </span><span class="kw">let </span>suffix = KotlinCodeOracle.class_name(<span class="kw-2">&amp;</span>name);
+                </span><span class="kw">let </span>suffix = KotlinCodeOracle.class_name(ci, <span class="kw-2">&amp;</span>name);
                 <span class="macro">format!</span>(<span class="string">&quot;{call}.let {{ RustBuffer{suffix}.create(it.capacity, it.len, it.data) }}&quot;</span>)
             }
             <span class="kw">_ </span>=&gt; call,

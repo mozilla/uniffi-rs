@@ -72,6 +72,10 @@
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
 <a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -84,7 +88,11 @@
 </span><span class="kw">use </span><span class="kw">super</span>::Literal;
 <span class="kw">use </span>std::fmt::Debug;
 
-<span class="doccomment">/// A Trait to help render types in a language specific format.
+<span class="comment">// XXX - Note that this trait is not used internally. It exists just to avoid an unnecessary
+// breaking change for external bindings which use this trait.
+// It is likely to be removed some time after 0.26.x.
+
+</span><span class="doccomment">/// A Trait to help render types in a language specific format.
 </span><span class="kw">pub trait </span>CodeType: Debug {
     <span class="doccomment">/// The language specific label used to reference this type. This will be used in
     /// method signatures and property declarations.

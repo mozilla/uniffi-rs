@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ErrorVariantCodeType","ErrorVariantCodeTypeProvider","VariantCodeType"]};
+window.SIDEBAR_ITEMS = {"struct":["VariantCodeType"]};

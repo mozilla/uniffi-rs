@@ -94,21 +94,25 @@
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::{CodeType, Literal, Type};
+</span><span class="kw">use super</span>::{AsCodeType, CodeType};
+<span class="kw">use </span><span class="kw">crate</span>::backend::{Literal, Type};
+<span class="kw">use </span><span class="kw">crate</span>::ComponentInterface;
 <span class="kw">use </span>paste::paste;
 
-<span class="kw">fn </span>render_literal(literal: <span class="kw-2">&amp;</span>Literal, inner: <span class="kw-2">&amp;</span>Type) -&gt; String {
+<span class="kw">fn </span>render_literal(literal: <span class="kw-2">&amp;</span>Literal, inner: <span class="kw-2">&amp;</span>Type, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
     <span class="kw">match </span>literal {
         Literal::Null =&gt; <span class="string">&quot;null&quot;</span>.into(),
         Literal::EmptySequence =&gt; <span class="string">&quot;listOf()&quot;</span>.into(),
         Literal::EmptyMap =&gt; <span class="string">&quot;mapOf()&quot;</span>.into(),
 
         <span class="comment">// For optionals
-        </span><span class="kw">_ </span>=&gt; <span class="kw">super</span>::KotlinCodeOracle.find(inner).literal(literal),
+        </span><span class="kw">_ </span>=&gt; <span class="kw">super</span>::KotlinCodeOracle.find(inner).literal(literal, ci),
     }
 }
 
@@ -130,16 +134,16 @@
             }
 
             <span class="kw">impl </span>CodeType <span class="kw">for </span><span class="macro-nonterminal">$T  </span>{
-                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-                    <span class="macro">format!</span>(<span class="macro-nonterminal">$type_label_pattern</span>, <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.inner()).type_label())
+                <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+                    <span class="macro">format!</span>(<span class="macro-nonterminal">$type_label_pattern</span>, <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.inner()).type_label(ci))
                 }
 
                 <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
                     <span class="macro">format!</span>(<span class="macro-nonterminal">$canonical_name_pattern</span>, <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.inner()).canonical_name())
                 }
 
-                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-                    render_literal(literal, <span class="self">self</span>.inner())
+                <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+                    render_literal(literal, <span class="self">self</span>.inner(), ci)
                 }
             }
         }
@@ -170,24 +174,24 @@
 }
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>MapCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
         <span class="macro">format!</span>(
             <span class="string">&quot;Map&lt;{}, {}&gt;&quot;</span>,
-            <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.key()).type_label(),
-            <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.value()).type_label(),
+            <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.key()).type_label(ci),
+            <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.value()).type_label(ci),
         )
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="macro">format!</span>(
             <span class="string">&quot;Map{}{}&quot;</span>,
-            <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.key()).canonical_name(),
-            <span class="kw">super</span>::KotlinCodeOracle.find(<span class="self">self</span>.value()).canonical_name(),
+            <span class="self">self</span>.key().as_codetype().canonical_name(),
+            <span class="self">self</span>.value().as_codetype().canonical_name(),
         )
     }
 
-    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-        render_literal(literal, <span class="kw-2">&amp;</span><span class="self">self</span>.value)
+    <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, literal: <span class="kw-2">&amp;</span>Literal, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        render_literal(literal, <span class="kw-2">&amp;</span><span class="self">self</span>.value, ci)
     }
 }
 </code></pre></div></section></main></body></html>

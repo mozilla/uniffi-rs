@@ -21,17 +21,19 @@
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
 <a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::backend::CodeType;
+</span><span class="kw">use </span><span class="kw">super</span>::CodeType;
+<span class="kw">use </span><span class="kw">crate</span>::ComponentInterface;
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ForeignExecutorCodeType;
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>ForeignExecutorCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
         <span class="comment">// Kotlin uses a CoroutineScope for ForeignExecutor
         </span><span class="string">&quot;CoroutineScope&quot;</span>.into()
     }
