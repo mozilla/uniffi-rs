@@ -301,14 +301,23 @@ uniffi = &quot;0.XX.0&quot;
 [build-dependencies]
 uniffi = { version = &quot;0.XX.0&quot;, features = [&quot;build&quot;] }
 </code></pre>
-<p>Then create a <code>build.rs</code> file next to <code>Cargo.toml</code> that uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
+<p>As noted in <a href="tutorial/udl_file.html">Describing the interface</a>, UniFFI currently supports two methods of interface definitions: UDL files and proc macros.
+If you are using only proc macros, you can skip some boilerplate in your crate setup as well.</p>
+<h3 id="setup-for-crates-using-udl"><a class="header" href="#setup-for-crates-using-udl">Setup for crates using UDL</a></h3>
+<p>Crates using UDL need a <code>build.rs</code> file next to <code>Cargo.toml</code>. This uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
 <pre><code class="language-rust">fn main() {
     uniffi::generate_scaffolding(&quot;src/math.udl&quot;).unwrap();
 }</code></pre>
 <p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code> using this handy macro:</p>
 <pre><code class="language-rust">uniffi::include_scaffolding!(&quot;math&quot;);</code></pre>
 <p><strong>Note:</strong> The file name is always <code>&lt;namespace&gt;.uniffi.rs</code>.</p>
-<p>Great! <code>add</code> is ready to see the outside world!</p>
+<h3 id="setup-for-crates-using-only-proc-macros"><a class="header" href="#setup-for-crates-using-only-proc-macros">Setup for crates using only proc macros</a></h3>
+<p>If you are only using proc macros, you can skip <code>build.rs</code> entirely!
+All you need to do is add this to the top of <code>lib.rs</code>
+NOTE: This function takes an optional parameter, the <a href="tutorial/../udl/namespace.html"><code>namespace</code></a> used by the component.
+If not specified, the crate name will be used as the namespace.</p>
+<pre><code class="language-rust">uniffi::setup_scaffolding!();</code></pre>
+<p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>
 <h3 id="libraries-that-depend-on-uniffi-components"><a class="header" href="#libraries-that-depend-on-uniffi-components">Libraries that depend on UniFFI components</a></h3>
 <p>Suppose you want to create a shared library that includes one or more
 components using UniFFI. The typical way to achieve this is to create a new
@@ -350,10 +359,10 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 <li>Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
 <p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
-<h2 id="running-uniffi-bindgen-using-a-library-file"><a class="header" href="#running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</a></h2>
+<h2 id="running-uniffi-bindgen-using-a-library-file-recommended"><a class="header" href="#running-uniffi-bindgen-using-a-library-file-recommended">Running uniffi-bindgen using a library file (RECOMMENDED)</a></h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
 This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
-The plan is to make library mode the default in a future UniFFI version.</p>
+The plan is to make library mode the default in a future UniFFI version, and it is highly recommended to specify the flag for now (because some features simply don't work otherwise).</p>
 <p>Taking <code>example/arithmetic</code> as an example, you can generate the bindings with:</p>
 <pre><code>cargo build --release
 cargo run --bin uniffi-bindgen generate --library target/release/libarithmetical.so --language kotlin --out-dir out
@@ -1186,7 +1195,7 @@ instead of in UDL.</p>
 <p><strong>⚠ Warning ⚠</strong> This facility is relatively new, so things may change often. However, this remains
 true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.</p>
 <h2 id="build-workflow"><a class="header" href="#build-workflow">Build workflow</a></h2>
-<p>Library mode is recommended when using UniFFI proc-macros (See the <a href="proc_macro/../tutorial/foreign_language_bindings.html">Foreign language bindings docs</a> for more info).</p>
+<p>Be sure to use library mode when using UniFFI proc-macros (See the <a href="proc_macro/../tutorial/foreign_language_bindings.html">Foreign language bindings docs</a> for more info).</p>
 <p>If your crate's API is declared using only proc-macros and not UDL files, call the <code>uniffi::setup_scaffolding</code> macro at the top of your source code:</p>
 <pre><code class="language-rust">uniffi::setup_scaffolding!();</code></pre>
 <p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>

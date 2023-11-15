@@ -188,7 +188,7 @@ instead of in UDL.</p>
 <p><strong>⚠ Warning ⚠</strong> This facility is relatively new, so things may change often. However, this remains
 true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.</p>
 <h2 id="build-workflow"><a class="header" href="#build-workflow">Build workflow</a></h2>
-<p>Library mode is recommended when using UniFFI proc-macros (See the <a href="../tutorial/foreign_language_bindings.html">Foreign language bindings docs</a> for more info).</p>
+<p>Be sure to use library mode when using UniFFI proc-macros (See the <a href="../tutorial/foreign_language_bindings.html">Foreign language bindings docs</a> for more info).</p>
 <p>If your crate's API is declared using only proc-macros and not UDL files, call the <code>uniffi::setup_scaffolding</code> macro at the top of your source code:</p>
 <pre><code class="language-rust">uniffi::setup_scaffolding!();</code></pre>
 <p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>

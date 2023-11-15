@@ -198,10 +198,10 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 <li>Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
 <p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
-<h2 id="running-uniffi-bindgen-using-a-library-file"><a class="header" href="#running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</a></h2>
+<h2 id="running-uniffi-bindgen-using-a-library-file-recommended"><a class="header" href="#running-uniffi-bindgen-using-a-library-file-recommended">Running uniffi-bindgen using a library file (RECOMMENDED)</a></h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
 This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
-The plan is to make library mode the default in a future UniFFI version.</p>
+The plan is to make library mode the default in a future UniFFI version, and it is highly recommended to specify the flag for now (because some features simply don't work otherwise).</p>
 <p>Taking <code>example/arithmetic</code> as an example, you can generate the bindings with:</p>
 <pre><code>cargo build --release
 cargo run --bin uniffi-bindgen generate --library target/release/libarithmetical.so --language kotlin --out-dir out
