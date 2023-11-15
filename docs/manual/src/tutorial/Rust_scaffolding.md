@@ -38,7 +38,9 @@ uniffi::include_scaffolding!("math");
 ### Setup for crates using only proc macros
 
 If you are only using proc macros, you can skip `build.rs` entirely!
-All you need to do is add this to the top of `lib.rs`:
+All you need to do is add this to the top of `lib.rs`
+NOTE: This function takes an optional parameter, the [`namespace`](../udl/namespace.md) used by the component.
+If not specified, the crate name will be used as the namespace.
 
 ```rust
 uniffi::setup_scaffolding!();
