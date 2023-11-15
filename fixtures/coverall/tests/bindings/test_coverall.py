@@ -4,6 +4,7 @@
 
 import unittest
 from datetime import datetime, timezone
+
 from coverall import *
 
 class TestCoverall(unittest.TestCase):
@@ -288,6 +289,13 @@ class TestCoverall(unittest.TestCase):
     def test_bytes(self):
         coveralls = Coveralls("test_bytes")
         self.assertEqual(coveralls.reverse(b"123"), b"321")
+
+    def test_return_only_dict(self):
+        # try_input_return_only_dict can never work, since ReturnOnlyDict should only be returned
+        # from Rust not inputted.  Test that an attempt raises an internal error rather than tries
+        # to use an invalid value.
+        with self.assertRaises(InternalError):
+            try_input_return_only_dict(ReturnOnlyDict(e=CoverallFlatError.TooManyVariants))
 
 class PyGetters:
     def get_bool(self, v, arg2):
