@@ -21,7 +21,10 @@
 
 ### What's new?
 
-- Rust traits `Display`, `Hash` and `Eq` exposed to Kotlin and Swift.
+- Rust traits `Display`, `Hash` and `Eq` exposed to Kotlin and Swift [#1817](https://github.com/mozilla/uniffi-rs/pull/1817)
+- Foreign types can now implement trait interfaces [#1791](https://github.com/mozilla/uniffi-rs/pull/1791)
+- Generated Python code is able to specify a package name for the module [#1784](https://github.com/mozilla/uniffi-rs/pull/1784)
+- UDL can describe async function [#1834](https://github.com/mozilla/uniffi-rs/pull/1834)
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
 
@@ -59,7 +62,6 @@
 - Error types must now implement `Error + Send + Sync + 'static`.
 - Proc-macros: The `handle_unknown_callback_error` attribute is no longer needed for callback
   interface errors
-- Foreign types can now implement trait interfaces
 
 ### What's Fixed
 
