@@ -12,6 +12,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's fixed?
+
+- Fixed regression in the name of error enums in Kotlin [#1842](https://github.com/mozilla/uniffi-rs/pull/1842)
+- Fix regression when error types are in dicts etc [#1847](https://github.com/mozilla/uniffi-rs/pull/1847)
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
 
 ## v0.25.1 (backend crates: v0.25.1) - (_2023-11-09_)
