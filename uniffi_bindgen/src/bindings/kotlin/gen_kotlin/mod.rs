@@ -73,6 +73,7 @@ trait CodeType: Debug {
 pub struct Config {
     package_name: Option<String>,
     cdylib_name: Option<String>,
+    generate_immutable_records: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
@@ -102,6 +103,11 @@ impl Config {
         } else {
             "uniffi".into()
         }
+    }
+
+    /// Whether to generate immutable records (`val` instead of `var`)
+    pub fn generate_immutable_records(&self) -> bool {
+        self.generate_immutable_records.unwrap_or(false)
     }
 }
 
