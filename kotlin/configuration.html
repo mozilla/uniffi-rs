@@ -177,6 +177,7 @@
 <div class="table-wrapper"><table><thead><tr><th>Configuration name</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>package_name</code></td><td><code>uniffi</code></td><td>The Kotlin package name - ie, the value used in the <code>package</code> statement at the top of generated files.</td></tr>
 <tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td></tr>
+<tr><td><code>generate_immutable_records</code></td><td><code>false</code></td><td>Whether to generate records with immutable fields (<code>val</code> instead of <code>var</code>).</td></tr>
 <tr><td><code>custom_types</code></td><td></td><td>A map which controls how custom types are exposed to Kotlin. See the <a href="../udl/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td></tr>
 <tr><td><code>external_packages</code></td><td></td><td>A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the <a href="../udl/ext_types_external.html#kotlin">external types section of the manual</a></td></tr>
 </tbody></table>

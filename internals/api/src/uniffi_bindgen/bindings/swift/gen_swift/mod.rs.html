@@ -703,6 +703,12 @@
 <a href="#703" id="703">703</a>
 <a href="#704" id="704">704</a>
 <a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -901,6 +907,7 @@
     ffi_module_filename: <span class="prelude-ty">Option</span>&lt;String&gt;,
     generate_module_map: <span class="prelude-ty">Option</span>&lt;bool&gt;,
     omit_argument_labels: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    generate_immutable_records: <span class="prelude-ty">Option</span>&lt;bool&gt;,
     <span class="attr">#[serde(default)]
     </span>custom_types: HashMap&lt;String, CustomTypeConfig&gt;,
 }
@@ -965,6 +972,11 @@
     <span class="doccomment">/// Whether to omit argument labels in Swift function definitions.
     </span><span class="kw">pub fn </span>omit_argument_labels(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.omit_argument_labels.unwrap_or(<span class="bool-val">false</span>)
+    }
+
+    <span class="doccomment">/// Whether to generate immutable records (`let` instead of `var`)
+    </span><span class="kw">pub fn </span>generate_immutable_records(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.generate_immutable_records.unwrap_or(<span class="bool-val">false</span>)
     }
 }
 
