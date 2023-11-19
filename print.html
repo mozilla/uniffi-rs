@@ -964,21 +964,37 @@ from multiple threads at once, but Rust can not enforce this in the foreign code
 would actually be <code>Box&lt;dyn Keychain&gt;</code> - eg, the Rust implementation of the <code>Authenticator</code>
 constructor would be <code>fn new(keychain: Box&lt;dyn Keychain&gt;) -&gt; Self</code> instead of the <code>Arc&lt;&gt;</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="external-types"><a class="header" href="#external-types">External types</a></h1>
-<p><em>Note: The facility described in this document is not yet available for all foreign language
-bindings.</em></p>
-<p>UniFFI supports referring to types defined outside of the UDL file. These types must be
-either:</p>
-<ol>
-<li>A locally defined type which <a href="udl/./custom_types.html">wraps a UniFFI primitive type</a>.</li>
-<li>A &quot;UniFFI compatible&quot; type <a href="udl/./ext_types_external.html">in another crate</a>.</li>
-</ol>
-<p>Specifically, &quot;UniFFI compatible&quot; means either a type defined in <code>udl</code> in an external crate, or
-a type defined in another crate that satisfies (1).</p>
-<p>These types are all declared using a <code>typedef</code>, with attributes specifying how the type is
-handled. See the links for details.</p>
+<p>External types are types implemented by UniFFI but outside of this UDL file.</p>
+<p>They are similar to, but different from <a href="udl/./custom_types.html">custom types</a> which wrap UniFFI primitive types.</p>
+<p>But like custom types, external types are all declared using a <code>typedef</code> with attributes
+giving more detail.</p>
+<h2 id="types-in-another-crate"><a class="header" href="#types-in-another-crate">Types in another crate</a></h2>
+<p><a href="udl/./ext_types_external.html">There's a whole page about that!</a></p>
+<h2 id="types-from-procmacros-in-this-crate"><a class="header" href="#types-from-procmacros-in-this-crate">Types from procmacros in this crate.</a></h2>
+<p>If your crate has types defined via <code>#[uniffi::export]</code> etc you can make them available
+to the UDL file in your own crate via a <code>typedef</code> with a <code>[Rust=]</code> attribute. Eg, your Rust
+might have:</p>
+<pre><code class="language-rust">#[derive(uniffi::Record)]
+pub struct One {
+    inner: i32,
+}</code></pre>
+<p>you can use it in your UDL:</p>
+<pre><code class="language-idl">[Rust=&quot;record&quot;]
+typedef extern One;
+
+namespace app {
+    // use the procmacro type.
+    One get_one(One? one);
+}
+
+</code></pre>
+<p>Supported values:</p>
+<ul>
+<li>&quot;enum&quot;, &quot;trait&quot;, &quot;callback&quot;</li>
+<li>For records, either &quot;record&quot; or &quot;dictionary&quot;</li>
+<li>For objects, either &quot;object&quot; or &quot;interface&quot;</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="declaring-external-types"><a class="header" href="#declaring-external-types">Declaring External Types</a></h1>
-<p><em>Note: The facility described in this document is not yet available for all foreign language
-bindings.</em></p>
 <p>It is possible to use types defined by UniFFI in an external crate. For example, let's assume
 that you have an existing crate named <code>demo_crate</code> with the following UDL:</p>
 <pre><code class="language-idl">dictionary DemoDict {
@@ -986,8 +1002,8 @@ that you have an existing crate named <code>demo_crate</code> with the following
   boolean bool_val;
 };
 </code></pre>
-<p>And further, assume that you have another crate called <code>consuming_crate</code> which would like to use
-this dictionary. Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
+<p>Inside another crate,  <code>consuming_crate</code>, you'd like to use this dictionary.
+Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
 <code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
 <pre><code class="language-idl">[External=&quot;demo_crate&quot;]
 typedef extern DemoDict;
@@ -999,10 +1015,6 @@ dictionary ConsumingDict {
 };
 
 </code></pre>
-<p>If in the above example, <code>DemoDict</code> was actually &quot;exported&quot; via a procmacro
-you should instead use <code>ExternExport</code></p>
-<p>(Note the special type <code>extern</code> used on the <code>typedef</code>. It is not currently enforced that the
-literal <code>extern</code> is used, but we hope to enforce this later, so please use it!)</p>
 <p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
 <code>consuming_crate</code>'s <code>lib.rs</code> might look like:</p>
 <pre><code class="language-rust">use demo_crate::DemoDict;
@@ -1014,12 +1026,20 @@ pub struct ConsumingDict {
 
 uniffi::include_scaffolding!(&quot;consuming_crate&quot;);</code></pre>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
-<p>The <code>External</code> attribute can be specified on dictionaries, enums and errors.</p>
+<p>The <code>External</code> attribute can be specified on dictionaries, enums, errors.</p>
 <h2 id="external-interface-types"><a class="header" href="#external-interface-types">External interface types</a></h2>
 <p>If the external type is an <a href="udl/./interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
 <pre><code class="language-idl">[ExternalInterface=&quot;demo_crate&quot;]
 typedef extern DemoInterface;
 </code></pre>
+<h2 id="external-procmacro-types"><a class="header" href="#external-procmacro-types">External procmacro types</a></h2>
+<p>The above examples assume the external types were defined via UDL.
+If they were defined by procmacros, you need different attribute names:</p>
+<ul>
+<li>if <code>DemoDict</code> is implemented by a procmacro in <code>demo_crate</code>, you'd use <code>[ExternalExport=...]</code></li>
+<li>for <code>DemoInterface</code> you'd use <code>[ExternalInterfaceExport=...]</code></li>
+</ul>
+<p>For types defined by procmacros in <em>this</em> crate, see the []<code>[Rust=...]</code> attribute](../ext_types.md)</p>
 <h2 id="foreign-bindings"><a class="header" href="#foreign-bindings">Foreign bindings</a></h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>
