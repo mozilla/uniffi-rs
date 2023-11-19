@@ -869,31 +869,6 @@ impl ComponentInterface {
                 bail!("Conflicting type definition for \"{}\"", f.name());
             }
         }
-
-        for ty in self.iter_types() {
-            match ty {
-                Type::Object { name, .. } => {
-                    ensure!(
-                        self.objects.iter().any(|o| o.name == *name),
-                        "Object `{name}` has no definition"
-                    );
-                }
-                Type::Record { name, .. } => {
-                    ensure!(
-                        self.records.contains_key(name),
-                        "Record `{name}` has no definition",
-                    );
-                }
-                Type::Enum { name, .. } => {
-                    ensure!(
-                        self.enums.contains_key(name),
-                        "Enum `{name}` has no definition",
-                    );
-                }
-                _ => {}
-            }
-        }
-
         Ok(())
     }
 

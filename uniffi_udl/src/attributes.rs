@@ -37,11 +37,25 @@ pub(super) enum Attribute {
         kind: ExternalKind,
         export: bool,
     },
+    Rust {
+        kind: RustKind,
+    },
     // Custom type on the scaffolding side
     Custom,
     // The interface described is implemented as a trait.
     Trait,
     Async,
+}
+
+// A type defined in Rust via procmacros but which should be available
+// in UDL.
+#[derive(Debug, Copy, Clone, Checksum)]
+pub(super) enum RustKind {
+    Object,
+    Trait,
+    Record,
+    Enum,
+    CallbackInterface,
 }
 
 impl Attribute {
@@ -97,6 +111,9 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                         kind: ExternalKind::Interface,
                         export: true,
                     }),
+                    "Rust" => Ok(Attribute::Rust {
+                        kind: rust_kind_from_id_or_string(&identity.rhs)?,
+                    }),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
                         identity.lhs_identifier.0
@@ -130,6 +147,25 @@ fn name_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -> Str
         weedle::attribute::IdentifierOrString::Identifier(identifier) => identifier.0.to_string(),
         weedle::attribute::IdentifierOrString::String(str_lit) => str_lit.0.to_string(),
     }
+}
+
+fn rust_kind_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -> Result<RustKind> {
+    Ok(match nm {
+        weedle::attribute::IdentifierOrString::String(str_lit) => match str_lit.0 {
+            // support names which match either procmacro or udl
+            "interface" => RustKind::Object,
+            "object" => RustKind::Object,
+            "record" => RustKind::Record,
+            "dictionary" => RustKind::Record,
+            "enum" => RustKind::Enum,
+            "trait" => RustKind::Trait,
+            "callback" => RustKind::CallbackInterface,
+            _ => anyhow::bail!("Unknown `[Rust=]` kind {:?}", str_lit.0),
+        },
+        weedle::attribute::IdentifierOrString::Identifier(_) => {
+            anyhow::bail!("Expected string attribute value, got identifer")
+        }
+    })
 }
 
 /// Parse a weedle `ExtendedAttributeList` into a list of `Attribute`s,
@@ -508,10 +544,18 @@ impl TypedefAttributes {
         })
     }
 
+    pub(super) fn rust_kind(&self) -> Option<RustKind> {
+        self.0.iter().find_map(|attr| match attr {
+            Attribute::Rust { kind, .. } => Some(*kind),
+            _ => None,
+        })
+    }
+
     pub(super) fn external_tagged(&self) -> Option<bool> {
         // If it was "exported" via a proc-macro the FfiConverter was not tagged.
         self.0.iter().find_map(|attr| match attr {
             Attribute::External { export, .. } => Some(!*export),
+            Attribute::Rust { .. } => Some(false),
             _ => None,
         })
     }
@@ -523,7 +567,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttribute
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::External { .. } | Attribute::Custom => Ok(()),
+            Attribute::External { .. } | Attribute::Custom | Attribute::Rust { .. } => Ok(()),
             _ => bail!(format!("{attr:?} not supported for typedefs")),
         })?;
         Ok(Self(attrs))

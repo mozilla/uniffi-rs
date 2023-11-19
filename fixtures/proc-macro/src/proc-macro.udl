@@ -1,7 +1,32 @@
-// Namespace different from crate name.
-namespace proc_macro { };
-
 // Use this to test that types defined in the UDL can be used in the proc-macros
 dictionary Zero {
     string inner;
+};
+
+// And all of these for the opposite - proc-macro types used in UDL.
+[Rust="record"]
+typedef extern One;
+
+[Rust="enum"]
+typedef extern MaybeBool;
+
+[Rust="interface"]
+typedef extern Object;
+
+[Rust="trait"]
+typedef extern Trait;
+
+// Then stuff defined here but referencing the imported types.
+dictionary Externals {
+    One? one;
+    MaybeBool? bool;
+};
+
+// Namespace different from crate name.
+namespace proc_macro {
+    One get_one(One? one);
+    MaybeBool get_bool(MaybeBool? b);
+    Object get_object(Object? o);
+    Trait get_trait(Trait? t);
+    Externals get_externals(Externals? e);
 };

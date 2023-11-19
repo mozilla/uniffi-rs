@@ -234,4 +234,31 @@ impl Object {
     }
 }
 
+// defined in UDL.
+fn get_one(one: Option<One>) -> One {
+    one.unwrap_or(One { inner: 0 })
+}
+
+fn get_bool(b: Option<MaybeBool>) -> MaybeBool {
+    b.unwrap_or(MaybeBool::Uncertain)
+}
+
+fn get_object(o: Option<Arc<Object>>) -> Arc<Object> {
+    o.unwrap_or_else(Object::new)
+}
+
+fn get_trait(o: Option<Arc<dyn Trait>>) -> Arc<dyn Trait> {
+    o.unwrap_or_else(|| Arc::new(TraitImpl {}))
+}
+
+#[derive(Default)]
+struct Externals {
+    one: Option<One>,
+    bool: Option<MaybeBool>,
+}
+
+fn get_externals(e: Option<Externals>) -> Externals {
+    e.unwrap_or_default()
+}
+
 uniffi::include_scaffolding!("proc-macro");
