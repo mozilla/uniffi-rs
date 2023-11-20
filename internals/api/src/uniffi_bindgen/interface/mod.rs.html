@@ -1196,6 +1196,15 @@
 <a href="#1196" id="1196">1196</a>
 <a href="#1197" id="1197">1197</a>
 <a href="#1198" id="1198">1198</a>
+<a href="#1199" id="1199">1199</a>
+<a href="#1200" id="1200">1200</a>
+<a href="#1201" id="1201">1201</a>
+<a href="#1202" id="1202">1202</a>
+<a href="#1203" id="1203">1203</a>
+<a href="#1204" id="1204">1204</a>
+<a href="#1205" id="1205">1205</a>
+<a href="#1206" id="1206">1206</a>
+<a href="#1207" id="1207">1207</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1508,8 +1517,17 @@
     /// This is important to know in language bindings that cannot integrate object types
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
     </span><span class="kw">pub fn </span>item_contains_object_references(<span class="kw-2">&amp;</span><span class="self">self</span>, item: <span class="kw-2">&amp;</span>Type) -&gt; bool {
-        <span class="self">self</span>.iter_types_in_item(item)
-            .any(|t| <span class="macro">matches!</span>(t, Type::Object { .. }))
+        <span class="comment">// this is surely broken for external records with object refs?
+        </span><span class="self">self</span>.iter_types_in_item(item).any(|t| {
+            <span class="macro">matches!</span>(
+                t,
+                Type::Object { .. }
+                    | Type::External {
+                        kind: ExternalKind::Interface,
+                        ..
+                    }
+            )
+        })
     }
 
     <span class="doccomment">/// Check whether the given item contains any (possibly nested) unsigned types
