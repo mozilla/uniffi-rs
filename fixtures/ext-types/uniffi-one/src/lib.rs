@@ -39,4 +39,9 @@ async fn get_uniffi_one_async() -> UniffiOneEnum {
     UniffiOneEnum::One
 }
 
+#[uniffi::export]
+pub trait UniffiOneTrait: Send + Sync {
+    fn hello(&self) -> String;
+}
+
 uniffi::include_scaffolding!("uniffi-one");

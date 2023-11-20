@@ -5,6 +5,7 @@
 import unittest
 import urllib
 from imported_types_lib import *
+from imported_types_sublib import *
 from uniffi_one_ns import *
 
 class TestIt(unittest.TestCase):
@@ -18,6 +19,18 @@ class TestIt(unittest.TestCase):
 
         ct2 = get_combined_type(ct)
         self.assertEqual(ct, ct2)
+
+        t = get_trait_impl()
+        self.assertEqual(t.hello(), "sub-lib trait impl says hello")
+        sub = SubLibType(maybe_enum = None, maybe_trait = t, maybe_interface = None)
+        self.assertTrue(get_sub_type(sub).maybe_trait is not None)
+
+        ot = ObjectsType(maybe_trait = t, maybe_interface = None, sub = sub)
+        self.assertTrue(ot.maybe_trait is not None)
+        self.assertEqual(ot.maybe_interface, None)
+        self.assertEqual(get_uniffi_one_trait(None), None)
+
+        get_sub_type(sub)
 
     def test_get_url(self):
         url = urllib.parse.urlparse("http://example.com/")

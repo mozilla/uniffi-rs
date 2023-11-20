@@ -1,7 +1,9 @@
 use custom_types::Handle;
 use ext_types_guid::Guid;
 use std::sync::Arc;
-use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneType};
+use uniffi_one::{
+    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
+};
 use url::Url;
 
 uniffi::use_udl_record!(uniffi_one, UniffiOneType);
@@ -59,6 +61,20 @@ fn get_combined_type(value: Option<CombinedType>) -> CombinedType {
         handle: Handle(123),
         handles: vec![Handle(1), Handle(2), Handle(3)],
         maybe_handle: Some(Handle(4)),
+    })
+}
+// Not part of CombinedType as object refs prevent equality testing.
+#[derive(uniffi::Record)]
+pub struct ObjectsType {
+    pub maybe_trait: Option<Arc<dyn UniffiOneTrait>>,
+    pub maybe_interface: Option<Arc<UniffiOneInterface>>,
+}
+
+#[uniffi::export]
+fn get_objects_type(value: Option<ObjectsType>) -> ObjectsType {
+    value.unwrap_or_else(|| ObjectsType {
+        maybe_interface: None,
+        maybe_trait: None,
     })
 }
 
@@ -139,6 +155,11 @@ fn get_maybe_uniffi_one_enums(es: Vec<Option<UniffiOneEnum>>) -> Vec<Option<Unif
 #[uniffi::export]
 fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
     Arc::new(UniffiOneInterface::new())
+}
+
+#[uniffi::export]
+fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn UniffiOneTrait>> {
+    t
 }
 
 // Some custom types via macros.

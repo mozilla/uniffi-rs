@@ -1,6 +1,3 @@
 [bindings.python.external_packages]
 # This fixture does not create a Python package, so we want all modules to be top-level modules.
-custom_types = ""
-ext_types_guid = ""
 uniffi_one_ns = ""
-imported_types_sublib = ""

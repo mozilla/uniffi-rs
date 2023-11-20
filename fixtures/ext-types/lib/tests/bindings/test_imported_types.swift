@@ -13,6 +13,16 @@ assert(ct.url ==  URL(string: "http://example.com/"))
 let ct2 = getCombinedType(value: ct)
 assert(ct == ct2)
 
+let t = getTraitImpl()
+assert(t.hello() == "sub-lib trait impl says hello")
+let sub = SubLibType(maybeEnum: nil, maybeTrait: t, maybeInterface: nil)
+assert(getSubType(existing: sub).maybeTrait != nil)
+
+let ob = ObjectsType(maybeTrait: t, maybeInterface: nil, sub: sub)
+assert(getObjectsType(value: nil).maybeInterface == nil)
+assert(getObjectsType(value: ob).maybeTrait != nil)
+assert(getUniffiOneTrait(t: nil) == nil)
+
 let url = URL(string: "http://example.com/")!;
 assert(getUrl(url: url) ==  url)
 assert(getMaybeUrl(url: url)! == url)

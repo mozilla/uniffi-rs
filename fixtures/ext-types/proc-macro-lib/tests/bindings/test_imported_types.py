@@ -21,6 +21,11 @@ class TestIt(unittest.TestCase):
         ct2 = get_combined_type(ct)
         self.assertEqual(ct, ct2)
 
+        ot = get_objects_type(None)
+        self.assertEqual(ot.maybe_trait, None)
+        self.assertEqual(ot.maybe_interface, None)
+        self.assertEqual(get_uniffi_one_trait(None), None)
+
     def test_get_url(self):
         url = urllib.parse.urlparse("http://example.com/")
         self.assertEqual(get_url(url), url)

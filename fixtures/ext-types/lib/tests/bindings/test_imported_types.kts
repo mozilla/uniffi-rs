@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import uniffi.imported_types_lib.*
+import uniffi.imported_types_sublib.*
 import uniffi.uniffi_one_ns.*
 
 val ct = getCombinedType(null)
@@ -12,6 +13,13 @@ assert(ct.url ==  java.net.URL("http://example.com/"))
 
 val ct2 = getCombinedType(ct)
 assert(ct == ct2)
+
+assert(getObjectsType(null).maybeInterface == null)
+assert(getObjectsType(null).maybeTrait == null)
+assert(getUniffiOneTrait(null) == null)
+
+assert(getSubType(null).maybeInterface == null)
+assert(getTraitImpl().hello() == "sub-lib trait impl says hello")
 
 val url = java.net.URL("http://example.com/")
 assert(getUrl(url) ==  url)

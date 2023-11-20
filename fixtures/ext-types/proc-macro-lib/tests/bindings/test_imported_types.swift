@@ -13,6 +13,10 @@ assert(ct.url ==  URL(string: "http://example.com/"))
 let ct2 = getCombinedType(value: ct)
 assert(ct == ct2)
 
+assert(getObjectsType(value: nil).maybeInterface == nil)
+assert(getObjectsType(value: nil).maybeTrait == nil)
+assert(getUniffiOneTrait(t: nil) == nil)
+
 let url = URL(string: "http://example.com/")!;
 assert(getUrl(url: url) ==  url)
 assert(getMaybeUrl(url: url)! == url)
