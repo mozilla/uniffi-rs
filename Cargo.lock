@@ -1585,6 +1585,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-example-arithmetic-procmacro"
+version = "0.22.0"
+dependencies = [
+ "thiserror",
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-example-callbacks"
 version = "0.22.0"
 dependencies = [

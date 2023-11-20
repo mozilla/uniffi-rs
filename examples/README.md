@@ -8,6 +8,8 @@ Newcomers are recommended to explore them in the following order:
 
 * [`./arithmetic/`](./arithmetic/) is the most minimal example - just some plain functions that operate
   on integers, and some minimal error handling.
+* [`./arithmetic-procmacro/`](./arithmetic-procmacro/) is a copy of the above example implemented using
+  procmacros - it has no UDL file nor `build.rs` script.
 * [`./geometry/`](./geometry/) shows how to use records and nullable types for working with more complex
   data.
 * [`./sprites/`](./sprites/) shows how to work with stateful objects that have methods, in classical
@@ -24,9 +26,8 @@ Each example has the following structure:
 * `src/<namespace>.udl`, the component interface definition which defines the main object and its methods.
   This is processed by functions in `build.rs` to generate Rust scaffolding for the component.
 * `src/lib.rs`, the core implementation of the component in Rust. This basically
-  pulls in the generated Rust scaffolding via `include!()` and fills in function implementations.
-* `Cargo.toml` configures the crate to build a `cdylib` with an appropriate name, matching the
-  namespace defined in the UDL file.
+  pulls in the generated Rust scaffolding via `uniffi::include_scaffolding!()` and fills in function implementations.
+* `Cargo.toml` configures the crate to build a `cdylib` with an appropriate name.
 * Some small test scripts that double as API examples in each target foreign language:
   * Kotlin `tests/bindings/test_<namespace>.kts`
   * Swift `tests/bindings/test_<namespace>.swift`
@@ -53,10 +54,11 @@ With that in place, try the following:
 * Run `cargo test`.  This will run each of the foreign-language testcases against the compiled Rust code,
   confirming whether everything is working as intended.
 * Explore the build process in more detail:
-  * Run `cargo run -p uniffi -- scaffolding ./src/<namespace>.udl`.
+  * Change to the root directory of this repo, so the `uniffi-bindgen` package referenced below can be found.
+  * Run `cargo run --bin uniffi-bindgen -- scaffolding examples/<example>/src/<namespace>.udl`.
     This will generate the Rust scaffolding code which exposes a C FFI for the component.
     You can view the generatd code in `./src/<namespace>.uniffi.rs`.
-  * Run `cargo run -p uniffi -- generate --language kotlin ./src/<namespace>.udl`.
+  * Run `cargo run --bin uniffi-bindgen -- generate --language kotlin examples/<example>/src/<namespace>.udl`.
     This will generate the foreign-language bindings for Kotlin, which load the compiled Rust code
     and use the C FFI generated above to interact with it.
     You can view the generated code in `./src/uniffi/<namespace>/<namespace>.kt`.
