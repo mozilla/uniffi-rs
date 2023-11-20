@@ -1594,7 +1594,7 @@ dependencies = [
  "trybuild",
  "uniffi_bindgen 0.3.0+v0.25.0",
  "uniffi_build 0.3.0+v0.25.0",
- "uniffi_core 0.3.0+v0.25.0",
+ "uniffi_core 0.25.0",
  "uniffi_macros 0.3.0+v0.25.0",
 ]
 
@@ -1605,7 +1605,7 @@ source = "git+https://github.com/mozilla/uniffi-rs.git?tag=v0.25.0#a0fb644361c1f
 dependencies = [
  "anyhow",
  "uniffi_build 0.25.0",
- "uniffi_core 0.25.0",
+ "uniffi_core 0.25.0 (git+https://github.com/mozilla/uniffi-rs.git?tag=v0.25.0)",
  "uniffi_macros 0.25.0",
 ]
 
@@ -1854,7 +1854,7 @@ version = "0.1.0"
 dependencies = [
  "thiserror",
  "uniffi 0.3.0+v0.25.0",
- "uniffi_core 0.3.0+v0.25.0",
+ "uniffi_core 0.25.0",
  "uniffi_meta 0.3.0+v0.25.0",
 ]
 
@@ -2078,7 +2078,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_core"
-version = "0.3.0+v0.25.0"
+version = "0.25.0"
 dependencies = [
  "anyhow",
  "async-compat",

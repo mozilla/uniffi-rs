@@ -5,4 +5,5 @@
 #
 # All other config exists in [../release.toml](../release.toml).
 
+release = false
 tag = false
