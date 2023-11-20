@@ -11,10 +11,10 @@ name = "uniffi_regression_logging_callback_interface"
 
 [dependencies]
 log = "0.4"
-uniffi = {path = "../../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }

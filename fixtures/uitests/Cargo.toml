@@ -10,7 +10,7 @@ publish = false
 name = "uniffi_uitests"
 
 [dependencies]
-uniffi = {path = "../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 uniffi_macros = {path = "../../uniffi_macros"}
 thiserror = "1.0"
 

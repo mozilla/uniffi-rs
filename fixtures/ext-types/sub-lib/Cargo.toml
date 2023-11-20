@@ -17,11 +17,11 @@ name = "uniffi_sublib"
 
 [dependencies]
 anyhow = "1"
-uniffi = {path = "../../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }

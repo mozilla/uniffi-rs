@@ -11,12 +11,12 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_traits"
 
 [dependencies]
-uniffi = {path = "../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }
 

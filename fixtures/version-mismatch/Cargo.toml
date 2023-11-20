@@ -20,7 +20,7 @@ default = []
 proc_macro_v2 = []
 
 [dependencies]
-uniffi = { path = "../../uniffi", version = "0.25", features = ["cli"]}
+uniffi = { workspace = true, features = ["cli"]}
 
 [build-dependencies]
-uniffi = { path = "../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }

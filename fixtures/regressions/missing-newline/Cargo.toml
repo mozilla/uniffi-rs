@@ -10,10 +10,10 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_regression_test_missing_newline"
 
 [dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }
