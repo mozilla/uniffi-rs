@@ -10,18 +10,18 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.25.2) - (_2023-11-20_)
+## v0.25.2 (backend crates: v0.25.2) - (_2023-11-20_)
 
 ### What's fixed?
 
 - Fixed regression in the name of error enums in Kotlin [#1842](https://github.com/mozilla/uniffi-rs/pull/1842)
 - Fix regression when error types are in dicts etc [#1847](https://github.com/mozilla/uniffi-rs/pull/1847)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
+[All changes in v0.25.2](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...v0.25.2).
 
 ## v0.25.1 (backend crates: v0.25.1) - (_2023-11-09_)
 
