@@ -1,74 +1,90 @@
-# UniFFI - a multi-language bindings generator for Rust
+# Fork of mozilla/uniffi-rs
 
-UniFFI is a toolkit for building cross-platform software components in Rust.
+Fork of [mozilla/uniffi-rs](https://github.com/mozilla/uniffi-rs). The fork maintains major version
+compatibility with upstream. When using matching major version of upstream and fork, its possible
+to use either of them to generate either scaffolding or foreign bindings. For example, when using
+`mozilla/uniffi-rs:v0.25.0` and `NordSecurity/uniffi-rs:v0.25.0-1`, its possible to use upstream to
+generate Rust scaffolding, and use the fork to generate foreign bindings. The fork contains
+[Github Actions code](.github/workflows/tests.yml) to run existing upstream tests. ABI compatibility
+with upstream is maintained with automated tests in [fixtures/coverall-upstream-compatibility](fixtures/coverall-upstream-compatibility/Cargo.toml).
 
-By writing your core business logic in Rust and describing its interface in a special
-[interface definition file](https://mozilla.github.io/uniffi-rs/udl_file_spec.html),
-you can use UniFFI to help you:
+The fork exists to implement ad hoc features for our internal use, and to ease the development
+process of external bindings generators. The ad hoc features are intended to eventually be
+contributed back to upstream.
 
-* Compile your Rust code into a shared library for use on different target platforms.
-* Generate bindings to load and use the library from different target languages.
+### Ad hoc features
 
-For example, UniFFI is currently used in the [mozilla/application-services](https://github.com/mozilla/application-services)
-project to build browser storage and syncing functionality for Firefox mobile browsers. Core functionality is
-written once in Rust, and auto-generated bindings allow that functionality to be called from both Kotlin (for Android apps)
-and Swift (for iOS apps).
+Currently the only ad hoc feature is docstrings. Docstrings allow the consumer to write comments in
+UDL file, and the comments are emitted in generated bindings. The comments are emitted without any
+transformations. What you see in UDL is what you get in generated bindings. The only change made to
+UDL comments are the comment syntax specific to each language. Docstrings can be used for most
+declarations in UDL file. Docstrings are parsed as AST nodes, so incorrectly placed docstrings will
+generate parse errors. Docstrings in UDL are comments prefixed with `///`. There is ongoing work to
+contribute docstrings to upstream [#1493](https://github.com/mozilla/uniffi-rs/pull/1493)
+[#1498](https://github.com/mozilla/uniffi-rs/pull/1498).
 
-Currently first-party supported foreign languages include Kotlin, Swift, Python and Ruby.
-Additional foreign language bindings can be developed externally and we welcome contributions to list them here.
-See [Third-party foreign language bindings](#third-party-foreign-language-bindings).
+To use the fork to generate docstrings, you can use upstream (or fork) to generate Rust scaffolding
+code, and use the fork to generate foreign bindings.
 
-## User Guide
+Example of docstrings in UDL file.
+```java
+/// The list of supported capitalization options
+enum Capitalization {
+    /// Lowercase, i.e. `hello, world!`
+    Lower,
 
-You can read more about using the tool in [**the UniFFI user guide**](https://mozilla.github.io/uniffi-rs/).
+    /// Uppercase, i.e. `Hello, World!`
+    Upper
+};
 
-Please be aware that UniFFI is being developed concurrently with its initial consumers, so it is changing rapidly and there
-are a number of sharp edges to the user experience. Still, we consider is developed enough for production use in Mozilla
-products and we welcome any feedback you may have about making it more broadly useful.
+namespace example {
+    /// Return a greeting message, using `capitalization` for capitalization
+    string hello_world(Capitalization capitalization);
+}
+```
 
-### Etymology and Pronunciation
+### External generators
 
-ˈjuːnɪfaɪ. Pronounced to rhyme with "unify".
+Writing external bindings generators might require small tweaks to upstream code. The tweaks are
+usually trivial, and can be contributed back to upstream immediately. The problem is that even if
+the changes are merged into upstream, the merged changes can't immediately be used in an external
+bindings generator. That is because external bindings generators target a specific released upstream
+version, not `main:HEAD`. The merged changes may only be used in an external bindings generator
+after next upstream version is released. In this situation, the fork allows us to easily create
+customized versions of existing upstream releases. In the future, we could try to come to an
+agreement with upstream maintainers so they would patch the required changes onto existing
+releases. List of external generators using this fork:
 
-A portmanteau word that also puns with "unify", to signify the joining of one codebase accessed from many languages.
+- [NordSecurity/uniffi-bindgen-cpp](https://github.com/NordSecurity/uniffi-bindgen-cpp)
+- [NordSecurity/uniffi-bindgen-cs](https://github.com/NordSecurity/uniffi-bindgen-cs)
+- [NordSecurity/uniffi-bindgen-go](https://github.com/NordSecurity/uniffi-bindgen-go)
 
-uni - [Latin ūni-, from ūnus, one]
-FFI - [Abbreviation, Foreign Function Interface]
+## Versioning
 
-## Alternative tools
+`NordSecurity/uniffi-rs` is versioned separately from `mozilla/uniffi-rs`. `NordSecurity/uniffi-rs`
+follows the [SemVer rules from the Cargo Book](https://doc.rust-lang.org/cargo/reference/resolver.html#semver-compatibility)
+which states "Versions are considered compatible if their left-most non-zero major/minor/patch component
+is the same". A breaking change is [any modification](docs/uniffi-versioning.md) that demands the
+consumer of the bindings to make corresponding changes to their code for continued functionality.
 
-Other tools we know of which try and solve a similarly shaped problem are:
+Versioning `NordSecurity/uniffi-rs` separately from `mozilla/uniffi-rs` makes room to properly
+version changes made to the fork. To make the underlying uniffi-rs version obvious, the fork uses
+versioning scheme `vX.Y.Z+vA.B.C`, where `X.Y.Z` is the version of the fork, and `A.B.C` is
+the version of uniffi-rs it is based on.
 
-* [Diplomat](https://github.com/rust-diplomat/diplomat/) - see our [writeup of
-  the different approach taken by that tool](docs/diplomat-and-macros.md)
-* [Interoptopus](https://github.com/ralfbiedert/interoptopus/)
+# Branching
 
-(Please open a PR if you think other tools should be listed!)
+`main` branch contains the latest version of the code. New upstream versions are merged into `main`
+from upstream release tags. Releases are tagged on `main` branch. Existing releases are patched by
+creating a branch from an existing release tag. Any changes destined for an existing release must
+first be merged into `main`, then cherry-picked from `main` into existing release. This ensures all
+changes/fixes will be included in upcoming releases.
 
-## Third-party foreign language bindings
+## Release instructions
 
-* [Kotlin Multiplatform support](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings). The repository contains Kotlin Multiplatform bindings generation for UniFFI, letting you target both JVM and Native.
-* [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
-* [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
+The fork contains custom release instructions [docs/release-process-nordsec.md](docs/release-process-nordsec.md).
 
-### External resources
+## Changelog
 
-There are a few third-party resources that make it easier to work with UniFFI:
-
-* [Plugin support for `.udl` files](https://github.com/Lonami/uniffi-dl) for the IDEA platform ([*uniffi-dl* in the JetBrains marketplace](https://plugins.jetbrains.com/plugin/20527-uniffi-dl)). It provides syntax highlighting, code folding, code completion, reference resolution and navigation (among others features) for the [UniFFI Definition Language (UDL)](https://mozilla.github.io/uniffi-rs/).
-* [cargo swift](https://github.com/antoniusnaumann/cargo-swift), a cargo plugin to build a Swift Package from Rust code. It provides an init command for setting up a UniFFI crate and a package command for building a Swift package from Rust code - without the need for additional configuration or build scripts.
-
-(Please open a PR if you think other resources should be listed!)
-
-## Contributing
-
-If this tool sounds interesting to you, please help us develop it! You can:
-
-* View the [contributor guidelines](./docs/contributing.md).
-* File or work on [issues](https://github.com/mozilla/uniffi-rs/issues) here in GitHub.
-* Join discussions in the [#uniffi:mozilla.org](https://matrix.to/#/#uniffi:mozilla.org)
-  room on Matrix.
-
-## Code of Conduct
-
-This project is governed by Mozilla's [Community Participation Guidelines](./CODE_OF_CONDUCT.md).
+The changes made in this fork are tracked in [CHANGELOG.md](CHANGELOG.md). The original changelog
+file is available at [mozilla/uniffi-rs/blob/main/CHANGELOG.md](https://github.com/mozilla/uniffi-rs/blob/main/CHANGELOG.md).

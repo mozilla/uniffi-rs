@@ -11,11 +11,11 @@ crate-type = ["lib", "cdylib"]
 name = "arithmetical"
 
 [dependencies]
-uniffi = {path = "../../uniffi", version = "0.25" }
+uniffi = {path = "../../uniffi", version = "0.3.0" }
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.3.0", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", version = "0.3.0", features = ["bindgen-tests"] }

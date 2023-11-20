@@ -11,12 +11,12 @@ name = "uniffi_simple_iface"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { path = "../../uniffi", version = "0.25" }
+uniffi = { path = "../../uniffi", version = "0.3.0" }
 thiserror = "1.0"
 lazy_static = "1.4"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.3.0", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", version = "0.3.0", features = ["bindgen-tests"] }
