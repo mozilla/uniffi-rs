@@ -28,7 +28,16 @@
 - UDL files can reference types defined in procmacros in this crate - see
   [the external types docs](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
+
+## v0.25.2 (backend crates: v0.25.2) - (_2023-11-20_)
+
+### What's fixed?
+
+- Fixed regression in the name of error enums in Kotlin [#1842](https://github.com/mozilla/uniffi-rs/pull/1842)
+- Fix regression when error types are in dicts etc [#1847](https://github.com/mozilla/uniffi-rs/pull/1847)
+
+[All changes in v0.25.2](https://github.com/mozilla/uniffi-rs/compare/v0.25.1...v0.25.2).
 
 ## v0.25.1 (backend crates: v0.25.1) - (_2023-11-09_)
 
