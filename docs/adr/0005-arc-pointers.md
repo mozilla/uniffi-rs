@@ -1,6 +1,6 @@
 # Use raw `Arc<T>` pointers to pass objects across the FFI
 
-* Status: proposed
+* Status: accepted
 * Deciders: mhammond, rfkelly
 * Consulted: travis, jhugman, dmose
 * Date: 2021-04-19
