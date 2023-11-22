@@ -2,9 +2,11 @@
 {%- if self.include_once_check("ObjectRuntime.kt") %}{% include "ObjectRuntime.kt" %}{% endif %}
 {%- let (interface_name, impl_class_name) = obj|object_names(ci) %}
 {%- let methods = obj.methods() %}
+{%- let interface_docstring = obj.docstring() %}
 
 {% include "Interface.kt" %}
 
+{%- call kt::docstring(obj, 0) %}
 open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
     constructor(pointer: Pointer): super(pointer)
@@ -21,6 +23,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+    {%- call kt::docstring(cons, 4) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
         this({% call kt::to_ffi_call(cons) %})
     {%- when None %}
@@ -43,6 +46,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     }
 
     {% for meth in obj.methods() -%}
+    {%- call kt::docstring(meth, 4) %}
     {%- match meth.throws_type() -%}
     {%- when Some with (throwable) %}
     @Throws({{ throwable|type_name(ci) }}::class)
@@ -136,6 +140,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
+        {%- call kt::docstring(cons, 4) %}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
             {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}

@@ -117,10 +117,7 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
                 module_path: meta.module_path.clone(),
                 name: meta.name.clone(),
             })?;
-            iface.add_callback_interface_definition(CallbackInterface::new(
-                meta.name,
-                meta.module_path,
-            ));
+            iface.add_callback_interface_definition(CallbackInterface::try_from(meta)?);
         }
         Metadata::TraitMethod(meta) => {
             iface.add_trait_method_meta(meta)?;

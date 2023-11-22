@@ -87,3 +87,15 @@
 {%- macro try(func) %}
 {%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}
+
+{%- macro docstring_value(maybe_docstring, indent_spaces) %}
+{%- match maybe_docstring %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}
+
+{%- macro docstring(defn, indent_spaces) %}
+{%- call docstring_value(defn.docstring(), indent_spaces) %}
+{%- endmacro %}

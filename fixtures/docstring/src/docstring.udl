@@ -1,0 +1,67 @@
+/// <docstring-namespace>
+namespace uniffi_docstring {
+    /// <docstring-function>
+    void test();
+
+    void test_without_docstring();
+};
+
+/// <docstring-enum>
+enum EnumTest {
+    /// <docstring-enum-variant>
+    "One",
+    /// <docstring-enum-variant-2>
+    "Two"
+};
+
+/// <docstring-associated-enum>
+[Enum]
+interface AssociatedEnumTest {
+    /// <docstring-associated-enum-variant>
+    Test(i16 code);
+    /// <docstring-associated-enum-variant-2>
+    Test2(i16 code);
+};
+
+/// <docstring-error>
+[Error]
+enum ErrorTest {
+    /// <docstring-error-variant>
+    "One",
+    /// <docstring-error-variant-2>
+    "Two",
+};
+
+/// <docstring-associated-error>
+[Error]
+interface AssociatedErrorTest {
+    /// <docstring-associated-error-variant>
+    Test(i16 code);
+    /// <docstring-associated-error-variant-2>
+    Test2(i16 code);
+};
+
+/// <docstring-object>
+interface ObjectTest {
+    /// <docstring-primary-constructor>
+    constructor();
+
+    /// <docstring-alternate-constructor>
+    [Name="new_alternate"]
+    constructor();
+
+    /// <docstring-method>
+    void test();
+};
+
+/// <docstring-record>
+dictionary RecordTest {
+    /// <docstring-record-field>
+    i32 test;
+};
+
+/// <docstring-callback>
+callback interface CallbackTest {
+    /// <docstring-callback-method>
+    void test();
+};

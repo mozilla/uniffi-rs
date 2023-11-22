@@ -205,6 +205,7 @@ impl<'a> MetadataReader<'a> {
             inputs,
             return_type,
             throws,
+            docstring: None,
             checksum: self.calc_checksum(),
         })
     }
@@ -232,6 +233,7 @@ impl<'a> MetadataReader<'a> {
             inputs,
             throws,
             checksum: self.calc_checksum(),
+            docstring: None,
         })
     }
 
@@ -252,6 +254,7 @@ impl<'a> MetadataReader<'a> {
             throws,
             takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
+            docstring: None,
         })
     }
 
@@ -260,6 +263,7 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             fields: self.read_fields()?,
+            docstring: None,
         })
     }
 
@@ -276,6 +280,7 @@ impl<'a> MetadataReader<'a> {
             module_path,
             name,
             variants,
+            docstring: None,
         })
     }
 
@@ -290,6 +295,7 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             imp: ObjectImpl::from_is_trait(self.read_bool()?),
+            docstring: None,
         })
     }
 
@@ -322,6 +328,7 @@ impl<'a> MetadataReader<'a> {
         Ok(CallbackInterfaceMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
+            docstring: None,
         })
     }
 
@@ -344,6 +351,7 @@ impl<'a> MetadataReader<'a> {
             throws,
             takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
+            docstring: None,
         })
     }
 
@@ -354,7 +362,12 @@ impl<'a> MetadataReader<'a> {
                 let name = self.read_string()?;
                 let ty = self.read_type()?;
                 let default = self.read_default(&name, &ty)?;
-                Ok(FieldMetadata { name, ty, default })
+                Ok(FieldMetadata {
+                    name,
+                    ty,
+                    default,
+                    docstring: None,
+                })
             })
             .collect()
     }
@@ -366,6 +379,7 @@ impl<'a> MetadataReader<'a> {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
                     fields: self.read_fields()?,
+                    docstring: None,
                 })
             })
             .collect()
@@ -378,6 +392,7 @@ impl<'a> MetadataReader<'a> {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
                     fields: vec![],
+                    docstring: None,
                 })
             })
             .collect()

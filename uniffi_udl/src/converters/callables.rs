@@ -5,6 +5,7 @@
 use super::APIConverter;
 use crate::attributes::ArgumentAttributes;
 use crate::attributes::{ConstructorAttributes, FunctionAttributes, MethodAttributes};
+use crate::converters::convert_docstring;
 use crate::literal::convert_default_value;
 use crate::InterfaceCollector;
 use anyhow::{bail, Result};
@@ -41,6 +42,7 @@ impl APIConverter<FieldMetadata> for weedle::argument::SingleArgument<'_> {
             name: self.identifier.0.to_string(),
             ty: type_,
             default: None,
+            docstring: None,
         })
     }
 }
@@ -104,6 +106,7 @@ impl APIConverter<FnMetadata> for weedle::namespace::OperationNamespaceMember<'_
             return_type,
             inputs: self.args.body.list.convert(ci)?,
             throws,
+            docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
             checksum: None,
         })
     }
@@ -127,6 +130,7 @@ impl APIConverter<ConstructorMetadata> for weedle::interface::ConstructorInterfa
             inputs: self.args.body.list.convert(ci)?,
             throws,
             checksum: None,
+            docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
         })
     }
 }
@@ -172,6 +176,7 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
             throws,
             takes_self_by_arc,
             checksum: None,
+            docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
         })
     }
 }
@@ -217,6 +222,7 @@ impl APIConverter<TraitMethodMetadata> for weedle::interface::OperationInterface
             throws,
             takes_self_by_arc,
             checksum: None,
+            docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
         })
     }
 }

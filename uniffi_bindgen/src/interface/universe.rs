@@ -25,6 +25,7 @@ pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type,
 pub(crate) struct TypeUniverse {
     /// The unique prefixes that we'll use for namespacing when exposing this component's API.
     pub namespace: NamespaceMetadata,
+    pub namespace_docstring: Option<String>,
 
     // Named type definitions (including aliases).
     type_definitions: HashMap<String, Type>,

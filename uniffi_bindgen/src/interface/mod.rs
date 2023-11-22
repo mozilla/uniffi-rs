@@ -139,6 +139,11 @@ impl ComponentInterface {
                 self.types.namespace
             );
         }
+
+        if group.namespace_docstring.is_some() {
+            self.types.namespace_docstring = group.namespace_docstring.clone();
+        }
+
         // Unconditionally add the String type, which is used by the panic handling
         self.types.add_known_type(&uniffi_meta::Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
@@ -151,6 +156,10 @@ impl ComponentInterface {
     /// a package or module name for the foreign language, etc.
     pub fn namespace(&self) -> &str {
         &self.types.namespace.name
+    }
+
+    pub fn namespace_docstring(&self) -> Option<&str> {
+        self.types.namespace_docstring.as_deref()
     }
 
     pub fn uniffi_contract_version(&self) -> u32 {
@@ -1062,20 +1071,24 @@ mod test {
         let err = ComponentInterface::from_webidl(UDL2, "crate_name").unwrap_err();
         assert_eq!(
             err.to_string(),
-            "Mismatching definition for enum `Testing`!\nexisting definition: Enum {
+            "Mismatching definition for enum `Testing`!
+existing definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
     variants: [
         Variant {
             name: \"one\",
             fields: [],
+            docstring: None,
         },
         Variant {
             name: \"two\",
             fields: [],
+            docstring: None,
         },
     ],
     flat: true,
+    docstring: None,
 },
 new definition: Enum {
     name: \"Testing\",
@@ -1084,13 +1097,16 @@ new definition: Enum {
         Variant {
             name: \"three\",
             fields: [],
+            docstring: None,
         },
         Variant {
             name: \"four\",
             fields: [],
+            docstring: None,
         },
     ],
     flat: true,
+    docstring: None,
 }",
         );
 
@@ -1203,5 +1219,26 @@ new definition: Enum {
             module_path: "".into(),
             imp: ObjectImpl::Struct,
         }));
+    }
+
+    #[test]
+    fn test_docstring_namespace() {
+        const UDL: &str = r#"
+            /// informative docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(ci.namespace_docstring().unwrap(), "informative docstring");
+    }
+
+    #[test]
+    fn test_multiline_docstring() {
+        const UDL: &str = r#"
+            /// informative
+            /// docstring
+            namespace test{};
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(ci.namespace_docstring().unwrap(), "informative\ndocstring");
     }
 }

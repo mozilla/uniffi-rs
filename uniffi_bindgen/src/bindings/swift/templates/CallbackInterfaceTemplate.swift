@@ -3,6 +3,7 @@
 {%- let callback_init = format!("uniffiCallbackInit{}", name) %}
 {%- let methods = cbi.methods() %}
 {%- let protocol_name = type_name.clone() %}
+{%- let protocol_docstring = cbi.docstring() %}
 {%- let ffi_init_callback = cbi.ffi_init_callback() %}
 
 {% include "Protocol.swift" %}

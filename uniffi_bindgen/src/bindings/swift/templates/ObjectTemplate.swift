@@ -1,9 +1,11 @@
 {%- let obj = ci|get_object_definition(name) %}
 {%- let (protocol_name, impl_class_name) = obj|object_names %}
 {%- let methods = obj.methods() %}
+{%- let protocol_docstring = obj.docstring() %}
 
 {% include "Protocol.swift" %}
 
+{%- call swift::docstring(obj, 0) %}
 public class {{ impl_class_name }}:
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
@@ -30,6 +32,7 @@ public class {{ impl_class_name }}:
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
+    {%- call swift::docstring(cons, 4) %}
     public convenience init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
         self.init(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
@@ -41,7 +44,7 @@ public class {{ impl_class_name }}:
     }
 
     {% for cons in obj.alternate_constructors() %}
-
+    {%- call swift::docstring(cons, 4) %}
     public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
         return {{ impl_class_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
@@ -51,7 +54,7 @@ public class {{ impl_class_name }}:
     {# // TODO: Maybe merge the two templates (i.e the one with a return type and the one without) #}
     {% for meth in obj.methods() -%}
     {%- if meth.is_async() %}
-
+    {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
@@ -86,7 +89,7 @@ public class {{ impl_class_name }}:
     {%- match meth.return_type() -%}
 
     {%- when Some with (return_type) %}
-
+    {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
@@ -94,7 +97,7 @@ public class {{ impl_class_name }}:
     }
 
     {%- when None %}
-
+    {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
         {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
     }

@@ -103,6 +103,8 @@ pub struct Object {
     // Ffi function to initialize the foreign callback for trait interfaces
     #[checksum_ignore]
     pub(super) ffi_init_callback: Option<FfiFunction>,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl Object {
@@ -166,6 +168,10 @@ impl Object {
         self.ffi_init_callback
             .as_ref()
             .unwrap_or_else(|| panic!("No ffi_init_callback set for {}", &self.name))
+    }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
     }
 
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
@@ -249,6 +255,7 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
                 ..Default::default()
             },
             ffi_init_callback: None,
+            docstring: meta.docstring.clone(),
         }
     }
 }
@@ -291,6 +298,8 @@ pub struct Constructor {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
     // Force a checksum value, or we'll fallback to the trait.
@@ -335,6 +344,10 @@ impl Constructor {
         self.throws.as_ref()
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn is_primary_constructor(&self) -> bool {
         self.name == "new"
     }
@@ -366,6 +379,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             object_module_path: meta.module_path,
             arguments,
             ffi_func,
+            docstring: meta.docstring.clone(),
             throws: meta.throws.map(Into::into),
             checksum_fn_name,
             checksum: meta.checksum,
@@ -394,6 +408,8 @@ pub struct Method {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) throws: Option<Type>,
     pub(super) takes_self_by_arc: bool,
     pub(super) checksum_fn_name: String,
@@ -464,6 +480,10 @@ impl Method {
         self.throws.as_ref()
     }
 
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
+
     pub fn takes_self_by_arc(&self) -> bool {
         self.takes_self_by_arc
     }
@@ -510,6 +530,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             arguments,
             return_type,
             ffi_func,
+            docstring: meta.docstring.clone(),
             throws: meta.throws.map(Into::into),
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
@@ -535,6 +556,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
             is_async: false,
             arguments,
             return_type,
+            docstring: meta.docstring.clone(),
             throws: meta.throws.map(Into::into),
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
@@ -787,6 +809,64 @@ mod test {
         assert_eq!(
             err.to_string(),
             "Trait interfaces can not have constructors: \"new\""
+        );
+    }
+
+    #[test]
+    fn test_docstring_object() {
+        const UDL: &str = r#"
+            namespace test{};
+            /// informative docstring
+            interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_constructor() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                /// informative docstring
+                constructor();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .primary_constructor()
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
+    }
+
+    #[test]
+    fn test_docstring_method() {
+        const UDL: &str = r#"
+            namespace test{};
+            interface Testing {
+                /// informative docstring
+                void testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_object_definition("Testing")
+                .unwrap()
+                .get_method("testing")
+                .docstring()
+                .unwrap(),
+            "informative docstring"
         );
     }
 }

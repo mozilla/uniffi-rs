@@ -12,5 +12,6 @@ keywords = ["ffi", "bindgen"]
 [dependencies]
 anyhow = "1"
 weedle2 = { version = "4.0.0", path = "../weedle2" }
+textwrap = "0.16"
 uniffi_meta = { path = "../uniffi_meta", version = "=0.25.2" }
 uniffi_testing = { path = "../uniffi_testing", version = "=0.25.2" }

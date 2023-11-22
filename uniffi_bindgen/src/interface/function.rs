@@ -59,6 +59,8 @@ pub struct Function {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_func: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
     pub(super) throws: Option<Type>,
     pub(super) checksum_fn_name: String,
     // Force a checksum value, or we'll fallback to the trait.
@@ -128,6 +130,10 @@ impl Function {
                 .chain(self.return_type.iter().flat_map(Type::iter_types)),
         )
     }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
 }
 
 impl From<uniffi_meta::FnParamMetadata> for Argument {
@@ -163,6 +169,7 @@ impl From<uniffi_meta::FnMetadata> for Function {
             arguments,
             return_type,
             ffi_func,
+            docstring: meta.docstring.clone(),
             throws: meta.throws,
             checksum_fn_name,
             checksum: meta.checksum,
@@ -363,5 +370,23 @@ mod test {
             matches!(func2.arguments()[1].as_type(), Type::Record { name, .. } if name == "TestDict")
         );
         Ok(())
+    }
+
+    #[test]
+    fn test_docstring_function() {
+        const UDL: &str = r#"
+            namespace test {
+                /// informative docstring
+                void testing();
+            };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_function_definition("testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }
