@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>External Types - The UniFFI user guide</title>
+        <title>Docstrings - The UniFFI user guide</title>
 
 
         <!-- Custom HTML head -->
@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html" class="active"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/docstrings.html"><strong aria-hidden="true">3.9.</strong> Docstrings</a></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html"><strong aria-hidden="true">4.</strong> Procedural Macros: Attributes and Derives</a></li><li class="chapter-item expanded "><a href="../futures.html"><strong aria-hidden="true">5.</strong> Futures and async support</a></li><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.</strong> Bindings</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.1.</strong> Customizing binding generation</a></li><li class="chapter-item expanded "><a href="../foreign_traits.html"><strong aria-hidden="true">6.2.</strong> Implementing Rust traits in foreign bindings</a></li><li class="chapter-item expanded "><a href="../kotlin/configuration.html"><strong aria-hidden="true">6.3.</strong> Kotlin</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">6.3.1.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded "><a href="../kotlin/lifetimes.html"><strong aria-hidden="true">6.3.2.</strong> Kotlin Lifetimes</a></li></ol></li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.4.</strong> Swift</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">6.4.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.4.2.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">6.4.3.</strong> Integrating with Xcode</a></li></ol></li><li class="chapter-item expanded "><a href="../python/configuration.html"><strong aria-hidden="true">6.5.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">7.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">8.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">9.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">10.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html"><strong aria-hidden="true">11.</strong> Rendering Foreign Bindings</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../Overview.html">Overview</a></li><li class="chapter-item expanded "><a href="../Motivation.html"><strong aria-hidden="true">1.</strong> Motivation</a></li><li class="chapter-item expanded "><a href="../Getting_started.html"><strong aria-hidden="true">2.</strong> Tutorial</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../tutorial/Prerequisites.html"><strong aria-hidden="true">2.1.</strong> Prerequisites</a></li><li class="chapter-item expanded "><a href="../tutorial/udl_file.html"><strong aria-hidden="true">2.2.</strong> Describing the interface</a></li><li class="chapter-item expanded "><a href="../tutorial/Rust_scaffolding.html"><strong aria-hidden="true">2.3.</strong> Generating the Rust scaffolding code</a></li><li class="chapter-item expanded "><a href="../tutorial/foreign_language_bindings.html"><strong aria-hidden="true">2.4.</strong> Generating the foreign-language bindings</a></li></ol></li><li class="chapter-item expanded "><a href="../udl_file_spec.html"><strong aria-hidden="true">3.</strong> The UDL file</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/namespace.html"><strong aria-hidden="true">3.1.</strong> Namespace</a></li><li class="chapter-item expanded "><a href="../udl/builtin_types.html"><strong aria-hidden="true">3.2.</strong> Built-in types</a></li><li class="chapter-item expanded "><a href="../udl/enumerations.html"><strong aria-hidden="true">3.3.</strong> Enumerations</a></li><li class="chapter-item expanded "><a href="../udl/structs.html"><strong aria-hidden="true">3.4.</strong> Structs/Dictionaries</a></li><li class="chapter-item expanded "><a href="../udl/functions.html"><strong aria-hidden="true">3.5.</strong> Functions</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/errors.html"><strong aria-hidden="true">3.5.1.</strong> Throwing errors</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/interfaces.html"><strong aria-hidden="true">3.6.</strong> Interfaces/Objects</a></li><li class="chapter-item expanded "><a href="../udl/callback_interfaces.html"><strong aria-hidden="true">3.7.</strong> Callback Interfaces</a></li><li class="chapter-item expanded "><a href="../udl/ext_types.html"><strong aria-hidden="true">3.8.</strong> External Types</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../udl/ext_types_external.html"><strong aria-hidden="true">3.8.1.</strong> Declaring External Types</a></li><li class="chapter-item expanded "><a href="../udl/custom_types.html"><strong aria-hidden="true">3.8.2.</strong> Declaring Custom Types</a></li></ol></li><li class="chapter-item expanded "><a href="../udl/docstrings.html" class="active"><strong aria-hidden="true">3.9.</strong> Docstrings</a></li></ol></li><li class="chapter-item expanded "><a href="../proc_macro/index.html"><strong aria-hidden="true">4.</strong> Procedural Macros: Attributes and Derives</a></li><li class="chapter-item expanded "><a href="../futures.html"><strong aria-hidden="true">5.</strong> Futures and async support</a></li><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.</strong> Bindings</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bindings.html"><strong aria-hidden="true">6.1.</strong> Customizing binding generation</a></li><li class="chapter-item expanded "><a href="../foreign_traits.html"><strong aria-hidden="true">6.2.</strong> Implementing Rust traits in foreign bindings</a></li><li class="chapter-item expanded "><a href="../kotlin/configuration.html"><strong aria-hidden="true">6.3.</strong> Kotlin</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../kotlin/gradle.html"><strong aria-hidden="true">6.3.1.</strong> Integrating with Gradle</a></li><li class="chapter-item expanded "><a href="../kotlin/lifetimes.html"><strong aria-hidden="true">6.3.2.</strong> Kotlin Lifetimes</a></li></ol></li><li class="chapter-item expanded "><a href="../swift/overview.html"><strong aria-hidden="true">6.4.</strong> Swift</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../swift/configuration.html"><strong aria-hidden="true">6.4.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../swift/module.html"><strong aria-hidden="true">6.4.2.</strong> Building a Swift module</a></li><li class="chapter-item expanded "><a href="../swift/xcode.html"><strong aria-hidden="true">6.4.3.</strong> Integrating with Xcode</a></li></ol></li><li class="chapter-item expanded "><a href="../python/configuration.html"><strong aria-hidden="true">6.5.</strong> Python</a></li></ol></li><li class="chapter-item expanded "><li class="part-title">Internals</li><li class="chapter-item expanded "><a href="../internals/design_principles.html"><strong aria-hidden="true">7.</strong> Design Principles</a></li><li class="chapter-item expanded "><a href="../internals/crates.html"><strong aria-hidden="true">8.</strong> Navigating the Code</a></li><li class="chapter-item expanded "><a href="../internals/lifting_and_lowering.html"><strong aria-hidden="true">9.</strong> Lifting, Lowering, and Serialization</a></li><li class="chapter-item expanded "><a href="../internals/object_references.html"><strong aria-hidden="true">10.</strong> Managing Object References</a></li><li class="chapter-item expanded "><a href="../internals/rendering_foreign_bindings.html"><strong aria-hidden="true">11.</strong> Rendering Foreign Bindings</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -171,47 +171,93 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="external-types"><a class="header" href="#external-types">External types</a></h1>
-<p>External types are types implemented by UniFFI but outside of this UDL file.</p>
-<p>They are similar to, but different from <a href="./custom_types.html">custom types</a> which wrap UniFFI primitive types.</p>
-<p>But like custom types, external types are all declared using a <code>typedef</code> with attributes
-giving more detail.</p>
-<h2 id="types-in-another-crate"><a class="header" href="#types-in-another-crate">Types in another crate</a></h2>
-<p><a href="./ext_types_external.html">There's a whole page about that!</a></p>
-<h2 id="types-from-procmacros-in-this-crate"><a class="header" href="#types-from-procmacros-in-this-crate">Types from procmacros in this crate.</a></h2>
-<p>If your crate has types defined via <code>#[uniffi::export]</code> etc you can make them available
-to the UDL file in your own crate via a <code>typedef</code> with a <code>[Rust=]</code> attribute. Eg, your Rust
-might have:</p>
-<pre><code class="language-rust">#[derive(uniffi::Record)]
-pub struct One {
-    inner: i32,
-}</code></pre>
-<p>you can use it in your UDL:</p>
-<pre><code class="language-idl">[Rust=&quot;record&quot;]
-typedef extern One;
+                        <h1 id="docstrings"><a class="header" href="#docstrings">Docstrings</a></h1>
+<p>UDL file supports docstring comments. The comments are emitted in generated bindings without any
+transformations. What you see in UDL is what you get in generated bindings. The only change made to
+UDL comments are the comment syntax specific to each language. Docstrings can be used for most
+declarations in UDL file. Docstrings are parsed as AST nodes, so incorrectly placed docstrings will
+generate parse errors. Docstrings in UDL are comments prefixed with <code>///</code>.</p>
+<h2 id="docstrings-in-udl"><a class="header" href="#docstrings-in-udl">Docstrings in UDL</a></h2>
+<pre><code class="language-java">/// The list of supported capitalization options
+enum Capitalization {
+    /// Lowercase, i.e. `hello, world!`
+    Lower,
 
-namespace app {
-    // use the procmacro type.
-    One get_one(One? one);
+    /// Uppercase, i.e. `Hello, World!`
+    Upper
+};
+
+namespace example {
+    /// Return a greeting message, using `capitalization` for capitalization
+    string hello_world(Capitalization capitalization);
+}
+</code></pre>
+<h2 id="docstrings-in-generated-kotlin-bindings"><a class="header" href="#docstrings-in-generated-kotlin-bindings">Docstrings in generated Kotlin bindings</a></h2>
+<pre><code class="language-kotlin">/**
+ * The list of supported capitalization options
+ */
+enum class Capitalization {
+    /**
+     * Lowercase, i.e. `hello, world!`
+     */
+    LOWER,
+
+    /**
+     * Uppercase, i.e. `Hello, World!`
+     */
+    UPPER;
 }
 
+/**
+ * Return a greeting message, using `capitalization` for capitalization
+ */
+fun `helloWorld`(`capitalization`: Capitalization): String { .. }
 </code></pre>
-<p>Supported values:</p>
-<ul>
-<li>&quot;enum&quot;, &quot;trait&quot;, &quot;callback&quot;</li>
-<li>For records, either &quot;record&quot; or &quot;dictionary&quot;</li>
-<li>For objects, either &quot;object&quot; or &quot;interface&quot;</li>
-</ul>
+<h2 id="docstrings-in-generated-swift-bindings"><a class="header" href="#docstrings-in-generated-swift-bindings">Docstrings in generated Swift bindings</a></h2>
+<pre><code class="language-swift">/**
+ * The list of supported capitalization options
+ */
+public enum Capitalization {
+    /**
+     * Lowercase, i.e. `hello, world!`
+     */
+    case lower
+
+    /**
+     * Uppercase, i.e. `Hello, World!`
+     */
+    case upper
+}
+
+/**
+ * Return a greeting message, using `capitalization` for capitalization
+ */
+public func helloWorld(capitalization: Capitalization) -&gt; String;
+</code></pre>
+<h2 id="docstrings-in-generated-python-bindings"><a class="header" href="#docstrings-in-generated-python-bindings">Docstrings in generated Python bindings</a></h2>
+<pre><code class="language-python">class Capitalization(enum.Enum):
+    &quot;&quot;&quot;The list of supported capitalization options&quot;&quot;&quot;
+
+    LOWER = 1
+    &quot;&quot;&quot;Lowercase, i.e. `hello, world!`&quot;&quot;&quot;
+
+    UPPER = 2
+    &quot;&quot;&quot;Uppercase, i.e. `Hello, World!`&quot;&quot;&quot;
+
+def hello_world(capitalization: &quot;Capitalization&quot;) -&gt; &quot;str&quot;:
+    &quot;&quot;&quot;Return a greeting message, using `capitalization` for capitalization&quot;&quot;&quot;
+    ..
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../udl/callback_interfaces.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../udl/custom_types.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../udl/ext_types_external.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../proc_macro/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -221,11 +267,11 @@ namespace app {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../udl/callback_interfaces.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../udl/custom_types.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../udl/ext_types_external.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../proc_macro/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

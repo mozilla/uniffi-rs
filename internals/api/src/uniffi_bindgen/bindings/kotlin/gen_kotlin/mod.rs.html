@@ -556,6 +556,15 @@
 <a href="#556" id="556">556</a>
 <a href="#557" id="557">557</a>
 <a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1112,6 +1121,15 @@
     /// display the name for the user.
     </span><span class="kw">pub fn </span>unquote(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(nm.trim_matches(<span class="string">&#39;`&#39;</span>).to_string())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of docstring
+    </span><span class="kw">pub fn </span>docstring(docstring: <span class="kw-2">&amp;</span>str, spaces: <span class="kw-2">&amp;</span>i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>middle = textwrap::indent(<span class="kw-2">&amp;</span>textwrap::dedent(docstring), <span class="string">&quot; * &quot;</span>);
+        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">&quot;/**\n{middle}\n */&quot;</span>);
+
+        <span class="kw">let </span>spaces = usize::try_from(<span class="kw-2">*</span>spaces).unwrap_or_default();
+        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">&quot; &quot;</span>.repeat(spaces)))
     }
 }
 </code></pre></div></section></main></body></html>

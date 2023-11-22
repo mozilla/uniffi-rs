@@ -365,6 +365,31 @@
 <a href="#365" id="365">365</a>
 <a href="#366" id="366">366</a>
 <a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -426,6 +451,8 @@
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
+    <span class="attr">#[checksum_ignore]
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) docstring: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) throws: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) checksum_fn_name: String,
     <span class="comment">// Force a checksum value, or we&#39;ll fallback to the trait.
@@ -495,6 +522,10 @@
                 .chain(<span class="self">self</span>.return_type.iter().flat_map(Type::iter_types)),
         )
     }
+
+    <span class="kw">pub fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.docstring.as_deref()
+    }
 }
 
 <span class="kw">impl </span>From&lt;uniffi_meta::FnParamMetadata&gt; <span class="kw">for </span>Argument {
@@ -530,6 +561,7 @@
             arguments,
             return_type,
             ffi_func,
+            docstring: meta.docstring.clone(),
             throws: meta.throws,
             checksum_fn_name,
             checksum: meta.checksum,
@@ -730,6 +762,24 @@
             <span class="macro">matches!</span>(func2.arguments()[<span class="number">1</span>].as_type(), Type::Record { name, .. } <span class="kw">if </span>name == <span class="string">&quot;TestDict&quot;</span>)
         );
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_docstring_function() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+            namespace test {
+                /// informative docstring
+                void testing();
+            };
+        &quot;#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(
+            ci.get_function_definition(<span class="string">&quot;testing&quot;</span>)
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            <span class="string">&quot;informative docstring&quot;
+        </span>);
     }
 }
 </code></pre></div></section></main></body></html>

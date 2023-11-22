@@ -141,6 +141,34 @@
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -195,18 +223,11 @@
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_init_callback: FfiFunction,
+    <span class="attr">#[checksum_ignore]
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) docstring: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="kw">impl </span>CallbackInterface {
-    <span class="kw">pub fn </span>new(name: String, module_path: String) -&gt; CallbackInterface {
-        CallbackInterface {
-            name,
-            module_path,
-            methods: Default::default(),
-            ffi_init_callback: Default::default(),
-        }
-    }
-
     <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
@@ -226,6 +247,10 @@
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
         Box::new(<span class="self">self</span>.methods.iter().flat_map(Method::iter_types))
     }
+
+    <span class="kw">pub fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.docstring.as_deref()
+    }
 }
 
 <span class="kw">impl </span>AsType <span class="kw">for </span>CallbackInterface {
@@ -234,6 +259,20 @@
             name: <span class="self">self</span>.name.clone(),
             module_path: <span class="self">self</span>.module_path.clone(),
         }
+    }
+}
+
+<span class="kw">impl </span>TryFrom&lt;uniffi_meta::CallbackInterfaceMetadata&gt; <span class="kw">for </span>CallbackInterface {
+    <span class="kw">type </span>Error = anyhow::Error;
+
+    <span class="kw">fn </span>try_from(meta: uniffi_meta::CallbackInterfaceMetadata) -&gt; anyhow::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            name: meta.name,
+            module_path: meta.module_path,
+            methods: Default::default(),
+            ffi_init_callback: Default::default(),
+            docstring: meta.docstring.clone(),
+        })
     }
 }
 
@@ -282,6 +321,23 @@
         <span class="macro">assert_eq!</span>(callbacks_two.methods().len(), <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(callbacks_two.methods()[<span class="number">0</span>].name(), <span class="string">&quot;two&quot;</span>);
         <span class="macro">assert_eq!</span>(callbacks_two.methods()[<span class="number">1</span>].name(), <span class="string">&quot;too&quot;</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_docstring_callback_interface() {
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+            namespace test{};
+            /// informative docstring
+            callback interface Testing { };
+        &quot;#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(
+            ci.get_callback_interface_definition(<span class="string">&quot;Testing&quot;</span>)
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            <span class="string">&quot;informative docstring&quot;
+        </span>);
     }
 }
 </code></pre></div></section></main></body></html>
