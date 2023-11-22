@@ -18,6 +18,7 @@ pub fn create_metadata_groups(items: &[Metadata]) -> MetadataGroupMap {
             Metadata::Namespace(namespace) => {
                 let group = MetadataGroup {
                     namespace: namespace.clone(),
+                    namespace_docstring: None,
                     items: BTreeSet::new(),
                 };
                 Some((namespace.crate_name.clone(), group))
@@ -29,6 +30,7 @@ pub fn create_metadata_groups(items: &[Metadata]) -> MetadataGroupMap {
                 };
                 let group = MetadataGroup {
                     namespace,
+                    namespace_docstring: None,
                     items: BTreeSet::new(),
                 };
                 Some((udl.module_path.clone(), group))
@@ -63,6 +65,7 @@ pub fn group_metadata(group_map: &mut MetadataGroupMap, items: Vec<Metadata>) ->
 #[derive(Debug)]
 pub struct MetadataGroup {
     pub namespace: NamespaceMetadata,
+    pub namespace_docstring: Option<String>,
     pub items: BTreeSet<Metadata>,
 }
 

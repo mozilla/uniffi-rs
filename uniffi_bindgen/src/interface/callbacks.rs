@@ -52,18 +52,11 @@ pub struct CallbackInterface {
     //    avoids a weird circular dependency in the calculation.
     #[checksum_ignore]
     pub(super) ffi_init_callback: FfiFunction,
+    #[checksum_ignore]
+    pub(super) docstring: Option<String>,
 }
 
 impl CallbackInterface {
-    pub fn new(name: String, module_path: String) -> CallbackInterface {
-        CallbackInterface {
-            name,
-            module_path,
-            methods: Default::default(),
-            ffi_init_callback: Default::default(),
-        }
-    }
-
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -83,6 +76,10 @@ impl CallbackInterface {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.methods.iter().flat_map(Method::iter_types))
     }
+
+    pub fn docstring(&self) -> Option<&str> {
+        self.docstring.as_deref()
+    }
 }
 
 impl AsType for CallbackInterface {
@@ -91,6 +88,20 @@ impl AsType for CallbackInterface {
             name: self.name.clone(),
             module_path: self.module_path.clone(),
         }
+    }
+}
+
+impl TryFrom<uniffi_meta::CallbackInterfaceMetadata> for CallbackInterface {
+    type Error = anyhow::Error;
+
+    fn try_from(meta: uniffi_meta::CallbackInterfaceMetadata) -> anyhow::Result<Self> {
+        Ok(Self {
+            name: meta.name,
+            module_path: meta.module_path,
+            methods: Default::default(),
+            ffi_init_callback: Default::default(),
+            docstring: meta.docstring.clone(),
+        })
     }
 }
 
@@ -139,5 +150,22 @@ mod test {
         assert_eq!(callbacks_two.methods().len(), 2);
         assert_eq!(callbacks_two.methods()[0].name(), "two");
         assert_eq!(callbacks_two.methods()[1].name(), "too");
+    }
+
+    #[test]
+    fn test_docstring_callback_interface() {
+        const UDL: &str = r#"
+            namespace test{};
+            /// informative docstring
+            callback interface Testing { };
+        "#;
+        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        assert_eq!(
+            ci.get_callback_interface_definition("Testing")
+                .unwrap()
+                .docstring()
+                .unwrap(),
+            "informative docstring"
+        );
     }
 }

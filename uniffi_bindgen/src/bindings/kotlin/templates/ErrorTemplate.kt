@@ -3,10 +3,10 @@
 {%- let canonical_type_name = type_|canonical_name %}
 
 {% if e.is_flat() %}
+{%- call kt::docstring(e, 0) %}
 sealed class {{ type_name }}(message: String): Exception(message){% if contains_object_references %}, Disposable {% endif %} {
-        // Each variant is a nested class
-        // Flat enums carries a string error message, so no special implementation is necessary.
         {% for variant in e.variants() -%}
+        {%- call kt::docstring(variant, 4) %}
         class {{ variant|error_variant_name }}(message: String) : {{ type_name }}(message)
         {% endfor %}
 
@@ -15,9 +15,10 @@ sealed class {{ type_name }}(message: String): Exception(message){% if contains_
     }
 }
 {%- else %}
+{%- call kt::docstring(e, 0) %}
 sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Disposable {% endif %} {
-    // Each variant is a nested class
     {% for variant in e.variants() -%}
+    {%- call kt::docstring(variant, 4) %}
     {%- let variant_name = variant|error_variant_name %}
     class {{ variant_name }}(
         {% for field in variant.fields() -%}

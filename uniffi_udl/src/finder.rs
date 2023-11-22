@@ -169,7 +169,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
 impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
     fn add_type_definitions_to(&self, types: &mut TypeCollector) -> Result<()> {
         if self.attributes.is_some() {
-            bail!("no typedef attributes are currently supported");
+            bail!("no callback interface attributes are currently supported");
         }
         let name = self.identifier.0.to_string();
         types.add_type_definition(

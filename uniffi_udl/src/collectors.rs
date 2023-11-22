@@ -5,7 +5,7 @@
 //! # Collects metadata from UDL.
 
 use crate::attributes;
-use crate::converters::APIConverter;
+use crate::converters::{convert_docstring, APIConverter};
 use crate::finder;
 use crate::resolver::TypeResolver;
 use anyhow::{bail, Result};
@@ -138,6 +138,7 @@ impl From<InterfaceCollector> for uniffi_meta::MetadataGroup {
                 crate_name: value.types.module_path(),
                 name: value.types.namespace,
             },
+            namespace_docstring: value.types.namespace_docstring.clone(),
             items: value.items,
         }
     }
@@ -218,6 +219,7 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
         if self.identifier.0 != ci.types.namespace {
             bail!("duplicate namespace definition");
         }
+        ci.types.namespace_docstring = self.docstring.as_ref().map(|v| convert_docstring(&v.0));
         for func in self.members.body.convert(ci)? {
             ci.add_definition(func.into())?;
         }
@@ -229,6 +231,7 @@ impl APIBuilder for weedle::NamespaceDefinition<'_> {
 pub(crate) struct TypeCollector {
     /// The unique prefix that we'll use for namespacing when exposing this component's API.
     pub namespace: String,
+    pub namespace_docstring: Option<String>,
 
     pub crate_name: String,
 

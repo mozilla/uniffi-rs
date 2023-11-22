@@ -75,3 +75,15 @@
         this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
     {% endfor -%})
 {%- endmacro -%}
+
+{%- macro docstring_value(maybe_docstring, indent_spaces) %}
+{%- match maybe_docstring %}
+{%- when Some(docstring) %}
+{{ docstring|docstring(indent_spaces) }}
+{%- else %}
+{%- endmatch %}
+{%- endmacro %}
+
+{%- macro docstring(defn, indent_spaces) %}
+{%- call docstring_value(defn.docstring(), indent_spaces) %}
+{%- endmacro %}

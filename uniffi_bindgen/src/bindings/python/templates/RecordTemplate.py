@@ -1,7 +1,9 @@
 {%- let rec = ci|get_record_definition(name) %}
 class {{ type_name }}:
-    {% for field in rec.fields() %}
-        {{- field.name()|var_name }}: "{{- field|type_name }}";
+    {%- call py::docstring(rec, 4) %}
+    {%- for field in rec.fields() %}
+    {{ field.name()|var_name }}: "{{ field|type_name }}"
+    {%- call py::docstring(field, 4) %}
     {%- endfor %}
 
     {%- if rec.has_fields() %}

@@ -503,4 +503,17 @@ pub mod filters {
     pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
         Ok(PythonCodeOracle.object_names(obj))
     }
+
+    /// Get the idiomatic Python rendering of docstring
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+        let docstring = textwrap::dedent(docstring);
+        let wrapped = if docstring.lines().count() > 1 {
+            format!("\"\"\"\n{docstring}\n\"\"\"")
+        } else {
+            format!("\"\"\"{docstring}\"\"\"")
+        };
+
+        let spaces = usize::try_from(*spaces).unwrap_or_default();
+        Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
+    }
 }
