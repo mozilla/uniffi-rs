@@ -27,6 +27,7 @@
 - UDL can describe async function [#1834](https://github.com/mozilla/uniffi-rs/pull/1834)
 - UDL files can reference types defined in procmacros in this crate - see
   [the external types docs](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
+- Add support for [docstrings in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
 
