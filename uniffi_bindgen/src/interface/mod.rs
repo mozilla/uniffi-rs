@@ -359,6 +359,13 @@ impl ComponentInterface {
             .any(|t| matches!(t, Type::Map { .. }))
     }
 
+    /// Check whether the interface contains any object types
+    pub fn contains_object_types(&self) -> bool {
+        self.types
+            .iter_known_types()
+            .any(|t| matches!(t, Type::Object { .. }))
+    }
+
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
     // namespace for types - each type has its own `module_path` which is used for them.
     fn ffi_namespace(&self) -> &str {
