@@ -77,6 +77,16 @@ pub struct Config {
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
     external_packages: HashMap<String, String>,
+    #[serde(default)]
+    android: bool,
+    #[serde(default)]
+    android_cleaner: Option<bool>,
+}
+
+impl Config {
+    pub(crate) fn android_cleaner(&self) -> bool {
+        self.android_cleaner.unwrap_or(self.android)
+    }
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

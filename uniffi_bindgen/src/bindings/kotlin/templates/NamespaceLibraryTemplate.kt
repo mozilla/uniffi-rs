@@ -31,7 +31,11 @@ internal interface UniffiLib : Library {
         {% if ci.contains_object_types() %}
         // The cleaner for the whole library.
         internal val CLEANER: Cleaner by lazy {
+        {%- if config.android_cleaner() %}
+            SystemCleaner.cleaner()
+        {%- else %}
             Cleaner.create()
+        {%- endif %}
         }
         {%- endif %}
     }

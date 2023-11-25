@@ -1,4 +1,5 @@
 {{- self.add_import("java.lang.ref.Cleaner") }}
+{%- if config.android_cleaner() %}{{- self.add_import("android.system.SystemCleaner") }}{%- endif %}
 {{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
 
