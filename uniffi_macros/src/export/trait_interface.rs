@@ -69,7 +69,7 @@ pub(super) fn gen_trait_scaffolding(
         interface_meta_static_var(&self_ident, true, mod_path)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, false);
+    let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, udl_mode);
 
     Ok(quote_spanned! { self_ident.span() =>
         #meta_static_var

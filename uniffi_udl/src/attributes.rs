@@ -111,6 +111,16 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                         kind: ExternalKind::Interface,
                         export: true,
                     }),
+                    "ExternalTrait" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::Trait,
+                        export: false,
+                    }),
+                    "ExternalTraitExport" => Ok(Attribute::External {
+                        crate_name: name_from_id_or_string(&identity.rhs),
+                        kind: ExternalKind::Trait,
+                        export: true,
+                    }),
                     "Rust" => Ok(Attribute::Rust {
                         kind: rust_kind_from_id_or_string(&identity.rhs)?,
                     }),
