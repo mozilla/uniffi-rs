@@ -3,15 +3,18 @@ use quote::quote;
 use syn::DeriveInput;
 use uniffi_meta::free_fn_symbol_name;
 
-use crate::util::{create_metadata_items, ident_to_string, mod_path, tagged_impl_header};
+use crate::util::{
+    create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
+};
 
 pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
     let module_path = mod_path()?;
     let ident = &input.ident;
+    let docstring = extract_docstring(&input.attrs)?;
     let name = ident_to_string(ident);
     let free_fn_ident = Ident::new(&free_fn_symbol_name(&module_path, &name), Span::call_site());
     let meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(ident, false, &module_path)
+        interface_meta_static_var(ident, false, &module_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     let interface_impl = interface_impl(ident, udl_mode);
@@ -131,16 +134,19 @@ pub(crate) fn interface_meta_static_var(
     ident: &Ident,
     is_trait: bool,
     module_path: &str,
+    docstring: String,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
+
     Ok(create_metadata_items(
         "interface",
         &name,
         quote! {
-                ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
-                    .concat_str(#module_path)
-                    .concat_str(#name)
-                    .concat_bool(#is_trait)
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
+                .concat_str(#module_path)
+                .concat_str(#name)
+                .concat_bool(#is_trait)
+                .concat_str(#docstring)
         },
         None,
     ))

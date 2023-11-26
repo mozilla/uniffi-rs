@@ -182,6 +182,7 @@ pub(super) fn metadata_items(
     self_ident: &Ident,
     items: &[ImplItem],
     module_path: &str,
+    docstring: String,
 ) -> syn::Result<Vec<TokenStream>> {
     let trait_name = ident_to_string(self_ident);
     let callback_interface_items = create_metadata_items(
@@ -191,6 +192,7 @@ pub(super) fn metadata_items(
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CALLBACK_INTERFACE)
                 .concat_str(#module_path)
                 .concat_str(#trait_name)
+                .concat_str(#docstring)
         },
         None,
     );

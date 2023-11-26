@@ -21,6 +21,7 @@ pub(super) fn gen_trait_scaffolding(
     self_ident: Ident,
     items: Vec<ImplItem>,
     udl_mode: bool,
+    docstring: String,
 ) -> syn::Result<TokenStream> {
     if let Some(rt) = args.async_runtime {
         return Err(syn::Error::new_spanned(rt, "not supported for traits"));
@@ -66,7 +67,7 @@ pub(super) fn gen_trait_scaffolding(
         .collect::<syn::Result<_>>()?;
 
     let meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(&self_ident, true, mod_path)
+        interface_meta_static_var(&self_ident, true, mod_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, udl_mode);

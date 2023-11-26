@@ -7,6 +7,7 @@ use proc_macro2::{Ident, Span};
 use quote::ToTokens;
 
 use super::attributes::{ExportAttributeArguments, ExportedImplFnAttributes};
+use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
 
 pub(super) enum ExportItem {
@@ -21,6 +22,7 @@ pub(super) enum ExportItem {
         self_ident: Ident,
         items: Vec<ImplItem>,
         callback_interface: bool,
+        docstring: String,
     },
     Struct {
         self_ident: Ident,
@@ -32,7 +34,8 @@ impl ExportItem {
     pub fn new(item: syn::Item, args: &ExportAttributeArguments) -> syn::Result<Self> {
         match item {
             syn::Item::Fn(item) => {
-                let sig = FnSignature::new_function(item.sig)?;
+                let docstring = extract_docstring(&item.attrs)?;
+                let sig = FnSignature::new_function(item.sig, docstring)?;
                 Ok(Self::Function { sig })
             }
             syn::Item::Impl(item) => Self::from_impl(item, args.constructor.is_some()),
@@ -88,14 +91,20 @@ impl ExportItem {
                     }
                 };
 
+                let docstring = extract_docstring(&impl_fn.attrs)?;
                 let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
                 let item = if force_constructor || attrs.constructor {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,
+                        docstring,
                     )?)
                 } else {
-                    ImplItem::Method(FnSignature::new_method(self_ident.clone(), impl_fn.sig)?)
+                    ImplItem::Method(FnSignature::new_method(
+                        self_ident.clone(),
+                        impl_fn.sig,
+                        docstring,
+                    )?)
                 };
 
                 Ok(item)
@@ -117,6 +126,7 @@ impl ExportItem {
         }
 
         let self_ident = item.ident.to_owned();
+        let docstring = extract_docstring(&item.attrs)?;
         let items = item
             .items
             .into_iter()
@@ -132,6 +142,7 @@ impl ExportItem {
                     }
                 };
 
+                let docstring = extract_docstring(&tim.attrs)?;
                 let attrs = ExportedImplFnAttributes::new(&tim.attrs)?;
                 let item = if attrs.constructor {
                     return Err(syn::Error::new_spanned(
@@ -143,6 +154,7 @@ impl ExportItem {
                         self_ident.clone(),
                         tim.sig,
                         i as u32,
+                        docstring,
                     )?)
                 };
 
@@ -154,6 +166,7 @@ impl ExportItem {
             items,
             self_ident,
             callback_interface,
+            docstring,
         })
     }
 

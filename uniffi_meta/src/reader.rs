@@ -105,6 +105,10 @@ impl<'a> MetadataReader<'a> {
         String::from_utf8(slice.into()).context("Invalid string data")
     }
 
+    fn read_optional_string(&mut self) -> Result<Option<String>> {
+        Ok(Some(self.read_string()?).filter(|str| !str.is_empty()))
+    }
+
     fn read_type(&mut self) -> Result<Type> {
         let value = self.read_u8()?;
         Ok(match value {
@@ -198,6 +202,7 @@ impl<'a> MetadataReader<'a> {
         let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
+        let docstring = self.read_optional_string()?;
         Ok(FnMetadata {
             module_path,
             name,
@@ -205,7 +210,7 @@ impl<'a> MetadataReader<'a> {
             inputs,
             return_type,
             throws,
-            docstring: None,
+            docstring,
             checksum: self.calc_checksum(),
         })
     }
@@ -216,6 +221,7 @@ impl<'a> MetadataReader<'a> {
         let name = self.read_string()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
+        let docstring = self.read_optional_string()?;
 
         return_type
             .filter(|t| {
@@ -233,7 +239,7 @@ impl<'a> MetadataReader<'a> {
             inputs,
             throws,
             checksum: self.calc_checksum(),
-            docstring: None,
+            docstring,
         })
     }
 
@@ -244,6 +250,7 @@ impl<'a> MetadataReader<'a> {
         let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
+        let docstring = self.read_optional_string()?;
         Ok(MethodMetadata {
             module_path,
             self_name,
@@ -254,7 +261,7 @@ impl<'a> MetadataReader<'a> {
             throws,
             takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
-            docstring: None,
+            docstring,
         })
     }
 
@@ -263,7 +270,7 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             fields: self.read_fields()?,
-            docstring: None,
+            docstring: self.read_optional_string()?,
         })
     }
 
@@ -280,7 +287,7 @@ impl<'a> MetadataReader<'a> {
             module_path,
             name,
             variants,
-            docstring: None,
+            docstring: self.read_optional_string()?,
         })
     }
 
@@ -295,7 +302,7 @@ impl<'a> MetadataReader<'a> {
             module_path: self.read_string()?,
             name: self.read_string()?,
             imp: ObjectImpl::from_is_trait(self.read_bool()?),
-            docstring: None,
+            docstring: self.read_optional_string()?,
         })
     }
 
@@ -328,7 +335,7 @@ impl<'a> MetadataReader<'a> {
         Ok(CallbackInterfaceMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
-            docstring: None,
+            docstring: self.read_optional_string()?,
         })
     }
 
@@ -340,6 +347,7 @@ impl<'a> MetadataReader<'a> {
         let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
+        let docstring = self.read_optional_string()?;
         Ok(TraitMethodMetadata {
             module_path,
             trait_name,
@@ -351,7 +359,7 @@ impl<'a> MetadataReader<'a> {
             throws,
             takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
-            docstring: None,
+            docstring,
         })
     }
 
@@ -366,7 +374,7 @@ impl<'a> MetadataReader<'a> {
                     name,
                     ty,
                     default,
-                    docstring: None,
+                    docstring: self.read_optional_string()?,
                 })
             })
             .collect()
@@ -379,7 +387,7 @@ impl<'a> MetadataReader<'a> {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
                     fields: self.read_fields()?,
-                    docstring: None,
+                    docstring: self.read_optional_string()?,
                 })
             })
             .collect()
@@ -392,7 +400,7 @@ impl<'a> MetadataReader<'a> {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
                     fields: vec![],
-                    docstring: None,
+                    docstring: self.read_optional_string()?,
                 })
             })
             .collect()
