@@ -148,13 +148,12 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 // must be external
                 None => {
                     let kind = attrs.external_kind().expect("External missing kind");
-                    let tagged = attrs.external_tagged().expect("External missing tagged");
                     Type::External {
                         name,
                         namespace: "".to_string(), // we don't know this yet
                         module_path: attrs.get_crate_name(),
                         kind,
-                        tagged,
+                        tagged: true,
                     }
                 }
             };

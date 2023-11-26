@@ -550,15 +550,6 @@ impl TypedefAttributes {
             _ => None,
         })
     }
-
-    pub(super) fn external_tagged(&self) -> Option<bool> {
-        // If it was "exported" via a proc-macro the FfiConverter was not tagged.
-        self.0.iter().find_map(|attr| match attr {
-            Attribute::External { export, .. } => Some(!*export),
-            Attribute::Rust { .. } => Some(false),
-            _ => None,
-        })
-    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttributes {
