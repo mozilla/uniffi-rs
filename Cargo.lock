@@ -1726,6 +1726,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-docstring-proc-macro"
+version = "0.22.0"
+dependencies = [
+ "glob",
+ "thiserror",
+ "uniffi",
+ "uniffi_bindgen",
+ "uniffi_testing",
+]
+
+[[package]]
 name = "uniffi-fixture-ext-types"
 version = "0.22.0"
 dependencies = [
