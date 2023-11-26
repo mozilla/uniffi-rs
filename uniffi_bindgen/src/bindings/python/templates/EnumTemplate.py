@@ -25,7 +25,8 @@ class {{ type_name }}:
         {%- call py::docstring(variant, 8) %}
 
         {%- for field in variant.fields() %}
-        {{ field.name()|var_name }}: "{{ field|type_name }}";
+        {{ field.name()|var_name }}: "{{ field|type_name }}"
+        {%- call py::docstring(field, 8) %}
         {%- endfor %}
 
         @typing.no_type_check

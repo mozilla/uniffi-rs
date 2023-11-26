@@ -58,6 +58,7 @@
 -#}
 {% macro field_list_decl(item) %}
     {%- for field in item.fields() -%}
+        {%- call docstring(field, 8) %}
         {{ field.name()|var_name }}: {{ field|type_name -}}
         {%- match field.default_value() %}
             {%- when Some with(literal) %} = {{ literal|literal_swift(field) }}
