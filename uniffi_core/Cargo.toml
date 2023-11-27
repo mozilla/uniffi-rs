@@ -9,6 +9,7 @@ authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2021"
 keywords = ["ffi", "bindgen"]
+readme = "../README.md"
 
 [dependencies]
 # Re-exported dependencies used in generated Rust scaffolding files.

@@ -7,6 +7,7 @@ homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
 license = "MPL-2.0"
 keywords = ["ffi", "bindgen"]
+readme = "../README.md"
 
 [dependencies]
 anyhow = "1"

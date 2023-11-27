@@ -12,6 +12,7 @@ authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2021"
 keywords = ["ffi", "bindgen"]
+readme = "../README.md"
 
 [dependencies]
 uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.25.2", optional = true }
