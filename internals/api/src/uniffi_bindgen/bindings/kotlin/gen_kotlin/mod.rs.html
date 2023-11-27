@@ -565,6 +565,11 @@
 <a href="#565" id="565">565</a>
 <a href="#566" id="566">566</a>
 <a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1044,6 +1049,11 @@
 
     <span class="kw">pub fn </span>ffi_type_name_by_value(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(KotlinCodeOracle::ffi_type_label_by_value(type_))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
+    </span><span class="kw">pub fn </span>class_name(nm: <span class="kw-2">&amp;</span>str, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.class_name(ci, nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.

@@ -1027,11 +1027,12 @@ pub struct ConsumingDict {
 uniffi::include_scaffolding!(&quot;consuming_crate&quot;);</code></pre>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
 <p>The <code>External</code> attribute can be specified on dictionaries, enums, errors.</p>
-<h2 id="external-interface-types"><a class="header" href="#external-interface-types">External interface types</a></h2>
+<h2 id="external-interface-and-trait-types"><a class="header" href="#external-interface-and-trait-types">External interface and trait types</a></h2>
 <p>If the external type is an <a href="udl/./interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
 <pre><code class="language-idl">[ExternalInterface=&quot;demo_crate&quot;]
 typedef extern DemoInterface;
 </code></pre>
+<p>similarly for traits: use <code>[ExternalTrait]</code>.</p>
 <h2 id="external-procmacro-types"><a class="header" href="#external-procmacro-types">External procmacro types</a></h2>
 <p>The above examples assume the external types were defined via UDL.
 If they were defined by procmacros, you need different attribute names:</p>

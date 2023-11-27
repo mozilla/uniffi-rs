@@ -44,8 +44,8 @@
 }
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>ExternalCodeType {
-    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
-        <span class="self">self</span>.name.clone()
+    <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
+        <span class="kw">super</span>::KotlinCodeOracle.class_name(ci, <span class="kw-2">&amp;</span><span class="self">self</span>.name)
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
