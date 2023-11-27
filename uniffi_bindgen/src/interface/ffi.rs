@@ -107,6 +107,11 @@ impl From<&Type> for FfiType {
                 name,
                 kind: ExternalKind::Interface,
                 ..
+            }
+            | Type::External {
+                name,
+                kind: ExternalKind::Trait,
+                ..
             } => FfiType::RustArcPtr(name.clone()),
             Type::External {
                 name,

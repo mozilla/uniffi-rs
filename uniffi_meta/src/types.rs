@@ -52,6 +52,7 @@ impl ObjectImpl {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Checksum, Ord, PartialOrd)]
 pub enum ExternalKind {
     Interface,
+    Trait,
     // Either a record or enum
     DataClass,
 }

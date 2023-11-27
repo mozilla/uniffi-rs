@@ -4,6 +4,7 @@ use ext_types_guid::Guid;
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
+    UniffiOneUDLTrait,
 };
 use uniffi_sublib::SubLibType;
 use url::Url;
@@ -144,6 +145,12 @@ fn get_uniffi_one_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMac
 
 fn get_external_crate_interface(val: String) -> Arc<ExternalCrateInterface> {
     Arc::new(ExternalCrateInterface::new(val))
+}
+
+fn get_uniffi_one_udl_trait(
+    t: Option<Arc<dyn UniffiOneUDLTrait>>,
+) -> Option<Arc<dyn UniffiOneUDLTrait>> {
+    t
 }
 
 uniffi::include_scaffolding!("ext-types-lib");

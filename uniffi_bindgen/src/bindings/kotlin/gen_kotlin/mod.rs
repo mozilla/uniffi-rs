@@ -480,6 +480,11 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
+    pub fn class_name(nm: &str, ci: &ComponentInterface) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.class_name(ci, nm))
+    }
+
+    /// Get the idiomatic Kotlin rendering of a function name.
     pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.fn_name(nm))
     }

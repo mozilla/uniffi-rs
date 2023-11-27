@@ -44,7 +44,7 @@ Your `Cargo.toml` must reference the external crate as normal.
 
 The `External` attribute can be specified on dictionaries, enums, errors.
 
-## External interface types
+## External interface and trait types
 
 If the external type is an [Interface](./interfaces.md), then use the `[ExternalInterface]` attribute instead of `[External]`:
 
@@ -52,6 +52,8 @@ If the external type is an [Interface](./interfaces.md), then use the `[External
 [ExternalInterface="demo_crate"]
 typedef extern DemoInterface;
 ```
+
+similarly for traits: use `[ExternalTrait]`.
 
 ## External procmacro types
 
