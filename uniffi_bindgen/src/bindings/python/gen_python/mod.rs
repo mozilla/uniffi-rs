@@ -350,19 +350,15 @@ impl PythonCodeOracle {
             FfiType::UInt64 => "ctypes.c_uint64".to_string(),
             FfiType::Float32 => "ctypes.c_float".to_string(),
             FfiType::Float64 => "ctypes.c_double".to_string(),
-            FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
+            FfiType::Handle => "ctypes.c_uint64".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
                 Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
                 None => "_UniffiRustBuffer".to_string(),
             },
             FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
             FfiType::ForeignCallback => "_UNIFFI_FOREIGN_CALLBACK_T".to_string(),
-            // Pointer to an `asyncio.EventLoop` instance
-            FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
             FfiType::ForeignExecutorCallback => "_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
-            FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
             FfiType::RustFutureContinuationCallback => "_UNIFFI_FUTURE_CONTINUATION_T".to_string(),
-            FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
 

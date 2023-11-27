@@ -446,11 +446,11 @@ Coveralls("test_bytes").use { coveralls ->
 
 // Test fakes using open classes
 
-class FakePatch(private val color: Color): Patch(NoPointer) {
+class FakePatch(private val color: Color): Patch(NoHandle) {
     override fun `getColor`(): Color = color
 }
 
-class FakeCoveralls(private val name: String) : Coveralls(NoPointer) {
+class FakeCoveralls(private val name: String) : Coveralls(NoHandle) {
     private val repairs = mutableListOf<Repair>()
 
     override fun `addPatch`(patch: Patch) {

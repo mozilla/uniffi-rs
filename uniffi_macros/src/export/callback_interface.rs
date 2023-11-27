@@ -45,11 +45,11 @@ pub(super) fn trait_impl(
         #[doc(hidden)]
         #[derive(Debug)]
         struct #trait_impl_ident {
-            handle: u64,
+            handle: ::uniffi::Handle,
         }
 
         impl #trait_impl_ident {
-            fn new(handle: u64) -> Self {
+            fn new(handle: ::uniffi::Handle) -> Self {
                 Self { handle }
             }
         }
@@ -109,7 +109,11 @@ pub fn ffi_converter_callback_interface_impl(
             type FfiType = u64;
 
             fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<Self> {
-                Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(v)))
+                let handle = match ::uniffi::Handle::from_raw(v) {
+                    Some(h) => h,
+                    None => ::uniffi::deps::anyhow::bail!("{}::try_lift: null handle", #trait_name),
+                };
+                Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(handle)))
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::deps::anyhow::Result<Self> {

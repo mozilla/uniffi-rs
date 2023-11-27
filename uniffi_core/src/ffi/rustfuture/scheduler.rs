@@ -4,7 +4,7 @@
 
 use std::mem;
 
-use super::{RustFutureContinuationCallback, RustFuturePoll};
+use super::{Handle, RustFutureContinuationCallback, RustFuturePoll};
 
 /// Schedules a [crate::RustFuture] by managing the continuation data
 ///
@@ -30,7 +30,7 @@ pub(super) enum Scheduler {
     /// continuation being called with `RustFuturePoll::Ready`.
     Cancelled,
     /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
-    Set(RustFutureContinuationCallback, *const ()),
+    Set(RustFutureContinuationCallback, Handle),
 }
 
 impl Scheduler {
@@ -40,7 +40,7 @@ impl Scheduler {
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    pub(super) fn store(&mut self, callback: RustFutureContinuationCallback, data: *const ()) {
+    pub(super) fn store(&mut self, callback: RustFutureContinuationCallback, data: Handle) {
         match self {
             Self::Empty => *self = Self::Set(callback, data),
             Self::Set(old_callback, old_data) => {
@@ -87,10 +87,3 @@ impl Scheduler {
         matches!(self, Self::Cancelled)
     }
 }
-
-// The `*const ()` data pointer references an object on the foreign side.
-// This object must be `Sync` in Rust terminology -- it must be safe for us to pass the pointer to the continuation callback from any thread.
-// If the foreign side upholds their side of the contract, then `Scheduler` is Send + Sync.
-
-unsafe impl Send for Scheduler {}
-unsafe impl Sync for Scheduler {}

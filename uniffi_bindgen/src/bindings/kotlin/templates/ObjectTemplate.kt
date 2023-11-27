@@ -9,23 +9,23 @@
 {%- call kt::docstring(obj, 0) %}
 open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
-    constructor(pointer: Pointer): super(pointer)
+    constructor(handleWrapper: UniffiHandleWrapper): super(handleWrapper.handle)
 
     /**
      * This constructor can be used to instantiate a fake object.
      *
      * **WARNING: Any object instantiated with this constructor cannot be passed to an actual Rust-backed object.**
-     * Since there isn't a backing [Pointer] the FFI lower functions will crash.
-     * @param noPointer Placeholder value so we can have a constructor separate from the default empty one that may be
+     * Since there isn't a backing [UniffiHandle] the FFI lower functions will crash.
+     * @param noHandle Placeholder value so we can have a constructor separate from the default empty one that may be
      *   implemented for classes extending [FFIObject].
      */
-    constructor(noPointer: NoPointer): super(noPointer)
+    constructor(noHandle: NoHandle): super(noHandle)
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     {%- call kt::docstring(cons, 4) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
-        this({% call kt::to_ffi_call(cons) %})
+        this(UniffiHandleWrapper({% call kt::to_ffi_call(cons) %}))
     {%- when None %}
     {%- endmatch %}
 
@@ -38,9 +38,9 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
     override protected fun freeRustArcPtr() {
-        this.pointer?.let { ptr ->
+        this.handle?.let { handle ->
             rustCall() { status ->
-                _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(ptr, status)
+                _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(handle, status)
             }
         }
     }
@@ -58,9 +58,9 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
         {%- call kt::arg_list_decl(meth) -%}
     ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
+            callWithHandle { uniffiHandle ->
                 _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
-                    thisPtr,
+                    uniffiHandle,
                     {% call kt::arg_list_lowered(meth) %}
                 )
             },
@@ -86,20 +86,16 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%- else -%}
     {%- match meth.return_type() -%}
     {%- when Some with (return_type) -%}
-    override fun {{ meth.name()|fn_name }}(
-        {%- call kt::arg_list_protocol(meth) -%}
-    ): {{ return_type|type_name(ci) }} =
-        callWithPointer {
+    override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}): {{ return_type|type_name(ci) }} =
+        callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }.let {
             {{ return_type|lift_fn }}(it)
         }
 
     {%- when None -%}
-    override fun {{ meth.name()|fn_name }}(
-        {%- call kt::arg_list_protocol(meth) -%}
-    ) =
-        callWithPointer {
+    override fun {{ meth.name()|fn_name }}({% call kt::arg_list_protocol(meth) %}) =
+        callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", meth) %}
         }
     {% endmatch %}
@@ -110,7 +106,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%-     match tm %}
     {%-         when UniffiTrait::Display { fmt } %}
     override fun toString(): String =
-        callWithPointer {
+        callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", fmt) %}
         }.let {
             {{ fmt.return_type().unwrap()|lift_fn }}(it)
@@ -120,7 +116,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is {{ impl_class_name}}) return false
-        return callWithPointer {
+        return callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", eq) %}
         }.let {
             {{ eq.return_type().unwrap()|lift_fn }}(it)
@@ -128,7 +124,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     }
     {%-         when UniffiTrait::Hash { hash } %}
     override fun hashCode(): Int =
-        callWithPointer {
+        callWithHandle {
             {%- call kt::to_ffi_call_with_prefix("it", hash) %}
         }.let {
             {{ hash.return_type().unwrap()|lift_fn }}(it).toInt()
@@ -142,7 +138,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
         {% for cons in obj.alternate_constructors() -%}
         {%- call kt::docstring(cons, 4) %}
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
-            {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
+            {{ impl_class_name }}(UniffiHandleWrapper({% call kt::to_ffi_call(cons) %}))
         {% endfor %}
     }
     {% else %}
@@ -157,35 +153,31 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 {% include "CallbackInterfaceImpl.kt" %}
 {%- endif %}
 
-public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
+public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, UniffiHandle> {
     {%- if obj.is_trait_interface() %}
-    internal val handleMap = ConcurrentHandleMap<{{ interface_name }}>()
+    internal val handleMap = UniffiHandleMap<{{ type_name }}>()
     {%- endif %}
 
-    override fun lower(value: {{ type_name }}): Pointer {
+    override fun lower(value: {{ type_name }}): UniffiHandle {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.callWithPointer { it }
+        return value.handle!!
         {%- when ObjectImpl::Trait %}
-        return Pointer(handleMap.insert(value))
+        return handleMap.newHandle(value)
         {%- endmatch %}
     }
 
-    override fun lift(value: Pointer): {{ type_name }} {
-        return {{ impl_class_name }}(value)
+    override fun lift(value: UniffiHandle): {{ type_name }} {
+        return {{ impl_class_name }}(UniffiHandleWrapper(value))
     }
 
     override fun read(buf: ByteBuffer): {{ type_name }} {
-        // The Rust code always writes pointers as 8 bytes, and will
-        // fail to compile if they don't fit.
-        return lift(Pointer(buf.getLong()))
+        return lift(buf.getLong())
     }
 
     override fun allocationSize(value: {{ type_name }}) = 8
 
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
+        buf.putLong(lower(value))
     }
 }

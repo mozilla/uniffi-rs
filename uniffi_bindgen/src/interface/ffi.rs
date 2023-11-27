@@ -33,11 +33,8 @@ pub enum FfiType {
     Int64,
     Float32,
     Float64,
-    /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
-    /// If you've got one of these, you must call the appropriate rust function to free it.
-    /// The templates will generate a unique `free` function for each T.
-    /// The inner string references the name of the `T` type.
-    RustArcPtr(String),
+    /// 64-bit handle.
+    Handle,
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
@@ -49,16 +46,10 @@ pub enum FfiType {
     ForeignBytes,
     /// Pointer to a callback function that handles all callbacks on the foreign language side.
     ForeignCallback,
-    /// Pointer-sized opaque handle that represents a foreign executor.  Foreign bindings can
-    /// either use an actual pointer or a usized integer.
-    ForeignExecutorHandle,
     /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
     ForeignExecutorCallback,
-    /// Pointer to a Rust future
-    RustFutureHandle,
     /// Continuation function for a Rust future
     RustFutureContinuationCallback,
-    RustFutureContinuationData,
     // TODO: you can imagine a richer structural typesystem here, e.g. `Ref<String>` or something.
     // We don't need that yet and it's possible we never will, so it isn't here for now.
 }
@@ -90,11 +81,14 @@ impl From<&Type> for FfiType {
             // Byte strings are also always owned rust values.
             // We might add a separate type for borrowed byte strings in future as well.
             Type::Bytes => FfiType::RustBuffer(None),
-            // Objects are pointers to an Arc<>
-            Type::Object { name, .. } => FfiType::RustArcPtr(name.to_owned()),
-            // Callback interfaces are passed as opaque integer handles.
-            Type::CallbackInterface { .. } => FfiType::UInt64,
-            Type::ForeignExecutor => FfiType::ForeignExecutorHandle,
+            // Object types interfaces are passed as opaque handles.
+            Type::Object { .. }
+            | Type::CallbackInterface { .. }
+            | Type::ForeignExecutor
+            | Type::External {
+                kind: ExternalKind::Interface,
+                ..
+            } => FfiType::Handle,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
             Type::Enum { .. }
             | Type::Record { .. }
@@ -103,11 +97,8 @@ impl From<&Type> for FfiType {
             | Type::Map { .. }
             | Type::Timestamp
             | Type::Duration => FfiType::RustBuffer(None),
-            Type::External {
-                name,
-                kind: ExternalKind::Interface,
-                ..
-            } => FfiType::RustArcPtr(name.clone()),
+            // External data classes are also serialized as a buffer, but need a module name to
+            // make imports work.
             Type::External {
                 name,
                 kind: ExternalKind::DataClass,
@@ -194,7 +185,7 @@ impl FfiFunction {
     ) {
         self.arguments = args.into_iter().collect();
         if self.is_async() {
-            self.return_type = Some(FfiType::RustFutureHandle);
+            self.return_type = Some(FfiType::Handle);
             self.has_rust_call_status_arg = false;
         } else {
             self.return_type = return_type;

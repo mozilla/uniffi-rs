@@ -521,16 +521,17 @@ impl SwiftCodeOracle {
             FfiType::UInt64 => "UInt64".into(),
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
-            FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
+            // Other bindings use an type alias for `Handle`, but this isn't so easy with Swift:
+            //   * When multiple crates are built together, all swift files get merged into a
+            //     single module which can lead to namespace conflicts.
+            //   * `fileprivate` type aliases can't be used in a public API, even if the actual
+            //     type is public.
+            FfiType::Handle => "UInt64".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback".into(),
-            FfiType::ForeignExecutorHandle => "Int".into(),
             FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
             FfiType::RustFutureContinuationCallback => "UniFfiRustFutureContinuation".into(),
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
-                "UnsafeMutableRawPointer".into()
-            }
         }
     }
 
@@ -538,9 +539,7 @@ impl SwiftCodeOracle {
         match ffi_type {
             FfiType::ForeignCallback
             | FfiType::ForeignExecutorCallback
-            | FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationCallback
-            | FfiType::RustFutureContinuationData => {
+            | FfiType::RustFutureContinuationCallback => {
                 format!("{} _Nonnull", self.ffi_type_label_raw(ffi_type))
             }
             _ => self.ffi_type_label_raw(ffi_type),
@@ -637,17 +636,13 @@ pub mod filters {
             FfiType::UInt64 => "uint64_t".into(),
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
-            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
+            FfiType::Handle => "uint64_t".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
             FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
-            FfiType::ForeignExecutorHandle => "size_t".into(),
             FfiType::RustFutureContinuationCallback => {
                 "UniFfiRustFutureContinuation _Nonnull".into()
-            }
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
-                "void* _Nonnull".into()
             }
         })
     }

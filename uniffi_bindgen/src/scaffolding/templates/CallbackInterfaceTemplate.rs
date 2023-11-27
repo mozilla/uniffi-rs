@@ -29,11 +29,11 @@ pub extern "C" fn {{ cbi.ffi_init_callback().name() }}(callback: uniffi::Foreign
 #[doc(hidden)]
 #[derive(Debug)]
 struct {{ trait_impl }} {
-  handle: u64
+  handle: ::uniffi::Handle
 }
 
 impl {{ trait_impl }} {
-    fn new(handle: u64) -> Self {
+    fn new(handle: ::uniffi::Handle) -> Self {
         Self { handle }
     }
 }

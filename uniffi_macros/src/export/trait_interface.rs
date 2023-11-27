@@ -11,7 +11,7 @@ use crate::{
         item::ImplItem,
     },
     object::interface_meta_static_var,
-    util::{ident_to_string, tagged_impl_header},
+    util::{derive_ffi_traits, ident_to_string, tagged_impl_header},
 };
 use uniffi_meta::free_fn_symbol_name;
 
@@ -28,7 +28,6 @@ pub(super) fn gen_trait_scaffolding(
     let trait_name = ident_to_string(&self_ident);
     let trait_impl = callback_interface::trait_impl(mod_path, &self_ident, &items)
         .unwrap_or_else(|e| e.into_compile_error());
-
     let free_fn_ident = Ident::new(
         &free_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
@@ -38,12 +37,11 @@ pub(super) fn gen_trait_scaffolding(
         #[doc(hidden)]
         #[no_mangle]
         pub extern "C" fn #free_fn_ident(
-            ptr: *const ::std::ffi::c_void,
+            handle: ::uniffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
             uniffi::rust_call(call_status, || {
-                assert!(!ptr.is_null());
-                drop(unsafe { ::std::boxed::Box::from_raw(ptr as *mut std::sync::Arc<dyn #self_ident>) });
+                <dyn #self_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::consume_handle(handle);
                 Ok(())
             });
         }
@@ -83,6 +81,8 @@ pub(super) fn gen_trait_scaffolding(
 pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool) -> TokenStream {
     let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, udl_mode);
     let lift_ref_impl_spec = tagged_impl_header("LiftRef", &quote! { dyn #trait_ident }, udl_mode);
+    let derive_ffi_traits =
+        derive_ffi_traits(&quote! { dyn #trait_ident }, udl_mode, &["HandleAlloc"]);
     let trait_name = ident_to_string(trait_ident);
     let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
 
@@ -93,30 +93,31 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
         // and thus help the user debug why the requirement isn't being met.
         uniffi::deps::static_assertions::assert_impl_all!(dyn #trait_ident: ::core::marker::Sync, ::core::marker::Send);
 
+        #derive_ffi_traits
+
         unsafe #impl_spec {
-            type FfiType = *const ::std::os::raw::c_void;
+            type FfiType = ::uniffi::Handle;
 
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) as *const ::std::os::raw::c_void
+                <dyn #trait_ident as ::uniffi::HandleAlloc<crate::UniFfiTag>>::new_handle(obj)
             }
 
-            fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
-                Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v as u64)))
+            fn try_lift(handle: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
+                Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(handle)))
             }
 
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::deps::bytes::BufMut::put_u64(
                     buf,
-                    <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64,
+                    <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj).as_raw()
                 );
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
                 <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(
-                    ::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                    ::uniffi::Handle::from_raw_unchecked(::uniffi::deps::bytes::Buf::get_u64(buf))
+                )
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)

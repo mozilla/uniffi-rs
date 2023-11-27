@@ -3,7 +3,7 @@
 // Declaration and FfiConverters for {{ type_name }} Callback Interface
 
 fileprivate let {{ callback_handler }} : ForeignCallback =
-    { (handle: UniFFICallbackHandle, method: Int32, argsData: UnsafePointer<UInt8>, argsLen: Int32, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
+    { (handle: UInt64, method: Int32, argsData: UnsafePointer<UInt8>, argsLen: Int32, out_buf: UnsafeMutablePointer<RustBuffer>) -> Int32 in
     {% for meth in methods.iter() -%}
     {%- let method_name = format!("invoke_{}", meth.name())|fn_name %}
 
@@ -55,18 +55,15 @@ fileprivate let {{ callback_handler }} : ForeignCallback =
 
     switch method {
         case IDX_CALLBACK_FREE:
-            {{ ffi_converter_name }}.handleMap.remove(handle: handle)
+            let _ = {{ ffi_converter_name }}.handleMap.consumeHandle(handle: handle)
             // Sucessful return
             // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
             return UNIFFI_CALLBACK_SUCCESS
         {% for meth in methods.iter() -%}
         {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
         case {{ loop.index }}:
-            guard let cb = {{ ffi_converter_name }}.handleMap.get(handle: handle) else {
-                out_buf.pointee = {{ Type::String.borrow()|lower_fn }}("No callback in handlemap; this is a Uniffi bug")
-                return UNIFFI_CALLBACK_UNEXPECTED_ERROR
-            }
             do {
+                let cb = {{ ffi_converter_name }}.handleMap.get(handle: handle)
                 return try {{ method_name }}(cb, argsData, argsLen, out_buf)
             } catch let error {
                 out_buf.pointee = {{ Type::String.borrow()|lower_fn }}(String(describing: error))
