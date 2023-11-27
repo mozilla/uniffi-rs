@@ -40,7 +40,7 @@ pub struct RustFutureHandle(*const ());
 ///
 /// For each exported async function, UniFFI will create a scaffolding function that uses this to
 /// create the [RustFutureHandle] to pass to the foreign code.
-pub fn rust_future_new<F, T, UT>(future: F, tag: UT) -> RustFutureHandle
+pub fn rust_future_new<F, T>(future: F) -> RustFutureHandle
 where
     // F is the future type returned by the exported async function.  It needs to be Send + `static
     // since it will move between threads for an indeterminate amount of time as the foreign
@@ -49,13 +49,11 @@ where
     F: Future<Output = T> + Send + 'static,
     // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
     // 'static for the same reason as F.
-    T: LowerReturn<UT> + Send + 'static,
-    // The UniFfiTag ZST. The Send + 'static bound is to keep rustc happy.
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
     // Create a RustFuture and coerce to `Arc<dyn RustFutureFfi>`, which is what we use to
     // implement the FFI
-    let future_ffi = RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>;
+    let future_ffi = RustFuture::new(future) as Arc<dyn RustFutureFfi<T::ReturnType>>;
     // Box the Arc, to convert the wide pointer into a normal sized pointer so that we can pass it
     // to the foreign code.
     let boxed_ffi = Box::new(future_ffi);

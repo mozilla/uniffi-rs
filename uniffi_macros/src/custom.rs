@@ -25,27 +25,27 @@ pub(crate) fn expand_ffi_converter_custom_type(
             // Note: the builtin type needs to implement both `Lower` and `Lift'.  We use the
             // `Lower` trait to get the associated type `FfiType` and const `TYPE_ID_META`.  These
             // can't differ between `Lower` and `Lift`.
-            type FfiType = <#builtin as ::uniffi::Lower<crate::UniFfiTag>>::FfiType;
+            type FfiType = <#builtin as ::uniffi::Lower>::FfiType;
             fn lower(obj: #ident ) -> Self::FfiType {
-                <#builtin as ::uniffi::Lower<crate::UniFfiTag>>::lower(<#ident as crate::UniffiCustomTypeConverter>::from_custom(obj))
+                <#builtin as ::uniffi::Lower>::lower(<#ident as crate::UniffiCustomTypeConverter>::from_custom(obj))
             }
 
             fn try_lift(v: Self::FfiType) -> uniffi::Result<#ident> {
-                <#ident as crate::UniffiCustomTypeConverter>::into_custom(<#builtin as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(v)?)
+                <#ident as crate::UniffiCustomTypeConverter>::into_custom(<#builtin as ::uniffi::Lift>::try_lift(v)?)
             }
 
             fn write(obj: #ident, buf: &mut Vec<u8>) {
-                <#builtin as ::uniffi::Lower<crate::UniFfiTag>>::write(<#ident as crate::UniffiCustomTypeConverter>::from_custom(obj), buf);
+                <#builtin as ::uniffi::Lower>::write(<#ident as crate::UniffiCustomTypeConverter>::from_custom(obj), buf);
             }
 
             fn try_read(buf: &mut &[u8]) -> uniffi::Result<#ident> {
-                <#ident as crate::UniffiCustomTypeConverter>::into_custom(<#builtin as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?)
+                <#ident as crate::UniffiCustomTypeConverter>::into_custom(<#builtin as ::uniffi::Lift>::try_read(buf)?)
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
                 .concat_str(#mod_path)
                 .concat_str(#name)
-                .concat(<#builtin as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META);
+                .concat(<#builtin as ::uniffi::Lower>::TYPE_ID_META);
         }
 
         #derive_ffi_traits

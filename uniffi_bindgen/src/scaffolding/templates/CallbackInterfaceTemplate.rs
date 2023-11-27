@@ -40,7 +40,7 @@ impl {{ trait_impl }} {
 
 impl Drop for {{ trait_impl }} {
     fn drop(&mut self) {
-        {{ foreign_callback_internals }}.invoke_callback::<(), crate::UniFfiTag>(
+        {{ foreign_callback_internals }}.invoke_callback::<()>(
             self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
         )
     }
@@ -74,7 +74,7 @@ impl r#{{ trait_name }} for {{ trait_impl }} {
         let args_rbuf = uniffi::RustBuffer::from_vec(args_buf);
 
         {#- Calling into foreign code. #}
-        {{ foreign_callback_internals }}.invoke_callback::<{{ meth|return_type }}, crate::UniFfiTag>(self.handle, {{ loop.index }}, args_rbuf)
+        {{ foreign_callback_internals }}.invoke_callback::<{{ meth|return_type }}>(self.handle, {{ loop.index }}, args_rbuf)
     }
     {%- endfor %}
 }

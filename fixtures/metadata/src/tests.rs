@@ -5,7 +5,6 @@
 /// This entire crate is just a set of tests for metadata handling.  We use a separate crate
 /// for testing because the metadata handling is split up between several crates, and no crate
 /// owns all the functionality.
-use crate::UniFfiTag;
 use uniffi_meta::*;
 
 mod person {
@@ -90,7 +89,7 @@ mod test_type_ids {
     use std::sync::Arc;
     use uniffi_core::Lower;
 
-    fn check_type_id<T: Lower<UniFfiTag>>(correct_type: Type) {
+    fn check_type_id<T: Lower>(correct_type: Type) {
         let buf = &mut T::TYPE_ID_META.as_ref();
         assert_eq!(
             uniffi_meta::read_metadata_type(buf).unwrap(),

@@ -12,15 +12,11 @@
 /// https://mozilla.github.io/uniffi-rs/internals/lifting_and_lowering.html#code-generation-and-the-fficonverter-trait,
 /// we use the following system:
 ///
-///   - Each UniFFIed crate defines a unit struct named `UniFfiTag`
-///   - We define an `impl FFIConverter<UniFfiTag> for Type` for each type that we want to pass
+///   - We define an `impl FFIConverter for Type` for each type that we want to pass
 ///     across the FFI.
-///   - When generating the code, we use the `<T as ::uniffi::FFIConverter<crate::UniFfiTag>>` impl
+///   - When generating the code, we use the `<T as ::uniffi::FFIConverter>` impl
 ///     to lift/lower/serialize types for a crate.
 ///
-/// This crate needs to implement `FFIConverter<UT>` on `UniFfiTag` instances for all UniFFI
-/// consumer crates.  To do this, it defines blanket impls like `impl<UT> FFIConverter<UT> for u8`.
-/// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
     ConvertError, FfiConverter, ForeignExecutor, Lift, LiftReturn, Lower, LowerReturn,
@@ -44,7 +40,7 @@ use std::{
 macro_rules! impl_ffi_converter_for_num_primitive {
     ($T:ty, $type_code:expr) => {
         paste! {
-            unsafe impl<UT> FfiConverter<UT> for $T {
+            unsafe impl FfiConverter for $T {
                 type FfiType = $T;
 
                 fn lower(obj: $T) -> Self::FfiType {
@@ -85,7 +81,7 @@ impl_ffi_converter_for_num_primitive!(f64, metadata::codes::TYPE_F64);
 ///
 /// Booleans are passed as an `i8` in order to avoid problems with handling
 /// C-compatible boolean values on JVM-based languages.
-unsafe impl<UT> FfiConverter<UT> for bool {
+unsafe impl FfiConverter for bool {
     type FfiType = i8;
 
     fn lower(obj: bool) -> Self::FfiType {
@@ -101,12 +97,12 @@ unsafe impl<UT> FfiConverter<UT> for bool {
     }
 
     fn write(obj: bool, buf: &mut Vec<u8>) {
-        buf.put_i8(<Self as FfiConverter<UT>>::lower(obj));
+        buf.put_i8(<Self as FfiConverter>::lower(obj));
     }
 
     fn try_read(buf: &mut &[u8]) -> Result<bool> {
         check_remaining(buf, 1)?;
-        <Self as FfiConverter<UT>>::try_lift(buf.get_i8())
+        <Self as FfiConverter>::try_lift(buf.get_i8())
     }
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_BOOL);
@@ -123,7 +119,7 @@ unsafe impl<UT> FfiConverter<UT> for bool {
 /// When serialized in a buffer, strings are represented as a i32 byte length
 /// followed by utf8-encoded bytes. (It's a signed integer because unsigned types are
 /// currently experimental in Kotlin).
-unsafe impl<UT> FfiConverter<UT> for String {
+unsafe impl FfiConverter for String {
     type FfiType = RustBuffer;
 
     // This returns a struct with a raw pointer to the underlying bytes, so it's very
@@ -183,8 +179,8 @@ unsafe impl<UT> FfiConverter<UT> for String {
 /// the sign of the seconds portion represents the direction of the offset
 /// overall. The sign of the seconds portion can then be used to determine
 /// if the total offset should be added to or subtracted from the unix epoch.
-unsafe impl<UT> FfiConverter<UT> for SystemTime {
-    ffi_converter_rust_buffer_lift_and_lower!(UT);
+unsafe impl FfiConverter for SystemTime {
+    ffi_converter_rust_buffer_lift_and_lower!();
 
     fn write(obj: SystemTime, buf: &mut Vec<u8>) {
         let mut sign = 1;
@@ -228,8 +224,8 @@ unsafe impl<UT> FfiConverter<UT> for SystemTime {
 /// magnitude in seconds, and a u32 that indicates the nanosecond portion
 /// of the magnitude. The nanosecond portion is expected to be between 0
 /// and 999,999,999.
-unsafe impl<UT> FfiConverter<UT> for Duration {
-    ffi_converter_rust_buffer_lift_and_lower!(UT);
+unsafe impl FfiConverter for Duration {
+    ffi_converter_rust_buffer_lift_and_lower!();
 
     fn write(obj: Duration, buf: &mut Vec<u8>) {
         buf.put_u64(obj.as_secs());
@@ -254,7 +250,7 @@ unsafe impl<UT> FfiConverter<UT> for Duration {
 // `None` option is represented as a null pointer and the `Some` as a valid pointer,
 // but that seems more fiddly and less safe in the short term, so it can wait.
 
-unsafe impl<UT, T: Lower<UT>> Lower<UT> for Option<T> {
+unsafe impl<T: Lower> Lower for Option<T> {
     type FfiType = RustBuffer;
 
     fn write(obj: Option<T>, buf: &mut Vec<u8>) {
@@ -275,7 +271,7 @@ unsafe impl<UT, T: Lower<UT>> Lower<UT> for Option<T> {
         MetadataBuffer::from_code(metadata::codes::TYPE_OPTION).concat(T::TYPE_ID_META);
 }
 
-unsafe impl<UT, T: Lift<UT>> Lift<UT> for Option<T> {
+unsafe impl<T: Lift> Lift for Option<T> {
     type FfiType = RustBuffer;
 
     fn try_read(buf: &mut &[u8]) -> Result<Option<T>> {
@@ -305,7 +301,7 @@ unsafe impl<UT, T: Lift<UT>> Lift<UT> for Option<T> {
 // than serializing, and perhaps even pass other vector types using a
 // similar struct. But that's for future work.
 
-unsafe impl<UT, T: Lower<UT>> Lower<UT> for Vec<T> {
+unsafe impl<T: Lower> Lower for Vec<T> {
     type FfiType = RustBuffer;
 
     fn write(obj: Vec<T>, buf: &mut Vec<u8>) {
@@ -313,7 +309,7 @@ unsafe impl<UT, T: Lower<UT>> Lower<UT> for Vec<T> {
         let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit arrays to i32::MAX items
         for item in obj {
-            <T as Lower<UT>>::write(item, buf);
+            <T as Lower>::write(item, buf);
         }
     }
 
@@ -330,7 +326,7 @@ unsafe impl<UT, T: Lower<UT>> Lower<UT> for Vec<T> {
 /// We write a `i32` entries count followed by each entry (string
 /// key followed by the value) in turn.
 /// (It's a signed type due to limits of the JVM).
-unsafe impl<UT, T: Lift<UT>> Lift<UT> for Vec<T> {
+unsafe impl<T: Lift> Lift for Vec<T> {
     type FfiType = RustBuffer;
 
     fn try_read(buf: &mut &[u8]) -> Result<Vec<T>> {
@@ -338,7 +334,7 @@ unsafe impl<UT, T: Lift<UT>> Lift<UT> for Vec<T> {
         let len = usize::try_from(buf.get_i32())?;
         let mut vec = Vec::with_capacity(len);
         for _ in 0..len {
-            vec.push(<T as Lift<UT>>::try_read(buf)?)
+            vec.push(<T as Lift>::try_read(buf)?)
         }
         Ok(vec)
     }
@@ -351,10 +347,10 @@ unsafe impl<UT, T: Lift<UT>> Lift<UT> for Vec<T> {
         MetadataBuffer::from_code(metadata::codes::TYPE_VEC).concat(T::TYPE_ID_META);
 }
 
-unsafe impl<K, V, UT> Lower<UT> for HashMap<K, V>
+unsafe impl<K, V> Lower for HashMap<K, V>
 where
-    K: Lower<UT> + std::hash::Hash + Eq,
-    V: Lower<UT>,
+    K: Lower + std::hash::Hash + Eq,
+    V: Lower,
 {
     type FfiType = RustBuffer;
 
@@ -363,8 +359,8 @@ where
         let len = i32::try_from(obj.len()).unwrap();
         buf.put_i32(len); // We limit HashMaps to i32::MAX entries
         for (key, value) in obj {
-            <K as Lower<UT>>::write(key, buf);
-            <V as Lower<UT>>::write(value, buf);
+            <K as Lower>::write(key, buf);
+            <V as Lower>::write(value, buf);
         }
     }
 
@@ -377,10 +373,10 @@ where
         .concat(V::TYPE_ID_META);
 }
 
-unsafe impl<K, V, UT> Lift<UT> for HashMap<K, V>
+unsafe impl<K, V> Lift for HashMap<K, V>
 where
-    K: Lift<UT> + std::hash::Hash + Eq,
-    V: Lift<UT>,
+    K: Lift + std::hash::Hash + Eq,
+    V: Lift,
 {
     type FfiType = RustBuffer;
 
@@ -389,8 +385,8 @@ where
         let len = usize::try_from(buf.get_i32())?;
         let mut map = HashMap::with_capacity(len);
         for _ in 0..len {
-            let key = <K as Lift<UT>>::try_read(buf)?;
-            let value = <V as Lift<UT>>::try_read(buf)?;
+            let key = <K as Lift>::try_read(buf)?;
+            let value = <V as Lift>::try_read(buf)?;
             map.insert(key, value);
         }
         Ok(map)
@@ -410,7 +406,7 @@ where
 /// These are passed over the FFI as opaque pointer-sized types representing the foreign executor.
 /// The foreign bindings may use an actual pointer to the executor object, or a usized integer
 /// handle.
-unsafe impl<UT> FfiConverter<UT> for ForeignExecutor {
+unsafe impl FfiConverter for ForeignExecutor {
     type FfiType = crate::ForeignExecutorHandle;
 
     // Passing these back to the foreign bindings is currently not supported
@@ -439,7 +435,7 @@ unsafe impl<UT> FfiConverter<UT> for ForeignExecutor {
             8 => buf.get_u64_ne() as usize,
             n => panic!("Invalid usize width: {n}"),
         };
-        <Self as FfiConverter<UT>>::try_lift(crate::ForeignExecutorHandle(usize_val as *const ()))
+        <Self as FfiConverter>::try_lift(crate::ForeignExecutorHandle(usize_val as *const ()))
     }
 
     const TYPE_ID_META: MetadataBuffer =
@@ -466,28 +462,27 @@ derive_ffi_traits!(blanket ForeignExecutor);
 //
 // Note that this means we don't get specialized return handling.  For example, if we could return
 // an `Option<Result<>>` we would always return that type directly and never throw.
-derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Option<T> where Option<T>: Lower<UT>);
-derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Option<T> where Option<T>: Lift<UT>);
-derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Option<T> where Option<T>: Lift<UT>);
+derive_ffi_traits!(impl<T> LowerReturn for Option<T> where Option<T>: Lower);
+derive_ffi_traits!(impl<T> LiftReturn for Option<T> where Option<T>: Lift);
+derive_ffi_traits!(impl<T> LiftRef for Option<T> where Option<T>: Lift);
 
-derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Vec<T> where Vec<T>: Lower<UT>);
-derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Vec<T> where Vec<T>: Lift<UT>);
-derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Vec<T> where Vec<T>: Lift<UT>);
+derive_ffi_traits!(impl<T> LowerReturn for Vec<T> where Vec<T>: Lower);
+derive_ffi_traits!(impl<T> LiftReturn for Vec<T> where Vec<T>: Lift);
+derive_ffi_traits!(impl<T> LiftRef for Vec<T> where Vec<T>: Lift);
 
-derive_ffi_traits!(impl<K, V, UT> LowerReturn<UT> for HashMap<K, V> where HashMap<K, V>: Lower<UT>);
-derive_ffi_traits!(impl<K, V, UT> LiftReturn<UT> for HashMap<K, V> where HashMap<K, V>: Lift<UT>);
-derive_ffi_traits!(impl<K, V, UT> LiftRef<UT> for HashMap<K, V> where HashMap<K, V>: Lift<UT>);
+derive_ffi_traits!(impl<K, V> LowerReturn for HashMap<K, V> where HashMap<K, V>: Lower);
+derive_ffi_traits!(impl<K, V> LiftReturn for HashMap<K, V> where HashMap<K, V>: Lift);
+derive_ffi_traits!(impl<K, V> LiftRef for HashMap<K, V> where HashMap<K, V>: Lift);
 
 // For Arc we derive all the traits, but have to write it all out because we need an unsized T bound
-derive_ffi_traits!(impl<T, UT> Lower<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
-derive_ffi_traits!(impl<T, UT> Lift<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
-derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Arc<T> where Arc<T>: Lower<UT>, T: ?Sized);
-derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Arc<T> where Arc<T>: Lift<UT>, T: ?Sized);
-derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Arc<T> where Arc<T>: Lift<UT>, T: ?Sized);
-
+derive_ffi_traits!(impl<T> Lower for Arc<T> where Arc<T>: FfiConverter, T: ?Sized);
+derive_ffi_traits!(impl<T> Lift for Arc<T> where Arc<T>: FfiConverter, T: ?Sized);
+derive_ffi_traits!(impl<T> LowerReturn for Arc<T> where Arc<T>: Lower, T: ?Sized);
+derive_ffi_traits!(impl<T> LiftReturn for Arc<T> where Arc<T>: Lift, T: ?Sized);
+derive_ffi_traits!(impl<T> LiftRef for Arc<T> where Arc<T>: Lift, T: ?Sized);
 // Implement LowerReturn/LiftReturn for the unit type (void returns)
 
-unsafe impl<UT> LowerReturn<UT> for () {
+unsafe impl LowerReturn for () {
     type ReturnType = ();
 
     fn lower_return(_: ()) -> Result<Self::ReturnType, RustBuffer> {
@@ -497,7 +492,7 @@ unsafe impl<UT> LowerReturn<UT> for () {
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_UNIT);
 }
 
-unsafe impl<UT> LiftReturn<UT> for () {
+unsafe impl LiftReturn for () {
     fn lift_callback_return(_buf: RustBuffer) -> Self {}
 
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_UNIT);
@@ -506,10 +501,10 @@ unsafe impl<UT> LiftReturn<UT> for () {
 // Implement LowerReturn/LiftReturn for `Result<R, E>`.  This is where we handle exceptions/Err
 // results.
 
-unsafe impl<UT, R, E> LowerReturn<UT> for Result<R, E>
+unsafe impl<R, E> LowerReturn for Result<R, E>
 where
-    R: LowerReturn<UT>,
-    E: Lower<UT> + Error + Send + Sync + 'static,
+    R: LowerReturn,
+    E: Lower + Error + Send + Sync + 'static,
 {
     type ReturnType = R::ReturnType;
 
@@ -532,10 +527,10 @@ where
         .concat(E::TYPE_ID_META);
 }
 
-unsafe impl<UT, R, E> LiftReturn<UT> for Result<R, E>
+unsafe impl<R, E> LiftReturn for Result<R, E>
 where
-    R: LiftReturn<UT>,
-    E: Lift<UT> + ConvertError<UT>,
+    R: LiftReturn,
+    E: Lift + ConvertError,
 {
     fn lift_callback_return(buf: RustBuffer) -> Self {
         Ok(R::lift_callback_return(buf))

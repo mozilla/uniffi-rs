@@ -108,7 +108,7 @@ fn enum_or_error_ffi_converter_impl(
     quote! {
         #[automatically_derived]
         unsafe #impl_spec {
-            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!(crate::UniFfiTag);
+            ::uniffi::ffi_converter_rust_buffer_lift_and_lower!();
 
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 #write_impl
@@ -132,7 +132,7 @@ fn write_field(f: &Field) -> TokenStream {
     let ty = &f.ty;
 
     quote! {
-        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(#ident, buf);
+        <#ty as ::uniffi::Lower>::write(#ident, buf);
     }
 }
 
@@ -184,7 +184,7 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                         .concat_value(#fields_len)
                             #(
                                 .concat_str(#field_names)
-                                .concat(<#field_types as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
+                                .concat(<#field_types as ::uniffi::Lower>::TYPE_ID_META)
                                 // field defaults not yet supported for enums
                                 .concat_bool(false)
                             )*

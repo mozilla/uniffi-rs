@@ -127,11 +127,11 @@ impl ScaffoldingBits {
         let ident = &sig.ident;
         let lift_impl = if is_trait {
             quote! {
-                <::std::sync::Arc<dyn #self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
+                <::std::sync::Arc<dyn #self_ident> as ::uniffi::Lift>
             }
         } else {
             quote! {
-                <::std::sync::Arc<#self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
+                <::std::sync::Arc<#self_ident> as ::uniffi::Lift>
             }
         };
         let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #lift_impl::FfiType })
@@ -271,7 +271,6 @@ pub(super) fn gen_ffi_function(
                     Ok(uniffi_args) => {
                         ::uniffi::rust_future_new(
                             async move { #future_expr.await },
-                            crate::UniFfiTag
                         )
                     },
                     Err((arg_name, anyhow_error)) => {
@@ -279,7 +278,6 @@ pub(super) fn gen_ffi_function(
                             async move {
                                 #return_impl::handle_failed_lift(arg_name, anyhow_error)
                             },
-                            crate::UniFfiTag,
                         )
                     },
                 }

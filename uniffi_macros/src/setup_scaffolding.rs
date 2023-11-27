@@ -27,14 +27,10 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     Ok(quote! {
         // Unit struct to parameterize the FfiConverter trait.
         //
-        // We use FfiConverter<UniFfiTag> to handle lowering/lifting/serializing types for this crate.  See
+        // We use FfiConverter to handle lowering/lifting/serializing types for this crate.  See
         // https://mozilla.github.io/uniffi-rs/internals/lifting_and_lowering.html#code-generation-and-the-fficonverter-trait
         // for details.
         //
-        // This is pub, since we need to access it to support external types
-        #[doc(hidden)]
-        pub struct UniFfiTag;
-
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]

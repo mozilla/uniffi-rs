@@ -199,21 +199,8 @@ pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
 // In UDL mode, we don't export the static metadata symbols or generate the checksum
 // functions.  This could be changed, but there doesn't seem to be much benefit at this point.
 //
-// ## The FfiConverter<UT> parameter
-//
-// In UDL-mode, we only implement `FfiConverter` for the local tag (`FfiConverter<crate::UniFfiTag>`)
-//
-// The reason for this split is remote types, i.e. types defined in remote crates that we
-// don't control and therefore can't define a blanket impl on because of the orphan rules.
-//
-// With UDL, we handle this by only implementing `FfiConverter<crate::UniFfiTag>` for the
-// type.  This gets around the orphan rules since a local type is in the trait, but requires
-// a `uniffi::ffi_converter_forward!` call if the type is used in a second local crate (an
-// External typedef).  This is natural for UDL-based generation, since you always need to
-// define the external type in the UDL file.
-//
-// With proc-macros this system isn't so natural.  Instead, we create a blanket implementation
-// for all UT and support for remote types is still TODO.
+// ## Blanket implementation
+// TODO
 
 #[doc(hidden)]
 #[proc_macro_attribute]
@@ -336,10 +323,8 @@ fn use_udl_simple_type(tokens: TokenStream) -> TokenStream {
         type_ident,
         ..
     } = parse_macro_input!(tokens);
-    quote! {
-        ::uniffi::ffi_converter_forward!(#type_ident, #crate_ident::UniFfiTag, crate::UniFfiTag);
-    }
-    .into()
+    // XXX
+    quote! {}.into()
 }
 
 #[proc_macro]
@@ -349,9 +334,7 @@ pub fn use_udl_object(tokens: TokenStream) -> TokenStream {
         type_ident,
         ..
     } = parse_macro_input!(tokens);
-    quote! {
-        ::uniffi::ffi_converter_arc_forward!(#type_ident, #crate_ident::UniFfiTag, crate::UniFfiTag);
-    }.into()
+    quote! {}.into()
 }
 
 /// A helper macro to generate and include component scaffolding.

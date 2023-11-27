@@ -11,8 +11,6 @@ mod tests {
     use uniffi::{FfiConverter, ForeignCallback, RustBuffer, RustCallStatus, RustCallStatusCode};
     use uniffi_bindgen::ComponentInterface;
 
-    struct UniFfiTag;
-
     // Load the dynamic library that was built for this crate.  The external functions from
     // `uniffi_callbacks' and `uniffi_coverall` should be present.
     pub fn load_library() -> Library {
@@ -170,7 +168,7 @@ mod tests {
 
         let obj_id = unsafe {
             coveralls_new(
-                <String as FfiConverter<UniFfiTag>>::lower("TestName".into()),
+                <String as FfiConverter>::lower("TestName".into()),
                 &mut call_status,
             )
         };
@@ -179,7 +177,7 @@ mod tests {
         let name_buf = unsafe { coveralls_get_name(obj_id, &mut call_status) };
         assert_eq!(call_status.code, RustCallStatusCode::Success);
         assert_eq!(
-            <String as FfiConverter<UniFfiTag>>::try_lift(name_buf).unwrap(),
+            <String as FfiConverter>::try_lift(name_buf).unwrap(),
             "TestName"
         );
 

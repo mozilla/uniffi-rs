@@ -108,14 +108,14 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::deps::bytes::BufMut::put_u64(
                     buf,
-                    <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64,
+                    <Self as ::uniffi::FfiConverterArc>::lower(obj) as u64,
                 );
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(
+                <Self as ::uniffi::FfiConverterArc>::try_lift(
                     ::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 

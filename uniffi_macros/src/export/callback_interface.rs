@@ -56,7 +56,7 @@ pub(super) fn trait_impl(
 
         impl ::std::ops::Drop for #trait_impl_ident {
             fn drop(&mut self) {
-                #internals_ident.invoke_callback::<(), crate::UniFfiTag>(
+                #internals_ident.invoke_callback::<()>(
                     self.handle, uniffi::IDX_CALLBACK_FREE, Default::default()
                 )
             }
@@ -115,7 +115,7 @@ pub fn ffi_converter_callback_interface_impl(
             fn try_read(buf: &mut &[u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 use uniffi::deps::bytes::Buf;
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(buf.get_u64())
+                <Self as ::uniffi::Lift>::try_lift(buf.get_u64())
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
@@ -173,7 +173,7 @@ fn gen_method_impl(sig: &FnSignature, internals_ident: &Ident) -> syn::Result<To
             #(#write_exprs;)*
             let uniffi_args_rbuf = uniffi::RustBuffer::from_vec(#buf_ident);
 
-            #internals_ident.invoke_callback::<#return_ty, crate::UniFfiTag>(self.handle, #index, uniffi_args_rbuf)
+            #internals_ident.invoke_callback::<#return_ty>(self.handle, #index, uniffi_args_rbuf)
         }
     })
 }

@@ -89,12 +89,11 @@ use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler};
 use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
 
 /// Wraps the actual future we're polling
-struct WrappedFuture<F, T, UT>
+struct WrappedFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
     // Note: this could be a single enum, but that would make it easy to mess up the future pinning
     // guarantee.   For example you might want to call `std::mem::take()` to try to get the result,
@@ -103,12 +102,11 @@ where
     result: Option<Result<T::ReturnType, RustCallStatus>>,
 }
 
-impl<F, T, UT> WrappedFuture<F, T, UT>
+impl<F, T> WrappedFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
     fn new(future: F) -> Self {
         Self {
@@ -182,40 +180,38 @@ where
 //
 // Rust will not mark it Send by default when T::ReturnType is a raw pointer.  This is promising
 // that we will treat the raw pointer properly, for example by not returning it twice.
-unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
+unsafe impl<F, T> Send for WrappedFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
 }
 
 /// Future that the foreign code is awaiting
-pub(super) struct RustFuture<F, T, UT>
+pub(super) struct RustFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
-    future: Mutex<WrappedFuture<F, T, UT>>,
+    future: Mutex<WrappedFuture<F, T>>,
     continuation_data: Mutex<Scheduler>,
     // UT is used as the generic parameter for [LowerReturn].
     // Let's model this with PhantomData as a function that inputs a UT value.
-    _phantom: PhantomData<fn(UT) -> ()>,
+    // ????
+    _phantom: PhantomData<fn() -> ()>,
 }
 
-impl<F, T, UT> RustFuture<F, T, UT>
+impl<F, T> RustFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
-    pub(super) fn new(future: F, _tag: UT) -> Arc<Self> {
+    pub(super) fn new(future: F) -> Arc<Self> {
         Arc::new(Self {
             future: Mutex::new(WrappedFuture::new(future)),
             continuation_data: Mutex::new(Scheduler::new()),
@@ -260,12 +256,11 @@ where
     }
 }
 
-impl<F, T, UT> Wake for RustFuture<F, T, UT>
+impl<F, T> Wake for RustFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
     fn wake(self: Arc<Self>) {
         self.deref().wake()
@@ -295,12 +290,11 @@ pub trait RustFutureFfi<ReturnType> {
     fn ffi_free(self: Arc<Self>);
 }
 
-impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
+impl<F, T> RustFutureFfi<T::ReturnType> for RustFuture<F, T>
 where
     // See rust_future_new for an explanation of these trait bounds
     F: Future<Output = T> + Send + 'static,
-    T: LowerReturn<UT> + Send + 'static,
-    UT: Send + 'static,
+    T: LowerReturn + Send + 'static,
 {
     fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
         self.poll(callback, data)

@@ -60,7 +60,7 @@ fn channel() -> (Sender, Arc<dyn RustFutureFfi<RustBuffer>>) {
         result: None,
         waker: None,
     }));
-    let rust_future = RustFuture::new(Receiver(channel.clone()), crate::UniFfiTag);
+    let rust_future = RustFuture::new(Receiver(channel.clone()));
     (Sender(channel), rust_future)
 }
 
@@ -106,10 +106,7 @@ fn test_success() {
     // Complete the future
     let (return_buf, call_status) = complete(rust_future);
     assert_eq!(call_status.code, RustCallStatusCode::Success);
-    assert_eq!(
-        <String as Lift<crate::UniFfiTag>>::try_lift(return_buf).unwrap(),
-        "All done"
-    );
+    assert_eq!(<String as Lift>::try_lift(return_buf).unwrap(), "All done");
 }
 
 #[test]
@@ -128,10 +125,8 @@ fn test_error() {
     assert_eq!(call_status.code, RustCallStatusCode::Error);
     unsafe {
         assert_eq!(
-            <TestError as Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(
-                call_status.error_buf.assume_init()
-            )
-            .unwrap(),
+            <TestError as Lift>::try_lift_from_rust_buffer(call_status.error_buf.assume_init())
+                .unwrap(),
             TestError::from("Something went wrong"),
         )
     }
@@ -207,7 +202,7 @@ fn test_wake_during_poll() {
             Poll::Ready("All done".to_owned())
         }
     });
-    let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> = RustFuture::new(future, crate::UniFfiTag);
+    let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> = RustFuture::new(future);
     let continuation_result = poll(&rust_future);
     // The continuation function should called immediately
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
@@ -216,8 +211,5 @@ fn test_wake_during_poll() {
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
     let (return_buf, call_status) = complete(rust_future);
     assert_eq!(call_status.code, RustCallStatusCode::Success);
-    assert_eq!(
-        <String as Lift<crate::UniFfiTag>>::try_lift(return_buf).unwrap(),
-        "All done"
-    );
+    assert_eq!(<String as Lift>::try_lift(return_buf).unwrap(), "All done");
 }
