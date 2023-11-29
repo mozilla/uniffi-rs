@@ -1,0 +1,21 @@
+[package]
+name = "uniffi-example-arithmetic-procmacro"
+edition = "2021"
+version = "0.22.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "arithmeticpm"
+
+[dependencies]
+uniffi = {path = "../../uniffi", version = "0.25" }
+thiserror = "1.0"
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests"] }
