@@ -166,7 +166,7 @@ pub(crate) fn record_meta_static_var(
                 .concat_str(#name)
                 .concat(<#ty as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
                 #default
-                .concat_str(#docstring)
+                .concat_long_str(#docstring)
             })
         })
         .collect::<syn::Result<_>>()?;
@@ -180,7 +180,7 @@ pub(crate) fn record_meta_static_var(
                 .concat_str(#name)
                 .concat_value(#fields_len)
                 #concat_fields
-                .concat_str(#docstring)
+                .concat_long_str(#docstring)
         },
         None,
     ))

@@ -192,7 +192,7 @@ pub(super) fn metadata_items(
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CALLBACK_INTERFACE)
                 .concat_str(#module_path)
                 .concat_str(#trait_name)
-                .concat_str(#docstring)
+                .concat_long_str(#docstring)
         },
         None,
     );

@@ -212,7 +212,7 @@ pub(crate) fn error_meta_static_var(
     } else {
         metadata_expr.extend(variant_metadata(enum_)?);
     }
-    metadata_expr.extend(quote! { .concat_str(#docstring) });
+    metadata_expr.extend(quote! { .concat_long_str(#docstring) });
     Ok(create_metadata_items("error", &name, metadata_expr, None))
 }
 
@@ -225,7 +225,7 @@ pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStr
             let docstring = extract_docstring(&v.attrs)?;
             Ok(quote! {
                 .concat_str(#name)
-                .concat_str(#docstring)
+                .concat_long_str(#docstring)
             })
         }))
         .collect()

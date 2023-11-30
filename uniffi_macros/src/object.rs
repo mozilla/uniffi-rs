@@ -146,7 +146,7 @@ pub(crate) fn interface_meta_static_var(
                 .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_bool(#is_trait)
-                .concat_str(#docstring)
+                .concat_long_str(#docstring)
         },
         None,
     ))
