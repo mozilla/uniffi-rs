@@ -168,7 +168,8 @@ impl MetadataBuffer {
         self.concat_value(value as u8)
     }
 
-    // Concatenate a string to this buffer.
+    // Concatenate a string to this buffer. The maximum string length is 255 bytes. For longer strings,
+    // use `concat_long_str()`.
     //
     // Strings are encoded as a `u8` length, followed by the utf8 data.
     //
@@ -179,6 +180,28 @@ impl MetadataBuffer {
         assert!(self.size + string.len() < BUF_SIZE);
         self.bytes[self.size] = string.len() as u8;
         self.size += 1;
+        let bytes = string.as_bytes();
+        let mut i = 0;
+        while i < bytes.len() {
+            self.bytes[self.size] = bytes[i];
+            self.size += 1;
+            i += 1;
+        }
+        self
+    }
+
+    // Concatenate a longer string to this buffer.
+    //
+    // Strings are encoded as a `u16` length, followed by the utf8 data.
+    //
+    // This consumes self, which is convenient for the proc-macro code and also allows us to avoid
+    // allocated an extra buffer.
+    pub const fn concat_long_str(mut self, string: &str) -> Self {
+        assert!(self.size + string.len() + 1 < BUF_SIZE);
+        let [lo, hi] = (string.len() as u16).to_le_bytes();
+        self.bytes[self.size] = lo;
+        self.bytes[self.size + 1] = hi;
+        self.size += 2;
         let bytes = string.as_bytes();
         let mut i = 0;
         while i < bytes.len() {

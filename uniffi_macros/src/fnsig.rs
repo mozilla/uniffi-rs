@@ -224,7 +224,7 @@ impl FnSignature {
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
                     .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                    .concat_str(#docstring)
+                    .concat_long_str(#docstring)
             }),
 
             FnKind::Method { self_ident } => {
@@ -238,7 +238,7 @@ impl FnSignature {
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                        .concat_str(#docstring)
+                        .concat_long_str(#docstring)
                 })
             }
 
@@ -254,7 +254,7 @@ impl FnSignature {
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                        .concat_str(#docstring)
+                        .concat_long_str(#docstring)
                 })
             }
 
@@ -268,7 +268,7 @@ impl FnSignature {
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
-                        .concat_str(#docstring)
+                        .concat_long_str(#docstring)
                 })
             }
         }

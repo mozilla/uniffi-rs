@@ -94,4 +94,11 @@ pub trait CallbackTest {
     fn test(&self);
 }
 
+/// This is a very long multi line test docstring that exceeds 255 characters.
+/// This is a very long multi line test docstring that exceeds 255 characters.
+/// This is a very long multi line test docstring that exceeds 255 characters.
+/// This is a very long multi line test docstring that exceeds 255 characters.
+#[uniffi::export]
+pub fn test_long_docstring() {}
+
 uniffi::include_scaffolding!("docstring-proc-macro");
