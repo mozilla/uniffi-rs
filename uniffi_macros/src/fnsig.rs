@@ -23,30 +23,40 @@ pub(crate) struct FnSignature {
     // Only use this in UDL mode.
     // In general, it's not reliable because it fails for type aliases.
     pub looks_like_result: bool,
+    pub docstring: String,
 }
 
 impl FnSignature {
-    pub(crate) fn new_function(sig: syn::Signature) -> syn::Result<Self> {
-        Self::new(FnKind::Function, sig)
+    pub(crate) fn new_function(sig: syn::Signature, docstring: String) -> syn::Result<Self> {
+        Self::new(FnKind::Function, sig, docstring)
     }
 
-    pub(crate) fn new_method(self_ident: Ident, sig: syn::Signature) -> syn::Result<Self> {
-        Self::new(FnKind::Method { self_ident }, sig)
+    pub(crate) fn new_method(
+        self_ident: Ident,
+        sig: syn::Signature,
+        docstring: String,
+    ) -> syn::Result<Self> {
+        Self::new(FnKind::Method { self_ident }, sig, docstring)
     }
 
-    pub(crate) fn new_constructor(self_ident: Ident, sig: syn::Signature) -> syn::Result<Self> {
-        Self::new(FnKind::Constructor { self_ident }, sig)
+    pub(crate) fn new_constructor(
+        self_ident: Ident,
+        sig: syn::Signature,
+        docstring: String,
+    ) -> syn::Result<Self> {
+        Self::new(FnKind::Constructor { self_ident }, sig, docstring)
     }
 
     pub(crate) fn new_trait_method(
         self_ident: Ident,
         sig: syn::Signature,
         index: u32,
+        docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::TraitMethod { self_ident, index }, sig)
+        Self::new(FnKind::TraitMethod { self_ident, index }, sig, docstring)
     }
 
-    pub(crate) fn new(kind: FnKind, sig: syn::Signature) -> syn::Result<Self> {
+    pub(crate) fn new(kind: FnKind, sig: syn::Signature, docstring: String) -> syn::Result<Self> {
         let span = sig.span();
         let ident = sig.ident;
         let looks_like_result = looks_like_result(&sig.output);
@@ -97,6 +107,7 @@ impl FnSignature {
             args,
             return_ty: output,
             looks_like_result,
+            docstring,
         })
     }
 
@@ -193,6 +204,7 @@ impl FnSignature {
             return_ty,
             is_async,
             mod_path,
+            docstring,
             ..
         } = &self;
         let args_len = try_metadata_value_from_usize(
@@ -212,6 +224,7 @@ impl FnSignature {
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
                     .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                    .concat_str(#docstring)
             }),
 
             FnKind::Method { self_ident } => {
@@ -225,6 +238,7 @@ impl FnSignature {
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat_str(#docstring)
                 })
             }
 
@@ -240,6 +254,7 @@ impl FnSignature {
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat_str(#docstring)
                 })
             }
 
@@ -253,6 +268,7 @@ impl FnSignature {
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat_str(#docstring)
                 })
             }
         }

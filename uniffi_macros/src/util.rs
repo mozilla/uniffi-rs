@@ -8,7 +8,7 @@ use std::path::{Path as StdPath, PathBuf};
 use syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
-    Attribute, Token,
+    Attribute, Expr, Lit, Token,
 };
 
 pub fn manifest_path() -> Result<PathBuf, String> {
@@ -275,4 +275,21 @@ impl Parse for ExternalTypeItem {
             type_ident: input.parse()?,
         })
     }
+}
+
+pub(crate) fn extract_docstring(attrs: &[Attribute]) -> syn::Result<String> {
+    return attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident("doc"))
+        .map(|attr| {
+            let name_value = attr.meta.require_name_value()?;
+            if let Expr::Lit(expr) = &name_value.value {
+                if let Lit::Str(lit_str) = &expr.lit {
+                    return Ok(lit_str.value());
+                }
+            }
+            Err(syn::Error::new_spanned(attr, "Cannot parse doc attribute"))
+        })
+        .collect::<syn::Result<Vec<_>>>()
+        .map(|lines| lines.join("\n"));
 }

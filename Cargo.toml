@@ -34,6 +34,7 @@ members = [
   "fixtures/ext-types/sub-lib",
 
   "fixtures/docstring",
+  "fixtures/docstring-proc-macro",
   "fixtures/foreign-executor",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",

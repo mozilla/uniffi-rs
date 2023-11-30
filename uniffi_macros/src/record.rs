@@ -6,9 +6,9 @@ use syn::{
 };
 
 use crate::util::{
-    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, ident_to_string, kw,
-    mod_path, tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
-    UniffiAttributeArgs,
+    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
+    ident_to_string, kw, mod_path, tagged_impl_header, try_metadata_value_from_usize,
+    try_read_field, AttributeSliceExt, UniffiAttributeArgs,
 };
 
 pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
@@ -23,10 +23,12 @@ pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
     };
 
     let ident = &input.ident;
+    let docstring = extract_docstring(&input.attrs)?;
     let ffi_converter = record_ffi_converter_impl(ident, &record, udl_mode)
         .unwrap_or_else(syn::Error::into_compile_error);
     let meta_static_var = (!udl_mode).then(|| {
-        record_meta_static_var(ident, &record).unwrap_or_else(syn::Error::into_compile_error)
+        record_meta_static_var(ident, docstring, &record)
+            .unwrap_or_else(syn::Error::into_compile_error)
     });
 
     Ok(quote! {
@@ -128,6 +130,7 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
 
 pub(crate) fn record_meta_static_var(
     ident: &Ident,
+    docstring: String,
     record: &DataStruct,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
@@ -144,6 +147,7 @@ pub(crate) fn record_meta_static_var(
                 .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
 
             let name = ident_to_string(f.ident.as_ref().unwrap());
+            let docstring = extract_docstring(&f.attrs)?;
             let ty = &f.ty;
             let default = match attrs.default {
                 Some(default) => {
@@ -162,6 +166,7 @@ pub(crate) fn record_meta_static_var(
                 .concat_str(#name)
                 .concat(<#ty as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
                 #default
+                .concat_str(#docstring)
             })
         })
         .collect::<syn::Result<_>>()?;
@@ -175,6 +180,7 @@ pub(crate) fn record_meta_static_var(
                 .concat_str(#name)
                 .concat_value(#fields_len)
                 #concat_fields
+                .concat_str(#docstring)
         },
         None,
     ))

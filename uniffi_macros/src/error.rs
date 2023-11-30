@@ -8,9 +8,9 @@ use syn::{
 use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw,
-        mod_path, parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
-        AttributeSliceExt, UniffiAttributeArgs,
+        chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, extract_docstring,
+        ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
+        try_metadata_value_from_usize, AttributeSliceExt, UniffiAttributeArgs,
     },
 };
 
@@ -30,13 +30,14 @@ pub fn expand_error(
         }
     };
     let ident = &input.ident;
+    let docstring = extract_docstring(&input.attrs)?;
     let mut attr: ErrorAttr = input.attrs.parse_uniffi_attr_args()?;
     if let Some(attr_from_udl_mode) = attr_from_udl_mode {
         attr = attr.merge(attr_from_udl_mode)?;
     }
     let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr, udl_mode);
     let meta_static_var = (!udl_mode).then(|| {
-        error_meta_static_var(ident, &enum_, attr.flat.is_some())
+        error_meta_static_var(ident, docstring, &enum_, attr.flat.is_some())
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -192,6 +193,7 @@ fn flat_error_ffi_converter_impl(
 
 pub(crate) fn error_meta_static_var(
     ident: &Ident,
+    docstring: String,
     enum_: &DataEnum,
     flat: bool,
 ) -> syn::Result<TokenStream> {
@@ -210,18 +212,23 @@ pub(crate) fn error_meta_static_var(
     } else {
         metadata_expr.extend(variant_metadata(enum_)?);
     }
+    metadata_expr.extend(quote! { .concat_str(#docstring) });
     Ok(create_metadata_items("error", &name, metadata_expr, None))
 }
 
 pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
     let variants_len =
         try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
-    Ok(std::iter::once(quote! { .concat_value(#variants_len) })
+    std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             let name = ident_to_string(&v.ident);
-            quote! { .concat_str(#name) }
+            let docstring = extract_docstring(&v.attrs)?;
+            Ok(quote! {
+                .concat_str(#name)
+                .concat_str(#docstring)
+            })
         }))
-        .collect())
+        .collect()
 }
 
 #[derive(Default)]

@@ -4,7 +4,9 @@
 public enum {{ type_name }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
-    case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}({% call swift::field_list_decl(variant) %}){% endif -%}
+    case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
+        {%- call swift::field_list_decl(variant) %}
+    ){% endif -%}
     {% endfor %}
 }
 

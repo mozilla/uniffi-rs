@@ -2,6 +2,7 @@ target
 .*.swp
 *.jar
 .vscode
+.idea
 xcuserdata
 docs/manual/src/internals/api
 examples/app/ios/Generated

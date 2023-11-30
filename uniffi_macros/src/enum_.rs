@@ -3,8 +3,8 @@ use quote::quote;
 use syn::{Data, DataEnum, DeriveInput, Field, Index};
 
 use crate::util::{
-    create_metadata_items, derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field,
+    create_metadata_items, derive_all_ffi_traits, extract_docstring, ident_to_string, mod_path,
+    tagged_impl_header, try_metadata_value_from_usize, try_read_field,
 };
 
 pub fn expand_enum(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
@@ -18,10 +18,12 @@ pub fn expand_enum(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStrea
         }
     };
     let ident = &input.ident;
+    let docstring = extract_docstring(&input.attrs)?;
     let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, udl_mode);
 
     let meta_static_var = (!udl_mode).then(|| {
-        enum_meta_static_var(ident, &enum_).unwrap_or_else(syn::Error::into_compile_error)
+        enum_meta_static_var(ident, docstring, &enum_)
+            .unwrap_or_else(syn::Error::into_compile_error)
     });
 
     Ok(quote! {
@@ -136,7 +138,11 @@ fn write_field(f: &Field) -> TokenStream {
     }
 }
 
-pub(crate) fn enum_meta_static_var(ident: &Ident, enum_: &DataEnum) -> syn::Result<TokenStream> {
+pub(crate) fn enum_meta_static_var(
+    ident: &Ident,
+    docstring: String,
+    enum_: &DataEnum,
+) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
     let module_path = mod_path()?;
 
@@ -146,6 +152,7 @@ pub(crate) fn enum_meta_static_var(ident: &Ident, enum_: &DataEnum) -> syn::Resu
             .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)?);
+    metadata_expr.extend(quote! { .concat_str(#docstring) });
     Ok(create_metadata_items("enum", &name, metadata_expr, None))
 }
 
@@ -178,7 +185,13 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                     .collect::<syn::Result<Vec<_>>>()?;
 
                     let name = ident_to_string(&v.ident);
+                    let docstring = extract_docstring(&v.attrs)?;
                     let field_types = v.fields.iter().map(|f| &f.ty);
+                    let field_docstrings = v.fields
+                        .iter()
+                        .map(|f| extract_docstring(&f.attrs))
+                        .collect::<syn::Result<Vec<_>>>()?;
+
                     Ok(quote! {
                         .concat_str(#name)
                         .concat_value(#fields_len)
@@ -187,7 +200,9 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                                 .concat(<#field_types as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
                                 // field defaults not yet supported for enums
                                 .concat_bool(false)
+                                .concat_str(#field_docstrings)
                             )*
+                        .concat_str(#docstring)
                     })
                 })
         )

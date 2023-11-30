@@ -41,6 +41,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     {% else -%}
     data class {{ variant|type_name(ci) }}(
         {% for field in variant.fields() -%}
+        {%- call kt::docstring(field, 8) %}
         val {{ field.name()|var_name }}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {

@@ -22,6 +22,7 @@ sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Di
     {%- let variant_name = variant|error_variant_name %}
     class {{ variant_name }}(
         {% for field in variant.fields() -%}
+        {%- call kt::docstring(field, 8) %}
         val {{ field.name()|var_name }}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
