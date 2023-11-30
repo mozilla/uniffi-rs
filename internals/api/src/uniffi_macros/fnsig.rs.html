@@ -464,6 +464,22 @@
 <a href="#464" id="464">464</a>
 <a href="#465" id="465">465</a>
 <a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -489,30 +505,40 @@
     // Only use this in UDL mode.
     // In general, it&#39;s not reliable because it fails for type aliases.
     </span><span class="kw">pub </span>looks_like_result: bool,
+    <span class="kw">pub </span>docstring: String,
 }
 
 <span class="kw">impl </span>FnSignature {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_function(sig: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Function, sig)
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_function(sig: syn::Signature, docstring: String) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="self">Self</span>::new(FnKind::Function, sig, docstring)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_method(self_ident: Ident, sig: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Method { self_ident }, sig)
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_method(
+        self_ident: Ident,
+        sig: syn::Signature,
+        docstring: String,
+    ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="self">Self</span>::new(FnKind::Method { self_ident }, sig, docstring)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_constructor(self_ident: Ident, sig: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Constructor { self_ident }, sig)
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_constructor(
+        self_ident: Ident,
+        sig: syn::Signature,
+        docstring: String,
+    ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="self">Self</span>::new(FnKind::Constructor { self_ident }, sig, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_trait_method(
         self_ident: Ident,
         sig: syn::Signature,
         index: u32,
+        docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::TraitMethod { self_ident, index }, sig)
+        <span class="self">Self</span>::new(FnKind::TraitMethod { self_ident, index }, sig, docstring)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(kind: FnKind, sig: syn::Signature) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(kind: FnKind, sig: syn::Signature, docstring: String) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>span = sig.span();
         <span class="kw">let </span>ident = sig.ident;
         <span class="kw">let </span>looks_like_result = looks_like_result(<span class="kw-2">&amp;</span>sig.output);
@@ -563,6 +589,7 @@
             args,
             return_ty: output,
             looks_like_result,
+            docstring,
         })
     }
 
@@ -659,6 +686,7 @@
             return_ty,
             is_async,
             mod_path,
+            docstring,
             ..
         } = <span class="kw-2">&amp;</span><span class="self">self</span>;
         <span class="kw">let </span>args_len = try_metadata_value_from_usize(
@@ -678,6 +706,7 @@
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
                     .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                    .concat_str(#docstring)
             }),
 
             FnKind::Method { self_ident } =&gt; {
@@ -691,6 +720,7 @@
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        .concat_str(#docstring)
                 })
             }
 
@@ -706,6 +736,7 @@
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        .concat_str(#docstring)
                 })
             }
 
@@ -719,6 +750,7 @@
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        .concat_str(#docstring)
                 })
             }
         }

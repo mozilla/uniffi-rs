@@ -265,6 +265,13 @@
 <a href="#265" id="265">265</a>
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -275,9 +282,9 @@
 <span class="kw">use crate</span>::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata},
     util::{
-        chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, ident_to_string, kw,
-        mod_path, parse_comma_separated, tagged_impl_header, try_metadata_value_from_usize,
-        AttributeSliceExt, UniffiAttributeArgs,
+        chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, extract_docstring,
+        ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
+        try_metadata_value_from_usize, AttributeSliceExt, UniffiAttributeArgs,
     },
 };
 
@@ -297,13 +304,14 @@
         }
     };
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
+    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>attr: ErrorAttr = input.attrs.parse_uniffi_attr_args()<span class="question-mark">?</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_from_udl_mode) = attr_from_udl_mode {
         attr = attr.merge(attr_from_udl_mode)<span class="question-mark">?</span>;
     }
     <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr, udl_mode);
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        error_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())
+        error_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -459,6 +467,7 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>error_meta_static_var(
     ident: <span class="kw-2">&amp;</span>Ident,
+    docstring: String,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     flat: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -477,18 +486,23 @@
     } <span class="kw">else </span>{
         metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     }
+    metadata_expr.extend(<span class="macro">quote! </span>{ .concat_str(#docstring) });
     <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;error&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
 }
 
 <span class="kw">pub fn </span>flat_error_variant_metadata(enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
     <span class="kw">let </span>variants_len =
         try_metadata_value_from_usize(enum_.variants.len(), <span class="string">&quot;UniFFI limits enums to 256 variants&quot;</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(std::iter::once(<span class="macro">quote! </span>{ .concat_value(#variants_len) })
+    std::iter::once(<span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{ .concat_value(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
-            <span class="macro">quote! </span>{ .concat_str(#name) }
+            <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>v.attrs)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                .concat_str(#name)
+                .concat_str(#docstring)
+            })
         }))
-        .collect())
+        .collect()
 }
 
 <span class="attr">#[derive(Default)]

@@ -152,6 +152,11 @@
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -222,18 +227,23 @@
             items,
             self_ident,
             callback_interface: <span class="bool-val">false</span>,
-        } =&gt; trait_interface::gen_trait_scaffolding(<span class="kw-2">&amp;</span>mod_path, args, self_ident, items, udl_mode),
+            docstring,
+        } =&gt; trait_interface::gen_trait_scaffolding(
+            <span class="kw-2">&amp;</span>mod_path, args, self_ident, items, udl_mode, docstring,
+        ),
         ExportItem::Trait {
             items,
             self_ident,
             callback_interface: <span class="bool-val">true</span>,
+            docstring,
         } =&gt; {
             <span class="kw">let </span>trait_name = ident_to_string(<span class="kw-2">&amp;</span>self_ident);
             <span class="kw">let </span>trait_impl_ident = callback_interface::trait_impl_ident(<span class="kw-2">&amp;</span>trait_name);
             <span class="kw">let </span>trait_impl = callback_interface::trait_impl(<span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items)
                 .unwrap_or_else(|e| e.into_compile_error());
-            <span class="kw">let </span>metadata_items = callback_interface::metadata_items(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>mod_path)
-                .unwrap_or_else(|e| <span class="macro">vec!</span>[e.into_compile_error()]);
+            <span class="kw">let </span>metadata_items =
+                callback_interface::metadata_items(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>mod_path, docstring)
+                    .unwrap_or_else(|e| <span class="macro">vec!</span>[e.into_compile_error()]);
             <span class="kw">let </span>ffi_converter_tokens =
                 ffi_converter_callback_interface_impl(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>trait_impl_ident, udl_mode);
 

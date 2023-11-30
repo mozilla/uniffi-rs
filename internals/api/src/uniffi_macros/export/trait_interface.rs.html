@@ -130,6 +130,7 @@
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -153,6 +154,7 @@
     self_ident: Ident,
     items: Vec&lt;ImplItem&gt;,
     udl_mode: bool,
+    docstring: String,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(rt) = args.async_runtime {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(rt, <span class="string">&quot;not supported for traits&quot;</span>));
@@ -198,7 +200,7 @@
         .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, mod_path)
+        interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, mod_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     <span class="kw">let </span>ffi_converter_tokens = ffi_converter(mod_path, <span class="kw-2">&amp;</span>self_ident, udl_mode);

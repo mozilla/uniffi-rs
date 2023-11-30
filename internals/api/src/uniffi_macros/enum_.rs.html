@@ -193,13 +193,28 @@
 <a href="#193" id="193">193</a>
 <a href="#194" id="194">194</a>
 <a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{Data, DataEnum, DeriveInput, Field, Index};
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field,
+    create_metadata_items, derive_all_ffi_traits, extract_docstring, ident_to_string, mod_path,
+    tagged_impl_header, try_metadata_value_from_usize, try_read_field,
 };
 
 <span class="kw">pub fn </span>expand_enum(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -213,10 +228,12 @@
         }
     };
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
+    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, udl_mode);
 
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        enum_meta_static_var(ident, <span class="kw-2">&amp;</span>enum_).unwrap_or_else(syn::Error::into_compile_error)
+        enum_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>enum_)
+            .unwrap_or_else(syn::Error::into_compile_error)
     });
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
@@ -331,7 +348,11 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(ident: <span class="kw-2">&amp;</span>Ident, enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(
+    ident: <span class="kw-2">&amp;</span>Ident,
+    docstring: String,
+    enum_: <span class="kw-2">&amp;</span>DataEnum,
+) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
 
@@ -341,6 +362,7 @@
             .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
+    metadata_expr.extend(<span class="macro">quote! </span>{ .concat_str(#docstring) });
     <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;enum&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
 }
 
@@ -373,7 +395,13 @@
                     .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
 
                     <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
+                    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>v.attrs)<span class="question-mark">?</span>;
                     <span class="kw">let </span>field_types = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
+                    <span class="kw">let </span>field_docstrings = v.fields
+                        .iter()
+                        .map(|f| extract_docstring(<span class="kw-2">&amp;</span>f.attrs))
+                        .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+
                     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                         .concat_str(#name)
                         .concat_value(#fields_len)
@@ -382,7 +410,9 @@
                                 .concat(&lt;#field_types <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                                 <span class="comment">// field defaults not yet supported for enums
                                 </span>.concat_bool(<span class="bool-val">false</span>)
+                                .concat_str(#field_docstrings)
                             )*
+                        .concat_str(#docstring)
                     })
                 })
         )

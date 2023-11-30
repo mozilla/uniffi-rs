@@ -202,6 +202,8 @@
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
 <a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -386,6 +388,7 @@
     self_ident: <span class="kw-2">&amp;</span>Ident,
     items: <span class="kw-2">&amp;</span>[ImplItem],
     module_path: <span class="kw-2">&amp;</span>str,
+    docstring: String,
 ) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
     <span class="kw">let </span>trait_name = ident_to_string(self_ident);
     <span class="kw">let </span>callback_interface_items = create_metadata_items(
@@ -395,6 +398,7 @@
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CALLBACK_INTERFACE)
                 .concat_str(#module_path)
                 .concat_str(#trait_name)
+                .concat_str(#docstring)
         },
         <span class="prelude-val">None</span>,
     );

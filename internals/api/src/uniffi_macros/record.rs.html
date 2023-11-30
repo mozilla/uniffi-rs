@@ -222,6 +222,12 @@
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
 <a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{quote, ToTokens};
 <span class="kw">use </span>syn::{
@@ -230,9 +236,9 @@
 };
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, ident_to_string, kw,
-    mod_path, tagged_impl_header, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
-    UniffiAttributeArgs,
+    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
+    ident_to_string, kw, mod_path, tagged_impl_header, try_metadata_value_from_usize,
+    try_read_field, AttributeSliceExt, UniffiAttributeArgs,
 };
 
 <span class="kw">pub fn </span>expand_record(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -247,10 +253,12 @@
     };
 
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
+    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
     <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, udl_mode)
         .unwrap_or_else(syn::Error::into_compile_error);
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        record_meta_static_var(ident, <span class="kw-2">&amp;</span>record).unwrap_or_else(syn::Error::into_compile_error)
+        record_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>record)
+            .unwrap_or_else(syn::Error::into_compile_error)
     });
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
@@ -352,6 +360,7 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>record_meta_static_var(
     ident: <span class="kw-2">&amp;</span>Ident,
+    docstring: String,
     record: <span class="kw-2">&amp;</span>DataStruct,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
@@ -368,6 +377,7 @@
                 .parse_uniffi_attr_args::&lt;FieldAttributeArguments&gt;()<span class="question-mark">?</span>;
 
             <span class="kw">let </span>name = ident_to_string(f.ident.as_ref().unwrap());
+            <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>f.attrs)<span class="question-mark">?</span>;
             <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
             <span class="kw">let </span>default = <span class="kw">match </span>attrs.default {
                 <span class="prelude-val">Some</span>(default) =&gt; {
@@ -386,6 +396,7 @@
                 .concat_str(#name)
                 .concat(&lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                 #default
+                .concat_str(#docstring)
             })
         })
         .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
@@ -399,6 +410,7 @@
                 .concat_str(#name)
                 .concat_value(#fields_len)
                 #concat_fields
+                .concat_str(#docstring)
         },
         <span class="prelude-val">None</span>,
     ))

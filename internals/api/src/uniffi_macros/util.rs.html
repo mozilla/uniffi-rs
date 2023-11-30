@@ -276,6 +276,23 @@
 <a href="#276" id="276">276</a>
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -286,7 +303,7 @@
 <span class="kw">use </span>syn::{
     ext::IdentExt,
     parse::{Parse, ParseStream},
-    Attribute, Token,
+    Attribute, Expr, Lit, Token,
 };
 
 <span class="kw">pub fn </span>manifest_path() -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
@@ -553,5 +570,22 @@
             type_ident: input.parse()<span class="question-mark">?</span>,
         })
     }
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>extract_docstring(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;String&gt; {
+    <span class="kw">return </span>attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident(<span class="string">&quot;doc&quot;</span>))
+        .map(|attr| {
+            <span class="kw">let </span>name_value = attr.meta.require_name_value()<span class="question-mark">?</span>;
+            <span class="kw">if let </span>Expr::Lit(expr) = <span class="kw-2">&amp;</span>name_value.value {
+                <span class="kw">if let </span>Lit::Str(lit_str) = <span class="kw-2">&amp;</span>expr.lit {
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(lit_str.value());
+                }
+            }
+            <span class="prelude-val">Err</span>(syn::Error::new_spanned(attr, <span class="string">&quot;Cannot parse doc attribute&quot;</span>))
+        })
+        .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()
+        .map(|lines| lines.join(<span class="string">&quot;\n&quot;</span>));
 }
 </code></pre></div></section></main></body></html>

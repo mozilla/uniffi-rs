@@ -166,6 +166,10 @@
 <a href="#166" id="166">166</a>
 <a href="#167" id="167">167</a>
 <a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -176,6 +180,7 @@
 
 <span class="kw">use super</span>::{attributes::ExportAttributeArguments, gen_ffi_function};
 <span class="kw">use </span><span class="kw">crate</span>::fnsig::FnSignature;
+<span class="kw">use </span><span class="kw">crate</span>::util::extract_docstring;
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_uniffi_trait_export(
@@ -325,13 +330,16 @@
         <span class="macro">unreachable!</span>()
     };
 
+    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>item.attrs)<span class="question-mark">?</span>;
+
     <span class="kw">let </span>ffi_func = gen_ffi_function(
-        <span class="kw-2">&amp;</span>FnSignature::new_method(self_ident.clone(), item.sig.clone())<span class="question-mark">?</span>,
+        <span class="kw-2">&amp;</span>FnSignature::new_method(self_ident.clone(), item.sig.clone(), docstring.clone())<span class="question-mark">?</span>,
         <span class="kw-2">&amp;</span>ExportAttributeArguments::default(),
         udl_mode,
     )<span class="question-mark">?</span>;
     <span class="comment">// metadata for the method, which will be packed inside metadata for the trait.
-    </span><span class="kw">let </span>method_meta = FnSignature::new_method(self_ident.clone(), item.sig)<span class="question-mark">?</span>.metadata_expr()<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>method_meta =
+        FnSignature::new_method(self_ident.clone(), item.sig, docstring)<span class="question-mark">?</span>.metadata_expr()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>((ffi_func, method_meta))
 }
 </code></pre></div></section></main></body></html>
