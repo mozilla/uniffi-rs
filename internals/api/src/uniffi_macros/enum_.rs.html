@@ -362,7 +362,7 @@
             .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
-    metadata_expr.extend(<span class="macro">quote! </span>{ .concat_str(#docstring) });
+    metadata_expr.extend(<span class="macro">quote! </span>{ .concat_long_str(#docstring) });
     <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;enum&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
 }
 
@@ -410,9 +410,9 @@
                                 .concat(&lt;#field_types <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                                 <span class="comment">// field defaults not yet supported for enums
                                 </span>.concat_bool(<span class="bool-val">false</span>)
-                                .concat_str(#field_docstrings)
+                                .concat_long_str(#field_docstrings)
                             )*
-                        .concat_str(#docstring)
+                        .concat_long_str(#docstring)
                     })
                 })
         )
