@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Key points for these cmd-line args:
 #  * run a transient image that deletes itself on successful completion
