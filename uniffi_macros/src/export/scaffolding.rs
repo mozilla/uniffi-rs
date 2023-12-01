@@ -143,9 +143,9 @@ impl ScaffoldingBits {
             // pointer.
             quote! {
                 {
-                    let foreign_arc = ::std::boxed::Box::leak(unsafe { Box::from_raw(uniffi_self_lowered as *mut ::std::sync::Arc<dyn #self_ident>) });
+                    let boxed_foreign_arc = unsafe { Box::from_raw(uniffi_self_lowered as *mut ::std::sync::Arc<dyn #self_ident>) };
                     // Take a clone for our own use.
-                    Ok(::std::sync::Arc::clone(foreign_arc))
+                    Ok(*boxed_foreign_arc)
                 }
             }
         } else {

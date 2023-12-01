@@ -29,6 +29,12 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%- when None %}
     {%- endmatch %}
 
+    override fun uniffiClonePointer(): Pointer {
+        return rustCall() { status ->
+            _UniFFILib.INSTANCE.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
+        }
+    }
+
     /**
      * Disconnect the object from the underlying Rust object.
      *
@@ -165,7 +171,7 @@ public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointe
     override fun lower(value: {{ type_name }}): Pointer {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.callWithPointer { it }
+        return value.uniffiClonePointer()
         {%- when ObjectImpl::Trait %}
         return Pointer(handleMap.insert(value))
         {%- endmatch %}

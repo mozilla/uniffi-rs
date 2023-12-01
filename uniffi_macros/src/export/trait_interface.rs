@@ -13,7 +13,6 @@ use crate::{
     object::interface_meta_static_var,
     util::{ident_to_string, tagged_impl_header},
 };
-use uniffi_meta::free_fn_symbol_name;
 
 pub(super) fn gen_trait_scaffolding(
     mod_path: &str,
@@ -30,15 +29,43 @@ pub(super) fn gen_trait_scaffolding(
     let trait_impl = callback_interface::trait_impl(mod_path, &self_ident, &items)
         .unwrap_or_else(|e| e.into_compile_error());
 
+    let clone_fn_ident = Ident::new(
+        &uniffi_meta::clone_fn_symbol_name(mod_path, &trait_name),
+        Span::call_site(),
+    );
     let free_fn_ident = Ident::new(
-        &free_fn_symbol_name(mod_path, &trait_name),
+        &uniffi_meta::free_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
     );
 
-    let free_tokens = quote! {
+    let helper_fn_tokens = quote! {
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #free_fn_ident(
+        /// Clone a pointer to this object type
+        ///
+        /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
+        /// passed to the free function.
+        pub unsafe extern "C" fn #clone_fn_ident(
+            ptr: *const ::std::ffi::c_void,
+            call_status: &mut ::uniffi::RustCallStatus
+        ) -> *const ::std::ffi::c_void {
+            uniffi::rust_call(call_status, || {
+                let ptr = ptr as *mut std::sync::Arc<dyn #self_ident>;
+                let arc = unsafe { ::std::sync::Arc::clone(&*ptr) };
+                Ok(::std::boxed::Box::into_raw(::std::boxed::Box::new(arc)) as  *const ::std::ffi::c_void)
+            })
+        }
+
+        #[doc(hidden)]
+        #[no_mangle]
+        /// Free a pointer to this object type
+        ///
+        /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
+        /// passed to the free function.
+        ///
+        /// Note: clippy doesn't complain about this being unsafe, but it definitely is since it
+        /// calls `Box::from_raw`.
+        pub unsafe extern "C" fn #free_fn_ident(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
@@ -74,7 +101,7 @@ pub(super) fn gen_trait_scaffolding(
 
     Ok(quote_spanned! { self_ident.span() =>
         #meta_static_var
-        #free_tokens
+        #helper_fn_tokens
         #trait_impl
         #impl_tokens
         #ffi_converter_tokens
