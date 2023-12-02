@@ -1808,13 +1808,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uniffi-fixture-foreign-executor"
-version = "0.23.0"
-dependencies = [
- "uniffi",
-]
-
-[[package]]
 name = "uniffi-fixture-futures"
 version = "0.21.0"
 dependencies = [
