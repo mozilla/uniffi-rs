@@ -151,10 +151,20 @@
 <a href="#151" id="151">151</a>
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
-<span class="kw">use </span>uniffi_meta::free_fn_symbol_name;
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
     create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
@@ -165,7 +175,14 @@
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
     <span class="kw">let </span>name = ident_to_string(ident);
-    <span class="kw">let </span>free_fn_ident = Ident::new(<span class="kw-2">&amp;</span>free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name), Span::call_site());
+    <span class="kw">let </span>clone_fn_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::clone_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name),
+        Span::call_site(),
+    );
+    <span class="kw">let </span>free_fn_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name),
+        Span::call_site(),
+    );
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
         interface_meta_static_var(ident, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>module_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
@@ -175,7 +192,19 @@
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
         #[no_mangle]
-        </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#free_fn_ident(
+        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#clone_fn_ident(
+            ptr: <span class="kw-2">*const </span>::std::ffi::c_void,
+            call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
+        ) -&gt; <span class="kw-2">*const </span>::std::ffi::c_void {
+            uniffi::rust_call(call_status, || {
+                <span class="kw">unsafe </span>{ ::std::sync::Arc::increment_strong_count(ptr) };
+                <span class="prelude-val">Ok</span>(ptr)
+            })
+        }
+
+        <span class="attr">#[doc(hidden)]
+        #[no_mangle]
+        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#free_fn_ident(
             ptr: <span class="kw-2">*const </span>::std::ffi::c_void,
             call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
         ) {
@@ -234,17 +263,10 @@
                 ::std::sync::Arc::into_raw(obj) <span class="kw">as </span><span class="self">Self</span>::FfiType
             }
 
-            <span class="doccomment">/// When lifting, we receive a &quot;borrow&quot; of the `Arc` that is owned by
-            /// the foreign-language code, and make a clone of it for our own use.
-            ///
-            /// Safety: the provided value must be a pointer previously obtained by calling
-            /// the `lower()` or `write()` method of this impl.
+            <span class="doccomment">/// When lifting, we receive an owned `Arc` that the foreign language code cloned.
             </span><span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; ::uniffi::Result&lt;::std::sync::Arc&lt;<span class="self">Self</span>&gt;&gt; {
                 <span class="kw">let </span>v = v <span class="kw">as </span><span class="kw-2">*const </span>#ident;
-                <span class="comment">// We musn&#39;t drop the `Arc` that is owned by the foreign-language code.
-                </span><span class="kw">let </span>foreign_arc = ::std::mem::ManuallyDrop::new(<span class="kw">unsafe </span>{ ::std::sync::Arc::&lt;<span class="self">Self</span>&gt;::from_raw(v) });
-                <span class="comment">// Take a clone for our own use.
-                </span><span class="prelude-val">Ok</span>(::std::sync::Arc::clone(<span class="kw-2">&amp;*</span>foreign_arc))
+                <span class="prelude-val">Ok</span>(<span class="kw">unsafe </span>{ ::std::sync::Arc::&lt;<span class="self">Self</span>&gt;::from_raw(v) })
             }
 
             <span class="doccomment">/// When writing as a field of a complex structure, make a clone and transfer ownership

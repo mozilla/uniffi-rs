@@ -870,6 +870,25 @@
 <a href="#870" id="870">870</a>
 <a href="#871" id="871">871</a>
 <a href="#872" id="872">872</a>
+<a href="#873" id="873">873</a>
+<a href="#874" id="874">874</a>
+<a href="#875" id="875">875</a>
+<a href="#876" id="876">876</a>
+<a href="#877" id="877">877</a>
+<a href="#878" id="878">878</a>
+<a href="#879" id="879">879</a>
+<a href="#880" id="880">880</a>
+<a href="#881" id="881">881</a>
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -929,9 +948,7 @@
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 
-</span><span class="kw">use </span>std::iter;
-
-<span class="kw">use </span>anyhow::Result;
+</span><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>uniffi_meta::Checksum;
 
 <span class="kw">use </span><span class="kw">super</span>::ffi::{FfiArgument, FfiFunction, FfiType};
@@ -970,6 +987,11 @@
     //  - its `name` property includes a checksum derived from  the very
     //    hash value we&#39;re trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
+
+    // FFI function to clone a pointer for this object
+    </span><span class="attr">#[checksum_ignore]
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func_clone: FfiFunction,
+    <span class="comment">// FFI function to free a pointer for this object
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func_free: FfiFunction,
     <span class="comment">// Ffi function to initialize the foreign callback for trait interfaces
@@ -1032,6 +1054,10 @@
         <span class="self">self</span>.uniffi_traits.iter().collect()
     }
 
+    <span class="kw">pub fn </span>ffi_object_clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>FfiFunction {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_clone
+    }
+
     <span class="kw">pub fn </span>ffi_object_free(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>FfiFunction {
         <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free
     }
@@ -1047,7 +1073,8 @@
     }
 
     <span class="kw">pub fn </span>iter_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>FfiFunction&gt; {
-        iter::once(<span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free)
+        [<span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_clone, <span class="kw-2">&amp;</span><span class="self">self</span>.ffi_func_free]
+            .into_iter()
             .chain(<span class="kw-2">&amp;</span><span class="self">self</span>.ffi_init_callback)
             .chain(<span class="self">self</span>.constructors.iter().map(|f| <span class="kw-2">&amp;</span>f.ffi_func))
             .chain(<span class="self">self</span>.methods.iter().map(|f| <span class="kw-2">&amp;</span>f.ffi_func))
@@ -1065,7 +1092,13 @@
     }
 
     <span class="kw">pub fn </span>derive_ffi_funcs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func_clone.name().is_empty());
         <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func_free.name().is_empty());
+        <span class="self">self</span>.ffi_func_clone.arguments = <span class="macro">vec!</span>[FfiArgument {
+            name: <span class="string">&quot;ptr&quot;</span>.to_string(),
+            type_: FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()),
+        }];
+        <span class="self">self</span>.ffi_func_clone.return_type = <span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()));
         <span class="self">self</span>.ffi_func_free.arguments = <span class="macro">vec!</span>[FfiArgument {
             name: <span class="string">&quot;ptr&quot;</span>.to_string(),
             type_: FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()),
@@ -1114,6 +1147,7 @@
 
 <span class="kw">impl </span>From&lt;uniffi_meta::ObjectMetadata&gt; <span class="kw">for </span>Object {
     <span class="kw">fn </span>from(meta: uniffi_meta::ObjectMetadata) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>ffi_clone_name = meta.clone_ffi_symbol_name();
         <span class="kw">let </span>ffi_free_name = meta.free_ffi_symbol_name();
         Object {
             module_path: meta.module_path,
@@ -1122,6 +1156,10 @@
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
+            ffi_func_clone: FfiFunction {
+                name: ffi_clone_name,
+                ..Default::default()
+            },
             ffi_func_free: FfiFunction {
                 name: ffi_free_name,
                 ..Default::default()

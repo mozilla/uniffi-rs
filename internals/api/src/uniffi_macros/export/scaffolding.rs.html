@@ -432,9 +432,9 @@
             // pointer.
             </span><span class="macro">quote! </span>{
                 {
-                    <span class="kw">let </span>foreign_arc = ::std::boxed::Box::leak(<span class="kw">unsafe </span>{ Box::from_raw(uniffi_self_lowered <span class="kw">as </span><span class="kw-2">*mut </span>::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt;) });
+                    <span class="kw">let </span>boxed_foreign_arc = <span class="kw">unsafe </span>{ Box::from_raw(uniffi_self_lowered <span class="kw">as </span><span class="kw-2">*mut </span>::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt;) };
                     <span class="comment">// Take a clone for our own use.
-                    </span><span class="prelude-val">Ok</span>(::std::sync::Arc::clone(foreign_arc))
+                    </span><span class="prelude-val">Ok</span>(<span class="kw-2">*</span>boxed_foreign_arc)
                 }
             }
         } <span class="kw">else </span>{

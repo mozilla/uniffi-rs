@@ -131,6 +131,33 @@
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -146,7 +173,6 @@
     object::interface_meta_static_var,
     util::{ident_to_string, tagged_impl_header},
 };
-<span class="kw">use </span>uniffi_meta::free_fn_symbol_name;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_trait_scaffolding(
     mod_path: <span class="kw-2">&amp;</span>str,
@@ -163,15 +189,43 @@
     <span class="kw">let </span>trait_impl = callback_interface::trait_impl(mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items)
         .unwrap_or_else(|e| e.into_compile_error());
 
+    <span class="kw">let </span>clone_fn_ident = Ident::new(
+        <span class="kw-2">&amp;</span>uniffi_meta::clone_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>trait_name),
+        Span::call_site(),
+    );
     <span class="kw">let </span>free_fn_ident = Ident::new(
-        <span class="kw-2">&amp;</span>free_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>trait_name),
+        <span class="kw-2">&amp;</span>uniffi_meta::free_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>trait_name),
         Span::call_site(),
     );
 
-    <span class="kw">let </span>free_tokens = <span class="macro">quote! </span>{
+    <span class="kw">let </span>helper_fn_tokens = <span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
         #[no_mangle]
-        </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#free_fn_ident(
+        </span><span class="doccomment">/// Clone a pointer to this object type
+        ///
+        /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
+        /// passed to the free function.
+        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#clone_fn_ident(
+            ptr: <span class="kw-2">*const </span>::std::ffi::c_void,
+            call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
+        ) -&gt; <span class="kw-2">*const </span>::std::ffi::c_void {
+            uniffi::rust_call(call_status, || {
+                <span class="kw">let </span>ptr = ptr <span class="kw">as </span><span class="kw-2">*mut </span>std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt;;
+                <span class="kw">let </span>arc = <span class="kw">unsafe </span>{ ::std::sync::Arc::clone(<span class="kw-2">&amp;*</span>ptr) };
+                <span class="prelude-val">Ok</span>(::std::boxed::Box::into_raw(::std::boxed::Box::new(arc)) <span class="kw">as  </span><span class="kw-2">*const </span>::std::ffi::c_void)
+            })
+        }
+
+        <span class="attr">#[doc(hidden)]
+        #[no_mangle]
+        </span><span class="doccomment">/// Free a pointer to this object type
+        ///
+        /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
+        /// passed to the free function.
+        ///
+        /// Note: clippy doesn&#39;t complain about this being unsafe, but it definitely is since it
+        /// calls `Box::from_raw`.
+        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#free_fn_ident(
             ptr: <span class="kw-2">*const </span>::std::ffi::c_void,
             call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
         ) {
@@ -207,7 +261,7 @@
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt;
         #meta_static_var
-        #free_tokens
+        #helper_fn_tokens
         #trait_impl
         #impl_tokens
         #ffi_converter_tokens
