@@ -89,6 +89,15 @@ class {{ ffi_converter_name }}:
         return {{ impl_name }}._make_instance_(value)
 
     @staticmethod
+    def check_lower(value: {{ type_name }}):
+        {%- if obj.is_trait_interface() %}
+        pass
+        {%- else %}
+        if not isinstance(value, {{ impl_name }}):
+            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
+        {%- endif %}
+
+    @staticmethod
     def lower(value: {{ protocol_name }}):
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}

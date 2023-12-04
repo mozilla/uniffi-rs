@@ -65,6 +65,20 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         raise InternalError("Raw enum value doesn't match any cases")
 
     @staticmethod
+    def check_lower(value):
+        {%- if e.variants().is_empty() %}
+        pass
+        {%- else %}
+        {%- for variant in e.variants() %}
+        if isinstance(value, {{ type_name }}.{{ variant.name()|class_name }}):
+            {%- for field in variant.fields() %}
+            {{ field|check_lower_fn }}(value.{{ field.name()|var_name }})
+            {%- endfor %}
+            return
+        {%- endfor %}
+        {%- endif %}
+
+    @staticmethod
     def write(value, buf):
         {%- for variant in e.variants() %}
         if isinstance(value, {{ type_name }}.{{ variant.name()|class_name }}):
