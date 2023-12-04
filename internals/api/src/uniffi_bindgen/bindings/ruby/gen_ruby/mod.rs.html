@@ -375,6 +375,24 @@
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -644,6 +662,24 @@
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for custom types, yet&quot;</span>),
             Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
+        })
+    }
+
+    <span class="kw">pub fn </span>check_lower_rb(nm: <span class="kw-2">&amp;</span>str, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
+            Type::Object { name, .. } =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_check_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>)
+            }
+            Type::Enum { .. }
+            | Type::Record { .. }
+            | Type::Optional { .. }
+            | Type::Sequence { .. }
+            | Type::Map { .. } =&gt; <span class="macro">format!</span>(
+                <span class="string">&quot;RustBuffer.check_lower_{}({})&quot;</span>,
+                class_name_rb(<span class="kw-2">&amp;</span>canonical_name(type_))<span class="question-mark">?</span>,
+                nm
+            ),
+            <span class="kw">_ </span>=&gt; <span class="string">&quot;&quot;</span>.to_owned(),
         })
     }
 
