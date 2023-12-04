@@ -106,7 +106,14 @@ abstract class FFIObject: Disposable, AutoCloseable {
     private val callCounter = AtomicLong(1)
 
     open protected fun freeRustArcPtr() {
-        // To be overridden in subclasses.
+        // Overridden by generated subclasses, the default method exists to allow users to manually
+        // implement the interface
+    }
+
+    open fun uniffiClonePointer(): Pointer {
+        // Overridden by generated subclasses, the default method exists to allow users to manually
+        // implement the interface
+        throw RuntimeException("uniffiClonePointer not implemented")
     }
 
     override fun destroy() {
@@ -139,7 +146,7 @@ abstract class FFIObject: Disposable, AutoCloseable {
         } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
-            return block(this.pointer!!)
+            return block(this.uniffiClonePointer())
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {

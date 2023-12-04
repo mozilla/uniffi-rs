@@ -30,6 +30,10 @@ public class {{ impl_class_name }}:
         self.pointer = pointer
     }
 
+    public func uniffiClonePointer() -> UnsafeMutableRawPointer {
+        return try! rustCall { {{ obj.ffi_object_clone().name() }}(self.pointer, $0) }
+    }
+
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
     {%- call swift::docstring(cons, 4) %}
@@ -59,7 +63,7 @@ public class {{ impl_class_name }}:
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
-                    self.pointer
+                    self.uniffiClonePointer()
                     {%- for arg in meth.arguments() -%}
                     ,
                     {{ arg|lower_fn }}({{ arg.name()|var_name }})
@@ -92,14 +96,14 @@ public class {{ impl_class_name }}:
     {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", meth) %}
         )
     }
 
     {%- when None %}
     {%- call swift::docstring(meth, 4) %}
     public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
-        {% call swift::to_ffi_call_with_prefix("self.pointer", meth) %}
+        {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", meth) %}
     }
 
     {%- endmatch -%}
@@ -111,25 +115,25 @@ public class {{ impl_class_name }}:
     {%-         when UniffiTrait::Display { fmt } %}
     public var description: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", fmt) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", fmt) %}
         )
     }
     {%-         when UniffiTrait::Debug { fmt } %}
     public var debugDescription: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", fmt) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", fmt) %}
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
     public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
         return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("lhs.pointer", eq) %}
+            {% call swift::to_ffi_call_with_prefix("lhs.uniffiClonePointer()", eq) %}
         )
     }
     {%-         when UniffiTrait::Hash { hash } %}
     public func hash(into hasher: inout Hasher) {
         let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.pointer", hash) %}
+            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", hash) %}
         )
         hasher.combine(val)
     }
@@ -161,7 +165,7 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     public static func lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
         {%- match obj.imp() %}
         {%- when ObjectImpl::Struct %}
-        return value.pointer
+        return value.uniffiClonePointer()
         {%- when ObjectImpl::Trait %}
         guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
             fatalError("Cast to UnsafeMutableRawPointer failed")

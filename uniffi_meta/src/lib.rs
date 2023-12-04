@@ -329,6 +329,14 @@ pub struct CallbackInterfaceMetadata {
 }
 
 impl ObjectMetadata {
+    /// FFI symbol name for the `clone` function for this object.
+    ///
+    /// This function is used to increment the reference count before lowering an object to pass
+    /// back to Rust.
+    pub fn clone_ffi_symbol_name(&self) -> String {
+        clone_fn_symbol_name(&self.module_path, &self.name)
+    }
+
     /// FFI symbol name for the `free` function for this object.
     ///
     /// This function is used to free the memory used by this object.

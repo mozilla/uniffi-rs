@@ -10,7 +10,10 @@ use std::time::SystemTime;
 use once_cell::sync::Lazy;
 
 mod traits;
-pub use traits::{ancestor_names, get_traits, make_rust_getters, test_getters, Getters, NodeTrait};
+pub use traits::{
+    ancestor_names, get_traits, make_rust_getters, test_getters, test_round_trip_through_foreign,
+    test_round_trip_through_rust, Getters, NodeTrait,
+};
 
 static NUM_ALIVE: Lazy<RwLock<u64>> = Lazy::new(|| RwLock::new(0));
 
