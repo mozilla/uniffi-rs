@@ -37,6 +37,15 @@ mod state {
     }
 }
 
+mod enum_repr {
+    #[derive(uniffi::Enum, Debug)]
+    pub enum ReprU8 {
+        One = 1,
+        Three = 3,
+        Fifteen = 0x0F,
+    }
+}
+
 mod error {
     use super::Weapon;
 
@@ -196,16 +205,19 @@ mod test_metadata {
                 variants: vec![
                     VariantMetadata {
                         name: "Rock".into(),
+                        discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Paper".into(),
+                        discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Scissors".into(),
+                        discr: None,
                         fields: vec![],
                         docstring: None,
                     },
@@ -225,11 +237,13 @@ mod test_metadata {
                 variants: vec![
                     VariantMetadata {
                         name: "Uninitialized".into(),
+                        discr: None,
                         fields: vec![],
                         docstring: None,
                     },
                     VariantMetadata {
                         name: "Initialized".into(),
+                        discr: None,
                         fields: vec![FieldMetadata {
                             name: "data".into(),
                             ty: Type::String,
@@ -240,6 +254,7 @@ mod test_metadata {
                     },
                     VariantMetadata {
                         name: "Complete".into(),
+                        discr: None,
                         fields: vec![FieldMetadata {
                             name: "result".into(),
                             ty: Type::Record {
@@ -249,6 +264,38 @@ mod test_metadata {
                             default: None,
                             docstring: None,
                         }],
+                        docstring: None,
+                    },
+                ],
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_repr_enum() {
+        check_metadata(
+            &enum_repr::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_REPRU8,
+            EnumMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "ReprU8".into(),
+                variants: vec![
+                    VariantMetadata {
+                        name: "One".into(),
+                        discr: Some(LiteralMetadata::new_uint(1)),
+                        fields: vec![],
+                        docstring: None,
+                    },
+                    VariantMetadata {
+                        name: "Three".into(),
+                        discr: Some(LiteralMetadata::new_uint(3)),
+                        fields: vec![],
+                        docstring: None,
+                    },
+                    VariantMetadata {
+                        name: "Fifteen".into(),
+                        discr: Some(LiteralMetadata::new_uint(15)),
+                        fields: vec![],
                         docstring: None,
                     },
                 ],
@@ -268,11 +315,13 @@ mod test_metadata {
                     variants: vec![
                         VariantMetadata {
                             name: "Overflow".into(),
+                            discr: None,
                             fields: vec![],
                             docstring: None,
                         },
                         VariantMetadata {
                             name: "DivideByZero".into(),
+                            discr: None,
                             fields: vec![],
                             docstring: None,
                         },
@@ -295,11 +344,13 @@ mod test_metadata {
                     variants: vec![
                         VariantMetadata {
                             name: "NotFound".into(),
+                            discr: None,
                             fields: vec![],
                             docstring: None,
                         },
                         VariantMetadata {
                             name: "PermissionDenied".into(),
+                            discr: None,
                             fields: vec![FieldMetadata {
                                 name: "reason".into(),
                                 ty: Type::String,
@@ -310,6 +361,7 @@ mod test_metadata {
                         },
                         VariantMetadata {
                             name: "InvalidWeapon".into(),
+                            discr: None,
                             fields: vec![FieldMetadata {
                                 name: "weapon".into(),
                                 ty: Type::Enum {

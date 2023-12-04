@@ -479,6 +479,12 @@ pub mod filters {
         Ok(as_ct.as_codetype().literal(literal))
     }
 
+    // Get the idiomatic Python rendering of an individual enum variant's discriminant
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+        let literal = e.variant_discr(*index).expect("invalid index");
+        Ok(Type::UInt64.as_codetype().literal(&literal))
+    }
+
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle::ffi_type_label(type_))
     }

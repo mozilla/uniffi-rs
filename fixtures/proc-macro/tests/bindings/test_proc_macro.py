@@ -90,3 +90,11 @@ assert get_bool(None) == MaybeBool.UNCERTAIN
 assert get_object(None).is_heavy() == MaybeBool.UNCERTAIN
 assert get_trait(None).name() == "TraitImpl"
 assert get_externals(None).one is None
+
+# values for enums without an explicit value are their index.
+assert(MaybeBool.TRUE.value == 0)
+assert(MaybeBool.FALSE.value == 1)
+assert(MaybeBool.UNCERTAIN.value == 2)
+# values with an explicit value should be that value.
+assert(ReprU8.ONE.value == 1)
+assert(ReprU8.THREE.value == 3)

@@ -77,6 +77,7 @@ impl APIConverter<VariantMetadata> for weedle::interface::OperationInterfaceMemb
         };
         Ok(VariantMetadata {
             name,
+            discr: None,
             fields: self
                 .args
                 .body

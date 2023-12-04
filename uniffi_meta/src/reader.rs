@@ -404,6 +404,7 @@ impl<'a> MetadataReader<'a> {
             .map(|_| {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
+                    discr: self.read_default("<variant-value>", &Type::UInt64)?,
                     fields: self.read_fields()?,
                     docstring: self.read_optional_long_string()?,
                 })
@@ -417,6 +418,7 @@ impl<'a> MetadataReader<'a> {
             .map(|_| {
                 Ok(VariantMetadata {
                     name: self.read_string()?,
+                    discr: None,
                     fields: vec![],
                     docstring: self.read_optional_long_string()?,
                 })

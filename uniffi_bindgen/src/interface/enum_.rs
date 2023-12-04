@@ -159,7 +159,7 @@ use anyhow::Result;
 use uniffi_meta::Checksum;
 
 use super::record::Field;
-use super::{AsType, Type, TypeIterator};
+use super::{AsType, Literal, Type, TypeIterator};
 
 /// Represents an enum with named variants, each of which may have named
 /// and typed fields.
@@ -200,6 +200,33 @@ impl Enum {
 
     pub fn variants(&self) -> &[Variant] {
         &self.variants
+    }
+
+    // Get the literal value to use for the specified variant's discriminant.
+    // Follows Rust's rules when mixing specified and unspecified values; please
+    // file a bug if you find a case where it does not.
+    // However, it *does not* attempt to handle error cases - either cases where
+    // a discriminant is not unique, or where a discriminant would overflow the
+    // repr. The intention is that the Rust compiler itself will fail to build
+    // in those cases, so by the time this get's run we can be confident these
+    // error cases can't exist.
+    pub fn variant_discr(&self, variant_index: usize) -> Result<Literal> {
+        if variant_index >= self.variants.len() {
+            anyhow::bail!("Invalid variant index {variant_index}");
+        }
+        let mut next = 0;
+        let mut this = 0;
+        for v in self.variants().iter().take(variant_index + 1) {
+            this = match v.discr {
+                None => next,
+                Some(Literal::UInt(v, _, _)) => v,
+                _ => {
+                    anyhow::bail!("Invalid literal type {v:?}");
+                }
+            };
+            next = this + 1;
+        }
+        Ok(Literal::new_uint(this))
     }
 
     pub fn is_flat(&self) -> bool {
@@ -250,6 +277,7 @@ impl AsType for Enum {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
 pub struct Variant {
     pub(super) name: String,
+    pub(super) discr: Option<Literal>,
     pub(super) fields: Vec<Field>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
@@ -283,6 +311,7 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
     fn try_from(meta: uniffi_meta::VariantMetadata) -> Result<Self> {
         Ok(Self {
             name: meta.name,
+            discr: meta.discr,
             fields: meta
                 .fields
                 .into_iter()
@@ -576,6 +605,69 @@ mod test {
                 .map(|v| v.name())
                 .collect::<Vec<_>>(),
             vec!["Normal", "Error"]
+        );
+    }
+
+    fn variant(val: Option<u64>) -> Variant {
+        Variant {
+            name: "v".to_string(),
+            discr: val.map(Literal::new_uint),
+            fields: vec![],
+            docstring: None,
+        }
+    }
+
+    fn check_discrs(e: &mut Enum, vs: Vec<Variant>) -> Vec<u64> {
+        e.variants = vs;
+        (0..e.variants.len())
+            .map(|i| e.variant_discr(i).unwrap())
+            .map(|l| match l {
+                Literal::UInt(v, _, _) => v,
+                _ => unreachable!(),
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_variant_values() {
+        let mut e = Enum {
+            module_path: "test".to_string(),
+            name: "test".to_string(),
+            variants: vec![],
+            flat: false,
+            docstring: None,
+        };
+
+        assert!(e.variant_discr(0).is_err());
+
+        // single values
+        assert_eq!(check_discrs(&mut e, vec![variant(None)]), vec![0]);
+        assert_eq!(check_discrs(&mut e, vec![variant(Some(3))]), vec![3]);
+
+        // no values
+        assert_eq!(
+            check_discrs(&mut e, vec![variant(None), variant(None)]),
+            vec![0, 1]
+        );
+
+        // values
+        assert_eq!(
+            check_discrs(&mut e, vec![variant(Some(1)), variant(Some(3))]),
+            vec![1, 3]
+        );
+
+        // mixed values
+        assert_eq!(
+            check_discrs(&mut e, vec![variant(None), variant(Some(3)), variant(None)]),
+            vec![0, 3, 4]
+        );
+
+        assert_eq!(
+            check_discrs(
+                &mut e,
+                vec![variant(Some(4)), variant(None), variant(Some(1))]
+            ),
+            vec![4, 5, 1]
         );
     }
 
