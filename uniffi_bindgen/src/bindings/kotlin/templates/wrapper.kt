@@ -31,6 +31,11 @@ import java.nio.ByteOrder
 import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
 import java.util.concurrent.ConcurrentHashMap
+{%- if config.android_cleaner() %}
+import android.os.Build
+import android.system.SystemCleaner
+import com.sun.jna.internal.Cleaner as JnaCleaner
+{%- endif %}
 
 {%- for req in self.imports() %}
 {{ req.render() }}

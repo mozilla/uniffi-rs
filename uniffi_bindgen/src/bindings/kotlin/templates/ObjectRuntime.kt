@@ -1,5 +1,4 @@
 {{- self.add_import("java.lang.ref.Cleaner") }}
-{%- if config.android_cleaner() %}{{- self.add_import("android.system.SystemCleaner") }}{%- endif %}
 {{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
 
@@ -116,7 +115,7 @@ abstract class FFIObject: Disposable, AutoCloseable {
     }
 
     protected val pointer: Pointer?
-    protected abstract val cleanable: Cleaner.Cleanable
+    protected abstract val cleanable: {% if config.android_cleaner() -%} AndroidCleanable {%- else -%} Cleaner.Cleanable {%- endif %}
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)

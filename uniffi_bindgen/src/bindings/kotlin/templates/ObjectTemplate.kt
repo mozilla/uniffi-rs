@@ -31,12 +31,6 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 
     override val cleanable: Cleaner.Cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
 
-    override fun uniffiClonePointer(): Pointer {
-        return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
-        }
-    }
-
     // Use a static inner class instead of a closure so as not to accidentally
     // capture `this` as part of the cleanable's action.
     private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
@@ -46,6 +40,12 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
                     UniffiLib.INSTANCE.{{ obj.ffi_object_free().name() }}(ptr, status)
                 }
             }
+        }
+    }
+
+    override fun uniffiClonePointer(): Pointer {
+        return uniffiRustCall() { status ->
+            UniffiLib.INSTANCE.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
         }
     }
 
