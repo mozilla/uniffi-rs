@@ -162,6 +162,17 @@
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
 <a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
@@ -226,6 +237,7 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_impl(ident: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverterArc&quot;</span>, ident, udl_mode);
+    <span class="kw">let </span>lower_return_impl_spec = tagged_impl_header(<span class="string">&quot;LowerReturn&quot;</span>, ident, udl_mode);
     <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, ident, udl_mode);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
@@ -297,6 +309,16 @@
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(<span class="bool-val">false</span>);
+        }
+
+        <span class="kw">unsafe </span>#lower_return_impl_spec {
+            <span class="kw">type </span>ReturnType = &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType;
+
+            <span class="kw">fn </span>lower_return(obj: <span class="self">Self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::ReturnType, ::uniffi::RustBuffer&gt; {
+                <span class="prelude-val">Ok</span>(&lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(::std::sync::Arc::new(obj)))
+            }
+
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META;
         }
 
         <span class="kw">unsafe </span>#lift_ref_impl_spec {
