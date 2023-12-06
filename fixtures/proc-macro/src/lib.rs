@@ -78,9 +78,11 @@ impl Object {
     }
 
     #[uniffi::constructor]
-    fn named_ctor(arg: u32) -> Arc<Self> {
+    fn named_ctor(arg: u32) -> Self {
         _ = arg;
-        Self::new()
+        // This constructor returns Self directly.  UniFFI ensures that it's wrapped in an Arc
+        // before sending it across the FFI.
+        Self
     }
 
     fn is_heavy(&self) -> MaybeBool {

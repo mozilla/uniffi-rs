@@ -62,6 +62,7 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
 pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
     let name = ident_to_string(ident);
     let impl_spec = tagged_impl_header("FfiConverterArc", ident, udl_mode);
+    let lower_return_impl_spec = tagged_impl_header("LowerReturn", ident, udl_mode);
     let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -133,6 +134,16 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
                 .concat_str(#mod_path)
                 .concat_str(#name)
                 .concat_bool(false);
+        }
+
+        unsafe #lower_return_impl_spec {
+            type ReturnType = <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::FfiType;
+
+            fn lower_return(obj: Self) -> Result<Self::ReturnType, ::uniffi::RustBuffer> {
+                Ok(<Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(::std::sync::Arc::new(obj)))
+            }
+
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::TYPE_ID_META;
         }
 
         unsafe #lift_ref_impl_spec {

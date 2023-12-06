@@ -30,6 +30,7 @@
 - Add support for [docstrings in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
 - Ability for UDL to use external trait interfaces [#1831](https://github.com/mozilla/uniffi-rs/issues/1831)
 - Add support for docstrings via procmacros [#1862](https://github.com/mozilla/uniffi-rs/pull/1862)
+- Objects can now be returned from functions/constructors/methods without wrapping them in an `Arc<>`.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
 
