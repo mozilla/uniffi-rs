@@ -44,28 +44,24 @@ Steps:
 
 1. Release the backend crates
    * The first step is to release all crates other than `uniffi`
-   * Test using a dry run: `cargo release-backend-crates {MAJOR}.{MINOR}.{PATCH}`
-       * Note: some of the output here isn't actually helpful - the `cargo` output will reflect the old
-         previous version because it will be building without having touched the version numbers in the
-         `Cargo.toml`, and it doesn't actually propose that it's going to do anything! But it's probably
-         worthwhile anyway!.
-   * Release the crates: `cargo release-backend-crates -x {MAJOR}.{MINOR}.{PATCH}`.
-       * **This will publish the new releases on crates.io**
-       * This will **NOT** create a local git tag.
+   * Create a release commit using: `cargo release-backend-crates {MAJOR}.{MINOR}.{PATCH}`
 
 1. Release `uniffi`
    * **Do not execute this before the previous step.**  It depends on the published crates from that step
-   * Test using a dry-run: `cargo release-uniffi {MAJOR}.{MINOR}.{PATCH}` to test the `uniffi` crates.
-       * Note: some of the output here isn't actually helpful - the `cargo` output will reflect the old
-         previous version because it will be building without having touched the version numbers in the
-         `Cargo.toml`, and it doesn't actually propose that it's going to do anything! But it's probably
-         worthwhile anyway!.
-   * Release the crates: `cargo release-uniffi -x {MAJOR}.{MINOR}.{PATCH}`.
-       * **This will publish the new releases on crates.io**
-       * **This will create a new local git tag for the version**
+   * Create a release commit using: `cargo release-uniffi {MAJOR}.{MINOR}.{PATCH}` to test the `uniffi` crates.
+   * Note: this will also create a tag for this version
 
-1. Push your branch and tags: `git push origin --tags`
-1. Make a PR to request it be merged to the main branch.
+1. Review the changes
+
+1. Create a PR with the changes and get it approved
+
+1. Publish the new release:
+  * Run `cargo login` if you're not already logged in
+  * Run `./tools/publish-release.sh`
+
+1. Push the tag: `git push v{MAJOR}.{MINOR}.{PATCH}`
+
+1. Create a PR to merge the changes back to the main branch
 
 ## Why avoid breaking changes for the uniffi crate?
 
