@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_build"
-version = "0.25.2"
+version = "0.25.3"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (build script helpers)"
 documentation = "https://mozilla.github.io/uniffi-rs"
@@ -13,7 +13,7 @@ keywords = ["ffi", "bindgen"]
 [dependencies]
 anyhow = "1"
 camino = "1.0.8"
-uniffi_bindgen = { path = "../uniffi_bindgen", default-features = false, version = "=0.25.2" }
+uniffi_bindgen = { path = "../uniffi_bindgen", default-features = false, version = "=0.25.3" }
 
 [features]
 default = []
