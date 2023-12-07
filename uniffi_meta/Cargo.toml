@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_meta"
-version = "0.25.2"
+version = "0.25.3"
 edition = "2021"
 description = "uniffi_meta"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -13,4 +13,4 @@ readme = "../README.md"
 anyhow = "1"
 bytes = "1.3"
 siphasher = "0.3"
-uniffi_checksum_derive = { version = "0.25.2", path = "../uniffi_checksum_derive" }
+uniffi_checksum_derive = { version = "0.25.3", path = "../uniffi_checksum_derive" }
