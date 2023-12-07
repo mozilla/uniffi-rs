@@ -2,6 +2,8 @@
 # Cargo command to release a new version for all packages, except uniffi
 release-backend-crates = [
     "release",
+    "--execute",
+    "--no-publish",
     "-p", "uniffi_core",
     "-p", "uniffi_bindgen",
     "-p", "uniffi_build",
@@ -11,4 +13,4 @@ release-backend-crates = [
     "-p", "uniffi_testing",
     "-p", "uniffi_udl",
 ]
-release-uniffi = ["release", "-p", "uniffi"]
+release-uniffi = ["release", "--execute", "--no-publish", "-p", "uniffi"]
