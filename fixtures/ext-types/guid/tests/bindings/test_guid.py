@@ -51,8 +51,8 @@ class TestGuid(unittest.TestCase):
 
         test_callback = TestCallback()
         guid = run_callback(test_callback)
-        self.assertEquals(guid, "callback-test-payload")
-        self.assertEquals(test_callback.saw_guid, "callback-test-payload")
+        self.assertEqual(guid, "callback-test-payload")
+        self.assertEqual(test_callback.saw_guid, "callback-test-payload")
 
 if __name__=='__main__':
     unittest.main()
