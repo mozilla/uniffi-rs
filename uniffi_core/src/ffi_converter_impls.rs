@@ -23,8 +23,8 @@
 /// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, ForeignExecutor, Lift, LiftReturn, Lower, LowerReturn,
-    MetadataBuffer, Result, RustBuffer, UnexpectedUniFFICallbackError,
+    ConvertError, FfiConverter, Lift, LiftReturn, Lower, LowerReturn, MetadataBuffer, Result,
+    RustBuffer, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -405,47 +405,6 @@ where
         .concat(V::TYPE_ID_META);
 }
 
-/// FFI support for [ForeignExecutor]
-///
-/// These are passed over the FFI as opaque pointer-sized types representing the foreign executor.
-/// The foreign bindings may use an actual pointer to the executor object, or a usized integer
-/// handle.
-unsafe impl<UT> FfiConverter<UT> for ForeignExecutor {
-    type FfiType = crate::ForeignExecutorHandle;
-
-    // Passing these back to the foreign bindings is currently not supported
-    fn lower(executor: Self) -> Self::FfiType {
-        executor.handle
-    }
-
-    fn write(executor: Self, buf: &mut Vec<u8>) {
-        // Use native endian when writing these values, so they can be casted to pointer values
-        match std::mem::size_of::<usize>() {
-            // Use native endian when reading these values, so they can be casted to pointer values
-            4 => buf.put_u32_ne(executor.handle.0 as u32),
-            8 => buf.put_u64_ne(executor.handle.0 as u64),
-            n => panic!("Invalid usize width: {n}"),
-        };
-    }
-
-    fn try_lift(executor: Self::FfiType) -> Result<Self> {
-        Ok(ForeignExecutor::new(executor))
-    }
-
-    fn try_read(buf: &mut &[u8]) -> Result<Self> {
-        let usize_val = match std::mem::size_of::<usize>() {
-            // Use native endian when reading these values, so they can be casted to pointer values
-            4 => buf.get_u32_ne() as usize,
-            8 => buf.get_u64_ne() as usize,
-            n => panic!("Invalid usize width: {n}"),
-        };
-        <Self as FfiConverter<UT>>::try_lift(crate::ForeignExecutorHandle(usize_val as *const ()))
-    }
-
-    const TYPE_ID_META: MetadataBuffer =
-        MetadataBuffer::from_code(metadata::codes::TYPE_FOREIGN_EXECUTOR);
-}
-
 derive_ffi_traits!(blanket u8);
 derive_ffi_traits!(blanket i8);
 derive_ffi_traits!(blanket u16);
@@ -460,7 +419,6 @@ derive_ffi_traits!(blanket bool);
 derive_ffi_traits!(blanket String);
 derive_ffi_traits!(blanket Duration);
 derive_ffi_traits!(blanket SystemTime);
-derive_ffi_traits!(blanket ForeignExecutor);
 
 // For composite types, derive LowerReturn, LiftReturn, etc, from Lift/Lower.
 //

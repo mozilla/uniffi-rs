@@ -22,7 +22,6 @@ mod callback_interface;
 mod compounds;
 mod custom;
 mod enum_;
-mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -469,7 +468,6 @@ impl SwiftCodeOracle {
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
             }
-            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional { inner_type } => {
                 Box::new(compounds::OptionalCodeType::new(*inner_type))
             }
@@ -525,8 +523,6 @@ impl SwiftCodeOracle {
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback".into(),
-            FfiType::ForeignExecutorHandle => "Int".into(),
-            FfiType::ForeignExecutorCallback => "ForeignExecutorCallback".into(),
             FfiType::RustFutureContinuationCallback => "UniFfiRustFutureContinuation".into(),
             FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
                 "UnsafeMutableRawPointer".into()
@@ -537,7 +533,6 @@ impl SwiftCodeOracle {
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::ForeignCallback
-            | FfiType::ForeignExecutorCallback
             | FfiType::RustFutureHandle
             | FfiType::RustFutureContinuationCallback
             | FfiType::RustFutureContinuationData => {
@@ -641,8 +636,6 @@ pub mod filters {
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::ForeignCallback => "ForeignCallback _Nonnull".into(),
-            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback _Nonnull".into(),
-            FfiType::ForeignExecutorHandle => "size_t".into(),
             FfiType::RustFutureContinuationCallback => {
                 "UniFfiRustFutureContinuation _Nonnull".into()
             }

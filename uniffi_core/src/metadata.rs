@@ -67,7 +67,6 @@ pub mod codes {
     pub const TYPE_CUSTOM: u8 = 22;
     pub const TYPE_RESULT: u8 = 23;
     pub const TYPE_FUTURE: u8 = 24;
-    pub const TYPE_FOREIGN_EXECUTOR: u8 = 25;
     pub const TYPE_UNIT: u8 = 255;
 
     // Literal codes for LiteralMetadata - note that we don't support

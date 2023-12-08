@@ -580,7 +580,6 @@ impl ComponentInterface {
             .chain(self.iter_rust_buffer_ffi_function_definitions())
             .chain(self.iter_futures_ffi_function_definitons())
             .chain(self.iter_checksum_ffi_functions())
-            .chain(self.ffi_foreign_executor_callback_set())
             .chain([self.ffi_uniffi_contract_version()])
     }
 
@@ -657,27 +656,6 @@ impl ComponentInterface {
                     self.ffi_rust_future_complete(return_type),
                 ]
             })
-    }
-
-    /// The ffi_foreign_executor_callback_set FFI function
-    ///
-    /// We only include this in the FFI if the `ForeignExecutor` type is actually used
-    pub fn ffi_foreign_executor_callback_set(&self) -> Option<FfiFunction> {
-        if self.types.contains(&Type::ForeignExecutor) {
-            Some(FfiFunction {
-                name: format!("ffi_{}_foreign_executor_callback_set", self.ffi_namespace()),
-                arguments: vec![FfiArgument {
-                    name: "callback".into(),
-                    type_: FfiType::ForeignExecutorCallback,
-                }],
-                return_type: None,
-                is_async: false,
-                has_rust_call_status_arg: false,
-                is_object_free_function: false,
-            })
-        } else {
-            None
-        }
     }
 
     /// List all API checksums to check

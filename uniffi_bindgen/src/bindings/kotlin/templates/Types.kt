@@ -112,9 +112,6 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
 {%- when Type::CallbackInterface { module_path, name } %}
 {% include "CallbackInterfaceTemplate.kt" %}
 
-{%- when Type::ForeignExecutor %}
-{% include "ForeignExecutorTemplate.kt" %}
-
 {%- when Type::Timestamp %}
 {% include "TimestampHelper.kt" %}
 

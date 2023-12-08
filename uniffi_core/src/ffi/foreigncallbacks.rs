@@ -10,7 +10,7 @@
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use crate::{ForeignExecutorHandle, RustBuffer, RustTaskCallback};
+use crate::RustBuffer;
 
 /// ForeignCallback is the Rust representation of a foreign language function.
 /// It is the basis for all callbacks interfaces. It is registered exactly once per callback interface,
@@ -37,30 +37,8 @@ pub type ForeignCallback = unsafe extern "C" fn(
     buf_ptr: *mut RustBuffer,
 ) -> i32;
 
-/// Callback to schedule a Rust call with a `ForeignExecutor`. The bindings code registers exactly
-/// one of these with the Rust code.
-///
-/// Delay is an approximate amount of ms to wait before scheduling the call.  Delay is usually 0,
-/// which means schedule sometime soon.
-///
-/// As a special case, when Rust drops the foreign executor, with `task=null`.  The foreign
-/// bindings should release the reference to the executor that was reserved for Rust.
-///
-/// This callback can be invoked from any thread, including threads created by Rust.
-///
-/// The callback should return one of the `ForeignExecutorCallbackResult` values.
-pub type ForeignExecutorCallback = extern "C" fn(
-    executor: ForeignExecutorHandle,
-    delay: u32,
-    task: Option<RustTaskCallback>,
-    task_data: *const (),
-) -> i8;
-
 /// Store a [ForeignCallback] pointer
 pub(crate) struct ForeignCallbackCell(AtomicUsize);
-
-/// Store a [ForeignExecutorCallback] pointer
-pub(crate) struct ForeignExecutorCallbackCell(AtomicUsize);
 
 /// Macro to define foreign callback types as well as the callback cell.
 macro_rules! impl_foreign_callback_cell {
@@ -100,4 +78,3 @@ macro_rules! impl_foreign_callback_cell {
 }
 
 impl_foreign_callback_cell!(ForeignCallback, ForeignCallbackCell);
-impl_foreign_callback_cell!(ForeignExecutorCallback, ForeignExecutorCallbackCell);

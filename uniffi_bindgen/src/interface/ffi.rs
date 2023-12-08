@@ -49,11 +49,6 @@ pub enum FfiType {
     ForeignBytes,
     /// Pointer to a callback function that handles all callbacks on the foreign language side.
     ForeignCallback,
-    /// Pointer-sized opaque handle that represents a foreign executor.  Foreign bindings can
-    /// either use an actual pointer or a usized integer.
-    ForeignExecutorHandle,
-    /// Pointer to the callback function that's invoked to schedule calls with a ForeignExecutor
-    ForeignExecutorCallback,
     /// Pointer to a Rust future
     RustFutureHandle,
     /// Continuation function for a Rust future
@@ -94,7 +89,6 @@ impl From<&Type> for FfiType {
             Type::Object { name, .. } => FfiType::RustArcPtr(name.to_owned()),
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface { .. } => FfiType::UInt64,
-            Type::ForeignExecutor => FfiType::ForeignExecutorHandle,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
             Type::Enum { .. }
             | Type::Record { .. }

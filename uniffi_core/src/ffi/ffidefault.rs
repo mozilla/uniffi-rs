@@ -51,12 +51,6 @@ impl FfiDefault for crate::RustBuffer {
     }
 }
 
-impl FfiDefault for crate::ForeignExecutorHandle {
-    fn ffi_default() -> Self {
-        Self(std::ptr::null())
-    }
-}
-
 impl<T> FfiDefault for Option<T> {
     fn ffi_default() -> Self {
         None
