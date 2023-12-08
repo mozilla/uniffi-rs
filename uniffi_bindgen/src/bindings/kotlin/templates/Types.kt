@@ -89,6 +89,9 @@ object NoPointer
 {%- when Type::Bytes %}
 {%- include "ByteArrayHelper.kt" %}
 
+{%- when Type::BlockingTaskQueue %}
+{%- include "BlockingTaskQueueTemplate.kt" %}
+
 {%- when Type::Enum { name, module_path } %}
 {%- let e = ci.get_enum_definition(name).unwrap() %}
 {%- if !ci.is_name_used_as_error(name) %}
@@ -134,10 +137,12 @@ object NoPointer
 {%- if ci.has_async_fns() %}
 {# Import types needed for async support #}
 {{ self.add_import("kotlin.coroutines.resume") }}
+{{ self.add_import("kotlin.coroutines.CoroutineContext") }}
+{{ self.add_import("kotlinx.coroutines.CancellableContinuation") }}
+{{ self.add_import("kotlinx.coroutines.CoroutineScope") }}
+{{ self.add_import("kotlinx.coroutines.DelicateCoroutinesApi") }}
+{{ self.add_import("kotlinx.coroutines.GlobalScope") }}
+{{ self.add_import("kotlinx.coroutines.Job") }}
 {{ self.add_import("kotlinx.coroutines.launch") }}
 {{ self.add_import("kotlinx.coroutines.suspendCancellableCoroutine") }}
-{{ self.add_import("kotlinx.coroutines.CancellableContinuation") }}
-{{ self.add_import("kotlinx.coroutines.DelicateCoroutinesApi") }}
-{{ self.add_import("kotlinx.coroutines.Job") }}
-{{ self.add_import("kotlinx.coroutines.GlobalScope") }}
 {%- endif %}

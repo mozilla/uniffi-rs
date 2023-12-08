@@ -55,6 +55,9 @@
 {%- when Type::Bytes %}
 {%- include "BytesHelper.py" %}
 
+{%- when Type::BlockingTaskQueue %}
+{%- include "BlockingTaskQueueTemplate.py" %}
+
 {%- when Type::Enum { name, module_path } %}
 {%- let e = ci.get_enum_definition(name).unwrap() %}
 {# For enums, there are either an error *or* an enum, they can't be both. #}

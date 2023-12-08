@@ -1,11 +1,32 @@
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
-fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
+// Data for an in-progress poll of a RustFuture
+fileprivate class UniffiPollData {
+    let continuation: UnsafeContinuation<Int8, Never>
+    let rustFuture: UInt64
+    let pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64, UInt64) -> ()
+
+    init(
+        continuation: UnsafeContinuation<Int8, Never>,
+        rustFuture: UInt64,
+        pollFunc: @escaping (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64, UInt64) -> ()
+    ) {
+        self.continuation = continuation
+        self.rustFuture = rustFuture
+        self.pollFunc = pollFunc
+    }
+}
+
+// Stores the UniffiPollData instances that correspond to RustFuture callback data
+fileprivate let uniffiPollDataHandleMap = UniffiHandleMap<UniffiPollData>()
+
+// Stores the DispatchQueue instances that correspond to blocking task queue handles
+fileprivate var uniffiBlockingTaskQueueHandleMap = UniffiHandleMap<DispatchQueue>()
 
 fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UInt64,
-    pollFunc: (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
+    pollFunc: @escaping (UInt64, @escaping UniffiRustFutureContinuationCallback, UInt64, UInt64) -> (),
     completeFunc: (UInt64, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UInt64) -> (),
     liftFunc: (F) throws -> T,
@@ -21,11 +42,18 @@ fileprivate func uniffiRustCallAsync<F, T>(
     var pollResult: Int8;
     repeat {
         pollResult = await withUnsafeContinuation {
+            let pollData = UniffiPollData(
+                continuation: $0,
+                rustFuture: rustFuture,
+                pollFunc: pollFunc
+            )
             pollFunc(
                 rustFuture,
                 uniffiFutureContinuationCallback,
-                uniffiContinuationHandleMap.insert(obj: $0)
+                uniffiPollDataHandleMap.insert(obj: pollData),
+                0
             )
+
         }
     } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
 
@@ -37,11 +65,22 @@ fileprivate func uniffiRustCallAsync<F, T>(
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
 // lift the return value or error and resume the suspended function.
-fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: Int8) {
-    if let continuation = try? uniffiContinuationHandleMap.remove(handle: handle) {
-        continuation.resume(returning: pollResult)
+fileprivate func uniffiFutureContinuationCallback(
+    pollDataHandle: UInt64,
+    pollResult: Int8,
+    blockingTaskQueueHandle: UInt64
+) {
+    if (blockingTaskQueueHandle == 0) {
+        // Try to complete the Swift continutation
+        let pollData = try! uniffiPollDataHandleMap.remove(handle: pollDataHandle)
+        pollData.continuation.resume(returning: pollResult)
     } else {
-        print("uniffiFutureContinuationCallback invalid handle")
+        // Call the poll function again, but inside the DispatchQuee
+        let pollData = try! uniffiPollDataHandleMap.get(handle: pollDataHandle)
+        let queue = try! uniffiBlockingTaskQueueHandleMap.get(handle: blockingTaskQueueHandle)
+        queue.async {
+            pollData.pollFunc(pollData.rustFuture, uniffiFutureContinuationCallback, pollDataHandle, blockingTaskQueueHandle)
+        }
     }
 }
 
@@ -114,3 +153,8 @@ public func uniffiForeignFutureHandleCount{{ ci.namespace()|class_name }}() -> I
 }
 
 {%- endif %}
+
+// For testing
+public func uniffiPollDataHandleCount{{ ci.namespace()|class_name }}() -> Int {
+    return uniffiPollDataHandleMap.count
+}

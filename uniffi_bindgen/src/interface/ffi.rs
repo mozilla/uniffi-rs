@@ -130,7 +130,8 @@ impl From<&Type> for FfiType {
             | Type::Sequence { .. }
             | Type::Map { .. }
             | Type::Timestamp
-            | Type::Duration => FfiType::RustBuffer(None),
+            | Type::Duration
+            | Type::BlockingTaskQueue => FfiType::RustBuffer(None),
             Type::External {
                 name,
                 kind: ExternalKind::Interface,

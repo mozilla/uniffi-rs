@@ -1,27 +1,33 @@
+import futures
 from futures import *
+import contextlib
 import unittest
 from datetime import datetime
 import asyncio
 import typing
 import futures
+from concurrent.futures import ThreadPoolExecutor
 
 def now():
     return datetime.now()
 
 class TestFutures(unittest.TestCase):
     def test_always_ready(self):
+        @self.check_handle_counts()
         async def test():
             self.assertEqual(await always_ready(), True)
 
         asyncio.run(test())
 
     def test_void(self):
+        @self.check_handle_counts()
         async def test():
             self.assertEqual(await void(), None)
 
         asyncio.run(test())
 
     def test_sleep(self):
+        @self.check_handle_counts()
         async def test():
             t0 = now()
             await sleep(2000)
@@ -33,6 +39,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_sequential_futures(self):
+        @self.check_handle_counts()
         async def test():
             t0 = now()
             result_alice = await say_after(100, 'Alice')
@@ -47,6 +54,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_concurrent_tasks(self):
+        @self.check_handle_counts()
         async def test():
             alice = asyncio.create_task(say_after(100, 'Alice'))
             bob = asyncio.create_task(say_after(200, 'Bob'))
@@ -64,6 +72,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_async_methods(self):
+        @self.check_handle_counts()
         async def test():
             megaphone = new_megaphone()
             t0 = now()
@@ -162,6 +171,7 @@ class TestFutures(unittest.TestCase):
         self.assertEqual(len(futures.UNIFFI_FOREIGN_FUTURE_HANDLE_MAP), 0)
 
     def test_async_object_param(self):
+        @self.check_handle_counts()
         async def test():
             megaphone = new_megaphone()
             t0 = now()
@@ -175,6 +185,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_with_tokio_runtime(self):
+        @self.check_handle_counts()
         async def test():
             t0 = now()
             result_alice = await say_after_with_tokio(200, 'Alice')
@@ -187,6 +198,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_fallible(self):
+        @self.check_handle_counts()
         async def test():
             result = await fallible_me(False)
             self.assertEqual(result, 42)
@@ -211,6 +223,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_fallible_struct(self):
+        @self.check_handle_counts()
         async def test():
             megaphone = await fallible_struct(False)
             self.assertEqual(await megaphone.fallible_me(False), 42)
@@ -224,6 +237,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_record(self):
+        @self.check_handle_counts()
         async def test():
             result = await new_my_record("foo", 42)
             self.assertEqual(result.__class__, MyRecord)
@@ -233,6 +247,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_cancel(self):
+        @self.check_handle_counts()
         async def test():
             # Create a task
             task = asyncio.create_task(say_after(200, 'Alice'))
@@ -250,6 +265,7 @@ class TestFutures(unittest.TestCase):
 
     # Test a future that uses a lock and that is cancelled.
     def test_shared_resource_cancellation(self):
+        @self.check_handle_counts()
         async def test():
             task = asyncio.create_task(use_shared_resource(
                 SharedResourceOptions(release_after_ms=5000, timeout_ms=100)))
@@ -260,6 +276,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_shared_resource_no_cancellation(self):
+        @self.check_handle_counts()
         async def test():
             await use_shared_resource(SharedResourceOptions(release_after_ms=100, timeout_ms=1000))
             await use_shared_resource(SharedResourceOptions(release_after_ms=0, timeout_ms=1000))
@@ -270,6 +287,48 @@ class TestFutures(unittest.TestCase):
             self.assertEqual(typing.get_type_hints(sleep) , {"ms": int, "return": bool})
             self.assertEqual(typing.get_type_hints(sleep_no_return), {"ms": int, "return": type(None)})
         asyncio.run(test())
+
+    # blocking task queue tests
+
+    def test_calc_square(self):
+        @self.check_handle_counts()
+        async def test():
+            executor = ThreadPoolExecutor()
+            self.assertEqual(await calc_square(executor, 20), 400)
+        asyncio.run(asyncio.wait_for(test(), timeout=1))
+
+    def test_calc_square_with_clone(self):
+        @self.check_handle_counts()
+        async def test():
+            executor = ThreadPoolExecutor()
+            self.assertEqual(await calc_square_with_clone(executor, 20), 400)
+        asyncio.run(asyncio.wait_for(test(), timeout=1))
+
+    def test_calc_squares(self):
+        @self.check_handle_counts()
+        async def test():
+            executor = ThreadPoolExecutor()
+            self.assertEqual(await calc_squares(executor, [1, -2, 3]), [1, 4, 9])
+        asyncio.run(asyncio.wait_for(test(), timeout=1))
+
+    def test_calc_squares_multi_queue(self):
+        @self.check_handle_counts()
+        async def test():
+            executors = [
+                ThreadPoolExecutor(),
+                ThreadPoolExecutor(),
+                ThreadPoolExecutor(),
+            ]
+            self.assertEqual(await calc_squares_multi_queue(executors, [1, -2, 3]), [1, 4, 9])
+        asyncio.run(asyncio.wait_for(test(), timeout=1))
+
+    @contextlib.asynccontextmanager
+    async def check_handle_counts(self):
+        initial_poll_handle_count = len(futures._UniffiPollDataHandleMap)
+        initial_blocking_task_queue_handle_count = len(futures._UniffiBlockingTaskQueueHandleMap)
+        yield
+        self.assertEqual(len(futures._UniffiPollDataHandleMap), initial_poll_handle_count)
+        self.assertEqual(len(futures._UniffiBlockingTaskQueueHandleMap), initial_blocking_task_queue_handle_count)
 
 if __name__ == '__main__':
     unittest.main()

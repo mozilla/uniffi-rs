@@ -45,6 +45,7 @@ mod filters {
                 format!("std::sync::Arc<{}>", imp.rust_name_for(name))
             }
             Type::CallbackInterface { name, .. } => format!("Box<dyn r#{name}>"),
+            Type::BlockingTaskQueue => "::uniffi::BlockingTaskQueue".to_owned(),
             Type::Optional { inner_type } => {
                 format!("std::option::Option<{}>", type_rs(inner_type)?)
             }

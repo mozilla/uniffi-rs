@@ -23,8 +23,9 @@
 /// "UT" means an arbitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerReturn, MetadataBuffer,
-    Result, RustBuffer, UnexpectedUniFFICallbackError,
+    BlockingTaskQueue, BlockingTaskQueueVTable, ConvertError, FfiConverter, Lift, LiftRef,
+    LiftReturn, Lower, LowerReturn, MetadataBuffer, Result, RustBuffer,
+    UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -244,6 +245,35 @@ unsafe impl<UT> FfiConverter<UT> for Duration {
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_DURATION);
 }
 
+/// Support for passing [BlockingTaskQueue] across the FFI
+///
+/// Both fields of [BlockingTaskQueue] are serialized into a RustBuffer.  The vtable pointer is
+/// casted to a u64.
+unsafe impl<UT> FfiConverter<UT> for BlockingTaskQueue {
+    ffi_converter_rust_buffer_lift_and_lower!(UT);
+
+    fn write(obj: BlockingTaskQueue, buf: &mut Vec<u8>) {
+        let obj = obj.clone();
+        buf.put_u64(obj.handle.into());
+        buf.put_u64(obj.vtable as *const BlockingTaskQueueVTable as u64);
+    }
+
+    fn try_read(buf: &mut &[u8]) -> Result<BlockingTaskQueue> {
+        check_remaining(buf, 16)?;
+        let handle = buf
+            .get_u64()
+            .try_into()
+            .expect("handle = 0 when reading BlockingTaskQueue");
+        let vtable = unsafe {
+            &*(buf.get_u64() as *const BlockingTaskQueueVTable) as &'static BlockingTaskQueueVTable
+        };
+        Ok(Self { handle, vtable })
+    }
+
+    const TYPE_ID_META: MetadataBuffer =
+        MetadataBuffer::from_code(metadata::codes::TYPE_BLOCKING_TASK_QUEUE);
+}
+
 // Support for passing optional values via the FFI.
 //
 // Optional values are currently always passed by serializing to a buffer.
@@ -419,6 +449,7 @@ derive_ffi_traits!(blanket bool);
 derive_ffi_traits!(blanket String);
 derive_ffi_traits!(blanket Duration);
 derive_ffi_traits!(blanket SystemTime);
+derive_ffi_traits!(blanket BlockingTaskQueue);
 
 // For composite types, derive LowerReturn, LiftReturn, etc, from Lift/Lower.
 //

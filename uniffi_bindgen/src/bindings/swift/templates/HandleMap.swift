@@ -1,6 +1,7 @@
 fileprivate class UniffiHandleMap<T> {
     private var map: [UInt64: T] = [:]
     private let lock = NSLock()
+    // Start at 1, since `0` represents a NULL handle.
     private var currentHandle: UInt64 = 1
 
     func insert(obj: T) -> UInt64 {

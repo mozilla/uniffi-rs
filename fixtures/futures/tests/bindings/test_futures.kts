@@ -1,9 +1,22 @@
 import uniffi.fixture.futures.*
+import java.util.concurrent.Executors
 import kotlinx.coroutines.*
 import kotlin.system.*
 
+fun runAsyncTest(test: suspend CoroutineScope.() -> Unit) {
+    val initialBlockingTaskQueueHandleCount = uniffiBlockingTaskQueueHandleCount()
+    val initialPollHandleCount = uniffiPollHandleCount()
+    val time = runBlocking { 
+         measureTimeMillis {
+            test()
+        }
+    }
+    assert(uniffiBlockingTaskQueueHandleCount() == initialBlockingTaskQueueHandleCount)
+    assert(uniffiPollHandleCount() == initialPollHandleCount)
+}
+
 // init UniFFI to get good measurements after that
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         alwaysReady()
     }
@@ -24,7 +37,7 @@ fun assertApproximateTime(actualTime: Long, expectedTime: Int, testName:  String
 }
 
 // Test `always_ready`.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val result = alwaysReady()
 
@@ -35,7 +48,7 @@ runBlocking {
 }
 
 // Test `void`.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val result = void()
 
@@ -46,7 +59,7 @@ runBlocking {
 }
 
 // Test `sleep`.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         sleep(200U)
     }
@@ -55,7 +68,7 @@ runBlocking {
 }
 
 // Test sequential futures.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val resultAlice = sayAfter(100U, "Alice")
         val resultBob = sayAfter(200U, "Bob")
@@ -68,7 +81,7 @@ runBlocking {
 }
 
 // Test concurrent futures.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val resultAlice = async { sayAfter(100U, "Alice") }
         val resultBob = async { sayAfter(200U, "Bob") }
@@ -81,7 +94,7 @@ runBlocking {
 }
 
 // Test async methods.
-runBlocking {
+runAsyncTest {
     val megaphone = newMegaphone()
     val time = measureTimeMillis {
         val resultAlice = megaphone.sayAfter(200U, "Alice")
@@ -92,7 +105,7 @@ runBlocking {
     assertApproximateTime(time, 200, "async methods")
 }
 
-runBlocking {
+runAsyncTest {
     val megaphone = newMegaphone()
     val time = measureTimeMillis {
         val resultAlice = sayAfterWithMegaphone(megaphone, 200U, "Alice")
@@ -104,7 +117,7 @@ runBlocking {
 }
 
 // Test async method returning optional object
-runBlocking {
+runAsyncTest {
     val megaphone = asyncMaybeNewMegaphone(true)
     assert(megaphone != null)
 
@@ -213,7 +226,7 @@ runBlocking {
 
 
 // Test with the Tokio runtime.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val resultAlice = sayAfterWithTokio(200U, "Alice")
 
@@ -224,7 +237,7 @@ runBlocking {
 }
 
 // Test fallible function/method.
-runBlocking {
+runAsyncTest {
     val time1 = measureTimeMillis {
         try {
             fallibleMe(false)
@@ -289,7 +302,7 @@ runBlocking {
 }
 
 // Test record.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val result = newMyRecord("foo", 42U)
 
@@ -303,7 +316,7 @@ runBlocking {
 }
 
 // Test a broken sleep.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         brokenSleep(100U, 0U) // calls the waker twice immediately
         sleep(100U) // wait for possible failure
@@ -317,7 +330,7 @@ runBlocking {
 
 
 // Test a future that uses a lock and that is cancelled.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         val job = launch {
             useSharedResource(SharedResourceOptions(releaseAfterMs=5000U, timeoutMs=100U))
@@ -336,11 +349,41 @@ runBlocking {
 }
 
 // Test a future that uses a lock and that is not cancelled.
-runBlocking {
+runAsyncTest {
     val time = measureTimeMillis {
         useSharedResource(SharedResourceOptions(releaseAfterMs=100U, timeoutMs=1000U))
 
         useSharedResource(SharedResourceOptions(releaseAfterMs=0U, timeoutMs=1000U))
     }
     println("useSharedResource (not canceled): ${time}ms")
+}
+
+// Test blocking task queues
+runAsyncTest {
+    withTimeout(1000) {
+        assert(calcSquare(Dispatchers.IO, 20) == 400)
+    }
+
+    withTimeout(1000) {
+        assert(calcSquares(Dispatchers.IO, listOf(1, -2, 3)) == listOf(1, 4, 9))
+    }
+
+    val executors = listOf(
+        Executors.newSingleThreadExecutor(),
+        Executors.newSingleThreadExecutor(),
+        Executors.newSingleThreadExecutor(),
+    )
+    withTimeout(1000) {
+        assert(calcSquaresMultiQueue(executors.map { it.asCoroutineDispatcher() }, listOf(1, -2, 3)) == listOf(1, 4, 9))
+    }
+    for (executor in executors) {
+        executor.shutdown()
+    }
+}
+
+// Test blocking task queue cloning
+runAsyncTest {
+    withTimeout(1000) {
+        assert(calcSquareWithClone(Dispatchers.IO, 20) == 400)
+    }
 }
