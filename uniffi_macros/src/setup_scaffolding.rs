@@ -20,8 +20,6 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let ffi_rustbuffer_free_ident = format_ident!("ffi_{module_path}_rustbuffer_free");
     let ffi_rustbuffer_reserve_ident = format_ident!("ffi_{module_path}_rustbuffer_reserve");
     let reexport_hack_ident = format_ident!("{module_path}_uniffi_reexport_hack");
-    let ffi_foreign_executor_callback_set_ident =
-        format_ident!("ffi_{module_path}_foreign_executor_callback_set");
     let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&module_path);
 
     Ok(quote! {
@@ -85,13 +83,6 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[no_mangle]
         pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
             uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
-        }
-
-        #[allow(clippy::missing_safety_doc, missing_docs)]
-        #[doc(hidden)]
-        #[no_mangle]
-        pub extern "C" fn #ffi_foreign_executor_callback_set_ident(callback: uniffi::ffi::ForeignExecutorCallback) {
-            uniffi::ffi::foreign_executor_callback_set(callback)
         }
 
         #ffi_rust_future_scaffolding_fns

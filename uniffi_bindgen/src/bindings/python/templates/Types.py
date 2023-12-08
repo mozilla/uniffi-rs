@@ -94,9 +94,6 @@
 {%- when Type::External { name, module_path, namespace, kind, tagged } %}
 {%- include "ExternalTemplate.py" %}
 
-{%- when Type::ForeignExecutor %}
-{%- include "ForeignExecutorTemplate.py" %}
-
 {%- else %}
 {%- endmatch %}
 {%- endfor %}

@@ -20,7 +20,6 @@ mod callback_interface;
 mod compounds;
 mod custom;
 mod enum_;
-mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -333,8 +332,6 @@ impl KotlinCodeOracle {
             }
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::ForeignCallback => "ForeignCallback".to_string(),
-            FfiType::ForeignExecutorHandle => "USize".to_string(),
-            FfiType::ForeignExecutorCallback => "UniFfiForeignExecutorCallback".to_string(),
             FfiType::RustFutureHandle => "Pointer".to_string(),
             FfiType::RustFutureContinuationCallback => {
                 "UniFffiRustFutureContinuationCallbackType".to_string()
@@ -402,7 +399,6 @@ impl<T: AsType> AsCodeType for T {
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
             }
-            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional { inner_type } => {
                 Box::new(compounds::OptionalCodeType::new(*inner_type))
             }

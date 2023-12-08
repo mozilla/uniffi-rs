@@ -57,7 +57,6 @@ pub fn canonical_name(t: &Type) -> String {
         Type::CallbackInterface { name, .. } => format!("CallbackInterface{name}"),
         Type::Timestamp => "Timestamp".into(),
         Type::Duration => "Duration".into(),
-        Type::ForeignExecutor => "ForeignExecutor".into(),
         // Recursive types.
         // These add a prefix to the name of the underlying type.
         // The component API definition cannot give names to recursive types, so as long as the
@@ -156,12 +155,6 @@ mod filters {
             // Callback interfaces are not yet implemented, but this needs to return something in
             // order for the coverall tests to pass.
             FfiType::ForeignCallback => ":pointer".to_string(),
-            FfiType::ForeignExecutorCallback => {
-                unimplemented!("Foreign executors are not implemented")
-            }
-            FfiType::ForeignExecutorHandle => {
-                unimplemented!("Foreign executors are not implemented")
-            }
             FfiType::RustFutureHandle
             | FfiType::RustFutureContinuationCallback
             | FfiType::RustFutureContinuationData => {
@@ -266,7 +259,6 @@ mod filters {
             }
             Type::External { .. } => panic!("No support for external types, yet"),
             Type::Custom { .. } => panic!("No support for custom types, yet"),
-            Type::ForeignExecutor => unimplemented!("Foreign executors are not implemented"),
         })
     }
 
@@ -320,7 +312,6 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lowering external types, yet"),
             Type::Custom { .. } => panic!("No support for lowering custom types, yet"),
-            Type::ForeignExecutor => unimplemented!("Foreign executors are not implemented"),
         })
     }
 
@@ -361,7 +352,6 @@ mod filters {
             ),
             Type::External { .. } => panic!("No support for lifting external types, yet"),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),
-            Type::ForeignExecutor => unimplemented!("Foreign executors are not implemented"),
         })
     }
 }

@@ -20,7 +20,6 @@ mod callback_interface;
 mod compounds;
 mod custom;
 mod enum_;
-mod executor;
 mod external;
 mod miscellany;
 mod object;
@@ -358,8 +357,6 @@ impl PythonCodeOracle {
             FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
             FfiType::ForeignCallback => "_UNIFFI_FOREIGN_CALLBACK_T".to_string(),
             // Pointer to an `asyncio.EventLoop` instance
-            FfiType::ForeignExecutorHandle => "ctypes.c_size_t".to_string(),
-            FfiType::ForeignExecutorCallback => "_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T".to_string(),
             FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
             FfiType::RustFutureContinuationCallback => "_UNIFFI_FUTURE_CONTINUATION_T".to_string(),
             FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
@@ -419,7 +416,6 @@ impl<T: AsType> AsCodeType for T {
             Type::CallbackInterface { name, .. } => {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
             }
-            Type::ForeignExecutor => Box::new(executor::ForeignExecutorCodeType),
             Type::Optional { inner_type } => {
                 Box::new(compounds::OptionalCodeType::new(*inner_type))
             }
