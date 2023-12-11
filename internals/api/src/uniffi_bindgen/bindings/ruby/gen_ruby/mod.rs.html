@@ -383,6 +383,16 @@
 <a href="#383" id="383">383</a>
 <a href="#384" id="384">384</a>
 <a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -442,6 +452,7 @@
         Type::CallbackInterface { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{name}&quot;</span>),
         Type::Timestamp =&gt; <span class="string">&quot;Timestamp&quot;</span>.into(),
         Type::Duration =&gt; <span class="string">&quot;Duration&quot;</span>.into(),
+        Type::ForeignExecutor =&gt; <span class="string">&quot;ForeignExecutor&quot;</span>.into(),
         <span class="comment">// Recursive types.
         // These add a prefix to the name of the underlying type.
         // The component API definition cannot give names to recursive types, so as long as the
@@ -540,6 +551,12 @@
             <span class="comment">// Callback interfaces are not yet implemented, but this needs to return something in
             // order for the coverall tests to pass.
             </span>FfiType::ForeignCallback =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
+            FfiType::ForeignExecutorCallback =&gt; {
+                <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>)
+            }
+            FfiType::ForeignExecutorHandle =&gt; {
+                <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>)
+            }
             FfiType::RustFutureHandle
             | FfiType::RustFutureContinuationCallback
             | FfiType::RustFutureContinuationData =&gt; {
@@ -644,6 +661,7 @@
             }
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for custom types, yet&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
         })
     }
 
@@ -697,6 +715,7 @@
             ),
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering custom types, yet&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
         })
     }
 
@@ -737,6 +756,7 @@
             </span>),
             Type::External { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting external types, yet&quot;</span>),
             Type::Custom { .. } =&gt; <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting custom types, yet&quot;</span>),
+            Type::ForeignExecutor =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Foreign executors are not implemented&quot;</span>),
         })
     }
 }
