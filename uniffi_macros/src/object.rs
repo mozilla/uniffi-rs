@@ -139,7 +139,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         unsafe #lower_return_impl_spec {
             type ReturnType = <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::FfiType;
 
-            fn lower_return(obj: Self) -> Result<Self::ReturnType, ::uniffi::RustBuffer> {
+            fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustBuffer> {
                 Ok(<Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(::std::sync::Arc::new(obj)))
             }
 
