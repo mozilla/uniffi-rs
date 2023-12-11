@@ -174,8 +174,13 @@ pub enum MyEnum {
         foo: u8,
         bar: Vec<i32>,
     },
+    WithValue = 3,
 }
 ```
+
+Variant discriminants are accepted by the macro but how they are used depends on the bindings.
+Most would be likely ignore it in the example above due to the nature of the enum,
+but some expose it for simple "unit" enums.
 
 ## The `uniffi::Object` derive
 

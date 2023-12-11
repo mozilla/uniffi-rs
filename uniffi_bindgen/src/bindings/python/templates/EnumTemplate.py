@@ -9,7 +9,7 @@
 class {{ type_name }}(enum.Enum):
     {%- call py::docstring(e, 4) %}
     {%- for variant in e.variants() %}
-    {{ variant.name()|enum_variant_py }} = {{ loop.index }}
+    {{ variant.name()|enum_variant_py }} = {{ e|variant_discr_literal(loop.index0) }}
     {%- call py::docstring(variant, 4) %}
     {% endfor %}
 {% else %}

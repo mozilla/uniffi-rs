@@ -273,6 +273,12 @@ pub enum LiteralMetadata {
     Null,
 }
 
+impl LiteralMetadata {
+    pub fn new_uint(v: u64) -> Self {
+        LiteralMetadata::UInt(v, Radix::Decimal, Type::UInt64)
+    }
+}
+
 // Represent the radix of integer literal values.
 // We preserve the radix into the generated bindings for readability reasons.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Checksum)]
@@ -309,6 +315,7 @@ pub struct EnumMetadata {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VariantMetadata {
     pub name: String,
+    pub discr: Option<LiteralMetadata>,
     pub fields: Vec<FieldMetadata>,
     pub docstring: Option<String>,
 }

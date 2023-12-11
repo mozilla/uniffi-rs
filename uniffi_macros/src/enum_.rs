@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{Data, DataEnum, DeriveInput, Field, Index};
+use syn::{Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant};
 
 use crate::util::{
     create_metadata_items, derive_all_ffi_traits, extract_docstring, ident_to_string, mod_path,
@@ -156,6 +156,30 @@ pub(crate) fn enum_meta_static_var(
     Ok(create_metadata_items("enum", &name, metadata_expr, None))
 }
 
+fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
+    let Some((_, e)) = &v.discriminant else {
+        return Ok(quote! { .concat_bool(false) });
+    };
+    let Expr::Lit(lit) = e else {
+        return Ok(quote! { .concat_bool(false) });
+    };
+    let Lit::Int(ref intlit) = lit.lit else {
+        return Ok(quote! { .concat_bool(false) });
+    };
+    if !intlit.suffix().is_empty() {
+        return Err(syn::Error::new_spanned(
+            intlit,
+            "integer literals with suffix not supported here",
+        ));
+    }
+    let digits = intlit.base10_digits();
+    Ok(quote! {
+        .concat_bool(true)
+        .concat_value(::uniffi::metadata::codes::LIT_INT)
+        .concat_str(#digits)
+    })
+}
+
 pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
     let variants_len =
         try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
@@ -185,6 +209,7 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                     .collect::<syn::Result<Vec<_>>>()?;
 
                     let name = ident_to_string(&v.ident);
+                    let value_tokens = variant_value(v)?;
                     let docstring = extract_docstring(&v.attrs)?;
                     let field_types = v.fields.iter().map(|f| &f.ty);
                     let field_docstrings = v.fields
@@ -194,6 +219,7 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
 
                     Ok(quote! {
                         .concat_str(#name)
+                        #value_tokens
                         .concat_value(#fields_len)
                             #(
                                 .concat_str(#field_names)

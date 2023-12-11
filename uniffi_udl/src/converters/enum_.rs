@@ -24,6 +24,7 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
                 .map::<Result<_>, _>(|v| {
                     Ok(VariantMetadata {
                         name: v.value.0.to_string(),
+                        discr: None,
                         fields: vec![],
                         docstring: v.docstring.as_ref().map(|v| convert_docstring(&v.0)),
                     })
@@ -48,6 +49,7 @@ impl APIConverter<ErrorMetadata> for weedle::EnumDefinition<'_> {
                     .map::<Result<_>, _>(|v| {
                         Ok(VariantMetadata {
                             name: v.value.0.to_string(),
+                            discr: None,
                             fields: vec![],
                             docstring: v.docstring.as_ref().map(|v| v.0.clone()),
                         })

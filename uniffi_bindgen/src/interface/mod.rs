@@ -1056,11 +1056,13 @@ existing definition: Enum {
     variants: [
         Variant {
             name: \"one\",
+            discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \"two\",
+            discr: None,
             fields: [],
             docstring: None,
         },
@@ -1074,11 +1076,13 @@ new definition: Enum {
     variants: [
         Variant {
             name: \"three\",
+            discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \"four\",
+            discr: None,
             fields: [],
             docstring: None,
         },

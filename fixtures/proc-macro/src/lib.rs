@@ -184,6 +184,13 @@ pub enum MaybeBool {
     Uncertain,
 }
 
+#[repr(u8)]
+#[derive(uniffi::Enum)]
+pub enum ReprU8 {
+    One = 1,
+    Three = 0x3,
+}
+
 #[uniffi::export]
 fn enum_identity(value: MaybeBool) -> MaybeBool {
     value
