@@ -517,10 +517,6 @@
 <a href="#517" id="517">517</a>
 <a href="#518" id="518">518</a>
 <a href="#519" id="519">519</a>
-<a href="#520" id="520">520</a>
-<a href="#521" id="521">521</a>
-<a href="#522" id="522">522</a>
-<a href="#523" id="523">523</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -543,7 +539,6 @@
 <span class="kw">mod </span>compounds;
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
-<span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
 <span class="kw">mod </span>object;
@@ -881,9 +876,7 @@
             FfiType::ForeignBytes =&gt; <span class="string">&quot;_UniffiForeignBytes&quot;</span>.to_string(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;_UNIFFI_FOREIGN_CALLBACK_T&quot;</span>.to_string(),
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
-            </span>FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;_UNIFFI_FOREIGN_EXECUTOR_CALLBACK_T&quot;</span>.to_string(),
-            FfiType::RustFutureHandle =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
+            </span>FfiType::RustFutureHandle =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
             FfiType::RustFutureContinuationCallback =&gt; <span class="string">&quot;_UNIFFI_FUTURE_CONTINUATION_T&quot;</span>.to_string(),
             FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
         }
@@ -942,7 +935,6 @@
             Type::CallbackInterface { name, .. } =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
             }
-            Type::ForeignExecutor =&gt; Box::new(executor::ForeignExecutorCodeType),
             Type::Optional { inner_type } =&gt; {
                 Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner_type))
             }

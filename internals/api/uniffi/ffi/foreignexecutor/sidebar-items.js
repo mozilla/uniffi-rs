@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ForeignExecutorCallbackResult","RustTaskCallbackCode"],"fn":["foreign_executor_callback_set"],"struct":["ForeignExecutor","ForeignExecutorHandle"],"type":["RustTaskCallback"]};

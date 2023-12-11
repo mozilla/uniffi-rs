@@ -237,12 +237,6 @@
 <a href="#237" id="237">237</a>
 <a href="#238" id="238">238</a>
 <a href="#239" id="239">239</a>
-<a href="#240" id="240">240</a>
-<a href="#241" id="241">241</a>
-<a href="#242" id="242">242</a>
-<a href="#243" id="243">243</a>
-<a href="#244" id="244">244</a>
-<a href="#245" id="245">245</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -294,11 +288,6 @@
     </span>ForeignBytes,
     <span class="doccomment">/// Pointer to a callback function that handles all callbacks on the foreign language side.
     </span>ForeignCallback,
-    <span class="doccomment">/// Pointer-sized opaque handle that represents a foreign executor.  Foreign bindings can
-    /// either use an actual pointer or a usized integer.
-    </span>ForeignExecutorHandle,
-    <span class="doccomment">/// Pointer to the callback function that&#39;s invoked to schedule calls with a ForeignExecutor
-    </span>ForeignExecutorCallback,
     <span class="doccomment">/// Pointer to a Rust future
     </span>RustFutureHandle,
     <span class="doccomment">/// Continuation function for a Rust future
@@ -339,7 +328,6 @@
             </span>Type::Object { name, .. } =&gt; FfiType::RustArcPtr(name.to_owned()),
             <span class="comment">// Callback interfaces are passed as opaque integer handles.
             </span>Type::CallbackInterface { .. } =&gt; FfiType::UInt64,
-            Type::ForeignExecutor =&gt; FfiType::ForeignExecutorHandle,
             <span class="comment">// Other types are serialized into a bytebuffer and deserialized on the other side.
             </span>Type::Enum { .. }
             | Type::Record { .. }
