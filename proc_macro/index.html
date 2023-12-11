@@ -308,7 +308,11 @@ pub enum MyEnum {
         foo: u8,
         bar: Vec&lt;i32&gt;,
     },
+    WithValue = 3,
 }</code></pre>
+<p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.
+Most would be likely ignore it in the example above due to the nature of the enum,
+but some expose it for simple &quot;unit&quot; enums.</p>
 <h2 id="the-uniffiobject-derive"><a class="header" href="#the-uniffiobject-derive">The <code>uniffi::Object</code> derive</a></h2>
 <p>This derive can be used to replace an <code>interface</code> definition in UDL. Every object type must have
 <em>either</em> an <code>interface</code> definition in UDL <em>or</em> use this derive macro. However, <code>#[uniffi::export]</code>

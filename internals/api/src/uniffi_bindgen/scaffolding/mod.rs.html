@@ -111,7 +111,6 @@
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -159,7 +158,6 @@
                 <span class="macro">format!</span>(<span class="string">&quot;std::sync::Arc&lt;{}&gt;&quot;</span>, imp.rust_name_for(name))
             }
             Type::CallbackInterface { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;Box&lt;dyn r#{name}&gt;&quot;</span>),
-            Type::ForeignExecutor =&gt; <span class="string">&quot;::uniffi::ForeignExecutor&quot;</span>.into(),
             Type::Optional { inner_type } =&gt; {
                 <span class="macro">format!</span>(<span class="string">&quot;std::option::Option&lt;{}&gt;&quot;</span>, type_rs(inner_type)<span class="question-mark">?</span>)
             }

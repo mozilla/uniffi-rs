@@ -566,10 +566,6 @@
 <a href="#566" id="566">566</a>
 <a href="#567" id="567">567</a>
 <a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -592,7 +588,6 @@
 <span class="kw">mod </span>compounds;
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>enum_;
-<span class="kw">mod </span>executor;
 <span class="kw">mod </span>external;
 <span class="kw">mod </span>miscellany;
 <span class="kw">mod </span>object;
@@ -905,8 +900,6 @@
             }
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),
             FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.to_string(),
-            FfiType::ForeignExecutorHandle =&gt; <span class="string">&quot;USize&quot;</span>.to_string(),
-            FfiType::ForeignExecutorCallback =&gt; <span class="string">&quot;UniFfiForeignExecutorCallback&quot;</span>.to_string(),
             FfiType::RustFutureHandle =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
             FfiType::RustFutureContinuationCallback =&gt; {
                 <span class="string">&quot;UniFffiRustFutureContinuationCallbackType&quot;</span>.to_string()
@@ -974,7 +967,6 @@
             Type::CallbackInterface { name, .. } =&gt; {
                 Box::new(callback_interface::CallbackInterfaceCodeType::new(name))
             }
-            Type::ForeignExecutor =&gt; Box::new(executor::ForeignExecutorCodeType),
             Type::Optional { inner_type } =&gt; {
                 Box::new(compounds::OptionalCodeType::new(<span class="kw-2">*</span>inner_type))
             }

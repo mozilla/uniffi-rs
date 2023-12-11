@@ -1224,24 +1224,6 @@
 <a href="#1224" id="1224">1224</a>
 <a href="#1225" id="1225">1225</a>
 <a href="#1226" id="1226">1226</a>
-<a href="#1227" id="1227">1227</a>
-<a href="#1228" id="1228">1228</a>
-<a href="#1229" id="1229">1229</a>
-<a href="#1230" id="1230">1230</a>
-<a href="#1231" id="1231">1231</a>
-<a href="#1232" id="1232">1232</a>
-<a href="#1233" id="1233">1233</a>
-<a href="#1234" id="1234">1234</a>
-<a href="#1235" id="1235">1235</a>
-<a href="#1236" id="1236">1236</a>
-<a href="#1237" id="1237">1237</a>
-<a href="#1238" id="1238">1238</a>
-<a href="#1239" id="1239">1239</a>
-<a href="#1240" id="1240">1240</a>
-<a href="#1241" id="1241">1241</a>
-<a href="#1242" id="1242">1242</a>
-<a href="#1243" id="1243">1243</a>
-<a href="#1244" id="1244">1244</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1824,7 +1806,6 @@
             .chain(<span class="self">self</span>.iter_rust_buffer_ffi_function_definitions())
             .chain(<span class="self">self</span>.iter_futures_ffi_function_definitons())
             .chain(<span class="self">self</span>.iter_checksum_ffi_functions())
-            .chain(<span class="self">self</span>.ffi_foreign_executor_callback_set())
             .chain([<span class="self">self</span>.ffi_uniffi_contract_version()])
     }
 
@@ -1901,27 +1882,6 @@
                     <span class="self">self</span>.ffi_rust_future_complete(return_type),
                 ]
             })
-    }
-
-    <span class="doccomment">/// The ffi_foreign_executor_callback_set FFI function
-    ///
-    /// We only include this in the FFI if the `ForeignExecutor` type is actually used
-    </span><span class="kw">pub fn </span>ffi_foreign_executor_callback_set(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;FfiFunction&gt; {
-        <span class="kw">if </span><span class="self">self</span>.types.contains(<span class="kw-2">&amp;</span>Type::ForeignExecutor) {
-            <span class="prelude-val">Some</span>(FfiFunction {
-                name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_foreign_executor_callback_set&quot;</span>, <span class="self">self</span>.ffi_namespace()),
-                arguments: <span class="macro">vec!</span>[FfiArgument {
-                    name: <span class="string">&quot;callback&quot;</span>.into(),
-                    type_: FfiType::ForeignExecutorCallback,
-                }],
-                return_type: <span class="prelude-val">None</span>,
-                is_async: <span class="bool-val">false</span>,
-                has_rust_call_status_arg: <span class="bool-val">false</span>,
-                is_object_free_function: <span class="bool-val">false</span>,
-            })
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>}
     }
 
     <span class="doccomment">/// List all API checksums to check
@@ -2322,11 +2282,13 @@ existing definition: Enum {
     variants: [
         Variant {
             name: \&quot;one\&quot;,
+            discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \&quot;two\&quot;,
+            discr: None,
             fields: [],
             docstring: None,
         },
@@ -2340,11 +2302,13 @@ new definition: Enum {
     variants: [
         Variant {
             name: \&quot;three\&quot;,
+            discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \&quot;four\&quot;,
+            discr: None,
             fields: [],
             docstring: None,
         },

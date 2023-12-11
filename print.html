@@ -1425,7 +1425,11 @@ pub enum MyEnum {
         foo: u8,
         bar: Vec&lt;i32&gt;,
     },
+    WithValue = 3,
 }</code></pre>
+<p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.
+Most would be likely ignore it in the example above due to the nature of the enum,
+but some expose it for simple &quot;unit&quot; enums.</p>
 <h2 id="the-uniffiobject-derive"><a class="header" href="#the-uniffiobject-derive">The <code>uniffi::Object</code> derive</a></h2>
 <p>This derive can be used to replace an <code>interface</code> definition in UDL. Every object type must have
 <em>either</em> an <code>interface</code> definition in UDL <em>or</em> use this derive macro. However, <code>#[uniffi::export]</code>
@@ -1603,7 +1607,6 @@ if __name__ == '__main__':
 <p>This code uses <code>asyncio</code> to drive the future to completion, while our exposed function is used with <code>await</code>.</p>
 <p>In Rust <code>Future</code> terminology this means the foreign bindings supply the &quot;executor&quot; - think event-loop, or async runtime. In this example it's <code>asyncio</code>. There's no requirement for a Rust event loop.</p>
 <p>There are <a href="https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html">some great API docs</a> on the implementation that are well worth a read.</p>
-<p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor">foreign-executor fixture</a> for more implementation details.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="generating-bindings"><a class="header" href="#generating-bindings">Generating bindings</a></h1>
 <p>Bindings is the term used for the code generates for foreign languages which integrate
 with Rust crates - that is, the generated Python, Swift or Kotlin code which drives the

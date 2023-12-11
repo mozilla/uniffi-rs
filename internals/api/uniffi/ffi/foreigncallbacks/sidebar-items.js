@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"type":["ForeignCallback","ForeignExecutorCallback"]};
+window.SIDEBAR_ITEMS = {"type":["ForeignCallback"]};

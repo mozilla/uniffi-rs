@@ -206,7 +206,6 @@ if __name__ == '__main__':
 <p>This code uses <code>asyncio</code> to drive the future to completion, while our exposed function is used with <code>await</code>.</p>
 <p>In Rust <code>Future</code> terminology this means the foreign bindings supply the &quot;executor&quot; - think event-loop, or async runtime. In this example it's <code>asyncio</code>. There's no requirement for a Rust event loop.</p>
 <p>There are <a href="https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html">some great API docs</a> on the implementation that are well worth a read.</p>
-<p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/foreign-executor">foreign-executor fixture</a> for more implementation details.</p>
 
                     </main>
 
