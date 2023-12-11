@@ -202,7 +202,7 @@ where
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
     future: Mutex<WrappedFuture<F, T, UT>>,
-    continuation_data: Mutex<Scheduler>,
+    scheduler: Mutex<Scheduler>,
     // UT is used as the generic parameter for [LowerReturn].
     // Let's model this with PhantomData as a function that inputs a UT value.
     _phantom: PhantomData<fn(UT) -> ()>,
@@ -218,7 +218,7 @@ where
     pub(super) fn new(future: F, _tag: UT) -> Arc<Self> {
         Arc::new(Self {
             future: Mutex::new(WrappedFuture::new(future)),
-            continuation_data: Mutex::new(Scheduler::new()),
+            scheduler: Mutex::new(Scheduler::new()),
             _phantom: PhantomData,
         })
     }
@@ -232,20 +232,20 @@ where
         if ready {
             callback(data, RustFuturePoll::Ready)
         } else {
-            self.continuation_data.lock().unwrap().store(callback, data);
+            self.scheduler.lock().unwrap().store(callback, data);
         }
     }
 
     pub(super) fn is_cancelled(&self) -> bool {
-        self.continuation_data.lock().unwrap().is_cancelled()
+        self.scheduler.lock().unwrap().is_cancelled()
     }
 
     pub(super) fn wake(&self) {
-        self.continuation_data.lock().unwrap().wake();
+        self.scheduler.lock().unwrap().wake();
     }
 
     pub(super) fn cancel(&self) {
-        self.continuation_data.lock().unwrap().cancel();
+        self.scheduler.lock().unwrap().cancel();
     }
 
     pub(super) fn complete(&self, call_status: &mut RustCallStatus) -> T::ReturnType {
@@ -254,7 +254,7 @@ where
 
     pub(super) fn free(self: Arc<Self>) {
         // Call cancel() to send any leftover data to the continuation callback
-        self.continuation_data.lock().unwrap().cancel();
+        self.scheduler.lock().unwrap().cancel();
         // Ensure we drop our inner future, releasing all held references
         self.future.lock().unwrap().free();
     }
