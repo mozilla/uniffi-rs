@@ -378,28 +378,6 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
-<a href="#390" id="390">390</a>
-<a href="#391" id="391">391</a>
-<a href="#392" id="392">392</a>
-<a href="#393" id="393">393</a>
-<a href="#394" id="394">394</a>
-<a href="#395" id="395">395</a>
-<a href="#396" id="396">396</a>
-<a href="#397" id="397">397</a>
-<a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
-<a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -434,20 +412,6 @@
     enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
     record::expand_record,
 };
-
-<span class="kw">struct </span>IdentPair {
-    lhs: Ident,
-    rhs: Ident,
-}
-
-<span class="kw">impl </span>Parse <span class="kw">for </span>IdentPair {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>lhs = input.parse()<span class="question-mark">?</span>;
-        input.parse::&lt;<span class="macro">Token!</span>[,]&gt;()<span class="question-mark">?</span>;
-        <span class="kw">let </span>rhs = input.parse()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ lhs, rhs })
-    }
-}
 
 <span class="kw">struct </span>CustomTypeInfo {
     ident: Ident,
@@ -657,14 +621,6 @@
 #[proc_macro_attribute]
 </span><span class="kw">pub fn </span>export_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     do_export(attrs, input, <span class="bool-val">true</span>)
-}
-
-<span class="doccomment">/// Generate the FfiConverter implementation for an trait interface for the scaffolding code
-</span><span class="attr">#[doc(hidden)]
-#[proc_macro]
-</span><span class="kw">pub fn </span>scaffolding_ffi_converter_callback_interface(tokens: TokenStream) -&gt; TokenStream {
-    <span class="kw">let </span>input: IdentPair = <span class="macro">syn::parse_macro_input!</span>(tokens);
-    export::ffi_converter_callback_interface_impl(<span class="kw-2">&amp;</span>input.lhs, <span class="kw-2">&amp;</span>input.rhs, <span class="bool-val">true</span>).into()
 }
 
 <span class="doccomment">/// A helper macro to include generated component scaffolding.

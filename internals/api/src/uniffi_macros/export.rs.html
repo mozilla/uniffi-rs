@@ -157,6 +157,9 @@
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -241,9 +244,12 @@
             <span class="kw">let </span>trait_impl_ident = callback_interface::trait_impl_ident(<span class="kw-2">&amp;</span>trait_name);
             <span class="kw">let </span>trait_impl = callback_interface::trait_impl(<span class="kw-2">&amp;</span>mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items)
                 .unwrap_or_else(|e| e.into_compile_error());
-            <span class="kw">let </span>metadata_items =
-                callback_interface::metadata_items(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>mod_path, docstring)
-                    .unwrap_or_else(|e| <span class="macro">vec!</span>[e.into_compile_error()]);
+            <span class="kw">let </span>metadata_items = (!udl_mode).then(|| {
+                <span class="kw">let </span>items =
+                    callback_interface::metadata_items(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items, <span class="kw-2">&amp;</span>mod_path, docstring)
+                        .unwrap_or_else(|e| <span class="macro">vec!</span>[e.into_compile_error()]);
+                <span class="macro">quote! </span>{ #(#items)* }
+            });
             <span class="kw">let </span>ffi_converter_tokens =
                 ffi_converter_callback_interface_impl(<span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>trait_impl_ident, udl_mode);
 
@@ -252,7 +258,7 @@
 
                 #ffi_converter_tokens
 
-                #(#metadata_items)*
+                #metadata_items
             })
         }
         ExportItem::Struct {
