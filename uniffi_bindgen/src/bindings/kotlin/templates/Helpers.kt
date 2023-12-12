@@ -157,5 +157,5 @@ internal class UniFfiHandleMap<T: Any> {
 
 // FFI type for Rust future continuations
 internal interface UniFffiRustFutureContinuationCallbackType : com.sun.jna.Callback {
-    fun callback(continuationHandle: USize, pollResult: Short);
+    fun callback(continuationHandle: USize, pollResult: Byte);
 }
