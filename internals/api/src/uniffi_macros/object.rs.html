@@ -314,7 +314,7 @@
         <span class="kw">unsafe </span>#lower_return_impl_spec {
             <span class="kw">type </span>ReturnType = &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType;
 
-            <span class="kw">fn </span>lower_return(obj: <span class="self">Self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::ReturnType, ::uniffi::RustBuffer&gt; {
+            <span class="kw">fn </span>lower_return(obj: <span class="self">Self</span>) -&gt; ::std::result::Result&lt;<span class="self">Self</span>::ReturnType, ::uniffi::RustBuffer&gt; {
                 <span class="prelude-val">Ok</span>(&lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(::std::sync::Arc::new(obj)))
             }
 
