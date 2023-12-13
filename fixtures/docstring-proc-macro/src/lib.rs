@@ -49,6 +49,9 @@ enum AssociatedErrorTest {
 }
 
 /// <docstring-object>
+///
+///   <docstring-object-indented-1>
+///   <docstring-object-indented-2>
 #[derive(uniffi::Object)]
 pub struct ObjectTest {}
 

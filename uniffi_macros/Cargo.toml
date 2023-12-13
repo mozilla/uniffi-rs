@@ -23,6 +23,7 @@ proc-macro2 = "1.0"
 quote = "1.0"
 serde = "1.0.136"
 syn = { version = "2.0", features = ["full", "visit-mut"] }
+textwrap = "0.16.0"
 toml = "0.5.9"
 uniffi_build = { path = "../uniffi_build", version = "=0.25.3" }
 uniffi_meta = { path = "../uniffi_meta", version = "=0.25.3" }

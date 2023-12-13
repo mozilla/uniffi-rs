@@ -42,6 +42,9 @@ interface AssociatedErrorTest {
 };
 
 /// <docstring-object>
+///
+///   <docstring-object-indented-1>
+///   <docstring-object-indented-2>
 interface ObjectTest {
     /// <docstring-primary-constructor>
     constructor();

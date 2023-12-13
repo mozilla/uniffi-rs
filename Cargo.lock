@@ -1872,6 +1872,7 @@ dependencies = [
  "quote",
  "serde",
  "syn",
+ "textwrap",
  "toml",
  "uniffi_build",
  "uniffi_meta",
