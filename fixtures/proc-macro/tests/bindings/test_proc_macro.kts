@@ -27,6 +27,7 @@ val three = Three(obj)
 
 assert(makeZero().inner == "ZERO")
 assert(makeRecordWithBytes().someBytes.contentEquals(byteArrayOf(0, 1, 2, 3, 4)))
+assert(join(listOf("a", "b", "c"), ":") == "a:b:c")
 
 try {
     alwaysFails()

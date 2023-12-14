@@ -33,6 +33,7 @@ let three = Three(obj: obj)
 
 assert(makeZero().inner == "ZERO")
 assert(makeRecordWithBytes().someBytes == Data([0, 1, 2, 3, 4]))
+assert(join(parts: ["a", "b", "c"], sep: ":") == "a:b:c")
 
 do {
     try alwaysFails()
