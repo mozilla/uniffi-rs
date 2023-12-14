@@ -38,6 +38,8 @@ assert(make_hashmap(1, 2) == {1: 2})
 # d = {1, 2}
 # assert(return_hashmap(d) == d)
 
+assert(join(["a", "b", "c"], ":") == "a:b:c")
+
 try:
     always_fails()
 except BasicError.OsError:

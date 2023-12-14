@@ -23,8 +23,8 @@
 /// "UT" means an abitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, Lift, LiftReturn, Lower, LowerReturn, MetadataBuffer, Result,
-    RustBuffer, UnexpectedUniFFICallbackError,
+    ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerReturn, MetadataBuffer,
+    Result, RustBuffer, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -517,4 +517,15 @@ where
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)
         .concat(R::TYPE_ID_META)
         .concat(E::TYPE_ID_META);
+}
+
+unsafe impl<T, UT> LiftRef<UT> for [T]
+where
+    T: Lift<UT>,
+{
+    type LiftType = Vec<T>;
+}
+
+unsafe impl<UT> LiftRef<UT> for str {
+    type LiftType = String;
 }

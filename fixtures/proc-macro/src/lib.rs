@@ -270,4 +270,9 @@ fn get_externals(e: Option<Externals>) -> Externals {
     e.unwrap_or_default()
 }
 
+#[uniffi::export]
+pub fn join(parts: &[String], sep: &str) -> String {
+    parts.join(sep)
+}
+
 uniffi::include_scaffolding!("proc-macro");
