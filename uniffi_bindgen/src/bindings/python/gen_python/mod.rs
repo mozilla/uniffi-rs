@@ -365,16 +365,19 @@ impl PythonCodeOracle {
 
     /// Get the name of the protocol and class name for an object.
     ///
-    /// For struct impls, the class name is the object name and the protocol name is derived from that.
-    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
+    /// Otherwise, the class name is the object name and the protocol name is derived from that.
+    ///
+    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
+    /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
+    /// only lowers the concrete class.
     fn object_names(&self, obj: &Object) -> (String, String) {
         let class_name = self.class_name(obj.name());
-        match obj.imp() {
-            ObjectImpl::Struct => (format!("{class_name}Protocol"), class_name),
-            ObjectImpl::Trait => {
-                let protocol_name = format!("{class_name}Impl");
-                (class_name, protocol_name)
-            }
+        if obj.has_callback_interface() {
+            let impl_name = format!("{class_name}Impl");
+            (class_name, impl_name)
+        } else {
+            (format!("{class_name}Protocol"), class_name)
         }
     }
 }

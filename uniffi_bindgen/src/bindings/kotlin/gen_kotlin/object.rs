@@ -27,9 +27,8 @@ impl CodeType for ObjectCodeType {
     }
 
     fn initialization_fn(&self) -> Option<String> {
-        match &self.imp {
-            ObjectImpl::Struct => None,
-            ObjectImpl::Trait => Some(format!("uniffiCallbackInterface{}.register", self.name)),
-        }
+        self.imp
+            .has_callback_interface()
+            .then(|| format!("uniffiCallbackInterface{}.register", self.name))
     }
 }

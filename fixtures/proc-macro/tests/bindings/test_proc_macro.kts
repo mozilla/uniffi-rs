@@ -44,9 +44,13 @@ try {
 }
 
 val traitImpl = obj.getTrait(null)
-assert(traitImpl.name() == "TraitImpl")
-assert(obj.getTrait(traitImpl).name() == "TraitImpl")
-assert(getTraitNameByRef(traitImpl) == "TraitImpl")
+assert(traitImpl.concatStrings("foo", "bar") == "foobar")
+assert(obj.getTrait(traitImpl).concatStrings("foo", "bar") == "foobar")
+assert(concatStringsByRef(traitImpl, "foo", "bar") == "foobar")
+
+val traitImpl2 = obj.getTraitWithForeign(null)
+assert(traitImpl2.name() == "RustTraitImpl")
+assert(obj.getTraitWithForeign(traitImpl2).name() == "RustTraitImpl")
 
 
 class KtTestCallbackInterface : TestCallbackInterface {

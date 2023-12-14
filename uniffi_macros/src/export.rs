@@ -67,16 +67,24 @@ pub(crate) fn expand_export(
         ExportItem::Trait {
             items,
             self_ident,
-            callback_interface: false,
+            with_foreign,
+            callback_interface_only: false,
             docstring,
         } => trait_interface::gen_trait_scaffolding(
-            &mod_path, args, self_ident, items, udl_mode, docstring,
+            &mod_path,
+            args,
+            self_ident,
+            items,
+            udl_mode,
+            with_foreign,
+            docstring,
         ),
         ExportItem::Trait {
             items,
             self_ident,
-            callback_interface: true,
+            callback_interface_only: true,
             docstring,
+            ..
         } => {
             let trait_name = ident_to_string(&self_ident);
             let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);

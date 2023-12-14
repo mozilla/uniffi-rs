@@ -44,6 +44,8 @@ pub(super) enum Attribute {
     Custom,
     // The interface described is implemented as a trait.
     Trait,
+    // Modifies `Trait` to enable foreign implementations (callback interfaces)
+    WithForeign,
     Async,
     NonExhaustive,
 }
@@ -53,6 +55,7 @@ pub(super) enum Attribute {
 #[derive(Debug, Copy, Clone, Checksum)]
 pub(super) enum RustKind {
     Object,
+    CallbackTrait,
     Trait,
     Record,
     Enum,
@@ -83,6 +86,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Error" => Ok(Attribute::Error),
                 "Custom" => Ok(Attribute::Custom),
                 "Trait" => Ok(Attribute::Trait),
+                "WithForeign" => Ok(Attribute::WithForeign),
                 "Async" => Ok(Attribute::Async),
                 "NonExhaustive" => Ok(Attribute::NonExhaustive),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
@@ -172,6 +176,7 @@ fn rust_kind_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -
             "enum" => RustKind::Enum,
             "trait" => RustKind::Trait,
             "callback" => RustKind::CallbackInterface,
+            "trait_with_foreign" => RustKind::CallbackTrait,
             _ => anyhow::bail!("Unknown `[Rust=]` kind {:?}", str_lit.0),
         },
         weedle::attribute::IdentifierOrString::Identifier(_) => {
@@ -358,12 +363,25 @@ impl InterfaceAttributes {
         self.0.iter().any(|attr| attr.is_error())
     }
 
-    pub fn object_impl(&self) -> ObjectImpl {
-        if self.0.iter().any(|attr| matches!(attr, Attribute::Trait)) {
-            ObjectImpl::Trait
-        } else {
-            ObjectImpl::Struct
-        }
+    pub fn contains_trait(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Trait))
+    }
+
+    pub fn contains_with_foreign(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::WithForeign))
+    }
+
+    pub fn object_impl(&self) -> Result<ObjectImpl> {
+        Ok(
+            match (self.contains_trait(), self.contains_with_foreign()) {
+                (true, true) => ObjectImpl::CallbackTrait,
+                (true, false) => ObjectImpl::Trait,
+                (false, false) => ObjectImpl::Struct,
+                (false, true) => bail!("WithForeign can't be specified without Trait"),
+            },
+        )
     }
     pub fn get_traits(&self) -> Vec<String> {
         self.0
@@ -385,6 +403,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Enum => Ok(()),
             Attribute::Error => Ok(()),
             Attribute::Trait => Ok(()),
+            Attribute::WithForeign => Ok(()),
             Attribute::Traits(_) => Ok(()),
             _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
@@ -849,11 +868,20 @@ mod test {
     fn test_trait_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert_eq!(attrs.object_impl(), ObjectImpl::Trait);
+        assert_eq!(attrs.object_impl().unwrap(), ObjectImpl::Trait);
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Trait, WithForeign]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert_eq!(attrs.object_impl().unwrap(), ObjectImpl::CallbackTrait);
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert_eq!(attrs.object_impl(), ObjectImpl::Struct);
+        assert_eq!(attrs.object_impl().unwrap(), ObjectImpl::Struct);
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[WithForeign]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(attrs.object_impl().is_err())
     }
 
     #[test]

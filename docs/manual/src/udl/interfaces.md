@@ -124,7 +124,14 @@ fn press(button: Arc<dyn Button>) -> Arc<dyn Button> { ... }
 
 ### Foreign implementations
 
-Traits can also be implemented on the foreign side passed into Rust, for example:
+Use the `WithForeign` attribute to allow traits to also be implemented on the foreign side passed into Rust, for example:
+
+```idl
+[Trait, WithForeign]
+interface Button {
+    string name();
+};
+```
 
 ```python
 class PyButton(uniffi_module.Button):
@@ -134,7 +141,7 @@ class PyButton(uniffi_module.Button):
 uniffi_module.press(PyButton())
 ```
 
-Note: This is currently supported on Python, Kotlin, and Swift.
+Note: This is currently only supported on Python, Kotlin, and Swift.
 
 ### Traits construction
 

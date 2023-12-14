@@ -5,6 +5,8 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote, quote_spanned};
 
+use uniffi_meta::ObjectImpl;
+
 use crate::{
     export::{
         attributes::ExportAttributeArguments, callback_interface, gen_method_scaffolding,
@@ -20,14 +22,17 @@ pub(super) fn gen_trait_scaffolding(
     self_ident: Ident,
     items: Vec<ImplItem>,
     udl_mode: bool,
+    with_foreign: bool,
     docstring: String,
 ) -> syn::Result<TokenStream> {
     if let Some(rt) = args.async_runtime {
         return Err(syn::Error::new_spanned(rt, "not supported for traits"));
     }
     let trait_name = ident_to_string(&self_ident);
-    let trait_impl = callback_interface::trait_impl(mod_path, &self_ident, &items)
-        .unwrap_or_else(|e| e.into_compile_error());
+    let trait_impl = with_foreign.then(|| {
+        callback_interface::trait_impl(mod_path, &self_ident, &items)
+            .unwrap_or_else(|e| e.into_compile_error())
+    });
 
     let clone_fn_ident = Ident::new(
         &uniffi_meta::clone_fn_symbol_name(mod_path, &trait_name),
@@ -94,10 +99,15 @@ pub(super) fn gen_trait_scaffolding(
         .collect::<syn::Result<_>>()?;
 
     let meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(&self_ident, true, mod_path, docstring)
+        let imp = if with_foreign {
+            ObjectImpl::CallbackTrait
+        } else {
+            ObjectImpl::Trait
+        };
+        interface_meta_static_var(&self_ident, imp, mod_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, udl_mode);
+    let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, udl_mode, with_foreign);
 
     Ok(quote_spanned! { self_ident.span() =>
         #meta_static_var
@@ -108,11 +118,36 @@ pub(super) fn gen_trait_scaffolding(
     })
 }
 
-pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool) -> TokenStream {
+pub(crate) fn ffi_converter(
+    mod_path: &str,
+    trait_ident: &Ident,
+    udl_mode: bool,
+    with_foreign: bool,
+) -> TokenStream {
     let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, udl_mode);
     let lift_ref_impl_spec = tagged_impl_header("LiftRef", &quote! { dyn #trait_ident }, udl_mode);
     let trait_name = ident_to_string(trait_ident);
-    let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
+    let try_lift = if with_foreign {
+        let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
+        quote! {
+            fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
+                Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v as u64)))
+            }
+        }
+    } else {
+        quote! {
+            fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
+                unsafe {
+                    Ok(*::std::boxed::Box::from_raw(v as *mut ::std::sync::Arc<Self>))
+                }
+            }
+        }
+    };
+    let metadata_code = if with_foreign {
+        quote! { ::uniffi::metadata::codes::TYPE_CALLBACK_TRAIT_INTERFACE }
+    } else {
+        quote! { ::uniffi::metadata::codes::TYPE_TRAIT_INTERFACE }
+    };
 
     quote! {
         // All traits must be `Sync + Send`. The generated scaffolding will fail to compile
@@ -128,9 +163,7 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
                 ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) as *const ::std::os::raw::c_void
             }
 
-            fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
-                Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v as u64)))
-            }
+            #try_lift
 
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
@@ -147,10 +180,9 @@ pub(crate) fn ffi_converter(mod_path: &str, trait_ident: &Ident, udl_mode: bool)
                     ::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
-            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)
                 .concat_str(#mod_path)
-                .concat_str(#trait_name)
-                .concat_bool(true);
+                .concat_str(#trait_name);
         }
 
         unsafe #lift_ref_impl_spec {

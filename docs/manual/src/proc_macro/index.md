@@ -89,6 +89,13 @@ trait MyTrait {
     // ...
 }
 
+// Corresponding UDL:
+// [Trait, WithForeign]
+// interface MyTrait {};
+#[uniffi::export(with_foreign)]
+trait MyTrait {
+    // ...
+}
 ```
 
 

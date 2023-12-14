@@ -127,7 +127,11 @@ impl Object {
     }
 
     pub fn is_trait_interface(&self) -> bool {
-        matches!(self.imp, ObjectImpl::Trait)
+        self.imp.is_trait_interface()
+    }
+
+    pub fn has_callback_interface(&self) -> bool {
+        self.imp.has_callback_interface()
     }
 
     pub fn constructors(&self) -> Vec<&Constructor> {
@@ -214,7 +218,7 @@ impl Object {
         }];
         self.ffi_func_free.return_type = None;
         self.ffi_func_free.is_object_free_function = true;
-        if self.is_trait_interface() {
+        if self.has_callback_interface() {
             self.ffi_init_callback =
                 Some(FfiFunction::callback_init(&self.module_path, &self.name));
         }

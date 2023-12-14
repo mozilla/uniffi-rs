@@ -21,6 +21,8 @@
 
 - Rust traits `Display`, `Hash` and `Eq` exposed to Kotlin and Swift [#1817](https://github.com/mozilla/uniffi-rs/pull/1817)
 - Foreign types can now implement trait interfaces [#1791](https://github.com/mozilla/uniffi-rs/pull/1791)
+  - UDL: use the `[WithForeign]` attribute
+  - proc-macros: use the `#[uniffi::export(with_foreign)]` attribute
 - Generated Python code is able to specify a package name for the module [#1784](https://github.com/mozilla/uniffi-rs/pull/1784)
 - UDL can describe async function [#1834](https://github.com/mozilla/uniffi-rs/pull/1834)
 - UDL files can reference types defined in procmacros in this crate - see

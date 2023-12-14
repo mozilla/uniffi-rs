@@ -156,7 +156,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {% endif %}
 }
 
-{%- if obj.is_trait_interface() %}
+{%- if obj.has_callback_interface() %}
 {%- let callback_handler_class = format!("UniffiCallbackInterface{}", name) %}
 {%- let callback_handler_obj = format!("uniffiCallbackInterface{}", name) %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
@@ -164,17 +164,16 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
 {%- endif %}
 
 public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
-    {%- if obj.is_trait_interface() %}
+    {%- if obj.has_callback_interface() %}
     internal val handleMap = ConcurrentHandleMap<{{ interface_name }}>()
     {%- endif %}
 
     override fun lower(value: {{ type_name }}): Pointer {
-        {%- match obj.imp() %}
-        {%- when ObjectImpl::Struct %}
-        return value.uniffiClonePointer()
-        {%- when ObjectImpl::Trait %}
+        {%- if obj.has_callback_interface() %}
         return Pointer(handleMap.insert(value))
-        {%- endmatch %}
+        {%- else %}
+        return value.uniffiClonePointer()
+        {%- endif %}
     }
 
     override fun lift(value: Pointer): {{ type_name }} {

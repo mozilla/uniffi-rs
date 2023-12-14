@@ -54,7 +54,9 @@ impl<'a> MetadataReader<'a> {
             codes::RECORD => self.read_record()?.into(),
             codes::ENUM => self.read_enum(false)?.into(),
             codes::ERROR => self.read_error()?.into(),
-            codes::INTERFACE => self.read_object()?.into(),
+            codes::INTERFACE => self.read_object(ObjectImpl::Struct)?.into(),
+            codes::TRAIT_INTERFACE => self.read_object(ObjectImpl::Trait)?.into(),
+            codes::CALLBACK_TRAIT_INTERFACE => self.read_object(ObjectImpl::CallbackTrait)?.into(),
             codes::CALLBACK_INTERFACE => self.read_callback_interface()?.into(),
             codes::TRAIT_METHOD => self.read_trait_method()?.into(),
             codes::UNIFFI_TRAIT => self.read_uniffi_trait()?.into(),
@@ -155,7 +157,17 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_INTERFACE => Type::Object {
                 module_path: self.read_string()?,
                 name: self.read_string()?,
-                imp: ObjectImpl::from_is_trait(self.read_bool()?),
+                imp: ObjectImpl::Struct,
+            },
+            codes::TYPE_TRAIT_INTERFACE => Type::Object {
+                module_path: self.read_string()?,
+                name: self.read_string()?,
+                imp: ObjectImpl::Trait,
+            },
+            codes::TYPE_CALLBACK_TRAIT_INTERFACE => Type::Object {
+                module_path: self.read_string()?,
+                name: self.read_string()?,
+                imp: ObjectImpl::CallbackTrait,
             },
             codes::TYPE_CALLBACK_INTERFACE => Type::CallbackInterface {
                 module_path: self.read_string()?,
@@ -315,11 +327,11 @@ impl<'a> MetadataReader<'a> {
         Ok(ErrorMetadata::Enum { enum_, is_flat })
     }
 
-    fn read_object(&mut self) -> Result<ObjectMetadata> {
+    fn read_object(&mut self, imp: ObjectImpl) -> Result<ObjectMetadata> {
         Ok(ObjectMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
-            imp: ObjectImpl::from_is_trait(self.read_bool()?),
+            imp,
             docstring: self.read_optional_long_string()?,
         })
     }

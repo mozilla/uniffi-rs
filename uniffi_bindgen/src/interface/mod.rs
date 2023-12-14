@@ -257,7 +257,7 @@ impl ComponentInterface {
             .chain(
                 self.object_definitions()
                     .iter()
-                    .filter(|o| o.is_trait_interface())
+                    .filter(|o| o.has_callback_interface())
                     .flat_map(|o| o.methods()),
             )
             .any(|m| m.throws_type() == Some(&e.as_type()));
