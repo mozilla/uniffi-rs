@@ -39,6 +39,8 @@ pub mod codes {
     pub const CALLBACK_INTERFACE: u8 = 9;
     pub const TRAIT_METHOD: u8 = 10;
     pub const UNIFFI_TRAIT: u8 = 11;
+    pub const TRAIT_INTERFACE: u8 = 12;
+    pub const CALLBACK_TRAIT_INTERFACE: u8 = 13;
     pub const UNKNOWN: u8 = 255;
 
     // Type codes
@@ -66,7 +68,8 @@ pub mod codes {
     pub const TYPE_CALLBACK_INTERFACE: u8 = 21;
     pub const TYPE_CUSTOM: u8 = 22;
     pub const TYPE_RESULT: u8 = 23;
-    pub const TYPE_FUTURE: u8 = 24;
+    pub const TYPE_TRAIT_INTERFACE: u8 = 24;
+    pub const TYPE_CALLBACK_TRAIT_INTERFACE: u8 = 25;
     pub const TYPE_UNIT: u8 = 255;
 
     // Literal codes for LiteralMetadata - note that we don't support

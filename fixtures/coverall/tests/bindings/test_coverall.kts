@@ -406,6 +406,12 @@ makeRustGetters().let { rustGetters ->
     testRoundTripThroughForeign(KotlinGetters())
 }
 
+// Test StringUtil
+getStringUtilTraits().let { traits ->
+    assert(traits[0].concat("cow", "boy") == "cowboy")
+    assert(traits[1].concat("cow", "boy") == "cowboy")
+}
+
 // This tests that the UniFFI-generated scaffolding doesn't introduce any unexpected locking.
 // We have one thread busy-wait for a some period of time, while a second thread repeatedly
 // increments the counter and then checks if the object is still busy. The second thread should

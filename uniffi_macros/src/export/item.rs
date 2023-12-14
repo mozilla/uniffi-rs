@@ -21,7 +21,8 @@ pub(super) enum ExportItem {
     Trait {
         self_ident: Ident,
         items: Vec<ImplItem>,
-        callback_interface: bool,
+        with_foreign: bool,
+        callback_interface_only: bool,
         docstring: String,
     },
     Struct {
@@ -39,7 +40,11 @@ impl ExportItem {
                 Ok(Self::Function { sig })
             }
             syn::Item::Impl(item) => Self::from_impl(item, args.constructor.is_some()),
-            syn::Item::Trait(item) => Self::from_trait(item, args.callback_interface.is_some()),
+            syn::Item::Trait(item) => Self::from_trait(
+                item,
+                args.callback_interface.is_some() || args.with_foreign.is_some(),
+                args.callback_interface.is_some(),
+            ),
             syn::Item::Struct(item) => Self::from_struct(item, args),
             // FIXME: Support const / static?
             _ => Err(syn::Error::new(
@@ -117,7 +122,11 @@ impl ExportItem {
         })
     }
 
-    fn from_trait(item: syn::ItemTrait, callback_interface: bool) -> syn::Result<Self> {
+    fn from_trait(
+        item: syn::ItemTrait,
+        with_foreign: bool,
+        callback_interface_only: bool,
+    ) -> syn::Result<Self> {
         if !item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             return Err(syn::Error::new_spanned(
                 &item.generics,
@@ -165,7 +174,8 @@ impl ExportItem {
         Ok(Self::Trait {
             items,
             self_ident,
-            callback_interface,
+            with_foreign,
+            callback_interface_only,
             docstring,
         })
     }

@@ -23,6 +23,8 @@ namespace coverall {
 
     sequence<string> ancestor_names(NodeTrait node);
 
+    sequence<StringUtil> get_string_util_traits();
+
     ReturnOnlyDict output_return_only_dict();
     ReturnOnlyEnum output_return_only_enum();
 
@@ -220,10 +222,10 @@ interface ThreadsafeCounter {
   i32 increment_if_busy();
 };
 
-// Test trait #1
+// Test trait interface #1
 //
 // The goal here is to test all possible arg, return, and error types.
-[Trait]
+[Trait, WithForeign]
 interface Getters {
     boolean get_bool(boolean v, boolean arg2);
     [Throws=CoverallError]
@@ -235,10 +237,10 @@ interface Getters {
     Coveralls round_trip_object(Coveralls coveralls);
 };
 
-// Test trait #2
+// Test trait interface #2
 //
 // The goal here is test passing objects back and forth between Rust and the foreign side
-[Trait]
+[Trait, WithForeign]
 interface NodeTrait {
     string name(); // The name of the this node
 
@@ -252,6 +254,14 @@ interface NodeTrait {
     /// Calls `Arc::strong_count()` on the `Arc` containing `self`.
     [Self=ByArc]
     u64 strong_count();
+};
+
+// Test trait interface #3
+//
+// The goal here is test Rust-only trait interfaces
+[Trait]
+interface StringUtil {
+    string concat([ByRef]string a, [ByRef]string b);
 };
 
 // Forward/backward declarations are fine in UDL.

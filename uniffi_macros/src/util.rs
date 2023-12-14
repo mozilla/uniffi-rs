@@ -247,6 +247,7 @@ pub(crate) fn derive_ffi_traits(ty: &Ident, udl_mode: bool, trait_names: &[&str]
 pub mod kw {
     syn::custom_keyword!(async_runtime);
     syn::custom_keyword!(callback_interface);
+    syn::custom_keyword!(with_foreign);
     syn::custom_keyword!(constructor);
     syn::custom_keyword!(default);
     syn::custom_keyword!(flat_error);

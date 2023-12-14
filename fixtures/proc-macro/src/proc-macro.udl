@@ -16,6 +16,9 @@ typedef extern Object;
 [Rust="trait"]
 typedef extern Trait;
 
+[Rust="trait_with_foreign"]
+typedef extern TraitWithForeign;
+
 // Then stuff defined here but referencing the imported types.
 dictionary Externals {
     One? one;
@@ -28,5 +31,6 @@ namespace proc_macro {
     MaybeBool get_bool(MaybeBool? b);
     Object get_object(Object? o);
     Trait get_trait(Trait? t);
+    TraitWithForeign get_trait_with_foreign(TraitWithForeign? t);
     Externals get_externals(Externals? e);
 };

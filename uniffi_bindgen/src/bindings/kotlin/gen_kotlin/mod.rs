@@ -342,22 +342,19 @@ impl KotlinCodeOracle {
 
     /// Get the name of the interface and class name for an object.
     ///
-    /// This depends on the `ObjectImpl`:
+    /// If we support callback interfaces, the interface name is the object name, and the class name is derived from that.
+    /// Otherwise, the class name is the object name and the interface name is derived from that.
     ///
-    /// For struct impls, the class name is the object name and the interface name is derived from that.
-    /// For trait impls, the interface name is the object name, and the class name is derived from that.
-    ///
-    /// This split is needed because of the `FfiConverter` interface.  For struct impls, `lower`
-    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
-    /// implement the interface.
+    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
+    /// interfaces, `lower` must lower anything that implements the interface.  If not, then lower
+    /// only lowers the concrete class.
     fn object_names(&self, ci: &ComponentInterface, obj: &Object) -> (String, String) {
         let class_name = self.class_name(ci, obj.name());
-        match obj.imp() {
-            ObjectImpl::Struct => (format!("{class_name}Interface"), class_name),
-            ObjectImpl::Trait => {
-                let interface_name = format!("{class_name}Impl");
-                (class_name, interface_name)
-            }
+        if obj.has_callback_interface() {
+            let impl_name = format!("{class_name}Impl");
+            (class_name, impl_name)
+        } else {
+            (format!("{class_name}Interface"), class_name)
         }
     }
 }

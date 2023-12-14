@@ -200,3 +200,26 @@ impl NodeTrait for Trait2 {
         (*self.parent.lock().unwrap()).as_ref().map(Arc::clone)
     }
 }
+
+pub trait StringUtil: Send + Sync {
+    fn concat(&self, a: &str, b: &str) -> String;
+}
+
+pub struct StringUtilImpl1;
+pub struct StringUtilImpl2;
+
+pub fn get_string_util_traits() -> Vec<Arc<dyn StringUtil>> {
+    vec![Arc::new(StringUtilImpl1), Arc::new(StringUtilImpl2)]
+}
+
+impl StringUtil for StringUtilImpl1 {
+    fn concat(&self, a: &str, b: &str) -> String {
+        format!("{a}{b}")
+    }
+}
+
+impl StringUtil for StringUtilImpl2 {
+    fn concat(&self, a: &str, b: &str) -> String {
+        format!("{a}{b}")
+    }
+}

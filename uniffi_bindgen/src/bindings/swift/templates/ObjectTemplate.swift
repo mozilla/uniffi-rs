@@ -143,7 +143,7 @@ public class {{ impl_class_name }}:
 
 }
 
-{%- if obj.is_trait_interface() %}
+{%- if obj.has_callback_interface() %}
 {%- let callback_handler = format!("uniffiCallbackInterface{}", name) %}
 {%- let callback_init = format!("uniffiCallbackInit{}", name) %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
@@ -151,7 +151,7 @@ public class {{ impl_class_name }}:
 {%- endif %}
 
 public struct {{ ffi_converter_name }}: FfiConverter {
-    {%- if obj.is_trait_interface() %}
+    {%- if obj.has_callback_interface() %}
     fileprivate static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
     {%- endif %}
 
@@ -163,15 +163,14 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     }
 
     public static func lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
-        {%- match obj.imp() %}
-        {%- when ObjectImpl::Struct %}
-        return value.uniffiClonePointer()
-        {%- when ObjectImpl::Trait %}
+        {%- if obj.has_callback_interface() %}
         guard let ptr = UnsafeMutableRawPointer(bitPattern: UInt(truncatingIfNeeded: handleMap.insert(obj: value))) else {
             fatalError("Cast to UnsafeMutableRawPointer failed")
         }
         return ptr
-        {%- endmatch %}
+        {%- else %}
+        return value.uniffiClonePointer()
+        {%- endif %}
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {

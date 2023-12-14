@@ -5,6 +5,7 @@ use syn::DeriveInput;
 use crate::util::{
     create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
 };
+use uniffi_meta::ObjectImpl;
 
 pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
     let module_path = mod_path()?;
@@ -20,7 +21,7 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
         Span::call_site(),
     );
     let meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(ident, false, &module_path, docstring)
+        interface_meta_static_var(ident, ObjectImpl::Struct, &module_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     let interface_impl = interface_impl(ident, udl_mode);
@@ -132,8 +133,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
                 .concat_str(#mod_path)
-                .concat_str(#name)
-                .concat_bool(false);
+                .concat_str(#name);
         }
 
         unsafe #lower_return_impl_spec {
@@ -154,20 +154,24 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
 
 pub(crate) fn interface_meta_static_var(
     ident: &Ident,
-    is_trait: bool,
+    imp: ObjectImpl,
     module_path: &str,
     docstring: String,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
+    let code = match imp {
+        ObjectImpl::Struct => quote! { ::uniffi::metadata::codes::INTERFACE },
+        ObjectImpl::Trait => quote! { ::uniffi::metadata::codes::TRAIT_INTERFACE },
+        ObjectImpl::CallbackTrait => quote! { ::uniffi::metadata::codes::CALLBACK_TRAIT_INTERFACE },
+    };
 
     Ok(create_metadata_items(
         "interface",
         &name,
         quote! {
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
+            ::uniffi::MetadataBuffer::from_code(#code)
                 .concat_str(#module_path)
                 .concat_str(#name)
-                .concat_bool(#is_trait)
                 .concat_long_str(#docstring)
         },
         None,

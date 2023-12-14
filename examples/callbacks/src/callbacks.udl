@@ -3,7 +3,7 @@ namespace callbacks {
 };
 
 // This trait is implemented in Rust and in foreign bindings.
-[Trait]
+[Trait, WithForeign]
 interface SimCard {
   string name(); // The name of the carrier/provider.
 };

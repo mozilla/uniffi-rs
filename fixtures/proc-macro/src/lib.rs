@@ -56,14 +56,30 @@ impl Unused {
 
 #[uniffi::export]
 pub trait Trait: Send + Sync {
-    fn name(&self) -> String;
+    // Test the absence of `with_foreign` by inputting reference arguments, which is
+    // incompatible with callback interfaces
+    #[allow(clippy::ptr_arg)]
+    fn concat_strings(&self, a: &str, b: &str) -> String;
 }
 
 struct TraitImpl {}
 
 impl Trait for TraitImpl {
+    fn concat_strings(&self, a: &str, b: &str) -> String {
+        format!("{a}{b}")
+    }
+}
+
+#[uniffi::export(with_foreign)]
+pub trait TraitWithForeign: Send + Sync {
+    fn name(&self) -> String;
+}
+
+struct RustTraitImpl {}
+
+impl TraitWithForeign for RustTraitImpl {
     fn name(&self) -> String {
-        "TraitImpl".to_string()
+        "RustTraitImpl".to_string()
     }
 }
 
@@ -97,6 +113,13 @@ impl Object {
         inc.unwrap_or_else(|| Arc::new(TraitImpl {}))
     }
 
+    fn get_trait_with_foreign(
+        &self,
+        inc: Option<Arc<dyn TraitWithForeign>>,
+    ) -> Arc<dyn TraitWithForeign> {
+        inc.unwrap_or_else(|| Arc::new(RustTraitImpl {}))
+    }
+
     fn take_error(&self, e: BasicError) -> u32 {
         assert!(matches!(e, BasicError::InvalidInput));
         42
@@ -104,8 +127,8 @@ impl Object {
 }
 
 #[uniffi::export]
-fn get_trait_name_by_ref(t: &dyn Trait) -> String {
-    t.name()
+fn concat_strings_by_ref(t: &dyn Trait, a: &str, b: &str) -> String {
+    t.concat_strings(a, b)
 }
 
 #[uniffi::export]
@@ -258,6 +281,10 @@ fn get_object(o: Option<Arc<Object>>) -> Arc<Object> {
 
 fn get_trait(o: Option<Arc<dyn Trait>>) -> Arc<dyn Trait> {
     o.unwrap_or_else(|| Arc::new(TraitImpl {}))
+}
+
+fn get_trait_with_foreign(o: Option<Arc<dyn TraitWithForeign>>) -> Arc<dyn TraitWithForeign> {
+    o.unwrap_or_else(|| Arc::new(RustTraitImpl {}))
 }
 
 #[derive(Default)]

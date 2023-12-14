@@ -457,3 +457,10 @@ do {
 
     testRoundTripThroughForeign(getters: SwiftGetters())
 }
+
+// Test rust-only traits
+do {
+    let stringUtils = getStringUtilTraits()
+    assert(stringUtils[0].concat(a: "cow", b: "boy") == "cowboy")
+    assert(stringUtils[1].concat(a: "cow", b: "boy") == "cowboy")
+}

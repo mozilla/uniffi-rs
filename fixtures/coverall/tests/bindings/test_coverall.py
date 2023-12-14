@@ -443,5 +443,10 @@ class TraitsTest(unittest.TestCase):
 
         test_round_trip_through_foreign(PyGetters())
 
+    def test_rust_only_traits(self):
+        traits = get_string_util_traits()
+        self.assertEqual(traits[0].concat("cow", "boy"), "cowboy")
+        self.assertEqual(traits[1].concat("cow", "boy"), "cowboy")
+
 if __name__=='__main__':
     unittest.main()

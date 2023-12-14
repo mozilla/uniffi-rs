@@ -23,7 +23,7 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
         };
 
         let object_name = self.identifier.0;
-        let object_impl = attributes.object_impl();
+        let object_impl = attributes.object_impl()?;
         // Convert each member into a constructor or method, guarding against duplicate names.
         // They get added to the ci and aren't carried in ObjectMetadata.
         let mut member_names = HashSet::new();
