@@ -57,6 +57,7 @@ pub enum FfiType {
     ///
     /// These are used to pass objects across the FFI.
     Handle,
+    RustCallStatus,
     /// Pointer to an FfiType.
     Reference(Box<FfiType>),
     /// Opaque pointer

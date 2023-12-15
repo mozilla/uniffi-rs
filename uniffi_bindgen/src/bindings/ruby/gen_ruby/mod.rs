@@ -152,6 +152,7 @@ mod filters {
             FfiType::Handle => ":uint64".to_string(),
             FfiType::RustArcPtr(_) => ":pointer".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
+            FfiType::RustCallStatus => "RustCallStatus".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
             FfiType::Callback(_) => unimplemented!("FFI Callbacks not implemented"),
             // Note: this can't just be `unimplemented!()` because some of the FFI function

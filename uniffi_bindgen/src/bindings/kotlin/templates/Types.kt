@@ -134,6 +134,10 @@ object NoPointer
 {%- if ci.has_async_fns() %}
 {# Import types needed for async support #}
 {{ self.add_import("kotlin.coroutines.resume") }}
+{{ self.add_import("kotlinx.coroutines.launch") }}
 {{ self.add_import("kotlinx.coroutines.suspendCancellableCoroutine") }}
 {{ self.add_import("kotlinx.coroutines.CancellableContinuation") }}
+{{ self.add_import("kotlinx.coroutines.DelicateCoroutinesApi") }}
+{{ self.add_import("kotlinx.coroutines.Job") }}
+{{ self.add_import("kotlinx.coroutines.GlobalScope") }}
 {%- endif %}

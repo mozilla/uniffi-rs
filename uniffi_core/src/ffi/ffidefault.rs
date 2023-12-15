@@ -57,6 +57,13 @@ impl FfiDefault for crate::RustBuffer {
     }
 }
 
+impl FfiDefault for crate::ForeignFuture {
+    fn ffi_default() -> Self {
+        extern "C" fn free(_handle: u64) {}
+        crate::ForeignFuture { handle: 0, free }
+    }
+}
+
 impl<T> FfiDefault for Option<T> {
     fn ffi_default() -> Self {
         None

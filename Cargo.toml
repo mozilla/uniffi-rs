@@ -13,6 +13,7 @@ members = [
   "examples/app/uniffi-bindgen-cli",
   "examples/arithmetic",
   "examples/arithmetic-procmacro",
+  "examples/async-api-client",
   "examples/callbacks",
   "examples/custom-types",
   "examples/futures",

@@ -20,6 +20,8 @@ class {{ trait_impl }}:
             args = ({% for arg in meth.arguments() %}{{ arg|lift_fn }}({{ arg.name()|var_name }}), {% endfor %})
             method = uniffi_obj.{{ meth.name()|fn_name }}
             return method(*args)
+
+        {% if !meth.is_async() %}
         {%- match meth.return_type() %}
         {%- when Some(return_type) %}
         def write_return_value(v):
@@ -44,6 +46,40 @@ class {{ trait_impl }}:
                 {{ error|lower_fn }},
         )
         {%- endmatch %}
+        {%- else %}
+        def handle_success(return_value):
+            uniffi_future_callback(
+                uniffi_callback_data,
+                {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
+                    {%- match meth.return_type() %}
+                    {%- when Some(return_type) %}
+                    {{ return_type|lower_fn }}(return_value),
+                    {%- when None %}
+                    {%- endmatch %}
+                    _UniffiRustCallStatus.default()
+                )
+            )
+
+        def handle_error(status_code, rust_buffer):
+            uniffi_future_callback(
+                uniffi_callback_data,
+                {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
+                    {%- match meth.return_type() %}
+                    {%- when Some(return_type) %}
+                    {{ meth.return_type().map(FfiType::from)|ffi_default_value }},
+                    {%- when None %}
+                    {%- endmatch %}
+                    _UniffiRustCallStatus(status_code, rust_buffer),
+                )
+            )
+
+        {%- match meth.throws_type() %}
+        {%- when None %}
+        uniffi_out_return[0] = uniffi_trait_interface_call_async(make_call, handle_success, handle_error)
+        {%- when Some(error) %}
+        uniffi_out_return[0] = uniffi_trait_interface_call_async_with_error(make_call, handle_success, handle_error, {{ error|type_name }}, {{ error|lower_fn }})
+        {%- endmatch %}
+        {%- endif %}
     {%- endfor %}
 
     @{{ "CallbackInterfaceFree"|ffi_callback_name }}

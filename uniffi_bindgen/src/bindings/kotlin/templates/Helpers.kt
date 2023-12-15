@@ -23,6 +23,15 @@ internal open class UniffiRustCallStatus : Structure() {
     fun isPanic(): Boolean {
         return code == UNIFFI_CALL_UNEXPECTED_ERROR
     }
+
+    companion object {
+        fun create(code: Byte, errorBuf: RustBuffer.ByValue): UniffiRustCallStatus.ByValue {
+            val callStatus = UniffiRustCallStatus.ByValue()
+            callStatus.code = code
+            callStatus.error_buf = errorBuf
+            return callStatus
+        }
+    }
 }
 
 class InternalException(message: String) : Exception(message)

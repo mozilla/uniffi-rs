@@ -336,6 +336,7 @@ impl KotlinCodeOracle {
     fn ffi_type_label_by_value(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type)),
+            FfiType::Struct(name) => format!("{}.UniffiByValue", self.ffi_struct_name(name)),
             _ => self.ffi_type_label(ffi_type),
         }
     }
@@ -367,8 +368,9 @@ impl KotlinCodeOracle {
             FfiType::Float32 => "0.0f".to_owned(),
             FfiType::Float64 => "0.0".to_owned(),
             FfiType::RustArcPtr(_) => "Pointer.NULL".to_owned(),
-            FfiType::RustBuffer(_) => "UniffiRustBuffer.ByValue()".to_owned(),
+            FfiType::RustBuffer(_) => "RustBuffer.ByValue()".to_owned(),
             FfiType::Callback(_) => "null".to_owned(),
+            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue()".to_owned(),
             _ => unimplemented!("ffi_default_value: {ffi_type:?}"),
         }
     }
@@ -408,6 +410,7 @@ impl KotlinCodeOracle {
             FfiType::RustBuffer(maybe_suffix) => {
                 format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
             }
+            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue".to_string(),
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),

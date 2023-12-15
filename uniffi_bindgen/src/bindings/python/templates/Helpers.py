@@ -18,6 +18,10 @@ class _UniffiRustCallStatus(ctypes.Structure):
     CALL_ERROR = 1
     CALL_UNEXPECTED_ERROR = 2
 
+    @staticmethod
+    def default():
+        return _UniffiRustCallStatus(code=_UniffiRustCallStatus.CALL_SUCCESS, error_buf=_UniffiRustBuffer.default())
+
     def __str__(self):
         if self.code == _UniffiRustCallStatus.CALL_SUCCESS:
             return "_UniffiRustCallStatus(CALL_SUCCESS)"
@@ -37,7 +41,7 @@ def _rust_call_with_error(error_ffi_converter, fn, *args):
     #
     # This function is used for rust calls that return Result<> and therefore can set the CALL_ERROR status code.
     # error_ffi_converter must be set to the _UniffiConverter for the error class that corresponds to the result.
-    call_status = _UniffiRustCallStatus(code=_UniffiRustCallStatus.CALL_SUCCESS, error_buf=_UniffiRustBuffer(0, 0, None))
+    call_status = _UniffiRustCallStatus.default()
 
     args_with_error = args + (ctypes.byref(call_status),)
     result = fn(*args_with_error)

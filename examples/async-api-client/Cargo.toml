@@ -1,0 +1,23 @@
+[package]
+name = "uniffi-example-async-api-client"
+edition = "2021"
+version = "0.26.1"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_async_api_client"
+
+[dependencies]
+async-trait = "0.1"
+uniffi = { workspace = true }
+serde = { version = "1", features=["derive"] }
+serde_json = "1"
+thiserror = "1.0"
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }

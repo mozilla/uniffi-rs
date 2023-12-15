@@ -249,6 +249,17 @@ impl ComponentInterface {
         self.callback_interfaces.iter().find(|o| o.name == name)
     }
 
+    /// Get the definitions for every Callback Interface type in the interface.
+    pub fn has_async_callback_interface_definition(&self) -> bool {
+        self.callback_interfaces
+            .iter()
+            .any(|cbi| cbi.has_async_method())
+            || self
+                .objects
+                .iter()
+                .any(|o| o.has_callback_interface() && o.has_async_method())
+    }
+
     /// Get the definitions for every Method type in the interface.
     pub fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
         // Each of the `as &dyn Callable` casts is a trivial cast, but it seems like the clearest
@@ -566,6 +577,10 @@ impl ComponentInterface {
     /// Does this interface contain async functions?
     pub fn has_async_fns(&self) -> bool {
         self.iter_ffi_function_definitions().any(|f| f.is_async())
+            || self
+                .callback_interfaces
+                .iter()
+                .any(CallbackInterface::has_async_method)
     }
 
     /// Iterate over `T` parameters of the `FutureCallback<T>` callbacks in this interface
@@ -642,6 +657,15 @@ impl ComponentInterface {
             .into(),
         ]
         .into_iter()
+        .chain(
+            self.all_possible_return_ffi_types()
+                .flat_map(|return_type| {
+                    [
+                        callbacks::foreign_future_ffi_result_struct(return_type.clone()).into(),
+                        callbacks::ffi_foreign_future_complete(return_type).into(),
+                    ]
+                }),
+        )
     }
 
     /// List the definitions of all FFI functions in the interface.

@@ -29,3 +29,5 @@ class _UniffiHandleMap:
         except KeyError:
             raise InternalError("UniffiHandleMap.remove: Invalid handle")
 
+    def __len__(self):
+        return len(self._map)
