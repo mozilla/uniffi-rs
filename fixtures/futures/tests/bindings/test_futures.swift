@@ -112,6 +112,44 @@ Task {
 	counter.leave()
 }
 
+// Test async trait interface methods
+counter.enter()
+
+Task {
+	let traits = getSayAfterTraits()
+
+	let t0 = Date()
+	let result1 = await traits[0].sayAfter(ms: 1000, who: "Alice")
+	let result2 = await traits[1].sayAfter(ms: 1000, who: "Bob")
+	let t1 = Date()
+
+	assert(result1 == "Hello, Alice!")
+	assert(result2 == "Hello, Bob!")
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 2 && tDelta.duration < 2.1)
+
+	counter.leave()
+}
+
+// Test UDL-defined async trait interface methods
+counter.enter()
+
+Task {
+	let traits = getSayAfterUdlTraits()
+
+	let t0 = Date()
+	let result1 = await traits[0].sayAfter(ms: 1000, who: "Alice")
+	let result2 = await traits[1].sayAfter(ms: 1000, who: "Bob")
+	let t1 = Date()
+
+	assert(result1 == "Hello, Alice!")
+	assert(result2 == "Hello, Bob!")
+	let tDelta = DateInterval(start: t0, end: t1)
+	assert(tDelta.duration > 2 && tDelta.duration < 2.1)
+
+	counter.leave()
+}
+
 // Test async function returning an object
 counter.enter()
 

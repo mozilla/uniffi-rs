@@ -605,17 +605,19 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
     fn from(meta: uniffi_meta::TraitMethodMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
+        let is_async = meta.is_async;
         let return_type = meta.return_type.map(Into::into);
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
         let ffi_func = FfiFunction {
             name: ffi_name,
+            is_async,
             ..FfiFunction::default()
         };
         Self {
             name: meta.name,
             object_name: meta.trait_name,
             object_module_path: meta.module_path,
-            is_async: false,
+            is_async,
             arguments,
             return_type,
             docstring: meta.docstring.clone(),

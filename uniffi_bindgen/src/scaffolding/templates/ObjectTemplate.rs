@@ -6,7 +6,7 @@
 #[::uniffi::export_for_udl{% if obj.has_callback_interface() %}(with_foreign){% endif %}]
 pub trait r#{{ obj.name() }} {
     {%- for meth in obj.methods() %}
-    fn {% if meth.is_async() %}async {% endif %}r#{{ meth.name() }}(
+    {% if meth.is_async() %}async {% endif %}fn r#{{ meth.name() }}(
         {% if meth.takes_self_by_arc()%}self: Arc<Self>{% else %}&self{% endif %},
         {%- for arg in meth.arguments() %}
         r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},

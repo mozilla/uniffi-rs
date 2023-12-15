@@ -2,3 +2,9 @@ namespace futures {
     [Async]
     boolean always_ready();
 };
+
+[Trait]
+interface SayAfterUdlTrait {
+    [Async]
+    string say_after(u16 ms, string who);
+};
