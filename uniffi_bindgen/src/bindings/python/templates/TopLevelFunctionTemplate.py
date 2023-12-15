@@ -3,11 +3,11 @@
 def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
     {%- call py::docstring(func, 4) %}
     {%- call py::setup_args(func) %}
-    return _uniffi_rust_call_async(
-        _UniffiLib.{{ func.ffi_func().name() }}({% call py::arg_list_lowered(func) %}),
-        _UniffiLib.{{func.ffi_rust_future_poll(ci) }},
-        _UniffiLib.{{func.ffi_rust_future_complete(ci) }},
-        _UniffiLib.{{func.ffi_rust_future_free(ci) }},
+    return uniffi_rust_call_async(
+        UniffiLib.{{ func.ffi_func().name() }}({% call py::arg_list_lowered(func) %}),
+        UniffiLib.{{func.ffi_rust_future_poll(ci) }},
+        UniffiLib.{{func.ffi_rust_future_complete(ci) }},
+        UniffiLib.{{func.ffi_rust_future_free(ci) }},
         # lift function
         {%- match func.return_type() %}
         {%- when Some(return_type) %}

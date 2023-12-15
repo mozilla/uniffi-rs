@@ -99,7 +99,7 @@ internal class {{ callback_handler_class }} : ForeignCallback {
 
     // Registers the foreign callback with the Rust side.
     // This method is generated for each callback interface.
-    internal fun register(lib: _UniFFILib) {
+    internal fun register(lib: UniffiLib) {
         lib.{{ ffi_init_callback.name() }}(this)
     }
 }

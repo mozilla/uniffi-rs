@@ -37,7 +37,7 @@ class {{ type_name }}:
         {%- endfor %}
         return True
 
-class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
+class {{ ffi_converter_name }}(UniffiConverterRustBuffer):
     @staticmethod
     def read(buf):
         return {{ type_name }}(

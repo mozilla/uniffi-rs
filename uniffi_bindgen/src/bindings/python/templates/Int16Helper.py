@@ -1,4 +1,4 @@
-class _UniffiConverterInt16(_UniffiConverterPrimitiveInt):
+class UniffiConverterInt16(UniffiConverterPrimitiveInt):
     CLASS_NAME = "i16"
     VALUE_MIN = -2**15
     VALUE_MAX = 2**15

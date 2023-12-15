@@ -265,7 +265,7 @@ mod filters {
     pub fn check_lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Object { name, .. } => {
-                format!("({}._uniffi_check_lower {nm})", class_name_rb(name)?)
+                format!("({}.uniffi_check_lower {nm})", class_name_rb(name)?)
             }
             Type::Enum { .. }
             | Type::Record { .. }
@@ -295,7 +295,7 @@ mod filters {
             Type::Boolean => format!("({nm} ? 1 : 0)"),
             Type::String => format!("RustBuffer.allocFromString({nm})"),
             Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
-            Type::Object { name, .. } => format!("({}._uniffi_lower {nm})", class_name_rb(name)?),
+            Type::Object { name, .. } => format!("({}.uniffi_lower {nm})", class_name_rb(name)?),
             Type::CallbackInterface { .. } => {
                 panic!("No support for lowering callback interfaces yet")
             }
@@ -329,7 +329,7 @@ mod filters {
             Type::Boolean => format!("1 == {nm}"),
             Type::String => format!("{nm}.consumeIntoString"),
             Type::Bytes => format!("{nm}.consumeIntoBytes"),
-            Type::Object { name, .. } => format!("{}._uniffi_allocate({nm})", class_name_rb(name)?),
+            Type::Object { name, .. } => format!("{}.uniffi_allocate({nm})", class_name_rb(name)?),
             Type::CallbackInterface { .. } => {
                 panic!("No support for lifting callback interfaces, yet")
             }

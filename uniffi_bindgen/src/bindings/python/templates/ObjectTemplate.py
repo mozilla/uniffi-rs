@@ -23,10 +23,10 @@ class {{ impl_name }}:
         # In case of partial initialization of instances.
         pointer = getattr(self, "_pointer", None)
         if pointer is not None:
-            _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
+            _rust_call(UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
 
-    def _uniffi_clone_pointer(self):
-        return _rust_call(_UniffiLib.{{ obj.ffi_object_clone().name() }}, self._pointer)
+    def uniffi_clone_pointer(self):
+        return _rust_call(UniffiLib.{{ obj.ffi_object_clone().name() }}, self._pointer)
 
     # Used by alternative constructors or any methods which return this type.
     @classmethod
@@ -63,13 +63,13 @@ class {{ impl_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
-        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_clone_pointer()", eq) %})
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self.uniffi_clone_pointer()", eq) %})
 
     def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
-        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_clone_pointer()", ne) %})
+        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self.uniffi_clone_pointer()", ne) %})
 {%-         when UniffiTrait::Hash { hash } %}
             {%- call py::method_decl("__hash__", hash) %}
 {%      endmatch %}
@@ -106,18 +106,18 @@ class {{ ffi_converter_name }}:
         {%- when ObjectImpl::Struct %}
         if not isinstance(value, {{ impl_name }}):
             raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
-        return value._uniffi_clone_pointer()
+        return value.uniffi_clone_pointer()
         {%- when ObjectImpl::Trait %}
         return {{ ffi_converter_name }}._handle_map.insert(value)
         {%- endmatch %}
 
     @classmethod
-    def read(cls, buf: _UniffiRustBuffer):
+    def read(cls, buf: UniffiRustBuffer):
         ptr = buf.read_u64()
         if ptr == 0:
             raise InternalError("Raw pointer value was null")
         return cls.lift(ptr)
 
     @classmethod
-    def write(cls, value: {{ protocol_name }}, buf: _UniffiRustBuffer):
+    def write(cls, value: {{ protocol_name }}, buf: UniffiRustBuffer):
         buf.write_u64(cls.lower(value))

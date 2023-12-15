@@ -1,5 +1,5 @@
 
-class _UniffiRustBuffer(ctypes.Structure):
+class UniffiRustBuffer(ctypes.Structure):
     _fields_ = [
         ("capacity", ctypes.c_int32),
         ("len", ctypes.c_int32),
@@ -8,17 +8,17 @@ class _UniffiRustBuffer(ctypes.Structure):
 
     @staticmethod
     def alloc(size):
-        return _rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+        return _rust_call(UniffiLib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
 
     @staticmethod
     def reserve(rbuf, additional):
-        return _rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
+        return _rust_call(UniffiLib.{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
 
     def free(self):
-        return _rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_free().name() }}, self)
+        return _rust_call(UniffiLib.{{ ci.ffi_rustbuffer_free().name() }}, self)
 
     def __str__(self):
-        return "_UniffiRustBuffer(capacity={}, len={}, data={})".format(
+        return "UniffiRustBuffer(capacity={}, len={}, data={})".format(
             self.capacity,
             self.len,
             self.data[0:self.len]
@@ -26,12 +26,12 @@ class _UniffiRustBuffer(ctypes.Structure):
 
     @contextlib.contextmanager
     def alloc_with_builder(*args):
-        """Context-manger to allocate a buffer using a _UniffiRustBufferBuilder.
+        """Context-manger to allocate a buffer using a UniffiRustBufferBuilder.
 
         The allocated buffer will be automatically freed if an error occurs, ensuring that
         we don't accidentally leak it.
         """
-        builder = _UniffiRustBufferBuilder()
+        builder = UniffiRustBufferBuilder()
         try:
             yield builder
         except:
@@ -40,13 +40,13 @@ class _UniffiRustBuffer(ctypes.Structure):
 
     @contextlib.contextmanager
     def consume_with_stream(self):
-        """Context-manager to consume a buffer using a _UniffiRustBufferStream.
+        """Context-manager to consume a buffer using a UniffiRustBufferStream.
 
-        The _UniffiRustBuffer will be freed once the context-manager exits, ensuring that we don't
+        The UniffiRustBuffer will be freed once the context-manager exits, ensuring that we don't
         leak it even if an error occurs.
         """
         try:
-            s = _UniffiRustBufferStream.from_rust_buffer(self)
+            s = UniffiRustBufferStream.from_rust_buffer(self)
             yield s
             if s.remaining() != 0:
                 raise RuntimeError("junk data left in buffer at end of consume_with_stream")
@@ -55,29 +55,29 @@ class _UniffiRustBuffer(ctypes.Structure):
 
     @contextlib.contextmanager
     def read_with_stream(self):
-        """Context-manager to read a buffer using a _UniffiRustBufferStream.
+        """Context-manager to read a buffer using a UniffiRustBufferStream.
 
         This is like consume_with_stream, but doesn't free the buffer afterwards.
-        It should only be used with borrowed `_UniffiRustBuffer` data.
+        It should only be used with borrowed `UniffiRustBuffer` data.
         """
-        s = _UniffiRustBufferStream.from_rust_buffer(self)
+        s = UniffiRustBufferStream.from_rust_buffer(self)
         yield s
         if s.remaining() != 0:
             raise RuntimeError("junk data left in buffer at end of read_with_stream")
 
-class _UniffiForeignBytes(ctypes.Structure):
+class UniffiForeignBytes(ctypes.Structure):
     _fields_ = [
         ("len", ctypes.c_int32),
         ("data", ctypes.POINTER(ctypes.c_char)),
     ]
 
     def __str__(self):
-        return "_UniffiForeignBytes(len={}, data={})".format(self.len, self.data[0:self.len])
+        return "UniffiForeignBytes(len={}, data={})".format(self.len, self.data[0:self.len])
 
 
-class _UniffiRustBufferStream:
+class UniffiRustBufferStream:
     """
-    Helper for structured reading of bytes from a _UniffiRustBuffer
+    Helper for structured reading of bytes from a UniffiRustBuffer
     """
 
     def __init__(self, data, len):
@@ -140,13 +140,13 @@ class _UniffiRustBufferStream:
     def read_c_size_t(self):
         return self._unpack_from(ctypes.sizeof(ctypes.c_size_t) , "@N")
 
-class _UniffiRustBufferBuilder:
+class UniffiRustBufferBuilder:
     """
-    Helper for structured writing of bytes into a _UniffiRustBuffer.
+    Helper for structured writing of bytes into a UniffiRustBuffer.
     """
 
     def __init__(self):
-        self.rbuf = _UniffiRustBuffer.alloc(16)
+        self.rbuf = UniffiRustBuffer.alloc(16)
         self.rbuf.len = 0
 
     def finalize(self):
@@ -162,7 +162,7 @@ class _UniffiRustBufferBuilder:
     @contextlib.contextmanager
     def _reserve(self, num_bytes):
         if self.rbuf.len + num_bytes > self.rbuf.capacity:
-            self.rbuf = _UniffiRustBuffer.reserve(self.rbuf, num_bytes)
+            self.rbuf = UniffiRustBuffer.reserve(self.rbuf, num_bytes)
         yield None
         self.rbuf.len += num_bytes
 

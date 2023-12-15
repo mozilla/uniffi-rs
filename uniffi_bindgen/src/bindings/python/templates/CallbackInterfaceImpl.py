@@ -1,12 +1,12 @@
 {% if self.include_once_check("CallbackInterfaceRuntime.py") %}{% include "CallbackInterfaceRuntime.py" %}{% endif %}
 
-# Declaration and _UniffiConverters for {{ type_name }} Callback Interface
+# Declaration and UniffiConverters for {{ type_name }} Callback Interface
 
 def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
     {% for meth in methods.iter() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name %}
     def {{ method_name }}(python_callback, args_stream, buf_ptr):
-        {#- Unpacking args from the _UniffiRustBuffer #}
+        {#- Unpacking args from the UniffiRustBuffer #}
         def makeCall():
             {#- Calling the concrete callback object #}
             {%- if meth.arguments().len() != 0 -%}
@@ -24,13 +24,13 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
             rval = makeCall()
-            with _UniffiRustBuffer.alloc_with_builder() as builder:
+            with UniffiRustBuffer.alloc_with_builder() as builder:
                 {{ return_type|write_fn }}(rval, builder)
                 buf_ptr[0] = builder.finalize()
             {%- when None %}
             makeCall()
             {%- endmatch %}
-            return _UNIFFI_CALLBACK_SUCCESS
+            return UNIFFI_CALLBACK_SUCCESS
 
         {%- match meth.throws_type() %}
         {%- when None %}
@@ -40,10 +40,10 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
             return makeCallAndHandleReturn()
         except {{ err|type_name }} as e:
             # Catch errors declared in the UDL file
-            with _UniffiRustBuffer.alloc_with_builder() as builder:
+            with UniffiRustBuffer.alloc_with_builder() as builder:
                 {{ err|write_fn }}(e, builder)
                 buf_ptr[0] = builder.finalize()
-            return _UNIFFI_CALLBACK_ERROR
+            return UNIFFI_CALLBACK_ERROR
         {%- endmatch %}
 
     {% endfor %}
@@ -55,7 +55,7 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
 
         # Successfull return
         # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
-        return _UNIFFI_CALLBACK_SUCCESS
+        return UNIFFI_CALLBACK_SUCCESS
 
     {% for meth in methods.iter() -%}
     {% let method_name = format!("invoke_{}", meth.name())|fn_name -%}
@@ -63,7 +63,7 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
         # Call the method and handle any errors
         # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs` for details
         try:
-            return {{ method_name }}(cb, _UniffiRustBufferStream(args_data, args_len), buf_ptr)
+            return {{ method_name }}(cb, UniffiRustBufferStream(args_data, args_len), buf_ptr)
         except BaseException as e:
             # Catch unexpected errors
             try:
@@ -72,7 +72,7 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
             except:
                 # If that fails, just give up
                 pass
-            return _UNIFFI_CALLBACK_UNEXPECTED_ERROR
+            return UNIFFI_CALLBACK_UNEXPECTED_ERROR
     {% endfor %}
 
     # This should never happen, because an out of bounds method index won't
@@ -81,11 +81,11 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
 
     # An unexpected error happened.
     # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
-    return _UNIFFI_CALLBACK_UNEXPECTED_ERROR
+    return UNIFFI_CALLBACK_UNEXPECTED_ERROR
 
 # We need to keep this function reference alive:
 # if they get GC'd while in use then UniFFI internals could attempt to call a function
 # that is in freed memory.
 # That would be...uh...bad. Yeah, that's the word. Bad.
-{{ callback_handler_obj }} = _UNIFFI_FOREIGN_CALLBACK_T({{ callback_handler_class }})
-_UniffiLib.{{ ffi_init_callback.name() }}({{ callback_handler_obj }})
+{{ callback_handler_obj }} = UNIFFI_FOREIGN_CALLBACK_T({{ callback_handler_class }})
+UniffiLib.{{ ffi_init_callback.name() }}({{ callback_handler_obj }})

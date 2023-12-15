@@ -9,5 +9,5 @@
 {% include "Protocol.py" %}
 {% include "CallbackInterfaceImpl.py" %}
 
-# The _UniffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+# The UniffiConverter which transforms the Callbacks in to Handles to pass to Rust.
 {{ ffi_converter_name }} = UniffiCallbackInterfaceFfiConverter()

@@ -1,4 +1,4 @@
-class _UniffiConverterInt32(_UniffiConverterPrimitiveInt):
+class UniffiConverterInt32(UniffiConverterPrimitiveInt):
     CLASS_NAME = "i32"
     VALUE_MIN = -2**31
     VALUE_MAX = 2**31

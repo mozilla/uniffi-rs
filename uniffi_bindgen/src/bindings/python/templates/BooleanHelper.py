@@ -1,4 +1,4 @@
-class _UniffiConverterBool:
+class UniffiConverterBool:
     @classmethod
     def check_lower(cls, value):
         return not not value

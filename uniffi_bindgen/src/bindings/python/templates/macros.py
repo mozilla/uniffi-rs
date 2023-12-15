@@ -11,7 +11,7 @@ _rust_call_with_error({{ e|ffi_converter_name }},
     {%- else -%}
 _rust_call(
     {%- endmatch -%}
-    _UniffiLib.{{ func.ffi_func().name() }},
+    UniffiLib.{{ func.ffi_func().name() }},
     {%- call arg_list_lowered(func) -%}
 )
 {%- endmacro -%}
@@ -24,7 +24,7 @@ _rust_call_with_error(
     {%- else -%}
 _rust_call(
     {%- endmatch -%}
-    _UniffiLib.{{ func.ffi_func().name() }},
+    UniffiLib.{{ func.ffi_func().name() }},
     {{- prefix }},
     {%- call arg_list_lowered(func) -%}
 )
@@ -67,7 +67,7 @@ _rust_call(
 {%- endmacro %}
 
 {#-
-// Arglist as used in the _UniffiLib function declarations.
+// Arglist as used in the UniffiLib function declarations.
 // Note unfiltered name but ffi_type_name filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
@@ -75,7 +75,7 @@ _rust_call(
     {{ arg.type_().borrow()|ffi_type_name }},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}
-    ctypes.POINTER(_UniffiRustCallStatus),{% endif %}
+    ctypes.POINTER(UniffiRustCallStatus),{% endif %}
 {% endmacro -%}
 
 {#
@@ -118,13 +118,13 @@ _rust_call(
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
-        return _uniffi_rust_call_async(
-            _UniffiLib.{{ meth.ffi_func().name() }}(
-                self._uniffi_clone_pointer(), {% call arg_list_lowered(meth) %}
+        return uniffi_rust_call_async(
+            UniffiLib.{{ meth.ffi_func().name() }}(
+                self.uniffi_clone_pointer(), {% call arg_list_lowered(meth) %}
             ),
-            _UniffiLib.{{ meth.ffi_rust_future_poll(ci) }},
-            _UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
-            _UniffiLib.{{ meth.ffi_rust_future_free(ci) }},
+            UniffiLib.{{ meth.ffi_rust_future_poll(ci) }},
+            UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
+            UniffiLib.{{ meth.ffi_rust_future_free(ci) }},
             # lift function
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
@@ -150,7 +150,7 @@ _rust_call(
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(
-            {% call to_ffi_call_with_prefix("self._uniffi_clone_pointer()", meth) %}
+            {% call to_ffi_call_with_prefix("self.uniffi_clone_pointer()", meth) %}
         )
 
 {%-         when None %}
@@ -158,7 +158,7 @@ _rust_call(
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
-        {% call to_ffi_call_with_prefix("self._uniffi_clone_pointer()", meth) %}
+        {% call to_ffi_call_with_prefix("self.uniffi_clone_pointer()", meth) %}
 {%      endmatch %}
 {%  endif %}
 

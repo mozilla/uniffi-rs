@@ -9,7 +9,7 @@
 @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 suspend fun {{ func.name()|fn_name }}({%- call kt::arg_list_decl(func) -%}){% match func.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
     return uniffiRustCallAsync(
-        _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call kt::arg_list_lowered(func) %}),
+        UniffiLib.INSTANCE.{{ func.ffi_func().name() }}({% call kt::arg_list_lowered(func) %}),
         {{ func|async_poll(ci) }},
         {{ func|async_complete(ci) }},
         {{ func|async_free(ci) }},

@@ -1,4 +1,4 @@
-class _UniffiConverterInt8(_UniffiConverterPrimitiveInt):
+class UniffiConverterInt8(UniffiConverterPrimitiveInt):
     CLASS_NAME = "i8"
     VALUE_MIN = -2**7
     VALUE_MAX = 2**7

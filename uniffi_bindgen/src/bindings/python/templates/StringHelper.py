@@ -1,4 +1,4 @@
-class _UniffiConverterString:
+class UniffiConverterString:
     @staticmethod
     def check_lower(value):
         if not isinstance(value, str):
@@ -26,6 +26,6 @@ class _UniffiConverterString:
 
     @staticmethod
     def lower(value):
-        with _UniffiRustBuffer.alloc_with_builder() as builder:
+        with UniffiRustBuffer.alloc_with_builder() as builder:
             builder.write(value.encode("utf-8"))
             return builder.finalize()

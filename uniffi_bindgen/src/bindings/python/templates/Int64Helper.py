@@ -1,4 +1,4 @@
-class _UniffiConverterInt64(_UniffiConverterPrimitiveInt):
+class UniffiConverterInt64(UniffiConverterPrimitiveInt):
     CLASS_NAME = "i64"
     VALUE_MIN = -2**63
     VALUE_MAX = 2**63

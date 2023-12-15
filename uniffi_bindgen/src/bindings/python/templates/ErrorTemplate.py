@@ -8,19 +8,19 @@ class {{ type_name }}(Exception):
     {%- call py::docstring(e, 4) %}
     pass
 
-_UniffiTemp{{ type_name }} = {{ type_name }}
+UniffiTemp{{ type_name }} = {{ type_name }}
 
 class {{ type_name }}:  # type: ignore
     {%- for variant in e.variants() -%}
     {%- let variant_type_name = variant.name()|class_name -%}
     {%- if e.is_flat() %}
-    class {{ variant_type_name }}(_UniffiTemp{{ type_name }}):
+    class {{ variant_type_name }}(UniffiTemp{{ type_name }}):
         {%- call py::docstring(variant, 8) %}
 
         def __repr__(self):
             return "{{ type_name }}.{{ variant_type_name }}({})".format(repr(str(self)))
     {%- else %}
-    class {{ variant_type_name }}(_UniffiTemp{{ type_name }}):
+    class {{ variant_type_name }}(UniffiTemp{{ type_name }}):
         {%- call py::docstring(variant, 8) %}
 
         def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name }}{% endfor %}):
@@ -39,14 +39,14 @@ class {{ type_name }}:  # type: ignore
         def __repr__(self):
             return "{{ type_name }}.{{ variant_type_name }}({})".format(str(self))
     {%- endif %}
-    _UniffiTemp{{ type_name }}.{{ variant_type_name }} = {{ variant_type_name }} # type: ignore
+    UniffiTemp{{ type_name }}.{{ variant_type_name }} = {{ variant_type_name }} # type: ignore
     {%- endfor %}
 
-{{ type_name }} = _UniffiTemp{{ type_name }} # type: ignore
-del _UniffiTemp{{ type_name }}
+{{ type_name }} = UniffiTemp{{ type_name }} # type: ignore
+del UniffiTemp{{ type_name }}
 
 
-class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
+class {{ ffi_converter_name }}(UniffiConverterRustBuffer):
     @staticmethod
     def read(buf):
         variant = buf.read_i32()

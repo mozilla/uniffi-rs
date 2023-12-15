@@ -68,7 +68,7 @@ class {{ type_name }}:
 
 {% endif %}
 
-class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
+class {{ ffi_converter_name }}(UniffiConverterRustBuffer):
     @staticmethod
     def read(buf):
         variant = buf.read_i32()

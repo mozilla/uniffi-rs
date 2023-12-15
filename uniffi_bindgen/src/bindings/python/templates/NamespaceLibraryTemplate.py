@@ -3,15 +3,15 @@
 """
 Function pointer for a Rust task, which a callback function that takes a opaque pointer
 """
-_UNIFFI_RUST_TASK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_int8)
+UNIFFI_RUST_TASK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_int8)
 
-def _uniffi_future_callback_t(return_type):
+def uniffi_future_callback_t(return_type):
     """
     Factory function to create callback function types for async functions
     """
-    return ctypes.CFUNCTYPE(None, ctypes.c_size_t, return_type, _UniffiRustCallStatus)
+    return ctypes.CFUNCTYPE(None, ctypes.c_size_t, return_type, UniffiRustCallStatus)
 
-def _uniffi_load_indirect():
+def uniffi_load_indirect():
     """
     This is how we find and load the dynamic library provided by the component.
     For now we just look it up by name.
@@ -36,7 +36,7 @@ def _uniffi_load_indirect():
     lib = ctypes.cdll.LoadLibrary(path)
     return lib
 
-def _uniffi_check_contract_api_version(lib):
+def uniffi_check_contract_api_version(lib):
     # Get the bindings contract version from our ComponentInterface
     bindings_contract_version = {{ ci.uniffi_contract_version() }}
     # Get the scaffolding contract version by calling the into the dylib
@@ -44,7 +44,7 @@ def _uniffi_check_contract_api_version(lib):
     if bindings_contract_version != scaffolding_contract_version:
         raise InternalError("UniFFI contract version mismatch: try cleaning and rebuilding your project")
 
-def _uniffi_check_api_checksums(lib):
+def uniffi_check_api_checksums(lib):
     {%- for (name, expected_checksum) in ci.iter_checksums() %}
     if lib.{{ name }}() != {{ expected_checksum }}:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
@@ -55,13 +55,13 @@ def _uniffi_check_api_checksums(lib):
 # A ctypes library to expose the extern-C FFI definitions.
 # This is an implementation detail which will be called internally by the public API.
 
-_UniffiLib = _uniffi_load_indirect()
+UniffiLib = uniffi_load_indirect()
 {%- for func in ci.iter_ffi_function_definitions() %}
-_UniffiLib.{{ func.name() }}.argtypes = (
+UniffiLib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
-_UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
+UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
 {%- endfor %}
 {# Ensure to call the contract verification only after we defined all functions. -#}
-_uniffi_check_contract_api_version(_UniffiLib)
-_uniffi_check_api_checksums(_UniffiLib)
+uniffi_check_contract_api_version(UniffiLib)
+uniffi_check_api_checksums(UniffiLib)

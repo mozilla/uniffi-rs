@@ -351,14 +351,14 @@ impl PythonCodeOracle {
             FfiType::Float64 => "ctypes.c_double".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
-                None => "_UniffiRustBuffer".to_string(),
+                Some(suffix) => format!("UniffiRustBuffer{suffix}"),
+                None => "UniffiRustBuffer".to_string(),
             },
-            FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
-            FfiType::ForeignCallback => "_UNIFFI_FOREIGN_CALLBACK_T".to_string(),
+            FfiType::ForeignBytes => "UniffiForeignBytes".to_string(),
+            FfiType::ForeignCallback => "UNIFFI_FOREIGN_CALLBACK_T".to_string(),
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
-            FfiType::RustFutureContinuationCallback => "_UNIFFI_FUTURE_CONTINUATION_T".to_string(),
+            FfiType::RustFutureContinuationCallback => "UNIFFI_FUTURE_CONTINUATION_T".to_string(),
             FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
@@ -441,7 +441,7 @@ pub mod filters {
     }
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
-        Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
+        Ok(String::from("Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }
 
     pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
