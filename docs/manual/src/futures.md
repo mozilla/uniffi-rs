@@ -45,3 +45,29 @@ This code uses `asyncio` to drive the future to completion, while our exposed fu
 In Rust `Future` terminology this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's `asyncio`. There's no requirement for a Rust event loop.
 
 There are [some great API docs](https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html) on the implementation that are well worth a read.
+
+## Exporting async trait methods
+
+UniFFI is compatible with the [async-trait](https://crates.io/crates/async-trait) crate and this can
+be used to export trait interfaces over the FFI.
+
+When using UDL, wrap your trait with the `#[async_trait]` attribute.  In the UDL, annotate all async
+methods with `[Async]`:
+
+```idl
+[Trait]
+interface SayAfterTrait {
+    [Async]
+    string say_after(u16 ms, string who);
+};
+```
+
+When using proc-macros, make sure to put `#[uniffi::export]` outside the `#[async_trait]` attribute:
+
+```rust
+#[uniffi::export]
+#[async_trait::async_trait]
+pub trait SayAfterTrait: Send + Sync {
+    async fn say_after(&self, ms: u16, who: String) -> String;
+}
+```

@@ -74,6 +74,36 @@ class TestFutures(unittest.TestCase):
 
         asyncio.run(test())
 
+    def test_async_trait_interface_methods(self):
+        async def test():
+            traits = get_say_after_traits()
+            t0 = now()
+            result1 = await traits[0].say_after(100, 'Alice')
+            result2 = await traits[1].say_after(100, 'Bob')
+            t1 = now()
+
+            self.assertEqual(result1, 'Hello, Alice!')
+            self.assertEqual(result2, 'Hello, Bob!')
+            t_delta = (t1 - t0).total_seconds()
+            self.assertGreater(t_delta, 0.2)
+
+        asyncio.run(test())
+
+    def test_udl_async_trait_interface_methods(self):
+        async def test():
+            traits = get_say_after_udl_traits()
+            t0 = now()
+            result1 = await traits[0].say_after(100, 'Alice')
+            result2 = await traits[1].say_after(100, 'Bob')
+            t1 = now()
+
+            self.assertEqual(result1, 'Hello, Alice!')
+            self.assertEqual(result2, 'Hello, Bob!')
+            t_delta = (t1 - t0).total_seconds()
+            self.assertGreater(t_delta, 0.2)
+
+        asyncio.run(test())
+
     def test_async_object_param(self):
         async def test():
             megaphone = new_megaphone()

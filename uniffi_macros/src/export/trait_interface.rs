@@ -87,12 +87,6 @@ pub(super) fn gen_trait_scaffolding(
         .into_iter()
         .map(|item| match item {
             ImplItem::Method(sig) => {
-                if sig.is_async {
-                    return Err(syn::Error::new(
-                        sig.span,
-                        "async trait methods are not supported",
-                    ));
-                }
                 let fn_args = ExportFnArgs {
                     async_runtime: None,
                 };

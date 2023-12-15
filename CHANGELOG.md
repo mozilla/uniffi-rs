@@ -8,6 +8,10 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...HEAD).
 
+### What's new?
+
+- Rust trait interfaces can now have async functions.  See the futures manual section for details.
+
 ### What's fixed?
  
 - Fixed a memory leak in callback interface handling.

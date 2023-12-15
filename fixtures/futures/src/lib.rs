@@ -326,4 +326,59 @@ pub async fn use_shared_resource(options: SharedResourceOptions) -> Result<(), A
     Ok(())
 }
 
+// Example of an trait with async methods
+#[uniffi::export]
+#[async_trait::async_trait]
+pub trait SayAfterTrait: Send + Sync {
+    async fn say_after(&self, ms: u16, who: String) -> String;
+}
+
+// Example of async trait defined in the UDL file
+#[async_trait::async_trait]
+pub trait SayAfterUdlTrait: Send + Sync {
+    async fn say_after(&self, ms: u16, who: String) -> String;
+}
+
+struct SayAfterImpl1;
+
+struct SayAfterImpl2;
+
+#[async_trait::async_trait]
+impl SayAfterTrait for SayAfterImpl1 {
+    async fn say_after(&self, ms: u16, who: String) -> String {
+        say_after(ms, who).await
+    }
+}
+
+#[async_trait::async_trait]
+impl SayAfterTrait for SayAfterImpl2 {
+    async fn say_after(&self, ms: u16, who: String) -> String {
+        say_after(ms, who).await
+    }
+}
+
+#[uniffi::export]
+fn get_say_after_traits() -> Vec<Arc<dyn SayAfterTrait>> {
+    vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
+}
+
+#[async_trait::async_trait]
+impl SayAfterUdlTrait for SayAfterImpl1 {
+    async fn say_after(&self, ms: u16, who: String) -> String {
+        say_after(ms, who).await
+    }
+}
+
+#[async_trait::async_trait]
+impl SayAfterUdlTrait for SayAfterImpl2 {
+    async fn say_after(&self, ms: u16, who: String) -> String {
+        say_after(ms, who).await
+    }
+}
+
+#[uniffi::export]
+fn get_say_after_udl_traits() -> Vec<Arc<dyn SayAfterUdlTrait>> {
+    vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
+}
+
 uniffi::include_scaffolding!("futures");

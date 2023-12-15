@@ -112,6 +112,34 @@ runBlocking {
     assert(not_megaphone == null)
 }
 
+// Test async methods in trait interfaces
+runBlocking {
+    val traits = getSayAfterTraits()
+    val time = measureTimeMillis {
+        val result1 = traits[0].sayAfter(100U, "Alice")
+        val result2 = traits[1].sayAfter(100U, "Bob")
+
+        assert(result1 == "Hello, Alice!")
+        assert(result2 == "Hello, Bob!")
+    }
+
+    assertApproximateTime(time, 200, "async methods")
+}
+
+// Test async methods in UDL-defined trait interfaces
+runBlocking {
+    val traits = getSayAfterUdlTraits()
+    val time = measureTimeMillis {
+        val result1 = traits[0].sayAfter(100U, "Alice")
+        val result2 = traits[1].sayAfter(100U, "Bob")
+
+        assert(result1 == "Hello, Alice!")
+        assert(result2 == "Hello, Bob!")
+    }
+
+    assertApproximateTime(time, 200, "async methods")
+}
+
 // Test with the Tokio runtime.
 runBlocking {
     val time = measureTimeMillis {
