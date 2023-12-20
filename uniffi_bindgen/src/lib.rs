@@ -202,6 +202,44 @@ impl BindingGenerator for BindingGeneratorDefault {
     }
 }
 
+struct MocksGenerator {
+    target_languages: Vec<TargetLanguage>,
+    try_format_code: bool,
+}
+
+impl BindingGenerator for MocksGenerator {
+    type Config = Config;
+
+    fn write_bindings(
+        &self,
+        ci: &ComponentInterface,
+        config: &Self::Config,
+        out_dir: &Utf8Path,
+    ) -> Result<()> {
+        for &language in &self.target_languages {
+            bindings::write_mocks(
+                &config.bindings,
+                ci,
+                out_dir,
+                language,
+                self.try_format_code,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()> {
+        for &language in &self.target_languages {
+            if cdylib_name.is_none() && language != TargetLanguage::Swift {
+                bail!(
+                    "Generate mocks for {language} requires a cdylib, but {library_path} was given"
+                );
+            }
+        }
+        Ok(())
+    }
+}
+
 /// Generate bindings for an external binding generator
 /// Ideally, this should replace the [`generate_bindings`] function below
 ///

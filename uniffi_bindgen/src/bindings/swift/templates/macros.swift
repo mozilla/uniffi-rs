@@ -52,6 +52,13 @@
     {%- endfor %}
 {%- endmacro %}
 
+{% macro mock_var_prefix(func) -%}
+    {{ func.name()|fn_name }}
+    {%- for arg in func.arguments() -%}
+        {{ arg.name()|var_name|capitalize }}
+    {%- endfor %}
+{%- endmacro -%}
+
 {#-
 // Field lists as used in Swift declarations of Records and Enums.
 // Note the var_name and type_name filters.

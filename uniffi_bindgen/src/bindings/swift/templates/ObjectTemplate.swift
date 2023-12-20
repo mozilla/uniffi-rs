@@ -58,12 +58,15 @@ open class {{ impl_class_name }}:
     {%- endmatch %}
 
     deinit {
+        guard let pointer = self.pointer else {
+            return
+        }
         try! rustCall { {{ obj.ffi_object_free().name() }}(pointer, $0) }
     }
 
     {% for cons in obj.alternate_constructors() %}
     {%- call swift::docstring(cons, 4) %}
-    public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
+    open class func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
         return {{ impl_class_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
     }
 

@@ -358,6 +358,31 @@ impl<'a> TypeRenderer<'a> {
     }
 }
 
+/// Generate UniFFI mocks for Swift, as strings in memory.
+///
+pub fn generate_mocks(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    let mocks_renderer = MocksRenderer::new(&config, ci);
+    let mocks = mocks_renderer
+        .render()
+        .context("failed to render Swift mocks")?;
+
+    Ok(mocks)
+}
+
+/// Renders Swift mocks helper code for all types
+#[derive(Template)]
+#[template(syntax = "swift", escape = "none", path = "wrapper_mocks.swift")]
+pub struct MocksRenderer<'a> {
+    config: &'a Config,
+    ci: &'a ComponentInterface,
+}
+
+impl<'a> MocksRenderer<'a> {
+    fn new(config: &'a Config, ci: &'a ComponentInterface) -> Self {
+        Self { config, ci }
+    }
+}
+
 /// Template for generating the `.h` file that defines the low-level C FFI.
 ///
 /// This file defines only the low-level structs and functions that are exposed
@@ -576,6 +601,10 @@ pub mod filters {
 
     pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).type_label())
+    }
+
+    pub fn type_is_optional(as_type: &impl AsType) -> Result<bool, askama::Error> {
+        Ok(matches!(&as_type.as_type(), Type::Optional { .. }))
     }
 
     pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
