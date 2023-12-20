@@ -32,11 +32,11 @@ class _UniffiRustCallStatus(ctypes.Structure):
         else:
             return "_UniffiRustCallStatus(<invalid code>)"
 
-def _rust_call(fn, *args):
+def _uniffi_rust_call(fn, *args):
     # Call a rust function
-    return _rust_call_with_error(None, fn, *args)
+    return _uniffi_rust_call_with_error(None, fn, *args)
 
-def _rust_call_with_error(error_ffi_converter, fn, *args):
+def _uniffi_rust_call_with_error(error_ffi_converter, fn, *args):
     # Call a rust function and handle any errors
     #
     # This function is used for rust calls that return Result<> and therefore can set the CALL_ERROR status code.
@@ -54,7 +54,7 @@ def _uniffi_check_call_status(error_ffi_converter, call_status):
     elif call_status.code == _UniffiRustCallStatus.CALL_ERROR:
         if error_ffi_converter is None:
             call_status.error_buf.free()
-            raise InternalError("_rust_call_with_error: CALL_ERROR, but error_ffi_converter is None")
+            raise InternalError("_uniffi_rust_call_with_error: CALL_ERROR, but error_ffi_converter is None")
         else:
             raise error_ffi_converter.lift(call_status.error_buf)
     elif call_status.code == _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR:

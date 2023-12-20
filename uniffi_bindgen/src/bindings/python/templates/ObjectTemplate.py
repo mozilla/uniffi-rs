@@ -34,10 +34,10 @@ class {{ impl_name }}:
         # In case of partial initialization of instances.
         pointer = getattr(self, "_pointer", None)
         if pointer is not None:
-            _rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
+            _uniffi_rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
 
     def _uniffi_clone_pointer(self):
-        return _rust_call(_UniffiLib.{{ obj.ffi_object_clone().name() }}, self._pointer)
+        return _uniffi_rust_call(_UniffiLib.{{ obj.ffi_object_clone().name() }}, self._pointer)
 
     # Used by alternative constructors or any methods which return this type.
     @classmethod

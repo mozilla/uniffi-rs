@@ -17,14 +17,14 @@
 {%-     when Some with (e) -%}
 {%-         match e -%}
 {%-             when Type::Enum { name, module_path } -%}
-_rust_call_with_error({{ e|ffi_converter_name }},
+_uniffi_rust_call_with_error({{ e|ffi_converter_name }},
 {%-             when Type::Object { name, module_path, imp } -%}
-_rust_call_with_error({{ e|ffi_converter_name }}__as_error,
+_uniffi_rust_call_with_error({{ e|ffi_converter_name }}__as_error,
 {%-             else %}
 # unsupported error type!
 {%-         endmatch %}
 {%- else -%}
-_rust_call(
+_uniffi_rust_call(
 {%- endmatch -%}
     _UniffiLib.{{ func.ffi_func().name() }},
     {{- prefix }}

@@ -57,7 +57,7 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
                 break
 
         return lift_func(
-            _rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
+            _uniffi_rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
         )
     finally:
         ffi_free(rust_future)
