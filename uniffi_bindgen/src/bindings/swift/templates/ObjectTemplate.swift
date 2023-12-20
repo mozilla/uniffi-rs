@@ -6,7 +6,7 @@
 {% include "Protocol.swift" %}
 
 {%- call swift::docstring(obj, 0) %}
-public class {{ impl_class_name }}:
+open class {{ impl_class_name }}:
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
     {%-         when UniffiTrait::Display { fmt } %}
@@ -21,13 +21,27 @@ public class {{ impl_class_name }}:
     {%-    endmatch %}
     {%- endfor %}
     {{ protocol_name }} {
-    fileprivate let pointer: UnsafeMutableRawPointer
+    fileprivate let pointer: UnsafeMutableRawPointer!
+
+    /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
+    public struct NoPointer {
+        public init() {}
+    }
 
     // TODO: We'd like this to be `private` but for Swifty reasons,
     // we can't implement `FfiConverter` without making this `required` and we can't
     // make it `required` without making it `public`.
-    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
+    required public init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
         self.pointer = pointer
+    }
+
+    /// This constructor can be used to instantiate a fake object.
+    /// - Parameter noPointer: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    ///
+    /// - Warning:
+    ///     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing [Pointer] the FFI lower functions will crash.
+    public init(noPointer: NoPointer) {
+        self.pointer = nil
     }
 
     public func uniffiClonePointer() -> UnsafeMutableRawPointer {
@@ -59,7 +73,7 @@ public class {{ impl_class_name }}:
     {% for meth in obj.methods() -%}
     {%- if meth.is_async() %}
     {%- call swift::docstring(meth, 4) %}
-    public func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
+    open func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
         return {% call swift::try(meth) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ meth.ffi_func().name() }}(
@@ -94,7 +108,7 @@ public class {{ impl_class_name }}:
 
     {%- when Some with (return_type) %}
     {%- call swift::docstring(meth, 4) %}
-    public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
+    open func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
         return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", meth) %}
         )
@@ -102,7 +116,7 @@ public class {{ impl_class_name }}:
 
     {%- when None %}
     {%- call swift::docstring(meth, 4) %}
-    public func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
+    open func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
         {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", meth) %}
     }
 
@@ -113,25 +127,25 @@ public class {{ impl_class_name }}:
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
     {%-         when UniffiTrait::Display { fmt } %}
-    public var description: String {
+    open var description: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", fmt) %}
         )
     }
     {%-         when UniffiTrait::Debug { fmt } %}
-    public var debugDescription: String {
+    open var debugDescription: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", fmt) %}
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
-    public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
+    open static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
         return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("lhs.uniffiClonePointer()", eq) %}
         )
     }
     {%-         when UniffiTrait::Hash { hash } %}
-    public func hash(into hasher: inout Hasher) {
+    open func hash(into hasher: inout Hasher) {
         let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", hash) %}
         )
