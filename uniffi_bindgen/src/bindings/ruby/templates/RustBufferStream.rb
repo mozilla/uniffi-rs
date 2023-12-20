@@ -155,7 +155,7 @@ class RustBufferStream
 
   def read{{ canonical_type_name }}
     pointer = FFI::Pointer.new unpack_from 8, 'Q>'
-    return {{ object_name|class_name_rb }}._uniffi_allocate(pointer)
+    return {{ object_name|class_name_rb }}.uniffi_allocate(pointer)
   end
 
   {% when Type::Enum { name, module_path } -%}
