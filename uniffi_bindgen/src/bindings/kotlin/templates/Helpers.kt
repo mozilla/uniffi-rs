@@ -2,11 +2,11 @@
 // This would be a good candidate for isolating in its own ffi-support lib.
 // Error runtime.
 @Structure.FieldOrder("code", "error_buf")
-internal open class RustCallStatus : Structure() {
+internal open class UniffiRustCallStatus : Structure() {
     @JvmField var code: Byte = 0
     @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
-    class ByValue: RustCallStatus(), Structure.ByValue
+    class ByValue: UniffiRustCallStatus(), Structure.ByValue
 
     fun isSuccess(): Boolean {
         return code == 0.toByte()
@@ -24,7 +24,7 @@ internal open class RustCallStatus : Structure() {
 class InternalException(message: String) : Exception(message)
 
 // Each top-level error class has a companion object that can lift the error from the call status's rust buffer
-interface CallStatusErrorHandler<E> {
+interface UniffiRustCallStatusErrorHandler<E> {
     fun lift(error_buf: RustBuffer.ByValue): E;
 }
 
@@ -33,15 +33,15 @@ interface CallStatusErrorHandler<E> {
 // synchronize itself
 
 // Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
-private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusErrorHandler<E>, callback: (RustCallStatus) -> U): U {
-    var status = RustCallStatus();
+private inline fun <U, E: Exception> uniffiRustCallWithError(errorHandler: UniffiRustCallStatusErrorHandler<E>, callback: (UniffiRustCallStatus) -> U): U {
+    var status = UniffiRustCallStatus();
     val return_value = callback(status)
-    checkCallStatus(errorHandler, status)
+    uniffiCheckCallStatus(errorHandler, status)
     return return_value
 }
 
-// Check RustCallStatus and throw an error if the call wasn't successful
-private fun<E: Exception> checkCallStatus(errorHandler: CallStatusErrorHandler<E>, status: RustCallStatus) {
+// Check UniffiRustCallStatus and throw an error if the call wasn't successful
+private fun<E: Exception> uniffiCheckCallStatus(errorHandler: UniffiRustCallStatusErrorHandler<E>, status: UniffiRustCallStatus) {
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
@@ -60,8 +60,8 @@ private fun<E: Exception> checkCallStatus(errorHandler: CallStatusErrorHandler<E
     }
 }
 
-// CallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
-object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
+// UniffiRustCallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
+object UniffiNullRustCallStatusErrorHandler: UniffiRustCallStatusErrorHandler<InternalException> {
     override fun lift(error_buf: RustBuffer.ByValue): InternalException {
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
@@ -69,8 +69,8 @@ object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
 }
 
 // Call a rust function that returns a plain value
-private inline fun <U> rustCall(callback: (RustCallStatus) -> U): U {
-    return rustCallWithError(NullCallStatusErrorHandler, callback);
+private inline fun <U> uniffiRustCall(callback: (UniffiRustCallStatus) -> U): U {
+    return uniffiRustCallWithError(UniffiNullRustCallStatusErrorHandler, callback);
 }
 
 // IntegerType that matches Rust's `usize` / C's `size_t`
