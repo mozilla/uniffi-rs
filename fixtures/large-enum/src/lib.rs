@@ -167,10 +167,10 @@ pub enum Value {
         discriminator: u8,
         fields: Vec<Value>,
     },
-    NonHomogenousCollection {
+    HeterogenousCollection {
         elements: Vec<Value>,
     },
-    HomogenousCollection {
+    HomogeneousCollection {
         elements: Vec<Value>,
     },
     Map {
