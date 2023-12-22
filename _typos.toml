@@ -6,3 +6,4 @@ ot = "ot"
 
 [default.extend-words]
 inout = "inout"
+Sur = "Sur" # Big Sur
