@@ -10,7 +10,7 @@ dictionary DemoDict {
 };
 ```
 
-Inside another crate,  `consuming_crate`, you'd like to use this dictionary.
+Inside another crate, `consuming_crate`, you'd like to use this dictionary.
 Inside `consuming_crate`'s UDL file you can reference `DemoDict` by using a
 `typedef` with an `External` attribute, as shown below.
 
@@ -59,10 +59,11 @@ similarly for traits: use `[ExternalTrait]`.
 
 The above examples assume the external types were defined via UDL.
 If they were defined by procmacros, you need different attribute names:
-* if `DemoDict` is implemented by a procmacro in `demo_crate`, you'd use `[ExternalExport=...]`
-* for `DemoInterface` you'd use `[ExternalInterfaceExport=...]`
 
-For types defined by procmacros in *this* crate, see the []`[Rust=...]` attribute](../ext_types.md)
+- if `DemoDict` is implemented by a procmacro in `demo_crate`, you'd use `[ExternalExport=...]`
+- for `DemoInterface` you'd use `[ExternalInterfaceExport=...]`
+
+For types defined by procmacros in _this_ crate, see the [Attribute `[Rust=...]`](../ext_types.md)
 
 ## Foreign bindings
 
