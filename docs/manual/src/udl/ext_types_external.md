@@ -63,7 +63,7 @@ If they were defined by procmacros, you need different attribute names:
 - if `DemoDict` is implemented by a procmacro in `demo_crate`, you'd use `[ExternalExport=...]`
 - for `DemoInterface` you'd use `[ExternalInterfaceExport=...]`
 
-For types defined by procmacros in _this_ crate, see the [Attribute `[Rust=...]`](../ext_types.md)
+For types defined by procmacros in _this_ crate, see the [attribute `[Rust=...]`](../ext_types.md)
 
 ## Foreign bindings
 
