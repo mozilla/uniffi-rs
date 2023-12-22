@@ -8,7 +8,7 @@ This fixture runs a set of benchmark tests, using criterion to test the performa
 Benchmarking UniFFI is tricky and involves a bit of ping-pong between Rust and
 the foreign language:
 
- - `benchmarks.rs` is the top-level Rust executuble where the process starts.
+ - `benchmarks.rs` is the top-level Rust executable where the process starts.
    It parses the CLI arguments and determines which languages we want to run
    the benchmarks for.
  - `benchmarks.rs` executes a script for each foreign language that we want to benchmark.

@@ -56,7 +56,7 @@ fileprivate let {{ callback_handler }} : ForeignCallback =
     switch method {
         case IDX_CALLBACK_FREE:
             {{ ffi_converter_name }}.handleMap.remove(handle: handle)
-            // Sucessful return
+            // Successful return
             // See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
             return UNIFFI_CALLBACK_SUCCESS
         {% for meth in methods.iter() -%}

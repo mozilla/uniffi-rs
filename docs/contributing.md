@@ -123,7 +123,7 @@ Before submitting a PR:
 - Your patch should include a changelog entry in the "unreleased" section of [CHANGES.md](../CHANGES.md), particularly
   if it would be a breaking change for consumers of the tool.
 - If your patch adds new dependencies, they must follow our [dependency management guidelines](./dependency-management.md).
-  Please include a summary of the due dilligence applied in selecting new dependencies.
+  Please include a summary of the due diligence applied in selecting new dependencies.
 
 When submitting a PR:
 - You agree to license your code under the project's open source license ([MPL 2.0](/LICENSE)).

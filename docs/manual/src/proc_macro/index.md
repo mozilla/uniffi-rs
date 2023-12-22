@@ -13,7 +13,7 @@ Further, using this capability probably means you still need to refer to the UDL
 because at this time, that documentation tends to conflate the UniFFI type model and the
 description of how foreign bindings use that type model. For example, the documentation for
 a UDL interface describes both how it is defined in UDL and how Swift and Kotlin might use
-that interface. The latter is relevent even if you define the interface using proc-macros
+that interface. The latter is relevant even if you define the interface using proc-macros
 instead of in UDL.
 
 [Procedural Macros]: https://doc.rust-lang.org/reference/procedural-macros.html

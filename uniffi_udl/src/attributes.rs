@@ -173,7 +173,7 @@ fn rust_kind_from_id_or_string(nm: &weedle::attribute::IdentifierOrString<'_>) -
             _ => anyhow::bail!("Unknown `[Rust=]` kind {:?}", str_lit.0),
         },
         weedle::attribute::IdentifierOrString::Identifier(_) => {
-            anyhow::bail!("Expected string attribute value, got identifer")
+            anyhow::bail!("Expected string attribute value, got identifier")
         }
     })
 }

@@ -4,7 +4,7 @@
 * Deciders: Uniffi developers, as approved in PR-1787
 * Date: 2023-10-18
 
-Prevous discussion: [PR 1394](https://github.com/mozilla/uniffi-rs/issues/1394), [Issue 8](https://github.com/mozilla/uniffi-rs/issues/8)
+Previous discussion: [PR 1394](https://github.com/mozilla/uniffi-rs/issues/1394), [Issue 8](https://github.com/mozilla/uniffi-rs/issues/8)
 
 ## Context and Problem Statement
 
@@ -58,7 +58,7 @@ This must be opt-in because that opt-in process must tell UniFFI exactly how the
 
 * UniFFI should present simple and clear abstractions to users.
 
-* UniFFI should let users explicity decide how they want to deal with resources.
+* UniFFI should let users explicitly decide how they want to deal with resources.
   There is no way UniFFI can automatically differentiate between objects that hold significant resources versus those that do not.
   Thus, components must "opt in" somehow to this facility, where the opt-in could be anywhere from fully manual closing (eg, by supplying a close method and documenting it must be called ASAP) or something more formal (ie, telling UniFFI this is such an object and UniFFI supplying some builtin support for this concept)
 
@@ -149,9 +149,9 @@ The above is all quite abstract - what does this mean in practice for our langua
 
 ## Kotlin
 
-* UniFFI will implement a mechanism that automically frees Rust references when the corresponding foreign object is destroyed.
+* UniFFI will implement a mechanism that automatically frees Rust references when the corresponding foreign object is destroyed.
   [Effective Java, 3rd edition](https://www.oreilly.com/library/view/effective-java-3rd/9780134686097/) recommends never using destructors.
-  It recomends avoiding the [Cleaner API](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/lang/ref/Cleaner.html), but does say that it may be appropriate for freeing a "native peer", like the UniFFI reference.
+  It recommends avoiding the [Cleaner API](https://docs.oracle.com/javase%2F9%2Fdocs%2Fapi%2F%2F/java/lang/ref/Cleaner.html), but does say that it may be appropriate for freeing a "native peer", like the UniFFI reference.
   The Android docs recommend using the [ReferenceQueue](https://www.android-doc.com/reference/java/lang/ref/ReferenceQueue.html) API, which is the low-level class that `Cleaner` uses (https://www.android-doc.com/reference/java/lang/Object.html#finalize())
 
 * We will no longer generate the `Closable` or `AutoClosable` interface for objects.

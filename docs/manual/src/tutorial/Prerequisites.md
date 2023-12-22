@@ -1,6 +1,6 @@
 # Prerequisites
 
-## Add `uniffi` as a dependency and build-depedency
+## Add `uniffi` as a dependency and build-dependency
 
 In your crate's `Cargo.toml` add:
 
