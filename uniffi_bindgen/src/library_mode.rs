@@ -126,10 +126,10 @@ pub struct Source<Config: BindingsConfig> {
 
 // If `library_path` is a C dynamic library, return its name
 pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
-    let cdylib_extentions = [".so", ".dll", ".dylib"];
+    let cdylib_extensions = [".so", ".dll", ".dylib"];
     let filename = library_path.file_name()?;
     let filename = filename.strip_prefix("lib").unwrap_or(filename);
-    for ext in cdylib_extentions {
+    for ext in cdylib_extensions {
         if let Some(f) = filename.strip_suffix(ext) {
             return Some(f);
         }

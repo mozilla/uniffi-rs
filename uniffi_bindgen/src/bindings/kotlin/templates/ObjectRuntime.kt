@@ -72,7 +72,7 @@
 // of the underlying Rust code.
 //
 // In the future we may be able to replace some of this with automatic finalization logic, such as using
-// the new "Cleaner" functionaility in Java 9. The above scheme has been designed to work even if `destroy` is
+// the new "Cleaner" functionality in Java 9. The above scheme has been designed to work even if `destroy` is
 // invoked by garbage-collection machinery rather than by calling code (which by the way, it's apparently also
 // possible for the JVM to finalize an object while there is an in-flight call to one of its methods [1],
 // so there would still be some complexity here).

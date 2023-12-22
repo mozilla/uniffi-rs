@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [[ `git status --porcelain` ]]; then
-  echo "Uncommited changes."
+  echo "Uncommitted changes."
   echo "Please commit changes and run this command again"
   echo
   echo "See docs/release.md for details"

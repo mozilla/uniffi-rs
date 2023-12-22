@@ -3,7 +3,7 @@
 Callback interfaces are a special implementation of
 [Rust traits implemented by foreign languages](../foreign_traits.md).
 
-These are described in both UDL and proc-macros as an explict "callback interface".
+These are described in both UDL and proc-macros as an explicit "callback interface".
 They are (soft) deprecated, remain now for backwards compatibility, but probably
 should be avoided.
 

@@ -175,7 +175,7 @@ fn create_command(program: &str, options: &RunScriptOptions) -> Command {
     if !options.show_compiler_messages {
         // This prevents most compiler messages, but not remarks
         command.arg("-suppress-warnings");
-        // This gets the remarks.  Note: swift will eventually get a `-supress-remarks` argument,
+        // This gets the remarks.  Note: swift will eventually get a `-suppress-remarks` argument,
         // maybe we can eventually move to that
         command.stderr(Stdio::null());
     }

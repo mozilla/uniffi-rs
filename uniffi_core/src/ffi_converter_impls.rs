@@ -20,7 +20,7 @@
 ///
 /// This crate needs to implement `FFIConverter<UT>` on `UniFfiTag` instances for all UniFFI
 /// consumer crates.  To do this, it defines blanket impls like `impl<UT> FFIConverter<UT> for u8`.
-/// "UT" means an abitrary `UniFfiTag` type.
+/// "UT" means an arbitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
     ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerReturn, MetadataBuffer,

@@ -53,7 +53,7 @@ def {{ callback_handler_class }}(handle, method, args_data, args_len, buf_ptr):
     if method == IDX_CALLBACK_FREE:
         {{ ffi_converter_name }}._handle_map.remove(handle)
 
-        # Successfull return
+        # Successful return
         # See docs of ForeignCallback in `uniffi_core/src/ffi/foreigncallbacks.rs`
         return _UNIFFI_CALLBACK_SUCCESS
 

@@ -118,7 +118,7 @@ Finally, we need to tell Xcode to look for the libraries based on the target, so
 4. Add paths per OS and architecture.
    The OS specific part can be configured in the Xcode project editor,
    but the architecture specific part has to be added by manually editing the `project.pbxproj` file.
-   Open `project.pbxproj` in your project direcotry and add the following in the `Debug` section:
+   Open `project.pbxproj` in your project directory and add the following in the `Debug` section:
 
    ```
    "LIBRARY_SEARCH_PATHS[sdk=iphoneos*][arch=arm64]" = "../../../target/aarch64-apple-ios/debug";

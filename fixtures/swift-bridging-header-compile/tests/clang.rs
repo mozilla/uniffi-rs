@@ -23,7 +23,7 @@ fn clang() -> Result<(), anyhow::Error> {
 
     let bridging_h = out_dir.join("swift_bridging_header_compileFFI.h");
 
-    // Compile the header as objective-c with a pendantic set of warnings.
+    // Compile the header as objective-c with a pedantic set of warnings.
     let o = Command::new("clang")
         .args([
             "-c",

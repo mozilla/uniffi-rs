@@ -578,7 +578,7 @@ impl ComponentInterface {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
-            .chain(self.iter_futures_ffi_function_definitons())
+            .chain(self.iter_futures_ffi_function_definitions())
             .chain(self.iter_checksum_ffi_functions())
             .chain([self.ffi_uniffi_contract_version()])
     }
@@ -627,7 +627,7 @@ impl ComponentInterface {
     }
 
     /// List all FFI functions definitions for async functionality.
-    pub fn iter_futures_ffi_function_definitons(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+    pub fn iter_futures_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
         let all_possible_return_ffi_types = [
             Some(FfiType::UInt8),
             Some(FfiType::Int8),
