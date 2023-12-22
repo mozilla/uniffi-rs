@@ -47,7 +47,7 @@ code to send it across the FFI as a bytebuffer.
 * Good, because we're familiar with this approach from our existing components.
 * Good, because Protocol Buffers exist and have decent tooling for generating serialization code
   in our various target languages.
-* Good, because it's hard to mis-handle the data in a way that introduces memory-safety issues.
+* Good, because it's hard to mishandle the data in a way that introduces memory-safety issues.
 * Bad, because we'd be calling the protobuf code-generator from inside our own code-generator,
   which seems like a very complex setup.
 * Bad, because there's likely to be a noticeable serialization-related performance overhead.
@@ -85,7 +85,7 @@ and serialize complex data types to send them across the FFI as a bytebuffer.
 * Good, because this is similar to the familiar protocol-buffers approach.
 * Good, because we can directly codegen the serialization logic as part of generating other code for
   the data structure.
-* Good, because it's hard to mis-handle the data in a way that introduces memory-safety issues.
+* Good, because it's hard to mishandle the data in a way that introduces memory-safety issues.
 * Bad, because we might introduce bugs in a new codebase that have already been shaken out in
   a more mature third-party serialization library.
 * Bad, because there's likely to be a noticeable serialization-related performance overhead.

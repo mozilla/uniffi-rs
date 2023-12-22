@@ -37,6 +37,6 @@ struct Testing {
 		print("result_bob: \(result_bob)")
 		showTime()
 
-		print("\nSee, it tooks 3secs, not 5secs!\n")
+		print("\nSee, it took 3secs, not 5secs!\n")
 	}
 }
