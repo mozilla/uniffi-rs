@@ -1,0 +1,8 @@
+[files]
+extend-exclude = ["examples/rondpoint/"]
+
+[default.extend-identifiers]
+ot = "ot"
+
+[default.extend-words]
+inout = "inout"
