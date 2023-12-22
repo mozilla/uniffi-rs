@@ -104,7 +104,7 @@ This decision is taken because:
 * Errors in our generated code might cause pointer misuse and lead to "use
   after free" type issues.
 
-* Mis-use of generated APIs may be able to create reference cycles between Rust
+* Misuse of generated APIs may be able to create reference cycles between Rust
   objects that cannot be deallocated, and consumers coming from a garbage-collected
   language may assume that such cycles will be collected.
 

@@ -4,7 +4,7 @@ namespace benchmarks {
 
   // Test functions
   //
-  // These are intented to test the overhead of Rust function calls including:
+  // These are intended to test the overhead of Rust function calls including:
   // popping arguments from the stack, unpacking RustBuffers, pushing return
   // values back to the stack, etc.
 
@@ -27,7 +27,7 @@ enum TestCase {
 callback interface TestCallbackInterface {
   // Test callback methods.
   //
-  // These are intented to test the overhead of callback interface calls
+  // These are intended to test the overhead of callback interface calls
   // including: popping arguments from the stack, unpacking RustBuffers,
   // pushing return values back to the stack, etc.
 
