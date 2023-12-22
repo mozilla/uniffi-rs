@@ -128,11 +128,11 @@ DocumentType includes ChildNode;
 Element includes ChildNode;
 CharacterData includes ChildNode;
 
-interface mixin Slottable {
+interface mixin Slotable {
   readonly attribute HTMLSlotElement? assignedSlot;
 };
-Element includes Slottable;
-Text includes Slottable;
+Element includes Slotable;
+Text includes Slotable;
 
 [Exposed=Window]
 interface NodeList {
