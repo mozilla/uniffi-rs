@@ -34,7 +34,7 @@ if [[ -n "${SDK_DIR:-}" ]]; then
   # Assume we're in Xcode, which means we're probably cross-compiling.
   # In this case, we need to add an extra library search path for build scripts and proc-macros,
   # which run on the host instead of the target.
-  # (macOS Big Sure does not have linkable libraries in /usr/lib/.)
+  # (macOS Big Sur does not have linkable libraries in /usr/lib/.)
   export LIBRARY_PATH="${SDK_DIR}/usr/lib:${LIBRARY_PATH:-}"
 fi
 
