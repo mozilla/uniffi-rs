@@ -35,8 +35,7 @@ uniffi::setup_scaffolding!();
 
 ## The `#[uniffi::export]` attribute
 
-The most important proc-macro is the `export` attribute. It can be used on functions, `impl`
-blocks, and `trait` definitions to make UniFFI aware of them.
+The most important proc-macro is the `export` attribute. It can be used on functions, `impl` blocks, and `trait` definitions to make UniFFI aware of them.
 
 ```rust
 #[uniffi::export]
@@ -91,9 +90,7 @@ trait MyTrait {
 
 ```
 
-
-All owned [builtin types](../udl/builtin_types.md) and user-defined types can be used as arguments
-and return types.
+All owned [builtin types](../udl/builtin_types.md) and user-defined types can be used as arguments and return types.
 
 Arguments and receivers can also be references to these types, for example:
 
@@ -119,8 +116,7 @@ fn call_both(foo: Arc<Foo>, bar: &Foo) {
 }
 ```
 
-The one restriction is that the reference must be visible in the function signature.  This wouldn't
-work:
+The one restriction is that the reference must be visible in the function signature. This wouldn't work:
 
 ```rust
 type MyFooRef = &'static Foo;
@@ -133,14 +129,9 @@ fn do_something(foo: MyFooRef) {
 
 ## The `uniffi::Record` derive
 
-The `Record` derive macro exposes a `struct` with named fields over FFI. All types that are
-supported as parameter and return types by `#[uniffi::export]` are also supported as field types
-here.
+The `Record` derive macro exposes a `struct` with named fields over FFI. All types that are supported as parameter and return types by `#[uniffi::export]` are also supported as field types here.
 
-It is permitted to use this macro on a type that is also defined in the UDL file, as long as all
-field types are UniFFI builtin types; user-defined types might be allowed in the future. You also
-have to maintain a consistent field order between the Rust and UDL files (otherwise compilation
-will fail).
+It is permitted to use this macro on a type that is also defined in the UDL file, as long as all field types are UniFFI builtin types; user-defined types might be allowed in the future. You also have to maintain a consistent field order between the Rust and UDL files (otherwise compilation will fail).
 
 ```rust
 #[derive(uniffi::Record)]
@@ -158,13 +149,9 @@ pub struct MyRecord {
 
 ## The `uniffi::Enum` derive
 
-The `Enum` derive macro works much like the `Record` derive macro. Any fields inside variants must
-be named. All types that are supported as parameter and return types by `#[uniffi::export]` are
-also supported as field types.
+The `Enum` derive macro works much like the `Record` derive macro. Any fields inside variants must be named. All types that are supported as parameter and return types by `#[uniffi::export]` are also supported as field types, with the limitation that your custom `Object` types **must** be wrapped in an `Arc`.
 
-It is permitted to use this macro on a type that is also defined in the UDL file as long as the
-two definitions are equal in the names and ordering of variants and variant fields, and any field
-types inside variants are UniFFI builtin types; user-defined types might be allowed in the future.
+It is permitted to use this macro on a type that is also defined in the UDL file as long as the two definitions are equal in the names and ordering of variants and variant fields, and any field types inside variants are UniFFI builtin types; user-defined types might be allowed in the future.
 
 ```rust
 #[derive(uniffi::Enum)]
@@ -178,18 +165,58 @@ pub enum MyEnum {
 }
 ```
 
-Variant discriminants are accepted by the macro but how they are used depends on the bindings.
-Most would be likely ignore it in the example above due to the nature of the enum,
-but some expose it for simple "unit" enums.
+Variant discriminants are accepted by the macro but how they are used depends on the bindings. Most would be likely ignore it in the example above due to the nature of the enum, but some expose it for simple "unit" enums.
+
+### Enum and `Arc` limitation
+
+```rust
+#[derive(uniffi::Object)]
+pub struct Car { ... }
+...
+...
+...
+#[derive(uniffi::Enum)]
+pub enum Vehicle {
+    Car { car: Car }, // Does NOT work, MUST wrap in `Arc`
+}
+```
+
+Instead the `Car` case inside `Vehicle` enum must be written:
+```rust
+#[derive(uniffi::Enum)]
+pub enum Vehicle {
+    Car { car: Arc<Car> }, // Works!
+}
+```
+
+### Enum and `uniffi::export` limitation
+
+Enums also does not support `uniffi::export` on methods.
+```rust
+#[uniffi::export] // Does NOT work
+impl Vehicle {
+    pub fn drive(&self) -> GasConsumption {
+        match self {
+            Car { car } => ...
+        }
+    }
+}
+```
+
+However, you can use global functions as a workaround:
+
+```rust
+#[uniffi::export] // Workaround
+pub fn drive(car: &Car) -> GasConsumption {
+    match self {
+        Car { car } => ...
+    }
+}
+```
 
 ## The `uniffi::Object` derive
 
-This derive can be used to replace an `interface` definition in UDL. Every object type must have
-*either* an `interface` definition in UDL *or* use this derive macro. However, `#[uniffi::export]`
-can be used on an impl block for an object type regardless of whether this derive is used. You can
-also mix and match, and define some method of an object via proc-macro while falling back to UDL
-for methods that are not supported by `#[uniffi::export]` yet; just make sure to use separate
-`impl` blocks:
+This derive can be used to replace an `interface` definition in UDL. Every object type must have *either* an `interface` definition in UDL *or* use this derive macro. However, `#[uniffi::export]` can be used on an impl block for an object type regardless of whether this derive is used. You can also mix and match, and define some method of an object via proc-macro while falling back to UDL for methods that are not supported by `#[uniffi::export]` yet; just make sure to use separate `impl` blocks:
 
 ```idl
 // UDL file
@@ -225,12 +252,10 @@ impl Foo {
 
 ## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 
-There are 2 macros available which allow procmacros to support "custom types" as described in the
-[UDL documentation for Custom Types](../udl/custom_types.md)
+There are 2 macros available which allow procmacros to support "custom types" as described in the [UDL documentation for Custom Types](../udl/custom_types.md)
 
-The `uniffi::custom_type!` macro requires you to specify the name of the custom type, and the name of the
-builtin which implements this type. Use of this macro requires you to manually implement the
-`UniffiCustomTypeConverter` trait for for your type, as shown below.
+The `uniffi::custom_type!` macro requires you to specify the name of the custom type, and the name of the builtin which implements this type. Use of this macro requires you to manually implement the `UniffiCustomTypeConverter` trait for for your type, as shown below.
+
 ```rust
 pub struct Uuid {
     val: String,
@@ -252,10 +277,7 @@ impl UniffiCustomTypeConverter for Uuid {
 }
 ```
 
-There's also a `uniffi::custom_newtype!` macro, designed for custom types which use the
-"new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
-is able to make assumptions about how the type is laid out, `UniffiCustomTypeConverter`
-is implemented automatically.
+There's also a `uniffi::custom_newtype!` macro, designed for custom types which use the "new type" idiom. You still need to specify the type name and builtin type, but because UniFFI is able to make assumptions about how the type is laid out, `UniffiCustomTypeConverter` is implemented automatically.
 
 ```rust
 uniffi::custom_newtype!(NewTypeHandle, i64);
@@ -269,8 +291,7 @@ and that's it!
 The `Error` derive registers a type as an error and can be used on any enum that the `Enum` derive also accepts.
 By default, it exposes any variant fields to the foreign code.
 This type can then be used as the `E` in a `Result<T, E>` return type of an exported function or method.
-The generated foreign function for an exported function with a `Result<T, E>` return type
-will have the result's `T` as its return type and throw the error in case the Rust call returns `Err(e)`.
+The generated foreign function for an exported function with a `Result<T, E>` return type will have the result's `T` as its return type and throw the error in case the Rust call returns `Err(e)`.
 
 ```rust
 #[derive(uniffi::Error)]
@@ -291,11 +312,7 @@ fn do_thing() -> Result<(), MyError> {
 }
 ```
 
-You can also use the helper attribute `#[uniffi(flat_error)]` to expose just the variants but none of the fields.
-In this case the error will be serialized using Rust's `ToString` trait
-and will be accessible as the only field on each of the variants.
-For flat errors your variants can have unnamed fields,
-and the types of the fields don't need to implement any special traits.
+You can also use the helper attribute `#[uniffi(flat_error)]` to expose just the variants but none of the fields. In this case the error will be serialized using Rust's `ToString` trait and will be accessible as the only field on each of the variants. For flat errors your variants can have unnamed fields, and the types of the fields don't need to implement any special traits.
 
 ```rust
 #[derive(uniffi::Error)]
@@ -319,8 +336,7 @@ fn do_http_request() -> Result<(), MyApiError> {
 
 ## The `#[uniffi::export(callback_interface)]` attribute
 
-`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.md) definition.
-This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
+`#[uniffi::export(callback_interface)]` can be used to export a [callback interface](../udl/callback_interfaces.md) definition. This allows the foreign bindings to implement the interface and pass an instance to the Rust code.
 
 ```rust
 #[uniffi::export(callback_interface)]
@@ -338,14 +354,11 @@ pub trait Person {
 
 ## Types from dependent crates
 
-When using proc-macros, you can use types from dependent crates in your exported library, as long as
-the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
-exceptions:
+When using proc-macros, you can use types from dependent crates in your exported library, as long as the dependent crate annotates the type with one of the UniFFI derives. However, there are a couple exceptions:
 
 ### Types from UDL-based dependent crates
 
-If the dependent crate uses a UDL file to define their types, then you must invoke one of the
-`uniffi::use_udl_*!` macros, for example:
+If the dependent crate uses a UDL file to define their types, then you must invoke one of the `uniffi::use_udl_*!` macros, for example:
 
 ```rust
 uniffi::use_udl_record!(dependent_crate, RecordType);
@@ -356,12 +369,8 @@ uniffi::use_udl_object!(dependent_crate, ObjectType);
 
 ### Non-UniFFI types from dependent crates
 
-If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
-then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
-to fix this limitation soon.
+If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros, then it's currently not possible to use them in an proc-macro exported interface. However, we hope to fix this limitation soon.
 
 ## Other limitations
 
-In addition to the per-item limitations of the macros presented above, there is also currently a
-global restriction: You can only use the proc-macros inside a crate whose name is the same as the
-namespace in your UDL file. This restriction will be lifted in the future.
+In addition to the per-item limitations of the macros presented above, there is also currently a global restriction: You can only use the proc-macros inside a crate whose name is the same as the namespace in your UDL file. This restriction will be lifted in the future.
