@@ -383,7 +383,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     <span class="kw">if </span>!options.show_compiler_messages {
         <span class="comment">// This prevents most compiler messages, but not remarks
         </span>command.arg(<span class="string">&quot;-suppress-warnings&quot;</span>);
-        <span class="comment">// This gets the remarks.  Note: swift will eventually get a `-supress-remarks` argument,
+        <span class="comment">// This gets the remarks.  Note: swift will eventually get a `-suppress-remarks` argument,
         // maybe we can eventually move to that
         </span>command.stderr(Stdio::null());
     }

@@ -422,10 +422,10 @@
 
 <span class="comment">// If `library_path` is a C dynamic library, return its name
 </span><span class="kw">pub fn </span>calc_cdylib_name(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
-    <span class="kw">let </span>cdylib_extentions = [<span class="string">&quot;.so&quot;</span>, <span class="string">&quot;.dll&quot;</span>, <span class="string">&quot;.dylib&quot;</span>];
+    <span class="kw">let </span>cdylib_extensions = [<span class="string">&quot;.so&quot;</span>, <span class="string">&quot;.dll&quot;</span>, <span class="string">&quot;.dylib&quot;</span>];
     <span class="kw">let </span>filename = library_path.file_name()<span class="question-mark">?</span>;
     <span class="kw">let </span>filename = filename.strip_prefix(<span class="string">&quot;lib&quot;</span>).unwrap_or(filename);
-    <span class="kw">for </span>ext <span class="kw">in </span>cdylib_extentions {
+    <span class="kw">for </span>ext <span class="kw">in </span>cdylib_extensions {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(f) = filename.strip_suffix(ext) {
             <span class="kw">return </span><span class="prelude-val">Some</span>(f);
         }

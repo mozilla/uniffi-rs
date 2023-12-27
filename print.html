@@ -257,7 +257,7 @@ you decide whether this project is a good fit for your needs.</p>
 <p>And top brass would like you to expose this <em>business-critical</em> operation to Kotlin and Swift.<br />
 <strong>Don't panic!</strong> We will show you how do that using UniFFI.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h1>
-<h2 id="add-uniffi-as-a-dependency-and-build-depedency"><a class="header" href="#add-uniffi-as-a-dependency-and-build-depedency">Add <code>uniffi</code> as a dependency and build-depedency</a></h2>
+<h2 id="add-uniffi-as-a-dependency-and-build-dependency"><a class="header" href="#add-uniffi-as-a-dependency-and-build-dependency">Add <code>uniffi</code> as a dependency and build-dependency</a></h2>
 <p>In your crate's <code>Cargo.toml</code> add:</p>
 <pre><code class="language-toml">[dependencies]
 uniffi = { version = &quot;[latest-version]&quot; }
@@ -954,7 +954,7 @@ impl Counter {
 <div style="break-before: page; page-break-before: always;"></div><h1 id="callback-interfaces"><a class="header" href="#callback-interfaces">Callback interfaces</a></h1>
 <p>Callback interfaces are a special implementation of
 <a href="udl/../foreign_traits.html">Rust traits implemented by foreign languages</a>.</p>
-<p>These are described in both UDL and proc-macros as an explict &quot;callback interface&quot;.
+<p>These are described in both UDL and proc-macros as an explicit &quot;callback interface&quot;.
 They are (soft) deprecated, remain now for backwards compatibility, but probably
 should be avoided.</p>
 <p>This document describes the differences from regular traits.</p>
@@ -1014,7 +1014,7 @@ that you have an existing crate named <code>demo_crate</code> with the following
   boolean bool_val;
 };
 </code></pre>
-<p>Inside another crate,  <code>consuming_crate</code>, you'd like to use this dictionary.
+<p>Inside another crate, <code>consuming_crate</code>, you'd like to use this dictionary.
 Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
 <code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
 <pre><code class="language-idl">[External=&quot;demo_crate&quot;]
@@ -1052,7 +1052,7 @@ If they were defined by procmacros, you need different attribute names:</p>
 <li>if <code>DemoDict</code> is implemented by a procmacro in <code>demo_crate</code>, you'd use <code>[ExternalExport=...]</code></li>
 <li>for <code>DemoInterface</code> you'd use <code>[ExternalInterfaceExport=...]</code></li>
 </ul>
-<p>For types defined by procmacros in <em>this</em> crate, see the []<code>[Rust=...]</code> attribute](../ext_types.md)</p>
+<p>For types defined by procmacros in <em>this</em> crate, see the <a href="udl/./ext_types.html">attribute <code>[Rust=...]</code></a></p>
 <h2 id="foreign-bindings"><a class="header" href="#foreign-bindings">Foreign bindings</a></h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>
@@ -1300,7 +1300,7 @@ types in UDL must also be declared in UDL.</p>
 because at this time, that documentation tends to conflate the UniFFI type model and the
 description of how foreign bindings use that type model. For example, the documentation for
 a UDL interface describes both how it is defined in UDL and how Swift and Kotlin might use
-that interface. The latter is relevent even if you define the interface using proc-macros
+that interface. The latter is relevant even if you define the interface using proc-macros
 instead of in UDL.</p>
 <p><strong>⚠ Warning ⚠</strong> This facility is relatively new, so things may change often. However, this remains
 true for all of UniFFI, so proceed with caution and the knowledge that things may break in the future.</p>

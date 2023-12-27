@@ -179,7 +179,7 @@ that you have an existing crate named <code>demo_crate</code> with the following
   boolean bool_val;
 };
 </code></pre>
-<p>Inside another crate,  <code>consuming_crate</code>, you'd like to use this dictionary.
+<p>Inside another crate, <code>consuming_crate</code>, you'd like to use this dictionary.
 Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
 <code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
 <pre><code class="language-idl">[External=&quot;demo_crate&quot;]
@@ -217,7 +217,7 @@ If they were defined by procmacros, you need different attribute names:</p>
 <li>if <code>DemoDict</code> is implemented by a procmacro in <code>demo_crate</code>, you'd use <code>[ExternalExport=...]</code></li>
 <li>for <code>DemoInterface</code> you'd use <code>[ExternalInterfaceExport=...]</code></li>
 </ul>
-<p>For types defined by procmacros in <em>this</em> crate, see the []<code>[Rust=...]</code> attribute](../ext_types.md)</p>
+<p>For types defined by procmacros in <em>this</em> crate, see the <a href="./ext_types.html">attribute <code>[Rust=...]</code></a></p>
 <h2 id="foreign-bindings"><a class="header" href="#foreign-bindings">Foreign bindings</a></h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>

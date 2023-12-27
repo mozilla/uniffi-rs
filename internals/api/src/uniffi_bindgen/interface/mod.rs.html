@@ -1804,7 +1804,7 @@
         <span class="self">self</span>.iter_user_ffi_function_definitions()
             .cloned()
             .chain(<span class="self">self</span>.iter_rust_buffer_ffi_function_definitions())
-            .chain(<span class="self">self</span>.iter_futures_ffi_function_definitons())
+            .chain(<span class="self">self</span>.iter_futures_ffi_function_definitions())
             .chain(<span class="self">self</span>.iter_checksum_ffi_functions())
             .chain([<span class="self">self</span>.ffi_uniffi_contract_version()])
     }
@@ -1853,7 +1853,7 @@
     }
 
     <span class="doccomment">/// List all FFI functions definitions for async functionality.
-    </span><span class="kw">pub fn </span>iter_futures_ffi_function_definitons(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>iter_futures_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
         <span class="kw">let </span>all_possible_return_ffi_types = [
             <span class="prelude-val">Some</span>(FfiType::UInt8),
             <span class="prelude-val">Some</span>(FfiType::Int8),

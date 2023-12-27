@@ -3,7 +3,7 @@
     R: <a class="trait" href="../trait.FfiDefault.html" title="trait uniffi::FfiDefault">FfiDefault</a>,</span></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Handle a scaffolding calls</p>
 <p><code>callback</code> is responsible for making the actual Rust call and returning a special result type:</p>
 <ul>
-<li>For successfull calls, return <code>Ok(value)</code></li>
+<li>For successful calls, return <code>Ok(value)</code></li>
 <li>For errors that should be translated into thrown exceptions in the foreign code, serialize
 the error into a <code>RustBuffer</code>, then return <code>Ok(buf)</code></li>
 <li>The success type, must implement <code>FfiDefault</code>.</li>
