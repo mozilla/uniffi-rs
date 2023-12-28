@@ -650,7 +650,7 @@
     <span class="kw">pub fn </span>check_lower_rb(nm: <span class="kw-2">&amp;</span>str, type_: <span class="kw-2">&amp;</span>Type) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>type_ {
             Type::Object { name, .. } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_check_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>)
+                <span class="macro">format!</span>(<span class="string">&quot;({}.uniffi_check_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>)
             }
             Type::Enum { .. }
             | Type::Record { .. }
@@ -680,7 +680,7 @@
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;({nm} ? 1 : 0)&quot;</span>),
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromString({nm})&quot;</span>),
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;RustBuffer.allocFromBytes({nm})&quot;</span>),
-            Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}._uniffi_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
+            Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;({}.uniffi_lower {nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
             Type::CallbackInterface { .. } =&gt; {
                 <span class="macro">panic!</span>(<span class="string">&quot;No support for lowering callback interfaces yet&quot;</span>)
             }
@@ -714,7 +714,7 @@
             Type::Boolean =&gt; <span class="macro">format!</span>(<span class="string">&quot;1 == {nm}&quot;</span>),
             Type::String =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.consumeIntoString&quot;</span>),
             Type::Bytes =&gt; <span class="macro">format!</span>(<span class="string">&quot;{nm}.consumeIntoBytes&quot;</span>),
-            Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}._uniffi_allocate({nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
+            Type::Object { name, .. } =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.uniffi_allocate({nm})&quot;</span>, class_name_rb(name)<span class="question-mark">?</span>),
             Type::CallbackInterface { .. } =&gt; {
                 <span class="macro">panic!</span>(<span class="string">&quot;No support for lifting callback interfaces, yet&quot;</span>)
             }
