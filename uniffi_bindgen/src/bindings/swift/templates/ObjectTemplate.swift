@@ -142,7 +142,7 @@ open class {{ impl_class_name }}:
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
-    open static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
+    public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
         return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call_with_prefix("lhs.uniffiClonePointer()", eq) %}
         )
