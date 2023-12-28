@@ -361,7 +361,7 @@ impl<'a> TypeRenderer<'a> {
 /// Generate UniFFI mocks for Swift, as strings in memory.
 ///
 pub fn generate_mocks(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    let mocks_renderer = MocksRenderer::new(&config, ci);
+    let mocks_renderer = MocksRenderer::new(config, ci);
     let mocks = mocks_renderer
         .render()
         .context("failed to render Swift mocks")?;
