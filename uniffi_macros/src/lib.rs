@@ -115,7 +115,7 @@ pub fn derive_record(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Enum)]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
-    expand_enum(parse_macro_input!(input), false)
+    expand_enum(parse_macro_input!(input), None, false)
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -211,10 +211,14 @@ pub fn derive_record_for_udl(_attrs: TokenStream, input: TokenStream) -> TokenSt
 
 #[doc(hidden)]
 #[proc_macro_attribute]
-pub fn derive_enum_for_udl(_attrs: TokenStream, input: TokenStream) -> TokenStream {
-    expand_enum(syn::parse_macro_input!(input), true)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+pub fn derive_enum_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    expand_enum(
+        syn::parse_macro_input!(input),
+        Some(syn::parse_macro_input!(attrs)),
+        true,
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
 }
 
 #[doc(hidden)]

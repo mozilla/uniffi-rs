@@ -1,5 +1,7 @@
 use custom_types::Handle;
-use ext_types_external_crate::{ExternalCrateDictionary, ExternalCrateInterface};
+use ext_types_external_crate::{
+    ExternalCrateDictionary, ExternalCrateInterface, ExternalCrateNonExhaustiveEnum,
+};
 use ext_types_guid::Guid;
 use std::sync::Arc;
 use uniffi_one::{
@@ -28,6 +30,7 @@ pub struct CombinedType {
     pub maybe_handle: Option<Handle>,
 
     pub ecd: ExternalCrateDictionary,
+    pub ecnee: ExternalCrateNonExhaustiveEnum,
 }
 
 fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
@@ -59,6 +62,7 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
         maybe_handle: Some(Handle(4)),
 
         ecd: ExternalCrateDictionary { sval: "ecd".into() },
+        ecnee: ExternalCrateNonExhaustiveEnum::One,
     })
 }
 

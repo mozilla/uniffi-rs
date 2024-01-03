@@ -189,6 +189,7 @@ pub struct Enum {
     // * For an Enum not used as an error but which has no variants with data, `flat` will be
     //   false when generating the scaffolding but `true` when generating bindings.
     pub(super) flat: bool,
+    pub(super) non_exhaustive: bool,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
@@ -233,6 +234,10 @@ impl Enum {
         self.flat
     }
 
+    pub fn is_non_exhaustive(&self) -> bool {
+        self.non_exhaustive
+    }
+
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.variants.iter().flat_map(Variant::iter_types))
     }
@@ -257,6 +262,7 @@ impl Enum {
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
             flat,
+            non_exhaustive: meta.non_exhaustive,
             docstring: meta.docstring.clone(),
         })
     }
@@ -635,6 +641,7 @@ mod test {
             name: "test".to_string(),
             variants: vec![],
             flat: false,
+            non_exhaustive: false,
             docstring: None,
         };
 

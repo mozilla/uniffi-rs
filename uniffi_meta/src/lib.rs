@@ -309,6 +309,7 @@ pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
     pub variants: Vec<VariantMetadata>,
+    pub non_exhaustive: bool,
     pub docstring: Option<String>,
 }
 

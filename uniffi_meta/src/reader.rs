@@ -304,6 +304,7 @@ impl<'a> MetadataReader<'a> {
             module_path,
             name,
             variants,
+            non_exhaustive: self.read_bool()?,
             docstring: self.read_optional_long_string()?,
         })
     }

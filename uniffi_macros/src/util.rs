@@ -252,6 +252,7 @@ pub mod kw {
     syn::custom_keyword!(flat_error);
     syn::custom_keyword!(None);
     syn::custom_keyword!(with_try_read);
+    syn::custom_keyword!(non_exhaustive);
     syn::custom_keyword!(Debug);
     syn::custom_keyword!(Display);
     syn::custom_keyword!(Eq);

@@ -45,6 +45,7 @@ pub(super) enum Attribute {
     // The interface described is implemented as a trait.
     Trait,
     Async,
+    NonExhaustive,
 }
 
 // A type defined in Rust via procmacros but which should be available
@@ -83,6 +84,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "Custom" => Ok(Attribute::Custom),
                 "Trait" => Ok(Attribute::Trait),
                 "Async" => Ok(Attribute::Async),
+                "NonExhaustive" => Ok(Attribute::NonExhaustive),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -209,13 +211,18 @@ where
 }
 
 /// Attributes that can be attached to an `enum` definition in the UDL.
-/// There's only one case here: using `[Error]` to mark an enum as an error class.
 #[derive(Debug, Clone, Checksum, Default)]
 pub(super) struct EnumAttributes(Vec<Attribute>);
 
 impl EnumAttributes {
     pub fn contains_error_attr(&self) -> bool {
         self.0.iter().any(|attr| attr.is_error())
+    }
+
+    pub fn contains_non_exhaustive_attr(&self) -> bool {
+        self.0
+            .iter()
+            .any(|attr| matches!(attr, Attribute::NonExhaustive))
     }
 }
 
@@ -226,6 +233,10 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Error => Ok(()),
+            Attribute::NonExhaustive => Ok(()),
+            // Allow `[Enum]`, since we may be parsing an attribute list from an interface with the
+            // `[Enum]` attribute.
+            Attribute::Enum => Ok(()),
             _ => bail!(format!("{attr:?} not supported for enums")),
         })?;
         Ok(Self(attrs))
@@ -846,7 +857,7 @@ mod test {
     }
 
     #[test]
-    fn test_enum_attribute() {
+    fn test_enum_attribute_on_interface() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
         assert!(matches!(attrs.contains_enum_attr(), true));
@@ -865,6 +876,38 @@ mod test {
             err.to_string(),
             "conflicting attributes on interface definition"
         );
+    }
+
+    // Test parsing attributes for enum definitions
+    #[test]
+    fn test_enum_attributes() {
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Error, NonExhaustive]").unwrap();
+        let attrs = EnumAttributes::try_from(&node).unwrap();
+        assert!(attrs.contains_error_attr());
+        assert!(attrs.contains_non_exhaustive_attr());
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
+        let err = EnumAttributes::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "Trait not supported for enums");
+    }
+
+    // Test parsing attributes for interface definitions with the `[Enum]` attribute
+    #[test]
+    fn test_enum_attributes_from_interface() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum]").unwrap();
+        assert!(EnumAttributes::try_from(&node).is_ok());
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Enum, Error, NonExhaustive]")
+                .unwrap();
+        let attrs = EnumAttributes::try_from(&node).unwrap();
+        assert!(attrs.contains_error_attr());
+        assert!(attrs.contains_non_exhaustive_attr());
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum, Trait]").unwrap();
+        let err = EnumAttributes::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "Trait not supported for enums");
     }
 
     #[test]
