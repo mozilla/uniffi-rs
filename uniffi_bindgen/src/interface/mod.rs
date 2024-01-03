@@ -1068,6 +1068,7 @@ existing definition: Enum {
         },
     ],
     flat: true,
+    non_exhaustive: false,
     docstring: None,
 },
 new definition: Enum {
@@ -1088,6 +1089,7 @@ new definition: Enum {
         },
     ],
     flat: true,
+    non_exhaustive: false,
     docstring: None,
 }",
         );

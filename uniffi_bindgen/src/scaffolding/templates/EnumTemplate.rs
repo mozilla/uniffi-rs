@@ -7,7 +7,11 @@
 // public so other crates can refer to it via an `[External='crate'] typedef`
 #}
 
-#[::uniffi::derive_enum_for_udl]
+#[::uniffi::derive_enum_for_udl(
+    {%- if e.is_non_exhaustive() -%}
+    non_exhaustive,
+    {%- endif %}
+)]
 enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}
     r#{{ variant.name() }} {

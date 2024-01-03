@@ -6,7 +6,7 @@ use syn::{
 };
 
 use crate::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumAttr},
     util::{
         chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, extract_docstring,
         ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
@@ -35,9 +35,9 @@ pub fn expand_error(
     if let Some(attr_from_udl_mode) = attr_from_udl_mode {
         attr = attr.merge(attr_from_udl_mode)?;
     }
-    let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr, udl_mode);
+    let ffi_converter_impl = error_ffi_converter_impl(ident, &enum_, &attr, udl_mode)?;
     let meta_static_var = (!udl_mode).then(|| {
-        error_meta_static_var(ident, docstring, &enum_, attr.flat.is_some())
+        error_meta_static_var(ident, docstring, &enum_, &attr)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -68,12 +68,12 @@ fn error_ffi_converter_impl(
     enum_: &DataEnum,
     attr: &ErrorAttr,
     udl_mode: bool,
-) -> TokenStream {
-    if attr.flat.is_some() {
-        flat_error_ffi_converter_impl(ident, enum_, udl_mode, attr.with_try_read.is_some())
+) -> syn::Result<TokenStream> {
+    Ok(if attr.flat.is_some() {
+        flat_error_ffi_converter_impl(ident, enum_, udl_mode, attr)
     } else {
-        rich_error_ffi_converter_impl(ident, enum_, udl_mode)
-    }
+        rich_error_ffi_converter_impl(ident, enum_, udl_mode, &attr.clone().try_into()?)
+    })
 }
 
 // FfiConverters for "flat errors"
@@ -84,7 +84,7 @@ fn flat_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     udl_mode: bool,
-    implement_lift: bool,
+    attr: &ErrorAttr,
 ) -> TokenStream {
     let name = ident_to_string(ident);
     let lower_impl_spec = tagged_impl_header("Lower", ident, udl_mode);
@@ -96,7 +96,7 @@ fn flat_error_ffi_converter_impl(
     };
 
     let lower_impl = {
-        let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
+        let mut match_arms: Vec<_> = enum_.variants.iter().enumerate().map(|(i, v)| {
             let v_ident = &v.ident;
             let idx = Index::from(i + 1);
 
@@ -106,7 +106,12 @@ fn flat_error_ffi_converter_impl(
                     <::std::string::String as ::uniffi::Lower<crate::UniFfiTag>>::write(error_msg, buf);
                 }
             }
-        });
+        }).collect();
+        if attr.non_exhaustive.is_some() {
+            match_arms.push(quote! {
+                _ => panic!("Unexpected variant in non-exhaustive enum"),
+            })
+        }
 
         quote! {
             #[automatically_derived]
@@ -129,7 +134,7 @@ fn flat_error_ffi_converter_impl(
         }
     };
 
-    let lift_impl = if implement_lift {
+    let lift_impl = if attr.with_try_read.is_some() {
         let match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
             let v_ident = &v.ident;
             let idx = Index::from(i + 1);
@@ -195,10 +200,12 @@ pub(crate) fn error_meta_static_var(
     ident: &Ident,
     docstring: String,
     enum_: &DataEnum,
-    flat: bool,
+    attr: &ErrorAttr,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
     let module_path = mod_path()?;
+    let flat = attr.flat.is_some();
+    let non_exhaustive = attr.non_exhaustive.is_some();
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
                 // first our is-flat flag
@@ -212,7 +219,10 @@ pub(crate) fn error_meta_static_var(
     } else {
         metadata_expr.extend(variant_metadata(enum_)?);
     }
-    metadata_expr.extend(quote! { .concat_long_str(#docstring) });
+    metadata_expr.extend(quote! {
+        .concat_bool(#non_exhaustive)
+        .concat_long_str(#docstring)
+    });
     Ok(create_metadata_items("error", &name, metadata_expr, None))
 }
 
@@ -231,10 +241,11 @@ pub fn flat_error_variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStr
         .collect()
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct ErrorAttr {
-    flat: Option<kw::flat_error>,
-    with_try_read: Option<kw::with_try_read>,
+    pub flat: Option<kw::flat_error>,
+    pub with_try_read: Option<kw::with_try_read>,
+    pub non_exhaustive: Option<kw::non_exhaustive>,
 }
 
 impl UniffiAttributeArgs for ErrorAttr {
@@ -250,8 +261,13 @@ impl UniffiAttributeArgs for ErrorAttr {
                 with_try_read: input.parse()?,
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::non_exhaustive) {
+            Ok(Self {
+                non_exhaustive: input.parse()?,
+                ..Self::default()
+            })
         } else if lookahead.peek(kw::handle_unknown_callback_error) {
-            // Not used anymore, but still lallowed
+            // Not used anymore, but still allowed
             Ok(Self::default())
         } else {
             Err(lookahead.error())
@@ -262,6 +278,7 @@ impl UniffiAttributeArgs for ErrorAttr {
         Ok(Self {
             flat: either_attribute_arg(self.flat, other.flat)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
+            non_exhaustive: either_attribute_arg(self.non_exhaustive, other.non_exhaustive)?,
         })
     }
 }
@@ -270,5 +287,27 @@ impl UniffiAttributeArgs for ErrorAttr {
 impl Parse for ErrorAttr {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         parse_comma_separated(input)
+    }
+}
+
+impl TryFrom<ErrorAttr> for EnumAttr {
+    type Error = syn::Error;
+
+    fn try_from(error_attr: ErrorAttr) -> Result<Self, Self::Error> {
+        if error_attr.flat.is_some() {
+            Err(syn::Error::new(
+                Span::call_site(),
+                "flat attribute not valid for rich enum errors",
+            ))
+        } else if error_attr.with_try_read.is_some() {
+            Err(syn::Error::new(
+                Span::call_site(),
+                "with_try_read attribute not valid for rich enum errors",
+            ))
+        } else {
+            Ok(EnumAttr {
+                non_exhaustive: error_attr.non_exhaustive,
+            })
+        }
     }
 }

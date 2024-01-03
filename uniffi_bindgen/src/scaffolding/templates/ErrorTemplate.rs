@@ -14,6 +14,9 @@
     with_try_read,
     {%- endif %}
     {%- endif %}
+    {%- if e.is_non_exhaustive() -%}
+    non_exhaustive,
+    {%- endif %}
 )]
 enum r#{{ e.name() }} {
     {%- for variant in e.variants() %}

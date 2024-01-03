@@ -221,6 +221,7 @@ mod test_metadata {
                         docstring: None,
                     },
                 ],
+                non_exhaustive: false,
                 docstring: None,
             },
         );
@@ -266,6 +267,7 @@ mod test_metadata {
                         docstring: None,
                     },
                 ],
+                non_exhaustive: false,
                 docstring: None,
             },
         );
@@ -298,6 +300,7 @@ mod test_metadata {
                         docstring: None,
                     },
                 ],
+                non_exhaustive: false,
                 docstring: None,
             },
         );
@@ -325,6 +328,7 @@ mod test_metadata {
                             docstring: None,
                         },
                     ],
+                    non_exhaustive: false,
                     docstring: None,
                 },
                 is_flat: true,
@@ -373,6 +377,7 @@ mod test_metadata {
                             docstring: None,
                         },
                     ],
+                    non_exhaustive: false,
                     docstring: None,
                 },
                 is_flat: false,

@@ -8,6 +8,12 @@ pub struct ExternalCrateInterface {
     pub sval: String,
 }
 
+#[non_exhaustive]
+pub enum ExternalCrateNonExhaustiveEnum {
+    One,
+    Two,
+}
+
 // This type is referenced as an "external" type as an interface.
 impl ExternalCrateInterface {
     pub fn new(sval: String) -> Self {

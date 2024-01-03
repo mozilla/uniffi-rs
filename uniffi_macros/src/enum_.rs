@@ -1,13 +1,22 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant};
-
-use crate::util::{
-    create_metadata_items, derive_all_ffi_traits, extract_docstring, ident_to_string, mod_path,
-    tagged_impl_header, try_metadata_value_from_usize, try_read_field,
+use syn::{
+    parse::{Parse, ParseStream},
+    Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
 };
 
-pub fn expand_enum(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
+use crate::util::{
+    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
+    ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
+    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+};
+
+pub fn expand_enum(
+    input: DeriveInput,
+    // Attributes from #[derive_error_for_udl()], if we are in udl mode
+    attr_from_udl_mode: Option<EnumAttr>,
+    udl_mode: bool,
+) -> syn::Result<TokenStream> {
     let enum_ = match input.data {
         Data::Enum(e) => e,
         _ => {
@@ -19,10 +28,14 @@ pub fn expand_enum(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStrea
     };
     let ident = &input.ident;
     let docstring = extract_docstring(&input.attrs)?;
-    let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, udl_mode);
+    let mut attr: EnumAttr = input.attrs.parse_uniffi_attr_args()?;
+    if let Some(attr_from_udl_mode) = attr_from_udl_mode {
+        attr = attr.merge(attr_from_udl_mode)?;
+    }
+    let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, udl_mode, &attr);
 
     let meta_static_var = (!udl_mode).then(|| {
-        enum_meta_static_var(ident, docstring, &enum_)
+        enum_meta_static_var(ident, docstring, &enum_, &attr)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -36,11 +49,13 @@ pub(crate) fn enum_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     udl_mode: bool,
+    attr: &EnumAttr,
 ) -> TokenStream {
     enum_or_error_ffi_converter_impl(
         ident,
         enum_,
         udl_mode,
+        attr,
         quote! { ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
@@ -49,11 +64,13 @@ pub(crate) fn rich_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     udl_mode: bool,
+    attr: &EnumAttr,
 ) -> TokenStream {
     enum_or_error_ffi_converter_impl(
         ident,
         enum_,
         udl_mode,
+        attr,
         quote! { ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
@@ -62,6 +79,7 @@ fn enum_or_error_ffi_converter_impl(
     ident: &Ident,
     enum_: &DataEnum,
     udl_mode: bool,
+    attr: &EnumAttr,
     metadata_type_code: TokenStream,
 ) -> TokenStream {
     let name = ident_to_string(ident);
@@ -71,19 +89,29 @@ fn enum_or_error_ffi_converter_impl(
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
     };
-    let write_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
-        let v_ident = &v.ident;
-        let fields = v.fields.iter().map(|f| &f.ident);
-        let idx = Index::from(i + 1);
-        let write_fields = v.fields.iter().map(write_field);
+    let mut write_match_arms: Vec<_> = enum_
+        .variants
+        .iter()
+        .enumerate()
+        .map(|(i, v)| {
+            let v_ident = &v.ident;
+            let fields = v.fields.iter().map(|f| &f.ident);
+            let idx = Index::from(i + 1);
+            let write_fields = v.fields.iter().map(write_field);
 
-        quote! {
-            Self::#v_ident { #(#fields),* } => {
-                ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                #(#write_fields)*
+            quote! {
+                Self::#v_ident { #(#fields),* } => {
+                    ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
+                    #(#write_fields)*
+                }
             }
-        }
-    });
+        })
+        .collect();
+    if attr.non_exhaustive.is_some() {
+        write_match_arms.push(quote! {
+            _ => panic!("Unexpected variant in non-exhaustive enum"),
+        })
+    }
     let write_impl = quote! {
         match obj { #(#write_match_arms)* }
     };
@@ -142,9 +170,11 @@ pub(crate) fn enum_meta_static_var(
     ident: &Ident,
     docstring: String,
     enum_: &DataEnum,
+    attr: &EnumAttr,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
     let module_path = mod_path()?;
+    let non_exhaustive = attr.non_exhaustive.is_some();
 
     let mut metadata_expr = quote! {
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
@@ -152,7 +182,10 @@ pub(crate) fn enum_meta_static_var(
             .concat_str(#name)
     };
     metadata_expr.extend(variant_metadata(enum_)?);
-    metadata_expr.extend(quote! { .concat_long_str(#docstring) });
+    metadata_expr.extend(quote! {
+        .concat_bool(#non_exhaustive)
+        .concat_long_str(#docstring)
+    });
     Ok(create_metadata_items("enum", &name, metadata_expr, None))
 }
 
@@ -233,4 +266,35 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                 })
         )
         .collect()
+}
+
+#[derive(Default)]
+pub struct EnumAttr {
+    pub non_exhaustive: Option<kw::non_exhaustive>,
+}
+
+// So ErrorAttr can be used with `parse_macro_input!`
+impl Parse for EnumAttr {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
+impl UniffiAttributeArgs for EnumAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::non_exhaustive) {
+            Ok(Self {
+                non_exhaustive: input.parse()?,
+            })
+        } else {
+            Err(lookahead.error())
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            non_exhaustive: either_attribute_arg(self.non_exhaustive, other.non_exhaustive)?,
+        })
+    }
 }

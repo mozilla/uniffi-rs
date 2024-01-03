@@ -66,6 +66,12 @@ interface ExternalCrateInterface {
     string value();
 };
 
+[NonExhaustive]
+enum ExternalCrateNonExhaustiveEnum {
+    "One",
+    "Two",
+};
+
 // And a new type here to tie them all together.
 dictionary CombinedType {
     UniffiOneEnum uoe;
@@ -86,4 +92,5 @@ dictionary CombinedType {
     Handle? maybe_handle;
 
     ExternalCrateDictionary ecd;
+    ExternalCrateNonExhaustiveEnum ecnee;
 };
