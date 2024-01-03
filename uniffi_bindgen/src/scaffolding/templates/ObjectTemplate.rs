@@ -1,14 +1,6 @@
-// For each Object definition, we assume the caller has provided an appropriately-shaped `struct T`
-// with an `impl` for each method on the object. We create an `Arc<T>` for "safely" handing out
-// references to these structs to foreign language code, and we provide a `pub extern "C"` function
-// corresponding to each method.
-//
-// (Note that "safely" is in "scare quotes" - that's because we use functions on an `Arc` that
-// that are inherently unsafe, but the code we generate is safe in practice.)
-//
-// If the caller's implementation of the struct does not match with the methods or types specified
-// in the UDL, then the rust compiler will complain with a (hopefully at least somewhat helpful!)
-// error message when processing this generated code.
+{#
+// Forward work to `uniffi_macros` This keeps macro-based and UDL-based generated code consistent.
+#}
 
 {%- match obj.imp() -%}
 {%- when ObjectImpl::Trait %}
