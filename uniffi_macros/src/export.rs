@@ -20,6 +20,7 @@ use self::{
     },
 };
 use crate::util::{ident_to_string, mod_path};
+pub use attributes::{DefaultMap, ExportFnArgs, ExportedImplFnArgs};
 pub use callback_interface::ffi_converter_callback_interface_impl;
 
 // TODO(jplatte): Ensure no generics, …

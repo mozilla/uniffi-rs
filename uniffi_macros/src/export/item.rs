@@ -8,7 +8,8 @@ use proc_macro2::{Ident, Span};
 use quote::ToTokens;
 
 use super::attributes::{
-    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnAttributes,
+    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnArgs,
+    ExportedImplFnAttributes,
 };
 use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
@@ -43,7 +44,7 @@ impl ExportItem {
             syn::Item::Fn(item) => {
                 let args: ExportFnArgs = syn::parse(attr_args)?;
                 let docstring = extract_docstring(&item.attrs)?;
-                let sig = FnSignature::new_function(item.sig, args.name.clone(), docstring)?;
+                let sig = FnSignature::new_function(item.sig, args.clone(), docstring)?;
                 Ok(Self::Function { sig, args })
             }
             syn::Item::Impl(item) => Self::from_impl(item, attr_args),
@@ -106,14 +107,14 @@ impl ExportItem {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,
-                        attrs.name,
+                        attrs.args,
                         docstring,
                     )?)
                 } else {
                     ImplItem::Method(FnSignature::new_method(
                         self_ident.clone(),
                         impl_fn.sig,
-                        attrs.name,
+                        attrs.args,
                         docstring,
                     )?)
                 };
@@ -169,7 +170,7 @@ impl ExportItem {
                     ImplItem::Method(FnSignature::new_trait_method(
                         self_ident.clone(),
                         tim.sig,
-                        None,
+                        ExportedImplFnArgs::default(),
                         i as u32,
                         docstring,
                     )?)

@@ -55,6 +55,20 @@ do {
 
 struct SomeOtherError: Error { }
 
+// Defaults
+
+let recordWithDefaults = RecordWithDefaults(noDefaultString: "Test")
+assert(recordWithDefaults.noDefaultString == "Test")
+assert(recordWithDefaults.optVec == nil)
+assert(recordWithDefaults.number == 42)
+
+assert(doubleWithDefault() == 42)
+
+let objWithDefaults = ObjectWithDefaults()
+assert(objWithDefaults.addToNum() == 42)
+
+// Traits
+
 class SwiftTestCallbackInterface : TestCallbackInterface {
     func doNothing() { }
 

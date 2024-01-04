@@ -21,8 +21,6 @@ pub fn one_inner_by_ref(one: &One) -> i32 {
 #[derive(uniffi::Record)]
 pub struct Two {
     a: String,
-    #[uniffi(default = None)]
-    b: Option<Vec<bool>>,
 }
 
 #[derive(uniffi::Record)]
@@ -339,6 +337,41 @@ impl Renamed {
 #[uniffi::export(name = "rename_test")]
 fn renamed_rename_test() -> bool {
     true
+}
+
+/// Test defaults on Records
+#[derive(uniffi::Record)]
+pub struct RecordWithDefaults {
+    no_default_string: String,
+    #[uniffi(default=None)]
+    opt_vec: Option<Vec<bool>>,
+    #[uniffi(default = 42)]
+    number: i32,
+}
+
+/// Test defaults on top-level functions
+#[uniffi::export(default(num = 21))]
+fn double_with_default(num: i32) -> i32 {
+    num + num
+}
+
+/// Test defaults on constructors / methods
+#[derive(uniffi::Object)]
+pub struct ObjectWithDefaults {
+    num: i32,
+}
+
+#[uniffi::export]
+impl ObjectWithDefaults {
+    #[uniffi::constructor(default(num = 30))]
+    fn new(num: i32) -> Self {
+        Self { num }
+    }
+
+    #[uniffi::method(default(other = 12))]
+    fn add_to_num(&self, other: i32) -> i32 {
+        self.num + other
+    }
 }
 
 uniffi::include_scaffolding!("proc-macro");

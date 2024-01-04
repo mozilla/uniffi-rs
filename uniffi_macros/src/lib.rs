@@ -16,6 +16,7 @@ use syn::{
 };
 
 mod custom;
+mod default;
 mod enum_;
 mod error;
 mod export;

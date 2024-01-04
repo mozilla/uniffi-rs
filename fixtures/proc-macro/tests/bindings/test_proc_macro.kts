@@ -43,6 +43,20 @@ try {
 } catch (e: FlatException) {
 }
 
+// Defaults
+
+val recordWithDefaults = RecordWithDefaults("Test")
+assert(recordWithDefaults.noDefaultString == "Test")
+assert(recordWithDefaults.optVec == null)
+assert(recordWithDefaults.number == 42)
+
+assert(doubleWithDefault() == 42)
+
+val objWithDefaults = ObjectWithDefaults()
+assert(objWithDefaults.addToNum() == 42)
+
+// Traits
+
 val traitImpl = obj.getTrait(null)
 assert(traitImpl.concatStrings("foo", "bar") == "foobar")
 assert(obj.getTrait(traitImpl).concatStrings("foo", "bar") == "foobar")

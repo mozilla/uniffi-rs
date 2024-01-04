@@ -1,12 +1,16 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-use crate::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
+use crate::{
+    default::DefaultValue,
+    util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs},
+};
 
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::{
+    parenthesized,
     parse::{Parse, ParseStream},
-    Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
+    Attribute, Ident, LitStr, Meta, PathArguments, PathSegment, Token,
 };
 use uniffi_meta::UniffiTraitDiscriminants;
 
@@ -67,10 +71,11 @@ impl UniffiAttributeArgs for ExportTraitArgs {
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct ExportFnArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
     pub(crate) name: Option<String>,
+    pub(crate) defaults: DefaultMap,
 }
 
 impl Parse for ExportFnArgs {
@@ -87,15 +92,20 @@ impl UniffiAttributeArgs for ExportFnArgs {
             let _: Token![=] = input.parse()?;
             Ok(Self {
                 async_runtime: Some(input.parse()?),
-                name: None,
+                ..Self::default()
             })
         } else if lookahead.peek(kw::name) {
             let _: kw::name = input.parse()?;
             let _: Token![=] = input.parse()?;
             let name = Some(input.parse::<LitStr>()?.value());
             Ok(Self {
-                async_runtime: None,
                 name,
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::default) {
+            Ok(Self {
+                defaults: DefaultMap::parse(input)?,
+                ..Self::default()
             })
         } else {
             Err(syn::Error::new(
@@ -109,6 +119,7 @@ impl UniffiAttributeArgs for ExportFnArgs {
         Ok(Self {
             async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
             name: either_attribute_arg(self.name, other.name)?,
+            defaults: self.defaults.merge(other.defaults),
         })
     }
 }
@@ -199,6 +210,7 @@ impl UniffiAttributeArgs for ExportStructArgs {
     }
 }
 
+#[derive(Clone)]
 pub(crate) enum AsyncRuntime {
     Tokio(LitStr),
 }
@@ -224,25 +236,37 @@ impl ToTokens for AsyncRuntime {
     }
 }
 
-#[derive(Default)]
-pub struct NonExportArgs {
+/// Arguments for function inside an impl block
+///
+/// This stores the parsed arguments for `uniffi::constructor` and `uniffi::method`
+#[derive(Clone, Default)]
+pub struct ExportedImplFnArgs {
     pub(crate) name: Option<String>,
+    pub(crate) defaults: DefaultMap,
 }
 
-impl Parse for NonExportArgs {
+impl Parse for ExportedImplFnArgs {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         parse_comma_separated(input)
     }
 }
 
-impl UniffiAttributeArgs for NonExportArgs {
+impl UniffiAttributeArgs for ExportedImplFnArgs {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::name) {
             let _: kw::name = input.parse()?;
             let _: Token![=] = input.parse()?;
             let name = Some(input.parse::<LitStr>()?.value());
-            Ok(Self { name })
+            Ok(Self {
+                name,
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::default) {
+            Ok(Self {
+                defaults: DefaultMap::parse(input)?,
+                ..Self::default()
+            })
         } else {
             Err(syn::Error::new(
                 input.span(),
@@ -254,6 +278,7 @@ impl UniffiAttributeArgs for NonExportArgs {
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             name: either_attribute_arg(self.name, other.name)?,
+            defaults: self.defaults.merge(other.defaults),
         })
     }
 }
@@ -261,7 +286,7 @@ impl UniffiAttributeArgs for NonExportArgs {
 #[derive(Default)]
 pub(super) struct ExportedImplFnAttributes {
     pub constructor: bool,
-    pub name: Option<String>,
+    pub args: ExportedImplFnArgs,
 }
 
 impl ExportedImplFnAttributes {
@@ -279,10 +304,10 @@ impl ExportedImplFnAttributes {
             ensure_no_path_args(fst)?;
 
             let args = match &attr.meta {
-                Meta::List(_) => attr.parse_args::<NonExportArgs>()?,
+                Meta::List(_) => attr.parse_args::<ExportedImplFnArgs>()?,
                 _ => Default::default(),
             };
-            this.name = args.name;
+            this.args = args;
 
             if segs.len() != 2 {
                 return Err(syn::Error::new_spanned(
@@ -324,5 +349,55 @@ fn ensure_no_path_args(seg: &PathSegment) -> syn::Result<()> {
         Ok(())
     } else {
         Err(syn::Error::new_spanned(&seg.arguments, "unexpected syntax"))
+    }
+}
+
+/// Maps arguments to defaults for functions
+#[derive(Clone, Default)]
+pub struct DefaultMap {
+    map: HashMap<Ident, DefaultValue>,
+}
+
+impl DefaultMap {
+    pub fn merge(self, other: Self) -> Self {
+        let mut map = self.map;
+        map.extend(other.map);
+        Self { map }
+    }
+
+    pub fn remove(&mut self, ident: &Ident) -> Option<DefaultValue> {
+        self.map.remove(ident)
+    }
+
+    pub fn idents(&self) -> Vec<&Ident> {
+        self.map.keys().collect()
+    }
+}
+
+impl Parse for DefaultMap {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let _: kw::default = input.parse()?;
+        let content;
+        let _ = parenthesized!(content in input);
+        let pairs = content.parse_terminated(DefaultPair::parse, Token![,])?;
+        Ok(Self {
+            map: pairs.into_iter().map(|p| (p.name, p.value)).collect(),
+        })
+    }
+}
+
+pub struct DefaultPair {
+    pub name: Ident,
+    pub eq_token: Token![=],
+    pub value: DefaultValue,
+}
+
+impl Parse for DefaultPair {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        Ok(Self {
+            name: input.parse()?,
+            eq_token: input.parse()?,
+            value: input.parse()?,
+        })
     }
 }
