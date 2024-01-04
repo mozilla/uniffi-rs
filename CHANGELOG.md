@@ -24,6 +24,10 @@
   This eliminates panics when the capacity of the vec exceeds `i32::MAX`.
   This can happen with the current Vec implementation when String/Vec sizes approach `i32::MAX` but don't exceed it.
 
+- Proc-macro function/method arguments can now have defaults
+
+- Proc-macro record defaults now support empty vecs and Some values.
+
 ### What's fixed?
  
 - Fixed a memory leak in callback interface handling.
@@ -77,7 +81,6 @@
 - Add support for docstrings via procmacros [#1862](https://github.com/mozilla/uniffi-rs/pull/1862)
   and [in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
 - Objects can now be returned from functions/constructors/methods without wrapping them in an `Arc<>`.
-- Proc-macro function/method arguments can now have defaults
 
 [All changes in v0.26.0](https://github.com/mozilla/uniffi-rs/compare/v0.25.3...v0.26.0).
 

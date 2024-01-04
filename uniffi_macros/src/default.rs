@@ -6,7 +6,9 @@ use crate::util::kw;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{
-    parse::{Parse, ParseStream},
+    bracketed, parenthesized,
+    parse::{Nothing, Parse, ParseStream},
+    token::{Bracket, Paren},
     Lit,
 };
 
@@ -14,14 +16,22 @@ use syn::{
 #[derive(Clone)]
 pub enum DefaultValue {
     Literal(Lit),
-    Null(kw::None),
+    None(kw::None),
+    Some {
+        some: kw::Some,
+        paren: Paren,
+        inner: Box<DefaultValue>,
+    },
+    EmptySeq(Bracket),
 }
 
 impl ToTokens for DefaultValue {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
             DefaultValue::Literal(lit) => lit.to_tokens(tokens),
-            DefaultValue::Null(kw) => kw.to_tokens(tokens),
+            DefaultValue::None(kw) => kw.to_tokens(tokens),
+            DefaultValue::Some { inner, .. } => tokens.extend(quote! { Some(#inner) }),
+            DefaultValue::EmptySeq(_) => tokens.extend(quote! { [] }),
         }
     }
 }
@@ -31,7 +41,21 @@ impl Parse for DefaultValue {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::None) {
             let none_kw: kw::None = input.parse()?;
-            Ok(Self::Null(none_kw))
+            Ok(Self::None(none_kw))
+        } else if lookahead.peek(kw::Some) {
+            let some: kw::Some = input.parse()?;
+            let content;
+            let paren = parenthesized!(content in input);
+            Ok(Self::Some {
+                some,
+                paren,
+                inner: content.parse()?,
+            })
+        } else if lookahead.peek(Bracket) {
+            let content;
+            let bracket = bracketed!(content in input);
+            content.parse::<Nothing>()?;
+            Ok(Self::EmptySeq(bracket))
         } else {
             Ok(Self::Literal(input.parse()?))
         }
@@ -76,9 +100,21 @@ impl DefaultValue {
                 "this type of literal is not currently supported as a default",
             )),
 
-            DefaultValue::Null(_) => Ok(quote! {
-                .concat_value(::uniffi::metadata::codes::LIT_NULL)
+            DefaultValue::EmptySeq(_) => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::LIT_EMPTY_SEQ)
             }),
+
+            DefaultValue::None(_) => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::LIT_NONE)
+            }),
+
+            DefaultValue::Some { inner, .. } => {
+                let inner_calls = inner.metadata_calls()?;
+                Ok(quote! {
+                    .concat_value(::uniffi::metadata::codes::LIT_SOME)
+                    #inner_calls
+                })
+            }
         }
     }
 }

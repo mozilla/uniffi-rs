@@ -36,8 +36,9 @@ impl CodeType for OptionalCodeType {
 
     fn literal(&self, literal: &Literal) -> String {
         match literal {
-            Literal::Null => "None".into(),
-            _ => super::PythonCodeOracle.find(&self.inner).literal(literal),
+            Literal::None => "None".into(),
+            Literal::Some { inner } => super::PythonCodeOracle.find(&self.inner).literal(inner),
+            _ => panic!("Invalid literal for Optional type: {literal:?}"),
         }
     }
 }

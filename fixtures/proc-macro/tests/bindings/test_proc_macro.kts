@@ -47,8 +47,12 @@ try {
 
 val recordWithDefaults = RecordWithDefaults("Test")
 assert(recordWithDefaults.noDefaultString == "Test")
+assert(recordWithDefaults.boolean == true)
+assert(recordWithDefaults.integer == 42)
+assert(recordWithDefaults.float == 4.2)
+assert(recordWithDefaults.vec.isEmpty())
 assert(recordWithDefaults.optVec == null)
-assert(recordWithDefaults.number == 42)
+assert(recordWithDefaults.optInteger == 42)
 
 assert(doubleWithDefault() == 42)
 

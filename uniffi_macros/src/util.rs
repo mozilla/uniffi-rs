@@ -254,6 +254,7 @@ pub mod kw {
     syn::custom_keyword!(default);
     syn::custom_keyword!(flat_error);
     syn::custom_keyword!(None);
+    syn::custom_keyword!(Some);
     syn::custom_keyword!(with_try_read);
     syn::custom_keyword!(name);
     syn::custom_keyword!(non_exhaustive);

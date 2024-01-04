@@ -59,7 +59,9 @@ pub mod codes {
     pub const LIT_INT: u8 = 1;
     pub const LIT_FLOAT: u8 = 2;
     pub const LIT_BOOL: u8 = 3;
-    pub const LIT_NULL: u8 = 4;
+    pub const LIT_NONE: u8 = 4;
+    pub const LIT_SOME: u8 = 5;
+    pub const LIT_EMPTY_SEQ: u8 = 6;
 }
 
 // Create a checksum for a MetadataBuffer

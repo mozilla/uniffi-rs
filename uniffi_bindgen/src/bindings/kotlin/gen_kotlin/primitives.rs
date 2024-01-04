@@ -9,7 +9,11 @@ use paste::paste;
 
 fn render_literal(literal: &Literal, _ci: &ComponentInterface) -> String {
     fn typed_number(type_: &Type, num_str: String) -> String {
-        match type_ {
+        let unwrapped_type = match type_ {
+            Type::Optional { inner_type } => inner_type,
+            t => t,
+        };
+        match unwrapped_type {
             // Bytes, Shorts and Ints can all be inferred from the type.
             Type::Int8 | Type::Int16 | Type::Int32 => num_str,
             Type::Int64 => format!("{num_str}L"),
@@ -19,7 +23,7 @@ fn render_literal(literal: &Literal, _ci: &ComponentInterface) -> String {
 
             Type::Float32 => format!("{num_str}f"),
             Type::Float64 => num_str,
-            _ => panic!("Unexpected literal: {num_str} is not a number"),
+            _ => panic!("Unexpected literal: {num_str} for type: {type_:?}"),
         }
     }
 

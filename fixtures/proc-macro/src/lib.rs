@@ -343,10 +343,18 @@ fn renamed_rename_test() -> bool {
 #[derive(uniffi::Record)]
 pub struct RecordWithDefaults {
     no_default_string: String,
+    #[uniffi(default = true)]
+    boolean: bool,
+    #[uniffi(default = 42)]
+    integer: i32,
+    #[uniffi(default = 4.2)]
+    float: f64,
+    #[uniffi(default=[])]
+    vec: Vec<bool>,
     #[uniffi(default=None)]
     opt_vec: Option<Vec<bool>>,
-    #[uniffi(default = 42)]
-    number: i32,
+    #[uniffi(default = Some(42))]
+    opt_integer: Option<i32>,
 }
 
 /// Test defaults on top-level functions

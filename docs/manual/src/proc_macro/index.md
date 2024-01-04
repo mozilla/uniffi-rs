@@ -176,7 +176,8 @@ impl TextSplitter {
 
 Supported default values:
   - String, integer, float, and boolean literals
-  - `None` for Option<T> types
+  - `[]` for empty Vecs
+  - `Option<T>` allows either `None` or `Some(T)`
 
 ### Renaming functions, methods and constructors
 
