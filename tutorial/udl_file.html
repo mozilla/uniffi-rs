@@ -182,7 +182,7 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 <ul>
 <li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed function (e.g. <code>namespace foo {}</code>).</li>
 <li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
-<li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! (TODO table correspondence)</li>
+<li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! See the <a href="../udl/builtin_types.html">Built-in Types</a> chapter for more information on mapping types between Rust and UDL.</li>
 </ul>
 <p><strong>Note:</strong> If any of the things you expose in the <code>udl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
 <p><strong>Note</strong> It's also possible to use <a href="../proc_macro/index.html">Rust procmacros</a> to describe your interface and you can avoid
