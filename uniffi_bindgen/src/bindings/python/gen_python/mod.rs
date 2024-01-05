@@ -513,13 +513,30 @@ pub mod filters {
     /// Get the idiomatic Python rendering of docstring
     pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
         let docstring = textwrap::dedent(docstring);
-        let wrapped = if docstring.lines().count() > 1 {
-            format!("\"\"\"\n{docstring}\n\"\"\"")
-        } else {
-            format!("\"\"\"{docstring}\"\"\"")
-        };
+        // Escape triple quotes to avoid syntax error
+        let escaped = docstring.replace(r#"""""#, r#"\"\"\""#);
+
+        let wrapped = format!("\"\"\"\n{escaped}\n\"\"\"");
 
         let spaces = usize::try_from(*spaces).unwrap_or_default();
         Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_docstring_escape() {
+        let docstring = r#"This is a docstring with "quotes" in it.
+It also has a triple quote: """
+And a even longer quote: """"""#;
+
+        let expected = r#""""
+This is a docstring with "quotes" in it.
+It also has a triple quote: \"\"\"
+And a even longer quote: \"\"\"""
+""""#;
+
+        assert_eq!(super::filters::docstring(docstring, &0).unwrap(), expected);
     }
 }
