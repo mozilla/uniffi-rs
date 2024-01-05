@@ -743,6 +743,13 @@
 <a href="#743" id="743">743</a>
 <a href="#744" id="744">744</a>
 <a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -934,6 +941,7 @@
     // * For an Enum not used as an error but which has no variants with data, `flat` will be
     //   false when generating the scaffolding but `true` when generating bindings.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) flat: bool,
+    <span class="kw">pub</span>(<span class="kw">super</span>) non_exhaustive: bool,
     <span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) docstring: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
@@ -978,6 +986,10 @@
         <span class="self">self</span>.flat
     }
 
+    <span class="kw">pub fn </span>is_non_exhaustive(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.non_exhaustive
+    }
+
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
         Box::new(<span class="self">self</span>.variants.iter().flat_map(Variant::iter_types))
     }
@@ -1002,6 +1014,7 @@
                 .map(TryInto::try_into)
                 .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>,
             flat,
+            non_exhaustive: meta.non_exhaustive,
             docstring: meta.docstring.clone(),
         })
     }
@@ -1380,6 +1393,7 @@
             name: <span class="string">&quot;test&quot;</span>.to_string(),
             variants: <span class="macro">vec!</span>[],
             flat: <span class="bool-val">false</span>,
+            non_exhaustive: <span class="bool-val">false</span>,
             docstring: <span class="prelude-val">None</span>,
         };
 

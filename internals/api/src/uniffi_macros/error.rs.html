@@ -272,6 +272,45 @@
 <a href="#272" id="272">272</a>
 <a href="#273" id="273">273</a>
 <a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -280,7 +319,7 @@
 };
 
 <span class="kw">use crate</span>::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumAttr},
     util::{
         chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, extract_docstring,
         ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
@@ -309,9 +348,9 @@
     <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_from_udl_mode) = attr_from_udl_mode {
         attr = attr.merge(attr_from_udl_mode)<span class="question-mark">?</span>;
     }
-    <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr, udl_mode);
+    <span class="kw">let </span>ffi_converter_impl = error_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr, udl_mode)<span class="question-mark">?</span>;
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        error_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>enum_, attr.flat.is_some())
+        error_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -342,12 +381,12 @@
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     attr: <span class="kw-2">&amp;</span>ErrorAttr,
     udl_mode: bool,
-) -&gt; TokenStream {
-    <span class="kw">if </span>attr.flat.is_some() {
-        flat_error_ffi_converter_impl(ident, enum_, udl_mode, attr.with_try_read.is_some())
+) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="prelude-val">Ok</span>(<span class="kw">if </span>attr.flat.is_some() {
+        flat_error_ffi_converter_impl(ident, enum_, udl_mode, attr)
     } <span class="kw">else </span>{
-        rich_error_ffi_converter_impl(ident, enum_, udl_mode)
-    }
+        rich_error_ffi_converter_impl(ident, enum_, udl_mode, <span class="kw-2">&amp;</span>attr.clone().try_into()<span class="question-mark">?</span>)
+    })
 }
 
 <span class="comment">// FfiConverters for &quot;flat errors&quot;
@@ -358,7 +397,7 @@
     ident: <span class="kw-2">&amp;</span>Ident,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     udl_mode: bool,
-    implement_lift: bool,
+    attr: <span class="kw-2">&amp;</span>ErrorAttr,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>lower_impl_spec = tagged_impl_header(<span class="string">&quot;Lower&quot;</span>, ident, udl_mode);
@@ -370,7 +409,7 @@
     };
 
     <span class="kw">let </span>lower_impl = {
-        <span class="kw">let </span>match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
+        <span class="kw">let </span><span class="kw-2">mut </span>match_arms: Vec&lt;<span class="kw">_</span>&gt; = enum_.variants.iter().enumerate().map(|(i, v)| {
             <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
             <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
 
@@ -380,7 +419,12 @@
                     &lt;::std::string::String <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(error_msg, buf);
                 }
             }
-        });
+        }).collect();
+        <span class="kw">if </span>attr.non_exhaustive.is_some() {
+            match_arms.push(<span class="macro">quote! </span>{
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected variant in non-exhaustive enum&quot;</span>),
+            })
+        }
 
         <span class="macro">quote! </span>{
             <span class="attr">#[automatically_derived]
@@ -403,7 +447,7 @@
         }
     };
 
-    <span class="kw">let </span>lift_impl = <span class="kw">if </span>implement_lift {
+    <span class="kw">let </span>lift_impl = <span class="kw">if </span>attr.with_try_read.is_some() {
         <span class="kw">let </span>match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
             <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
             <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
@@ -469,10 +513,12 @@
     ident: <span class="kw-2">&amp;</span>Ident,
     docstring: String,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
-    flat: bool,
+    attr: <span class="kw-2">&amp;</span>ErrorAttr,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
+    <span class="kw">let </span>flat = attr.flat.is_some();
+    <span class="kw">let </span>non_exhaustive = attr.non_exhaustive.is_some();
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
                 <span class="comment">// first our is-flat flag
@@ -486,7 +532,10 @@
     } <span class="kw">else </span>{
         metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     }
-    metadata_expr.extend(<span class="macro">quote! </span>{ .concat_long_str(#docstring) });
+    metadata_expr.extend(<span class="macro">quote! </span>{
+        .concat_bool(#non_exhaustive)
+        .concat_long_str(#docstring)
+    });
     <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;error&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
 }
 
@@ -505,10 +554,11 @@
         .collect()
 }
 
-<span class="attr">#[derive(Default)]
+<span class="attr">#[derive(Clone, Default)]
 </span><span class="kw">pub struct </span>ErrorAttr {
-    flat: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
-    with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
+    <span class="kw">pub </span>flat: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
+    <span class="kw">pub </span>with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
+    <span class="kw">pub </span>non_exhaustive: <span class="prelude-ty">Option</span>&lt;kw::non_exhaustive&gt;,
 }
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ErrorAttr {
@@ -524,8 +574,13 @@
                 with_try_read: input.parse()<span class="question-mark">?</span>,
                 ..<span class="self">Self</span>::default()
             })
+        } <span class="kw">else if </span>lookahead.peek(kw::non_exhaustive) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                non_exhaustive: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
         } <span class="kw">else if </span>lookahead.peek(kw::handle_unknown_callback_error) {
-            <span class="comment">// Not used anymore, but still lallowed
+            <span class="comment">// Not used anymore, but still allowed
             </span><span class="prelude-val">Ok</span>(<span class="self">Self</span>::default())
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(lookahead.error())
@@ -536,6 +591,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             flat: either_attribute_arg(<span class="self">self</span>.flat, other.flat)<span class="question-mark">?</span>,
             with_try_read: either_attribute_arg(<span class="self">self</span>.with_try_read, other.with_try_read)<span class="question-mark">?</span>,
+            non_exhaustive: either_attribute_arg(<span class="self">self</span>.non_exhaustive, other.non_exhaustive)<span class="question-mark">?</span>,
         })
     }
 }
@@ -544,6 +600,28 @@
 </span><span class="kw">impl </span>Parse <span class="kw">for </span>ErrorAttr {
     <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         parse_comma_separated(input)
+    }
+}
+
+<span class="kw">impl </span>TryFrom&lt;ErrorAttr&gt; <span class="kw">for </span>EnumAttr {
+    <span class="kw">type </span>Error = syn::Error;
+
+    <span class="kw">fn </span>try_from(error_attr: ErrorAttr) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">if </span>error_attr.flat.is_some() {
+            <span class="prelude-val">Err</span>(syn::Error::new(
+                Span::call_site(),
+                <span class="string">&quot;flat attribute not valid for rich enum errors&quot;</span>,
+            ))
+        } <span class="kw">else if </span>error_attr.with_try_read.is_some() {
+            <span class="prelude-val">Err</span>(syn::Error::new(
+                Span::call_site(),
+                <span class="string">&quot;with_try_read attribute not valid for rich enum errors&quot;</span>,
+            ))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(EnumAttr {
+                non_exhaustive: error_attr.non_exhaustive,
+            })
+        }
     }
 }
 </code></pre></div></section></main></body></html>

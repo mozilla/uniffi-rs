@@ -458,6 +458,7 @@ interface Sprite {
   &quot;Cat&quot;,
 };
 </code></pre>
+<h2 id="enums-with-fields"><a class="header" href="#enums-with-fields">Enums with fields</a></h2>
 <p>Enumerations with associated data require a different syntax,
 due to the limitations of using WebIDL as the basis for UniFFI's interface language.
 An enum like this in Rust:</p>
@@ -473,6 +474,23 @@ interface IpAddr {
 };
 </code></pre>
 <p>Only enums with named fields are supported by this syntax.</p>
+<h2 id="remote-non-exhaustive-enums"><a class="header" href="#remote-non-exhaustive-enums">Remote, non-exhaustive enums</a></h2>
+<p>One corner case is an enum that's:</p>
+<ul>
+<li>Defined in another crate.</li>
+<li>Has the <a href="https://doc.rust-lang.org/reference/attributes/type_system.html#the-non_exhaustive-attribute">non_exhaustive` attribute</a>.</li>
+</ul>
+<p>In this case, UniFFI needs to generate a default arm when matching against the enum variants, or else a compile error will be generated.
+Use the <code>[NonExhaustive]</code> attribute to handle this case:</p>
+<pre><code class="language-idl">[Enum]
+[NonExhaustive]
+interface Message {
+  Send(u32 from, u32 to, string contents);
+  Quit();
+};
+</code></pre>
+<p><strong>Note:</strong> since UniFFI generates a default arm, if you leave out a variant, or if the upstream crate adds a new variant, this won't be caught at compile time.
+Any attempt to pass that variant across the FFI will result in a panic.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="structsdictionaries"><a class="header" href="#structsdictionaries">Structs/Dictionaries</a></h1>
 <p>Dictionaries are how UniFFI represents structured data.
 They consist of one of more named <em>fields</em>, each of which holds a value of a particular type.

@@ -378,6 +378,10 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -495,7 +499,7 @@
 
 <span class="attr">#[proc_macro_derive(Enum)]
 </span><span class="kw">pub fn </span>derive_enum(input: TokenStream) -&gt; TokenStream {
-    expand_enum(<span class="macro">parse_macro_input!</span>(input), <span class="bool-val">false</span>)
+    expand_enum(<span class="macro">parse_macro_input!</span>(input), <span class="prelude-val">None</span>, <span class="bool-val">false</span>)
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -591,10 +595,14 @@
 
 <span class="attr">#[doc(hidden)]
 #[proc_macro_attribute]
-</span><span class="kw">pub fn </span>derive_enum_for_udl(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    expand_enum(<span class="macro">syn::parse_macro_input!</span>(input), <span class="bool-val">true</span>)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
+</span><span class="kw">pub fn </span>derive_enum_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    expand_enum(
+        <span class="macro">syn::parse_macro_input!</span>(input),
+        <span class="prelude-val">Some</span>(<span class="macro">syn::parse_macro_input!</span>(attrs)),
+        <span class="bool-val">true</span>,
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
 }
 
 <span class="attr">#[doc(hidden)]
