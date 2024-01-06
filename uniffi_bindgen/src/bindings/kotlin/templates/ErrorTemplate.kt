@@ -10,7 +10,7 @@ sealed class {{ type_name }}(message: String): Exception(message){% if contains_
         class {{ variant|error_variant_name }}(message: String) : {{ type_name }}(message)
         {% endfor %}
 
-    companion object ErrorHandler : CallStatusErrorHandler<{{ type_name }}> {
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
         override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
     }
 }
@@ -31,7 +31,7 @@ sealed class {{ type_name }}: Exception(){% if contains_object_references %}, Di
     }
     {% endfor %}
 
-    companion object ErrorHandler : CallStatusErrorHandler<{{ type_name }}> {
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
         override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
     }
 

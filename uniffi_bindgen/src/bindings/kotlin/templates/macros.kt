@@ -7,22 +7,22 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|type_name(ci) }})
+    uniffiRustCallWithError({{ e|type_name(ci) }})
     {%- else %}
-    rustCall()
+    uniffiRustCall()
     {%- endmatch %} { _status ->
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}({% call arg_list_lowered(func) -%} _status)
+    UniffiLib.INSTANCE.{{ func.ffi_func().name() }}({% call arg_list_lowered(func) -%} _status)
 }
 {%- endmacro -%}
 
 {%- macro to_ffi_call_with_prefix(prefix, func) %}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|type_name(ci) }})
+    uniffiRustCallWithError({{ e|type_name(ci) }})
     {%- else %}
-    rustCall()
+    uniffiRustCall()
     {%- endmatch %} { _status ->
-    _UniFFILib.INSTANCE.{{ func.ffi_func().name() }}(
+    UniffiLib.INSTANCE.{{ func.ffi_func().name() }}(
         {{- prefix }},
         {% call arg_list_lowered(func) %}
         _status)
@@ -58,14 +58,14 @@
     {%- endfor %}
 {%- endmacro %}
 {#-
-// Arglist as used in the _UniFFILib function declarations.
+// Arglist as used in the UniffiLib function declarations.
 // Note unfiltered name but ffi_type_name filters.
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
         {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value -}},
     {%- endfor %}
-    {%- if func.has_rust_call_status_arg() %}_uniffi_out_err: RustCallStatus, {% endif %}
+    {%- if func.has_rust_call_status_arg() %}uniffi_out_err: UniffiRustCallStatus, {% endif %}
 {%- endmacro -%}
 
 // Macro for destroying fields

@@ -2,15 +2,15 @@
 {{- self.add_import("java.util.concurrent.locks.ReentrantLock") }}
 {{- self.add_import("kotlin.concurrent.withLock") }}
 
-internal typealias Handle = Long
+internal typealias UniffiHandle = Long
 internal class ConcurrentHandleMap<T>(
-    private val leftMap: MutableMap<Handle, T> = mutableMapOf(),
+    private val leftMap: MutableMap<UniffiHandle, T> = mutableMapOf(),
 ) {
     private val lock = java.util.concurrent.locks.ReentrantLock()
     private val currentHandle = AtomicLong(0L)
     private val stride = 1L
 
-    fun insert(obj: T): Handle =
+    fun insert(obj: T): UniffiHandle =
         lock.withLock {
             currentHandle.getAndAdd(stride)
                 .also { handle ->
@@ -18,22 +18,22 @@ internal class ConcurrentHandleMap<T>(
                 }
             }
 
-    fun get(handle: Handle) = lock.withLock {
+    fun get(handle: UniffiHandle) = lock.withLock {
         leftMap[handle] ?: throw InternalException("No callback in handlemap; this is a Uniffi bug")
     }
 
-    fun delete(handle: Handle) {
+    fun delete(handle: UniffiHandle) {
         this.remove(handle)
     }
 
-    fun remove(handle: Handle): T? =
+    fun remove(handle: UniffiHandle): T? =
         lock.withLock {
             leftMap.remove(handle)
         }
 }
 
 interface ForeignCallback : com.sun.jna.Callback {
-    public fun invoke(handle: Handle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int
+    public fun invoke(handle: UniffiHandle, method: Int, argsData: Pointer, argsLen: Int, outBuf: RustBufferByReference): Int
 }
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
@@ -44,14 +44,14 @@ internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
 internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
-public abstract class FfiConverterCallbackInterface<CallbackInterface>: FfiConverter<CallbackInterface, Handle> {
+public abstract class FfiConverterCallbackInterface<CallbackInterface>: FfiConverter<CallbackInterface, UniffiHandle> {
     internal val handleMap = ConcurrentHandleMap<CallbackInterface>()
 
-    internal fun drop(handle: Handle) {
+    internal fun drop(handle: UniffiHandle) {
         handleMap.remove(handle)
     }
 
-    override fun lift(value: Handle): CallbackInterface {
+    override fun lift(value: UniffiHandle): CallbackInterface {
         return handleMap.get(value)
     }
 

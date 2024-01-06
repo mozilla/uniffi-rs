@@ -30,8 +30,8 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%- endmatch %}
 
     override fun uniffiClonePointer(): Pointer {
-        return rustCall() { status ->
-            _UniFFILib.INSTANCE.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
+        return uniffiRustCall() { status ->
+            UniffiLib.INSTANCE.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
         }
     }
 
@@ -45,8 +45,8 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
      */
     override protected fun freeRustArcPtr() {
         this.pointer?.let { ptr ->
-            rustCall() { status ->
-                _UniFFILib.INSTANCE.{{ obj.ffi_object_free().name() }}(ptr, status)
+            uniffiRustCall() { status ->
+                UniffiLib.INSTANCE.{{ obj.ffi_object_free().name() }}(ptr, status)
             }
         }
     }
@@ -65,7 +65,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
-                _UniFFILib.INSTANCE.{{ meth.ffi_func().name() }}(
+                UniffiLib.INSTANCE.{{ meth.ffi_func().name() }}(
                     thisPtr,
                     {% call kt::arg_list_lowered(meth) %}
                 )
@@ -85,7 +85,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
             {%- when Some(e) %}
             {{ e|type_name(ci) }}.ErrorHandler,
             {%- when None %}
-            NullCallStatusErrorHandler,
+            UniffiNullRustCallStatusErrorHandler,
             {%- endmatch %}
         )
     }
