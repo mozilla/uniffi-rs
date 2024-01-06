@@ -7,9 +7,9 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-_rust_call_with_error({{ e|ffi_converter_name }},
+_uniffi_rust_call_with_error({{ e|ffi_converter_name }},
     {%- else -%}
-_rust_call(
+_uniffi_rust_call(
     {%- endmatch -%}
     _UniffiLib.{{ func.ffi_func().name() }},
     {%- call arg_list_lowered(func) -%}
@@ -19,10 +19,10 @@ _rust_call(
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
     {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-_rust_call_with_error(
+_uniffi_rust_call_with_error(
     {{ e|ffi_converter_name }},
     {%- else -%}
-_rust_call(
+_uniffi_rust_call(
     {%- endmatch -%}
     _UniffiLib.{{ func.ffi_func().name() }},
     {{- prefix }},
