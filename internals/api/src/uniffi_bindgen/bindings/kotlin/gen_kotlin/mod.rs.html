@@ -1081,7 +1081,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_poll(ci);
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{{ future, callback, continuation -&gt; _UniFFILib.INSTANCE.{ffi_func}(future, callback, continuation) }}&quot;
+            <span class="string">&quot;{{ future, callback, continuation -&gt; UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}&quot;
         </span>))
     }
 
@@ -1090,7 +1090,7 @@
         ci: <span class="kw-2">&amp;</span>ComponentInterface,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_complete(ci);
-        <span class="kw">let </span>call = <span class="macro">format!</span>(<span class="string">&quot;_UniFFILib.INSTANCE.{ffi_func}(future, continuation)&quot;</span>);
+        <span class="kw">let </span>call = <span class="macro">format!</span>(<span class="string">&quot;UniffiLib.INSTANCE.{ffi_func}(future, continuation)&quot;</span>);
         <span class="kw">let </span>call = <span class="kw">match </span>callable.return_type() {
             <span class="prelude-val">Some</span>(Type::External {
                 kind: ExternalKind::DataClass,
@@ -1112,7 +1112,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_free(ci);
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{{ future -&gt; _UniFFILib.INSTANCE.{ffi_func}(future) }}&quot;
+            <span class="string">&quot;{{ future -&gt; UniffiLib.INSTANCE.{ffi_func}(future) }}&quot;
         </span>))
     }
 
