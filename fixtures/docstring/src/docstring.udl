@@ -3,6 +3,10 @@ namespace uniffi_docstring {
     /// <docstring-function>
     void test();
 
+    /// <docstring-multiline-function>
+    /// <second-line>
+    void test_multiline();
+
     void test_without_docstring();
 };
 

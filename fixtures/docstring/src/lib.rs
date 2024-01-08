@@ -51,6 +51,8 @@ pub fn test() {
     let _ = ErrorTest::Two;
 }
 
+pub fn test_multiline() {}
+
 pub fn test_without_docstring() {}
 
 pub trait CallbackTest {

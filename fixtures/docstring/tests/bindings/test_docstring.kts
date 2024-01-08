@@ -10,6 +10,7 @@
 import uniffi.fixture.docstring.*;
 
 test()
+test_multiline()
 
 EnumTest.ONE
 EnumTest.TWO
