@@ -84,6 +84,11 @@ pub fn test() {
     let _ = ErrorTest::Two;
 }
 
+/// <docstring-multiline-function>
+/// <second-line>
+#[uniffi::export]
+pub fn test_multiline() {}
+
 #[uniffi::export]
 pub fn test_without_docstring() {}
 
