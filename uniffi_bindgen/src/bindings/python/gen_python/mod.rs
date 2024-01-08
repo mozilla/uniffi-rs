@@ -527,12 +527,14 @@ pub mod filters {
 mod tests {
     #[test]
     fn test_docstring_escape() {
-        let docstring = r#"This is a docstring with "quotes" in it.
+        let docstring = r#""""This is a docstring beginning with triple quotes.
+Contains "quotes" in it.
 It also has a triple quote: """
 And a even longer quote: """"""#;
 
         let expected = r#""""
-This is a docstring with "quotes" in it.
+\"\"\"This is a docstring beginning with triple quotes.
+Contains "quotes" in it.
 It also has a triple quote: \"\"\"
 And a even longer quote: \"\"\"""
 """"#;
