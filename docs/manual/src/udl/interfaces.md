@@ -173,7 +173,7 @@ generate special methods on the object.
 
 For example, consider the following example:
 ```
-[Traits=Debug]
+[Traits=(Debug)]
 interface TodoList {
     ...
 }
