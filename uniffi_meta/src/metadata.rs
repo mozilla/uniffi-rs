@@ -15,7 +15,6 @@ pub mod codes {
     pub const RECORD: u8 = 2;
     pub const ENUM: u8 = 3;
     pub const INTERFACE: u8 = 4;
-    pub const ERROR: u8 = 5;
     pub const NAMESPACE: u8 = 6;
     pub const CONSTRUCTOR: u8 = 7;
     pub const UDL_FILE: u8 = 8;

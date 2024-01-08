@@ -201,6 +201,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Weapon".into(),
+                forced_flatness: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Rock".into(),
@@ -234,6 +235,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "State".into(),
+                forced_flatness: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Uninitialized".into(),
@@ -280,6 +282,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ReprU8".into(),
+                forced_flatness: None,
                 variants: vec![
                     VariantMetadata {
                         name: "One".into(),
@@ -310,28 +313,26 @@ mod test_metadata {
     fn test_simple_error() {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_FLATERROR,
-            ErrorMetadata::Enum {
-                enum_: EnumMetadata {
-                    module_path: "uniffi_fixture_metadata".into(),
-                    name: "FlatError".into(),
-                    variants: vec![
-                        VariantMetadata {
-                            name: "Overflow".into(),
-                            discr: None,
-                            fields: vec![],
-                            docstring: None,
-                        },
-                        VariantMetadata {
-                            name: "DivideByZero".into(),
-                            discr: None,
-                            fields: vec![],
-                            docstring: None,
-                        },
-                    ],
-                    non_exhaustive: false,
-                    docstring: None,
-                },
-                is_flat: true,
+            EnumMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "FlatError".into(),
+                forced_flatness: Some(true),
+                variants: vec![
+                    VariantMetadata {
+                        name: "Overflow".into(),
+                        discr: None,
+                        fields: vec![],
+                        docstring: None,
+                    },
+                    VariantMetadata {
+                        name: "DivideByZero".into(),
+                        discr: None,
+                        fields: vec![],
+                        docstring: None,
+                    },
+                ],
+                non_exhaustive: false,
+                docstring: None,
             },
         );
     }
@@ -340,47 +341,45 @@ mod test_metadata {
     fn test_complex_error() {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_COMPLEXERROR,
-            ErrorMetadata::Enum {
-                enum_: EnumMetadata {
-                    module_path: "uniffi_fixture_metadata".into(),
-                    name: "ComplexError".into(),
-                    variants: vec![
-                        VariantMetadata {
-                            name: "NotFound".into(),
-                            discr: None,
-                            fields: vec![],
+            EnumMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "ComplexError".into(),
+                forced_flatness: Some(false),
+                variants: vec![
+                    VariantMetadata {
+                        name: "NotFound".into(),
+                        discr: None,
+                        fields: vec![],
+                        docstring: None,
+                    },
+                    VariantMetadata {
+                        name: "PermissionDenied".into(),
+                        discr: None,
+                        fields: vec![FieldMetadata {
+                            name: "reason".into(),
+                            ty: Type::String,
+                            default: None,
                             docstring: None,
-                        },
-                        VariantMetadata {
-                            name: "PermissionDenied".into(),
-                            discr: None,
-                            fields: vec![FieldMetadata {
-                                name: "reason".into(),
-                                ty: Type::String,
-                                default: None,
-                                docstring: None,
-                            }],
+                        }],
+                        docstring: None,
+                    },
+                    VariantMetadata {
+                        name: "InvalidWeapon".into(),
+                        discr: None,
+                        fields: vec![FieldMetadata {
+                            name: "weapon".into(),
+                            ty: Type::Enum {
+                                module_path: "uniffi_fixture_metadata".into(),
+                                name: "Weapon".into(),
+                            },
+                            default: None,
                             docstring: None,
-                        },
-                        VariantMetadata {
-                            name: "InvalidWeapon".into(),
-                            discr: None,
-                            fields: vec![FieldMetadata {
-                                name: "weapon".into(),
-                                ty: Type::Enum {
-                                    module_path: "uniffi_fixture_metadata".into(),
-                                    name: "Weapon".into(),
-                                },
-                                default: None,
-                                docstring: None,
-                            }],
-                            docstring: None,
-                        },
-                    ],
-                    non_exhaustive: false,
-                    docstring: None,
-                },
-                is_flat: false,
+                        }],
+                        docstring: None,
+                    },
+                ],
+                non_exhaustive: false,
+                docstring: None,
             },
         );
     }

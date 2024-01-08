@@ -4,9 +4,7 @@
 
 use crate::interface::{CallbackInterface, ComponentInterface, Enum, Record, Type};
 use anyhow::{bail, Context};
-use uniffi_meta::{
-    create_metadata_groups, group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup,
-};
+use uniffi_meta::{create_metadata_groups, group_metadata, EnumMetadata, Metadata, MetadataGroup};
 
 /// Add Metadata items to the ComponentInterface
 ///
@@ -98,7 +96,9 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             iface.add_record_definition(record)?;
         }
         Metadata::Enum(meta) => {
-            let flat = meta.variants.iter().all(|v| v.fields.is_empty());
+            let flat = meta
+                .forced_flatness
+                .unwrap_or_else(|| meta.variants.iter().all(|v| v.fields.is_empty()));
             add_enum_to_ci(iface, meta, flat)?;
         }
         Metadata::Object(meta) => {
@@ -121,14 +121,6 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
         }
         Metadata::TraitMethod(meta) => {
             iface.add_trait_method_meta(meta)?;
-        }
-        Metadata::Error(meta) => {
-            iface.note_name_used_as_error(meta.name());
-            match meta {
-                ErrorMetadata::Enum { enum_, is_flat } => {
-                    add_enum_to_ci(iface, enum_, is_flat)?;
-                }
-            };
         }
         Metadata::CustomType(meta) => {
             iface.types.add_known_type(&Type::Custom {

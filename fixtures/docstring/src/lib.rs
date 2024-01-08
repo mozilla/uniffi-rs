@@ -13,7 +13,7 @@ pub enum AssociatedEnumTest {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum ErrorTest {
+pub enum ErrorTest {
     #[error("Test")]
     One,
     #[error("Two")]
@@ -21,7 +21,7 @@ enum ErrorTest {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum AssociatedErrorTest {
+pub enum AssociatedErrorTest {
     #[error("Test")]
     Test { code: i16 },
     #[error("Test2")]
@@ -46,14 +46,17 @@ struct RecordTest {
     test: i32,
 }
 
-pub fn test() {
+pub fn test() -> Result<(), ErrorTest> {
     let _ = ErrorTest::One;
     let _ = ErrorTest::Two;
+    Ok(())
 }
 
 pub fn test_multiline() {}
 
-pub fn test_without_docstring() {}
+pub fn test_without_docstring() -> Result<(), AssociatedErrorTest> {
+    Ok(())
+}
 
 pub trait CallbackTest {
     fn test(&self);

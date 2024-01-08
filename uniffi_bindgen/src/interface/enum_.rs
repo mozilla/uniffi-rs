@@ -94,7 +94,9 @@
 //!
 //! ```
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
-//! # namespace example {};
+//! # namespace example {
+//! #   [Throws=Example] void func();
+//! # };
 //! # [Error]
 //! # enum Example {
 //! #   "one",
@@ -130,7 +132,9 @@
 //!
 //! ```
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
-//! # namespace example {};
+//! # namespace example {
+//! #   [Throws=Example] void func();
+//! # };
 //! # [Error]
 //! # interface Example {
 //! #   one();
@@ -496,7 +500,10 @@ mod test {
     #[test]
     fn test_variants() {
         const UDL: &str = r#"
-            namespace test{};
+            namespace test{
+                [Throws=Testing]
+                void func();
+            };
             [Error]
             enum Testing { "one", "two", "three" };
         "#;
@@ -535,7 +542,10 @@ mod test {
     #[test]
     fn test_variant_data() {
         const UDL: &str = r#"
-            namespace test{};
+            namespace test{
+                [Throws=Testing]
+                void func();
+            };
 
             [Error]
             interface Testing {

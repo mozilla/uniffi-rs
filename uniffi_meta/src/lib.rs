@@ -308,6 +308,7 @@ pub struct FieldMetadata {
 pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
+    pub forced_flatness: Option<bool>,
     pub variants: Vec<VariantMetadata>,
     pub non_exhaustive: bool,
     pub docstring: Option<String>,
@@ -414,25 +415,6 @@ impl UniffiTraitDiscriminants {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ErrorMetadata {
-    Enum { enum_: EnumMetadata, is_flat: bool },
-}
-
-impl ErrorMetadata {
-    pub fn name(&self) -> &String {
-        match self {
-            Self::Enum { enum_, .. } => &enum_.name,
-        }
-    }
-
-    pub fn module_path(&self) -> &String {
-        match self {
-            Self::Enum { enum_, .. } => &enum_.module_path,
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CustomTypeMetadata {
     pub module_path: String,
     pub name: String,
@@ -459,7 +441,6 @@ pub enum Metadata {
     CallbackInterface(CallbackInterfaceMetadata),
     Record(RecordMetadata),
     Enum(EnumMetadata),
-    Error(ErrorMetadata),
     Constructor(ConstructorMetadata),
     Method(MethodMetadata),
     TraitMethod(TraitMethodMetadata),
@@ -484,7 +465,6 @@ impl Metadata {
             Metadata::Object(meta) => &meta.module_path,
             Metadata::CallbackInterface(meta) => &meta.module_path,
             Metadata::TraitMethod(meta) => &meta.module_path,
-            Metadata::Error(meta) => meta.module_path(),
             Metadata::CustomType(meta) => &meta.module_path,
             Metadata::UniffiTrait(meta) => meta.module_path(),
         }
@@ -530,12 +510,6 @@ impl From<RecordMetadata> for Metadata {
 impl From<EnumMetadata> for Metadata {
     fn from(e: EnumMetadata) -> Self {
         Self::Enum(e)
-    }
-}
-
-impl From<ErrorMetadata> for Metadata {
-    fn from(e: ErrorMetadata) -> Self {
-        Self::Error(e)
     }
 }
 

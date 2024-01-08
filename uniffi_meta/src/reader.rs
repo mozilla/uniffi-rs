@@ -52,8 +52,7 @@ impl<'a> MetadataReader<'a> {
             codes::CONSTRUCTOR => self.read_constructor()?.into(),
             codes::METHOD => self.read_method()?.into(),
             codes::RECORD => self.read_record()?.into(),
-            codes::ENUM => self.read_enum(false)?.into(),
-            codes::ERROR => self.read_error()?.into(),
+            codes::ENUM => self.read_enum()?.into(),
             codes::INTERFACE => self.read_object(ObjectImpl::Struct)?.into(),
             codes::TRAIT_INTERFACE => self.read_object(ObjectImpl::Trait)?.into(),
             codes::CALLBACK_TRAIT_INTERFACE => self.read_object(ObjectImpl::CallbackTrait)?.into(),
@@ -303,10 +302,16 @@ impl<'a> MetadataReader<'a> {
         })
     }
 
-    fn read_enum(&mut self, is_flat_error: bool) -> Result<EnumMetadata> {
+    fn read_enum(&mut self) -> Result<EnumMetadata> {
         let module_path = self.read_string()?;
         let name = self.read_string()?;
-        let variants = if is_flat_error {
+        let forced_flatness = match self.read_u8()? {
+            0 => None,
+            1 => Some(false),
+            2 => Some(true),
+            _ => unreachable!("invalid flatness"),
+        };
+        let variants = if forced_flatness == Some(true) {
             self.read_flat_variants()?
         } else {
             self.read_variants()?
@@ -315,16 +320,11 @@ impl<'a> MetadataReader<'a> {
         Ok(EnumMetadata {
             module_path,
             name,
+            forced_flatness,
             variants,
             non_exhaustive: self.read_bool()?,
             docstring: self.read_optional_long_string()?,
         })
-    }
-
-    fn read_error(&mut self) -> Result<ErrorMetadata> {
-        let is_flat = self.read_bool()?;
-        let enum_ = self.read_enum(is_flat)?;
-        Ok(ErrorMetadata::Enum { enum_, is_flat })
     }
 
     fn read_object(&mut self, imp: ObjectImpl) -> Result<ObjectMetadata> {
