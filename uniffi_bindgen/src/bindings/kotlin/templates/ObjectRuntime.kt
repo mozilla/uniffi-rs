@@ -1,6 +1,6 @@
-{{- self.add_import("java.lang.ref.Cleaner") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{- self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
+{%- include "ObjectCleanerHelper.kt" %}
 
 // The base class for all UniFFI Object types.
 //
@@ -115,7 +115,7 @@ abstract class FFIObject: Disposable, AutoCloseable {
     }
 
     protected val pointer: Pointer?
-    protected abstract val cleanable: {% if config.android_cleaner() -%} AndroidCleanable {%- else -%} Cleaner.Cleanable {%- endif %}
+    protected abstract val cleanable: UniffiCleaner.Cleanable
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)

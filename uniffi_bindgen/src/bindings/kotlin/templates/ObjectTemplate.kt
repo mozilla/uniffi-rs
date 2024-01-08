@@ -29,7 +29,7 @@ open class {{ impl_class_name }} : FFIObject, {{ interface_name }} {
     {%- when None %}
     {%- endmatch %}
 
-    override val cleanable: Cleaner.Cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    override val cleanable: UniffiCleaner.Cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
 
     // Use a static inner class instead of a closure so as not to accidentally
     // capture `this` as part of the cleanable's action.
