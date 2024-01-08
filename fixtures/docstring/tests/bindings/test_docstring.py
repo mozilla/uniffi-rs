@@ -10,7 +10,6 @@ from uniffi_docstring import *
 
 # Test function
 assert test.__doc__.strip() == "<docstring-function>"
-print(test_multiline.__doc__.strip())
 assert test_multiline.__doc__.strip() == "<docstring-function-multiline>\n    <second-line>"
 assert test_without_docstring.__doc__ is None
 
