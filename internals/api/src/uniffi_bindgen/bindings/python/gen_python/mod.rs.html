@@ -526,6 +526,25 @@
 <a href="#526" id="526">526</a>
 <a href="#527" id="527">527</a>
 <a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1044,14 +1063,33 @@
     <span class="doccomment">/// Get the idiomatic Python rendering of docstring
     </span><span class="kw">pub fn </span>docstring(docstring: <span class="kw-2">&amp;</span>str, spaces: <span class="kw-2">&amp;</span>i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>docstring = textwrap::dedent(docstring);
-        <span class="kw">let </span>wrapped = <span class="kw">if </span>docstring.lines().count() &gt; <span class="number">1 </span>{
-            <span class="macro">format!</span>(<span class="string">&quot;\&quot;\&quot;\&quot;\n{docstring}\n\&quot;\&quot;\&quot;&quot;</span>)
-        } <span class="kw">else </span>{
-            <span class="macro">format!</span>(<span class="string">&quot;\&quot;\&quot;\&quot;{docstring}\&quot;\&quot;\&quot;&quot;</span>)
-        };
+        <span class="comment">// Escape triple quotes to avoid syntax error
+        </span><span class="kw">let </span>escaped = docstring.replace(<span class="string">r#&quot;&quot;&quot;&quot;&quot;#</span>, <span class="string">r#&quot;\&quot;\&quot;\&quot;&quot;#</span>);
+
+        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">&quot;\&quot;\&quot;\&quot;\n{escaped}\n\&quot;\&quot;\&quot;&quot;</span>);
 
         <span class="kw">let </span>spaces = usize::try_from(<span class="kw-2">*</span>spaces).unwrap_or_default();
         <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">&quot; &quot;</span>.repeat(spaces)))
+    }
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_docstring_escape() {
+        <span class="kw">let </span>docstring = <span class="string">r#&quot;&quot;&quot;&quot;This is a docstring beginning with triple quotes.
+Contains &quot;quotes&quot; in it.
+It also has a triple quote: &quot;&quot;&quot;
+And a even longer quote: &quot;&quot;&quot;&quot;&quot;&quot;#</span>;
+
+        <span class="kw">let </span>expected = <span class="string">r#&quot;&quot;&quot;&quot;
+\&quot;\&quot;\&quot;This is a docstring beginning with triple quotes.
+Contains &quot;quotes&quot; in it.
+It also has a triple quote: \&quot;\&quot;\&quot;
+And a even longer quote: \&quot;\&quot;\&quot;&quot;&quot;
+&quot;&quot;&quot;&quot;#</span>;
+
+        <span class="macro">assert_eq!</span>(<span class="kw">super</span>::filters::docstring(docstring, <span class="kw-2">&amp;</span><span class="number">0</span>).unwrap(), expected);
     }
 }
 </code></pre></div></section></main></body></html>
