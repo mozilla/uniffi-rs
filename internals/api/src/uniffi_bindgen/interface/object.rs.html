@@ -889,6 +889,10 @@
 <a href="#889" id="889">889</a>
 <a href="#890" id="890">890</a>
 <a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
+<a href="#893" id="893">893</a>
+<a href="#894" id="894">894</a>
+<a href="#895" id="895">895</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1018,7 +1022,11 @@
     }
 
     <span class="kw">pub fn </span>is_trait_interface(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="macro">matches!</span>(<span class="self">self</span>.imp, ObjectImpl::Trait)
+        <span class="self">self</span>.imp.is_trait_interface()
+    }
+
+    <span class="kw">pub fn </span>has_callback_interface(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.imp.has_callback_interface()
     }
 
     <span class="kw">pub fn </span>constructors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Constructor&gt; {
@@ -1105,7 +1113,7 @@
         }];
         <span class="self">self</span>.ffi_func_free.return_type = <span class="prelude-val">None</span>;
         <span class="self">self</span>.ffi_func_free.is_object_free_function = <span class="bool-val">true</span>;
-        <span class="kw">if </span><span class="self">self</span>.is_trait_interface() {
+        <span class="kw">if </span><span class="self">self</span>.has_callback_interface() {
             <span class="self">self</span>.ffi_init_callback =
                 <span class="prelude-val">Some</span>(FfiFunction::callback_init(<span class="kw-2">&amp;</span><span class="self">self</span>.module_path, <span class="kw-2">&amp;</span><span class="self">self</span>.name));
         }

@@ -173,6 +173,10 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
@@ -180,6 +184,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::util::{
     create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
 };
+<span class="kw">use </span>uniffi_meta::ObjectImpl;
 
 <span class="kw">pub fn </span>expand_object(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
@@ -195,7 +200,7 @@
         Span::call_site(),
     );
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(ident, <span class="bool-val">false</span>, <span class="kw-2">&amp;</span>module_path, docstring)
+        interface_meta_static_var(ident, ObjectImpl::Struct, <span class="kw-2">&amp;</span>module_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     <span class="kw">let </span>interface_impl = interface_impl(ident, udl_mode);
@@ -307,8 +312,7 @@
 
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
                 .concat_str(#mod_path)
-                .concat_str(#name)
-                .concat_bool(<span class="bool-val">false</span>);
+                .concat_str(#name);
         }
 
         <span class="kw">unsafe </span>#lower_return_impl_spec {
@@ -329,20 +333,24 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_meta_static_var(
     ident: <span class="kw-2">&amp;</span>Ident,
-    is_trait: bool,
+    imp: ObjectImpl,
     module_path: <span class="kw-2">&amp;</span>str,
     docstring: String,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
+    <span class="kw">let </span>code = <span class="kw">match </span>imp {
+        ObjectImpl::Struct =&gt; <span class="macro">quote! </span>{ ::uniffi::metadata::codes::INTERFACE },
+        ObjectImpl::Trait =&gt; <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TRAIT_INTERFACE },
+        ObjectImpl::CallbackTrait =&gt; <span class="macro">quote! </span>{ ::uniffi::metadata::codes::CALLBACK_TRAIT_INTERFACE },
+    };
 
     <span class="prelude-val">Ok</span>(create_metadata_items(
         <span class="string">&quot;interface&quot;</span>,
         <span class="kw-2">&amp;</span>name,
         <span class="macro">quote! </span>{
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::INTERFACE)
+            ::uniffi::MetadataBuffer::from_code(#code)
                 .concat_str(#module_path)
                 .concat_str(#name)
-                .concat_bool(#is_trait)
                 .concat_long_str(#docstring)
         },
         <span class="prelude-val">None</span>,

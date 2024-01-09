@@ -260,14 +260,19 @@ For example, this UDL:</p>
 <pre><code class="language-rust">fn get_buttons() -&gt; Vec&lt;Arc&lt;dyn Button&gt;&gt; { ... }
 fn press(button: Arc&lt;dyn Button&gt;) -&gt; Arc&lt;dyn Button&gt; { ... }</code></pre>
 <h3 id="foreign-implementations"><a class="header" href="#foreign-implementations">Foreign implementations</a></h3>
-<p>Traits can also be implemented on the foreign side passed into Rust, for example:</p>
+<p>Use the <code>WithForeign</code> attribute to allow traits to also be implemented on the foreign side passed into Rust, for example:</p>
+<pre><code class="language-idl">[Trait, WithForeign]
+interface Button {
+    string name();
+};
+</code></pre>
 <pre><code class="language-python">class PyButton(uniffi_module.Button):
     def name(self):
         return &quot;PyButton&quot;
 
 uniffi_module.press(PyButton())
 </code></pre>
-<p>Note: This is currently supported on Python, Kotlin, and Swift.</p>
+<p>Note: This is currently only supported on Python, Kotlin, and Swift.</p>
 <h3 id="traits-construction"><a class="header" href="#traits-construction">Traits construction</a></h3>
 <p>Because any number of <code>struct</code>s may implement a trait, they don't have constructors.</p>
 <h3 id="traits-example"><a class="header" href="#traits-example">Traits example</a></h3>

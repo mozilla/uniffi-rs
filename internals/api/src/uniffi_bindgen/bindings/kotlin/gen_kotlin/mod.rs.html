@@ -563,9 +563,6 @@
 <a href="#563" id="563">563</a>
 <a href="#564" id="564">564</a>
 <a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a>
-<a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -910,22 +907,19 @@
 
     <span class="doccomment">/// Get the name of the interface and class name for an object.
     ///
-    /// This depends on the `ObjectImpl`:
+    /// If we support callback interfaces, the interface name is the object name, and the class name is derived from that.
+    /// Otherwise, the class name is the object name and the interface name is derived from that.
     ///
-    /// For struct impls, the class name is the object name and the interface name is derived from that.
-    /// For trait impls, the interface name is the object name, and the class name is derived from that.
-    ///
-    /// This split is needed because of the `FfiConverter` interface.  For struct impls, `lower`
-    /// can only lower the concrete class.  For trait impls, `lower` can lower anything that
-    /// implement the interface.
+    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
+    /// interfaces, `lower` must lower anything that implements the interface.  If not, then lower
+    /// only lowers the concrete class.
     </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
         <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(ci, obj.name());
-        <span class="kw">match </span>obj.imp() {
-            ObjectImpl::Struct =&gt; (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Interface&quot;</span>), class_name),
-            ObjectImpl::Trait =&gt; {
-                <span class="kw">let </span>interface_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
-                (class_name, interface_name)
-            }
+        <span class="kw">if </span>obj.has_callback_interface() {
+            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+            (class_name, impl_name)
+        } <span class="kw">else </span>{
+            (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Interface&quot;</span>), class_name)
         }
     }
 }

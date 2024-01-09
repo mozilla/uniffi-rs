@@ -1485,7 +1485,7 @@
             .chain(
                 <span class="self">self</span>.object_definitions()
                     .iter()
-                    .filter(|o| o.is_trait_interface())
+                    .filter(|o| o.has_callback_interface())
                     .flat_map(|o| o.methods()),
             )
             .any(|m| m.throws_type() == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>e.as_type()));

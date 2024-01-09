@@ -32,7 +32,6 @@
 <a href="#32" id="32">32</a>
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
-<a href="#35" id="35">35</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -62,10 +61,9 @@
     }
 
     <span class="kw">fn </span>initialization_fn(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
-        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.imp {
-            ObjectImpl::Struct =&gt; <span class="prelude-val">None</span>,
-            ObjectImpl::Trait =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;uniffiCallbackInterface{}.register&quot;</span>, <span class="self">self</span>.name)),
-        }
+        <span class="self">self</span>.imp
+            .has_callback_interface()
+            .then(|| <span class="macro">format!</span>(<span class="string">&quot;uniffiCallbackInterface{}.register&quot;</span>, <span class="self">self</span>.name))
     }
 }
 </code></pre></div></section></main></body></html>

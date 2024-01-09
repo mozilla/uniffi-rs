@@ -158,12 +158,46 @@
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
 <a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{quote, quote_spanned};
+
+<span class="kw">use </span>uniffi_meta::ObjectImpl;
 
 <span class="kw">use crate</span>::{
     export::{
@@ -180,14 +214,17 @@
     self_ident: Ident,
     items: Vec&lt;ImplItem&gt;,
     udl_mode: bool,
+    with_foreign: bool,
     docstring: String,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(rt) = args.async_runtime {
         <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(rt, <span class="string">&quot;not supported for traits&quot;</span>));
     }
     <span class="kw">let </span>trait_name = ident_to_string(<span class="kw-2">&amp;</span>self_ident);
-    <span class="kw">let </span>trait_impl = callback_interface::trait_impl(mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items)
-        .unwrap_or_else(|e| e.into_compile_error());
+    <span class="kw">let </span>trait_impl = with_foreign.then(|| {
+        callback_interface::trait_impl(mod_path, <span class="kw-2">&amp;</span>self_ident, <span class="kw-2">&amp;</span>items)
+            .unwrap_or_else(|e| e.into_compile_error())
+    });
 
     <span class="kw">let </span>clone_fn_ident = Ident::new(
         <span class="kw-2">&amp;</span>uniffi_meta::clone_fn_symbol_name(mod_path, <span class="kw-2">&amp;</span>trait_name),
@@ -254,10 +291,15 @@
         .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, <span class="bool-val">true</span>, mod_path, docstring)
+        <span class="kw">let </span>imp = <span class="kw">if </span>with_foreign {
+            ObjectImpl::CallbackTrait
+        } <span class="kw">else </span>{
+            ObjectImpl::Trait
+        };
+        interface_meta_static_var(<span class="kw-2">&amp;</span>self_ident, imp, mod_path, docstring)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    <span class="kw">let </span>ffi_converter_tokens = ffi_converter(mod_path, <span class="kw-2">&amp;</span>self_ident, udl_mode);
+    <span class="kw">let </span>ffi_converter_tokens = ffi_converter(mod_path, <span class="kw-2">&amp;</span>self_ident, udl_mode, with_foreign);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt;
         #meta_static_var
@@ -268,11 +310,36 @@
     })
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ffi_converter(mod_path: <span class="kw-2">&amp;</span>str, trait_ident: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; TokenStream {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ffi_converter(
+    mod_path: <span class="kw-2">&amp;</span>str,
+    trait_ident: <span class="kw-2">&amp;</span>Ident,
+    udl_mode: bool,
+    with_foreign: bool,
+) -&gt; TokenStream {
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">&quot;FfiConverterArc&quot;</span>, <span class="kw-2">&amp;</span><span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident }, udl_mode);
     <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">&quot;LiftRef&quot;</span>, <span class="kw-2">&amp;</span><span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident }, udl_mode);
     <span class="kw">let </span>trait_name = ident_to_string(trait_ident);
-    <span class="kw">let </span>trait_impl_ident = callback_interface::trait_impl_ident(<span class="kw-2">&amp;</span>trait_name);
+    <span class="kw">let </span>try_lift = <span class="kw">if </span>with_foreign {
+        <span class="kw">let </span>trait_impl_ident = callback_interface::trait_impl_ident(<span class="kw-2">&amp;</span>trait_name);
+        <span class="macro">quote! </span>{
+            <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; ::uniffi::deps::anyhow::Result&lt;::std::sync::Arc&lt;<span class="self">Self</span>&gt;&gt; {
+                <span class="prelude-val">Ok</span>(::std::sync::Arc::new(&lt;#trait_impl_ident&gt;::new(v <span class="kw">as </span>u64)))
+            }
+        }
+    } <span class="kw">else </span>{
+        <span class="macro">quote! </span>{
+            <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; ::uniffi::deps::anyhow::Result&lt;::std::sync::Arc&lt;<span class="self">Self</span>&gt;&gt; {
+                <span class="kw">unsafe </span>{
+                    <span class="prelude-val">Ok</span>(<span class="kw-2">*</span>::std::boxed::Box::from_raw(v <span class="kw">as </span><span class="kw-2">*mut </span>::std::sync::Arc&lt;<span class="self">Self</span>&gt;))
+                }
+            }
+        }
+    };
+    <span class="kw">let </span>metadata_code = <span class="kw">if </span>with_foreign {
+        <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_CALLBACK_TRAIT_INTERFACE }
+    } <span class="kw">else </span>{
+        <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_TRAIT_INTERFACE }
+    };
 
     <span class="macro">quote! </span>{
         <span class="comment">// All traits must be `Sync + Send`. The generated scaffolding will fail to compile
@@ -288,9 +355,7 @@
                 ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) <span class="kw">as </span><span class="kw-2">*const </span>::std::os::raw::c_void
             }
 
-            <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; ::uniffi::deps::anyhow::Result&lt;::std::sync::Arc&lt;<span class="self">Self</span>&gt;&gt; {
-                <span class="prelude-val">Ok</span>(::std::sync::Arc::new(&lt;#trait_impl_ident&gt;::new(v <span class="kw">as </span>u64)))
-            }
+            #try_lift
 
             <span class="kw">fn </span>write(obj: ::std::sync::Arc&lt;<span class="self">Self</span>&gt;, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
                 <span class="macro">::uniffi::deps::static_assertions::const_assert!</span>(::std::mem::size_of::&lt;<span class="kw-2">*const </span>::std::ffi::c_void&gt;() &lt;= <span class="number">8</span>);
@@ -307,10 +372,9 @@
                     ::uniffi::deps::bytes::Buf::get_u64(buf) <span class="kw">as </span><span class="self">Self</span>::FfiType)
             }
 
-            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)
                 .concat_str(#mod_path)
-                .concat_str(#trait_name)
-                .concat_bool(<span class="bool-val">true</span>);
+                .concat_str(#trait_name);
         }
 
         <span class="kw">unsafe </span>#lift_ref_impl_spec {

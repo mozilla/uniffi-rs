@@ -523,6 +523,9 @@
 <a href="#523" id="523">523</a>
 <a href="#524" id="524">524</a>
 <a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -890,16 +893,19 @@
 
     <span class="doccomment">/// Get the name of the protocol and class name for an object.
     ///
-    /// For struct impls, the class name is the object name and the protocol name is derived from that.
-    /// For trait impls, the protocol name is the object name, and the class name is derived from that.
+    /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
+    /// Otherwise, the class name is the object name and the protocol name is derived from that.
+    ///
+    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
+    /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
+    /// only lowers the concrete class.
     </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
         <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(obj.name());
-        <span class="kw">match </span>obj.imp() {
-            ObjectImpl::Struct =&gt; (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Protocol&quot;</span>), class_name),
-            ObjectImpl::Trait =&gt; {
-                <span class="kw">let </span>protocol_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
-                (class_name, protocol_name)
-            }
+        <span class="kw">if </span>obj.has_callback_interface() {
+            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+            (class_name, impl_name)
+        } <span class="kw">else </span>{
+            (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Protocol&quot;</span>), class_name)
         }
     }
 }

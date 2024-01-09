@@ -171,6 +171,20 @@
 <a href="#171" id="171">171</a>
 <a href="#172" id="172">172</a>
 <a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
 
 <span class="kw">use </span>proc_macro2::TokenStream;
@@ -184,6 +198,7 @@
 </span><span class="kw">pub struct </span>ExportAttributeArguments {
     <span class="kw">pub</span>(<span class="kw">crate</span>) async_runtime: <span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) callback_interface: <span class="prelude-ty">Option</span>&lt;kw::callback_interface&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) with_foreign: <span class="prelude-ty">Option</span>&lt;kw::with_foreign&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) constructor: <span class="prelude-ty">Option</span>&lt;kw::constructor&gt;,
     <span class="comment">// tried to make this a vec but that got messy quickly...
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) trait_debug: <span class="prelude-ty">Option</span>&lt;kw::Debug&gt;,
@@ -211,6 +226,11 @@
         } <span class="kw">else if </span>lookahead.peek(kw::callback_interface) {
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
                 callback_interface: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::with_foreign) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                with_foreign: input.parse()<span class="question-mark">?</span>,
                 ..<span class="self">Self</span>::default()
             })
         } <span class="kw">else if </span>lookahead.peek(kw::constructor) {
@@ -244,18 +264,26 @@
     }
 
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+        <span class="kw">let </span>merged = <span class="self">Self </span>{
             async_runtime: either_attribute_arg(<span class="self">self</span>.async_runtime, other.async_runtime)<span class="question-mark">?</span>,
             callback_interface: either_attribute_arg(
                 <span class="self">self</span>.callback_interface,
                 other.callback_interface,
             )<span class="question-mark">?</span>,
+            with_foreign: either_attribute_arg(<span class="self">self</span>.with_foreign, other.with_foreign)<span class="question-mark">?</span>,
             constructor: either_attribute_arg(<span class="self">self</span>.constructor, other.constructor)<span class="question-mark">?</span>,
             trait_debug: either_attribute_arg(<span class="self">self</span>.trait_debug, other.trait_debug)<span class="question-mark">?</span>,
             trait_display: either_attribute_arg(<span class="self">self</span>.trait_display, other.trait_display)<span class="question-mark">?</span>,
             trait_hash: either_attribute_arg(<span class="self">self</span>.trait_hash, other.trait_hash)<span class="question-mark">?</span>,
             trait_eq: either_attribute_arg(<span class="self">self</span>.trait_eq, other.trait_eq)<span class="question-mark">?</span>,
-        })
+        };
+        <span class="kw">if </span>merged.callback_interface.is_some() &amp;&amp; merged.with_foreign.is_some() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                merged.callback_interface.unwrap().span,
+                <span class="string">&quot;`callback_interface` and `with_foreign` are mutually exclusive&quot;</span>,
+            ));
+        }
+        <span class="prelude-val">Ok</span>(merged)
     }
 }
 

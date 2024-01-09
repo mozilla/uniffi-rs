@@ -244,7 +244,14 @@ impl MyObject {
 trait MyTrait {
     // ...
 }
-</code></pre>
+
+// Corresponding UDL:
+// [Trait, WithForeign]
+// interface MyTrait {};
+#[uniffi::export(with_foreign)]
+trait MyTrait {
+    // ...
+}</code></pre>
 <p>All owned <a href="../udl/builtin_types.html">builtin types</a> and user-defined types can be used as arguments
 and return types.</p>
 <p>Arguments and receivers can also be references to these types, for example:</p>
