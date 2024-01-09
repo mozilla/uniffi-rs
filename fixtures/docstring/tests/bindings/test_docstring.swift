@@ -10,6 +10,7 @@
 import uniffi_docstring
 
 test()
+testMultiline()
 
 var _ = EnumTest.one
 var _ = EnumTest.two
