@@ -237,6 +237,26 @@ Coveralls("test_empty_records").use { coveralls ->
     assert(EmptyStruct() !== EmptyStruct())
 }
 
+// The GC test; we should have 1000 alive by the end of the loop.
+//
+// Later on, nearer the end of the script, we'll test again, when the cleaner
+// has had time to clean up.
+//
+// The number alive then should be zero.
+fun makeCoveralls(n: Int) {
+    for (i in 1..n) {
+        val c = Coveralls("GC testing ${i}")
+    }
+}
+
+// First we make 1000 objects, and wait for the rest of the test to run. If it has, then
+// the garbage objects have been collected, and the Rust counter parts have been dropped.
+makeCoveralls(1000)
+
+// We could call `System.gc()` but it has unpredictable effects: it makes the
+// amount of time between creation and dropping much less, but then it seems it's needed for
+// all prompt garbage collection.
+
 class KotlinGetters : Getters {
     override fun getBool(v: Boolean, arg2: Boolean) : Boolean {
         return v != arg2
@@ -505,3 +525,8 @@ Coveralls("using_fakes_with_real_objects_crashes").use { coveralls ->
     }
     assert(exception != null)
 }
+
+// This is from an earlier GC test; ealier, we made 1000 new objects.
+// By now, the GC has had time to clean up, and now we should see 0 alive.
+assert(getNumAlive() != 1000UL) { "Num alive is ${getNumAlive()}. GC/Cleaner hasn't begun to run" };
+assert(getNumAlive() <= 500UL) { "Num alive is ${getNumAlive()}. GC/Cleaner thread has starved" };

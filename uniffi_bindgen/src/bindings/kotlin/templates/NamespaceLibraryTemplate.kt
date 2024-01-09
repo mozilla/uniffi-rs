@@ -28,6 +28,12 @@ internal interface UniffiLib : Library {
                 {% endfor -%}
             }
         }
+        {% if ci.contains_object_types() %}
+        // The Cleaner for the whole library
+        internal val CLEANER: UniffiCleaner by lazy {
+            UniffiCleaner.create()
+        }
+        {%- endif %}
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}
