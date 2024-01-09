@@ -180,6 +180,8 @@
 <tr><td><code>generate_immutable_records</code></td><td><code>false</code></td><td>Whether to generate records with immutable fields (<code>val</code> instead of <code>var</code>).</td></tr>
 <tr><td><code>custom_types</code></td><td></td><td>A map which controls how custom types are exposed to Kotlin. See the <a href="../udl/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td></tr>
 <tr><td><code>external_packages</code></td><td></td><td>A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the <a href="../udl/ext_types_external.html#kotlin">external types section of the manual</a></td></tr>
+<tr><td><code>android</code></td><td><code>false</code></td><td>Used to toggle on Android specific optimizations</td></tr>
+<tr><td><code>android_cleaner</code></td><td><code>android</code></td><td>Use the <a href="https://developer.android.com/reference/android/system/SystemCleaner"><code>android.system.SystemCleaner</code></a> instead of <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html"><code>java.lang.ref.Cleaner</code></a>. Fallback in both instances is the one shipped with JNA.</td></tr>
 </tbody></table>
 </div>
 <h2 id="example"><a class="header" href="#example">Example</a></h2>

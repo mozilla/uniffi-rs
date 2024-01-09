@@ -1226,6 +1226,13 @@
 <a href="#1226" id="1226">1226</a>
 <a href="#1227" id="1227">1227</a>
 <a href="#1228" id="1228">1228</a>
+<a href="#1229" id="1229">1229</a>
+<a href="#1230" id="1230">1230</a>
+<a href="#1231" id="1231">1231</a>
+<a href="#1232" id="1232">1232</a>
+<a href="#1233" id="1233">1233</a>
+<a href="#1234" id="1234">1234</a>
+<a href="#1235" id="1235">1235</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1585,6 +1592,13 @@
         <span class="self">self</span>.types
             .iter_known_types()
             .any(|t| <span class="macro">matches!</span>(t, Type::Map { .. }))
+    }
+
+    <span class="doccomment">/// Check whether the interface contains any object types
+    </span><span class="kw">pub fn </span>contains_object_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.types
+            .iter_known_types()
+            .any(|t| <span class="macro">matches!</span>(t, Type::Object { .. }))
     }
 
     <span class="comment">// The namespace to use in crate-level FFI function definitions. Not used as the ffi
