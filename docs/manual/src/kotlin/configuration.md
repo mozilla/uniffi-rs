@@ -12,8 +12,7 @@ The generated Kotlin modules can be configured using a `uniffi.toml` configurati
 | `custom_types`      | | A map which controls how custom types are exposed to Kotlin. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code)|
 | `external_packages` | | A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the [external types section of the manual](../udl/ext_types_external.md#kotlin)
 | `android` | `false` | Used to toggle on Android specific optimizations
-| `android_cleaner` | `android` | Use the [`android.system.SystemCleaner`](https://developer.android.com/reference/android/system/SystemCleaner) instead of [`java.lang.ref.Cleaner`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html)
-
+| `android_cleaner` | `android` | Use the [`android.system.SystemCleaner`](https://developer.android.com/reference/android/system/SystemCleaner) instead of [`java.lang.ref.Cleaner`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html). Fallback in both instances is the one shipped with JNA.
 
 ## Example
 
