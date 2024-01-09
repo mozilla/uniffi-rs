@@ -20,7 +20,7 @@ assert EnumTest.__doc__.strip() == "<docstring-enum>"
 # assert EnumTest.ONE.__doc__ == "<docstring-enum-variant>"
 # assert EnumTest.TWO.__doc__ == "<docstring-enum-variant-2>"
 
-assert AssociatedEnumTest.__doc__ .strip()== "<docstring-associated-enum>"
+assert AssociatedEnumTest.__doc__ .strip() == "<docstring-associated-enum>"
 
 # `__doc__` is lost because of how enum templates are generated
 # https://github.com/mozilla/uniffi-rs/blob/eb97592f8c48a7f5cf02a94662b8b7861a6544f3/uniffi_bindgen/src/bindings/python/templates/EnumTemplate.py#L60
