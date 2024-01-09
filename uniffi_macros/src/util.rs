@@ -287,11 +287,11 @@ pub(crate) fn extract_docstring(attrs: &[Attribute]) -> syn::Result<String> {
             let name_value = attr.meta.require_name_value()?;
             if let Expr::Lit(expr) = &name_value.value {
                 if let Lit::Str(lit_str) = &expr.lit {
-                    return Ok(lit_str.value().trim().to_owned());
+                    return Ok(lit_str.value());
                 }
             }
             Err(syn::Error::new_spanned(attr, "Cannot parse doc attribute"))
         })
         .collect::<syn::Result<Vec<_>>>()
-        .map(|lines| lines.join("\n"));
+        .map(|lines| textwrap::dedent(&lines.join("\n")));
 }

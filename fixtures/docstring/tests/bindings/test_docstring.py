@@ -36,7 +36,13 @@ assert AssociatedErrorTest.Test.__doc__ == "<docstring-associated-error-variant>
 assert AssociatedErrorTest.Test2.__doc__ == "<docstring-associated-error-variant-2>"
 
 # Test objects
-assert ObjectTest.__doc__ == "<docstring-object>"
+expected_object_doc = """
+    <docstring-object>
+
+      <docstring-object-indented-1>
+      <docstring-object-indented-2>
+    """
+assert ObjectTest.__doc__ == expected_object_doc
 assert ObjectTest.__init__.__doc__ == "<docstring-primary-constructor>"
 assert ObjectTest.new_alternate.__doc__ == "<docstring-alternate-constructor>"
 assert ObjectTest.test.__doc__ == "<docstring-method>"
