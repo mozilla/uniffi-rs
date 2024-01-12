@@ -211,6 +211,7 @@ pub(crate) fn error_meta_static_var(
                 .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_option_bool(Some(#flat))
+                .concat_bool(false) // discr_type: None
     };
     if flat {
         metadata_expr.extend(flat_error_variant_metadata(enum_)?)

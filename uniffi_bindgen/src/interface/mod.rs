@@ -1066,6 +1066,7 @@ mod test {
 existing definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    discr_type: None,
     variants: [
         Variant {
             name: \"one\",
@@ -1087,6 +1088,7 @@ existing definition: Enum {
 new definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    discr_type: None,
     variants: [
         Variant {
             name: \"three\",

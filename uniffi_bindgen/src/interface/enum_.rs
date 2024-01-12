@@ -174,6 +174,7 @@ use super::{AsType, Literal, Type, TypeIterator};
 pub struct Enum {
     pub(super) name: String,
     pub(super) module_path: String,
+    pub(super) discr_type: Option<Type>,
     pub(super) variants: Vec<Variant>,
     // NOTE: `flat` is a misleading name and to make matters worse, has 2 different
     // meanings depending on the context :(
@@ -260,6 +261,7 @@ impl Enum {
         Ok(Self {
             name: meta.name,
             module_path: meta.module_path,
+            discr_type: meta.discr_type,
             variants: meta
                 .variants
                 .into_iter()
@@ -649,6 +651,7 @@ mod test {
         let mut e = Enum {
             module_path: "test".to_string(),
             name: "test".to_string(),
+            discr_type: None,
             variants: vec![],
             flat: false,
             non_exhaustive: false,
