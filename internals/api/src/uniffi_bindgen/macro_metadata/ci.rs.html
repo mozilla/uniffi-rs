@@ -132,23 +132,13 @@
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::interface::{CallbackInterface, ComponentInterface, Enum, Record, Type};
 <span class="kw">use </span>anyhow::{bail, Context};
-<span class="kw">use </span>uniffi_meta::{
-    create_metadata_groups, group_metadata, EnumMetadata, ErrorMetadata, Metadata, MetadataGroup,
-};
+<span class="kw">use </span>uniffi_meta::{create_metadata_groups, group_metadata, EnumMetadata, Metadata, MetadataGroup};
 
 <span class="doccomment">/// Add Metadata items to the ComponentInterface
 ///
@@ -240,7 +230,9 @@
             iface.add_record_definition(record)<span class="question-mark">?</span>;
         }
         Metadata::Enum(meta) =&gt; {
-            <span class="kw">let </span>flat = meta.variants.iter().all(|v| v.fields.is_empty());
+            <span class="kw">let </span>flat = meta
+                .forced_flatness
+                .unwrap_or_else(|| meta.variants.iter().all(|v| v.fields.is_empty()));
             add_enum_to_ci(iface, meta, flat)<span class="question-mark">?</span>;
         }
         Metadata::Object(meta) =&gt; {
@@ -263,14 +255,6 @@
         }
         Metadata::TraitMethod(meta) =&gt; {
             iface.add_trait_method_meta(meta)<span class="question-mark">?</span>;
-        }
-        Metadata::Error(meta) =&gt; {
-            iface.note_name_used_as_error(meta.name());
-            <span class="kw">match </span>meta {
-                ErrorMetadata::Enum { enum_, is_flat } =&gt; {
-                    add_enum_to_ci(iface, enum_, is_flat)<span class="question-mark">?</span>;
-                }
-            };
         }
         Metadata::CustomType(meta) =&gt; {
             iface.types.add_known_type(<span class="kw-2">&amp;</span>Type::Custom {

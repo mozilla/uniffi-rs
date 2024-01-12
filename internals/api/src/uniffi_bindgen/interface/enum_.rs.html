@@ -750,6 +750,16 @@
 <a href="#750" id="750">750</a>
 <a href="#751" id="751">751</a>
 <a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
+<a href="#757" id="757">757</a>
+<a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
+<a href="#760" id="760">760</a>
+<a href="#761" id="761">761</a>
+<a href="#762" id="762">762</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -846,7 +856,9 @@
 //!
 //! ```
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
-//! # namespace example {};
+//! # namespace example {
+//! #   [Throws=Example] void func();
+//! # };
 //! # [Error]
 //! # enum Example {
 //! #   &quot;one&quot;,
@@ -882,7 +894,9 @@
 //!
 //! ```
 //! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
-//! # namespace example {};
+//! # namespace example {
+//! #   [Throws=Example] void func();
+//! # };
 //! # [Error]
 //! # interface Example {
 //! #   one();
@@ -1248,7 +1262,10 @@
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_variants() {
         <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
-            namespace test{};
+            namespace test{
+                [Throws=Testing]
+                void func();
+            };
             [Error]
             enum Testing { &quot;one&quot;, &quot;two&quot;, &quot;three&quot; };
         &quot;#</span>;
@@ -1287,7 +1304,10 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_variant_data() {
         <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
-            namespace test{};
+            namespace test{
+                [Throws=Testing]
+                void func();
+            };
 
             [Error]
             interface Testing {

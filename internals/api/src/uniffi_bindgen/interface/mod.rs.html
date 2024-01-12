@@ -1233,6 +1233,12 @@
 <a href="#1233" id="1233">1233</a>
 <a href="#1234" id="1234">1234</a>
 <a href="#1235" id="1235">1235</a>
+<a href="#1236" id="1236">1236</a>
+<a href="#1237" id="1237">1237</a>
+<a href="#1238" id="1238">1238</a>
+<a href="#1239" id="1239">1239</a>
+<a href="#1240" id="1240">1240</a>
+<a href="#1241" id="1241">1241</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -2005,6 +2011,8 @@
             <span class="macro">bail!</span>(<span class="string">&quot;Conflicting type definition for \&quot;{}\&quot;&quot;</span>, defn.name());
         }
         <span class="self">self</span>.types.add_known_types(defn.iter_types())<span class="question-mark">?</span>;
+        defn.throws_name()
+            .map(|n| <span class="self">self</span>.errors.insert(n.to_string()));
         <span class="self">self</span>.functions.push(defn);
 
         <span class="prelude-val">Ok</span>(())
@@ -2016,6 +2024,8 @@
         <span class="kw">let </span>defn: Constructor = meta.into();
 
         <span class="self">self</span>.types.add_known_types(defn.iter_types())<span class="question-mark">?</span>;
+        defn.throws_name()
+            .map(|n| <span class="self">self</span>.errors.insert(n.to_string()));
         object.constructors.push(defn);
 
         <span class="prelude-val">Ok</span>(())
@@ -2027,6 +2037,9 @@
             .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_method_meta: object {} not found&quot;</span>, <span class="kw-2">&amp;</span>method.object_name))<span class="question-mark">?</span>;
 
         <span class="self">self</span>.types.add_known_types(method.iter_types())<span class="question-mark">?</span>;
+        method
+            .throws_name()
+            .map(|n| <span class="self">self</span>.errors.insert(n.to_string()));
         method.object_impl = object.imp;
         object.methods.push(method);
         <span class="prelude-val">Ok</span>(())
@@ -2050,10 +2063,6 @@
         <span class="self">self</span>.types.add_known_types(defn.iter_types())<span class="question-mark">?</span>;
         <span class="self">self</span>.objects.push(defn);
         <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>note_name_used_as_error(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) {
-        <span class="self">self</span>.errors.insert(name.to_string());
     }
 
     <span class="kw">pub fn </span>is_name_used_as_error(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; bool {
@@ -2083,6 +2092,9 @@
                 <span class="self">self</span>.callback_interface_throws_types.insert(error.clone());
             }
             <span class="self">self</span>.types.add_known_types(method.iter_types())<span class="question-mark">?</span>;
+            method
+                .throws_name()
+                .map(|n| <span class="self">self</span>.errors.insert(n.to_string()));
             cbi.methods.push(method);
         } <span class="kw">else </span>{
             <span class="self">self</span>.add_method_meta(meta)<span class="question-mark">?</span>;

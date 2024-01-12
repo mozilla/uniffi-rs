@@ -298,6 +298,7 @@
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -480,7 +481,8 @@
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
             .concat_str(#module_path)
             .concat_str(#name)
-    };
+            .concat_option_bool(<span class="prelude-val">None</span>) <span class="comment">// forced_flatness
+    </span>};
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     metadata_expr.extend(<span class="macro">quote! </span>{
         .concat_bool(#non_exhaustive)
