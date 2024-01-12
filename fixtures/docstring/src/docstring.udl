@@ -1,13 +1,13 @@
 /// <docstring-namespace>
 namespace uniffi_docstring {
     /// <docstring-function>
-    void test();
+    [Throws=ErrorTest] void test();
 
     /// <docstring-multiline-function>
     /// <second-line>
     void test_multiline();
 
-    void test_without_docstring();
+    [Throws=AssociatedErrorTest] void test_without_docstring();
 };
 
 /// <docstring-enum>

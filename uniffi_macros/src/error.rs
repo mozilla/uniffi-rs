@@ -207,12 +207,10 @@ pub(crate) fn error_meta_static_var(
     let flat = attr.flat.is_some();
     let non_exhaustive = attr.non_exhaustive.is_some();
     let mut metadata_expr = quote! {
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ERROR)
-                // first our is-flat flag
-                .concat_bool(#flat)
-                // followed by an enum
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
                 .concat_str(#module_path)
                 .concat_str(#name)
+                .concat_option_bool(Some(#flat))
     };
     if flat {
         metadata_expr.extend(flat_error_variant_metadata(enum_)?)

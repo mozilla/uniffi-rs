@@ -9,7 +9,7 @@
 
 import uniffi_docstring_proc_macro
 
-test()
+try! test()
 testMultiline()
 
 var _ = EnumTest.one

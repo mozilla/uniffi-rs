@@ -770,6 +770,8 @@ impl ComponentInterface {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
         self.types.add_known_types(defn.iter_types())?;
+        defn.throws_name()
+            .map(|n| self.errors.insert(n.to_string()));
         self.functions.push(defn);
 
         Ok(())
@@ -781,6 +783,8 @@ impl ComponentInterface {
         let defn: Constructor = meta.into();
 
         self.types.add_known_types(defn.iter_types())?;
+        defn.throws_name()
+            .map(|n| self.errors.insert(n.to_string()));
         object.constructors.push(defn);
 
         Ok(())
@@ -792,6 +796,9 @@ impl ComponentInterface {
             .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &method.object_name))?;
 
         self.types.add_known_types(method.iter_types())?;
+        method
+            .throws_name()
+            .map(|n| self.errors.insert(n.to_string()));
         method.object_impl = object.imp;
         object.methods.push(method);
         Ok(())
@@ -815,10 +822,6 @@ impl ComponentInterface {
         self.types.add_known_types(defn.iter_types())?;
         self.objects.push(defn);
         Ok(())
-    }
-
-    pub(super) fn note_name_used_as_error(&mut self, name: &str) {
-        self.errors.insert(name.to_string());
     }
 
     pub fn is_name_used_as_error(&self, name: &str) -> bool {
@@ -848,6 +851,9 @@ impl ComponentInterface {
                 self.callback_interface_throws_types.insert(error.clone());
             }
             self.types.add_known_types(method.iter_types())?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
             cbi.methods.push(method);
         } else {
             self.add_method_meta(meta)?;

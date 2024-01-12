@@ -180,6 +180,7 @@ pub(crate) fn enum_meta_static_var(
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
             .concat_str(#module_path)
             .concat_str(#name)
+            .concat_option_bool(None) // forced_flatness
     };
     metadata_expr.extend(variant_metadata(enum_)?);
     metadata_expr.extend(quote! {

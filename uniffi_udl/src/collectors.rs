@@ -172,15 +172,13 @@ impl APIBuilder for weedle::Definition<'_> {
         match self {
             weedle::Definition::Namespace(d) => d.process(ci)?,
             weedle::Definition::Enum(d) => {
+                let mut e: uniffi_meta::EnumMetadata = d.convert(ci)?;
                 // We check if the enum represents an error...
                 let attrs = attributes::EnumAttributes::try_from(d.attributes.as_ref())?;
                 if attrs.contains_error_attr() {
-                    let e: uniffi_meta::ErrorMetadata = d.convert(ci)?;
-                    ci.add_definition(e.into())?;
-                } else {
-                    let e: uniffi_meta::EnumMetadata = d.convert(ci)?;
-                    ci.add_definition(e.into())?;
+                    e.forced_flatness = Some(true);
                 }
+                ci.add_definition(e.into())?;
             }
             weedle::Definition::Dictionary(d) => {
                 let rec = d.convert(ci)?;
@@ -188,11 +186,8 @@ impl APIBuilder for weedle::Definition<'_> {
             }
             weedle::Definition::Interface(d) => {
                 let attrs = attributes::InterfaceAttributes::try_from(d.attributes.as_ref())?;
-                if attrs.contains_enum_attr() {
+                if attrs.contains_enum_attr() || attrs.contains_error_attr() {
                     let e: uniffi_meta::EnumMetadata = d.convert(ci)?;
-                    ci.add_definition(e.into())?;
-                } else if attrs.contains_error_attr() {
-                    let e: uniffi_meta::ErrorMetadata = d.convert(ci)?;
                     ci.add_definition(e.into())?;
                 } else {
                     let obj: uniffi_meta::ObjectMetadata = d.convert(ci)?;

@@ -28,7 +28,7 @@ pub enum AssociatedEnumTest {
 /// <docstring-error>
 #[derive(uniffi::Error, Debug, thiserror::Error)]
 #[uniffi(flat_error)]
-enum ErrorTest {
+pub enum ErrorTest {
     /// <docstring-error-variant>
     #[error("Test")]
     One,
@@ -39,7 +39,7 @@ enum ErrorTest {
 
 /// <docstring-associated-error>
 #[derive(uniffi::Error, Debug, thiserror::Error)]
-enum AssociatedErrorTest {
+pub enum AssociatedErrorTest {
     /// <docstring-associated-error-variant>
     #[error("Test")]
     Test { code: i16 },
@@ -79,9 +79,10 @@ struct RecordTest {
 
 /// <docstring-function>
 #[uniffi::export]
-pub fn test() {
+pub fn test() -> Result<(), ErrorTest> {
     let _ = ErrorTest::One;
     let _ = ErrorTest::Two;
+    Ok(())
 }
 
 /// <docstring-multiline-function>
@@ -90,7 +91,9 @@ pub fn test() {
 pub fn test_multiline() {}
 
 #[uniffi::export]
-pub fn test_without_docstring() {}
+pub fn test_without_docstring() -> Result<(), AssociatedErrorTest> {
+    Ok(())
+}
 
 /// <docstring-callback>
 #[uniffi::export(callback_interface)]

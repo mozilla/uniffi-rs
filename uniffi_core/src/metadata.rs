@@ -32,7 +32,6 @@ pub mod codes {
     pub const RECORD: u8 = 2;
     pub const ENUM: u8 = 3;
     pub const INTERFACE: u8 = 4;
-    pub const ERROR: u8 = 5;
     pub const NAMESPACE: u8 = 6;
     pub const CONSTRUCTOR: u8 = 7;
     pub const UDL_FILE: u8 = 8;
@@ -168,6 +167,15 @@ impl MetadataBuffer {
     // allocated an extra buffer.
     pub const fn concat_bool(self, value: bool) -> Self {
         self.concat_value(value as u8)
+    }
+
+    // Option<bool>
+    pub const fn concat_option_bool(self, value: Option<bool>) -> Self {
+        self.concat_value(match value {
+            None => 0,
+            Some(false) => 1,
+            Some(true) => 2,
+        })
     }
 
     // Concatenate a string to this buffer. The maximum string length is 255 bytes. For longer strings,
