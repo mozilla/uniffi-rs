@@ -198,36 +198,17 @@ impl Default for RustBuffer {
     }
 }
 
-// extern "C" functions for the RustBuffer functionality.
+// Functions for the RustBuffer functionality.
 //
-// These are used in two ways:
-//   1. Code that statically links to UniFFI can use these directly to handle RustBuffer
-//      allocation/destruction. The plan is to use this for the Firefox desktop JS bindings.
-//
-//   2. The scaffolding code re-exports these functions, prefixed with the component name and UDL
-//      hash  This creates a separate set of functions for each UniFFIed component, which is needed
-//      in the case where we create multiple dylib artifacts since each dylib will have its own
-//      allocator.
+// The scaffolding code re-exports these functions, prefixed with the component name and UDL hash
+// This creates a separate set of functions for each UniFFIed component, which is needed in the
+// case where we create multiple dylib artifacts since each dylib will have its own allocator.
 
 /// This helper allocates a new byte buffer owned by the Rust code, and returns it
 /// to the foreign-language code as a `RustBuffer` struct. Callers must eventually
 /// free the resulting buffer, either by explicitly calling [`uniffi_rustbuffer_free`] defined
 /// below, or by passing ownership of the buffer back into Rust code.
-#[cfg(feature = "extern-rustbuffer")]
-#[no_mangle]
-pub extern "C" fn uniffi_rustbuffer_alloc(
-    size: i32,
-    call_status: &mut RustCallStatus,
-) -> RustBuffer {
-    _uniffi_rustbuffer_alloc(size, call_status)
-}
-
-#[cfg(not(feature = "extern-rustbuffer"))]
 pub fn uniffi_rustbuffer_alloc(size: i32, call_status: &mut RustCallStatus) -> RustBuffer {
-    _uniffi_rustbuffer_alloc(size, call_status)
-}
-
-fn _uniffi_rustbuffer_alloc(size: i32, call_status: &mut RustCallStatus) -> RustBuffer {
     rust_call(call_status, || {
         Ok(RustBuffer::new_with_size(size.max(0) as usize))
     })
@@ -241,24 +222,7 @@ fn _uniffi_rustbuffer_alloc(size: i32, call_status: &mut RustCallStatus) -> Rust
 /// # Safety
 /// This function will dereference a provided pointer in order to copy bytes from it, so
 /// make sure the `ForeignBytes` struct contains a valid pointer and length.
-#[cfg(feature = "extern-rustbuffer")]
-#[no_mangle]
-pub extern "C" fn uniffi_rustbuffer_from_bytes(
-    bytes: ForeignBytes,
-    call_status: &mut RustCallStatus,
-) -> RustBuffer {
-    _uniffi_rustbuffer_from_bytes(bytes, call_status)
-}
-
-#[cfg(not(feature = "extern-rustbuffer"))]
 pub fn uniffi_rustbuffer_from_bytes(
-    bytes: ForeignBytes,
-    call_status: &mut RustCallStatus,
-) -> RustBuffer {
-    _uniffi_rustbuffer_from_bytes(bytes, call_status)
-}
-
-fn _uniffi_rustbuffer_from_bytes(
     bytes: ForeignBytes,
     call_status: &mut RustCallStatus,
 ) -> RustBuffer {
@@ -274,18 +238,7 @@ fn _uniffi_rustbuffer_from_bytes(
 /// The argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
-#[cfg(feature = "extern-rustbuffer")]
-#[no_mangle]
-pub extern "C" fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
-    _uniffi_rustbuffer_free(buf, call_status)
-}
-
-#[cfg(not(feature = "extern-rustbuffer"))]
 pub fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
-    _uniffi_rustbuffer_free(buf, call_status)
-}
-
-fn _uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
     rust_call(call_status, || {
         RustBuffer::destroy(buf);
         Ok(())
@@ -307,26 +260,7 @@ fn _uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus) {
 /// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
 /// into the Rust code that returned a buffer, or you'll risk freeing unowned memory or
 /// corrupting the allocator state.
-#[cfg(feature = "extern-rustbuffer")]
-#[no_mangle]
-pub extern "C" fn uniffi_rustbuffer_reserve(
-    buf: RustBuffer,
-    additional: i32,
-    call_status: &mut RustCallStatus,
-) -> RustBuffer {
-    _uniffi_rustbuffer_reserve(buf, additional, call_status)
-}
-
-#[cfg(not(feature = "extern-rustbuffer"))]
 pub fn uniffi_rustbuffer_reserve(
-    buf: RustBuffer,
-    additional: i32,
-    call_status: &mut RustCallStatus,
-) -> RustBuffer {
-    _uniffi_rustbuffer_reserve(buf, additional, call_status)
-}
-
-fn _uniffi_rustbuffer_reserve(
     buf: RustBuffer,
     additional: i32,
     call_status: &mut RustCallStatus,
