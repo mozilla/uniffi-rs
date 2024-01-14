@@ -30,6 +30,9 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
+/** Used to instantiate an interface without an actual pointer, for fakes in tests, mostly. */
+object NoPointer
+
 {%- for type_ in ci.iter_types() %}
 {%- let type_name = type_|type_name(ci) %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
