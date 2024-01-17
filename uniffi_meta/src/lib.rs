@@ -310,6 +310,7 @@ pub struct EnumMetadata {
     pub name: String,
     pub forced_flatness: Option<bool>,
     pub variants: Vec<VariantMetadata>,
+    pub discr_type: Option<Type>,
     pub non_exhaustive: bool,
     pub docstring: Option<String>,
 }

@@ -18,6 +18,7 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
             forced_flatness: None,
+            discr_type: None,
             variants: self
                 .values
                 .body
@@ -60,6 +61,7 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
                     ),
                 })
                 .collect::<Result<Vec<_>>>()?,
+            discr_type: None,
             non_exhaustive: attributes.contains_non_exhaustive_attr(),
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
             // Enums declared using the `[Enum] interface` syntax might have variants with fields.

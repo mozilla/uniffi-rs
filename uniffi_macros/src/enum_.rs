@@ -2,7 +2,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
+    Attribute, Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
 };
 
 use crate::util::{
@@ -10,6 +10,30 @@ use crate::util::{
     ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
     try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
 };
+
+fn extract_repr(attrs: &[Attribute]) -> syn::Result<Option<Ident>> {
+    let mut result = None;
+    for attr in attrs {
+        if attr.path().is_ident("repr") {
+            attr.parse_nested_meta(|meta| {
+                result = match meta.path.get_ident() {
+                    Some(i) => {
+                        let s = i.to_string();
+                        match s.as_str() {
+                            "u8" | "u16" | "u32" | "u64" | "usize" | "i8" | "i16" | "i32"
+                            | "i64" | "isize" => Some(i.clone()),
+                            // while the default repr for an enum is `isize` we don't apply that default here.
+                            _ => None,
+                        }
+                    }
+                    _ => None,
+                };
+                Ok(())
+            })?
+        }
+    }
+    Ok(result)
+}
 
 pub fn expand_enum(
     input: DeriveInput,
@@ -28,6 +52,7 @@ pub fn expand_enum(
     };
     let ident = &input.ident;
     let docstring = extract_docstring(&input.attrs)?;
+    let discr_type = extract_repr(&input.attrs)?;
     let mut attr: EnumAttr = input.attrs.parse_uniffi_attr_args()?;
     if let Some(attr_from_udl_mode) = attr_from_udl_mode {
         attr = attr.merge(attr_from_udl_mode)?;
@@ -35,7 +60,7 @@ pub fn expand_enum(
     let ffi_converter_impl = enum_ffi_converter_impl(ident, &enum_, udl_mode, &attr);
 
     let meta_static_var = (!udl_mode).then(|| {
-        enum_meta_static_var(ident, docstring, &enum_, &attr)
+        enum_meta_static_var(ident, docstring, discr_type, &enum_, &attr)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -169,6 +194,7 @@ fn write_field(f: &Field) -> TokenStream {
 pub(crate) fn enum_meta_static_var(
     ident: &Ident,
     docstring: String,
+    discr_type: Option<Ident>,
     enum_: &DataEnum,
     attr: &EnumAttr,
 ) -> syn::Result<TokenStream> {
@@ -182,6 +208,10 @@ pub(crate) fn enum_meta_static_var(
             .concat_str(#name)
             .concat_option_bool(None) // forced_flatness
     };
+    metadata_expr.extend(match discr_type {
+        None => quote! { .concat_bool(false) },
+        Some(t) => quote! { .concat_bool(true).concat(<#t as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META) }
+    });
     metadata_expr.extend(variant_metadata(enum_)?);
     metadata_expr.extend(quote! {
         .concat_bool(#non_exhaustive)

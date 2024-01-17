@@ -311,6 +311,11 @@ impl<'a> MetadataReader<'a> {
             2 => Some(true),
             _ => unreachable!("invalid flatness"),
         };
+        let discr_type = if self.read_bool()? {
+            Some(self.read_type()?)
+        } else {
+            None
+        };
         let variants = if forced_flatness == Some(true) {
             self.read_flat_variants()?
         } else {
@@ -321,6 +326,7 @@ impl<'a> MetadataReader<'a> {
             module_path,
             name,
             forced_flatness,
+            discr_type,
             variants,
             non_exhaustive: self.read_bool()?,
             docstring: self.read_optional_long_string()?,

@@ -39,10 +39,16 @@ mod state {
 
 mod enum_repr {
     #[derive(uniffi::Enum, Debug)]
+    #[repr(u8)]
     pub enum ReprU8 {
         One = 1,
         Three = 3,
         Fifteen = 0x0F,
+    }
+
+    #[derive(uniffi::Enum, Debug)]
+    pub enum NoRepr {
+        One = 1,
     }
 }
 
@@ -202,6 +208,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Weapon".into(),
                 forced_flatness: None,
+                discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Rock".into(),
@@ -236,6 +243,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "State".into(),
                 forced_flatness: None,
+                discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Uninitialized".into(),
@@ -283,6 +291,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ReprU8".into(),
                 forced_flatness: None,
+                discr_type: Some(Type::UInt8),
                 variants: vec![
                     VariantMetadata {
                         name: "One".into(),
@@ -310,6 +319,27 @@ mod test_metadata {
     }
 
     #[test]
+    fn test_no_repr_enum() {
+        check_metadata(
+            &enum_repr::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_NOREPR,
+            EnumMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "NoRepr".into(),
+                forced_flatness: None,
+                discr_type: None,
+                variants: vec![VariantMetadata {
+                    name: "One".into(),
+                    discr: Some(LiteralMetadata::new_uint(1)),
+                    fields: vec![],
+                    docstring: None,
+                }],
+                non_exhaustive: false,
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
     fn test_simple_error() {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_FLATERROR,
@@ -317,6 +347,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "FlatError".into(),
                 forced_flatness: Some(true),
+                discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "Overflow".into(),
@@ -345,6 +376,7 @@ mod test_metadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ComplexError".into(),
                 forced_flatness: Some(false),
+                discr_type: None,
                 variants: vec![
                     VariantMetadata {
                         name: "NotFound".into(),
