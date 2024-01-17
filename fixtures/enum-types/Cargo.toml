@@ -1,0 +1,21 @@
+[package]
+name = "uniffi-fixture-enum-types"
+version = "0.22.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "enum_types"
+
+[dependencies]
+uniffi = { workspace = true }
+thiserror = "1.0"
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }

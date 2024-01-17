@@ -45,6 +45,11 @@
 
 [All changes in v0.26.1](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...v0.26.1).
 
+### What's new?
+
+- Enums created with proc macros can now produce literals for variants in Kotlin and Swift bindings specifically for unsigned types.. See
+[the section on enum proc-macros](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-uniffienum-derive) for more information.
+
 ## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 
 ### What's changed?

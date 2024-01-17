@@ -210,9 +210,66 @@ pub enum MyEnum {
 }
 ```
 
+### Variant Discriminants
+
 Variant discriminants are accepted by the macro but how they are used depends on the bindings.
-Most would be likely ignore it in the example above due to the nature of the enum,
-but some expose it for simple "unit" enums.
+
+Currently only `unsigned integer` variant discriminants are passed through to the foreign bindings. For example this enum:
+
+```rust
+#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Foo = 3,
+    Bar = 4,
+}
+```
+
+would give you in Kotlin & Swift:
+
+```swift
+// kotlin
+enum class MyEnum {   
+    FOO,
+    BAR;
+    companion object
+}
+// swift 
+public enum MyEnum {    
+    case foo
+    case bar
+}
+```
+
+which means you cannot use the platforms helpful methods like `value` or `rawValue` to get the underlying discriminants. Adding a `repr` will allow the type to be defined in the foreign bindings.
+
+For example:
+
+```rust
+// added the repr(u8), also u16 -> u64 supported
+#[repr(u8)]
+#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Foo = 3,
+    Bar = 4,
+}
+```
+
+will now generate:
+
+```swift
+// kotlin
+enum class MyEnum(val value: UByte) {
+    FOO(3u),
+    BAR(4u);
+    companion object
+}
+
+// swift
+public enum MyEnum : UInt8 {
+    case foo = 3
+    case bar = 4
+}
+```
 
 ## The `uniffi::Object` derive
 

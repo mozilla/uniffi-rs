@@ -8,6 +8,8 @@
 {%- if e.is_flat() %}
 
 {%- call kt::docstring(e, 0) %}
+{% match e.variant_discr_type() %}
+{% when None %}
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
@@ -15,6 +17,15 @@ enum class {{ type_name }} {
     {%- endfor %}
     companion object
 }
+{% when Some with (variant_discr_type) %}
+enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
+    {% for variant in e.variants() -%}
+    {%- call kt::docstring(variant, 4) %}
+    {{ variant|variant_name }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
+    {%- endfor %}
+    companion object
+}
+{% endmatch %}
 
 public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer) = try {

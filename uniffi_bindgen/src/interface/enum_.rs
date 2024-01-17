@@ -235,6 +235,10 @@ impl Enum {
         Ok(Literal::new_uint(this))
     }
 
+    pub fn variant_discr_type(&self) -> &Option<Type> {
+        &self.discr_type
+    }
+
     pub fn is_flat(&self) -> bool {
         self.flat
     }

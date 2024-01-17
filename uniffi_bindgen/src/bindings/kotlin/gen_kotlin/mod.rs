@@ -491,6 +491,7 @@ impl<T: AsType> AsCodeType for T {
 mod filters {
     use super::*;
     pub use crate::backend::filters::*;
+    use uniffi_meta::LiteralMetadata;
 
     pub(super) fn type_name(
         as_ct: &impl AsCodeType,
@@ -542,6 +543,33 @@ mod filters {
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().literal(literal, ci))
+    }
+
+    // Get the idiomatic Kotlin rendering of an individual enum variant's discriminant
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+        let literal = e.variant_discr(*index).expect("invalid index");
+        match literal {
+            // Kotlin doesn't convert between signed and unsigned by default
+            // so we'll need to make sure we define the type as appropriately
+            LiteralMetadata::UInt(v, _, _) => {
+                if let Some(t) = e.variant_discr_type() {
+                    match t {
+                        Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(v.to_string()),
+                        Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => {
+                            Ok(v.to_string() + "u")
+                        }
+                        _ => unreachable!("only unsigned is supported at this time"),
+                    }
+                } else {
+                    Err(askama::Error::Custom(Box::new(UniFFIError::new(
+                        "Enum hasn't defined a repr".to_string(),
+                    ))))
+                }
+            }
+            _ => Err(askama::Error::Custom(Box::new(UniFFIError::new(
+                "Expected an UInt!".to_string(),
+            )))),
+        }
     }
 
     pub fn ffi_type_name_by_value(type_: &FfiType) -> Result<String, askama::Error> {
