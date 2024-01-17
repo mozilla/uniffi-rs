@@ -299,11 +299,41 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
-    Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
+    Attribute, Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
 };
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
@@ -311,6 +341,30 @@
     ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
     try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
 };
+
+<span class="kw">fn </span>extract_repr(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;Ident&gt;&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="prelude-val">None</span>;
+    <span class="kw">for </span>attr <span class="kw">in </span>attrs {
+        <span class="kw">if </span>attr.path().is_ident(<span class="string">&quot;repr&quot;</span>) {
+            attr.parse_nested_meta(|meta| {
+                result = <span class="kw">match </span>meta.path.get_ident() {
+                    <span class="prelude-val">Some</span>(i) =&gt; {
+                        <span class="kw">let </span>s = i.to_string();
+                        <span class="kw">match </span>s.as_str() {
+                            <span class="string">&quot;u8&quot; </span>| <span class="string">&quot;u16&quot; </span>| <span class="string">&quot;u32&quot; </span>| <span class="string">&quot;u64&quot; </span>| <span class="string">&quot;usize&quot; </span>| <span class="string">&quot;i8&quot; </span>| <span class="string">&quot;i16&quot; </span>| <span class="string">&quot;i32&quot;
+                            </span>| <span class="string">&quot;i64&quot; </span>| <span class="string">&quot;isize&quot; </span>=&gt; <span class="prelude-val">Some</span>(i.clone()),
+                            <span class="comment">// while the default repr for an enum is `isize` we don&#39;t apply that default here.
+                            </span><span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+                        }
+                    }
+                    <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+                };
+                <span class="prelude-val">Ok</span>(())
+            })<span class="question-mark">?
+        </span>}
+    }
+    <span class="prelude-val">Ok</span>(result)
+}
 
 <span class="kw">pub fn </span>expand_enum(
     input: DeriveInput,
@@ -329,6 +383,7 @@
     };
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
     <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
+    <span class="kw">let </span>discr_type = extract_repr(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>attr: EnumAttr = input.attrs.parse_uniffi_attr_args()<span class="question-mark">?</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_from_udl_mode) = attr_from_udl_mode {
         attr = attr.merge(attr_from_udl_mode)<span class="question-mark">?</span>;
@@ -336,7 +391,7 @@
     <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, udl_mode, <span class="kw-2">&amp;</span>attr);
 
     <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        enum_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr)
+        enum_meta_static_var(ident, docstring, discr_type, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr)
             .unwrap_or_else(syn::Error::into_compile_error)
     });
 
@@ -470,6 +525,7 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(
     ident: <span class="kw-2">&amp;</span>Ident,
     docstring: String,
+    discr_type: <span class="prelude-ty">Option</span>&lt;Ident&gt;,
     enum_: <span class="kw-2">&amp;</span>DataEnum,
     attr: <span class="kw-2">&amp;</span>EnumAttr,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
@@ -483,6 +539,10 @@
             .concat_str(#name)
             .concat_option_bool(<span class="prelude-val">None</span>) <span class="comment">// forced_flatness
     </span>};
+    metadata_expr.extend(<span class="kw">match </span>discr_type {
+        <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">false</span>) },
+        <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">true</span>).concat(&lt;#t <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META) }
+    });
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     metadata_expr.extend(<span class="macro">quote! </span>{
         .concat_bool(#non_exhaustive)

@@ -309,6 +309,7 @@
 <a href="#309" id="309">309</a>
 <a href="#310" id="310">310</a>
 <a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -522,7 +523,8 @@
                 .concat_str(#module_path)
                 .concat_str(#name)
                 .concat_option_bool(<span class="prelude-val">Some</span>(#flat))
-    };
+                .concat_bool(<span class="bool-val">false</span>) <span class="comment">// discr_type: None
+    </span>};
     <span class="kw">if </span>flat {
         metadata_expr.extend(flat_error_variant_metadata(enum_)<span class="question-mark">?</span>)
     } <span class="kw">else </span>{

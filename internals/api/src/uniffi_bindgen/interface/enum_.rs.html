@@ -760,6 +760,9 @@
 <a href="#760" id="760">760</a>
 <a href="#761" id="761">761</a>
 <a href="#762" id="762">762</a>
+<a href="#763" id="763">763</a>
+<a href="#764" id="764">764</a>
+<a href="#765" id="765">765</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -936,6 +939,7 @@
 </span><span class="kw">pub struct </span>Enum {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) discr_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) variants: Vec&lt;Variant&gt;,
     <span class="comment">// NOTE: `flat` is a misleading name and to make matters worse, has 2 different
     // meanings depending on the context :(
@@ -1022,6 +1026,7 @@
         </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             name: meta.name,
             module_path: meta.module_path,
+            discr_type: meta.discr_type,
             variants: meta
                 .variants
                 .into_iter()
@@ -1411,6 +1416,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>e = Enum {
             module_path: <span class="string">&quot;test&quot;</span>.to_string(),
             name: <span class="string">&quot;test&quot;</span>.to_string(),
+            discr_type: <span class="prelude-val">None</span>,
             variants: <span class="macro">vec!</span>[],
             flat: <span class="bool-val">false</span>,
             non_exhaustive: <span class="bool-val">false</span>,

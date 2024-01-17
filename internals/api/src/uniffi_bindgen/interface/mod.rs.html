@@ -1239,6 +1239,8 @@
 <a href="#1239" id="1239">1239</a>
 <a href="#1240" id="1240">1240</a>
 <a href="#1241" id="1241">1241</a>
+<a href="#1242" id="1242">1242</a>
+<a href="#1243" id="1243">1243</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -2307,6 +2309,7 @@
 existing definition: Enum {
     name: \&quot;Testing\&quot;,
     module_path: \&quot;crate_name\&quot;,
+    discr_type: None,
     variants: [
         Variant {
             name: \&quot;one\&quot;,
@@ -2328,6 +2331,7 @@ existing definition: Enum {
 new definition: Enum {
     name: \&quot;Testing\&quot;,
     module_path: \&quot;crate_name\&quot;,
+    discr_type: None,
     variants: [
         Variant {
             name: \&quot;three\&quot;,
