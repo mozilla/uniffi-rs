@@ -10,13 +10,13 @@ name = "uniffi_swift_bridging_header_compiler"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { path = "../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 camino = "1.0.8"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.25", features = ["bindgen-tests", "cli"] }
+uniffi = { workspace = true, features = ["bindgen-tests", "cli"] }
 uniffi_testing = { path = "../../uniffi_testing" }
 anyhow = "1"

@@ -20,7 +20,7 @@ name = "uniffi_ext_types_proc_macro_lib"
 [dependencies]
 anyhow = "1"
 bytes = "1.3"
-uniffi = {path = "../../../uniffi"}
+uniffi = { workspace = true }
 
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 uniffi-fixture-ext-types-guid = {path = "../guid"}
@@ -31,7 +31,7 @@ uniffi-example-custom-types = {path = "../../../examples/custom-types"}
 url = "2.2"
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../../uniffi", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }

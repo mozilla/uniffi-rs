@@ -22,7 +22,7 @@ name = "uniffi_ext_types_lib"
 [dependencies]
 anyhow = "1"
 bytes = "1.3"
-uniffi = {path = "../../../uniffi", version = "0.25" }
+uniffi = { workspace = true }
 
 uniffi-fixture-ext-types-external-crate = {path = "../external-crate"}
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
@@ -35,7 +35,7 @@ uniffi-example-custom-types = {path = "../../../examples/custom-types"}
 url = "2.2"
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.25", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }

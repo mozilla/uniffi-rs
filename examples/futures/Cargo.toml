@@ -12,10 +12,10 @@ crate-type = ["lib", "cdylib"]
 [dependencies]
 async-std = "1.12.0"
 thiserror = "1.0"
-uniffi = {path = "../../uniffi" }
+uniffi = { workspace = true }
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }
