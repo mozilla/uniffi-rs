@@ -1,9 +1,3 @@
-### Migrating to UniFFI 0.23+
-
-- Update your `Cargo.toml` file to only depend on the `uniffi` crate.  Follow the directions from the [Prerequisites section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/Prerequisites.html)
-- Create a `uniffi-bindgen` binary for your project.  Follow the directions from the [Foreign language bindings section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html).
-- Uninstall the system-wide `uniffi_bindgen`: `cargo uninstall uniffi_bindgen`.  (Not strictly necessary, but you won't be using it anymore).
-
 <!-- The sections in this file are managed automatically by `cargo release` -->
 <!-- See our [internal release process docs](docs/release-process.md) and for more general -->
 <!-- guidance, see https://github.com/sunng87/cargo-release/blob/master/docs/faq.md#maintaining-changelog -->
@@ -20,16 +14,17 @@
 ### What's new?
 
 - Rust traits `Display`, `Hash` and `Eq` exposed to Kotlin and Swift [#1817](https://github.com/mozilla/uniffi-rs/pull/1817)
-- Foreign types can now implement trait interfaces [#1791](https://github.com/mozilla/uniffi-rs/pull/1791)
+- Foreign types can now implement trait interfaces [#1791](https://github.com/mozilla/uniffi-rs/pull/1791) and
+ [the documentation](https://mozilla.github.io/uniffi-rs/udl/interfaces.html#foreign-implementations)
   - UDL: use the `[WithForeign]` attribute
   - proc-macros: use the `#[uniffi::export(with_foreign)]` attribute
 - Generated Python code is able to specify a package name for the module [#1784](https://github.com/mozilla/uniffi-rs/pull/1784)
 - UDL can describe async function [#1834](https://github.com/mozilla/uniffi-rs/pull/1834)
 - UDL files can reference types defined in procmacros in this crate - see
   [the external types docs](https://mozilla.github.io/uniffi-rs/udl/ext_types.html)
-- Add support for [docstrings in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
-- Ability for UDL to use external trait interfaces [#1831](https://github.com/mozilla/uniffi-rs/issues/1831)
+  and also external trait interfaces [#1831](https://github.com/mozilla/uniffi-rs/issues/1831)
 - Add support for docstrings via procmacros [#1862](https://github.com/mozilla/uniffi-rs/pull/1862)
+  and [in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
 - Objects can now be returned from functions/constructors/methods without wrapping them in an `Arc<>`.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
@@ -183,6 +178,12 @@ Significant patches to UniFFI's builtin bindings which you will need to port inc
 * <https://github.com/mozilla/uniffi-rs/pull/1497>
 
 ## v0.23.0 (backend crates: v0.23.0) - (_2023-01-27_)
+
+### Migrating to UniFFI 0.23+
+
+- Update your `Cargo.toml` file to only depend on the `uniffi` crate.  Follow the directions from the [Prerequisites section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/Prerequisites.html)
+- Create a `uniffi-bindgen` binary for your project.  Follow the directions from the [Foreign language bindings section of the manual](https://mozilla.github.io/uniffi-rs/tutorial/foreign_language_bindings.html).
+- Uninstall the system-wide `uniffi_bindgen`: `cargo uninstall uniffi_bindgen`.  (Not strictly necessary, but you won't be using it anymore).
 
 [All changes in v0.23.0](https://github.com/mozilla/uniffi-rs/compare/v0.22.0...v0.23.0).
 
