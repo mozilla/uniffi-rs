@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
 
 use proc_macro2::TokenStream;
@@ -6,27 +8,22 @@ use syn::{
     parse::{Parse, ParseStream},
     Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
 };
+use uniffi_meta::UniffiTraitDiscriminants;
 
 #[derive(Default)]
-pub struct ExportAttributeArguments {
+pub struct ExportTraitArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
     pub(crate) callback_interface: Option<kw::callback_interface>,
     pub(crate) with_foreign: Option<kw::with_foreign>,
-    pub(crate) constructor: Option<kw::constructor>,
-    // tried to make this a vec but that got messy quickly...
-    pub(crate) trait_debug: Option<kw::Debug>,
-    pub(crate) trait_display: Option<kw::Display>,
-    pub(crate) trait_hash: Option<kw::Hash>,
-    pub(crate) trait_eq: Option<kw::Eq>,
 }
 
-impl Parse for ExportAttributeArguments {
+impl Parse for ExportTraitArgs {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         parse_comma_separated(input)
     }
 }
 
-impl UniffiAttributeArgs for ExportAttributeArguments {
+impl UniffiAttributeArgs for ExportTraitArgs {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::async_runtime) {
@@ -46,31 +43,6 @@ impl UniffiAttributeArgs for ExportAttributeArguments {
                 with_foreign: input.parse()?,
                 ..Self::default()
             })
-        } else if lookahead.peek(kw::constructor) {
-            Ok(Self {
-                constructor: input.parse()?,
-                ..Self::default()
-            })
-        } else if lookahead.peek(kw::Debug) {
-            Ok(Self {
-                trait_debug: input.parse()?,
-                ..Self::default()
-            })
-        } else if lookahead.peek(kw::Display) {
-            Ok(Self {
-                trait_display: input.parse()?,
-                ..Self::default()
-            })
-        } else if lookahead.peek(kw::Hash) {
-            Ok(Self {
-                trait_hash: input.parse()?,
-                ..Self::default()
-            })
-        } else if lookahead.peek(kw::Eq) {
-            Ok(Self {
-                trait_eq: input.parse()?,
-                ..Self::default()
-            })
         } else {
             Ok(Self::default())
         }
@@ -84,11 +56,6 @@ impl UniffiAttributeArgs for ExportAttributeArguments {
                 other.callback_interface,
             )?,
             with_foreign: either_attribute_arg(self.with_foreign, other.with_foreign)?,
-            constructor: either_attribute_arg(self.constructor, other.constructor)?,
-            trait_debug: either_attribute_arg(self.trait_debug, other.trait_debug)?,
-            trait_display: either_attribute_arg(self.trait_display, other.trait_display)?,
-            trait_hash: either_attribute_arg(self.trait_hash, other.trait_hash)?,
-            trait_eq: either_attribute_arg(self.trait_eq, other.trait_eq)?,
         };
         if merged.callback_interface.is_some() && merged.with_foreign.is_some() {
             return Err(syn::Error::new(
@@ -97,6 +64,95 @@ impl UniffiAttributeArgs for ExportAttributeArguments {
             ));
         }
         Ok(merged)
+    }
+}
+
+#[derive(Default)]
+pub struct ExportFnArgs {
+    pub(crate) async_runtime: Option<AsyncRuntime>,
+}
+
+impl Parse for ExportFnArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
+impl UniffiAttributeArgs for ExportFnArgs {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::async_runtime) {
+            let _: kw::async_runtime = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                async_runtime: Some(input.parse()?),
+            })
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                format!("uniffi::export attribute `{input}` is not supported here."),
+            ))
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
+        })
+    }
+}
+
+// for now, `impl` blocks are identical to `fn` blocks.
+pub type ExportImplArgs = ExportFnArgs;
+
+#[derive(Default)]
+pub struct ExportStructArgs {
+    pub(crate) traits: HashSet<UniffiTraitDiscriminants>,
+}
+
+impl Parse for ExportStructArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
+impl UniffiAttributeArgs for ExportStructArgs {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::Debug) {
+            input.parse::<Option<kw::Debug>>()?;
+            Ok(Self {
+                traits: HashSet::from([UniffiTraitDiscriminants::Debug]),
+            })
+        } else if lookahead.peek(kw::Display) {
+            input.parse::<Option<kw::Display>>()?;
+            Ok(Self {
+                traits: HashSet::from([UniffiTraitDiscriminants::Display]),
+            })
+        } else if lookahead.peek(kw::Hash) {
+            input.parse::<Option<kw::Hash>>()?;
+            Ok(Self {
+                traits: HashSet::from([UniffiTraitDiscriminants::Hash]),
+            })
+        } else if lookahead.peek(kw::Eq) {
+            input.parse::<Option<kw::Eq>>()?;
+            Ok(Self {
+                traits: HashSet::from([UniffiTraitDiscriminants::Eq]),
+            })
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                format!(
+                    "uniffi::export struct attributes must be builtin trait names; `{input}` is invalid"
+                ),
+            ))
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        let mut traits = self.traits;
+        traits.extend(other.traits);
+        Ok(Self { traits })
     }
 }
 

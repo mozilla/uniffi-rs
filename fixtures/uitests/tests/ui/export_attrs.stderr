@@ -1,0 +1,25 @@
+error: uniffi::export on a struct must supply a builtin trait name. Did you mean `#[derive(uniffi::Object)]`?
+ --> tests/ui/export_attrs.rs:5:1
+  |
+5 | #[uniffi::export]
+  | ^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: uniffi::export struct attributes must be builtin trait names; `Dixplay` is invalid
+ --> tests/ui/export_attrs.rs:8:18
+  |
+8 | #[uniffi::export(Dixplay)]
+  |                  ^^^^^^^
+
+error: uniffi::export attribute `callback_interface` is not supported here.
+  --> tests/ui/export_attrs.rs:14:18
+   |
+14 | #[uniffi::export(callback_interface)]
+   |                  ^^^^^^^^^^^^^^^^^^
+
+error: uniffi::export attribute `with_foreign` is not supported here.
+  --> tests/ui/export_attrs.rs:17:18
+   |
+17 | #[uniffi::export(with_foreign)]
+   |                  ^^^^^^^^^^^^
