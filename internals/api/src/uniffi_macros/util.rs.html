@@ -295,6 +295,10 @@
 <a href="#295" id="295">295</a>
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -521,7 +525,11 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>derive_ffi_traits(ty: <span class="kw-2">&amp;</span>Ident, udl_mode: bool, trait_names: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; TokenStream {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>derive_ffi_traits(
+    ty: <span class="kw">impl </span>ToTokens,
+    udl_mode: bool,
+    trait_names: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str],
+) -&gt; TokenStream {
     <span class="kw">let </span>trait_idents = trait_names
         .iter()
         .map(|name| Ident::new(name, Span::call_site()));
