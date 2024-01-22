@@ -381,7 +381,6 @@
 <a href="#381" id="381">381</a>
 <a href="#382" id="382">382</a>
 <a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -477,9 +476,8 @@
     <span class="kw">let </span>copied_input = (!udl_mode).then(|| proc_macro2::TokenStream::from(input.clone()));
 
     <span class="kw">let </span>gen_output = || {
-        <span class="kw">let </span>args = syn::parse(attr_args)<span class="question-mark">?</span>;
         <span class="kw">let </span>item = syn::parse(input)<span class="question-mark">?</span>;
-        expand_export(item, args, udl_mode)
+        expand_export(item, attr_args, udl_mode)
     };
     <span class="kw">let </span>output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 

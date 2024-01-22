@@ -221,25 +221,31 @@
 <a href="#221" id="221">221</a>
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::fnsig::FnSignature;
+<span class="kw">use </span>proc_macro::TokenStream;
 <span class="kw">use </span>proc_macro2::{Ident, Span};
 <span class="kw">use </span>quote::ToTokens;
 
-<span class="kw">use </span><span class="kw">super</span>::attributes::{ExportAttributeArguments, ExportedImplFnAttributes};
+<span class="kw">use </span><span class="kw">super</span>::attributes::{
+    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnAttributes,
+};
 <span class="kw">use </span><span class="kw">crate</span>::util::extract_docstring;
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>ExportItem {
     Function {
         sig: FnSignature,
+        args: ExportFnArgs,
     },
     Impl {
         self_ident: Ident,
         items: Vec&lt;ImplItem&gt;,
+        args: ExportImplArgs,
     },
     Trait {
         self_ident: Ident,
@@ -247,6 +253,7 @@
         with_foreign: bool,
         callback_interface_only: bool,
         docstring: String,
+        args: ExportTraitArgs,
     },
     Struct {
         self_ident: Ident,
@@ -255,20 +262,17 @@
 }
 
 <span class="kw">impl </span>ExportItem {
-    <span class="kw">pub fn </span>new(item: syn::Item, args: <span class="kw-2">&amp;</span>ExportAttributeArguments) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub fn </span>new(item: syn::Item, attr_args: TokenStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">match </span>item {
             syn::Item::Fn(item) =&gt; {
+                <span class="kw">let </span>args: ExportFnArgs = syn::parse(attr_args)<span class="question-mark">?</span>;
                 <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>item.attrs)<span class="question-mark">?</span>;
                 <span class="kw">let </span>sig = FnSignature::new_function(item.sig, docstring)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Function { sig })
+                <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Function { sig, args })
             }
-            syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item, args.constructor.is_some()),
-            syn::Item::Trait(item) =&gt; <span class="self">Self</span>::from_trait(
-                item,
-                args.callback_interface.is_some() || args.with_foreign.is_some(),
-                args.callback_interface.is_some(),
-            ),
-            syn::Item::Struct(item) =&gt; <span class="self">Self</span>::from_struct(item, args),
+            syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item, attr_args),
+            syn::Item::Trait(item) =&gt; <span class="self">Self</span>::from_trait(item, attr_args),
+            syn::Item::Struct(item) =&gt; <span class="self">Self</span>::from_struct(item, attr_args),
             <span class="comment">// FIXME: Support const / static?
             </span><span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
@@ -278,7 +282,8 @@
         }
     }
 
-    <span class="kw">pub fn </span>from_impl(item: syn::ItemImpl, force_constructor: bool) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub fn </span>from_impl(item: syn::ItemImpl, attr_args: TokenStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>args: ExportImplArgs = syn::parse(attr_args)<span class="question-mark">?</span>;
         <span class="kw">if </span>!item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
                 <span class="kw-2">&amp;</span>item.generics,
@@ -321,7 +326,7 @@
 
                 <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>impl_fn.attrs)<span class="question-mark">?</span>;
                 <span class="kw">let </span>attrs = ExportedImplFnAttributes::new(<span class="kw-2">&amp;</span>impl_fn.attrs)<span class="question-mark">?</span>;
-                <span class="kw">let </span>item = <span class="kw">if </span>force_constructor || attrs.constructor {
+                <span class="kw">let </span>item = <span class="kw">if </span>attrs.constructor {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,
@@ -342,14 +347,15 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Impl {
             items,
             self_ident: self_ident.to_owned(),
+            args,
         })
     }
 
-    <span class="kw">fn </span>from_trait(
-        item: syn::ItemTrait,
-        with_foreign: bool,
-        callback_interface_only: bool,
-    ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>from_trait(item: syn::ItemTrait, attr_args: TokenStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>args: ExportTraitArgs = syn::parse(attr_args)<span class="question-mark">?</span>;
+        <span class="kw">let </span>with_foreign = args.callback_interface.is_some() || args.with_foreign.is_some();
+        <span class="kw">let </span>callback_interface_only = args.callback_interface.is_some();
+
         <span class="kw">if </span>!item.generics.params.is_empty() || item.generics.where_clause.is_some() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
                 <span class="kw-2">&amp;</span>item.generics,
@@ -400,27 +406,23 @@
             with_foreign,
             callback_interface_only,
             docstring,
+            args,
         })
     }
 
-    <span class="kw">fn </span>from_struct(item: syn::ItemStruct, args: <span class="kw-2">&amp;</span>ExportAttributeArguments) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>uniffi_traits = Vec::new();
-        <span class="kw">if </span>args.trait_debug.is_some() {
-            uniffi_traits.push(UniffiTraitDiscriminants::Debug);
+    <span class="kw">fn </span>from_struct(item: syn::ItemStruct, attr_args: TokenStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>args: ExportStructArgs = syn::parse(attr_args)<span class="question-mark">?</span>;
+        <span class="kw">let </span>uniffi_traits: Vec&lt;UniffiTraitDiscriminants&gt; = args.traits.into_iter().collect();
+        <span class="kw">if </span>uniffi_traits.is_empty() {
+            <span class="prelude-val">Err</span>(syn::Error::new(Span::call_site(),
+                <span class="string">&quot;uniffi::export on a struct must supply a builtin trait name. Did you mean `#[derive(uniffi::Object)]`?&quot;
+            </span>))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Struct {
+                self_ident: item.ident,
+                uniffi_traits,
+            })
         }
-        <span class="kw">if </span>args.trait_display.is_some() {
-            uniffi_traits.push(UniffiTraitDiscriminants::Display);
-        }
-        <span class="kw">if </span>args.trait_hash.is_some() {
-            uniffi_traits.push(UniffiTraitDiscriminants::Hash);
-        }
-        <span class="kw">if </span>args.trait_eq.is_some() {
-            uniffi_traits.push(UniffiTraitDiscriminants::Eq);
-        }
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Struct {
-            self_ident: item.ident,
-            uniffi_traits,
-        })
     }
 }
 

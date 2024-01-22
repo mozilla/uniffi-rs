@@ -178,7 +178,7 @@
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::ext::IdentExt;
 
-<span class="kw">use super</span>::{attributes::ExportAttributeArguments, gen_ffi_function};
+<span class="kw">use super</span>::{attributes::ExportFnArgs, gen_ffi_function};
 <span class="kw">use </span><span class="kw">crate</span>::fnsig::FnSignature;
 <span class="kw">use </span><span class="kw">crate</span>::util::extract_docstring;
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
@@ -334,7 +334,7 @@
 
     <span class="kw">let </span>ffi_func = gen_ffi_function(
         <span class="kw-2">&amp;</span>FnSignature::new_method(self_ident.clone(), item.sig.clone(), docstring.clone())<span class="question-mark">?</span>,
-        <span class="kw-2">&amp;</span>ExportAttributeArguments::default(),
+        <span class="kw-2">&amp;</span>ExportFnArgs::default(),
         udl_mode,
     )<span class="question-mark">?</span>;
     <span class="comment">// metadata for the method, which will be packed inside metadata for the trait.

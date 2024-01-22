@@ -168,6 +168,11 @@
 <a href="#168" id="168">168</a>
 <a href="#169" id="169">169</a>
 <a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -190,7 +195,6 @@
     },
 };
 <span class="kw">use </span><span class="kw">crate</span>::util::{ident_to_string, mod_path};
-<span class="kw">pub use </span>attributes::ExportAttributeArguments;
 <span class="kw">pub use </span>callback_interface::ffi_converter_callback_interface_impl;
 
 <span class="comment">// TODO(jplatte): Ensure no generics, …
@@ -198,7 +202,7 @@
 
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expand_export(
     <span class="kw-2">mut </span>item: Item,
-    args: ExportAttributeArguments,
+    all_args: proc_macro::TokenStream,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
@@ -208,11 +212,15 @@
     // new functions outside of the `impl`).
     </span>rewrite_self_type(<span class="kw-2">&amp;mut </span>item);
 
-    <span class="kw">let </span>metadata = ExportItem::new(item, <span class="kw-2">&amp;</span>args)<span class="question-mark">?</span>;
+    <span class="kw">let </span>metadata = ExportItem::new(item, all_args)<span class="question-mark">?</span>;
 
     <span class="kw">match </span>metadata {
-        ExportItem::Function { sig } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
-        ExportItem::Impl { items, self_ident } =&gt; {
+        ExportItem::Function { sig, args } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
+        ExportItem::Impl {
+            items,
+            self_ident,
+            args,
+        } =&gt; {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(rt) = <span class="kw-2">&amp;</span>args.async_runtime {
                 <span class="kw">if </span>items
                     .iter()
@@ -240,6 +248,7 @@
             with_foreign,
             callback_interface_only: <span class="bool-val">false</span>,
             docstring,
+            args,
         } =&gt; trait_interface::gen_trait_scaffolding(
             <span class="kw-2">&amp;</span>mod_path,
             args,
@@ -280,6 +289,7 @@
         ExportItem::Struct {
             self_ident,
             uniffi_traits,
+            ..
         } =&gt; {
             <span class="macro">assert!</span>(!udl_mode);
             utrait::expand_uniffi_trait_export(self_ident, uniffi_traits)

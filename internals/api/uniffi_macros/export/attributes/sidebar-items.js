@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["AsyncRuntime"],"fn":["ensure_no_path_args"],"struct":["ExportAttributeArguments","ExportedImplFnAttributes"]};
+window.SIDEBAR_ITEMS = {"enum":["AsyncRuntime"],"fn":["ensure_no_path_args"],"struct":["ExportFnArgs","ExportStructArgs","ExportTraitArgs","ExportedImplFnAttributes"],"type":["ExportImplArgs"]};
