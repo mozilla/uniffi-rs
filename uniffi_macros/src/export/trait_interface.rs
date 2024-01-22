@@ -9,7 +9,8 @@ use uniffi_meta::ObjectImpl;
 
 use crate::{
     export::{
-        attributes::ExportAttributeArguments, callback_interface, gen_method_scaffolding,
+        attributes::{ExportFnArgs, ExportTraitArgs},
+        callback_interface, gen_method_scaffolding,
         item::ImplItem,
     },
     object::interface_meta_static_var,
@@ -18,7 +19,7 @@ use crate::{
 
 pub(super) fn gen_trait_scaffolding(
     mod_path: &str,
-    args: ExportAttributeArguments,
+    args: ExportTraitArgs,
     self_ident: Ident,
     items: Vec<ImplItem>,
     udl_mode: bool,
@@ -92,7 +93,10 @@ pub(super) fn gen_trait_scaffolding(
                         "async trait methods are not supported",
                     ));
                 }
-                gen_method_scaffolding(sig, &args, udl_mode)
+                let fn_args = ExportFnArgs {
+                    async_runtime: None,
+                };
+                gen_method_scaffolding(sig, &fn_args, udl_mode)
             }
             _ => unreachable!("traits have no constructors"),
         })

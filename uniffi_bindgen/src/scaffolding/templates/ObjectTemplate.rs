@@ -37,8 +37,9 @@ pub trait r#{{ obj.name() }} {
 struct {{ obj.rust_name() }} { }
 
 {%- for cons in obj.constructors() %}
-#[::uniffi::export_for_udl(constructor)]
+#[::uniffi::export_for_udl]
 impl {{ obj.rust_name() }} {
+    #[uniffi::constructor]
     pub fn r#{{ cons.name() }}(
         {%- for arg in cons.arguments() %}
         r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},

@@ -93,9 +93,8 @@ fn do_export(attr_args: TokenStream, input: TokenStream, udl_mode: bool) -> Toke
     let copied_input = (!udl_mode).then(|| proc_macro2::TokenStream::from(input.clone()));
 
     let gen_output = || {
-        let args = syn::parse(attr_args)?;
         let item = syn::parse(input)?;
-        expand_export(item, args, udl_mode)
+        expand_export(item, attr_args, udl_mode)
     };
     let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
 

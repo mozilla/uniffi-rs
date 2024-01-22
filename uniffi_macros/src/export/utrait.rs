@@ -6,7 +6,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::ext::IdentExt;
 
-use super::{attributes::ExportAttributeArguments, gen_ffi_function};
+use super::{attributes::ExportFnArgs, gen_ffi_function};
 use crate::fnsig::FnSignature;
 use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
@@ -162,7 +162,7 @@ fn process_uniffi_trait_method(
 
     let ffi_func = gen_ffi_function(
         &FnSignature::new_method(self_ident.clone(), item.sig.clone(), docstring.clone())?,
-        &ExportAttributeArguments::default(),
+        &ExportFnArgs::default(),
         udl_mode,
     )?;
     // metadata for the method, which will be packed inside metadata for the trait.

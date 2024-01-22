@@ -6,12 +6,12 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use std::iter;
 
-use super::attributes::{AsyncRuntime, ExportAttributeArguments};
+use super::attributes::{AsyncRuntime, ExportFnArgs};
 use crate::fnsig::{FnKind, FnSignature, NamedArg};
 
 pub(super) fn gen_fn_scaffolding(
     sig: FnSignature,
-    arguments: &ExportAttributeArguments,
+    arguments: &ExportFnArgs,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
@@ -41,7 +41,7 @@ pub(super) fn gen_fn_scaffolding(
 
 pub(super) fn gen_constructor_scaffolding(
     sig: FnSignature,
-    arguments: &ExportAttributeArguments,
+    arguments: &ExportFnArgs,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
@@ -66,7 +66,7 @@ pub(super) fn gen_constructor_scaffolding(
 
 pub(super) fn gen_method_scaffolding(
     sig: FnSignature,
-    arguments: &ExportAttributeArguments,
+    arguments: &ExportFnArgs,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let scaffolding_func = if sig.receiver.is_none() {
@@ -203,7 +203,7 @@ impl ScaffoldingBits {
 /// `rust_fn` is the Rust function to call.
 pub(super) fn gen_ffi_function(
     sig: &FnSignature,
-    arguments: &ExportAttributeArguments,
+    arguments: &ExportFnArgs,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
