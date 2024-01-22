@@ -78,6 +78,12 @@ class KtTestCallbackInterface : TestCallbackInterface {
         val v = o.takeError(BasicException.InvalidInput());
         return v
     }
+
+    override fun getOtherCallbackInterface() = KtTestCallbackInterface2()
+}
+
+class KtTestCallbackInterface2 : OtherCallbackInterface {
+    override fun multiply(a: UInt, b: UInt) = a * b
 }
 
 callCallbackInterface(KtTestCallbackInterface())

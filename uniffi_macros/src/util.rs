@@ -224,7 +224,11 @@ pub(crate) fn derive_all_ffi_traits(ty: &Ident, udl_mode: bool) -> TokenStream {
     }
 }
 
-pub(crate) fn derive_ffi_traits(ty: &Ident, udl_mode: bool, trait_names: &[&str]) -> TokenStream {
+pub(crate) fn derive_ffi_traits(
+    ty: impl ToTokens,
+    udl_mode: bool,
+    trait_names: &[&str],
+) -> TokenStream {
     let trait_idents = trait_names
         .iter()
         .map(|name| Ident::new(name, Span::call_site()));

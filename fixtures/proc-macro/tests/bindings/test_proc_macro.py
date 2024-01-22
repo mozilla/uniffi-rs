@@ -88,6 +88,13 @@ class PyTestCallbackInterface(TestCallbackInterface):
         v = h.take_error(BasicError.InvalidInput())
         return v
 
+    def get_other_callback_interface(self):
+        return PyTestCallbackInterface2()
+
+class PyTestCallbackInterface2(OtherCallbackInterface):
+    def multiply(self, a, b):
+        return a * b
+
 call_callback_interface(PyTestCallbackInterface())
 
 # udl exposed functions with procmacro types.

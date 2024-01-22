@@ -179,6 +179,8 @@ fn call_callback_interface(cb: Box<dyn TestCallbackInterface>) {
         Err(BasicError::UnexpectedError { .. }),
     ));
     assert_eq!(42, cb.callback_handler(Object::new()));
+
+    assert_eq!(6, cb.get_other_callback_interface().multiply(2, 3));
 }
 
 // Type that's defined in the UDL and not wrapped with #[uniffi::export]
