@@ -45,7 +45,7 @@ pub(crate) fn expand_ffi_converter_custom_type(
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
                 .concat_str(#mod_path)
                 .concat_str(#name)
-                .concat(<#builtin as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META);
+                .concat(<#builtin as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META);
         }
 
         #derive_ffi_traits

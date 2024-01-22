@@ -24,7 +24,7 @@
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
     ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerReturn, MetadataBuffer,
-    Result, RustBuffer, UnexpectedUniFFICallbackError,
+    Result, RustBuffer, TypeId, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -270,9 +270,6 @@ unsafe impl<UT, T: Lower<UT>> Lower<UT> for Option<T> {
     fn lower(obj: Option<T>) -> RustBuffer {
         Self::lower_into_rust_buffer(obj)
     }
-
-    const TYPE_ID_META: MetadataBuffer =
-        MetadataBuffer::from_code(metadata::codes::TYPE_OPTION).concat(T::TYPE_ID_META);
 }
 
 unsafe impl<UT, T: Lift<UT>> Lift<UT> for Option<T> {
@@ -290,7 +287,9 @@ unsafe impl<UT, T: Lift<UT>> Lift<UT> for Option<T> {
     fn try_lift(buf: RustBuffer) -> Result<Option<T>> {
         Self::try_lift_from_rust_buffer(buf)
     }
+}
 
+impl<UT, T: TypeId<UT>> TypeId<UT> for Option<T> {
     const TYPE_ID_META: MetadataBuffer =
         MetadataBuffer::from_code(metadata::codes::TYPE_OPTION).concat(T::TYPE_ID_META);
 }
@@ -320,9 +319,6 @@ unsafe impl<UT, T: Lower<UT>> Lower<UT> for Vec<T> {
     fn lower(obj: Vec<T>) -> RustBuffer {
         Self::lower_into_rust_buffer(obj)
     }
-
-    const TYPE_ID_META: MetadataBuffer =
-        MetadataBuffer::from_code(metadata::codes::TYPE_VEC).concat(T::TYPE_ID_META);
 }
 
 /// Support for associative arrays via the FFI - `record<u32, u64>` in UDL.
@@ -346,7 +342,9 @@ unsafe impl<UT, T: Lift<UT>> Lift<UT> for Vec<T> {
     fn try_lift(buf: RustBuffer) -> Result<Vec<T>> {
         Self::try_lift_from_rust_buffer(buf)
     }
+}
 
+impl<UT, T: TypeId<UT>> TypeId<UT> for Vec<T> {
     const TYPE_ID_META: MetadataBuffer =
         MetadataBuffer::from_code(metadata::codes::TYPE_VEC).concat(T::TYPE_ID_META);
 }
@@ -371,10 +369,6 @@ where
     fn lower(obj: HashMap<K, V>) -> RustBuffer {
         Self::lower_into_rust_buffer(obj)
     }
-
-    const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_HASH_MAP)
-        .concat(K::TYPE_ID_META)
-        .concat(V::TYPE_ID_META);
 }
 
 unsafe impl<K, V, UT> Lift<UT> for HashMap<K, V>
@@ -399,7 +393,13 @@ where
     fn try_lift(buf: RustBuffer) -> Result<HashMap<K, V>> {
         Self::try_lift_from_rust_buffer(buf)
     }
+}
 
+impl<K, V, UT> TypeId<UT> for HashMap<K, V>
+where
+    K: TypeId<UT> + std::hash::Hash + Eq,
+    V: TypeId<UT>,
+{
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_HASH_MAP)
         .concat(K::TYPE_ID_META)
         .concat(V::TYPE_ID_META);
@@ -442,6 +442,7 @@ derive_ffi_traits!(impl<T, UT> Lift<UT> for Arc<T> where Arc<T>: FfiConverter<UT
 derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Arc<T> where Arc<T>: Lower<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Arc<T> where Arc<T>: Lift<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Arc<T> where Arc<T>: Lift<UT>, T: ?Sized);
+derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
 
 // Implement LowerReturn/LiftReturn for the unit type (void returns)
 
@@ -451,8 +452,6 @@ unsafe impl<UT> LowerReturn<UT> for () {
     fn lower_return(_: ()) -> Result<Self::ReturnType, RustBuffer> {
         Ok(())
     }
-
-    const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_UNIT);
 }
 
 unsafe impl<UT> LiftReturn<UT> for () {
@@ -461,7 +460,9 @@ unsafe impl<UT> LiftReturn<UT> for () {
     fn try_lift_successful_return(_: ()) -> Result<Self> {
         Ok(())
     }
+}
 
+impl<UT> TypeId<UT> for () {
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_UNIT);
 }
 
@@ -488,10 +489,6 @@ where
             Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
         }
     }
-
-    const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)
-        .concat(R::TYPE_ID_META)
-        .concat(E::TYPE_ID_META);
 }
 
 unsafe impl<UT, R, E> LiftReturn<UT> for Result<R, E>
@@ -519,7 +516,13 @@ where
     fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Self {
         Err(E::try_convert_unexpected_callback_error(e).unwrap_or_else(|e| panic!("{e}")))
     }
+}
 
+impl<UT, R, E> TypeId<UT> for Result<R, E>
+where
+    R: TypeId<UT>,
+    E: TypeId<UT>,
+{
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_RESULT)
         .concat(R::TYPE_ID_META)
         .concat(E::TYPE_ID_META);

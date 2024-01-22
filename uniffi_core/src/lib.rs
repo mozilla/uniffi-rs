@@ -46,7 +46,7 @@ pub mod metadata;
 pub use ffi::*;
 pub use ffi_converter_traits::{
     ConvertError, FfiConverter, FfiConverterArc, HandleAlloc, Lift, LiftRef, LiftReturn, Lower,
-    LowerReturn,
+    LowerReturn, TypeId,
 };
 pub use metadata::*;
 

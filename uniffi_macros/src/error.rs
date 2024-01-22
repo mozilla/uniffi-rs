@@ -89,6 +89,7 @@ fn flat_error_ffi_converter_impl(
     let name = ident_to_string(ident);
     let lower_impl_spec = tagged_impl_header("Lower", ident, udl_mode);
     let lift_impl_spec = tagged_impl_header("Lift", ident, udl_mode);
+    let type_id_impl_spec = tagged_impl_header("TypeId", ident, udl_mode);
     let derive_ffi_traits = derive_ffi_traits(ident, udl_mode, &["ConvertError"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -126,10 +127,6 @@ fn flat_error_ffi_converter_impl(
                 fn lower(obj: Self) -> ::uniffi::RustBuffer {
                     <Self as ::uniffi::Lower<crate::UniFfiTag>>::lower_into_rust_buffer(obj)
                 }
-
-                const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
-                    .concat_str(#mod_path)
-                    .concat_str(#name);
             }
         }
     };
@@ -158,10 +155,7 @@ fn flat_error_ffi_converter_impl(
                 fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
                     <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(v)
                 }
-
-                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META;
             }
-
         }
     } else {
         quote! {
@@ -183,8 +177,6 @@ fn flat_error_ffi_converter_impl(
                 fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
                     panic!("Can't lift flat errors")
                 }
-
-                const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META;
             }
         }
     };
@@ -192,6 +184,14 @@ fn flat_error_ffi_converter_impl(
     quote! {
         #lower_impl
         #lift_impl
+
+        #[automatically_derived]
+        #type_id_impl_spec {
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_ENUM)
+                .concat_str(#mod_path)
+                .concat_str(#name);
+        }
+
         #derive_ffi_traits
     }
 }
