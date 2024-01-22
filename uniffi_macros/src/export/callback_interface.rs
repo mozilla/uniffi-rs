@@ -5,7 +5,9 @@
 use crate::{
     export::ImplItem,
     fnsig::{FnKind, FnSignature, ReceiverArg},
-    util::{create_metadata_items, ident_to_string, mod_path, tagged_impl_header},
+    util::{
+        create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
+    },
 };
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -96,7 +98,7 @@ pub fn ffi_converter_callback_interface_impl(
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
     let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, udl_mode);
-    let lift_ref_impl_spec = tagged_impl_header("LiftRef", &dyn_trait, udl_mode);
+    let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, udl_mode, &["LiftRef", "LiftReturn"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
@@ -125,9 +127,7 @@ pub fn ffi_converter_callback_interface_impl(
             .concat_str(#trait_name);
         }
 
-        unsafe #lift_ref_impl_spec {
-            type LiftType = #box_dyn_trait;
-        }
+        #derive_ffi_traits
     }
 }
 
@@ -199,7 +199,7 @@ pub(super) fn metadata_items(
 
     iter::once(Ok(callback_interface_items))
         .chain(items.iter().map(|item| match item {
-            ImplItem::Method(sig) => sig.metadata_items(),
+            ImplItem::Method(sig) => sig.metadata_items_for_callback_interface(),
             _ => unreachable!("traits have no constructors"),
         }))
         .collect()

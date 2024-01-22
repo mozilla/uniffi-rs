@@ -316,6 +316,65 @@ impl FnSignature {
         }
     }
 
+    /// Generate metadata items for callback interfaces
+    ///
+    /// Unfortunately, most of this is duplicate code from [Self::metadata_items] and
+    /// [Self::metadata_expr].  However, one issue with that code is that it needs to assume if the
+    /// arguments are being lifted vs lowered in order to get TYPE_ID_META.  That code uses
+    /// `<Type as Lift>::TYPE_ID_META` for arguments and `<Type as LowerReturn>::TYPE_ID_META` for
+    /// return types, which works for accidental/historical reasons.
+    ///
+    /// The one exception is callback interfaces (#1947), which are handled by this method.
+    ///
+    /// TODO: fix the metadata system so that this is not needed.
+    pub(crate) fn metadata_items_for_callback_interface(&self) -> syn::Result<TokenStream> {
+        let Self {
+            name,
+            return_ty,
+            is_async,
+            mod_path,
+            docstring,
+            ..
+        } = &self;
+        match &self.kind {
+            FnKind::TraitMethod {
+                self_ident, index, ..
+            } => {
+                let object_name = ident_to_string(self_ident);
+                let args_len = try_metadata_value_from_usize(
+                    // Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
+                    // params
+                    self.args.len(),
+                    "UniFFI limits functions to 256 arguments",
+                )?;
+                let arg_metadata_calls = self.args.iter().map(NamedArg::arg_metadata);
+                let metadata_expr = quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_u32(#index)
+                        .concat_str(#name)
+                        .concat_bool(#is_async)
+                        .concat_value(#args_len)
+                        #(#arg_metadata_calls)*
+                        .concat(<#return_ty as ::uniffi::LiftReturn<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat_long_str(#docstring)
+                };
+                Ok(create_metadata_items(
+                    "method",
+                    &format!("{object_name}_{name}"),
+                    metadata_expr,
+                    Some(self.checksum_symbol_name()),
+                ))
+            }
+
+            // This should never happen and indicates an error in the internal code
+            _ => panic!(
+                "metadata_items_for_callback_interface can only be called with `TraitMethod` sigs"
+            ),
+        }
+    }
+
     pub(crate) fn checksum_symbol_name(&self) -> String {
         let name = &self.name;
         match &self.kind {

@@ -12,4 +12,10 @@ pub trait TestCallbackInterface {
     fn with_bytes(&self, rwb: RecordWithBytes) -> Vec<u8>;
     fn try_parse_int(&self, value: String) -> Result<u32, BasicError>;
     fn callback_handler(&self, h: std::sync::Arc<Object>) -> u32;
+    fn get_other_callback_interface(&self) -> Box<dyn OtherCallbackInterface>;
+}
+
+#[uniffi::export(callback_interface)]
+pub trait OtherCallbackInterface {
+    fn multiply(&self, a: u32, b: u32) -> u32;
 }
