@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.26.0) - (_2024-01-23_)
+## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 
 ### What's changed?
 
@@ -31,7 +31,7 @@
   and [in UDL](https://mozilla.github.io/uniffi-rs/udl/docstrings.html)
 - Objects can now be returned from functions/constructors/methods without wrapping them in an `Arc<>`.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...HEAD).
+[All changes in v0.26.0](https://github.com/mozilla/uniffi-rs/compare/v0.25.2...v0.26.0).
 
 ## v0.25.3 (backend crates: v0.25.3) - (_2023-12-07_)
 
