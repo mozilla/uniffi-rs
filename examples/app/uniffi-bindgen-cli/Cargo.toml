@@ -9,4 +9,4 @@ name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
 
 [dependencies]
-uniffi = { path = "../../../uniffi", version = "0.3.0", features = ["cli"] }
+uniffi = { path = "../../../uniffi", version = "0.3.1", features = ["cli"] }
