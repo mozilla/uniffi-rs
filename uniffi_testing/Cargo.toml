@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_testing"
-version = "0.3.0+v0.25.0"
+version = "0.3.1+v0.25.0"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (testing helpers)"
 documentation = "https://mozilla.github.io/uniffi-rs"
