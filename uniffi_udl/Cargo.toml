@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_udl"
-version = "0.26.0"
+version = "0.26.1"
 description = "udl parsing for the uniffi project"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -14,5 +14,5 @@ readme = "../README.md"
 anyhow = "1"
 weedle2 = { version = "5.0.0", path = "../weedle2" }
 textwrap = "0.16"
-uniffi_meta = { path = "../uniffi_meta", version = "=0.26.0" }
-uniffi_testing = { path = "../uniffi_testing", version = "=0.26.0" }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.26.1" }
+uniffi_testing = { path = "../uniffi_testing", version = "=0.26.1" }
