@@ -8,6 +8,11 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...HEAD).
 
+### What's fixed?
+
+- The weedle2 version is now `5.0.0` rather than `4.0.1`.  `4.0.1` was yanked because it contained a breaking change.
+- Fixed a memory leak in callback interface handling.
+
 ## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 
 ### What's changed?
