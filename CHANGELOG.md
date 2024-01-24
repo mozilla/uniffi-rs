@@ -5,6 +5,10 @@ scheme, and will be removed in the future. The legacy tags have a corresponding 
 
 ----
 
+### v0.3.1+v0.25.0
+
+- **IMPORTANT**: Fix memory leak in uniffi scaffolding when invoking callback.
+
 ### v0.3.0+v0.25.0  (~~v0.25.0-1~~)
 
 - **BREAKING**: uniffi-rs: `v0.25.0`.

@@ -17,7 +17,7 @@ cargo install cargo-release
     ```
 
 - Update changelog in [README.md](../README.md) to include the changes that were made since last
-    version.
+    version. Commit the changelog with message `Update CHANGELOG.md`.
 
 - Update version numbers in `Cargo.toml` files, creates a commit.
     ```
