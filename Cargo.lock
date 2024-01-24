@@ -2042,7 +2042,7 @@ dependencies = [
 
 [[package]]
 name = "weedle2"
-version = "4.0.0"
+version = "5.0.0"
 dependencies = [
  "fs-err",
  "nom",
