@@ -182,6 +182,7 @@ impl ForeignCallbackInternals {
                 &mut ret_rbuf,
             )
         };
+        RustBuffer::destroy(args);
         let result = CallbackResult::try_from(raw_result)
             .unwrap_or_else(|code| panic!("Callback failed with unexpected return code: {code}"));
         match result {
