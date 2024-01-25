@@ -103,9 +103,9 @@ mod test_type_ids {
     use super::*;
     use std::collections::HashMap;
     use std::sync::Arc;
-    use uniffi_core::Lower;
+    use uniffi_core::TypeId;
 
-    fn check_type_id<T: Lower<UniFfiTag>>(correct_type: Type) {
+    fn check_type_id<T: TypeId<UniFfiTag>>(correct_type: Type) {
         let buf = &mut T::TYPE_ID_META.as_ref();
         assert_eq!(
             uniffi_meta::read_metadata_type(buf).unwrap(),
