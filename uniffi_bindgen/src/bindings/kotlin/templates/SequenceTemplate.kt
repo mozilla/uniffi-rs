@@ -16,7 +16,7 @@ public object {{ ffi_converter_name }}: FfiConverterRustBuffer<List<{{ inner_typ
 
     override fun write(value: List<{{ inner_type_name }}>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             {{ inner_type|write_fn }}(it, buf)
         }
     }
