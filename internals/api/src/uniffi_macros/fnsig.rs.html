@@ -531,14 +531,6 @@
 <a href="#531" id="531">531</a>
 <a href="#532" id="532">532</a>
 <a href="#533" id="533">533</a>
-<a href="#534" id="534">534</a>
-<a href="#535" id="535">535</a>
-<a href="#536" id="536">536</a>
-<a href="#537" id="537">537</a>
-<a href="#538" id="538">538</a>
-<a href="#539" id="539">539</a>
-<a href="#540" id="540">540</a>
-<a href="#541" id="541">541</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -652,10 +644,17 @@
         })
     }
 
-    <span class="kw">pub fn </span>return_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+    <span class="kw">pub fn </span>lower_return_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
         <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span><span class="self">self</span>.return_ty;
         <span class="macro">quote! </span>{
             &lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
+        }
+    }
+
+    <span class="kw">pub fn </span>lift_return_impl(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
+        <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span><span class="self">self</span>.return_ty;
+        <span class="macro">quote! </span>{
+            &lt;#return_ty <span class="kw">as </span>::uniffi::LiftReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
         }
     }
 
@@ -701,14 +700,6 @@
             }
         });
         <span class="macro">quote! </span>{ #(#args),* }
-    }
-
-    <span class="doccomment">/// Write expressions for each of our arguments
-    </span><span class="kw">pub fn </span>write_exprs&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>,
-        buf_ident: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Ident,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;a </span>{
-        <span class="self">self</span>.args.iter().map(|a| a.write_expr(buf_ident))
     }
 
     <span class="doccomment">/// Parameters expressions for each of our arguments
@@ -1040,13 +1031,6 @@
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
         <span class="kw">let </span>lift_impl = <span class="self">self</span>.lift_impl();
         <span class="macro">quote! </span>{ #ident: #lift_impl::FfiType }
-    }
-
-    <span class="doccomment">/// Generate the expression to write the scaffolding parameter for this arg
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write_expr(<span class="kw-2">&amp;</span><span class="self">self</span>, buf_ident: <span class="kw-2">&amp;</span>Ident) -&gt; TokenStream {
-        <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
-        <span class="kw">let </span>lower_impl = <span class="self">self</span>.lower_impl();
-        <span class="macro">quote! </span>{ #lower_impl::write(#ident, <span class="kw-2">&amp;mut </span>#buf_ident) }
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>arg_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {

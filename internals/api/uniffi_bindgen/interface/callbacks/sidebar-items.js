@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["CallbackInterface"]};
+window.SIDEBAR_ITEMS = {"fn":["ffi_callbacks","method_ffi_callback","method_ffi_callback_name","vtable_name","vtable_struct"],"struct":["CallbackInterface"]};

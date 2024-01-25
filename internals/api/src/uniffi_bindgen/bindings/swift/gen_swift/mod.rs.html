@@ -710,6 +710,18 @@
 <a href="#710" id="710">710</a>
 <a href="#711" id="711">711</a>
 <a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1219,7 +1231,17 @@
         nm.to_string().to_lower_camel_case()
     }
 
-    <span class="kw">fn </span>ffi_type_label_raw(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+    <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI callback function name
+    </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI struct name
+    </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+    }
+
+    <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             FfiType::Int8 =&gt; <span class="string">&quot;Int8&quot;</span>.into(),
             FfiType::UInt8 =&gt; <span class="string">&quot;UInt8&quot;</span>.into(),
@@ -1234,28 +1256,19 @@
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.into(),
-            FfiType::RustFutureContinuationCallback =&gt; <span class="string">&quot;UniFfiRustFutureContinuation&quot;</span>.into(),
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData =&gt; {
-                <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into()
+            FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
+            FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
+            FfiType::Reference(inner) =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;UnsafeMutablePointer&lt;{}&gt;&quot;</span>, <span class="self">self</span>.ffi_type_label(inner))
             }
-        }
-    }
-
-    <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
-        <span class="kw">match </span>ffi_type {
-            FfiType::ForeignCallback
+            FfiType::VoidPointer
             | FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationCallback
-            | FfiType::RustFutureContinuationData =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;{} _Nonnull&quot;</span>, <span class="self">self</span>.ffi_type_label_raw(ffi_type))
-            }
-            <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label_raw(ffi_type),
+            | FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
         }
     }
 
     <span class="kw">fn </span>ffi_canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
-        <span class="self">self</span>.ffi_type_label_raw(ffi_type)
+        <span class="self">self</span>.ffi_type_label(ffi_type)
     }
 
     <span class="doccomment">/// Get the name of the protocol and class name for an object.
@@ -1346,13 +1359,14 @@
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback _Nonnull&quot;</span>.into(),
-            FfiType::RustFutureContinuationCallback =&gt; {
-                <span class="string">&quot;UniFfiRustFutureContinuation _Nonnull&quot;</span>.into()
+            FfiType::Callback(name) =&gt; {
+                <span class="macro">format!</span>(<span class="string">&quot;{} _Nonnull&quot;</span>, SwiftCodeOracle.ffi_callback_name(name))
             }
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData =&gt; {
-                <span class="string">&quot;void* _Nonnull&quot;</span>.into()
-            }
+            FfiType::Struct(name) =&gt; SwiftCodeOracle.ffi_struct_name(name),
+            FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}* _Nonnull&quot;</span>, header_ffi_type_name(inner)<span class="question-mark">?</span>),
+            FfiType::VoidPointer
+            | FfiType::RustFutureHandle
+            | FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
         })
     }
 
@@ -1385,6 +1399,16 @@
     <span class="doccomment">/// Get the idiomatic Swift rendering of an individual enum variant, for contexts (for use in non-declaration contexts where quoting is not needed)
     </span><span class="kw">pub fn </span>enum_variant_swift(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(oracle().enum_variant_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI callback function name
+    </span><span class="kw">pub fn </span>ffi_callback_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().ffi_callback_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI struct name
+    </span><span class="kw">pub fn </span>ffi_struct_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().ffi_struct_name(nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of docstring

@@ -573,6 +573,54 @@
 <a href="#573" id="573">573</a>
 <a href="#574" id="574">574</a>
 <a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -885,7 +933,12 @@
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.
     </span><span class="kw">fn </span>var_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, nm.to_string().to_lower_camel_case())
+        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="self">self</span>.var_name_raw(nm))
+    }
+
+    <span class="doccomment">/// `var_name` without the backticks.  Useful for using in `@Structure.FieldOrder`.
+    </span><span class="kw">pub fn </span>var_name_raw(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        nm.to_string().to_lower_camel_case()
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an individual enum variant.
@@ -893,14 +946,43 @@
         nm.to_string().to_shouty_snake_case()
     }
 
-    <span class="kw">fn </span>ffi_type_label_by_value(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an FFI callback function name
+    </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an FFI struct name
+    </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+    }
+
+    <span class="kw">fn </span>ffi_type_label_by_value(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.ByValue&quot;</span>, <span class="self">Self</span>::ffi_type_label(ffi_type)),
-            <span class="kw">_ </span>=&gt; <span class="self">Self</span>::ffi_type_label(ffi_type),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.ByValue&quot;</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
+            <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label(ffi_type),
         }
     }
 
-    <span class="kw">fn </span>ffi_type_label(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+    <span class="kw">fn </span>ffi_type_label_by_reference(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+        <span class="kw">match </span>ffi_type {
+            FfiType::Int8
+            | FfiType::UInt8
+            | FfiType::Int16
+            | FfiType::UInt16
+            | FfiType::Int32
+            | FfiType::UInt32
+            | FfiType::Int64
+            | FfiType::UInt64
+            | FfiType::Float32
+            | FfiType::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}ByReference&quot;</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;PointerByReference&quot;</span>.to_owned(),
+            <span class="comment">// JNA structs default to ByReference
+            </span>FfiType::RustBuffer(<span class="kw">_</span>) | FfiType::Struct(<span class="kw">_</span>) =&gt; <span class="self">self</span>.ffi_type_label(ffi_type),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;{ffi_type:?} by reference is not implemented&quot;</span>),
+        }
+    }
+
+    <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             <span class="comment">// Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
@@ -916,11 +998,10 @@
                 <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{}&quot;</span>, maybe_suffix.as_deref().unwrap_or_default())
             }
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;ForeignCallback&quot;</span>.to_string(),
-            FfiType::RustFutureHandle =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
-            FfiType::RustFutureContinuationCallback =&gt; {
-                <span class="string">&quot;UniFffiRustFutureContinuationCallbackType&quot;</span>.to_string()
-            }
+            FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
+            FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
+            FfiType::Reference(inner) =&gt; <span class="self">self</span>.ffi_type_label_by_reference(inner),
+            FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
             FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;USize&quot;</span>.to_string(),
         }
     }
@@ -1054,7 +1135,7 @@
     }
 
     <span class="kw">pub fn </span>ffi_type_name_by_value(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(KotlinCodeOracle::ffi_type_label_by_value(type_))
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.ffi_type_label_by_value(type_))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
@@ -1072,6 +1153,11 @@
         <span class="prelude-val">Ok</span>(KotlinCodeOracle.var_name(nm))
     }
 
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.
+    </span><span class="kw">pub fn </span>var_name_raw(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.var_name_raw(nm))
+    }
+
     <span class="doccomment">/// Get a String representing the name used for an individual enum variant.
     </span><span class="kw">pub fn </span>variant_name(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(KotlinCodeOracle.enum_variant_name(v.name()))
@@ -1080,6 +1166,16 @@
     <span class="kw">pub fn </span>error_variant_name(v: <span class="kw-2">&amp;</span>Variant) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>name = v.name().to_string().to_upper_camel_case();
         <span class="prelude-val">Ok</span>(KotlinCodeOracle.convert_error_suffix(<span class="kw-2">&amp;</span>name))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an FFI callback function name
+    </span><span class="kw">pub fn </span>ffi_callback_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.ffi_callback_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Kotlin rendering of an FFI struct name
+    </span><span class="kw">pub fn </span>ffi_struct_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.ffi_struct_name(nm))
     }
 
     <span class="kw">pub fn </span>object_names(

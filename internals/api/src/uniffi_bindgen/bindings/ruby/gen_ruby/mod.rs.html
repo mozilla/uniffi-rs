@@ -383,6 +383,11 @@
 <a href="#383" id="383">383</a>
 <a href="#384" id="384">384</a>
 <a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -537,12 +542,17 @@
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.to_string(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
-            <span class="comment">// Callback interfaces are not yet implemented, but this needs to return something in
-            // order for the coverall tests to pass.
-            </span>FfiType::ForeignCallback =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
-            FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationCallback
-            | FfiType::RustFutureContinuationData =&gt; {
+            FfiType::Callback(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;FFI Callbacks not implemented&quot;</span>),
+            <span class="comment">// Note: this can&#39;t just be `unimplemented!()` because some of the FFI function
+            // definitions use references.  Those FFI functions aren&#39;t actually used, so we just
+            // pick something that runs and makes some sense.  Revisit this once the references
+            // are actually implemented.
+            </span>FfiType::Reference(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
+            FfiType::VoidPointer =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
+            FfiType::Struct(<span class="kw">_</span>) =&gt; {
+                <span class="macro">unimplemented!</span>(<span class="string">&quot;Structs are not implemented&quot;</span>)
+            }
+            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData =&gt; {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Async functions are not implemented&quot;</span>)
             }
         })

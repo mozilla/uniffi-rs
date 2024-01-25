@@ -237,6 +237,97 @@
 <a href="#237" id="237">237</a>
 <a href="#238" id="238">238</a>
 <a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -286,16 +377,26 @@
     <span class="doccomment">/// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     </span>ForeignBytes,
-    <span class="doccomment">/// Pointer to a callback function that handles all callbacks on the foreign language side.
-    </span>ForeignCallback,
+    <span class="doccomment">/// Pointer to a callback function.  The inner value which matches one of the items in
+    /// [crate::ComponentInterface::ffi_callback_definitions].
+    </span>Callback(String),
+    <span class="doccomment">/// Pointer to a FFI struct (e.g. a VTable).  The inner value matches one of the items in
+    /// [crate::ComponentInterface::ffi_struct_definitions].
+    </span>Struct(String),
     <span class="doccomment">/// Pointer to a Rust future
     </span>RustFutureHandle,
-    <span class="doccomment">/// Continuation function for a Rust future
-    </span>RustFutureContinuationCallback,
     RustFutureContinuationData,
-    <span class="comment">// TODO: you can imagine a richer structural typesystem here, e.g. `Ref&lt;String&gt;` or something.
-    // We don&#39;t need that yet and it&#39;s possible we never will, so it isn&#39;t here for now.
-</span>}
+    <span class="doccomment">/// Pointer to an FfiType.
+    </span>Reference(Box&lt;FfiType&gt;),
+    <span class="doccomment">/// Opaque pointer
+    </span>VoidPointer,
+}
+
+<span class="kw">impl </span>FfiType {
+    <span class="kw">pub fn </span>reference(<span class="self">self</span>) -&gt; FfiType {
+        FfiType::Reference(Box::new(<span class="self">self</span>))
+    }
+}
 
 <span class="doccomment">/// When passing data across the FFI, each `Type` value will be lowered into a corresponding
 /// `FfiType` value. This conversion tells you which one.
@@ -388,12 +489,12 @@
 }
 
 <span class="kw">impl </span>FfiFunction {
-    <span class="kw">pub fn </span>callback_init(module_path: <span class="kw-2">&amp;</span>str, trait_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>callback_init(module_path: <span class="kw-2">&amp;</span>str, trait_name: <span class="kw-2">&amp;</span>str, vtable_name: String) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            name: uniffi_meta::init_callback_fn_symbol_name(module_path, trait_name),
+            name: uniffi_meta::init_callback_vtable_fn_symbol_name(module_path, trait_name),
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;handle&quot;</span>.to_string(),
-                type_: FfiType::ForeignCallback,
+                name: <span class="string">&quot;vtable&quot;</span>.to_string(),
+                type_: FfiType::Struct(vtable_name).reference(),
             }],
             return_type: <span class="prelude-val">None</span>,
             has_rust_call_status_arg: <span class="bool-val">false</span>,
@@ -463,9 +564,90 @@
 }
 
 <span class="kw">impl </span>FfiArgument {
+    <span class="kw">pub fn </span>new(name: <span class="kw">impl </span>Into&lt;String&gt;, type_: FfiType) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: name.into(),
+            type_,
+        }
+    }
+
     <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
+
+    <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiType {
+        <span class="self">self</span>.type_.clone()
+    }
+}
+
+<span class="doccomment">/// Represents an &quot;extern C&quot;-style callback function
+///
+/// These are defined in the foreign code and passed to Rust as a function pointer.
+</span><span class="attr">#[derive(Debug, Default, Clone)]
+</span><span class="kw">pub struct </span>FfiCallbackFunction {
+    <span class="comment">// Name for this function type. This matches the value inside `FfiType::Callback`
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;FfiArgument&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) has_rust_call_status_arg: bool,
+}
+
+<span class="kw">impl </span>FfiCallbackFunction {
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
+    }
+
+    <span class="kw">pub fn </span>arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>FfiArgument&gt; {
+        <span class="self">self</span>.arguments.iter().collect()
+    }
+
+    <span class="kw">pub fn </span>return_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>FfiType&gt; {
+        <span class="self">self</span>.return_type.as_ref()
+    }
+
+    <span class="kw">pub fn </span>has_rust_call_status_arg(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.has_rust_call_status_arg
+    }
+}
+
+<span class="doccomment">/// Represents a repr(C) struct used in the FFI
+</span><span class="attr">#[derive(Debug, Default, Clone)]
+</span><span class="kw">pub struct </span>FfiStruct {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) fields: Vec&lt;FfiField&gt;,
+}
+
+<span class="kw">impl </span>FfiStruct {
+    <span class="doccomment">/// Get the name of this struct
+    </span><span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
+    }
+
+    <span class="doccomment">/// Get the fields for this struct
+    </span><span class="kw">pub fn </span>fields(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[FfiField] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.fields
+    }
+}
+
+<span class="doccomment">/// Represents a field of an [FfiStruct]
+</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>FfiField {
+    <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) type_: FfiType,
+}
+
+<span class="kw">impl </span>FfiField {
+    <span class="kw">pub fn </span>new(name: <span class="kw">impl </span>Into&lt;String&gt;, type_: FfiType) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            name: name.into(),
+            type_,
+        }
+    }
+
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
+    }
+
     <span class="kw">pub fn </span>type_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiType {
         <span class="self">self</span>.type_.clone()
     }

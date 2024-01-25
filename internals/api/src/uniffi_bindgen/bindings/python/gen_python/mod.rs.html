@@ -545,6 +545,29 @@
 <a href="#545" id="545">545</a>
 <a href="#546" id="546">546</a>
 <a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -884,7 +907,19 @@
         fixup_keyword(nm.to_string().to_shouty_snake_case())
     }
 
-    <span class="kw">fn </span>ffi_type_label(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+    <span class="doccomment">/// Get the idiomatic Python rendering of an FFI callback function name
+    </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;UNIFFI_{}&quot;</span>, nm.to_shouty_snake_case())
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of an FFI struct name
+    </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="comment">// The ctypes docs use both SHOUTY_SNAKE_CASE AND UpperCamelCase for structs. Let&#39;s use
+        // UpperCamelCase and reserve shouting for global variables
+        </span><span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+    }
+
+    <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             FfiType::Int8 =&gt; <span class="string">&quot;ctypes.c_int8&quot;</span>.to_string(),
             FfiType::UInt8 =&gt; <span class="string">&quot;ctypes.c_uint8&quot;</span>.to_string(),
@@ -902,10 +937,11 @@
                 <span class="prelude-val">None </span>=&gt; <span class="string">&quot;_UniffiRustBuffer&quot;</span>.to_string(),
             },
             FfiType::ForeignBytes =&gt; <span class="string">&quot;_UniffiForeignBytes&quot;</span>.to_string(),
-            FfiType::ForeignCallback =&gt; <span class="string">&quot;_UNIFFI_FOREIGN_CALLBACK_T&quot;</span>.to_string(),
+            FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
+            FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
-            </span>FfiType::RustFutureHandle =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
-            FfiType::RustFutureContinuationCallback =&gt; <span class="string">&quot;_UNIFFI_FUTURE_CONTINUATION_T&quot;</span>.to_string(),
+            </span>FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ctypes.POINTER({})&quot;</span>, <span class="self">self</span>.ffi_type_label(inner)),
+            FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
             FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
         }
     }
@@ -1032,7 +1068,7 @@
     }
 
     <span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(PythonCodeOracle::ffi_type_label(type_))
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.ffi_type_label(type_))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
@@ -1053,6 +1089,16 @@
     <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.
     </span><span class="kw">pub fn </span>enum_variant_py(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(PythonCodeOracle.enum_variant_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of an FFI callback function name
+    </span><span class="kw">pub fn </span>ffi_callback_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.ffi_callback_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Python rendering of an FFI struct name
+    </span><span class="kw">pub fn </span>ffi_struct_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.ffi_struct_name(nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an individual enum variant.

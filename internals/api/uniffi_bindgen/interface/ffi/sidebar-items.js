@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["FfiType"],"struct":["FfiArgument","FfiFunction"]};
+window.SIDEBAR_ITEMS = {"enum":["FfiType"],"struct":["FfiArgument","FfiCallbackFunction","FfiField","FfiFunction","FfiStruct"]};

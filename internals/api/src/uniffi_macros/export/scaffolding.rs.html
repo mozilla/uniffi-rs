@@ -520,7 +520,7 @@
 
     <span class="kw">let </span>ffi_ident = sig.scaffolding_fn_ident()<span class="question-mark">?</span>;
     <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.name;
-    <span class="kw">let </span>return_impl = <span class="kw-2">&amp;</span>sig.return_impl();
+    <span class="kw">let </span>return_impl = <span class="kw-2">&amp;</span>sig.lower_return_impl();
 
     <span class="prelude-val">Ok</span>(<span class="kw">if </span>!sig.is_async {
         <span class="macro">quote! </span>{
