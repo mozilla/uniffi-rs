@@ -230,7 +230,7 @@ impl ComponentInterface {
             FfiCallbackFunction {
                 name: "RustFutureContinuationCallback".to_owned(),
                 arguments: vec![
-                    FfiArgument::new("data", FfiType::RustFutureContinuationData),
+                    FfiArgument::new("data", FfiType::UInt64),
                     FfiArgument::new("poll_result", FfiType::Int8),
                 ],
                 return_type: None,
@@ -522,7 +522,7 @@ impl ComponentInterface {
                 },
                 FfiArgument {
                     name: "callback_data".to_owned(),
-                    type_: FfiType::RustFutureContinuationData,
+                    type_: FfiType::UInt64,
                 },
             ],
             return_type: None,

@@ -16,9 +16,12 @@ fileprivate struct {{ trait_impl }} {
             uniffiCallStatus: UnsafeMutablePointer<RustCallStatus>
             {%- endif %}
         ) in
-            guard let uniffiObj = {{ ffi_converter_name }}.handleMap.get(handle: uniffiHandle) else {
+            let uniffiObj: {{ type_name }}
+            do {
+                try uniffiObj = {{ ffi_converter_name }}.handleMap.get(handle: uniffiHandle)
+            } catch {
                 uniffiCallStatus.pointee.code = CALL_UNEXPECTED_ERROR
-                uniffiCallStatus.pointee.errorBuf = {{ Type::String.borrow()|lower_fn }}("No callback in handlemap; this is a Uniffi bug")
+                uniffiCallStatus.pointee.errorBuf = {{ Type::String.borrow()|lower_fn }}("Callback handle map error: \(error)")
                 return
             }
             let makeCall = { {% if meth.throws() %}try {% endif %}uniffiObj.{{ meth.name()|fn_name }}(
@@ -51,7 +54,10 @@ fileprivate struct {{ trait_impl }} {
         },
         {%- endfor %}
         uniffiFree: { (uniffiHandle: UInt64) -> () in
-            {{ ffi_converter_name }}.handleMap.delete(handle: uniffiHandle)
+            let result = try? {{ ffi_converter_name }}.handleMap.remove(handle: uniffiHandle)
+            if result == nil {
+                print("Uniffi callback interface {{ name }}: handle missing in uniffiFree")
+            }
         }
     )
 }

@@ -162,7 +162,7 @@ mod filters {
             FfiType::Struct(_) => {
                 unimplemented!("Structs are not implemented")
             }
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData => {
+            FfiType::RustFutureHandle => {
                 unimplemented!("Async functions are not implemented")
             }
         })

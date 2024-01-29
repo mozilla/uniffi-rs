@@ -137,9 +137,6 @@ class _UniffiRustBufferStream:
     def read_double(self):
         return self._unpack_from(8, ">d")
 
-    def read_c_size_t(self):
-        return self._unpack_from(ctypes.sizeof(ctypes.c_size_t) , "@N")
-
 class _UniffiRustBufferBuilder:
     """
     Helper for structured writing of bytes into a _UniffiRustBuffer.

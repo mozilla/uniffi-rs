@@ -95,7 +95,6 @@
 // [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
 //
 
-{{ self.add_import("java.util.concurrent.atomic.AtomicLong") }}
 {{ self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
 {%- if self.include_once_check("interface-support") %}
     {%- include "ObjectCleanerHelper.kt" %}
@@ -312,7 +311,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 
 public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
     {%- if obj.has_callback_interface() %}
-    internal val handleMap = ConcurrentHandleMap<{{ interface_name }}>()
+    internal val handleMap = UniffiHandleMap<{{ type_name }}>()
     {%- endif %}
 
     override fun lower(value: {{ type_name }}): Pointer {

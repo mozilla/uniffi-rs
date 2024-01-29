@@ -9,7 +9,7 @@ def _uniffi_future_callback_t(return_type):
     """
     Factory function to create callback function types for async functions
     """
-    return ctypes.CFUNCTYPE(None, ctypes.c_size_t, return_type, _UniffiRustCallStatus)
+    return ctypes.CFUNCTYPE(None, ctypes.c_uint64, return_type, _UniffiRustCallStatus)
 
 def _uniffi_load_indirect():
     """

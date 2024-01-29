@@ -26,6 +26,14 @@ fileprivate enum UniffiInternalError: LocalizedError {
     }
 }
 
+fileprivate extension NSLock {
+    func withLock<T>(f: () throws -> T) rethrows -> T {
+        self.lock()
+        defer { self.unlock() }
+        return try f()
+    }
+}
+
 fileprivate let CALL_SUCCESS: Int8 = 0
 fileprivate let CALL_ERROR: Int8 = 1
 fileprivate let CALL_UNEXPECTED_ERROR: Int8 = 2

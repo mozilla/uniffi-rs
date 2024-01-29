@@ -55,7 +55,6 @@ pub enum FfiType {
     Struct(String),
     /// Pointer to a Rust future
     RustFutureHandle,
-    RustFutureContinuationData,
     /// Pointer to an FfiType.
     Reference(Box<FfiType>),
     /// Opaque pointer

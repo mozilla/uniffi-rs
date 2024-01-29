@@ -30,7 +30,7 @@ pub(super) enum Scheduler {
     /// continuation being called with `RustFuturePoll::Ready`.
     Cancelled,
     /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
-    Set(RustFutureContinuationCallback, *const ()),
+    Set(RustFutureContinuationCallback, u64),
 }
 
 impl Scheduler {
@@ -40,7 +40,7 @@ impl Scheduler {
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    pub(super) fn store(&mut self, callback: RustFutureContinuationCallback, data: *const ()) {
+    pub(super) fn store(&mut self, callback: RustFutureContinuationCallback, data: u64) {
         match self {
             Self::Empty => *self = Self::Set(callback, data),
             Self::Set(old_callback, old_data) => {

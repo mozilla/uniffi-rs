@@ -537,9 +537,7 @@ impl SwiftCodeOracle {
             FfiType::Reference(inner) => {
                 format!("UnsafeMutablePointer<{}>", self.ffi_type_label(inner))
             }
-            FfiType::VoidPointer
-            | FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationData => "UnsafeMutableRawPointer".into(),
+            FfiType::VoidPointer | FfiType::RustFutureHandle => "UnsafeMutableRawPointer".into(),
         }
     }
 
@@ -640,9 +638,7 @@ pub mod filters {
             }
             FfiType::Struct(name) => SwiftCodeOracle.ffi_struct_name(name),
             FfiType::Reference(inner) => format!("{}* _Nonnull", header_ffi_type_name(inner)?),
-            FfiType::VoidPointer
-            | FfiType::RustFutureHandle
-            | FfiType::RustFutureContinuationData => "void* _Nonnull".into(),
+            FfiType::VoidPointer | FfiType::RustFutureHandle => "void* _Nonnull".into(),
         })
     }
 

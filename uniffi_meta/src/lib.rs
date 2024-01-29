@@ -23,7 +23,7 @@ mod metadata;
 // `docs/uniffi-versioning.md` for details.
 //
 // Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-pub const UNIFFI_CONTRACT_VERSION: u32 = 25;
+pub const UNIFFI_CONTRACT_VERSION: u32 = 26;
 
 /// Similar to std::hash::Hash.
 ///
