@@ -30,6 +30,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.ConcurrentHashMap
 
 {%- for req in self.imports() %}
@@ -39,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap
 {% include "RustBufferTemplate.kt" %}
 {% include "FfiConverterTemplate.kt" %}
 {% include "Helpers.kt" %}
+{% include "HandleMap.kt" %}
 
 // Contains loading, initialization code,
 // and the FFI Function declarations in a com.sun.jna.Library.

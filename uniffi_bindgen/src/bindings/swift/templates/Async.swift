@@ -1,9 +1,11 @@
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
 private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
 
+fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
+
 fileprivate func uniffiRustCallAsync<F, T>(
     rustFutureFunc: () -> UnsafeMutableRawPointer,
-    pollFunc: (UnsafeMutableRawPointer, @escaping UniffiRustFutureContinuationCallback, UnsafeMutableRawPointer) -> (),
+    pollFunc: (UnsafeMutableRawPointer, @escaping UniffiRustFutureContinuationCallback, UInt64) -> (),
     completeFunc: (UnsafeMutableRawPointer, UnsafeMutablePointer<RustCallStatus>) -> F,
     freeFunc: (UnsafeMutableRawPointer) -> (),
     liftFunc: (F) throws -> T,
@@ -19,7 +21,11 @@ fileprivate func uniffiRustCallAsync<F, T>(
     var pollResult: Int8;
     repeat {
         pollResult = await withUnsafeContinuation {
-            pollFunc(rustFuture, uniffiFutureContinuationCallback, ContinuationHolder($0).toOpaque())
+            pollFunc(
+                rustFuture,
+                uniffiFutureContinuationCallback,
+                uniffiContinuationHandleMap.insert(obj: $0)
+            )
         }
     } while pollResult != UNIFFI_RUST_FUTURE_POLL_READY
 
@@ -31,28 +37,10 @@ fileprivate func uniffiRustCallAsync<F, T>(
 
 // Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
 // lift the return value or error and resume the suspended function.
-fileprivate func uniffiFutureContinuationCallback(ptr: UnsafeMutableRawPointer, pollResult: Int8) {
-    ContinuationHolder.fromOpaque(ptr).resume(pollResult)
-}
-
-// Wraps UnsafeContinuation in a class so that we can use reference counting when passing it across
-// the FFI
-fileprivate class ContinuationHolder {
-    let continuation: UnsafeContinuation<Int8, Never>
-
-    init(_ continuation: UnsafeContinuation<Int8, Never>) {
-        self.continuation = continuation
-    }
-
-    func resume(_ pollResult: Int8) {
-        self.continuation.resume(returning: pollResult)
-    }
-
-    func toOpaque() -> UnsafeMutableRawPointer {
-        return Unmanaged<ContinuationHolder>.passRetained(self).toOpaque()
-    }
-
-    static func fromOpaque(_ ptr: UnsafeRawPointer) -> ContinuationHolder {
-        return Unmanaged<ContinuationHolder>.fromOpaque(ptr).takeRetainedValue()
+fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: Int8) {
+    if let continuation = try? uniffiContinuationHandleMap.remove(handle: handle) {
+        continuation.resume(returning: pollResult)
+    } else {
+        print("uniffiFutureContinuationCallback invalid handle")
     }
 }

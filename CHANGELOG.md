@@ -16,6 +16,7 @@
 
 - The callback interface code was reworked to use vtables rather than a single callback method.
   See https://github.com/mozilla/uniffi-rs/pull/1818 for details and how the other bindings were updated.
+- Removed `FfiType::RustFutureContinuationData`.  `RustFutureContinuation` callbacks now take a `u64` handle.
 
 ## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 

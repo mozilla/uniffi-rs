@@ -166,7 +166,7 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: *const ()) {
+            pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: u64) {
                 ::uniffi::ffi::rust_future_poll::<#return_type>(handle, callback, data);
             }
 

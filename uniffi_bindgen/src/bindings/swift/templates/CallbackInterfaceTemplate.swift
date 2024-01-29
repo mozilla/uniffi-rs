@@ -13,27 +13,24 @@
 
 // FfiConverter protocol for callback interfaces
 fileprivate struct {{ ffi_converter_name }} {
-    fileprivate static var handleMap = UniFFICallbackHandleMap<{{ type_name }}>()
+    fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
 }
 
 extension {{ ffi_converter_name }} : FfiConverter {
     typealias SwiftType = {{ type_name }}
     // We can use Handle as the FfiType because it's a typealias to UInt64
-    typealias FfiType = UniFFICallbackHandle
+    typealias FfiType = UniffiHandle
 
-    public static func lift(_ handle: UniFFICallbackHandle) throws -> SwiftType {
-        guard let callback = handleMap.get(handle: handle) else {
-            throw UniffiInternalError.unexpectedStaleHandle
-        }
-        return callback
+    public static func lift(_ handle: UniffiHandle) throws -> SwiftType {
+        try handleMap.get(handle: handle)
     }
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
-        let handle: UniFFICallbackHandle = try readInt(&buf)
+        let handle: UniffiHandle = try readInt(&buf)
         return try lift(handle)
     }
 
-    public static func lower(_ v: SwiftType) -> UniFFICallbackHandle {
+    public static func lower(_ v: SwiftType) -> UniffiHandle {
         return handleMap.insert(obj: v)
     }
 

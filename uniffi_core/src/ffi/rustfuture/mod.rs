@@ -28,7 +28,7 @@ pub enum RustFuturePoll {
 ///
 /// The Rust side of things calls this when the foreign side should call [rust_future_poll] again
 /// to continue progress on the future.
-pub type RustFutureContinuationCallback = extern "C" fn(callback_data: *const (), RustFuturePoll);
+pub type RustFutureContinuationCallback = extern "C" fn(callback_data: u64, RustFuturePoll);
 
 /// Opaque handle for a Rust future that's stored by the foreign language code
 #[repr(transparent)]
@@ -75,7 +75,7 @@ where
 pub unsafe fn rust_future_poll<ReturnType>(
     handle: RustFutureHandle,
     callback: RustFutureContinuationCallback,
-    data: *const (),
+    data: u64,
 ) {
     let future = &*(handle.0 as *mut Arc<dyn RustFutureFfi<ReturnType>>);
     future.clone().ffi_poll(callback, data)

@@ -379,7 +379,6 @@ impl KotlinCodeOracle {
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) => self.ffi_type_label_by_reference(inner),
             FfiType::VoidPointer | FfiType::RustFutureHandle => "Pointer".to_string(),
-            FfiType::RustFutureContinuationData => "USize".to_string(),
         }
     }
 

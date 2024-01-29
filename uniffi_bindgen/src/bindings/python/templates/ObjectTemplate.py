@@ -84,7 +84,7 @@ class {{ impl_name }}:
 
 class {{ ffi_converter_name }}:
     {%- if obj.has_callback_interface() %}
-    _handle_map = ConcurrentHandleMap()
+    _handle_map = _UniffiHandleMap()
     {%- endif %}
 
     @staticmethod

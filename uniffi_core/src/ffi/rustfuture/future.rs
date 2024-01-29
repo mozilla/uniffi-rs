@@ -223,7 +223,7 @@ where
         })
     }
 
-    pub(super) fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
+    pub(super) fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
         let ready = self.is_cancelled() || {
             let mut locked = self.future.lock().unwrap();
             let waker: std::task::Waker = Arc::clone(&self).into();
@@ -289,7 +289,7 @@ where
 /// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
 pub trait RustFutureFfi<ReturnType> {
-    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ());
+    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64);
     fn ffi_cancel(&self);
     fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;
     fn ffi_free(self: Arc<Self>);
@@ -302,7 +302,7 @@ where
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: *const ()) {
+    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
         self.poll(callback, data)
     }
 

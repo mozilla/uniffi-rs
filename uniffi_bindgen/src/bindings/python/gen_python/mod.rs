@@ -372,7 +372,6 @@ impl PythonCodeOracle {
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::Reference(inner) => format!("ctypes.POINTER({})", self.ffi_type_label(inner)),
             FfiType::VoidPointer | FfiType::RustFutureHandle => "ctypes.c_void_p".to_string(),
-            FfiType::RustFutureContinuationData => "ctypes.c_size_t".to_string(),
         }
     }
 

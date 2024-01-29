@@ -67,12 +67,12 @@ fn channel() -> (Sender, Arc<dyn RustFutureFfi<RustBuffer>>) {
 /// Poll a Rust future and get an OnceCell that's set when the continuation is called
 fn poll(rust_future: &Arc<dyn RustFutureFfi<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
     let cell = Arc::new(OnceCell::new());
-    let cell_ptr = Arc::into_raw(cell.clone()) as *const ();
-    rust_future.clone().ffi_poll(poll_continuation, cell_ptr);
+    let handle = Arc::into_raw(cell.clone()) as u64;
+    rust_future.clone().ffi_poll(poll_continuation, handle);
     cell
 }
 
-extern "C" fn poll_continuation(data: *const (), code: RustFuturePoll) {
+extern "C" fn poll_continuation(data: u64, code: RustFuturePoll) {
     let cell = unsafe { Arc::from_raw(data as *const OnceCell<RustFuturePoll>) };
     cell.set(code).expect("Error setting OnceCell");
 }
