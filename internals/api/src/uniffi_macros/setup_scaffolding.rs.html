@@ -365,7 +365,7 @@
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: <span class="kw-2">*const </span>()) {
+            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: u64) {
                 ::uniffi::ffi::rust_future_poll::&lt;#return_type&gt;(handle, callback, data);
             }
 

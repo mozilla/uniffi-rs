@@ -620,7 +620,6 @@
 <a href="#620" id="620">620</a>
 <a href="#621" id="621">621</a>
 <a href="#622" id="622">622</a>
-<a href="#623" id="623">623</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1002,7 +1001,6 @@
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             FfiType::Reference(inner) =&gt; <span class="self">self</span>.ffi_type_label_by_reference(inner),
             FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
-            FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;USize&quot;</span>.to_string(),
         }
     }
 

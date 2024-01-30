@@ -552,7 +552,7 @@
             FfiType::Struct(<span class="kw">_</span>) =&gt; {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Structs are not implemented&quot;</span>)
             }
-            FfiType::RustFutureHandle | FfiType::RustFutureContinuationData =&gt; {
+            FfiType::RustFutureHandle =&gt; {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Async functions are not implemented&quot;</span>)
             }
         })

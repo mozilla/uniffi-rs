@@ -1519,7 +1519,7 @@
             FfiCallbackFunction {
                 name: <span class="string">&quot;RustFutureContinuationCallback&quot;</span>.to_owned(),
                 arguments: <span class="macro">vec!</span>[
-                    FfiArgument::new(<span class="string">&quot;data&quot;</span>, FfiType::RustFutureContinuationData),
+                    FfiArgument::new(<span class="string">&quot;data&quot;</span>, FfiType::UInt64),
                     FfiArgument::new(<span class="string">&quot;poll_result&quot;</span>, FfiType::Int8),
                 ],
                 return_type: <span class="prelude-val">None</span>,
@@ -1811,7 +1811,7 @@
                 },
                 FfiArgument {
                     name: <span class="string">&quot;callback_data&quot;</span>.to_owned(),
-                    type_: FfiType::RustFutureContinuationData,
+                    type_: FfiType::UInt64,
                 },
             ],
             return_type: <span class="prelude-val">None</span>,

@@ -567,7 +567,6 @@
 <a href="#567" id="567">567</a>
 <a href="#568" id="568">568</a>
 <a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -942,7 +941,6 @@
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
             </span>FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ctypes.POINTER({})&quot;</span>, <span class="self">self</span>.ffi_type_label(inner)),
             FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
-            FfiType::RustFutureContinuationData =&gt; <span class="string">&quot;ctypes.c_size_t&quot;</span>.to_string(),
         }
     }
 
