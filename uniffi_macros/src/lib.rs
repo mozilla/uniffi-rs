@@ -5,9 +5,6 @@
 #![warn(rust_2018_idioms, unused_qualifications)]
 
 //! Macros for `uniffi`.
-//!
-//! Currently this is just for easily generating integration tests, but maybe
-//! we'll put some other code-annotation helper macros in here at some point.
 
 use camino::Utf8Path;
 use proc_macro::TokenStream;
@@ -369,14 +366,16 @@ pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
     }.into()
 }
 
-/// A dummy macro that does nothing.
+/// An attribute for constructors.
+///
+/// Constructors are in `impl` blocks which have a `#[uniffi::export]` attribute,
 ///
 /// This exists so `#[uniffi::export]` can emit its input verbatim without
-/// causing unexpected errors, plus some extra code in case everything is okay.
+/// causing unexpected errors in the entire exported block.
+/// This happens very often when the proc-macro is run on an incomplete
+/// input by rust-analyzer while the developer is typing.
 ///
-/// It is important for `#[uniffi::export]` to not raise unexpected errors if it
-/// fails to parse the input as this happens very often when the proc-macro is
-/// run on an incomplete input by rust-analyzer while the developer is typing.
+/// So much better to do nothing here then let the impl block find the attribute.
 #[proc_macro_attribute]
 pub fn constructor(_attrs: TokenStream, input: TokenStream) -> TokenStream {
     input

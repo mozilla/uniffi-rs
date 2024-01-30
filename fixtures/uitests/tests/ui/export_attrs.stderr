@@ -23,3 +23,21 @@ error: uniffi::export attribute `with_foreign` is not supported here.
    |
 17 | #[uniffi::export(with_foreign)]
    |                  ^^^^^^^^^^^^
+
+error: attribute arguments are not currently recognized in this position
+  --> tests/ui/export_attrs.rs:22:10
+   |
+22 | #[uniffi(flat_error)]
+   |          ^^^^^^^^^^
+
+error: expected `default`
+  --> tests/ui/export_attrs.rs:27:14
+   |
+27 |     #[uniffi(flat_error)]
+   |              ^^^^^^^^^^
+
+error: attribute arguments are not currently recognized in this position
+  --> tests/ui/export_attrs.rs:34:14
+   |
+34 |     #[uniffi(flat_error)]
+   |              ^^^^^^^^^^

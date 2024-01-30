@@ -1,6 +1,6 @@
 fn main() {} /* empty main required by `trybuild` */
 
-#[uniffi::constructor] // <--- should be an error!
+#[uniffi::constructor] // <--- would ideally be an error.
 // Someone might try to 'export' a struct instead of deriving it.
 #[uniffi::export]
 struct S {}
@@ -16,5 +16,23 @@ impl Object {}
 
 #[uniffi::export(with_foreign)]
 fn foreign() {}
+
+#[derive(uniffi::Record)]
+// Records have explicit `#[uniffi()]` handling.
+#[uniffi(flat_error)]
+pub struct One {}
+
+#[derive(uniffi::Record)]
+pub struct Two {
+    #[uniffi(flat_error)]
+    inner: i32,
+}
+
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+pub enum Error {
+    #[error("Oops")]
+    #[uniffi(flat_error)]
+    Oops,
+}
 
 uniffi_macros::setup_scaffolding!();
