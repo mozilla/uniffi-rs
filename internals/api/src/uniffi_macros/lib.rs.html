@@ -380,7 +380,6 @@
 <a href="#380" id="380">380</a>
 <a href="#381" id="381">381</a>
 <a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -388,9 +387,6 @@
 #![warn(rust_2018_idioms, unused_qualifications)]
 
 </span><span class="doccomment">//! Macros for `uniffi`.
-//!
-//! Currently this is just for easily generating integration tests, but maybe
-//! we&#39;ll put some other code-annotation helper macros in here at some point.
 
 </span><span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>proc_macro::TokenStream;
@@ -752,14 +748,16 @@
     }.into()
 }
 
-<span class="doccomment">/// A dummy macro that does nothing.
+<span class="doccomment">/// An attribute for constructors.
+///
+/// Constructors are in `impl` blocks which have a `#[uniffi::export]` attribute,
 ///
 /// This exists so `#[uniffi::export]` can emit its input verbatim without
-/// causing unexpected errors, plus some extra code in case everything is okay.
+/// causing unexpected errors in the entire exported block.
+/// This happens very often when the proc-macro is run on an incomplete
+/// input by rust-analyzer while the developer is typing.
 ///
-/// It is important for `#[uniffi::export]` to not raise unexpected errors if it
-/// fails to parse the input as this happens very often when the proc-macro is
-/// run on an incomplete input by rust-analyzer while the developer is typing.
+/// So much better to do nothing here then let the impl block find the attribute.
 </span><span class="attr">#[proc_macro_attribute]
 </span><span class="kw">pub fn </span>constructor(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     input

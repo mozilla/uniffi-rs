@@ -292,13 +292,6 @@
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -452,13 +445,7 @@
 }
 
 <span class="attr">#[derive(Default)]
-</span><span class="kw">pub struct </span>ArgumentNotAllowedHere;
-
-<span class="kw">impl </span>Parse <span class="kw">for </span>ArgumentNotAllowedHere {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        parse_comma_separated(input)
-    }
-}
+</span><span class="kw">struct </span>ArgumentNotAllowedHere;
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ArgumentNotAllowedHere {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
@@ -553,7 +540,6 @@
     <span class="macro">syn::custom_keyword!</span>(async_runtime);
     <span class="macro">syn::custom_keyword!</span>(callback_interface);
     <span class="macro">syn::custom_keyword!</span>(with_foreign);
-    <span class="macro">syn::custom_keyword!</span>(constructor);
     <span class="macro">syn::custom_keyword!</span>(default);
     <span class="macro">syn::custom_keyword!</span>(flat_error);
     <span class="macro">syn::custom_keyword!</span>(<span class="prelude-val">None</span>);

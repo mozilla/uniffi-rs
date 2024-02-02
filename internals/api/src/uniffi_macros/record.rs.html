@@ -228,6 +228,9 @@
 <a href="#228" id="228">228</a>
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{quote, ToTokens};
 <span class="kw">use </span>syn::{
@@ -242,6 +245,9 @@
 };
 
 <span class="kw">pub fn </span>expand_record(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(e) = input.attrs.uniffi_attr_args_not_allowed_here() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
+    }
     <span class="kw">let </span>record = <span class="kw">match </span>input.data {
         Data::Struct(s) =&gt; s,
         <span class="kw">_ </span>=&gt; {
