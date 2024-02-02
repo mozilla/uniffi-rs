@@ -12,6 +12,9 @@ use crate::util::{
 };
 
 pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
+    if let Some(e) = input.attrs.uniffi_attr_args_not_allowed_here() {
+        return Err(e);
+    }
     let record = match input.data {
         Data::Struct(s) => s,
         _ => {

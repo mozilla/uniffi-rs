@@ -151,13 +151,7 @@ pub fn parse_comma_separated<T: UniffiAttributeArgs>(input: ParseStream<'_>) -> 
 }
 
 #[derive(Default)]
-pub struct ArgumentNotAllowedHere;
-
-impl Parse for ArgumentNotAllowedHere {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        parse_comma_separated(input)
-    }
-}
+struct ArgumentNotAllowedHere;
 
 impl UniffiAttributeArgs for ArgumentNotAllowedHere {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
@@ -252,7 +246,6 @@ pub mod kw {
     syn::custom_keyword!(async_runtime);
     syn::custom_keyword!(callback_interface);
     syn::custom_keyword!(with_foreign);
-    syn::custom_keyword!(constructor);
     syn::custom_keyword!(default);
     syn::custom_keyword!(flat_error);
     syn::custom_keyword!(None);
