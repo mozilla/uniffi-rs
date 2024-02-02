@@ -78,15 +78,15 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         {%- endif %}
     }
 
-    override fun allocationSize(value: {{ type_name }}): Int {
+    override fun allocationSize(value: {{ type_name }}): ULong {
         {%- if e.is_flat() %}
-        return 4
+        return 4UL
         {%- else %}
         return when(value) {
             {%- for variant in e.variants() %}
             is {{ type_name }}.{{ variant|error_variant_name }} -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
-                4
+                4UL
                 {%- for field in variant.fields() %}
                 + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }})
                 {%- endfor %}

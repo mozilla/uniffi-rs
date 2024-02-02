@@ -659,7 +659,7 @@ mod filters {
             }) => {
                 // Need to convert the RustBuffer from our package to the RustBuffer of the external package
                 let suffix = KotlinCodeOracle.class_name(ci, &name);
-                format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity, it.len, it.data) }}")
+                format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
             }
             _ => call,
         };

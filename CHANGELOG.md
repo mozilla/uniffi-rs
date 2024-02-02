@@ -20,6 +20,10 @@
 
 - Procmacros support tuple-enums.
 
+- `RustBuffer` was changed to use `u64` fields.
+  This eliminates panics when the capacity of the vec exceeds `i32::MAX`.
+  This can happen with the current Vec implementation when String/Vec sizes approach `i32::MAX` but don't exceed it.
+
 ### What's fixed?
  
 - Fixed a memory leak in callback interface handling.
@@ -38,6 +42,7 @@
   types including:
   - Rust futures (replacing `FfiType::RustFutureHandle` which was removed)
   - Rust future continuation data (Replacing `FfiType::RustFutureContinuationData` which was moved).
+- `RustBuffer.len` and `RustBuffer.capacity` are now `u64` rather than `i32`.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.1...HEAD).
 

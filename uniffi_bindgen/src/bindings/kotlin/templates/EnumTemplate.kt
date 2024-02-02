@@ -34,7 +34,7 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
         throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
 
-    override fun allocationSize(value: {{ type_name }}) = 4
+    override fun allocationSize(value: {{ type_name }}) = 4UL
 
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
@@ -99,7 +99,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         is {{ type_name }}.{{ variant|type_name(ci) }} -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
-                4
+                4UL
                 {%- for field in variant.fields() %}
                 + {{ field|allocation_size_fn }}(value.{%- call kt::field_name(field, loop.index) -%})
                 {%- endfor %}

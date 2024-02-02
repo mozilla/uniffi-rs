@@ -21,7 +21,7 @@ public abstract class FfiConverterCallbackInterface<CallbackInterface: Any>: Ffi
 
     override fun lower(value: CallbackInterface) = handleMap.insert(value)
 
-    override fun allocationSize(value: CallbackInterface) = 8
+    override fun allocationSize(value: CallbackInterface) = 8UL
 
     override fun write(value: CallbackInterface, buf: ByteBuffer) {
         buf.putLong(lower(value))

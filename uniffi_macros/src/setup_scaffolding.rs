@@ -60,7 +60,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #ffi_rustbuffer_alloc_ident(size: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
+        pub extern "C" fn #ffi_rustbuffer_alloc_ident(size: u64, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
             uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
         }
 
@@ -81,7 +81,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: i32, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
+        pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: u64, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
             uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
         }
 

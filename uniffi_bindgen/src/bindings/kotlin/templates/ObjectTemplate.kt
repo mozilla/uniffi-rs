@@ -350,7 +350,7 @@ public object {{ ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
         return lift(Pointer(buf.getLong()))
     }
 
-    override fun allocationSize(value: {{ type_name }}) = 8
+    override fun allocationSize(value: {{ type_name }}) = 8UL
 
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         // The Rust code always expects pointers written as 8 bytes,
