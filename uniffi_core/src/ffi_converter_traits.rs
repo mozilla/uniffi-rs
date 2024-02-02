@@ -247,6 +247,7 @@ pub unsafe trait Lower<UT>: Sized {
     fn lower_into_rust_buffer(obj: Self) -> RustBuffer {
         let mut buf = ::std::vec::Vec::new();
         Self::write(obj, &mut buf);
+        buf.shrink_to(i32::MAX as usize);
         RustBuffer::from_vec(buf)
     }
 

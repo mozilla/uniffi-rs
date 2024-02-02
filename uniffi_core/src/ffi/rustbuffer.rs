@@ -228,6 +228,8 @@ pub fn uniffi_rustbuffer_from_bytes(
 ) -> RustBuffer {
     rust_call(call_status, || {
         let bytes = bytes.as_slice();
+        let mut bytes = bytes.to_vec();
+        bytes.shrink_to(i32::MAX as usize);
         Ok(RustBuffer::from_vec(bytes.to_vec()))
     })
 }
@@ -254,7 +256,8 @@ pub fn uniffi_rustbuffer_free(buf: RustBuffer, call_status: &mut RustCallStatus)
 ///
 /// The second argument must be the minimum number of *additional* bytes to reserve
 /// capacity for in the buffer; it is likely to reserve additional capacity in practice
-/// due to amortized growth strategy of Rust vectors.
+/// due to amortized growth strategy of Rust vectors. If the additional capacity  exceeds
+/// i32::MAX, the buffer will be reallocated to have exactly i32::MAX capacity.
 ///
 /// # Safety
 /// The first argument *must* be a uniquely-owned `RustBuffer` previously obtained from a call
@@ -271,6 +274,7 @@ pub fn uniffi_rustbuffer_reserve(
             .expect("additional buffer length negative or overflowed");
         let mut v = buf.destroy_into_vec();
         v.reserve(additional);
+        v.shrink_to(i32::MAX as usize);
         Ok(RustBuffer::from_vec(v))
     })
 }
