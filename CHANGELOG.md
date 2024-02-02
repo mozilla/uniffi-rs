@@ -11,6 +11,7 @@
 ### What's fixed?
  
 - Fixed a memory leak in callback interface handling.
+- Prevent `Vec<u8>` capacity from unecessarily triggering panics in `RustBuffer::from_vec`
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
