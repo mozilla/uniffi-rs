@@ -230,7 +230,7 @@ pub fn uniffi_rustbuffer_from_bytes(
         let bytes = bytes.as_slice();
         let mut bytes = bytes.to_vec();
         bytes.shrink_to(i32::MAX as usize);
-        Ok(RustBuffer::from_vec(bytes.to_vec()))
+        Ok(RustBuffer::from_vec(bytes))
     })
 }
 
