@@ -718,6 +718,8 @@
 <a href="#718" id="718">718</a>
 <a href="#719" id="719">719</a>
 <a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1249,6 +1251,7 @@
             FfiType::UInt64 =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
             FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
+            FfiType::Handle =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
@@ -1257,7 +1260,7 @@
             FfiType::Reference(inner) =&gt; {
                 <span class="macro">format!</span>(<span class="string">&quot;UnsafeMutablePointer&lt;{}&gt;&quot;</span>, <span class="self">self</span>.ffi_type_label(inner))
             }
-            FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
+            FfiType::VoidPointer =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
         }
     }
 
@@ -1350,6 +1353,7 @@
             FfiType::UInt64 =&gt; <span class="string">&quot;uint64_t&quot;</span>.into(),
             FfiType::Float32 =&gt; <span class="string">&quot;float&quot;</span>.into(),
             FfiType::Float64 =&gt; <span class="string">&quot;double&quot;</span>.into(),
+            FfiType::Handle =&gt; <span class="string">&quot;uint64_t&quot;</span>.into(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
@@ -1358,7 +1362,7 @@
             }
             FfiType::Struct(name) =&gt; SwiftCodeOracle.ffi_struct_name(name),
             FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}* _Nonnull&quot;</span>, header_ffi_type_name(inner)<span class="question-mark">?</span>),
-            FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
+            FfiType::VoidPointer =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
         })
     }
 

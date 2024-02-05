@@ -1803,7 +1803,7 @@
             arguments: <span class="macro">vec!</span>[
                 FfiArgument {
                     name: <span class="string">&quot;handle&quot;</span>.to_owned(),
-                    type_: FfiType::RustFutureHandle,
+                    type_: FfiType::Handle,
                 },
                 FfiArgument {
                     name: <span class="string">&quot;callback&quot;</span>.to_owned(),
@@ -1811,7 +1811,7 @@
                 },
                 FfiArgument {
                     name: <span class="string">&quot;callback_data&quot;</span>.to_owned(),
-                    type_: FfiType::UInt64,
+                    type_: FfiType::Handle,
                 },
             ],
             return_type: <span class="prelude-val">None</span>,
@@ -1829,7 +1829,7 @@
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;handle&quot;</span>.to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: return_ffi_type,
             has_rust_call_status_arg: <span class="bool-val">true</span>,
@@ -1844,7 +1844,7 @@
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;handle&quot;</span>.to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: <span class="prelude-val">None</span>,
             has_rust_call_status_arg: <span class="bool-val">false</span>,
@@ -1859,7 +1859,7 @@
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;handle&quot;</span>.to_owned(),
-                type_: FfiType::RustFutureHandle,
+                type_: FfiType::Handle,
             }],
             return_type: <span class="prelude-val">None</span>,
             has_rust_call_status_arg: <span class="bool-val">false</span>,

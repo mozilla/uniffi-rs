@@ -386,8 +386,6 @@
 <a href="#386" id="386">386</a>
 <a href="#387" id="387">387</a>
 <a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
-<a href="#390" id="390">390</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -539,6 +537,7 @@
             FfiType::UInt64 =&gt; <span class="string">&quot;:uint64&quot;</span>.to_string(),
             FfiType::Float32 =&gt; <span class="string">&quot;:float&quot;</span>.to_string(),
             FfiType::Float64 =&gt; <span class="string">&quot;:double&quot;</span>.to_string(),
+            FfiType::Handle =&gt; <span class="string">&quot;:uint64&quot;</span>.to_string(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.by_value&quot;</span>.to_string(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.to_string(),
@@ -551,9 +550,6 @@
             FfiType::VoidPointer =&gt; <span class="string">&quot;:pointer&quot;</span>.to_string(),
             FfiType::Struct(<span class="kw">_</span>) =&gt; {
                 <span class="macro">unimplemented!</span>(<span class="string">&quot;Structs are not implemented&quot;</span>)
-            }
-            FfiType::RustFutureHandle =&gt; {
-                <span class="macro">unimplemented!</span>(<span class="string">&quot;Async functions are not implemented&quot;</span>)
             }
         })
     }

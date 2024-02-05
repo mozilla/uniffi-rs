@@ -328,12 +328,12 @@
 
 <span class="doccomment">/// Generates the rust_future_* functions
 ///
-/// The foreign side uses a type-erased `RustFutureHandle` to interact with futures, which presents
+/// The foreign side uses a type-erased `Handle` to interact with futures, which presents
 /// a problem when creating scaffolding functions.  What is the `ReturnType` parameter of `RustFutureFfi`?
 ///
 /// Handle this by using some brute-force monomorphization.  For each possible ffi type, we
 /// generate a set of scaffolding functions.  The bindings code is responsible for calling the one
-/// corresponds the scaffolding function that created the `RustFutureHandle`.
+/// corresponds the scaffolding function that created the `Handle`.
 ///
 /// This introduces safety issues, but we do get some type checking.  If the bindings code calls
 /// the wrong rust_future_complete function, they should get an unexpected return type, which
@@ -365,32 +365,32 @@
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_poll(handle: ::uniffi::RustFutureHandle, callback: ::uniffi::RustFutureContinuationCallback, data: u64) {
-                ::uniffi::ffi::rust_future_poll::&lt;#return_type&gt;(handle, callback, data);
+            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: u64) {
+                ::uniffi::ffi::rust_future_poll::&lt;#return_type, <span class="kw">crate</span>::UniFfiTag&gt;(handle, callback, data);
             }
 
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_cancel(handle: ::uniffi::RustFutureHandle) {
-                ::uniffi::ffi::rust_future_cancel::&lt;#return_type&gt;(handle)
+            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_cancel(handle: ::uniffi::Handle) {
+                ::uniffi::ffi::rust_future_cancel::&lt;#return_type, <span class="kw">crate</span>::UniFfiTag&gt;(handle)
             }
 
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
             </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_complete(
-                handle: ::uniffi::RustFutureHandle,
+                handle: ::uniffi::Handle,
                 out_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus
             ) -&gt; #return_type {
-                ::uniffi::ffi::rust_future_complete::&lt;#return_type&gt;(handle, out_status)
+                ::uniffi::ffi::rust_future_complete::&lt;#return_type, <span class="kw">crate</span>::UniFfiTag&gt;(handle, out_status)
             }
 
             <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_free(handle: ::uniffi::RustFutureHandle) {
-                ::uniffi::ffi::rust_future_free::&lt;#return_type&gt;(handle)
+            </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rust_future_free(handle: ::uniffi::Handle) {
+                ::uniffi::ffi::rust_future_free::&lt;#return_type, <span class="kw">crate</span>::UniFfiTag&gt;(handle)
             }
         }
     })

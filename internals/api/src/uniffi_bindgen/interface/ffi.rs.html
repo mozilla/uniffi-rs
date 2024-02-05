@@ -327,6 +327,8 @@
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
 <a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -382,8 +384,10 @@
     <span class="doccomment">/// Pointer to a FFI struct (e.g. a VTable).  The inner value matches one of the items in
     /// [crate::ComponentInterface::ffi_struct_definitions].
     </span>Struct(String),
-    <span class="doccomment">/// Pointer to a Rust future
-    </span>RustFutureHandle,
+    <span class="doccomment">/// Opaque 64-bit handle
+    ///
+    /// These are used to pass objects across the FFI.
+    </span>Handle,
     <span class="doccomment">/// Pointer to an FfiType.
     </span>Reference(Box&lt;FfiType&gt;),
     <span class="doccomment">/// Opaque pointer
@@ -531,7 +535,7 @@
     ) {
         <span class="self">self</span>.arguments = args.into_iter().collect();
         <span class="kw">if </span><span class="self">self</span>.is_async() {
-            <span class="self">self</span>.return_type = <span class="prelude-val">Some</span>(FfiType::RustFutureHandle);
+            <span class="self">self</span>.return_type = <span class="prelude-val">Some</span>(FfiType::Handle);
             <span class="self">self</span>.has_rust_call_status_arg = <span class="bool-val">false</span>;
         } <span class="kw">else </span>{
             <span class="self">self</span>.return_type = return_type;

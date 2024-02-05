@@ -567,6 +567,7 @@
 <a href="#567" id="567">567</a>
 <a href="#568" id="568">568</a>
 <a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -930,6 +931,7 @@
             FfiType::UInt64 =&gt; <span class="string">&quot;ctypes.c_uint64&quot;</span>.to_string(),
             FfiType::Float32 =&gt; <span class="string">&quot;ctypes.c_float&quot;</span>.to_string(),
             FfiType::Float64 =&gt; <span class="string">&quot;ctypes.c_double&quot;</span>.to_string(),
+            FfiType::Handle =&gt; <span class="string">&quot;ctypes.c_uint64&quot;</span>.to_string(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
             FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
                 <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_UniffiRustBuffer{suffix}&quot;</span>),
@@ -940,7 +942,7 @@
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
             </span>FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ctypes.POINTER({})&quot;</span>, <span class="self">self</span>.ffi_type_label(inner)),
-            FfiType::VoidPointer | FfiType::RustFutureHandle =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
+            FfiType::VoidPointer =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
         }
     }
 
