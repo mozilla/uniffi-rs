@@ -106,12 +106,22 @@
 <a href="#106" id="106">106</a>
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">super</span>::CodeType;
-<span class="kw">use </span><span class="kw">crate</span>::backend::{Literal, Type};
+<span class="kw">use crate</span>::{
+    backend::{Literal, Type},
+    bindings::python::gen_python::AsCodeType,
+};
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>OptionalCodeType {
@@ -196,7 +206,11 @@
 
 <span class="kw">impl </span>CodeType <span class="kw">for </span>MapCodeType {
     <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="string">&quot;dict&quot;</span>.to_string()
+        <span class="macro">format!</span>(
+            <span class="string">&quot;dict[{}, {}]&quot;</span>,
+            <span class="self">self</span>.key.as_codetype().type_label(),
+            <span class="self">self</span>.value.as_codetype().type_label()
+        )
     }
 
     <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
