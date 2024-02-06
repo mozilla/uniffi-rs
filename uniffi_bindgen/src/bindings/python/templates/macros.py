@@ -114,11 +114,14 @@ _rust_call(
  #}
 {%- macro method_decl(py_method_name, meth) %}
 {%  if meth.is_async() %}
+{%-     match meth.return_type() %}
 
-    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+{%-         when Some with (return_type) %}
+
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
-        return _uniffi_rust_call_async(
+        return await _uniffi_rust_call_async(
             _UniffiLib.{{ meth.ffi_func().name() }}(
                 self._uniffi_clone_pointer(), {% call arg_list_lowered(meth) %}
             ),
@@ -126,12 +129,7 @@ _rust_call(
             _UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
             _UniffiLib.{{ meth.ffi_rust_future_free(ci) }},
             # lift function
-            {%- match meth.return_type() %}
-            {%- when Some(return_type) %}
             {{ return_type|lift_fn }},
-            {%- when None %}
-            lambda val: None,
-            {% endmatch %}
             # Error FFI converter
             {%- match meth.throws_type() %}
             {%- when Some(e) %}
@@ -140,6 +138,31 @@ _rust_call(
             None,
             {%- endmatch %}
         )
+
+{%-         when None %}
+
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+        {%- call docstring(meth, 8) %}
+        {%- call setup_args_extra_indent(meth) %}
+        return await _uniffi_rust_call_async(
+            _UniffiLib.{{ meth.ffi_func().name() }}(
+                self._uniffi_clone_pointer(), {% call arg_list_lowered(meth) %}
+            ),
+            _UniffiLib.{{ meth.ffi_rust_future_poll(ci) }},
+            _UniffiLib.{{ meth.ffi_rust_future_complete(ci) }},
+            _UniffiLib.{{ meth.ffi_rust_future_free(ci) }},
+            # lift function
+            lambda val: None,
+            # Error FFI converter
+            {%- match meth.throws_type() %}
+            {%- when Some(e) %}
+            {{ e|ffi_converter_name }},
+            {%- when None %}
+            None,
+            {%- endmatch %}
+        )
+
+{%      endmatch %}
 
 {%- else -%}
 {%-     match meth.return_type() %}

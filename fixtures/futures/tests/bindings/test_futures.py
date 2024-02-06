@@ -178,5 +178,11 @@ class TestFutures(unittest.TestCase):
             await use_shared_resource(SharedResourceOptions(release_after_ms=0, timeout_ms=1000))
         asyncio.run(test())
 
+    def test_function_annotations(self):
+        async def test():
+            assert sleep.__annotations__ == {"ms": "int", "return": "bool"}
+            assert sleep_no_return.__annotations__ == {"ms": "int"}
+        asyncio.run(test())
+
 if __name__ == '__main__':
     unittest.main()

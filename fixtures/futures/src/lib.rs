@@ -101,6 +101,12 @@ pub async fn sleep(ms: u16) -> bool {
     true
 }
 
+/// Async function that sleeps with no return type
+#[uniffi::export]
+pub async fn sleep_no_return(ms: u16) {
+    TimerFuture::new(Duration::from_millis(ms.into())).await;
+}
+
 // Our error.
 #[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum MyError {
