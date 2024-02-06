@@ -15,3 +15,9 @@ add_to_set(a_set, "bar")
 assert set_contains(a_set, "foo")
 assert set_contains(a_set, "bar")
 assert not set_contains(a_set, "baz")
+
+assert hash_map_identity({"a": "b"}) == {"a": "b"}
+assert hash_map_identity.__annotations__ == {
+    "h": "'dict[str, str]'",
+    "return": "'dict[str, str]'",
+}

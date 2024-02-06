@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 pub type MyHashSet = Mutex<HashSet<String>>;
@@ -20,6 +20,11 @@ fn get_int() -> i32 {
 #[uniffi::export]
 fn string_identity(s: String) -> String {
     s
+}
+
+#[uniffi::export]
+fn hash_map_identity(h: HashMap<String, String>) -> HashMap<String, String> {
+    h
 }
 
 #[uniffi::export]
