@@ -206,6 +206,23 @@ if __name__ == '__main__':
 <p>This code uses <code>asyncio</code> to drive the future to completion, while our exposed function is used with <code>await</code>.</p>
 <p>In Rust <code>Future</code> terminology this means the foreign bindings supply the &quot;executor&quot; - think event-loop, or async runtime. In this example it's <code>asyncio</code>. There's no requirement for a Rust event loop.</p>
 <p>There are <a href="https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html">some great API docs</a> on the implementation that are well worth a read.</p>
+<h2 id="exporting-async-trait-methods"><a class="header" href="#exporting-async-trait-methods">Exporting async trait methods</a></h2>
+<p>UniFFI is compatible with the <a href="https://crates.io/crates/async-trait">async-trait</a> crate and this can
+be used to export trait interfaces over the FFI.</p>
+<p>When using UDL, wrap your trait with the <code>#[async_trait]</code> attribute.  In the UDL, annotate all async
+methods with <code>[Async]</code>:</p>
+<pre><code class="language-idl">[Trait]
+interface SayAfterTrait {
+    [Async]
+    string say_after(u16 ms, string who);
+};
+</code></pre>
+<p>When using proc-macros, make sure to put <code>#[uniffi::export]</code> outside the <code>#[async_trait]</code> attribute:</p>
+<pre><code class="language-rust">#[uniffi::export]
+#[async_trait::async_trait]
+pub trait SayAfterTrait: Send + Sync {
+    async fn say_after(&amp;self, ms: u16, who: String) -&gt; String;
+}</code></pre>
 
                     </main>
 

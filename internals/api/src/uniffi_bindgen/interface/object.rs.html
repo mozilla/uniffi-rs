@@ -932,6 +932,8 @@
 <a href="#932" id="932">932</a>
 <a href="#933" id="933">933</a>
 <a href="#934" id="934">934</a>
+<a href="#935" id="935">935</a>
+<a href="#936" id="936">936</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1539,17 +1541,19 @@
     <span class="kw">fn </span>from(meta: uniffi_meta::TraitMethodMetadata) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ffi_name = meta.ffi_symbol_name();
         <span class="kw">let </span>checksum_fn_name = meta.checksum_symbol_name();
+        <span class="kw">let </span>is_async = meta.is_async;
         <span class="kw">let </span>return_type = meta.return_type.map(Into::into);
         <span class="kw">let </span>arguments = meta.inputs.into_iter().map(Into::into).collect();
         <span class="kw">let </span>ffi_func = FfiFunction {
             name: ffi_name,
+            is_async,
             ..FfiFunction::default()
         };
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.trait_name,
             object_module_path: meta.module_path,
-            is_async: <span class="bool-val">false</span>,
+            is_async,
             arguments,
             return_type,
             docstring: meta.docstring.clone(),
