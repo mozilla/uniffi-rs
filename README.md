@@ -14,7 +14,7 @@ you can use UniFFI to help you:
 You can describe your object model in an [interface definition file](https://mozilla.github.io/uniffi-rs/udl_file_spec.html)
 or [by using proc-macros](https://mozilla.github.io/uniffi-rs/proc_macro/index.html).
 
-UniFFI is currently extensively by Mozilla in Firefox mobile and desktop browsers;
+UniFFI is currently used extensively by Mozilla in Firefox mobile and desktop browsers;
 written once in Rust, auto-generated bindings allow that functionality to be called
 from both Kotlin (for Android apps) and Swift (for iOS apps).
 It also has a growing community of users shipping various cool things to many users.
