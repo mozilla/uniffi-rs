@@ -1,9 +1,15 @@
 {%- if func.is_async() %}
 
-def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
+{%- match func.return_type() -%}
+{%- when Some with (return_type) %}
+async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
+{% when None %}
+async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:
+{% endmatch %}
+
     {%- call py::docstring(func, 4) %}
     {%- call py::setup_args(func) %}
-    return _uniffi_rust_call_async(
+    return await _uniffi_rust_call_async(
         _UniffiLib.{{ func.ffi_func().name() }}({% call py::arg_list_lowered(func) %}),
         _UniffiLib.{{func.ffi_rust_future_poll(ci) }},
         _UniffiLib.{{func.ffi_rust_future_complete(ci) }},
@@ -34,7 +40,7 @@ def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> "{{ retur
     return {{ return_type|lift_fn }}({% call py::to_ffi_call(func) %})
 {% when None %}
 
-def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}):
+def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:
     {%- call py::docstring(func, 4) %}
     {%- call py::setup_args(func) %}
     {% call py::to_ffi_call(func) %}

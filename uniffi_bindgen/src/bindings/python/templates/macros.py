@@ -115,10 +115,16 @@ _rust_call(
 {%- macro method_decl(py_method_name, meth) %}
 {%  if meth.is_async() %}
 
-    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+{%-     match meth.return_type() %}
+{%-         when Some with (return_type) %}
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
+{%-         when None %}
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> None:
+{%      endmatch %}
+
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
-        return _uniffi_rust_call_async(
+        return await _uniffi_rust_call_async(
             _UniffiLib.{{ meth.ffi_func().name() }}(
                 self._uniffi_clone_pointer(), {% call arg_list_lowered(meth) %}
             ),
@@ -155,7 +161,7 @@ _rust_call(
 
 {%-         when None %}
 
-    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}):
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> None:
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         {% call to_ffi_call_with_prefix("self._uniffi_clone_pointer()", meth) %}
