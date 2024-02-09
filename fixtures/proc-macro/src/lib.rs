@@ -304,4 +304,27 @@ pub fn join(parts: &[String], sep: &str) -> String {
     parts.join(sep)
 }
 
+// Custom names
+#[derive(uniffi::Object)]
+pub struct Renamed;
+
+// `renamed_new` becomes the default constructor because it's named `new`
+#[uniffi::export]
+impl Renamed {
+    #[uniffi::constructor(name = "new")]
+    fn renamed_new() -> Arc<Self> {
+        Arc::new(Self)
+    }
+
+    #[uniffi::method(name = "func")]
+    fn renamed_func(&self) -> bool {
+        true
+    }
+}
+
+#[uniffi::export(name = "rename_test")]
+fn renamed_rename_test() -> bool {
+    true
+}
+
 uniffi::include_scaffolding!("proc-macro");

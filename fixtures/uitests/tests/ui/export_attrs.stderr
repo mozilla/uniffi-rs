@@ -41,3 +41,15 @@ error: attribute arguments are not currently recognized in this position
    |
 34 |     #[uniffi(flat_error)]
    |              ^^^^^^^^^^
+
+error: uniffi::constructor/method attribute `foo = bar` is not supported here.
+  --> tests/ui/export_attrs.rs:44:27
+   |
+44 |     #[uniffi::constructor(foo = bar)]
+   |                           ^^^
+
+error: uniffi::constructor/method attribute `foo` is not supported here.
+  --> tests/ui/export_attrs.rs:50:22
+   |
+50 |     #[uniffi::method(foo)]
+   |                      ^^^

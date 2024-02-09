@@ -138,6 +138,31 @@ fn do_something(foo: MyFooRef) {
 }
 ```
 
+### Renaming functions, methods and constructors
+
+A single exported function can specify an alternate name to be used by the bindings by specifying a `name` attribute.
+
+```rust
+#[uniffi::export(name = "something")]
+fn do_something() {
+}
+```
+will be exposed to foreign bindings as a namespace function `something()`
+
+You can also rename constructors and methods:
+```rust
+#[uniffi::export]
+impl Something {
+    // Set this as the default constructor by naming it `new`
+    #[uniffi::constructor(name = "new")]
+    fn make_new() -> Arc<Self> { ... }
+
+    // Expose this as `obj.something()`
+    #[uniffi::method(name = "something")]
+    fn do_something(&self) { }
+}
+```
+
 ## The `uniffi::Record` derive
 
 The `Record` derive macro exposes a `struct` with named fields over FFI. All types that are

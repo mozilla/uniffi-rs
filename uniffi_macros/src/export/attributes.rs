@@ -70,6 +70,7 @@ impl UniffiAttributeArgs for ExportTraitArgs {
 #[derive(Default)]
 pub struct ExportFnArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
+    pub(crate) name: Option<String>,
 }
 
 impl Parse for ExportFnArgs {
@@ -79,6 +80,51 @@ impl Parse for ExportFnArgs {
 }
 
 impl UniffiAttributeArgs for ExportFnArgs {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::async_runtime) {
+            let _: kw::async_runtime = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                async_runtime: Some(input.parse()?),
+                name: None,
+            })
+        } else if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self {
+                async_runtime: None,
+                name,
+            })
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                format!("uniffi::export attribute `{input}` is not supported here."),
+            ))
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            async_runtime: either_attribute_arg(self.async_runtime, other.async_runtime)?,
+            name: either_attribute_arg(self.name, other.name)?,
+        })
+    }
+}
+
+#[derive(Default)]
+pub struct ExportImplArgs {
+    pub(crate) async_runtime: Option<AsyncRuntime>,
+}
+
+impl Parse for ExportImplArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
+impl UniffiAttributeArgs for ExportImplArgs {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::async_runtime) {
@@ -101,9 +147,6 @@ impl UniffiAttributeArgs for ExportFnArgs {
         })
     }
 }
-
-// for now, `impl` blocks are identical to `fn` blocks.
-pub type ExportImplArgs = ExportFnArgs;
 
 #[derive(Default)]
 pub struct ExportStructArgs {
@@ -182,8 +225,43 @@ impl ToTokens for AsyncRuntime {
 }
 
 #[derive(Default)]
+pub struct NonExportArgs {
+    pub(crate) name: Option<String>,
+}
+
+impl Parse for NonExportArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
+impl UniffiAttributeArgs for NonExportArgs {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self { name })
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                format!("uniffi::constructor/method attribute `{input}` is not supported here."),
+            ))
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            name: either_attribute_arg(self.name, other.name)?,
+        })
+    }
+}
+
+#[derive(Default)]
 pub(super) struct ExportedImplFnAttributes {
     pub constructor: bool,
+    pub name: Option<String>,
 }
 
 impl ExportedImplFnAttributes {
@@ -200,12 +278,11 @@ impl ExportedImplFnAttributes {
             }
             ensure_no_path_args(fst)?;
 
-            if let Meta::List(_) | Meta::NameValue(_) = &attr.meta {
-                return Err(syn::Error::new_spanned(
-                    &attr.meta,
-                    "attribute arguments are not currently recognized in this position",
-                ));
-            }
+            let args = match &attr.meta {
+                Meta::List(_) => attr.parse_args::<NonExportArgs>()?,
+                _ => Default::default(),
+            };
+            this.name = args.name;
 
             if segs.len() != 2 {
                 return Err(syn::Error::new_spanned(
@@ -225,6 +302,14 @@ impl ExportedImplFnAttributes {
                         ));
                     }
                     this.constructor = true;
+                }
+                "method" => {
+                    if this.constructor {
+                        return Err(syn::Error::new_spanned(
+                            attr,
+                            "confused constructor/method attributes",
+                        ));
+                    }
                 }
                 _ => return Err(syn::Error::new_spanned(snd, "unknown uniffi attribute")),
             }

@@ -43,7 +43,7 @@ impl ExportItem {
             syn::Item::Fn(item) => {
                 let args: ExportFnArgs = syn::parse(attr_args)?;
                 let docstring = extract_docstring(&item.attrs)?;
-                let sig = FnSignature::new_function(item.sig, docstring)?;
+                let sig = FnSignature::new_function(item.sig, args.name.clone(), docstring)?;
                 Ok(Self::Function { sig, args })
             }
             syn::Item::Impl(item) => Self::from_impl(item, attr_args),
@@ -106,12 +106,14 @@ impl ExportItem {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,
+                        attrs.name,
                         docstring,
                     )?)
                 } else {
                     ImplItem::Method(FnSignature::new_method(
                         self_ident.clone(),
                         impl_fn.sig,
+                        attrs.name,
                         docstring,
                     )?)
                 };
@@ -167,6 +169,7 @@ impl ExportItem {
                     ImplItem::Method(FnSignature::new_trait_method(
                         self_ident.clone(),
                         tim.sig,
+                        None,
                         i as u32,
                         docstring,
                     )?)

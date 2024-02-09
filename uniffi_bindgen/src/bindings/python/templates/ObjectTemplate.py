@@ -17,6 +17,9 @@ class {{ impl_name }}:
         {%- call py::setup_args_extra_indent(cons) %}
         self._pointer = {% call py::to_ffi_call(cons) %}
 {%-     when None %}
+    {# no __init__ means simple construction without a pointer works, which can confuse #}
+    def __init__(self, *args, **kwargs):
+        raise ValueError("This class has no default constructor")
 {%- endmatch %}
 
     def __del__(self):

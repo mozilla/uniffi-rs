@@ -20,6 +20,10 @@ assert obj.is_heavy() == MaybeBool.UNCERTAIN
 obj2 = Object()
 assert obj.is_other_heavy(obj2) == MaybeBool.UNCERTAIN
 
+robj = Renamed()
+assert(robj.func())
+assert(rename_test())
+
 trait_impl = obj.get_trait(None)
 assert trait_impl.concat_strings("foo", "bar") == "foobar"
 assert obj.get_trait(trait_impl).concat_strings("foo", "bar") == "foobar"

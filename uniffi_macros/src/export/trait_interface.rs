@@ -9,9 +9,7 @@ use uniffi_meta::ObjectImpl;
 
 use crate::{
     export::{
-        attributes::{ExportFnArgs, ExportTraitArgs},
-        callback_interface, gen_method_scaffolding,
-        item::ImplItem,
+        attributes::ExportTraitArgs, callback_interface, gen_method_scaffolding, item::ImplItem,
     },
     object::interface_meta_static_var,
     util::{ident_to_string, tagged_impl_header},
@@ -86,12 +84,7 @@ pub(super) fn gen_trait_scaffolding(
     let impl_tokens: TokenStream = items
         .into_iter()
         .map(|item| match item {
-            ImplItem::Method(sig) => {
-                let fn_args = ExportFnArgs {
-                    async_runtime: None,
-                };
-                gen_method_scaffolding(sig, &fn_args, udl_mode)
-            }
+            ImplItem::Method(sig) => gen_method_scaffolding(sig, &None, udl_mode),
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<_>>()?;

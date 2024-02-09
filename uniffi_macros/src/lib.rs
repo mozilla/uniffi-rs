@@ -380,3 +380,11 @@ pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
 pub fn constructor(_attrs: TokenStream, input: TokenStream) -> TokenStream {
     input
 }
+
+/// An attribute for methods.
+///
+/// Everything above applies here too.
+#[proc_macro_attribute]
+pub fn method(_attrs: TokenStream, input: TokenStream) -> TokenStream {
+    input
+}

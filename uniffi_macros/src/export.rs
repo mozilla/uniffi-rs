@@ -40,7 +40,9 @@ pub(crate) fn expand_export(
     let metadata = ExportItem::new(item, all_args)?;
 
     match metadata {
-        ExportItem::Function { sig, args } => gen_fn_scaffolding(sig, &args, udl_mode),
+        ExportItem::Function { sig, args } => {
+            gen_fn_scaffolding(sig, &args.async_runtime, udl_mode)
+        }
         ExportItem::Impl {
             items,
             self_ident,
@@ -61,8 +63,12 @@ pub(crate) fn expand_export(
             let item_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| match item {
-                    ImplItem::Constructor(sig) => gen_constructor_scaffolding(sig, &args, udl_mode),
-                    ImplItem::Method(sig) => gen_method_scaffolding(sig, &args, udl_mode),
+                    ImplItem::Constructor(sig) => {
+                        gen_constructor_scaffolding(sig, &args.async_runtime, udl_mode)
+                    }
+                    ImplItem::Method(sig) => {
+                        gen_method_scaffolding(sig, &args.async_runtime, udl_mode)
+                    }
                 })
                 .collect::<syn::Result<_>>()?;
             Ok(quote_spanned! { self_ident.span() => #item_tokens })
