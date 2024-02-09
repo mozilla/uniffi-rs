@@ -8,6 +8,7 @@ uniffi::build_foreign_language_testcases!(
 mod tests {
     use camino::Utf8PathBuf;
     use uniffi_bindgen::bindings::TargetLanguage;
+    use uniffi_bindgen::BindingGeneratorDefault;
     use uniffi_testing::UniFFITestHelper;
 
     const DOCSTRINGS: &[&str] = &[
@@ -48,7 +49,10 @@ mod tests {
         uniffi_bindgen::generate_bindings(
             &Utf8PathBuf::from("src/docstring.udl"),
             None,
-            vec![language],
+            BindingGeneratorDefault {
+                target_languages: vec![language],
+                try_format_code: false,
+            },
             Some(&out_dir),
             None,
             None,

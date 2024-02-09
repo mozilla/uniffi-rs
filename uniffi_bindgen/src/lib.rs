@@ -160,15 +160,16 @@ pub trait BindingGenerator: Sized {
         ci: &ComponentInterface,
         config: &Self::Config,
         out_dir: &Utf8Path,
+        try_format_code: bool,
     ) -> Result<()>;
 
     /// Check if `library_path` used by library mode is valid for this generator
     fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()>;
 }
 
-struct BindingGeneratorDefault {
-    target_languages: Vec<TargetLanguage>,
-    try_format_code: bool,
+pub struct BindingGeneratorDefault {
+    pub target_languages: Vec<TargetLanguage>,
+    pub try_format_code: bool,
 }
 
 impl BindingGenerator for BindingGeneratorDefault {
@@ -179,6 +180,7 @@ impl BindingGenerator for BindingGeneratorDefault {
         ci: &ComponentInterface,
         config: &Self::Config,
         out_dir: &Utf8Path,
+        _try_format_code: bool,
     ) -> Result<()> {
         for &language in &self.target_languages {
             bindings::write_bindings(
@@ -219,12 +221,13 @@ impl BindingGenerator for BindingGeneratorDefault {
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
 /// - `crate_name`: Override the default crate name that is guessed from UDL file path.
 pub fn generate_external_bindings<T: BindingGenerator>(
-    binding_generator: T,
+    binding_generator: &T,
     udl_file: impl AsRef<Utf8Path>,
     config_file_override: Option<impl AsRef<Utf8Path>>,
     out_dir_override: Option<impl AsRef<Utf8Path>>,
     library_file: Option<impl AsRef<Utf8Path>>,
     crate_name: Option<&str>,
+    try_format_code: bool,
 ) -> Result<()> {
     let crate_name = crate_name
         .map(|c| Ok(c.to_string()))
@@ -253,7 +256,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
         udl_file.as_ref(),
         out_dir_override.as_ref().map(|p| p.as_ref()),
     )?;
-    binding_generator.write_bindings(&component, &config, &out_dir)
+    binding_generator.write_bindings(&component, &config, &out_dir, try_format_code)
 }
 
 // Generate the infrastructural Rust code for implementing the UDL interface,
@@ -301,25 +304,23 @@ fn generate_component_scaffolding_inner(
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
-pub fn generate_bindings(
+pub fn generate_bindings<T: BindingGenerator>(
     udl_file: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
-    target_languages: Vec<TargetLanguage>,
+    binding_generator: T,
     out_dir_override: Option<&Utf8Path>,
     library_file: Option<&Utf8Path>,
     crate_name: Option<&str>,
     try_format_code: bool,
 ) -> Result<()> {
     generate_external_bindings(
-        BindingGeneratorDefault {
-            target_languages,
-            try_format_code,
-        },
+        &binding_generator,
         udl_file,
         config_file_override,
         out_dir_override,
         library_file,
         crate_name,
+        try_format_code,
     )
 }
 

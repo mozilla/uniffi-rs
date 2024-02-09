@@ -2,10 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{
-    bindings::{RunScriptOptions, TargetLanguage},
-    library_mode::generate_bindings,
-};
+use crate::{bindings::RunScriptOptions, library_mode::generate_bindings, BindingGeneratorDefault};
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
@@ -14,6 +11,8 @@ use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
+
+use crate::bindings::TargetLanguage;
 
 /// Run Swift tests for a UniFFI test fixture
 pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<()> {
@@ -129,7 +128,10 @@ impl GeneratedSources {
         let sources = generate_bindings(
             cdylib_path,
             None,
-            &[TargetLanguage::Swift],
+            &BindingGeneratorDefault {
+                target_languages: vec![TargetLanguage::Swift],
+                try_format_code: false,
+            },
             None,
             out_dir,
             false,

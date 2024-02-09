@@ -10,13 +10,15 @@ use std::fmt::Debug;
 
 use anyhow::{Context, Result};
 use askama::Template;
+use camino::Utf8Path;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
 use crate::backend::TemplateExpression;
+use crate::bindings::swift;
 use crate::interface::*;
-use crate::BindingsConfig;
+use crate::{BindingGenerator, BindingsConfig};
 
 mod callback_interface;
 mod compounds;
@@ -27,6 +29,29 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
+
+pub struct SwiftBindingGenerator;
+impl BindingGenerator for SwiftBindingGenerator {
+    type Config = Config;
+
+    fn write_bindings(
+        &self,
+        ci: &ComponentInterface,
+        config: &Config,
+        out_dir: &Utf8Path,
+        try_format_code: bool,
+    ) -> Result<()> {
+        swift::write_bindings(config, ci, out_dir, try_format_code)
+    }
+
+    fn check_library_path(
+        &self,
+        _library_path: &Utf8Path,
+        _cdylib_name: Option<&str>,
+    ) -> Result<()> {
+        Ok(())
+    }
+}
 
 /// A trait tor the implementation.
 trait CodeType: Debug {
