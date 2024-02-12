@@ -355,6 +355,7 @@ pub struct Constructor {
     pub(super) name: String,
     pub(super) object_name: String,
     pub(super) object_module_path: String,
+    pub(super) is_async: bool,
     pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -420,8 +421,10 @@ impl Constructor {
 
     fn derive_ffi_func(&mut self) {
         assert!(!self.ffi_func.name().is_empty());
-        self.ffi_func.arguments = self.arguments.iter().map(Into::into).collect();
-        self.ffi_func.return_type = Some(FfiType::RustArcPtr(self.object_name.clone()));
+        self.ffi_func.init(
+            Some(FfiType::RustArcPtr(self.object_name.clone())),
+            self.arguments.iter().map(Into::into),
+        );
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -437,11 +440,13 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 
         let ffi_func = FfiFunction {
             name: ffi_name,
+            is_async: meta.is_async,
             ..FfiFunction::default()
         };
         Self {
             name: meta.name,
             object_name: meta.self_name,
+            is_async: meta.is_async,
             object_module_path: meta.module_path,
             arguments,
             ffi_func,
@@ -697,7 +702,7 @@ impl Callable for Constructor {
     }
 
     fn is_async(&self) -> bool {
-        false
+        self.is_async
     }
 }
 
@@ -716,6 +721,10 @@ impl Callable for Method {
 
     fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    fn takes_self(&self) -> bool {
+        true
     }
 }
 

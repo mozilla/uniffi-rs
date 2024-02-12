@@ -164,12 +164,17 @@ interface TodoList {
     // This alternate constructor makes a new TodoList from a list of string items.
     [Name=new_from_items]
     constructor(sequence<string> items);
+    // This alternate constructor is async.
+    [Async, Name=new_async]
+    constructor(sequence<string> items);
     ...
 ```
 
 For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.
+
+Constructors can be async, although support for async primary constructors in bindings is minimal.
 
 ## Exposing methods from standard Rust traits
 

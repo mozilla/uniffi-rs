@@ -253,6 +253,28 @@ Task {
 	counter.leave()
 }
 
+counter.enter()
+
+Task {
+	let megaphone = await Megaphone()
+
+	let result = try await megaphone.fallibleMe(doFail: false)
+	assert(result == 42)
+
+	counter.leave()
+}
+
+counter.enter()
+
+Task {
+	let megaphone = await Megaphone.secondary()
+
+	let result = try await megaphone.fallibleMe(doFail: false)
+	assert(result == 42)
+
+	counter.leave()
+}
+
 // Test with the Tokio runtime.
 counter.enter()
 

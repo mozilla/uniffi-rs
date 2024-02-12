@@ -103,6 +103,12 @@ runBlocking {
     assertApproximateTime(time, 200, "async methods")
 }
 
+// Test async constructors
+runBlocking {
+    val megaphone = Megaphone.secondary()
+    assert(megaphone.sayAfter(1U, "hi") == "HELLO, HI!")
+}
+
 // Test async method returning optional object
 runBlocking {
     val megaphone = asyncMaybeNewMegaphone(true)

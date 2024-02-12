@@ -101,13 +101,6 @@ impl FnSignature {
         };
         let is_async = sig.asyncness.is_some();
 
-        if is_async && matches!(kind, FnKind::Constructor { .. }) {
-            return Err(syn::Error::new(
-                span,
-                "Async constructors are not supported",
-            ));
-        }
-
         let mut input_iter = sig
             .inputs
             .into_iter()
@@ -323,6 +316,7 @@ impl FnSignature {
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
                         .concat_str(#name)
+                        .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(<#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::TYPE_ID_META)

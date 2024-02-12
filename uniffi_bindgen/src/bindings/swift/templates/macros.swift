@@ -12,22 +12,91 @@
     {%- else -%}
         rustCall() {
     {%- endmatch %}
-    {{ func.ffi_func().name() }}({% call arg_list_lowered(func) -%} $0)
+    {{ func.ffi_func().name() }}(
+        {%- if func.takes_self() %}self.uniffiClonePointer(),{% endif %}
+        {%- call arg_list_lowered(func) -%} $0
+    )
 }
 {%- endmacro -%}
 
-{%- macro to_ffi_call_with_prefix(prefix, func) -%}
-{% call try(func) %}
-    {%- match func.throws_type() %}
-    {%- when Some with (e) %}
-    rustCallWithError({{ e|ffi_error_converter_name }}.lift) {
-    {%- else %}
-    rustCall() {
-    {% endmatch %}
-    {{ func.ffi_func().name() }}(
-        {{- prefix }}, {% call arg_list_lowered(func) -%} $0
-    )
+// eg, `public func foo_bar() { body }`
+{%- macro func_decl(func_decl, callable, indent) %}
+{%- call docstring(callable, indent) %}
+{{ func_decl }} {{ callable.name()|fn_name }}(
+    {%- call arg_list_decl(callable) -%})
+    {%- call async(callable) %}
+    {%- call throws(callable) %}
+    {%- match callable.return_type() %}
+    {%-  when Some with (return_type) %} -> {{ return_type|type_name }}
+    {%-  when None %}
+    {%- endmatch %} {
+    {%- call call_body(callable) %}
 }
+{%- endmacro %}
+
+// primary ctor - no name, no return-type.
+{%- macro ctor_decl(callable, indent) %}
+{%- call docstring(callable, indent) %}
+public convenience init(
+    {%- call arg_list_decl(callable) -%}) {%- call async(callable) %} {
+    {%- if callable.is_async() %}
+    let pointer = {% call throws(callable) %}
+        {%- call call_async(callable) %}
+        {# The async mechanism returns an already constructed self.
+           We work around that by cloning the pointer from that object, then
+           assune the old object dies as there are no other references possible.
+        #}
+        .uniffiClonePointer()
+    {%- else %}
+    let pointer = {% call throws(callable) %}
+        {%- call to_ffi_call(callable) %}
+    {%- endif %}
+    self.init(unsafeFromRawPointer: pointer)
+}
+{%- endmacro %}
+
+{%- macro call_body(callable) %}
+{%- if callable.is_async() %}
+    return {%- call call_async(callable) %}
+{%- else %}
+{%-     match callable.return_type() -%}
+{%-         when Some with (return_type) %}
+    return {% call try(callable) %} {{ return_type|lift_fn }}({% call to_ffi_call(callable) %})
+{%-         when None %}
+{%-             call to_ffi_call(callable) %}
+{%-     endmatch %}
+{%- endif %}
+
+{%- endmacro %}
+
+{%- macro call_async(callable) %}
+        {% call try(callable) %} await uniffiRustCallAsync(
+            rustFutureFunc: {
+                {{ callable.ffi_func().name() }}(
+                    {%- if callable.takes_self() %}
+                    self.uniffiClonePointer(){% if !callable.arguments().is_empty() %},{% endif %}
+                    {% endif %}
+                    {%- for arg in callable.arguments() -%}
+                    {{ arg|lower_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
+                    {%- endfor %}
+                )
+            },
+            pollFunc: {{ callable.ffi_rust_future_poll(ci) }},
+            completeFunc: {{ callable.ffi_rust_future_complete(ci) }},
+            freeFunc: {{ callable.ffi_rust_future_free(ci) }},
+            {%- match callable.return_type() %}
+            {%- when Some(return_type) %}
+            liftFunc: {{ return_type|lift_fn }},
+            {%- when None %}
+            liftFunc: { $0 },
+            {%- endmatch %}
+            {%- match callable.throws_type() %}
+            {%- when Some with (e) %}
+            errorHandler: {{ e|ffi_error_converter_name }}.lift
+            {%- else %}
+            errorHandler: nil
+            {% endmatch %}
+        )
 {%- endmacro %}
 
 {%- macro arg_list_lowered(func) %}
@@ -87,7 +156,6 @@ v{{- field_num -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}
-
 
 {%- macro async(func) %}
 {%- if func.is_async() %}async {% endif %}

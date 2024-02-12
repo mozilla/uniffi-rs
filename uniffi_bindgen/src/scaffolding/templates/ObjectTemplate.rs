@@ -40,7 +40,7 @@ struct {{ obj.rust_name() }} { }
 #[::uniffi::export_for_udl]
 impl {{ obj.rust_name() }} {
     #[uniffi::constructor]
-    pub fn r#{{ cons.name() }}(
+    pub {% if cons.is_async() %}async {% endif %}fn r#{{ cons.name() }}(
         {%- for arg in cons.arguments() %}
         r#{{ arg.name() }}: {% if arg.by_ref() %}&{% endif %}{{ arg.as_type().borrow()|type_rs }},
         {%- endfor %}
