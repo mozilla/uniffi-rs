@@ -340,6 +340,39 @@ impl KotlinCodeOracle {
         }
     }
 
+    /// FFI type name to use inside structs
+    ///
+    /// The main requirement here is that all types must have default values or else the struct
+    /// won't work in some JNA contexts.
+    fn ffi_type_label_for_ffi_struct(&self, ffi_type: &FfiType) -> String {
+        match ffi_type {
+            // Make callbacks function pointers nullable. This matches the semantics of a C
+            // function pointer better and allows for `null` as a default value.
+            FfiType::Callback(name) => format!("{}?", self.ffi_callback_name(name)),
+            _ => self.ffi_type_label_by_value(ffi_type),
+        }
+    }
+
+    /// Default values for FFI
+    ///
+    /// This is used to:
+    ///   - Set a default return value for error results
+    ///   - Set a default for structs, which JNA sometimes requires
+    fn ffi_default_value(&self, ffi_type: &FfiType) -> String {
+        match ffi_type {
+            FfiType::UInt8 | FfiType::Int8 => "0.toByte()".to_owned(),
+            FfiType::UInt16 | FfiType::Int16 => "0.toShort()".to_owned(),
+            FfiType::UInt32 | FfiType::Int32 => "0".to_owned(),
+            FfiType::UInt64 | FfiType::Int64 => "0.toLong()".to_owned(),
+            FfiType::Float32 => "0.0f".to_owned(),
+            FfiType::Float64 => "0.0".to_owned(),
+            FfiType::RustArcPtr(_) => "Pointer.NULL".to_owned(),
+            FfiType::RustBuffer(_) => "UniffiRustBuffer.ByValue()".to_owned(),
+            FfiType::Callback(_) => "null".to_owned(),
+            _ => unimplemented!("ffi_default_value: {ffi_type:?}"),
+        }
+    }
+
     fn ffi_type_label_by_reference(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8
@@ -513,6 +546,14 @@ mod filters {
 
     pub fn ffi_type_name_by_value(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_type_label_by_value(type_))
+    }
+
+    pub fn ffi_type_name_for_ffi_struct(type_: &FfiType) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_))
+    }
+
+    pub fn ffi_default_value(type_: FfiType) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_default_value(&type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.

@@ -10,7 +10,7 @@ use std::fmt::Debug;
 
 use anyhow::{Context, Result};
 use askama::Template;
-use heck::{ToLowerCamelCase, ToUpperCamelCase};
+use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
@@ -517,6 +517,11 @@ impl SwiftCodeOracle {
         format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
+    /// Get the idiomatic Swift rendering of an if guard name
+    fn if_guard_name(&self, nm: &str) -> String {
+        format!("UNIFFI_FFIDEF_{}", nm.to_shouty_snake_case())
+    }
+
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
         match ffi_type {
             FfiType::Int8 => "Int8".into(),
@@ -692,6 +697,11 @@ pub mod filters {
     /// Get the idiomatic Swift rendering of an FFI struct name
     pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().ffi_struct_name(nm))
+    }
+
+    /// Get the idiomatic Swift rendering of an if guard name
+    pub fn if_guard_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(oracle().if_guard_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of docstring
