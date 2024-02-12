@@ -52,9 +52,14 @@ def _uniffi_check_api_checksums(lib):
     pass
     {%- endfor %}
 
+# A ctypes library to expose the extern-C FFI definitions.
+# This is an implementation detail which will be called internally by the public API.
 
-# Define FFI callback types
-{%- for callback in ci.ffi_callback_definitions() %}
+_UniffiLib = _uniffi_load_indirect()
+
+{%- for def in ci.ffi_definitions() %}
+{%- match def %}
+{%- when FfiDefinition::CallbackFunction(callback) %}
 {{ callback.name()|ffi_callback_name }} = ctypes.CFUNCTYPE(
     {%- match callback.return_type() %}
     {%- when Some(return_type) %}{{ return_type|ffi_type_name }},
@@ -67,28 +72,21 @@ def _uniffi_check_api_checksums(lib):
     ctypes.POINTER(_UniffiRustCallStatus),
     {%- endif %}
 )
-{%- endfor %}
-
-# Define FFI structs
-{%- for ffi_struct in ci.ffi_struct_definitions() %}
+{%- when FfiDefinition::Struct(ffi_struct) %}
 class {{ ffi_struct.name()|ffi_struct_name }}(ctypes.Structure):
     _fields_ = [
         {%- for field in ffi_struct.fields() %}
         ("{{ field.name()|var_name }}", {{ field.type_().borrow()|ffi_type_name }}),
         {%- endfor %}
     ]
-{%- endfor %}
-
-# A ctypes library to expose the extern-C FFI definitions.
-# This is an implementation detail which will be called internally by the public API.
-
-_UniffiLib = _uniffi_load_indirect()
-{%- for func in ci.iter_ffi_function_definitions() %}
+{%- when FfiDefinition::Function(func) %}
 _UniffiLib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
 _UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
+{%- endmatch %}
 {%- endfor %}
+
 {# Ensure to call the contract verification only after we defined all functions. -#}
 _uniffi_check_contract_api_version(_UniffiLib)
 _uniffi_check_api_checksums(_UniffiLib)

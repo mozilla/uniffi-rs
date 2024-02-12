@@ -47,11 +47,11 @@ pub enum FfiType {
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
-    /// Pointer to a callback function.  The inner value which matches one of the items in
-    /// [crate::ComponentInterface::ffi_callback_definitions].
+    /// Pointer to a callback function.  The inner value which matches one of the callback
+    /// definitions in [crate::ComponentInterface::ffi_definitions].
     Callback(String),
-    /// Pointer to a FFI struct (e.g. a VTable).  The inner value matches one of the items in
-    /// [crate::ComponentInterface::ffi_struct_definitions].
+    /// Pointer to a FFI struct (e.g. a VTable).  The inner value matches one of the struct
+    /// definitions in [crate::ComponentInterface::ffi_definitions].
     Struct(String),
     /// Opaque 64-bit handle
     ///
@@ -66,6 +66,28 @@ pub enum FfiType {
 impl FfiType {
     pub fn reference(self) -> FfiType {
         FfiType::Reference(Box::new(self))
+    }
+
+    /// Unique name for an FFI return type
+    pub fn return_type_name(return_type: Option<&FfiType>) -> String {
+        match return_type {
+            Some(t) => match t {
+                FfiType::UInt8 => "u8".to_owned(),
+                FfiType::Int8 => "i8".to_owned(),
+                FfiType::UInt16 => "u16".to_owned(),
+                FfiType::Int16 => "i16".to_owned(),
+                FfiType::UInt32 => "u32".to_owned(),
+                FfiType::Int32 => "i32".to_owned(),
+                FfiType::UInt64 => "u64".to_owned(),
+                FfiType::Int64 => "i64".to_owned(),
+                FfiType::Float32 => "f32".to_owned(),
+                FfiType::Float64 => "f64".to_owned(),
+                FfiType::RustArcPtr(_) => "pointer".to_owned(),
+                FfiType::RustBuffer(_) => "rust_buffer".to_owned(),
+                _ => unimplemented!("FFI return type: {t:?}"),
+            },
+            None => "void".to_owned(),
+        }
     }
 }
 
@@ -138,6 +160,24 @@ impl From<Type> for FfiType {
 impl From<&&Type> for FfiType {
     fn from(ty: &&Type) -> Self {
         (*ty).into()
+    }
+}
+
+/// An Ffi definition
+#[derive(Debug, Clone)]
+pub enum FfiDefinition {
+    Function(FfiFunction),
+    CallbackFunction(FfiCallbackFunction),
+    Struct(FfiStruct),
+}
+
+impl FfiDefinition {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Function(f) => f.name(),
+            Self::CallbackFunction(f) => f.name(),
+            Self::Struct(s) => s.name(),
+        }
     }
 }
 
@@ -321,6 +361,24 @@ impl FfiField {
 
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
+    }
+}
+
+impl From<FfiFunction> for FfiDefinition {
+    fn from(value: FfiFunction) -> FfiDefinition {
+        FfiDefinition::Function(value)
+    }
+}
+
+impl From<FfiStruct> for FfiDefinition {
+    fn from(value: FfiStruct) -> FfiDefinition {
+        FfiDefinition::Struct(value)
+    }
+}
+
+impl From<FfiCallbackFunction> for FfiDefinition {
+    fn from(value: FfiCallbackFunction) -> FfiDefinition {
+        FfiDefinition::CallbackFunction(value)
     }
 }
 

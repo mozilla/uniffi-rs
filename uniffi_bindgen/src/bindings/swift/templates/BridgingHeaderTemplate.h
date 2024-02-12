@@ -45,8 +45,11 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-// Define FFI callback types
-{%- for callback in ci.ffi_callback_definitions() %}
+{%- for def in ci.ffi_definitions() %}
+#ifndef {{ def.name()|if_guard_name }}
+#define {{ def.name()|if_guard_name }}
+{%- match def %}
+{% when FfiDefinition::CallbackFunction(callback) %}
 typedef
     {%- match callback.return_type() %}{% when Some(return_type) %} {{ return_type|header_ffi_type_name }} {% when None %} void {% endmatch -%}
     (*{{ callback.name()|ffi_callback_name }})(
@@ -58,19 +61,13 @@ typedef
         RustCallStatus *_Nonnull uniffiCallStatus
         {%- endif %}
     );
-{%- endfor %}
-
-// Define FFI structs
-{%- for struct in ci.ffi_struct_definitions() %}
+{% when FfiDefinition::Struct(struct) %}
 typedef struct {{ struct.name()|ffi_struct_name }} {
     {%- for field in struct.fields() %}
     {{ field.type_().borrow()|header_ffi_type_name }} {{ field.name()|var_name }};
     {%- endfor %}
 } {{ struct.name()|ffi_struct_name }};
-{%- endfor %}
-
-// Scaffolding functions
-{%- for func in ci.iter_ffi_function_definitions() %}
+{% when FfiDefinition::Function(func) %}
 {% match func.return_type() -%}{%- when Some with (type_) %}{{ type_|header_ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
     {%- if func.arguments().len() > 0 %}
         {%- for arg in func.arguments() %}
@@ -81,6 +78,8 @@ typedef struct {{ struct.name()|ffi_struct_name }} {
         {%- if func.has_rust_call_status_arg() %}RustCallStatus *_Nonnull out_status{%- else %}void{% endif %}
     {% endif %}
 );
+{%- endmatch %}
+#endif
 {%- endfor %}
 
 {% import "macros.swift" as swift %}

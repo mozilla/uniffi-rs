@@ -67,7 +67,9 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
-pub use ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
+pub use ffi::{
+    FfiArgument, FfiCallbackFunction, FfiDefinition, FfiField, FfiFunction, FfiStruct, FfiType,
+};
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
@@ -213,42 +215,19 @@ impl ComponentInterface {
         self.objects.iter().find(|o| o.name == name)
     }
 
-    /// Get the definitions for callback FFI functions
-    ///
-    /// These are defined by the foreign code and invoked by Rust.
-    pub fn ffi_callback_definitions(&self) -> impl IntoIterator<Item = FfiCallbackFunction> + '_ {
-        self.builtin_ffi_callback_definitions().into_iter().chain(
-            self.callback_interfaces
-                .iter()
-                .flat_map(|cbi| cbi.ffi_callbacks())
-                .chain(self.objects.iter().flat_map(|o| o.ffi_callbacks())),
-        )
-    }
-
-    fn builtin_ffi_callback_definitions(&self) -> impl IntoIterator<Item = FfiCallbackFunction> {
-        [
-            FfiCallbackFunction {
-                name: "RustFutureContinuationCallback".to_owned(),
-                arguments: vec![
-                    FfiArgument::new("data", FfiType::UInt64),
-                    FfiArgument::new("poll_result", FfiType::Int8),
-                ],
-                return_type: None,
-                has_rust_call_status_arg: false,
-            },
-            FfiCallbackFunction {
-                name: "CallbackInterfaceFree".to_owned(),
-                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
-                return_type: None,
-                has_rust_call_status_arg: false,
-            },
-        ]
+    fn callback_interface_callback_definitions(
+        &self,
+    ) -> impl IntoIterator<Item = FfiCallbackFunction> + '_ {
+        self.callback_interfaces
+            .iter()
+            .flat_map(|cbi| cbi.ffi_callbacks())
+            .chain(self.objects.iter().flat_map(|o| o.ffi_callbacks()))
     }
 
     /// Get the definitions for callback FFI functions
     ///
     /// These are defined by the foreign code and invoked by Rust.
-    pub fn ffi_struct_definitions(&self) -> impl IntoIterator<Item = FfiStruct> + '_ {
+    fn callback_interface_vtable_definitions(&self) -> impl IntoIterator<Item = FfiStruct> + '_ {
         self.callback_interface_definitions()
             .iter()
             .map(|cbi| cbi.vtable_definition())
@@ -580,24 +559,8 @@ impl ComponentInterface {
 
     fn rust_future_ffi_fn_name(&self, base_name: &str, return_ffi_type: Option<FfiType>) -> String {
         let namespace = self.ffi_namespace();
-        match return_ffi_type {
-            Some(t) => match t {
-                FfiType::UInt8 => format!("ffi_{namespace}_{base_name}_u8"),
-                FfiType::Int8 => format!("ffi_{namespace}_{base_name}_i8"),
-                FfiType::UInt16 => format!("ffi_{namespace}_{base_name}_u16"),
-                FfiType::Int16 => format!("ffi_{namespace}_{base_name}_i16"),
-                FfiType::UInt32 => format!("ffi_{namespace}_{base_name}_u32"),
-                FfiType::Int32 => format!("ffi_{namespace}_{base_name}_i32"),
-                FfiType::UInt64 => format!("ffi_{namespace}_{base_name}_u64"),
-                FfiType::Int64 => format!("ffi_{namespace}_{base_name}_i64"),
-                FfiType::Float32 => format!("ffi_{namespace}_{base_name}_f32"),
-                FfiType::Float64 => format!("ffi_{namespace}_{base_name}_f64"),
-                FfiType::RustArcPtr(_) => format!("ffi_{namespace}_{base_name}_pointer"),
-                FfiType::RustBuffer(_) => format!("ffi_{namespace}_{base_name}_rust_buffer"),
-                _ => unimplemented!("FFI return type: {t:?}"),
-            },
-            None => format!("ffi_{namespace}_{base_name}_void"),
-        }
+        let return_type_name = FfiType::return_type_name(return_ffi_type.as_ref());
+        format!("ffi_{namespace}_{base_name}_{return_type_name}")
     }
 
     /// Does this interface contain async functions?
@@ -621,6 +584,64 @@ impl ComponentInterface {
             .map(|c| c.result_type())
             .collect::<BTreeSet<_>>();
         unique_results.into_iter()
+    }
+
+    /// Iterate over all Ffi definitions
+    pub fn ffi_definitions(&self) -> impl Iterator<Item = FfiDefinition> + '_ {
+        // Note: for languages like Python it's important to keep things in dependency order.
+        // For example some FFI function definitions depend on FFI struct definitions, so the
+        // function definitions come last.
+        self.builtin_ffi_definitions()
+            .into_iter()
+            .chain(
+                self.callback_interface_callback_definitions()
+                    .into_iter()
+                    .map(Into::into),
+            )
+            .chain(
+                self.callback_interface_vtable_definitions()
+                    .into_iter()
+                    .map(Into::into),
+            )
+            .chain(self.iter_ffi_function_definitions().map(Into::into))
+    }
+
+    fn builtin_ffi_definitions(&self) -> impl IntoIterator<Item = FfiDefinition> + '_ {
+        [
+            FfiCallbackFunction {
+                name: "RustFutureContinuationCallback".to_owned(),
+                arguments: vec![
+                    FfiArgument::new("data", FfiType::UInt64),
+                    FfiArgument::new("poll_result", FfiType::Int8),
+                ],
+                return_type: None,
+                has_rust_call_status_arg: false,
+            }
+            .into(),
+            FfiCallbackFunction {
+                name: "ForeignFutureFree".to_owned(),
+                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
+                return_type: None,
+                has_rust_call_status_arg: false,
+            }
+            .into(),
+            FfiCallbackFunction {
+                name: "CallbackInterfaceFree".to_owned(),
+                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
+                return_type: None,
+                has_rust_call_status_arg: false,
+            }
+            .into(),
+            FfiStruct {
+                name: "ForeignFuture".to_owned(),
+                fields: vec![
+                    FfiField::new("handle", FfiType::UInt64),
+                    FfiField::new("free", FfiType::Callback("ForeignFutureFree".to_owned())),
+                ],
+            }
+            .into(),
+        ]
+        .into_iter()
     }
 
     /// List the definitions of all FFI functions in the interface.
@@ -679,9 +700,8 @@ impl ComponentInterface {
         .into_iter()
     }
 
-    /// List all FFI functions definitions for async functionality.
-    pub fn iter_futures_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
-        let all_possible_return_ffi_types = [
+    fn all_possible_return_ffi_types(&self) -> impl Iterator<Item = Option<FfiType>> {
+        [
             Some(FfiType::UInt8),
             Some(FfiType::Int8),
             Some(FfiType::UInt16),
@@ -692,15 +712,18 @@ impl ComponentInterface {
             Some(FfiType::Int64),
             Some(FfiType::Float32),
             Some(FfiType::Float64),
-            // RustBuffer and RustArcPtr have an inner field which doesn't affect the rust future
-            // complete scaffolding function, so we just use a placeholder value here.
+            // RustBuffer and RustArcPtr have an inner field which we have to fill in with a
+            // placeholder value.
             Some(FfiType::RustArcPtr("".to_owned())),
             Some(FfiType::RustBuffer(None)),
             None,
-        ];
+        ]
+        .into_iter()
+    }
 
-        all_possible_return_ffi_types
-            .into_iter()
+    /// List all FFI functions definitions for async functionality.
+    pub fn iter_futures_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+        self.all_possible_return_ffi_types()
             .flat_map(|return_type| {
                 [
                     self.ffi_rust_future_poll(return_type.clone()),
