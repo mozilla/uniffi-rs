@@ -17,6 +17,7 @@ private class AndroidSystemCleaner : UniffiCleaner {
         AndroidSystemCleanable(cleaner.register(value, cleanUpTask))
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 private class AndroidSystemCleanable(
     private val cleanable: java.lang.ref.Cleaner.Cleanable,
 ) : UniffiCleaner.Cleanable {
