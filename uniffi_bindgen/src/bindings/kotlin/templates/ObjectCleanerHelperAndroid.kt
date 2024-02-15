@@ -1,4 +1,5 @@
 {{- self.add_import("android.os.Build") }}
+{{- self.add_import("androidx.annotation.RequiresApi") }}
 
 private fun UniffiCleaner.Companion.create(): UniffiCleaner =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -8,6 +9,7 @@ private fun UniffiCleaner.Companion.create(): UniffiCleaner =
     }
 
 // The SystemCleaner, available from API Level 33.
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 private class AndroidSystemCleaner : UniffiCleaner {
     val cleaner = android.system.SystemCleaner.cleaner()
 
