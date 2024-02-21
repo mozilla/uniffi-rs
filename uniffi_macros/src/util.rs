@@ -79,8 +79,13 @@ pub fn try_read_field(f: &syn::Field) -> TokenStream {
     let ident = &f.ident;
     let ty = &f.ty;
 
-    quote! {
-        #ident: <#ty as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?,
+    match ident {
+        Some(ident) => quote! {
+            #ident: <#ty as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?,
+        },
+        None => quote! {
+            <#ty as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?,
+        },
     }
 }
 

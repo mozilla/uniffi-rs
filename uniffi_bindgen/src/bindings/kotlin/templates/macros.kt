@@ -68,6 +68,14 @@
     {%- if func.has_rust_call_status_arg() %}uniffi_out_err: UniffiRustCallStatus, {% endif %}
 {%- endmacro -%}
 
+{% macro field_name(field, field_num) %}
+{%- if field.name().is_empty() -%}
+v{{- field_num -}}
+{%- else -%}
+{{ field.name()|var_name }}
+{%- endif -%}
+{%- endmacro %}
+
 // Macro for destroying fields
 {%- macro destroy_fields(member) %}
     Disposable.destroy(

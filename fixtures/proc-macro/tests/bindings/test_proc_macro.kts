@@ -87,3 +87,20 @@ class KtTestCallbackInterface2 : OtherCallbackInterface {
 }
 
 callCallbackInterface(KtTestCallbackInterface())
+
+assert(getMixedEnum(null) == MixedEnum.Int(1))
+assert(getMixedEnum(MixedEnum.None) == MixedEnum.None)
+assert(getMixedEnum(MixedEnum.Str("hello")) == MixedEnum.Str("hello"))
+
+val e = getMixedEnum(null)
+if (e is MixedEnum.Int) {
+    // you can destruct the enum into its bits.
+    val (i) = e
+    assert(i == 1L)
+} else {
+    assert(false)
+}
+val eb = MixedEnum.Both("hi", 2)
+val (s, i) = eb
+assert(s == "hi")
+assert(i == 2L)

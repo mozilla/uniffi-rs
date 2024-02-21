@@ -99,3 +99,29 @@ class SwiftTestCallbackInterface2 : OtherCallbackInterface {
 }
 
 callCallbackInterface(cb: SwiftTestCallbackInterface())
+
+assert(getMixedEnum(v: nil) == .int(1))
+assert(getMixedEnum(v: MixedEnum.none) == .none)
+assert(getMixedEnum(v: MixedEnum.str("hello")) == .str("hello"))
+switch MixedEnum.str("hello") {
+    case let .str(s):
+        assert(s == "hello")
+    default:
+        assert(false)
+}
+
+switch MixedEnum.both("hello", 1) {
+    case let .both(s, i):
+        assert(s == "hello")
+        assert(i == 1)
+    default:
+        assert(false)
+}
+
+switch MixedEnum.all(s: "string", i: 2) {
+    case let .all(s, i):
+        assert(s == "string")
+        assert(i == 2)
+    default:
+        assert(false)
+}

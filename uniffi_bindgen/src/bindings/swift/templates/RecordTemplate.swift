@@ -8,7 +8,7 @@ public struct {{ type_name }} {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init({% call swift::field_list_decl(rec) %}) {
+    public init({% call swift::field_list_decl(rec, false) %}) {
         {%- for field in rec.fields() %}
         self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
         {%- endfor %}
