@@ -56,7 +56,7 @@ macro_rules! impl_code_type_for_primitive {
 
             impl CodeType for $T  {
                 fn type_label(&self, _ci: &ComponentInterface) -> String {
-                    $class_name.into()
+                    format!("kotlin.{}", $class_name)
                 }
 
                 fn canonical_name(&self) -> String {

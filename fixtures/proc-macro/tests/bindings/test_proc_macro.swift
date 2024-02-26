@@ -102,9 +102,9 @@ callCallbackInterface(cb: SwiftTestCallbackInterface())
 
 assert(getMixedEnum(v: nil) == .int(1))
 assert(getMixedEnum(v: MixedEnum.none) == .none)
-assert(getMixedEnum(v: MixedEnum.str("hello")) == .str("hello"))
-switch MixedEnum.str("hello") {
-    case let .str(s):
+assert(getMixedEnum(v: MixedEnum.string("hello")) == .string("hello"))
+switch MixedEnum.string("hello") {
+    case let .string(s):
         assert(s == "hello")
     default:
         assert(false)

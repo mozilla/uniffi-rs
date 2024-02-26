@@ -212,7 +212,7 @@ pub enum MaybeBool {
 #[derive(uniffi::Enum)]
 pub enum MixedEnum {
     None,
-    Str(String),
+    String(String),
     Int(i64),
     Both(String, i64),
     All { s: String, i: i64 },
