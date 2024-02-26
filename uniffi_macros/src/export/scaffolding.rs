@@ -6,12 +6,12 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use std::iter;
 
-use super::attributes::{AsyncRuntime, ExportFnArgs};
+use super::attributes::AsyncRuntime;
 use crate::fnsig::{FnKind, FnSignature, NamedArg};
 
 pub(super) fn gen_fn_scaffolding(
     sig: FnSignature,
-    arguments: &ExportFnArgs,
+    ar: &Option<AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
@@ -21,7 +21,7 @@ pub(super) fn gen_fn_scaffolding(
         ));
     }
     if !sig.is_async {
-        if let Some(async_runtime) = &arguments.async_runtime {
+        if let Some(async_runtime) = ar {
             return Err(syn::Error::new_spanned(
                 async_runtime,
                 "this attribute is only allowed on async functions",
@@ -32,7 +32,7 @@ pub(super) fn gen_fn_scaffolding(
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let scaffolding_func = gen_ffi_function(&sig, arguments, udl_mode)?;
+    let scaffolding_func = gen_ffi_function(&sig, ar, udl_mode)?;
     Ok(quote! {
         #scaffolding_func
         #metadata_items
@@ -41,7 +41,7 @@ pub(super) fn gen_fn_scaffolding(
 
 pub(super) fn gen_constructor_scaffolding(
     sig: FnSignature,
-    arguments: &ExportFnArgs,
+    ar: &Option<AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
@@ -57,7 +57,7 @@ pub(super) fn gen_constructor_scaffolding(
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let scaffolding_func = gen_ffi_function(&sig, arguments, udl_mode)?;
+    let scaffolding_func = gen_ffi_function(&sig, ar, udl_mode)?;
     Ok(quote! {
         #scaffolding_func
         #metadata_items
@@ -66,7 +66,7 @@ pub(super) fn gen_constructor_scaffolding(
 
 pub(super) fn gen_method_scaffolding(
     sig: FnSignature,
-    arguments: &ExportFnArgs,
+    ar: &Option<AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let scaffolding_func = if sig.receiver.is_none() {
@@ -75,7 +75,7 @@ pub(super) fn gen_method_scaffolding(
             "associated functions are not currently supported",
         ));
     } else {
-        gen_ffi_function(&sig, arguments, udl_mode)?
+        gen_ffi_function(&sig, ar, udl_mode)?
     };
 
     let metadata_items = (!udl_mode).then(|| {
@@ -203,7 +203,7 @@ impl ScaffoldingBits {
 /// `rust_fn` is the Rust function to call.
 pub(super) fn gen_ffi_function(
     sig: &FnSignature,
-    arguments: &ExportFnArgs,
+    ar: &Option<AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
@@ -257,7 +257,7 @@ pub(super) fn gen_ffi_function(
         }
     } else {
         let mut future_expr = rust_fn_call;
-        if matches!(arguments.async_runtime, Some(AsyncRuntime::Tokio(_))) {
+        if matches!(ar, Some(AsyncRuntime::Tokio(_))) {
             future_expr = quote! { ::uniffi::deps::async_compat::Compat::new(#future_expr) }
         }
 

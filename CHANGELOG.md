@@ -10,6 +10,8 @@
 
 ### What's new?
 
+- Functions, methods and constructors exported by procmacros can be renamed for the forgeign bindings. See the procmaco manual section.
+
 - Rust trait interfaces can now have async functions.  See the futures manual section for details.
 
 ### What's fixed?

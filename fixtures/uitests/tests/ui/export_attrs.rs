@@ -35,4 +35,20 @@ pub enum Error {
     Oops,
 }
 
+// ctor and method attribute confusion.
+#[derive(uniffi::Object)]
+struct OtherAttrs;
+
+#[uniffi::export]
+impl OtherAttrs {
+    #[uniffi::constructor(foo = bar)]
+    fn one() {}
+}
+
+#[uniffi::export]
+impl OtherAttrs {
+    #[uniffi::method(foo)]
+    fn two() {}
+}
+
 uniffi_macros::setup_scaffolding!();

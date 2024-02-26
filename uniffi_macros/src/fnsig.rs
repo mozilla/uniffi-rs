@@ -13,7 +13,9 @@ pub(crate) struct FnSignature {
     pub kind: FnKind,
     pub span: Span,
     pub mod_path: String,
+    // The identifier of the Rust function.
     pub ident: Ident,
+    // The foreign name for this function, usually == ident.
     pub name: String,
     pub is_async: bool,
     pub receiver: Option<ReceiverArg>,
@@ -27,36 +29,53 @@ pub(crate) struct FnSignature {
 }
 
 impl FnSignature {
-    pub(crate) fn new_function(sig: syn::Signature, docstring: String) -> syn::Result<Self> {
-        Self::new(FnKind::Function, sig, docstring)
+    pub(crate) fn new_function(
+        sig: syn::Signature,
+        name: Option<String>,
+        docstring: String,
+    ) -> syn::Result<Self> {
+        Self::new(FnKind::Function, sig, name, docstring)
     }
 
     pub(crate) fn new_method(
         self_ident: Ident,
         sig: syn::Signature,
+        name: Option<String>,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::Method { self_ident }, sig, docstring)
+        Self::new(FnKind::Method { self_ident }, sig, name, docstring)
     }
 
     pub(crate) fn new_constructor(
         self_ident: Ident,
         sig: syn::Signature,
+        name: Option<String>,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::Constructor { self_ident }, sig, docstring)
+        Self::new(FnKind::Constructor { self_ident }, sig, name, docstring)
     }
 
     pub(crate) fn new_trait_method(
         self_ident: Ident,
         sig: syn::Signature,
+        name: Option<String>,
         index: u32,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::TraitMethod { self_ident, index }, sig, docstring)
+        Self::new(
+            FnKind::TraitMethod { self_ident, index },
+            sig,
+            name,
+            docstring,
+        )
     }
 
-    pub(crate) fn new(kind: FnKind, sig: syn::Signature, docstring: String) -> syn::Result<Self> {
+    pub(crate) fn new(
+        kind: FnKind,
+        sig: syn::Signature,
+        name: Option<String>,
+        docstring: String,
+    ) -> syn::Result<Self> {
         let span = sig.span();
         let ident = sig.ident;
         let looks_like_result = looks_like_result(&sig.output);
@@ -100,7 +119,7 @@ impl FnSignature {
             kind,
             span,
             mod_path,
-            name: ident_to_string(&ident),
+            name: name.unwrap_or_else(|| ident_to_string(&ident)),
             ident,
             is_async,
             receiver,
