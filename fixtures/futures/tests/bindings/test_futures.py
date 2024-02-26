@@ -2,6 +2,7 @@ from futures import *
 import unittest
 from datetime import datetime
 import asyncio
+import typing
 
 def now():
     return datetime.now()
@@ -210,8 +211,8 @@ class TestFutures(unittest.TestCase):
 
     def test_function_annotations(self):
         async def test():
-            assert sleep.__annotations__ == {"ms": "int", "return": "bool"}
-            assert sleep_no_return.__annotations__ == {"ms": "int", "return": None}
+            self.assertEqual(typing.get_type_hints(sleep) , {"ms": int, "return": bool})
+            self.assertEqual(typing.get_type_hints(sleep_no_return), {"ms": int, "return": type(None)})
         asyncio.run(test())
 
 if __name__ == '__main__':
