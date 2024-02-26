@@ -531,6 +531,25 @@
 <a href="#531" id="531">531</a>
 <a href="#532" id="532">532</a>
 <a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -546,8 +565,10 @@
     <span class="kw">pub </span>kind: FnKind,
     <span class="kw">pub </span>span: Span,
     <span class="kw">pub </span>mod_path: String,
-    <span class="kw">pub </span>ident: Ident,
-    <span class="kw">pub </span>name: String,
+    <span class="comment">// The identifier of the Rust function.
+    </span><span class="kw">pub </span>ident: Ident,
+    <span class="comment">// The foreign name for this function, usually == ident.
+    </span><span class="kw">pub </span>name: String,
     <span class="kw">pub </span>is_async: bool,
     <span class="kw">pub </span>receiver: <span class="prelude-ty">Option</span>&lt;ReceiverArg&gt;,
     <span class="kw">pub </span>args: Vec&lt;NamedArg&gt;,
@@ -560,36 +581,53 @@
 }
 
 <span class="kw">impl </span>FnSignature {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_function(sig: syn::Signature, docstring: String) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Function, sig, docstring)
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_function(
+        sig: syn::Signature,
+        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+        docstring: String,
+    ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="self">Self</span>::new(FnKind::Function, sig, name, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_method(
         self_ident: Ident,
         sig: syn::Signature,
+        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Method { self_ident }, sig, docstring)
+        <span class="self">Self</span>::new(FnKind::Method { self_ident }, sig, name, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_constructor(
         self_ident: Ident,
         sig: syn::Signature,
+        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Constructor { self_ident }, sig, docstring)
+        <span class="self">Self</span>::new(FnKind::Constructor { self_ident }, sig, name, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_trait_method(
         self_ident: Ident,
         sig: syn::Signature,
+        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
         index: u32,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::TraitMethod { self_ident, index }, sig, docstring)
+        <span class="self">Self</span>::new(
+            FnKind::TraitMethod { self_ident, index },
+            sig,
+            name,
+            docstring,
+        )
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(kind: FnKind, sig: syn::Signature, docstring: String) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
+        kind: FnKind,
+        sig: syn::Signature,
+        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+        docstring: String,
+    ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>span = sig.span();
         <span class="kw">let </span>ident = sig.ident;
         <span class="kw">let </span>looks_like_result = looks_like_result(<span class="kw-2">&amp;</span>sig.output);
@@ -633,7 +671,7 @@
             kind,
             span,
             mod_path,
-            name: ident_to_string(<span class="kw-2">&amp;</span>ident),
+            name: name.unwrap_or_else(|| ident_to_string(<span class="kw-2">&amp;</span>ident)),
             ident,
             is_async,
             receiver,

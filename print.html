@@ -1422,6 +1422,23 @@ work:</p>
 #[uniffi::export]
 fn do_something(foo: MyFooRef) {
 }</code></pre>
+<h3 id="renaming-functions-methods-and-constructors"><a class="header" href="#renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</a></h3>
+<p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
+<pre><code class="language-rust">#[uniffi::export(name = &quot;something&quot;)]
+fn do_something() {
+}</code></pre>
+<p>will be exposed to foreign bindings as a namespace function <code>something()</code></p>
+<p>You can also rename constructors and methods:</p>
+<pre><code class="language-rust">#[uniffi::export]
+impl Something {
+    // Set this as the default constructor by naming it `new`
+    #[uniffi::constructor(name = &quot;new&quot;)]
+    fn make_new() -&gt; Arc&lt;Self&gt; { ... }
+
+    // Expose this as `obj.something()`
+    #[uniffi::method(name = &quot;something&quot;)]
+    fn do_something(&amp;self) { }
+}</code></pre>
 <h2 id="the-uniffirecord-derive"><a class="header" href="#the-uniffirecord-derive">The <code>uniffi::Record</code> derive</a></h2>
 <p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
 supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types

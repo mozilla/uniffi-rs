@@ -181,13 +181,6 @@
 <a href="#181" id="181">181</a>
 <a href="#182" id="182">182</a>
 <a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -199,9 +192,7 @@
 
 <span class="kw">use crate</span>::{
     export::{
-        attributes::{ExportFnArgs, ExportTraitArgs},
-        callback_interface, gen_method_scaffolding,
-        item::ImplItem,
+        attributes::ExportTraitArgs, callback_interface, gen_method_scaffolding, item::ImplItem,
     },
     object::interface_meta_static_var,
     util::{ident_to_string, tagged_impl_header},
@@ -276,12 +267,7 @@
     <span class="kw">let </span>impl_tokens: TokenStream = items
         .into_iter()
         .map(|item| <span class="kw">match </span>item {
-            ImplItem::Method(sig) =&gt; {
-                <span class="kw">let </span>fn_args = ExportFnArgs {
-                    async_runtime: <span class="prelude-val">None</span>,
-                };
-                gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>fn_args, udl_mode)
-            }
+            ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span><span class="prelude-val">None</span>, udl_mode),
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
         })
         .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;

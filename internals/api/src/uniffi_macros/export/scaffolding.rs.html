@@ -295,12 +295,12 @@
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>std::iter;
 
-<span class="kw">use </span><span class="kw">super</span>::attributes::{AsyncRuntime, ExportFnArgs};
+<span class="kw">use </span><span class="kw">super</span>::attributes::AsyncRuntime;
 <span class="kw">use </span><span class="kw">crate</span>::fnsig::{FnKind, FnSignature, NamedArg};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: FnSignature,
-    arguments: <span class="kw-2">&amp;</span>ExportFnArgs,
+    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if </span>sig.receiver.is_some() {
@@ -310,7 +310,7 @@
         </span>));
     }
     <span class="kw">if </span>!sig.is_async {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(async_runtime) = <span class="kw-2">&amp;</span>arguments.async_runtime {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(async_runtime) = ar {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
                 async_runtime,
                 <span class="string">&quot;this attribute is only allowed on async functions&quot;</span>,
@@ -321,7 +321,7 @@
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments, udl_mode)<span class="question-mark">?</span>;
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, ar, udl_mode)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_items
@@ -330,7 +330,7 @@
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_constructor_scaffolding(
     sig: FnSignature,
-    arguments: <span class="kw-2">&amp;</span>ExportFnArgs,
+    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if </span>sig.receiver.is_some() {
@@ -346,7 +346,7 @@
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments, udl_mode)<span class="question-mark">?</span>;
+    <span class="kw">let </span>scaffolding_func = gen_ffi_function(<span class="kw-2">&amp;</span>sig, ar, udl_mode)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #scaffolding_func
         #metadata_items
@@ -355,7 +355,7 @@
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
     sig: FnSignature,
-    arguments: <span class="kw-2">&amp;</span>ExportFnArgs,
+    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>scaffolding_func = <span class="kw">if </span>sig.receiver.is_none() {
@@ -364,7 +364,7 @@
             <span class="string">&quot;associated functions are not currently supported&quot;</span>,
         ));
     } <span class="kw">else </span>{
-        gen_ffi_function(<span class="kw-2">&amp;</span>sig, arguments, udl_mode)<span class="question-mark">?
+        gen_ffi_function(<span class="kw-2">&amp;</span>sig, ar, udl_mode)<span class="question-mark">?
     </span>};
 
     <span class="kw">let </span>metadata_items = (!udl_mode).then(|| {
@@ -492,7 +492,7 @@
 /// `rust_fn` is the Rust function to call.
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_ffi_function(
     sig: <span class="kw-2">&amp;</span>FnSignature,
-    arguments: <span class="kw-2">&amp;</span>ExportFnArgs,
+    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ScaffoldingBits {
@@ -546,7 +546,7 @@
         }
     } <span class="kw">else </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>future_expr = rust_fn_call;
-        <span class="kw">if </span><span class="macro">matches!</span>(arguments.async_runtime, <span class="prelude-val">Some</span>(AsyncRuntime::Tokio(<span class="kw">_</span>))) {
+        <span class="kw">if </span><span class="macro">matches!</span>(ar, <span class="prelude-val">Some</span>(AsyncRuntime::Tokio(<span class="kw">_</span>))) {
             future_expr = <span class="macro">quote! </span>{ ::uniffi::deps::async_compat::Compat::new(#future_expr) }
         }
 

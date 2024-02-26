@@ -380,6 +380,14 @@
 <a href="#380" id="380">380</a>
 <a href="#381" id="381">381</a>
 <a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -760,6 +768,14 @@
 /// So much better to do nothing here then let the impl block find the attribute.
 </span><span class="attr">#[proc_macro_attribute]
 </span><span class="kw">pub fn </span>constructor(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    input
+}
+
+<span class="doccomment">/// An attribute for methods.
+///
+/// Everything above applies here too.
+</span><span class="attr">#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>method(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     input
 }
 </code></pre></div></section></main></body></html>

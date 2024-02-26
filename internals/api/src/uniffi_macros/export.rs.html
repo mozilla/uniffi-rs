@@ -173,6 +173,12 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -215,7 +221,9 @@
     <span class="kw">let </span>metadata = ExportItem::new(item, all_args)<span class="question-mark">?</span>;
 
     <span class="kw">match </span>metadata {
-        ExportItem::Function { sig, args } =&gt; gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
+        ExportItem::Function { sig, args } =&gt; {
+            gen_fn_scaffolding(sig, <span class="kw-2">&amp;</span>args.async_runtime, udl_mode)
+        }
         ExportItem::Impl {
             items,
             self_ident,
@@ -236,8 +244,12 @@
             <span class="kw">let </span>item_tokens: TokenStream = items
                 .into_iter()
                 .map(|item| <span class="kw">match </span>item {
-                    ImplItem::Constructor(sig) =&gt; gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
-                    ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args, udl_mode),
+                    ImplItem::Constructor(sig) =&gt; {
+                        gen_constructor_scaffolding(sig, <span class="kw-2">&amp;</span>args.async_runtime, udl_mode)
+                    }
+                    ImplItem::Method(sig) =&gt; {
+                        gen_method_scaffolding(sig, <span class="kw-2">&amp;</span>args.async_runtime, udl_mode)
+                    }
                 })
                 .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="macro">quote_spanned! </span>{ self_ident.span() =&gt; #item_tokens })
