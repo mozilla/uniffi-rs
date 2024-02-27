@@ -42,3 +42,68 @@ interface ArithmeticError {
   IntegerOverflow(u64 a, u64 b);
 };
 ```
+
+## Interfaces as errors
+
+It's possible to use an `interface` (ie, a rust struct impl or a `dyn Trait`) as an error;
+the thrown object will have methods instead of fields.
+This can be particularly useful when working with `anyhow` style errors, where
+an enum can't easily represent certain errors.
+
+In your UDL:
+```
+namespace error {
+  [Throws=MyError]
+  void bail(string message);
+}
+
+[Traits=(Debug)]
+interface MyError {
+  string message();
+};
+```
+and Rust:
+```rs
+#[derive(Debug, thiserror::Error)]
+#[error("{e:?}")] // default message is from anyhow.
+pub struct MyError {
+    e: anyhow::Error,
+}
+
+impl MyError {
+    fn message(&self) -> String> { self.to_string() }
+}
+
+impl From<anyhow::Error> for MyError {
+    fn from(e: anyhow::Error) -> Self {
+        Self { e }
+    }
+}
+```
+You can't yet use `anyhow` directly in your exposed functions - you need a wrapper:
+
+```rs
+fn oops() -> Result<(), Arc<MyError>> {
+    let e = anyhow::Error::msg("oops");
+    Err(Arc::new(e.into()))
+}
+```
+then in Python:
+```py
+try:
+  oops()
+except MyError as e:
+  print("oops", e.message())
+```
+
+This works for procmacros too - just derive or export the types.
+```rs
+#[derive(Debug, uniffi::Error)]
+pub struct MyError { ... }
+#[uniffi::export]
+impl MyError { ... }
+#[uniffi::export]
+fn oops(e: String) -> Result<(), Arc<MyError>> { ... }
+```
+
+[See our tests this feature.](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/error-types)

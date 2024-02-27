@@ -8,7 +8,7 @@
     {%- call try(func) -%}
     {%- match func.throws_type() -%}
     {%- when Some with (e) -%}
-        rustCallWithError({{ e|ffi_converter_name }}.lift) {
+        rustCallWithError({{ e|ffi_error_converter_name }}.lift) {
     {%- else -%}
         rustCall() {
     {%- endmatch %}
@@ -20,7 +20,7 @@
 {% call try(func) %}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    rustCallWithError({{ e|ffi_converter_name }}.lift) {
+    rustCallWithError({{ e|ffi_error_converter_name }}.lift) {
     {%- else %}
     rustCall() {
     {% endmatch %}

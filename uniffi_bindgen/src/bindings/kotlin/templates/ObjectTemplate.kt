@@ -104,11 +104,17 @@
 {%- let (interface_name, impl_class_name) = obj|object_names(ci) %}
 {%- let methods = obj.methods() %}
 {%- let interface_docstring = obj.docstring() %}
+{%- let is_error = ci.is_name_used_as_error(name) %}
+{%- let ffi_converter_name = obj|ffi_converter_name %}
 
 {%- include "Interface.kt" %}
 
 {%- call kt::docstring(obj, 0) %}
+{% if (is_error) %}
+open class {{ impl_class_name }} : Exception, Disposable, AutoCloseable, {{ interface_name }} {
+{% else -%}
 open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }} {
+{%- endif %}
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -127,7 +133,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
 
     {%- match obj.primary_constructor() %}
-    {%- when Some with (cons) %}
+    {%- when Some(cons) %}
     {%- call kt::docstring(cons, 4) %}
     constructor({% call kt::arg_list_decl(cons) -%}) :
         this({% call kt::to_ffi_call(cons) %})
@@ -200,7 +206,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {% for meth in obj.methods() -%}
     {%- call kt::docstring(meth, 4) %}
     {%- match meth.throws_type() -%}
-    {%- when Some with (throwable) %}
+    {%- when Some(throwable) %}
     @Throws({{ throwable|type_name(ci) }}::class)
     {%- else -%}
     {%- endmatch -%}
@@ -289,6 +295,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {%-     endmatch %}
     {%- endfor %}
 
+    {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
@@ -296,6 +303,17 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
             {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
         {% endfor %}
+    }
+    {% else if is_error %}
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ impl_class_name }}> {
+        override fun lift(error_buf: RustBuffer.ByValue): {{ impl_class_name }} {
+            // Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer.
+            val bb = error_buf.asByteBuffer()
+            if (bb == null) {
+                throw InternalException("?")
+            }
+            return {{ ffi_converter_name }}.read(bb)
+        }
     }
     {% else %}
     companion object
@@ -309,7 +327,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 {% include "CallbackInterfaceImpl.kt" %}
 {%- endif %}
 
-public object {{ obj|ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
+public object {{ ffi_converter_name }}: FfiConverter<{{ type_name }}, Pointer> {
     {%- if obj.has_callback_interface() %}
     internal val handleMap = UniffiHandleMap<{{ type_name }}>()
     {%- endif %}

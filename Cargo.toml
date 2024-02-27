@@ -25,6 +25,7 @@ members = [
   "fixtures/benchmarks",
   "fixtures/coverall",
   "fixtures/callbacks",
+  "fixtures/error-types",
 
   "fixtures/ext-types/guid",
   "fixtures/ext-types/http-headermap",
