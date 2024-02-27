@@ -30,7 +30,7 @@ pub fn test_script_command(
     fixture_name: &str,
     script_file: &str,
 ) -> Result<Command> {
-    let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
+    let script_path = Utf8Path::new(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(fixture_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
