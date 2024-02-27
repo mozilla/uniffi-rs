@@ -36,7 +36,7 @@ use camino::Utf8Path;
 use fs_err as fs;
 
 pub mod gen_swift;
-pub use gen_swift::{generate_bindings, Config};
+pub use gen_swift::{generate_bindings, generate_mocks, Config};
 mod test;
 
 use super::super::interface::ComponentInterface;
@@ -82,16 +82,39 @@ pub fn write_bindings(
     }
 
     if try_format_code {
-        if let Err(e) = Command::new("swiftformat")
-            .arg(source_file.as_str())
-            .output()
-        {
-            println!(
-                "Warning: Unable to auto-format {} using swiftformat: {e:?}",
-                source_file.file_name().unwrap(),
-            );
-        }
+        format_code(&source_file)
     }
 
     Ok(())
+}
+
+/// Write UniFFI mocks for Swift as files on disk.
+pub fn write_mocks(
+    config: &Config,
+    ci: &ComponentInterface,
+    out_dir: &Utf8Path,
+    try_format_code: bool,
+) -> Result<()> {
+    let mocks = generate_mocks(config, ci)?;
+
+    let source_file = out_dir.join(format!("{}_mocks.swift", config.module_name()));
+    fs::write(&source_file, mocks)?;
+
+    if try_format_code {
+        format_code(&source_file)
+    }
+
+    Ok(())
+}
+
+fn format_code(source_file: &Utf8Path) {
+    if let Err(e) = Command::new("swiftformat")
+        .arg(source_file.as_str())
+        .output()
+    {
+        println!(
+            "Warning: Unable to auto-format {} using swiftformat: {e:?}",
+            source_file.file_name().unwrap(),
+        );
+    }
 }

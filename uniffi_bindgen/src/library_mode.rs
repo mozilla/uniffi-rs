@@ -17,7 +17,7 @@
 ///     package maps.
 use crate::{
     bindings::TargetLanguage, load_initial_config, macro_metadata, BindingGenerator,
-    BindingGeneratorDefault, BindingsConfig, ComponentInterface, Result,
+    BindingGeneratorDefault, BindingsConfig, ComponentInterface, MocksGenerator, Result,
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
@@ -113,6 +113,29 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     }
 
     Ok(sources)
+}
+
+/// Generate foreign mocks
+///
+/// Returns the list of sources used to generate the mocks, in no particular order.
+pub fn generate_mocks(
+    library_path: &Utf8Path,
+    crate_name: Option<String>,
+    target_languages: &[TargetLanguage],
+    config_file_override: Option<&Utf8Path>,
+    out_dir: &Utf8Path,
+    try_format_code: bool,
+) -> Result<Vec<Source<crate::Config>>> {
+    generate_external_bindings(
+        MocksGenerator {
+            target_languages: target_languages.into(),
+            try_format_code,
+        },
+        library_path,
+        crate_name,
+        config_file_override,
+        out_dir,
+    )
 }
 
 // A single source that we generate bindings for

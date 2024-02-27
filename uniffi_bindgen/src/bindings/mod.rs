@@ -123,3 +123,29 @@ pub fn write_bindings(
     }
     Ok(())
 }
+
+pub fn write_mocks(
+    config: &Config,
+    ci: &ComponentInterface,
+    out_dir: &Utf8Path,
+    language: TargetLanguage,
+    try_format_code: bool,
+) -> Result<()> {
+    match language {
+        TargetLanguage::Kotlin => {
+            return Err(anyhow::anyhow!(
+                "Mock generation is not supported for Kotlin"
+            ))
+        }
+        TargetLanguage::Swift => swift::write_mocks(&config.swift, ci, out_dir, try_format_code)?,
+        TargetLanguage::Python => {
+            return Err(anyhow::anyhow!(
+                "Mock generation is not supported for Python"
+            ))
+        }
+        TargetLanguage::Ruby => {
+            return Err(anyhow::anyhow!("Mock generation is not supported for Ruby"))
+        }
+    }
+    Ok(())
+}
