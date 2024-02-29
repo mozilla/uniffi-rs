@@ -63,6 +63,10 @@ open class {{ impl_class_name }}:
     {%- endmatch %}
 
     deinit {
+        guard let pointer = pointer else {
+            return
+        }
+
         try! rustCall { {{ obj.ffi_object_free().name() }}(pointer, $0) }
     }
 
