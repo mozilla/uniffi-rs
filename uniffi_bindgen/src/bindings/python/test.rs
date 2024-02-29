@@ -34,7 +34,7 @@ pub fn run_script(
     args: Vec<String>,
     _options: &RunScriptOptions,
 ) -> Result<()> {
-    let script_path = Utf8Path::new(".").join(script_file).canonicalize_utf8()?;
+    let script_path = Utf8Path::new(script_file).canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
