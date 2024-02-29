@@ -104,7 +104,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     args: Vec&lt;String&gt;,
     _options: <span class="kw-2">&amp;</span>RunScriptOptions,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>script_path = Utf8Path::new(<span class="string">&quot;.&quot;</span>).join(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
+    <span class="kw">let </span>script_path = Utf8Path::new(script_file).canonicalize_utf8()<span class="question-mark">?</span>;
     <span class="kw">let </span>test_helper = UniFFITestHelper::new(crate_name)<span class="question-mark">?</span>;
     <span class="kw">let </span>out_dir = test_helper.create_out_dir(tmp_dir, <span class="kw-2">&amp;</span>script_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>cdylib_path = test_helper.copy_cdylib_to_out_dir(<span class="kw-2">&amp;</span>out_dir)<span class="question-mark">?</span>;
