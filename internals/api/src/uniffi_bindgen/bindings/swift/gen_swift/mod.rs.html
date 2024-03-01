@@ -729,6 +729,16 @@
 <a href="#729" id="729">729</a>
 <a href="#730" id="730">730</a>
 <a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -741,7 +751,7 @@
 
 <span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>askama::Template;
-<span class="kw">use </span>heck::{ToLowerCamelCase, ToUpperCamelCase};
+<span class="kw">use </span>heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">super</span>::Bindings;
@@ -1248,6 +1258,11 @@
         <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
     }
 
+    <span class="doccomment">/// Get the idiomatic Swift rendering of an if guard name
+    </span><span class="kw">fn </span>if_guard_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;UNIFFI_FFIDEF_{}&quot;</span>, nm.to_shouty_snake_case())
+    }
+
     <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             FfiType::Int8 =&gt; <span class="string">&quot;Int8&quot;</span>.into(),
@@ -1423,6 +1438,11 @@
     <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI struct name
     </span><span class="kw">pub fn </span>ffi_struct_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(oracle().ffi_struct_name(nm))
+    }
+
+    <span class="doccomment">/// Get the idiomatic Swift rendering of an if guard name
+    </span><span class="kw">pub fn </span>if_guard_name(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(oracle().if_guard_name(nm))
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of docstring

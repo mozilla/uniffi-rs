@@ -621,6 +621,47 @@
 <a href="#621" id="621">621</a>
 <a href="#622" id="622">622</a>
 <a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -963,6 +1004,39 @@
         }
     }
 
+    <span class="doccomment">/// FFI type name to use inside structs
+    ///
+    /// The main requirement here is that all types must have default values or else the struct
+    /// won&#39;t work in some JNA contexts.
+    </span><span class="kw">fn </span>ffi_type_label_for_ffi_struct(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+        <span class="kw">match </span>ffi_type {
+            <span class="comment">// Make callbacks function pointers nullable. This matches the semantics of a C
+            // function pointer better and allows for `null` as a default value.
+            </span>FfiType::Callback(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}?&quot;</span>, <span class="self">self</span>.ffi_callback_name(name)),
+            <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label_by_value(ffi_type),
+        }
+    }
+
+    <span class="doccomment">/// Default values for FFI
+    ///
+    /// This is used to:
+    ///   - Set a default return value for error results
+    ///   - Set a default for structs, which JNA sometimes requires
+    </span><span class="kw">fn </span>ffi_default_value(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
+        <span class="kw">match </span>ffi_type {
+            FfiType::UInt8 | FfiType::Int8 =&gt; <span class="string">&quot;0.toByte()&quot;</span>.to_owned(),
+            FfiType::UInt16 | FfiType::Int16 =&gt; <span class="string">&quot;0.toShort()&quot;</span>.to_owned(),
+            FfiType::UInt32 | FfiType::Int32 =&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
+            FfiType::UInt64 | FfiType::Int64 =&gt; <span class="string">&quot;0.toLong()&quot;</span>.to_owned(),
+            FfiType::Float32 =&gt; <span class="string">&quot;0.0f&quot;</span>.to_owned(),
+            FfiType::Float64 =&gt; <span class="string">&quot;0.0&quot;</span>.to_owned(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer.NULL&quot;</span>.to_owned(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;UniffiRustBuffer.ByValue()&quot;</span>.to_owned(),
+            FfiType::Callback(<span class="kw">_</span>) =&gt; <span class="string">&quot;null&quot;</span>.to_owned(),
+            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;ffi_default_value: {ffi_type:?}&quot;</span>),
+        }
+    }
+
     <span class="kw">fn </span>ffi_type_label_by_reference(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             FfiType::Int8
@@ -1136,6 +1210,14 @@
 
     <span class="kw">pub fn </span>ffi_type_name_by_value(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(KotlinCodeOracle.ffi_type_label_by_value(type_))
+    }
+
+    <span class="kw">pub fn </span>ffi_type_name_for_ffi_struct(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_))
+    }
+
+    <span class="kw">pub fn </span>ffi_default_value(type_: FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(KotlinCodeOracle.ffi_default_value(<span class="kw-2">&amp;</span>type_))
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.

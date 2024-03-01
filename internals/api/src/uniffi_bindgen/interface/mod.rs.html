@@ -1287,6 +1287,29 @@
 <a href="#1287" id="1287">1287</a>
 <a href="#1288" id="1288">1288</a>
 <a href="#1289" id="1289">1289</a>
+<a href="#1290" id="1290">1290</a>
+<a href="#1291" id="1291">1291</a>
+<a href="#1292" id="1292">1292</a>
+<a href="#1293" id="1293">1293</a>
+<a href="#1294" id="1294">1294</a>
+<a href="#1295" id="1295">1295</a>
+<a href="#1296" id="1296">1296</a>
+<a href="#1297" id="1297">1297</a>
+<a href="#1298" id="1298">1298</a>
+<a href="#1299" id="1299">1299</a>
+<a href="#1300" id="1300">1300</a>
+<a href="#1301" id="1301">1301</a>
+<a href="#1302" id="1302">1302</a>
+<a href="#1303" id="1303">1303</a>
+<a href="#1304" id="1304">1304</a>
+<a href="#1305" id="1305">1305</a>
+<a href="#1306" id="1306">1306</a>
+<a href="#1307" id="1307">1307</a>
+<a href="#1308" id="1308">1308</a>
+<a href="#1309" id="1309">1309</a>
+<a href="#1310" id="1310">1310</a>
+<a href="#1311" id="1311">1311</a>
+<a href="#1312" id="1312">1312</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1356,7 +1379,9 @@
 <span class="kw">pub use </span>record::{Field, Record};
 
 <span class="kw">pub mod </span>ffi;
-<span class="kw">pub use </span>ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
+<span class="kw">pub use </span>ffi::{
+    FfiArgument, FfiCallbackFunction, FfiDefinition, FfiField, FfiFunction, FfiStruct, FfiType,
+};
 <span class="kw">pub use </span>uniffi_meta::Radix;
 <span class="kw">use </span>uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
@@ -1502,42 +1527,19 @@
         </span><span class="self">self</span>.objects.iter().find(|o| o.name == name)
     }
 
-    <span class="doccomment">/// Get the definitions for callback FFI functions
-    ///
-    /// These are defined by the foreign code and invoked by Rust.
-    </span><span class="kw">pub fn </span>ffi_callback_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiCallbackFunction&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="self">self</span>.builtin_ffi_callback_definitions().into_iter().chain(
-            <span class="self">self</span>.callback_interfaces
-                .iter()
-                .flat_map(|cbi| cbi.ffi_callbacks())
-                .chain(<span class="self">self</span>.objects.iter().flat_map(|o| o.ffi_callbacks())),
-        )
-    }
-
-    <span class="kw">fn </span>builtin_ffi_callback_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiCallbackFunction&gt; {
-        [
-            FfiCallbackFunction {
-                name: <span class="string">&quot;RustFutureContinuationCallback&quot;</span>.to_owned(),
-                arguments: <span class="macro">vec!</span>[
-                    FfiArgument::new(<span class="string">&quot;data&quot;</span>, FfiType::UInt64),
-                    FfiArgument::new(<span class="string">&quot;poll_result&quot;</span>, FfiType::Int8),
-                ],
-                return_type: <span class="prelude-val">None</span>,
-                has_rust_call_status_arg: <span class="bool-val">false</span>,
-            },
-            FfiCallbackFunction {
-                name: <span class="string">&quot;CallbackInterfaceFree&quot;</span>.to_owned(),
-                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64)],
-                return_type: <span class="prelude-val">None</span>,
-                has_rust_call_status_arg: <span class="bool-val">false</span>,
-            },
-        ]
+    <span class="kw">fn </span>callback_interface_callback_definitions(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+    ) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiCallbackFunction&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.callback_interfaces
+            .iter()
+            .flat_map(|cbi| cbi.ffi_callbacks())
+            .chain(<span class="self">self</span>.objects.iter().flat_map(|o| o.ffi_callbacks()))
     }
 
     <span class="doccomment">/// Get the definitions for callback FFI functions
     ///
     /// These are defined by the foreign code and invoked by Rust.
-    </span><span class="kw">pub fn </span>ffi_struct_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiStruct&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">fn </span>callback_interface_vtable_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiStruct&gt; + <span class="lifetime">&#39;_ </span>{
         <span class="self">self</span>.callback_interface_definitions()
             .iter()
             .map(|cbi| cbi.vtable_definition())
@@ -1869,24 +1871,8 @@
 
     <span class="kw">fn </span>rust_future_ffi_fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>, base_name: <span class="kw-2">&amp;</span>str, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; String {
         <span class="kw">let </span>namespace = <span class="self">self</span>.ffi_namespace();
-        <span class="kw">match </span>return_ffi_type {
-            <span class="prelude-val">Some</span>(t) =&gt; <span class="kw">match </span>t {
-                FfiType::UInt8 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_u8&quot;</span>),
-                FfiType::Int8 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_i8&quot;</span>),
-                FfiType::UInt16 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_u16&quot;</span>),
-                FfiType::Int16 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_i16&quot;</span>),
-                FfiType::UInt32 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_u32&quot;</span>),
-                FfiType::Int32 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_i32&quot;</span>),
-                FfiType::UInt64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_u64&quot;</span>),
-                FfiType::Int64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_i64&quot;</span>),
-                FfiType::Float32 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_f32&quot;</span>),
-                FfiType::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_f64&quot;</span>),
-                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_pointer&quot;</span>),
-                FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_rust_buffer&quot;</span>),
-                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;FFI return type: {t:?}&quot;</span>),
-            },
-            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_void&quot;</span>),
-        }
+        <span class="kw">let </span>return_type_name = FfiType::return_type_name(return_ffi_type.as_ref());
+        <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_{return_type_name}&quot;</span>)
     }
 
     <span class="doccomment">/// Does this interface contain async functions?
@@ -1910,6 +1896,64 @@
             .map(|c| c.result_type())
             .collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
         unique_results.into_iter()
+    }
+
+    <span class="doccomment">/// Iterate over all Ffi definitions
+    </span><span class="kw">pub fn </span>ffi_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiDefinition&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="comment">// Note: for languages like Python it&#39;s important to keep things in dependency order.
+        // For example some FFI function definitions depend on FFI struct definitions, so the
+        // function definitions come last.
+        </span><span class="self">self</span>.builtin_ffi_definitions()
+            .into_iter()
+            .chain(
+                <span class="self">self</span>.callback_interface_callback_definitions()
+                    .into_iter()
+                    .map(Into::into),
+            )
+            .chain(
+                <span class="self">self</span>.callback_interface_vtable_definitions()
+                    .into_iter()
+                    .map(Into::into),
+            )
+            .chain(<span class="self">self</span>.iter_ffi_function_definitions().map(Into::into))
+    }
+
+    <span class="kw">fn </span>builtin_ffi_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiDefinition&gt; + <span class="lifetime">&#39;_ </span>{
+        [
+            FfiCallbackFunction {
+                name: <span class="string">&quot;RustFutureContinuationCallback&quot;</span>.to_owned(),
+                arguments: <span class="macro">vec!</span>[
+                    FfiArgument::new(<span class="string">&quot;data&quot;</span>, FfiType::UInt64),
+                    FfiArgument::new(<span class="string">&quot;poll_result&quot;</span>, FfiType::Int8),
+                ],
+                return_type: <span class="prelude-val">None</span>,
+                has_rust_call_status_arg: <span class="bool-val">false</span>,
+            }
+            .into(),
+            FfiCallbackFunction {
+                name: <span class="string">&quot;ForeignFutureFree&quot;</span>.to_owned(),
+                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64)],
+                return_type: <span class="prelude-val">None</span>,
+                has_rust_call_status_arg: <span class="bool-val">false</span>,
+            }
+            .into(),
+            FfiCallbackFunction {
+                name: <span class="string">&quot;CallbackInterfaceFree&quot;</span>.to_owned(),
+                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64)],
+                return_type: <span class="prelude-val">None</span>,
+                has_rust_call_status_arg: <span class="bool-val">false</span>,
+            }
+            .into(),
+            FfiStruct {
+                name: <span class="string">&quot;ForeignFuture&quot;</span>.to_owned(),
+                fields: <span class="macro">vec!</span>[
+                    FfiField::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64),
+                    FfiField::new(<span class="string">&quot;free&quot;</span>, FfiType::Callback(<span class="string">&quot;ForeignFutureFree&quot;</span>.to_owned())),
+                ],
+            }
+            .into(),
+        ]
+        .into_iter()
     }
 
     <span class="doccomment">/// List the definitions of all FFI functions in the interface.
@@ -1968,9 +2012,8 @@
         .into_iter()
     }
 
-    <span class="doccomment">/// List all FFI functions definitions for async functionality.
-    </span><span class="kw">pub fn </span>iter_futures_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="kw">let </span>all_possible_return_ffi_types = [
+    <span class="kw">fn </span>all_possible_return_ffi_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Option</span>&lt;FfiType&gt;&gt; {
+        [
             <span class="prelude-val">Some</span>(FfiType::UInt8),
             <span class="prelude-val">Some</span>(FfiType::Int8),
             <span class="prelude-val">Some</span>(FfiType::UInt16),
@@ -1981,15 +2024,18 @@
             <span class="prelude-val">Some</span>(FfiType::Int64),
             <span class="prelude-val">Some</span>(FfiType::Float32),
             <span class="prelude-val">Some</span>(FfiType::Float64),
-            <span class="comment">// RustBuffer and RustArcPtr have an inner field which doesn&#39;t affect the rust future
-            // complete scaffolding function, so we just use a placeholder value here.
+            <span class="comment">// RustBuffer and RustArcPtr have an inner field which we have to fill in with a
+            // placeholder value.
             </span><span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="string">&quot;&quot;</span>.to_owned())),
             <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
             <span class="prelude-val">None</span>,
-        ];
+        ]
+        .into_iter()
+    }
 
-        all_possible_return_ffi_types
-            .into_iter()
+    <span class="doccomment">/// List all FFI functions definitions for async functionality.
+    </span><span class="kw">pub fn </span>iter_futures_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.all_possible_return_ffi_types()
             .flat_map(|return_type| {
                 [
                     <span class="self">self</span>.ffi_rust_future_poll(return_type.clone()),
