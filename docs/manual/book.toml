@@ -5,6 +5,9 @@ multilingual = false
 src = "src"
 title = "The UniFFI user guide"
 
+[output.html]
+git-repository-url = "https://github.com/mozilla/uniffi-rs"
+
 [output.html.playground]
 runnable = false
 
