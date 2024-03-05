@@ -85,13 +85,13 @@ _rust_call(
  #}
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
     {%- match arg.default_value() %}
     {%- when None %}
     {%- when Some with(literal) %}
     if {{ arg.name()|var_name }} is _DEFAULT:
         {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
     {%- endmatch %}
+    {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
     {% endfor -%}
 {%- endmacro -%}
 
@@ -101,13 +101,13 @@ _rust_call(
  #}
 {%- macro setup_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
         {%- match arg.default_value() %}
         {%- when None %}
         {%- when Some with(literal) %}
         if {{ arg.name()|var_name }} is _DEFAULT:
             {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
         {%- endmatch %}
+        {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
         {% endfor -%}
 {%- endmacro -%}
 
