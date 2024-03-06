@@ -28,11 +28,11 @@ pub trait Keychain: Send + Sync + Debug {
 }
 ```
 
-If you are using macros add `#[uniffi::export]` above the trait.
+If you are using macros add `#[uniffi::export(with_foreign)]` above the trait.
 Otherwise define this trait in your UDL file:
 
 ```webidl
-[Trait]
+[Trait, WithForeign]
 interface Keychain {
     [Throws=KeyChainError]
     string? get(string key);
@@ -41,6 +41,8 @@ interface Keychain {
     void put(string key, string data);
 };
 ```
+
+The `with_foreign` / `WithForeign` attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.
 
 ## 2. Allow it to be passed into Rust
 
