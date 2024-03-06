@@ -52,6 +52,7 @@ members = [
   "fixtures/regressions/swift-dictionary-nesting",
   "fixtures/regressions/unary-result-alias",
   "fixtures/regressions/nested-module-import",
+  "fixtures/regressions/wrong-lower-check",
   "fixtures/trait-methods",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",

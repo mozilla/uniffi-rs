@@ -1,0 +1,11 @@
+// A single function with an optional, default-nulled string parameter.
+// Calling this should work with and without an explicit argument.
+
+namespace regression_test_wrong_lower_check {
+  string? optional_string(optional string? s = null);
+};
+
+interface Klass {
+    constructor();
+    string? optional_string(optional string? value = null);
+};
