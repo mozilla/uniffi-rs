@@ -1774,9 +1774,9 @@ a <a href="./udl/errors.html">compatible error type</a> - see below for more on 
   fn get(&amp;self, key: String) -&gt; Result&lt;Option&lt;String&gt;, KeyChainError&gt;;
   fn put(&amp;self, key: String, value: String) -&gt; Result&lt;(), KeyChainError&gt;;
 }</code></pre>
-<p>If you are using macros add <code>#[uniffi::export]</code> above the trait.
+<p>If you are using macros add <code>#[uniffi::export(with_foreign)]</code> above the trait.
 Otherwise define this trait in your UDL file:</p>
-<pre><code class="language-webidl">[Trait]
+<pre><code class="language-webidl">[Trait, WithForeign]
 interface Keychain {
     [Throws=KeyChainError]
     string? get(string key);
@@ -1785,6 +1785,7 @@ interface Keychain {
     void put(string key, string data);
 };
 </code></pre>
+<p>The <code>with_foreign</code> / <code>WithForeign</code> attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.</p>
 <h2 id="2-allow-it-to-be-passed-into-rust"><a class="header" href="#2-allow-it-to-be-passed-into-rust">2. Allow it to be passed into Rust</a></h2>
 <p>Here, we define a new object with a constructor which takes a keychain.</p>
 <pre><code class="language-webidl">interface Authenticator {
