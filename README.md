@@ -19,7 +19,7 @@ written once in Rust, auto-generated bindings allow that functionality to be cal
 from both Kotlin (for Android apps) and Swift (for iOS apps).
 It also has a growing community of users shipping various cool things to many users.
 
-UniFII comes with support for **Kotlin**, **Swift**, **Python** and **Ruby** with 3rd party bindings available for **C#** and **Golang**.
+UniFFI comes with support for **Kotlin**, **Swift**, **Python** and **Ruby** with 3rd party bindings available for **C#** and **Golang**.
 Additional foreign language bindings can be developed externally and we welcome contributions to list them here.
 See [Third-party foreign language bindings](#third-party-foreign-language-bindings).
 
