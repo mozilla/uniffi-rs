@@ -11,10 +11,6 @@
 - Objects can be errors - anywhere you can specify an enum error object you can specify
   an `Arc<Object>` - see [the manual](https://mozilla.github.io/uniffi-rs/udl/errors.html).
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...HEAD).
-
-### What's new?
-
 - Functions, methods and constructors exported by procmacros can be renamed for the forgeign bindings. See the procmaco manual section.
 
 - Rust trait interfaces can now have async functions.  See the futures manual section for details.
@@ -37,6 +33,17 @@
   types including:
   - Rust futures (replacing `FfiType::RustFutureHandle` which was removed)
   - Rust future continuation data (Replacing `FfiType::RustFutureContinuationData` which was moved).
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.1...HEAD).
+
+## v0.26.1 (backend crates: v0.26.1) - (_2024-01-24_)
+
+### What's fixed?
+
+- The weedle2 version is now `5.0.0` rather than `4.0.1`.  `4.0.1` was yanked because it contained a breaking change.
+- Fixed a memory leak in callback interface handling.
+
+[All changes in v0.26.1](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...v0.26.1).
 
 ## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 
