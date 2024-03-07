@@ -8,6 +8,9 @@
 
 ### What's new?
 
+- Enums created with proc macros can now produce literals for variants in Kotlin and Swift. See
+[the section on enum proc-macros](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-uniffienum-derive) for more information.
+
 - Objects can be errors - anywhere you can specify an enum error object you can specify
   an `Arc<Object>` - see [the manual](https://mozilla.github.io/uniffi-rs/udl/errors.html).
 
@@ -44,11 +47,6 @@
 - Fixed a memory leak in callback interface handling.
 
 [All changes in v0.26.1](https://github.com/mozilla/uniffi-rs/compare/v0.26.0...v0.26.1).
-
-### What's new?
-
-- Enums created with proc macros can now produce literals for variants in Kotlin and Swift bindings specifically for unsigned types.. See
-[the section on enum proc-macros](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-uniffienum-derive) for more information.
 
 ## v0.26.0 (backend crates: v0.26.0) - (_2024-01-23_)
 

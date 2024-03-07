@@ -483,12 +483,24 @@ impl<'a> MetadataReader<'a> {
             }
             codes::LIT_INT => {
                 let base10_digits = self.read_string()?;
+                // procmacros emit the type for discriminant values based purely on whether the constant
+                // is positive or negative.
+                let ty = if !base10_digits.is_empty()
+                    && base10_digits.as_bytes()[0] == b'-'
+                    && ty == &Type::UInt64
+                {
+                    &Type::Int64
+                } else {
+                    ty
+                };
                 macro_rules! parse_int {
                     ($ty:ident, $variant:ident) => {
                         LiteralMetadata::$variant(
                             base10_digits
                                 .parse::<$ty>()
-                                .with_context(|| format!("parsing default for field {name}"))?
+                                .with_context(|| {
+                                    format!("parsing default for field {name}: {base10_digits}")
+                                })?
                                 .into(),
                             Radix::Decimal,
                             ty.to_owned(),

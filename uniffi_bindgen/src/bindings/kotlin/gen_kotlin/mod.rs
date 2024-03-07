@@ -545,29 +545,33 @@ mod filters {
         Ok(as_ct.as_codetype().literal(literal, ci))
     }
 
+    // Get the idiomatic Kotlin rendering of an integer.
+    fn int_literal(t: &Option<Type>, base10: String) -> Result<String, askama::Error> {
+        if let Some(t) = t {
+            match t {
+                Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
+                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Ok(base10 + "u"),
+                _ => Err(askama::Error::Custom(Box::new(UniFFIError::new(
+                    "Only ints are supported.".to_string(),
+                )))),
+            }
+        } else {
+            Err(askama::Error::Custom(Box::new(UniFFIError::new(
+                "Enum hasn't defined a repr".to_string(),
+            ))))
+        }
+    }
+
     // Get the idiomatic Kotlin rendering of an individual enum variant's discriminant
     pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         match literal {
             // Kotlin doesn't convert between signed and unsigned by default
             // so we'll need to make sure we define the type as appropriately
-            LiteralMetadata::UInt(v, _, _) => {
-                if let Some(t) = e.variant_discr_type() {
-                    match t {
-                        Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(v.to_string()),
-                        Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => {
-                            Ok(v.to_string() + "u")
-                        }
-                        _ => unreachable!("only unsigned is supported at this time"),
-                    }
-                } else {
-                    Err(askama::Error::Custom(Box::new(UniFFIError::new(
-                        "Enum hasn't defined a repr".to_string(),
-                    ))))
-                }
-            }
+            LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
+            LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
             _ => Err(askama::Error::Custom(Box::new(UniFFIError::new(
-                "Expected an UInt!".to_string(),
+                "Only ints are supported.".to_string(),
             )))),
         }
     }

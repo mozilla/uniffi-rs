@@ -277,6 +277,9 @@ impl LiteralMetadata {
     pub fn new_uint(v: u64) -> Self {
         LiteralMetadata::UInt(v, Radix::Decimal, Type::UInt64)
     }
+    pub fn new_int(v: i64) -> Self {
+        LiteralMetadata::Int(v, Radix::Decimal, Type::Int64)
+    }
 }
 
 // Represent the radix of integer literal values.

@@ -221,18 +221,26 @@ impl Enum {
             anyhow::bail!("Invalid variant index {variant_index}");
         }
         let mut next = 0;
-        let mut this = 0;
+        let mut this;
+        let mut this_lit = Literal::new_uint(0);
         for v in self.variants().iter().take(variant_index + 1) {
-            this = match v.discr {
-                None => next,
-                Some(Literal::UInt(v, _, _)) => v,
-                _ => {
-                    anyhow::bail!("Invalid literal type {v:?}");
-                }
+            (this, this_lit) = match v.discr {
+                None => (
+                    next,
+                    if (next as i64) < 0 {
+                        Literal::new_int(next as i64)
+                    } else {
+                        Literal::new_uint(next)
+                    },
+                ),
+                Some(Literal::UInt(v, _, _)) => (v, Literal::new_uint(v)),
+                // in-practice, Literal::Int == a negative number.
+                Some(Literal::Int(v, _, _)) => (v as u64, Literal::new_int(v)),
+                _ => anyhow::bail!("Invalid literal type {v:?}"),
             };
-            next = this + 1;
+            next = this.wrapping_add(1);
         }
-        Ok(Literal::new_uint(this))
+        Ok(this_lit)
     }
 
     pub fn variant_discr_type(&self) -> &Option<Type> {
