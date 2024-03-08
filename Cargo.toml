@@ -65,6 +65,7 @@ members = [
   "fixtures/swift-bridging-header-compile",
   "fixtures/type-limits",
   "fixtures/large-enum",
+  "fixtures/enum-types",
 ]
 
 resolver = "2"

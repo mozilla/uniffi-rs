@@ -573,6 +573,7 @@ impl SwiftCodeOracle {
 pub mod filters {
     use super::*;
     pub use crate::backend::filters::*;
+    use uniffi_meta::LiteralMetadata;
 
     fn oracle() -> &'static SwiftCodeOracle {
         &SwiftCodeOracle
@@ -620,6 +621,15 @@ pub mod filters {
         as_type: &impl AsType,
     ) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).literal(literal))
+    }
+
+    // Get the idiomatic Swift rendering of an individual enum variant's discriminant
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+        let literal = e.variant_discr(*index).expect("invalid index");
+        match literal {
+            LiteralMetadata::UInt(v, _, _) => Ok(v.to_string()),
+            _ => unreachable!("expected an UInt!"),
+        }
     }
 
     /// Get the Swift type for an FFIType

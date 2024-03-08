@@ -1,6 +1,8 @@
 // Note that we don't yet support `indirect` for enums.
 // See https://github.com/mozilla/uniffi-rs/issues/396 for further discussion.
 {%- call swift::docstring(e, 0) %}
+{% match e.variant_discr_type() %}
+{% when None %}
 public enum {{ type_name }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
@@ -9,6 +11,16 @@ public enum {{ type_name }} {
     ){% endif -%}
     {% endfor %}
 }
+{% when Some with (variant_discr_type) %}
+public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
+    {% for variant in e.variants() %}
+    {%- call swift::docstring(variant, 4) %}
+    case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
+        {%- call swift::field_list_decl(variant) %}
+    ){% endif -%}
+    {% endfor %}
+}
+{% endmatch %}
 
 public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ type_name }}
