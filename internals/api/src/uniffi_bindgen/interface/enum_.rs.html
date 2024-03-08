@@ -763,6 +763,10 @@
 <a href="#763" id="763">763</a>
 <a href="#764" id="764">764</a>
 <a href="#765" id="765">765</a>
+<a href="#766" id="766">766</a>
+<a href="#767" id="767">767</a>
+<a href="#768" id="768">768</a>
+<a href="#769" id="769">769</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -998,6 +1002,10 @@
             next = this + <span class="number">1</span>;
         }
         <span class="prelude-val">Ok</span>(Literal::new_uint(this))
+    }
+
+    <span class="kw">pub fn </span>variant_discr_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Type&gt; {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.discr_type
     }
 
     <span class="kw">pub fn </span>is_flat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {

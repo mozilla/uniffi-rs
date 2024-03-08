@@ -89,12 +89,12 @@
 <span class="comment">// Need to define an error that implements std::error::Error, which neither String nor
 // anyhow::Error do.
 </span><span class="attr">#[derive(Debug)]
-</span><span class="kw">struct </span>UniFFIError {
+</span><span class="kw">pub struct </span>UniFFIError {
     message: String,
 }
 
 <span class="kw">impl </span>UniFFIError {
-    <span class="kw">fn </span>new(message: String) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>new(message: String) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ message }
     }
 }

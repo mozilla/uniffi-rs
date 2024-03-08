@@ -1531,9 +1531,50 @@ pub enum MyEnum {
     },
     WithValue = 3,
 }</code></pre>
-<p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.
-Most would be likely ignore it in the example above due to the nature of the enum,
-but some expose it for simple &quot;unit&quot; enums.</p>
+<h3 id="variant-discriminants"><a class="header" href="#variant-discriminants">Variant Discriminants</a></h3>
+<p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.</p>
+<p>Currently only <code>unsigned integer</code> variant discriminants are passed through to the foreign bindings. For example this enum:</p>
+<pre><code class="language-rust">#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Foo = 3,
+    Bar = 4,
+}</code></pre>
+<p>would give you in Kotlin &amp; Swift:</p>
+<pre><code class="language-swift">// kotlin
+enum class MyEnum {   
+    FOO,
+    BAR;
+    companion object
+}
+// swift 
+public enum MyEnum {    
+    case foo
+    case bar
+}
+</code></pre>
+<p>which means you cannot use the platforms helpful methods like <code>value</code> or <code>rawValue</code> to get the underlying discriminants. Adding a <code>repr</code> will allow the type to be defined in the foreign bindings.</p>
+<p>For example:</p>
+<pre><code class="language-rust">// added the repr(u8), also u16 -&gt; u64 supported
+#[repr(u8)]
+#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    Foo = 3,
+    Bar = 4,
+}</code></pre>
+<p>will now generate:</p>
+<pre><code class="language-swift">// kotlin
+enum class MyEnum(val value: UByte) {
+    FOO(3u),
+    BAR(4u);
+    companion object
+}
+
+// swift
+public enum MyEnum : UInt8 {
+    case foo = 3
+    case bar = 4
+}
+</code></pre>
 <h2 id="the-uniffiobject-derive"><a class="header" href="#the-uniffiobject-derive">The <code>uniffi::Object</code> derive</a></h2>
 <p>This derive can be used to replace an <code>interface</code> definition in UDL. Every object type must have
 <em>either</em> an <code>interface</code> definition in UDL <em>or</em> use this derive macro. However, <code>#[uniffi::export]</code>

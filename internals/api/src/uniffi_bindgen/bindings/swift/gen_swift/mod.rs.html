@@ -739,6 +739,16 @@
 <a href="#739" id="739">739</a>
 <a href="#740" id="740">740</a>
 <a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1314,6 +1324,7 @@
 <span class="kw">pub mod </span>filters {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">pub use </span><span class="kw">crate</span>::backend::filters::<span class="kw-2">*</span>;
+    <span class="kw">use </span>uniffi_meta::LiteralMetadata;
 
     <span class="kw">fn </span>oracle() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>SwiftCodeOracle {
         <span class="kw-2">&amp;</span>SwiftCodeOracle
@@ -1361,6 +1372,15 @@
         as_type: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsType,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).literal(literal))
+    }
+
+    <span class="comment">// Get the idiomatic Swift rendering of an individual enum variant&#39;s discriminant
+    </span><span class="kw">pub fn </span>variant_discr_literal(e: <span class="kw-2">&amp;</span>Enum, index: <span class="kw-2">&amp;</span>usize) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">&quot;invalid index&quot;</span>);
+        <span class="kw">match </span>literal {
+            LiteralMetadata::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(v.to_string()),
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;expected an UInt!&quot;</span>),
+        }
     }
 
     <span class="doccomment">/// Get the Swift type for an FFIType
