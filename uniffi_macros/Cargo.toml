@@ -24,11 +24,13 @@ quote = "1.0"
 serde = { version = "1.0.136", features = ["derive"] }
 syn = { version = "2.0", features = ["full", "visit-mut"] }
 toml = "0.5.9"
-uniffi_build = { path = "../uniffi_build", version = "=0.26.1" }
+uniffi_build = { path = "../uniffi_build", version = "=0.26.1", optional = true }
 uniffi_meta = { path = "../uniffi_meta", version = "=0.26.1" }
 
 [features]
 default = []
+# Enable the generate_and_include_scaffolding! macro
+trybuild = [ "dep:uniffi_build" ]
 # Enable extra features that require a nightly compiler:
 # * Add the full module path of exported items to FFI metadata instead of just the crate name.
 #   This may be used by language backends to generate nested module structures in the future.
