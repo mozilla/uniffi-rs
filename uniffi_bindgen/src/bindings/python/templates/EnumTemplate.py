@@ -103,6 +103,7 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
             {%- endfor %}
             return
         {%- endfor %}
+        raise ValueError(value)
         {%- endif %}
 
     @staticmethod

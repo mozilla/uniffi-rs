@@ -5,14 +5,22 @@
 import unittest
 from enum_types import *
 
-assert(Animal.DOG.value == 0)
-assert(Animal.CAT.value == 1)
+class TestErrorTypes(unittest.TestCase):
+    def test_animals(self):
+        self.assertEqual(Animal.DOG.value,  0)
+        self.assertEqual(Animal.CAT.value, 1)
+        self.assertEqual(get_animal(None), Animal.DOG)
+        with self.assertRaises(ValueError):
+            get_animal(1)
 
-assert(AnimalNoReprInt.DOG.value == 3)
-assert(AnimalNoReprInt.CAT.value == 4)
+        self.assertEqual(AnimalNoReprInt.DOG.value, 3)
+        self.assertEqual(AnimalNoReprInt.CAT.value, 4)
 
-assert(AnimalUInt.DOG.value == 3)
-assert(AnimalUInt.CAT.value == 4)
+        self.assertEqual(AnimalUInt.DOG.value, 3)
+        self.assertEqual(AnimalUInt.CAT.value, 4)
 
-assert(AnimalLargeUInt.DOG.value == (4294967295 + 3))
-assert(AnimalLargeUInt.CAT.value == (4294967295 + 4))
+        self.assertEqual(AnimalLargeUInt.DOG.value, (4294967295 + 3))
+        self.assertEqual(AnimalLargeUInt.CAT.value, (4294967295 + 4))
+
+if __name__=='__main__':
+    unittest.main()
