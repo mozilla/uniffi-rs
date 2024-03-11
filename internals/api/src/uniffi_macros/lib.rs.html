@@ -388,6 +388,8 @@
 <a href="#388" id="388">388</a>
 <a href="#389" id="389">389</a>
 <a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -396,6 +398,7 @@
 
 </span><span class="doccomment">//! Macros for `uniffi`.
 
+</span><span class="attr">#[cfg(feature = <span class="string">&quot;trybuild&quot;</span>)]
 </span><span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>proc_macro::TokenStream;
 <span class="kw">use </span>quote::quote;
@@ -733,6 +736,7 @@
 /// uniffi_macros::generate_and_include_scaffolding!(&quot;path/to/my/interface.udl&quot;);
 /// ```
 </span><span class="attr">#[proc_macro]
+#[cfg(feature = <span class="string">&quot;trybuild&quot;</span>)]
 </span><span class="kw">pub fn </span>generate_and_include_scaffolding(udl_file: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>udl_file = <span class="macro">syn::parse_macro_input!</span>(udl_file <span class="kw">as </span>LitStr);
     <span class="kw">let </span>udl_file_string = udl_file.value();
