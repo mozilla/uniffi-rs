@@ -6,6 +6,7 @@
 
 //! Macros for `uniffi`.
 
+#[cfg(feature = "trybuild")]
 use camino::Utf8Path;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -343,6 +344,7 @@ pub fn use_udl_object(tokens: TokenStream) -> TokenStream {
 /// uniffi_macros::generate_and_include_scaffolding!("path/to/my/interface.udl");
 /// ```
 #[proc_macro]
+#[cfg(feature = "trybuild")]
 pub fn generate_and_include_scaffolding(udl_file: TokenStream) -> TokenStream {
     let udl_file = syn::parse_macro_input!(udl_file as LitStr);
     let udl_file_string = udl_file.value();
