@@ -21,7 +21,7 @@ fs-err = "2.7.0"
 once_cell = "1.10.0"
 proc-macro2 = "1.0"
 quote = "1.0"
-serde = "1.0.136"
+serde = { version = "1.0.136", features = ["derive"] }
 syn = { version = "2.0", features = ["full", "visit-mut"] }
 toml = "0.5.9"
 uniffi_build = { path = "../uniffi_build", version = "=0.26.1" }
