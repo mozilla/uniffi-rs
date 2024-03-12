@@ -10,3 +10,5 @@ assert(AnimalUInt.cat.rawValue == 4)
 
 assert(AnimalLargeUInt.dog.rawValue == 4294967298)
 assert(AnimalLargeUInt.cat.rawValue == 4294967299)
+
+assert(AnimalSignedInt.dog.rawValue == -3)

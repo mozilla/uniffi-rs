@@ -628,6 +628,7 @@ pub mod filters {
         let literal = e.variant_discr(*index).expect("invalid index");
         match literal {
             LiteralMetadata::UInt(v, _, _) => Ok(v.to_string()),
+            LiteralMetadata::Int(v, _, _) => Ok(v.to_string()),
             _ => unreachable!("expected an UInt!"),
         }
     }

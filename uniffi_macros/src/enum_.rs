@@ -224,19 +224,51 @@ fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
     let Some((_, e)) = &v.discriminant else {
         return Ok(quote! { .concat_bool(false) });
     };
-    let Expr::Lit(lit) = e else {
-        return Ok(quote! { .concat_bool(false) });
+    // Attempting to expose an enum value which we don't understand is a hard-error
+    // rather than silently ignoring it. If we had the ability to emit a warning that
+    // might make more sense.
+
+    // We can't sanely handle most expressions other than literals, but we can handle
+    // negative literals.
+    let mut negate = false;
+    let lit = match e {
+        Expr::Lit(lit) => lit,
+        Expr::Unary(expr_unary) if matches!(expr_unary.op, syn::UnOp::Neg(_)) => {
+            negate = true;
+            match *expr_unary.expr {
+                Expr::Lit(ref lit) => lit,
+                _ => {
+                    return Err(syn::Error::new_spanned(
+                        e,
+                        "UniFFI disciminant values must be a literal",
+                    ));
+                }
+            }
+        }
+        _ => {
+            return Err(syn::Error::new_spanned(
+                e,
+                "UniFFI disciminant values must be a literal",
+            ));
+        }
     };
     let Lit::Int(ref intlit) = lit.lit else {
-        return Ok(quote! { .concat_bool(false) });
+        return Err(syn::Error::new_spanned(
+            v,
+            "UniFFI disciminant values must be a literal integer",
+        ));
     };
     if !intlit.suffix().is_empty() {
         return Err(syn::Error::new_spanned(
             intlit,
-            "integer literals with suffix not supported here",
+            "integer literals with suffix not supported by UniFFI here",
         ));
     }
-    let digits = intlit.base10_digits();
+    let digits = if negate {
+        format!("-{}", intlit.base10_digits())
+    } else {
+        intlit.base10_digits().to_string()
+    };
     Ok(quote! {
         .concat_bool(true)
         .concat_value(::uniffi::metadata::codes::LIT_INT)

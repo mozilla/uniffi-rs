@@ -29,13 +29,14 @@ pub enum AnimalLargeUInt {
     Cat = 4294967299, // u32::MAX as u64 + 4
 }
 
-// Signed is currently NOT supported but included to ensure we don't break
-// things for current users of the enum proc-macro
 #[repr(i8)]
-#[derive(uniffi::Enum)]
+#[derive(Debug, uniffi::Enum)]
 pub enum AnimalSignedInt {
     Dog = -3,
-    Cat = -4,
+    Cat = -2,
+    Koala,   // -1
+    Wallaby, // 0
+    Wombat,  // 1
 }
 
 #[uniffi::export]
@@ -44,3 +45,15 @@ fn get_animal(a: Option<Animal>) -> Animal {
 }
 
 uniffi::include_scaffolding!("enum_types");
+
+#[cfg(test)]
+mod test {
+    use crate::AnimalSignedInt;
+
+    #[test]
+    fn check_signed() {
+        assert_eq!(AnimalSignedInt::Koala as i8, -1);
+        assert_eq!(AnimalSignedInt::Wallaby as i8, 0);
+        assert_eq!(AnimalSignedInt::Wombat as i8, 1);
+    }
+}

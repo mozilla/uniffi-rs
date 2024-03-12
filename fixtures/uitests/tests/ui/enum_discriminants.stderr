@@ -1,0 +1,5 @@
+error: UniFFI disciminant values must be a literal
+ --> tests/ui/enum_discriminants.rs:6:9
+  |
+6 |     V = 1 + 1,
+  |         ^^^^^

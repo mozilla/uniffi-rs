@@ -10,3 +10,6 @@ assert(AnimalUInt.CAT.value == 4.toUByte())
 
 assert(AnimalLargeUInt.DOG.value == 4294967298.toULong())
 assert(AnimalLargeUInt.CAT.value == 4294967299.toULong())
+
+// could check `value == (-3).toByte()` but that's ugly :)
+assert(AnimalSignedInt.DOG.value + 3 == 0)

@@ -214,7 +214,7 @@ pub enum MyEnum {
 
 Variant discriminants are accepted by the macro but how they are used depends on the bindings.
 
-Currently only `unsigned integer` variant discriminants are passed through to the foreign bindings. For example this enum:
+For example this enum:
 
 ```rust
 #[derive(uniffi::Enum)]
@@ -228,13 +228,13 @@ would give you in Kotlin & Swift:
 
 ```swift
 // kotlin
-enum class MyEnum {   
+enum class MyEnum {
     FOO,
     BAR;
     companion object
 }
-// swift 
-public enum MyEnum {    
+// swift
+public enum MyEnum {
     case foo
     case bar
 }
