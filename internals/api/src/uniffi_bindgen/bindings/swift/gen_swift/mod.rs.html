@@ -749,6 +749,7 @@
 <a href="#749" id="749">749</a>
 <a href="#750" id="750">750</a>
 <a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1379,6 +1380,7 @@
         <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">&quot;invalid index&quot;</span>);
         <span class="kw">match </span>literal {
             LiteralMetadata::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(v.to_string()),
+            LiteralMetadata::Int(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(v.to_string()),
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;expected an UInt!&quot;</span>),
         }
     }

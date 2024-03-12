@@ -1533,7 +1533,7 @@ pub enum MyEnum {
 }</code></pre>
 <h3 id="variant-discriminants"><a class="header" href="#variant-discriminants">Variant Discriminants</a></h3>
 <p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.</p>
-<p>Currently only <code>unsigned integer</code> variant discriminants are passed through to the foreign bindings. For example this enum:</p>
+<p>For example this enum:</p>
 <pre><code class="language-rust">#[derive(uniffi::Enum)]
 pub enum MyEnum {
     Foo = 3,
@@ -1541,13 +1541,13 @@ pub enum MyEnum {
 }</code></pre>
 <p>would give you in Kotlin &amp; Swift:</p>
 <pre><code class="language-swift">// kotlin
-enum class MyEnum {   
+enum class MyEnum {
     FOO,
     BAR;
     companion object
 }
-// swift 
-public enum MyEnum {    
+// swift
+public enum MyEnum {
     case foo
     case bar
 }

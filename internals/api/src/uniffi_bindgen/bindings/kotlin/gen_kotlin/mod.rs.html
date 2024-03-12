@@ -690,6 +690,10 @@
 <a href="#690" id="690">690</a>
 <a href="#691" id="691">691</a>
 <a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1237,29 +1241,33 @@
         <span class="prelude-val">Ok</span>(as_ct.as_codetype().literal(literal, ci))
     }
 
+    <span class="comment">// Get the idiomatic Kotlin rendering of an integer.
+    </span><span class="kw">fn </span>int_literal(t: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Type&gt;, base10: String) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(t) = t {
+            <span class="kw">match </span>t {
+                Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 =&gt; <span class="prelude-val">Ok</span>(base10),
+                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 =&gt; <span class="prelude-val">Ok</span>(base10 + <span class="string">&quot;u&quot;</span>),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
+                    <span class="string">&quot;Only ints are supported.&quot;</span>.to_string(),
+                )))),
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
+                <span class="string">&quot;Enum hasn&#39;t defined a repr&quot;</span>.to_string(),
+            ))))
+        }
+    }
+
     <span class="comment">// Get the idiomatic Kotlin rendering of an individual enum variant&#39;s discriminant
     </span><span class="kw">pub fn </span>variant_discr_literal(e: <span class="kw-2">&amp;</span>Enum, index: <span class="kw-2">&amp;</span>usize) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">&quot;invalid index&quot;</span>);
         <span class="kw">match </span>literal {
             <span class="comment">// Kotlin doesn&#39;t convert between signed and unsigned by default
             // so we&#39;ll need to make sure we define the type as appropriately
-            </span>LiteralMetadata::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; {
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(t) = e.variant_discr_type() {
-                    <span class="kw">match </span>t {
-                        Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 =&gt; <span class="prelude-val">Ok</span>(v.to_string()),
-                        Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 =&gt; {
-                            <span class="prelude-val">Ok</span>(v.to_string() + <span class="string">&quot;u&quot;</span>)
-                        }
-                        <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;only unsigned is supported at this time&quot;</span>),
-                    }
-                } <span class="kw">else </span>{
-                    <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
-                        <span class="string">&quot;Enum hasn&#39;t defined a repr&quot;</span>.to_string(),
-                    ))))
-                }
-            }
+            </span>LiteralMetadata::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; int_literal(e.variant_discr_type(), v.to_string()),
+            LiteralMetadata::Int(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; int_literal(e.variant_discr_type(), v.to_string()),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
-                <span class="string">&quot;Expected an UInt!&quot;</span>.to_string(),
+                <span class="string">&quot;Only ints are supported.&quot;</span>.to_string(),
             )))),
         }
     }

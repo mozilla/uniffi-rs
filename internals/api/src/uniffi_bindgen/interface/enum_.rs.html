@@ -767,6 +767,14 @@
 <a href="#767" id="767">767</a>
 <a href="#768" id="768">768</a>
 <a href="#769" id="769">769</a>
+<a href="#770" id="770">770</a>
+<a href="#771" id="771">771</a>
+<a href="#772" id="772">772</a>
+<a href="#773" id="773">773</a>
+<a href="#774" id="774">774</a>
+<a href="#775" id="775">775</a>
+<a href="#776" id="776">776</a>
+<a href="#777" id="777">777</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -990,18 +998,26 @@
             <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Invalid variant index {variant_index}&quot;</span>);
         }
         <span class="kw">let </span><span class="kw-2">mut </span>next = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>this = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>this;
+        <span class="kw">let </span><span class="kw-2">mut </span>this_lit = Literal::new_uint(<span class="number">0</span>);
         <span class="kw">for </span>v <span class="kw">in </span><span class="self">self</span>.variants().iter().take(variant_index + <span class="number">1</span>) {
-            this = <span class="kw">match </span>v.discr {
-                <span class="prelude-val">None </span>=&gt; next,
-                <span class="prelude-val">Some</span>(Literal::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>)) =&gt; v,
-                <span class="kw">_ </span>=&gt; {
-                    <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Invalid literal type {v:?}&quot;</span>);
-                }
+            (this, this_lit) = <span class="kw">match </span>v.discr {
+                <span class="prelude-val">None </span>=&gt; (
+                    next,
+                    <span class="kw">if </span>(next <span class="kw">as </span>i64) &lt; <span class="number">0 </span>{
+                        Literal::new_int(next <span class="kw">as </span>i64)
+                    } <span class="kw">else </span>{
+                        Literal::new_uint(next)
+                    },
+                ),
+                <span class="prelude-val">Some</span>(Literal::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>)) =&gt; (v, Literal::new_uint(v)),
+                <span class="comment">// in-practice, Literal::Int == a negative number.
+                </span><span class="prelude-val">Some</span>(Literal::Int(v, <span class="kw">_</span>, <span class="kw">_</span>)) =&gt; (v <span class="kw">as </span>u64, Literal::new_int(v)),
+                <span class="kw">_ </span>=&gt; <span class="macro">anyhow::bail!</span>(<span class="string">&quot;Invalid literal type {v:?}&quot;</span>),
             };
-            next = this + <span class="number">1</span>;
+            next = this.wrapping_add(<span class="number">1</span>);
         }
-        <span class="prelude-val">Ok</span>(Literal::new_uint(this))
+        <span class="prelude-val">Ok</span>(this_lit)
     }
 
     <span class="kw">pub fn </span>variant_discr_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Type&gt; {
