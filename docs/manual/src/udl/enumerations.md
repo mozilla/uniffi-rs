@@ -42,6 +42,16 @@ interface IpAddr {
 ```
 
 Only enums with named fields are supported by this syntax.
+However, procmacros support more flexible enums.
+
+```rust
+#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    None,
+    Str(String),
+    All { s: String, i: i64 }
+}
+```
 
 ## Remote, non-exhaustive enums
 

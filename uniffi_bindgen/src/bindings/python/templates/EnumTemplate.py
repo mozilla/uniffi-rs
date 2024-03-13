@@ -24,6 +24,28 @@ class {{ type_name }}:
     class {{ variant.name()|enum_variant_py }}:
         {%- call py::docstring(variant, 8) %}
 
+    {%-  if variant.has_nameless_fields() %}
+        def __init__(self, *values):
+            if len(values) != {{ variant.fields().len() }}:
+                raise TypeError(f"Expected a tuple of len {{ variant.fields().len() }}, found len {len(values)}")
+        {%- for field in variant.fields() %}
+            if not isinstance(values[{{ loop.index0 }}], {{ field|type_name }}):
+                raise TypeError(f"unexpected type for tuple element {{ loop.index0 }} - expected '{{ field|type_name }}', got '{type(values[{{ loop.index0 }}])}'")
+        {%- endfor %}
+            self._values = values
+
+        def __getitem__(self, index):
+            return self._values[index]
+
+        def __str__(self):
+            return f"{{ type_name }}.{{ variant.name()|enum_variant_py }}{self._values!r}"
+
+        def __eq__(self, other):
+            if not other.is_{{ variant.name()|var_name }}():
+                return False
+            return self._values == other._values
+
+    {%-  else -%}
         {%- for field in variant.fields() %}
         {{ field.name()|var_name }}: "{{ field|type_name }}"
         {%- call py::docstring(field, 8) %}
@@ -31,13 +53,13 @@ class {{ type_name }}:
 
         @typing.no_type_check
         def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name }}: "{{- field|type_name }}"{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
-            {% if variant.has_fields() %}
+            {%- if variant.has_fields() %}
             {%- for field in variant.fields() %}
             self.{{ field.name()|var_name }} = {{ field.name()|var_name }}
             {%- endfor %}
-            {% else %}
+            {%- else %}
             pass
-            {% endif %}
+            {%- endif %}
 
         def __str__(self):
             return "{{ type_name }}.{{ variant.name()|enum_variant_py }}({% for field in variant.fields() %}{{ field.name()|var_name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name()|var_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
@@ -50,6 +72,7 @@ class {{ type_name }}:
                 return False
             {%- endfor %}
             return True
+    {%  endif %}
     {% endfor %}
 
     # For each variant, we have an `is_NAME` method for easily checking
@@ -99,7 +122,11 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         if value.is_{{ variant.name()|var_name }}():
         {%- endif %}
             {%- for field in variant.fields() %}
+            {%- if variant.has_nameless_fields() %}
+            {{ field|check_lower_fn }}(value._values[{{ loop.index0 }}])
+            {%- else %}
             {{ field|check_lower_fn }}(value.{{ field.name()|var_name }})
+            {%- endif %}
             {%- endfor %}
             return
         {%- endfor %}
@@ -116,7 +143,11 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         if value.is_{{ variant.name()|var_name }}():
             buf.write_i32({{ loop.index }})
             {%- for field in variant.fields() %}
+            {%- if variant.has_nameless_fields() %}
+            {{ field|write_fn }}(value._values[{{ loop.index0 }}], buf)
+            {%- else %}
             {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+            {%- endif %}
             {%- endfor %}
         {%- endif %}
         {%- endfor %}

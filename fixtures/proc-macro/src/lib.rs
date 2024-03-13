@@ -209,6 +209,20 @@ pub enum MaybeBool {
     Uncertain,
 }
 
+#[derive(uniffi::Enum)]
+pub enum MixedEnum {
+    None,
+    Str(String),
+    Int(i64),
+    Both(String, i64),
+    All { s: String, i: i64 },
+}
+
+#[uniffi::export]
+fn get_mixed_enum(v: Option<MixedEnum>) -> MixedEnum {
+    v.unwrap_or(MixedEnum::Int(1))
+}
+
 #[repr(u8)]
 #[derive(uniffi::Enum)]
 pub enum ReprU8 {

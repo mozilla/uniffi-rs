@@ -18,6 +18,8 @@
 
 - Rust trait interfaces can now have async functions.  See the futures manual section for details.
 
+- Procmacros support tuple-enums.
+
 ### What's fixed?
  
 - Fixed a memory leak in callback interface handling.

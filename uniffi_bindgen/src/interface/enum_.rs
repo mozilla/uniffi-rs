@@ -320,6 +320,10 @@ impl Variant {
         !self.fields.is_empty()
     }
 
+    pub fn has_nameless_fields(&self) -> bool {
+        self.fields.iter().any(|f| f.name.is_empty())
+    }
+
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
     }

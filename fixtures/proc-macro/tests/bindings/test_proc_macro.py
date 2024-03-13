@@ -115,3 +115,18 @@ assert(MaybeBool.UNCERTAIN.value == 2)
 # values with an explicit value should be that value.
 assert(ReprU8.ONE.value == 1)
 assert(ReprU8.THREE.value == 3)
+#assert(ReprU8.FIVE.value == 5)
+
+assert(get_mixed_enum(None) == MixedEnum.INT(1))
+assert(get_mixed_enum(MixedEnum.NONE()) == MixedEnum.NONE())
+assert(get_mixed_enum(MixedEnum.STR("hello")) == MixedEnum.STR("hello"))
+assert(MixedEnum.STR("hello")[0] == "hello")
+assert(str(MixedEnum.STR("hello")) == "MixedEnum.STR('hello',)")
+
+assert(MixedEnum.BOTH("hello", 1)[0] == "hello")
+assert(MixedEnum.BOTH("hello", 1)[1] == 1)
+assert(MixedEnum.BOTH("hello", 1)[:] == ('hello', 1))
+assert(MixedEnum.BOTH("hello", 1)[-1] == 1)
+assert(str(MixedEnum.BOTH("hello", 2)) == "MixedEnum.BOTH('hello', 2)")
+
+assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_all())

@@ -2,7 +2,8 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    Attribute, Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
+    spanned::Spanned,
+    Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit, Variant,
 };
 
 use crate::util::{
@@ -120,12 +121,33 @@ fn enum_or_error_ffi_converter_impl(
         .enumerate()
         .map(|(i, v)| {
             let v_ident = &v.ident;
-            let fields = v.fields.iter().map(|f| &f.ident);
+            let field_idents = v
+                .fields
+                .iter()
+                .enumerate()
+                .map(|(i, f)| {
+                    f.ident
+                        .clone()
+                        .unwrap_or_else(|| Ident::new(&format!("e{i}"), f.span()))
+                })
+                .collect::<Vec<Ident>>();
             let idx = Index::from(i + 1);
-            let write_fields = v.fields.iter().map(write_field);
+            let write_fields =
+                std::iter::zip(v.fields.iter(), field_idents.iter()).map(|(f, ident)| {
+                    let ty = &f.ty;
+                    quote! {
+                        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(#ident, buf);
+                    }
+                });
+            let is_tuple = v.fields.iter().any(|f| f.ident.is_none());
+            let fields = if is_tuple {
+                quote! { ( #(#field_idents),* ) }
+            } else {
+                quote! { { #(#field_idents),* } }
+            };
 
             quote! {
-                Self::#v_ident { #(#fields),* } => {
+                Self::#v_ident #fields => {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
                     #(#write_fields)*
                 }
@@ -144,10 +166,17 @@ fn enum_or_error_ffi_converter_impl(
     let try_read_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         let idx = Index::from(i + 1);
         let v_ident = &v.ident;
+        let is_tuple = v.fields.iter().any(|f| f.ident.is_none());
         let try_read_fields = v.fields.iter().map(try_read_field);
 
-        quote! {
-            #idx => Self::#v_ident { #(#try_read_fields)* },
+        if is_tuple {
+            quote! {
+                #idx => Self::#v_ident ( #(#try_read_fields)* ),
+            }
+        } else {
+            quote! {
+                #idx => Self::#v_ident { #(#try_read_fields)* },
+            }
         }
     });
     let error_format_string = format!("Invalid {ident} enum value: {{}}");
@@ -179,15 +208,6 @@ fn enum_or_error_ffi_converter_impl(
         }
 
         #derive_ffi_traits
-    }
-}
-
-fn write_field(f: &Field) -> TokenStream {
-    let ident = &f.ident;
-    let ty = &f.ty;
-
-    quote! {
-        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(#ident, buf);
     }
 }
 
@@ -280,54 +300,42 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
     let variants_len =
         try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
     std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
-        .chain(
-            enum_.variants
+        .chain(enum_.variants.iter().map(|v| {
+            let fields_len = try_metadata_value_from_usize(
+                v.fields.len(),
+                "UniFFI limits enum variants to 256 fields",
+            )?;
+
+            let field_names = v
+                .fields
                 .iter()
-                .map(|v| {
-                    let fields_len = try_metadata_value_from_usize(
-                        v.fields.len(),
-                        "UniFFI limits enum variants to 256 fields",
-                    )?;
+                .map(|f| f.ident.as_ref().map(ident_to_string).unwrap_or_default())
+                .collect::<Vec<_>>();
 
-                    let field_names = v.fields
-                        .iter()
-                        .map(|f| {
-                            f.ident
-                                .as_ref()
-                                .ok_or_else(||
-                                    syn::Error::new_spanned(
-                                        v,
-                                        "UniFFI only supports enum variants with named fields (or no fields at all)",
-                                    )
-                                )
-                                .map(ident_to_string)
-                        })
-                    .collect::<syn::Result<Vec<_>>>()?;
+            let name = ident_to_string(&v.ident);
+            let value_tokens = variant_value(v)?;
+            let docstring = extract_docstring(&v.attrs)?;
+            let field_types = v.fields.iter().map(|f| &f.ty);
+            let field_docstrings = v
+                .fields
+                .iter()
+                .map(|f| extract_docstring(&f.attrs))
+                .collect::<syn::Result<Vec<_>>>()?;
 
-                    let name = ident_to_string(&v.ident);
-                    let value_tokens = variant_value(v)?;
-                    let docstring = extract_docstring(&v.attrs)?;
-                    let field_types = v.fields.iter().map(|f| &f.ty);
-                    let field_docstrings = v.fields
-                        .iter()
-                        .map(|f| extract_docstring(&f.attrs))
-                        .collect::<syn::Result<Vec<_>>>()?;
-
-                    Ok(quote! {
-                        .concat_str(#name)
-                        #value_tokens
-                        .concat_value(#fields_len)
-                            #(
-                                .concat_str(#field_names)
-                                .concat(<#field_types as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
-                                // field defaults not yet supported for enums
-                                .concat_bool(false)
-                                .concat_long_str(#field_docstrings)
-                            )*
-                        .concat_long_str(#docstring)
-                    })
-                })
-        )
+            Ok(quote! {
+                .concat_str(#name)
+                #value_tokens
+                .concat_value(#fields_len)
+                    #(
+                        .concat_str(#field_names)
+                        .concat(<#field_types as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
+                        // field defaults not yet supported for enums
+                        .concat_bool(false)
+                        .concat_long_str(#field_docstrings)
+                    )*
+                .concat_long_str(#docstring)
+            })
+        }))
         .collect()
 }
 

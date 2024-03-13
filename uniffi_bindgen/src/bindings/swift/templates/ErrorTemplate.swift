@@ -11,7 +11,7 @@ public enum {{ type_name }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|class_name }}{% if variant.fields().len() > 0 %}(
-        {%- call swift::field_list_decl(variant) %}
+        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
     ){% endif -%}
     {% endfor %}
 

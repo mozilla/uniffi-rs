@@ -56,18 +56,30 @@
 // Field lists as used in Swift declarations of Records and Enums.
 // Note the var_name and type_name filters.
 -#}
-{% macro field_list_decl(item) %}
+{% macro field_list_decl(item, has_nameless_fields) %}
     {%- for field in item.fields() -%}
         {%- call docstring(field, 8) %}
+        {%- if has_nameless_fields %}
+        {{- field|type_name -}}
+        {%- if !loop.last -%}, {%- endif -%}
+        {%- else -%}
         {{ field.name()|var_name }}: {{ field|type_name -}}
         {%- match field.default_value() %}
             {%- when Some with(literal) %} = {{ literal|literal_swift(field) }}
             {%- else %}
         {%- endmatch -%}
         {% if !loop.last %}, {% endif %}
+        {%- endif -%}
     {%- endfor %}
 {%- endmacro %}
 
+{% macro field_name(field, field_num) %}
+{%- if field.name().is_empty() -%}
+v{{- field_num -}}
+{%- else -%}
+{{ field.name()|var_name }}
+{%- endif -%}
+{%- endmacro %}
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
