@@ -293,6 +293,11 @@
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
 <a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -374,8 +379,13 @@
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
     <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
 
-    <span class="macro">quote! </span>{
-        #ident: &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+    <span class="kw">match </span>ident {
+        <span class="prelude-val">Some</span>(ident) =&gt; <span class="macro">quote! </span>{
+            #ident: &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+        },
+        <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{
+            &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+        },
     }
 }
 

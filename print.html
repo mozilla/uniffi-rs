@@ -476,7 +476,14 @@ interface IpAddr {
   V6(string addr);
 };
 </code></pre>
-<p>Only enums with named fields are supported by this syntax.</p>
+<p>Only enums with named fields are supported by this syntax.
+However, procmacros support more flexible enums.</p>
+<pre><code class="language-rust">#[derive(uniffi::Enum)]
+pub enum MyEnum {
+    None,
+    Str(String),
+    All { s: String, i: i64 }
+}</code></pre>
 <h2 id="remote-non-exhaustive-enums"><a class="header" href="#remote-non-exhaustive-enums">Remote, non-exhaustive enums</a></h2>
 <p>One corner case is an enum that's:</p>
 <ul>

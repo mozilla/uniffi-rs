@@ -361,11 +361,20 @@
 <a href="#361" id="361">361</a>
 <a href="#362" id="362">362</a>
 <a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
     parse::{Parse, ParseStream},
-    Attribute, Data, DataEnum, DeriveInput, Expr, Field, Index, Lit, Variant,
+    spanned::Spanned,
+    Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit, Variant,
 };
 
 <span class="kw">use </span><span class="kw">crate</span>::util::{
@@ -483,12 +492,33 @@
         .enumerate()
         .map(|(i, v)| {
             <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
-            <span class="kw">let </span>fields = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ident);
+            <span class="kw">let </span>field_idents = v
+                .fields
+                .iter()
+                .enumerate()
+                .map(|(i, f)| {
+                    f.ident
+                        .clone()
+                        .unwrap_or_else(|| Ident::new(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;e{i}&quot;</span>), f.span()))
+                })
+                .collect::&lt;Vec&lt;Ident&gt;&gt;();
             <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
-            <span class="kw">let </span>write_fields = v.fields.iter().map(write_field);
+            <span class="kw">let </span>write_fields =
+                std::iter::zip(v.fields.iter(), field_idents.iter()).map(|(f, ident)| {
+                    <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
+                    <span class="macro">quote! </span>{
+                        &lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(#ident, buf);
+                    }
+                });
+            <span class="kw">let </span>is_tuple = v.fields.iter().any(|f| f.ident.is_none());
+            <span class="kw">let </span>fields = <span class="kw">if </span>is_tuple {
+                <span class="macro">quote! </span>{ ( #(#field_idents),* ) }
+            } <span class="kw">else </span>{
+                <span class="macro">quote! </span>{ { #(#field_idents),* } }
+            };
 
             <span class="macro">quote! </span>{
-                <span class="self">Self</span>::#v_ident { #(#fields),* } =&gt; {
+                <span class="self">Self</span>::#v_ident #fields =&gt; {
                     ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
                     #(#write_fields)*
                 }
@@ -507,10 +537,17 @@
     <span class="kw">let </span>try_read_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
         <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
         <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
+        <span class="kw">let </span>is_tuple = v.fields.iter().any(|f| f.ident.is_none());
         <span class="kw">let </span>try_read_fields = v.fields.iter().map(try_read_field);
 
-        <span class="macro">quote! </span>{
-            #idx =&gt; <span class="self">Self</span>::#v_ident { #(#try_read_fields)* },
+        <span class="kw">if </span>is_tuple {
+            <span class="macro">quote! </span>{
+                #idx =&gt; <span class="self">Self</span>::#v_ident ( #(#try_read_fields)* ),
+            }
+        } <span class="kw">else </span>{
+            <span class="macro">quote! </span>{
+                #idx =&gt; <span class="self">Self</span>::#v_ident { #(#try_read_fields)* },
+            }
         }
     });
     <span class="kw">let </span>error_format_string = <span class="macro">format!</span>(<span class="string">&quot;Invalid {ident} enum value: {{}}&quot;</span>);
@@ -542,15 +579,6 @@
         }
 
         #derive_ffi_traits
-    }
-}
-
-<span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {
-    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
-    <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
-
-    <span class="macro">quote! </span>{
-        &lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(#ident, buf);
     }
 }
 
@@ -643,54 +671,42 @@
     <span class="kw">let </span>variants_len =
         try_metadata_value_from_usize(enum_.variants.len(), <span class="string">&quot;UniFFI limits enums to 256 variants&quot;</span>)<span class="question-mark">?</span>;
     std::iter::once(<span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{ .concat_value(#variants_len) }))
-        .chain(
-            enum_.variants
+        .chain(enum_.variants.iter().map(|v| {
+            <span class="kw">let </span>fields_len = try_metadata_value_from_usize(
+                v.fields.len(),
+                <span class="string">&quot;UniFFI limits enum variants to 256 fields&quot;</span>,
+            )<span class="question-mark">?</span>;
+
+            <span class="kw">let </span>field_names = v
+                .fields
                 .iter()
-                .map(|v| {
-                    <span class="kw">let </span>fields_len = try_metadata_value_from_usize(
-                        v.fields.len(),
-                        <span class="string">&quot;UniFFI limits enum variants to 256 fields&quot;</span>,
-                    )<span class="question-mark">?</span>;
+                .map(|f| f.ident.as_ref().map(ident_to_string).unwrap_or_default())
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-                    <span class="kw">let </span>field_names = v.fields
-                        .iter()
-                        .map(|f| {
-                            f.ident
-                                .as_ref()
-                                .ok_or_else(||
-                                    syn::Error::new_spanned(
-                                        v,
-                                        <span class="string">&quot;UniFFI only supports enum variants with named fields (or no fields at all)&quot;</span>,
-                                    )
-                                )
-                                .map(ident_to_string)
-                        })
-                    .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+            <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
+            <span class="kw">let </span>value_tokens = variant_value(v)<span class="question-mark">?</span>;
+            <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>v.attrs)<span class="question-mark">?</span>;
+            <span class="kw">let </span>field_types = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
+            <span class="kw">let </span>field_docstrings = v
+                .fields
+                .iter()
+                .map(|f| extract_docstring(<span class="kw-2">&amp;</span>f.attrs))
+                .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
 
-                    <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
-                    <span class="kw">let </span>value_tokens = variant_value(v)<span class="question-mark">?</span>;
-                    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>v.attrs)<span class="question-mark">?</span>;
-                    <span class="kw">let </span>field_types = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
-                    <span class="kw">let </span>field_docstrings = v.fields
-                        .iter()
-                        .map(|f| extract_docstring(<span class="kw-2">&amp;</span>f.attrs))
-                        .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
-
-                    <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
-                        .concat_str(#name)
-                        #value_tokens
-                        .concat_value(#fields_len)
-                            #(
-                                .concat_str(#field_names)
-                                .concat(&lt;#field_types <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
-                                <span class="comment">// field defaults not yet supported for enums
-                                </span>.concat_bool(<span class="bool-val">false</span>)
-                                .concat_long_str(#field_docstrings)
-                            )*
-                        .concat_long_str(#docstring)
-                    })
-                })
-        )
+            <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                .concat_str(#name)
+                #value_tokens
+                .concat_value(#fields_len)
+                    #(
+                        .concat_str(#field_names)
+                        .concat(&lt;#field_types <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        <span class="comment">// field defaults not yet supported for enums
+                        </span>.concat_bool(<span class="bool-val">false</span>)
+                        .concat_long_str(#field_docstrings)
+                    )*
+                .concat_long_str(#docstring)
+            })
+        }))
         .collect()
 }
 
