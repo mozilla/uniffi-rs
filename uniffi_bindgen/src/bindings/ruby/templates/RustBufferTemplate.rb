@@ -181,7 +181,7 @@ class RustBuffer < FFI::Struct
 
   {% when Type::Optional { inner_type } -%}
   # The Optional<T> type for {{ canonical_name(inner_type) }}.
-  
+
   def self.check_lower_{{ canonical_type_name }}(v)
     if not v.nil?
       {{ "v"|check_lower_rb(inner_type.borrow()) }}

@@ -3,7 +3,7 @@ class _UniffiConverterPrimitive:
     @classmethod
     def lift(cls, value):
         return value
- 
+
     @classmethod
     def lower(cls, value):
         return value
