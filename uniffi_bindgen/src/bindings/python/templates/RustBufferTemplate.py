@@ -1,8 +1,8 @@
 
 class _UniffiRustBuffer(ctypes.Structure):
     _fields_ = [
-        ("capacity", ctypes.c_int32),
-        ("len", ctypes.c_int32),
+        ("capacity", ctypes.c_uint64),
+        ("len", ctypes.c_uint64),
         ("data", ctypes.POINTER(ctypes.c_char)),
     ]
 

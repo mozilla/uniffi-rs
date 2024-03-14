@@ -53,7 +53,7 @@ public object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name 
         {%- for field in rec.fields() %}
             {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }}){% if !loop.last %} +{% endif %}
         {%- endfor %}
-    ) {%- else %} 0 {%- endif %}
+    ) {%- else %} 0UL {%- endif %}
 
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         {%- for field in rec.fields() %}

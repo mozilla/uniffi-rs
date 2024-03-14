@@ -420,7 +420,7 @@ impl ComponentInterface {
             is_async: false,
             arguments: vec![FfiArgument {
                 name: "size".to_string(),
-                type_: FfiType::Int32,
+                type_: FfiType::UInt64,
             }],
             return_type: Some(FfiType::RustBuffer(None)),
             has_rust_call_status_arg: true,
@@ -476,7 +476,7 @@ impl ComponentInterface {
                 },
                 FfiArgument {
                     name: "additional".to_string(),
-                    type_: FfiType::Int32,
+                    type_: FfiType::UInt64,
                 },
             ],
             return_type: Some(FfiType::RustBuffer(None)),

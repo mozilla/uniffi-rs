@@ -1,6 +1,6 @@
 class RustBuffer < FFI::Struct
-  layout :capacity, :int32,
-         :len,      :int32,
+  layout :capacity, :uint64,
+         :len,      :uint64,
          :data,     :pointer
 
   def self.alloc(size)
