@@ -1732,7 +1732,7 @@
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
                 name: <span class="string">&quot;size&quot;</span>.to_string(),
-                type_: FfiType::Int32,
+                type_: FfiType::UInt64,
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
             has_rust_call_status_arg: <span class="bool-val">true</span>,
@@ -1788,7 +1788,7 @@
                 },
                 FfiArgument {
                     name: <span class="string">&quot;additional&quot;</span>.to_string(),
-                    type_: FfiType::Int32,
+                    type_: FfiType::UInt64,
                 },
             ],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),

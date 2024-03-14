@@ -259,7 +259,7 @@
         </span><span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rustbuffer_alloc_ident(size: i32, call_status: <span class="kw-2">&amp;mut </span>uniffi::RustCallStatus) -&gt; uniffi::RustBuffer {
+        </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rustbuffer_alloc_ident(size: u64, call_status: <span class="kw-2">&amp;mut </span>uniffi::RustCallStatus) -&gt; uniffi::RustBuffer {
             uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
         }
 
@@ -280,7 +280,7 @@
         <span class="attr">#[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: i32, call_status: <span class="kw-2">&amp;mut </span>uniffi::RustCallStatus) -&gt; uniffi::RustBuffer {
+        </span><span class="kw">pub unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: u64, call_status: <span class="kw-2">&amp;mut </span>uniffi::RustCallStatus) -&gt; uniffi::RustBuffer {
             uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
         }
 
