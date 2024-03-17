@@ -43,6 +43,8 @@ mod ffi_converter_impls;
 mod ffi_converter_traits;
 pub mod metadata;
 
+#[cfg(feature = "scaffolding-ffi-buffer-fns")]
+pub use ffi::ffiserialize::FfiBufferElement;
 pub use ffi::*;
 pub use ffi_converter_traits::{
     ConvertError, FfiConverter, FfiConverterArc, HandleAlloc, Lift, LiftRef, LiftReturn, Lower,
