@@ -11,12 +11,13 @@ name = "uniffi_proc_macro"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { workspace = true }
+# Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
+uniffi = { workspace = true, features = ["scaffolding-ffi-buffer-fns"] }
 thiserror = "1.0"
 lazy_static = "1.4"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "scaffolding-ffi-buffer-fns"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

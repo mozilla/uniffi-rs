@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::FfiSerialize;
+
 /// Object handle
 ///
 /// Handles opaque `u64` values used to pass objects across the FFI, both for objects implemented in
@@ -42,5 +44,17 @@ impl Handle {
 
     pub fn as_raw(&self) -> u64 {
         self.0
+    }
+}
+
+impl FfiSerialize for Handle {
+    const SIZE: usize = 1;
+
+    fn get(buf: &[u64]) -> Self {
+        Handle(buf[0])
+    }
+
+    fn put(buf: &mut [u64], value: Self) {
+        buf[0] = value.0
     }
 }

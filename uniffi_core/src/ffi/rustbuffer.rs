@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::ffi::{rust_call, ForeignBytes, RustCallStatus};
+use crate::ffi::{rust_call, FfiSerialize, ForeignBytes, RustCallStatus};
 
 /// Support for passing an allocated-by-Rust buffer of bytes over the FFI.
 ///
@@ -107,6 +107,12 @@ impl RustBuffer {
             .expect("buffer length negative or overflowed")
     }
 
+    pub fn capacity(&self) -> usize {
+        self.capacity
+            .try_into()
+            .expect("buffer length negative or overflowed")
+    }
+
     /// Get a pointer to the data
     pub fn data_pointer(&self) -> *const u8 {
         self.data
@@ -191,6 +197,20 @@ impl RustBuffer {
 impl Default for RustBuffer {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl FfiSerialize for RustBuffer {
+    const SIZE: usize = 3;
+
+    fn get(buf: &[u64]) -> Self {
+        unsafe { crate::RustBuffer::from_raw_parts(buf[0] as *mut u8, buf[1], buf[2]) }
+    }
+
+    fn put(buf: &mut [u64], value: Self) {
+        buf[0] = value.data as u64;
+        buf[1] = value.len;
+        buf[2] = value.capacity;
     }
 }
 

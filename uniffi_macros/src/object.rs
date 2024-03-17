@@ -2,8 +2,11 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::util::{
-    create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
+use crate::{
+    export::ffi_buffer_scaffolding_fn,
+    util::{
+        create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
+    },
 };
 use uniffi_meta::ObjectImpl;
 
@@ -25,6 +28,19 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     let interface_impl = interface_impl(ident, udl_mode);
+
+    let clone_fn_ffi_buffer_version = ffi_buffer_scaffolding_fn(
+        &clone_fn_ident,
+        &quote! { *const ::std::ffi::c_void },
+        &[quote! { *const ::std::ffi::c_void }],
+        true,
+    );
+    let free_fn_ffi_buffer_version = ffi_buffer_scaffolding_fn(
+        &free_fn_ident,
+        &quote! { () },
+        &[quote! { *const ::std::ffi::c_void }],
+        true,
+    );
 
     Ok(quote! {
         #[doc(hidden)]
@@ -54,6 +70,9 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
                 Ok(())
             });
         }
+
+        #clone_fn_ffi_buffer_version
+        #free_fn_ffi_buffer_version
 
         #interface_impl
         #meta_static_var

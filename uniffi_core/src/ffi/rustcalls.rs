@@ -11,7 +11,7 @@
 //!    - Adapting the result of `Return::lower_return()` into either a return value or an
 //!      exception
 
-use crate::{FfiDefault, Lower, RustBuffer, UniFfiTag};
+use crate::{FfiDefault, FfiSerialize, Lower, RustBuffer, UniFfiTag};
 use std::mem::MaybeUninit;
 use std::panic;
 
@@ -87,6 +87,25 @@ impl Default for RustCallStatus {
     }
 }
 
+impl FfiSerialize for RustCallStatus {
+    const SIZE: usize = 4;
+
+    fn get(buf: &[u64]) -> Self {
+        Self {
+            code: RustCallStatusCode::try_from(buf[0] as i8)
+                .unwrap_or(RustCallStatusCode::UnexpectedError),
+            error_buf: MaybeUninit::new(RustBuffer::get(&buf[1..])),
+        }
+    }
+
+    fn put(buf: &mut [u64], value: Self) {
+        buf[0] = value.code as u64;
+        // Safety: This is okay even if the error buf is not initialized.  It just means we'll be
+        // copying the garbage data.
+        unsafe { RustBuffer::put(&mut buf[1..], value.error_buf.assume_init()) }
+    }
+}
+
 /// Result of a FFI call to a Rust function
 #[repr(i8)]
 #[derive(Debug, PartialEq, Eq)]
@@ -104,6 +123,20 @@ pub enum RustCallStatusCode {
     /// This is only returned for async functions and only if the bindings code uses the
     /// [rust_future_cancel] call.
     Cancelled = 3,
+}
+
+impl TryFrom<i8> for RustCallStatusCode {
+    type Error = i8;
+
+    fn try_from(value: i8) -> Result<Self, i8> {
+        match value {
+            0 => Ok(Self::Success),
+            1 => Ok(Self::Error),
+            2 => Ok(Self::UnexpectedError),
+            3 => Ok(Self::Cancelled),
+            n => Err(n),
+        }
+    }
 }
 
 /// Handle a scaffolding calls

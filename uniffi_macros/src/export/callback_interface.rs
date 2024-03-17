@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::{
-    export::ImplItem,
+    export::{ffi_buffer_scaffolding_fn, ImplItem},
     fnsig::{FnKind, FnSignature, ReceiverArg},
     util::{
         create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
@@ -60,6 +60,13 @@ pub(super) fn trait_impl(
         .map(|sig| gen_method_impl(sig, &vtable_cell))
         .collect::<syn::Result<Vec<_>>>()?;
 
+    let init_fn_ffi_buffer_version = ffi_buffer_scaffolding_fn(
+        &init_ident,
+        &quote! { () },
+        &[quote! { ::std::ptr::NonNull<#vtable_type> }],
+        false,
+    );
+
     Ok(quote! {
         struct #vtable_type {
             #(#vtable_fields)*
@@ -72,6 +79,8 @@ pub(super) fn trait_impl(
         extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
             #vtable_cell.set(vtable);
         }
+
+        #init_fn_ffi_buffer_version
 
         #[derive(Debug)]
         struct #trait_impl_ident {

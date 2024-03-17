@@ -21,6 +21,7 @@ use self::{
 };
 use crate::util::{ident_to_string, mod_path};
 pub use callback_interface::ffi_converter_callback_interface_impl;
+pub use scaffolding::ffi_buffer_scaffolding_fn;
 
 // TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
