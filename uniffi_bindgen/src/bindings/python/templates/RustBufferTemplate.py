@@ -7,6 +7,10 @@ class _UniffiRustBuffer(ctypes.Structure):
     ]
 
     @staticmethod
+    def default():
+        return _UniffiRustBuffer(0, 0, None)
+
+    @staticmethod
     def alloc(size):
         return _rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
 

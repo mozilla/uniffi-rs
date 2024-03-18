@@ -58,6 +58,7 @@ pub mod deps {
     pub use async_compat;
     pub use bytes;
     pub use log;
+    pub use oneshot;
     pub use static_assertions;
 }
 

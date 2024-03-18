@@ -11,6 +11,8 @@ use std::{
     time::Duration,
 };
 
+use futures::future::{AbortHandle, Abortable, Aborted};
+
 /// Non-blocking timer future.
 pub struct TimerFuture {
     shared_state: Arc<Mutex<SharedState>>,
@@ -385,6 +387,73 @@ impl SayAfterUdlTrait for SayAfterImpl2 {
 #[uniffi::export]
 fn get_say_after_udl_traits() -> Vec<Arc<dyn SayAfterUdlTrait>> {
     vec![Arc::new(SayAfterImpl1), Arc::new(SayAfterImpl2)]
+}
+
+// Async callback interface implemented in foreign code
+#[uniffi::export(with_foreign)]
+#[async_trait::async_trait]
+pub trait AsyncParser: Send + Sync {
+    // Simple async method
+    async fn as_string(&self, delay_ms: i32, value: i32) -> String;
+    // Async method that can throw
+    async fn try_from_string(&self, delay_ms: i32, value: String) -> Result<i32, ParserError>;
+    // Void return, which requires special handling
+    async fn delay(&self, delay_ms: i32);
+    // Void return that can also throw
+    async fn try_delay(&self, delay_ms: String) -> Result<(), ParserError>;
+}
+
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+pub enum ParserError {
+    #[error("NotAnInt")]
+    NotAnInt,
+    #[error("UnexpectedError")]
+    UnexpectedError,
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for ParserError {
+    fn from(_: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        Self::UnexpectedError
+    }
+}
+
+#[uniffi::export]
+async fn as_string_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32, value: i32) -> String {
+    obj.as_string(delay_ms, value).await
+}
+
+#[uniffi::export]
+async fn try_from_string_using_trait(
+    obj: Arc<dyn AsyncParser>,
+    delay_ms: i32,
+    value: String,
+) -> Result<i32, ParserError> {
+    obj.try_from_string(delay_ms, value).await
+}
+
+#[uniffi::export]
+async fn delay_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32) {
+    obj.delay(delay_ms).await
+}
+
+#[uniffi::export]
+async fn try_delay_using_trait(
+    obj: Arc<dyn AsyncParser>,
+    delay_ms: String,
+) -> Result<(), ParserError> {
+    obj.try_delay(delay_ms).await
+}
+
+#[uniffi::export]
+async fn cancel_delay_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32) {
+    let (abort_handle, abort_registration) = AbortHandle::new_pair();
+    thread::spawn(move || {
+        // Simulate a different thread aborting the process
+        thread::sleep(Duration::from_millis(1));
+        abort_handle.abort();
+    });
+    let future = Abortable::new(obj.delay(delay_ms), abort_registration);
+    assert_eq!(future.await, Err(Aborted));
 }
 
 uniffi::include_scaffolding!("futures");

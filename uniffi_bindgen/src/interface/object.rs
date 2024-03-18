@@ -135,6 +135,10 @@ impl Object {
         self.imp.has_callback_interface()
     }
 
+    pub fn has_async_method(&self) -> bool {
+        self.methods.iter().any(Method::is_async)
+    }
+
     pub fn constructors(&self) -> Vec<&Constructor> {
         self.constructors.iter().collect()
     }
@@ -566,6 +570,11 @@ impl Method {
                 .flat_map(Argument::iter_types)
                 .chain(self.return_type.iter().flat_map(Type::iter_types)),
         )
+    }
+
+    /// For async callback interface methods, the FFI struct to pass to the completion function.
+    pub fn foreign_future_ffi_result_struct(&self) -> FfiStruct {
+        callbacks::foreign_future_ffi_result_struct(self.return_type.as_ref().map(FfiType::from))
     }
 }
 

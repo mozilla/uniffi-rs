@@ -35,6 +35,7 @@
 
 use std::iter;
 
+use heck::ToUpperCamelCase;
 use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiField, FfiFunction, FfiStruct, FfiType};
@@ -107,6 +108,10 @@ impl CallbackInterface {
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
     }
+
+    pub fn has_async_method(&self) -> bool {
+        self.methods.iter().any(Method::is_async)
+    }
 }
 
 impl AsType for CallbackInterface {
@@ -142,17 +147,80 @@ pub fn ffi_callbacks(trait_name: &str, methods: &[Method]) -> Vec<FfiCallbackFun
 }
 
 pub fn method_ffi_callback(trait_name: &str, method: &Method, index: usize) -> FfiCallbackFunction {
+    if !method.is_async() {
+        FfiCallbackFunction {
+            name: method_ffi_callback_name(trait_name, index),
+            arguments: iter::once(FfiArgument::new("uniffi_handle", FfiType::UInt64))
+                .chain(method.arguments().into_iter().map(Into::into))
+                .chain(iter::once(match method.return_type() {
+                    Some(t) => FfiArgument::new("uniffi_out_return", FfiType::from(t).reference()),
+                    None => FfiArgument::new("uniffi_out_return", FfiType::VoidPointer),
+                }))
+                .collect(),
+            has_rust_call_status_arg: true,
+            return_type: None,
+        }
+    } else {
+        let completion_callback =
+            ffi_foreign_future_complete(method.return_type().map(FfiType::from));
+        FfiCallbackFunction {
+            name: method_ffi_callback_name(trait_name, index),
+            arguments: iter::once(FfiArgument::new("uniffi_handle", FfiType::UInt64))
+                .chain(method.arguments().into_iter().map(Into::into))
+                .chain([
+                    FfiArgument::new(
+                        "uniffi_future_callback",
+                        FfiType::Callback(completion_callback.name),
+                    ),
+                    FfiArgument::new("uniffi_callback_data", FfiType::UInt64),
+                    FfiArgument::new(
+                        "uniffi_out_return",
+                        FfiType::Struct("ForeignFuture".to_owned()).reference(),
+                    ),
+                ])
+                .collect(),
+            has_rust_call_status_arg: false,
+            return_type: None,
+        }
+    }
+}
+
+/// Result struct to pass to the completion callback for async methods
+pub fn foreign_future_ffi_result_struct(return_ffi_type: Option<FfiType>) -> FfiStruct {
+    let return_type_name =
+        FfiType::return_type_name(return_ffi_type.as_ref()).to_upper_camel_case();
+    FfiStruct {
+        name: format!("ForeignFutureStruct{return_type_name}"),
+        fields: match return_ffi_type {
+            Some(return_ffi_type) => vec![
+                FfiField::new("return_value", return_ffi_type),
+                FfiField::new("call_status", FfiType::RustCallStatus),
+            ],
+            None => vec![
+                // In Rust, `return_value` is `()` -- a ZST.
+                // ZSTs are not valid in `C`, but they also take up 0 space.
+                // Skip the `return_value` field to make the layout correct.
+                FfiField::new("call_status", FfiType::RustCallStatus),
+            ],
+        },
+    }
+}
+
+/// Definition for callback functions to complete an async callback interface method
+pub fn ffi_foreign_future_complete(return_ffi_type: Option<FfiType>) -> FfiCallbackFunction {
+    let return_type_name =
+        FfiType::return_type_name(return_ffi_type.as_ref()).to_upper_camel_case();
     FfiCallbackFunction {
-        name: method_ffi_callback_name(trait_name, index),
-        arguments: iter::once(FfiArgument::new("uniffi_handle", FfiType::UInt64))
-            .chain(method.arguments().into_iter().map(Into::into))
-            .chain(iter::once(match method.return_type() {
-                Some(t) => FfiArgument::new("uniffi_out_return", FfiType::from(t).reference()),
-                None => FfiArgument::new("uniffi_out_return", FfiType::VoidPointer),
-            }))
-            .collect(),
-        has_rust_call_status_arg: true,
+        name: format!("ForeignFutureComplete{return_type_name}"),
+        arguments: vec![
+            FfiArgument::new("callback_data", FfiType::UInt64),
+            FfiArgument::new(
+                "result",
+                FfiType::Struct(format!("ForeignFutureStruct{return_type_name}")),
+            ),
+        ],
         return_type: None,
+        has_rust_call_status_arg: false,
     }
 }
 

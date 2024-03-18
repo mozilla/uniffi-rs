@@ -367,12 +367,40 @@ impl PythonCodeOracle {
                 Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
                 None => "_UniffiRustBuffer".to_string(),
             },
+            FfiType::RustCallStatus => "_UniffiRustCallStatus".to_string(),
             FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::Reference(inner) => format!("ctypes.POINTER({})", self.ffi_type_label(inner)),
             FfiType::VoidPointer => "ctypes.c_void_p".to_string(),
+        }
+    }
+
+    /// Default values for FFI types
+    ///
+    /// Used to set a default return value when returning an error
+    fn ffi_default_value(&self, return_type: Option<&FfiType>) -> String {
+        match return_type {
+            Some(t) => match t {
+                FfiType::UInt8
+                | FfiType::Int8
+                | FfiType::UInt16
+                | FfiType::Int16
+                | FfiType::UInt32
+                | FfiType::Int32
+                | FfiType::UInt64
+                | FfiType::Int64 => "0".to_owned(),
+                FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
+                FfiType::RustArcPtr(_) => "ctypes.c_void_p()".to_owned(),
+                FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
+                    Some(suffix) => format!("_UniffiRustBuffer{suffix}.default()"),
+                    None => "_UniffiRustBuffer.default()".to_owned(),
+                },
+                _ => unimplemented!("FFI return type: {t:?}"),
+            },
+            // When we need to use a value for void returns, we use a `u8` placeholder
+            None => "0".to_owned(),
         }
     }
 
@@ -499,6 +527,10 @@ pub mod filters {
 
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.ffi_type_label(type_))
+    }
+
+    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.ffi_default_value(return_type.as_ref()))
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).

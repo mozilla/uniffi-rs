@@ -20,6 +20,9 @@ Newcomers are recommended to explore them in the following order:
   code, through rust and back again.
 * [`./fxa-client`](./fxa-client/) doesn't work yet, but it contains aspirational example of what the UDL
   might look like for an actual real-world component.
+* [`./async-api-client`](./async-api-client/) shows how to handle async calls across the FFI.  The
+  foreign code supplies the HTTP client, the Rust code uses that client to expose a GitHub API
+  client, then the foreign code consumes the client.  All code on both sides of the FFI is async.
 
 Each example has the following structure:
 

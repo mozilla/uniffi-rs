@@ -50,8 +50,25 @@ pub(super) fn trait_impl(
             let param_names = sig.scaffolding_param_names();
             let param_types = sig.scaffolding_param_types();
             let lift_return = sig.lift_return_impl();
-            quote! {
-                #ident: extern "C" fn(handle: u64, #(#param_names: #param_types,)* &mut #lift_return::ReturnType, &mut ::uniffi::RustCallStatus),
+            if !sig.is_async {
+                quote! {
+                    #ident: extern "C" fn(
+                        uniffi_handle: u64,
+                        #(#param_names: #param_types,)*
+                        uniffi_out_return: &mut #lift_return::ReturnType,
+                        uniffi_out_call_status: &mut ::uniffi::RustCallStatus,
+                    ),
+                }
+            } else {
+                quote! {
+                    #ident: extern "C" fn(
+                        uniffi_handle: u64,
+                        #(#param_names: #param_types,)*
+                        uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return::ReturnType>,
+                        uniffi_callback_data: u64,
+                        uniffi_out_return: &mut ::uniffi::ForeignFuture,
+                    ),
+                }
             }
         });
 
@@ -59,6 +76,8 @@ pub(super) fn trait_impl(
         .iter()
         .map(|sig| gen_method_impl(sig, &vtable_cell))
         .collect::<syn::Result<Vec<_>>>()?;
+    let has_async_method = methods.iter().any(|m| m.is_async);
+    let impl_attributes = has_async_method.then(|| quote! { #[::async_trait::async_trait] });
 
     Ok(quote! {
         struct #vtable_type {
@@ -86,6 +105,7 @@ pub(super) fn trait_impl(
 
         ::uniffi::deps::static_assertions::assert_impl_all!(#trait_impl_ident: ::core::marker::Send);
 
+        #impl_attributes
         impl #trait_ident for #trait_impl_ident {
             #(#trait_impl_methods)*
         }
@@ -153,6 +173,7 @@ pub fn ffi_converter_callback_interface_impl(
 fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenStream> {
     let FnSignature {
         ident,
+        is_async,
         return_ty,
         kind,
         receiver,
@@ -190,15 +211,28 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
 
     let lift_return = sig.lift_return_impl();
 
-    Ok(quote! {
-        fn #ident(#self_param, #(#params),*) -> #return_ty {
-            let vtable = #vtable_cell.get();
-            let mut uniffi_call_status = ::uniffi::RustCallStatus::new();
-            let mut return_value: #lift_return::ReturnType = ::uniffi::FfiDefault::ffi_default();
-            (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut return_value, &mut uniffi_call_status);
-            #lift_return::lift_foreign_return(return_value, uniffi_call_status)
-        }
-    })
+    if !is_async {
+        Ok(quote! {
+            fn #ident(#self_param, #(#params),*) -> #return_ty {
+                let vtable = #vtable_cell.get();
+                let mut uniffi_call_status = ::uniffi::RustCallStatus::new();
+                let mut uniffi_return_value: #lift_return::ReturnType = ::uniffi::FfiDefault::ffi_default();
+                (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut uniffi_return_value, &mut uniffi_call_status);
+                #lift_return::lift_foreign_return(uniffi_return_value, uniffi_call_status)
+            }
+        })
+    } else {
+        Ok(quote! {
+            async fn #ident(#self_param, #(#params),*) -> #return_ty {
+                let vtable = #vtable_cell.get();
+                ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(move |uniffi_future_callback, uniffi_future_callback_data| {
+                    let mut uniffi_foreign_future: ::uniffi::ForeignFuture = ::uniffi::FfiDefault::ffi_default();
+                    (vtable.#ident)(self.handle, #(#lower_exprs,)* uniffi_future_callback, uniffi_future_callback_data, &mut uniffi_foreign_future);
+                    uniffi_foreign_future
+                }).await
+            }
+        })
+    }
 }
 
 pub(super) fn metadata_items(

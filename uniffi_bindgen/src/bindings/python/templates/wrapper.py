@@ -25,6 +25,7 @@ import contextlib
 import datetime
 import threading
 import itertools
+import traceback
 import typing
 {%- if ci.has_async_fns() %}
 import asyncio
@@ -45,13 +46,13 @@ _DEFAULT = object()
 # Contains loading, initialization code, and the FFI Function declarations.
 {% include "NamespaceLibraryTemplate.py" %}
 
+# Public interface members begin here.
+{{ type_helper_code }}
+
 # Async support
 {%- if ci.has_async_fns() %}
 {%- include "Async.py" %}
 {%- endif %}
-
-# Public interface members begin here.
-{{ type_helper_code }}
 
 {%- for func in ci.function_definitions() %}
 {%- include "TopLevelFunctionTemplate.py" %}
@@ -74,6 +75,9 @@ __all__ = [
     {%- for c in ci.callback_interface_definitions() %}
     "{{ c.name()|class_name }}",
     {%- endfor %}
+    {%- if ci.has_async_fns() %}
+    "uniffi_set_event_loop",
+    {%- endif %}
 ]
 
 {% import "macros.py" as py %}

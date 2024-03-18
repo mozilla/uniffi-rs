@@ -19,13 +19,14 @@ internal object {{ trait_impl }} {
         {%- when None %}
         {%- endmatch %} {
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiHandle)
-            val makeCall = { ->
+            val makeCall = {% if meth.is_async() %}suspend {% endif %}{ ->
                 uniffiObj.{{ meth.name()|fn_name() }}(
                     {%- for arg in meth.arguments() %}
                     {{ arg|lift_fn }}({{ arg.name()|var_name }}),
                     {%- endfor %}
                 )
             }
+            {%- if !meth.is_async() %}
 
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
@@ -45,6 +46,52 @@ internal object {{ trait_impl }} {
                 { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) }
             )
             {%- endmatch %}
+
+            {%- else %}
+            val uniffiHandleSuccess = { {% if meth.return_type().is_some() %}returnValue{% else %}_{% endif %}: {% match meth.return_type() %}{%- when Some(return_type) %}{{ return_type|type_name(ci) }}{%- when None %}Unit{% endmatch %} ->
+                val uniffiResult = {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
+                    {%- match meth.return_type() %}
+                    {%- when Some(return_type) %}
+                    {{ return_type|lower_fn }}(returnValue),
+                    {%- when None %}
+                    {%- endmatch %}
+                    UniffiRustCallStatus.ByValue()
+                )
+                uniffiResult.write()
+                uniffiFutureCallback.callback(uniffiCallbackData, uniffiResult)
+            }
+            val uniffiHandleError = { callStatus: UniffiRustCallStatus.ByValue ->
+                uniffiFutureCallback.callback(
+                    uniffiCallbackData,
+                    {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
+                        {%- match meth.return_type() %}
+                        {%- when Some(return_type) %}
+                        {{ return_type.into()|ffi_default_value }},
+                        {%- when None %}
+                        {%- endmatch %}
+                        callStatus,
+                    ),
+                )
+            }
+
+            uniffiOutReturn.uniffiSetValue(
+                {%- match meth.throws_type() %}
+                {%- when None %}
+                uniffiTraitInterfaceCallAsync(
+                    makeCall,
+                    uniffiHandleSuccess,
+                    uniffiHandleError
+                )
+                {%- when Some(error_type) %}
+                uniffiTraitInterfaceCallAsyncWithError(
+                    makeCall,
+                    uniffiHandleSuccess,
+                    uniffiHandleError,
+                    { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) }
+                )
+                {%- endmatch %}
+            )
+            {%- endif %}
         }
     }
     {%- endfor %}
@@ -59,7 +106,7 @@ internal object {{ trait_impl }} {
         {%- for (ffi_callback, meth) in vtable_methods.iter() %}
         {{ meth.name()|var_name() }},
         {%- endfor %}
-        uniffiFree
+        uniffiFree,
     )
 
     // Registers the foreign callback with the Rust side.

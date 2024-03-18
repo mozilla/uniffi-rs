@@ -537,13 +537,41 @@ impl SwiftCodeOracle {
             FfiType::Handle => "UInt64".into(),
             FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
+            FfiType::RustCallStatus => "RustCallStatus".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
-            FfiType::Callback(name) => self.ffi_callback_name(name),
+            // Note: @escaping is required for Swift versions before 5.7 for callbacks passed into
+            // async functions. Swift 5.7 and later does not require it.  We should probably remove
+            // it once we upgrade our minimum requirement to 5.7 or later.
+            FfiType::Callback(name) => format!("@escaping {}", self.ffi_callback_name(name)),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) => {
                 format!("UnsafeMutablePointer<{}>", self.ffi_type_label(inner))
             }
             FfiType::VoidPointer => "UnsafeMutableRawPointer".into(),
+        }
+    }
+
+    /// Default values for FFI types
+    ///
+    /// Used to set a default return value when returning an error
+    fn ffi_default_value(&self, return_type: Option<&FfiType>) -> String {
+        match return_type {
+            Some(t) => match t {
+                FfiType::UInt8
+                | FfiType::Int8
+                | FfiType::UInt16
+                | FfiType::Int16
+                | FfiType::UInt32
+                | FfiType::Int32
+                | FfiType::UInt64
+                | FfiType::Int64 => "0".to_owned(),
+                FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
+                FfiType::RustArcPtr(_) => "nil".to_owned(),
+                FfiType::RustBuffer(_) => "RustBuffer.empty()".to_owned(),
+                _ => unimplemented!("FFI return type: {t:?}"),
+            },
+            // When we need to use a value for void returns, we use a `u8` placeholder
+            None => "0".to_owned(),
         }
     }
 
@@ -581,6 +609,13 @@ pub mod filters {
 
     pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).type_label())
+    }
+
+    pub fn return_type_name(as_type: Option<&impl AsType>) -> Result<String, askama::Error> {
+        Ok(match as_type {
+            Some(as_type) => oracle().find(&as_type.as_type()).type_label(),
+            None => "()".to_owned(),
+        })
     }
 
     pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
@@ -642,6 +677,10 @@ pub mod filters {
         Ok(oracle().ffi_canonical_name(ffi_type))
     }
 
+    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
+        Ok(oracle().ffi_default_value(return_type.as_ref()))
+    }
+
     /// Like `ffi_type_name`, but used in `BridgingHeaderTemplate.h` which uses a slightly different
     /// names.
     pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
@@ -659,6 +698,7 @@ pub mod filters {
             FfiType::Handle => "uint64_t".into(),
             FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
+            FfiType::RustCallStatus => "RustCallStatus".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
             FfiType::Callback(name) => {
                 format!("{} _Nonnull", SwiftCodeOracle.ffi_callback_name(name))

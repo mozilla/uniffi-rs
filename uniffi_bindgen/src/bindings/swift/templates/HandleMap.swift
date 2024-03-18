@@ -30,5 +30,11 @@ fileprivate class UniffiHandleMap<T> {
             return obj
         }
     }
+
+    var count: Int {
+        get {
+            map.count
+        }
+    }
 }
 

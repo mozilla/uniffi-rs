@@ -16,7 +16,7 @@
 
 - Functions, methods and constructors exported by procmacros can be renamed for the forgeign bindings. See the procmaco manual section.
 
-- Rust trait interfaces can now have async functions.  See the futures manual section for details.
+- Trait interfaces can now have async functions, both Rust and foreign-implemented.  See the futures manual section for details.
 
 - Procmacros support tuple-enums.
 
