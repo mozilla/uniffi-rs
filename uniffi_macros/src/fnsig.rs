@@ -211,8 +211,18 @@ impl FnSignature {
     }
 
     /// Scaffolding parameters expressions for each of our arguments
-    pub fn scaffolding_params(&self) -> impl Iterator<Item = TokenStream> + '_ {
-        self.args.iter().map(NamedArg::scaffolding_param)
+    pub fn scaffolding_param_names(&self) -> impl Iterator<Item = TokenStream> + '_ {
+        self.args.iter().map(|a| {
+            let ident = &a.ident;
+            quote! { #ident }
+        })
+    }
+
+    pub fn scaffolding_param_types(&self) -> impl Iterator<Item = TokenStream> + '_ {
+        self.args.iter().map(|a| {
+            let lift_impl = a.lift_impl();
+            quote! { #lift_impl::FfiType }
+        })
     }
 
     /// Generate metadata items for this function
@@ -510,13 +520,6 @@ impl NamedArg {
         let ident = &self.ident;
         let ty = &self.ty;
         quote! { #ident: #ty }
-    }
-
-    /// Generate the scaffolding parameter for this Arg
-    pub(crate) fn scaffolding_param(&self) -> TokenStream {
-        let ident = &self.ident;
-        let lift_impl = self.lift_impl();
-        quote! { #ident: #lift_impl::FfiType }
     }
 
     pub(crate) fn arg_metadata(&self) -> TokenStream {
