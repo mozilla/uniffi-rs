@@ -90,7 +90,7 @@ callCallbackInterface(KtTestCallbackInterface())
 
 assert(getMixedEnum(null) == MixedEnum.Int(1))
 assert(getMixedEnum(MixedEnum.None) == MixedEnum.None)
-assert(getMixedEnum(MixedEnum.Str("hello")) == MixedEnum.Str("hello"))
+assert(getMixedEnum(MixedEnum.String("hello")) == MixedEnum.String("hello"))
 
 val e = getMixedEnum(null)
 if (e is MixedEnum.Int) {

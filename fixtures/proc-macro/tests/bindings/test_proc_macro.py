@@ -119,9 +119,9 @@ assert(ReprU8.THREE.value == 3)
 
 assert(get_mixed_enum(None) == MixedEnum.INT(1))
 assert(get_mixed_enum(MixedEnum.NONE()) == MixedEnum.NONE())
-assert(get_mixed_enum(MixedEnum.STR("hello")) == MixedEnum.STR("hello"))
-assert(MixedEnum.STR("hello")[0] == "hello")
-assert(str(MixedEnum.STR("hello")) == "MixedEnum.STR('hello',)")
+assert(get_mixed_enum(MixedEnum.STRING("hello")) == MixedEnum.STRING("hello"))
+assert(MixedEnum.STRING("hello")[0] == "hello")
+assert(str(MixedEnum.STRING("hello")) == "MixedEnum.STRING('hello',)")
 
 assert(MixedEnum.BOTH("hello", 1)[0] == "hello")
 assert(MixedEnum.BOTH("hello", 1)[1] == 1)
