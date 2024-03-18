@@ -47,10 +47,11 @@ pub(super) fn trait_impl(
     let vtable_fields = methods.iter()
         .map(|sig| {
             let ident = &sig.ident;
-            let params = sig.scaffolding_params();
+            let param_names = sig.scaffolding_param_names();
+            let param_types = sig.scaffolding_param_types();
             let lift_return = sig.lift_return_impl();
             quote! {
-                #ident: extern "C" fn(handle: u64, #(#params,)* &mut #lift_return::ReturnType, &mut ::uniffi::RustCallStatus),
+                #ident: extern "C" fn(handle: u64, #(#param_names: #param_types,)* &mut #lift_return::ReturnType, &mut ::uniffi::RustCallStatus),
             }
         });
 

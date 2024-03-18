@@ -7,7 +7,7 @@ use quote::quote;
 use std::iter;
 
 use super::attributes::AsyncRuntime;
-use crate::fnsig::{FnKind, FnSignature, NamedArg};
+use crate::fnsig::{FnKind, FnSignature};
 
 pub(super) fn gen_fn_scaffolding(
     sig: FnSignature,
@@ -90,8 +90,10 @@ pub(super) fn gen_method_scaffolding(
 
 // Pieces of code for the scaffolding function
 struct ScaffoldingBits {
-    /// Parameters for the scaffolding function
-    params: Vec<TokenStream>,
+    /// Parameter names for the scaffolding function
+    param_names: Vec<TokenStream>,
+    /// Parameter types for the scaffolding function
+    param_types: Vec<TokenStream>,
     /// Lift closure.  See `FnSignature::lift_closure` for an explanation of this.
     lift_closure: TokenStream,
     /// Expression to call the Rust function after a successful lift.
@@ -101,7 +103,6 @@ struct ScaffoldingBits {
 impl ScaffoldingBits {
     fn new_for_function(sig: &FnSignature, udl_mode: bool) -> Self {
         let ident = &sig.ident;
-        let params: Vec<_> = sig.args.iter().map(NamedArg::scaffolding_param).collect();
         let call_params = sig.rust_call_params(false);
         let rust_fn_call = quote! { #ident(#call_params) };
         // UDL mode adds an extra conversion (#1749)
@@ -112,7 +113,8 @@ impl ScaffoldingBits {
         };
 
         Self {
-            params,
+            param_names: sig.scaffolding_param_names().collect(),
+            param_types: sig.scaffolding_param_types().collect(),
             lift_closure: sig.lift_closure(None),
             rust_fn_call,
         }
@@ -134,9 +136,6 @@ impl ScaffoldingBits {
                 <::std::sync::Arc<#self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
             }
         };
-        let params: Vec<_> = iter::once(quote! { uniffi_self_lowered: #lift_impl::FfiType })
-            .chain(sig.scaffolding_params())
-            .collect();
         let try_lift_self = if is_trait {
             // For trait interfaces we need to special case this.  Trait interfaces normally lift
             // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
@@ -168,7 +167,12 @@ impl ScaffoldingBits {
         };
 
         Self {
-            params,
+            param_names: iter::once(quote! { uniffi_self_lowered })
+                .chain(sig.scaffolding_param_names())
+                .collect(),
+            param_types: iter::once(quote! { #lift_impl::FfiType })
+                .chain(sig.scaffolding_param_types())
+                .collect(),
             lift_closure,
             rust_fn_call,
         }
@@ -176,7 +180,6 @@ impl ScaffoldingBits {
 
     fn new_for_constructor(sig: &FnSignature, self_ident: &Ident, udl_mode: bool) -> Self {
         let ident = &sig.ident;
-        let params: Vec<_> = sig.args.iter().map(NamedArg::scaffolding_param).collect();
         let call_params = sig.rust_call_params(false);
         let rust_fn_call = quote! { #self_ident::#ident(#call_params) };
         // UDL mode adds extra conversions (#1749)
@@ -190,7 +193,8 @@ impl ScaffoldingBits {
         };
 
         Self {
-            params,
+            param_names: sig.scaffolding_param_names().collect(),
+            param_types: sig.scaffolding_param_types().collect(),
             lift_closure: sig.lift_closure(None),
             rust_fn_call,
         }
@@ -207,7 +211,8 @@ pub(super) fn gen_ffi_function(
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
-        params,
+        param_names,
+        param_types,
         lift_closure,
         rust_fn_call,
     } = match &sig.kind {
@@ -238,7 +243,7 @@ pub(super) fn gen_ffi_function(
             #[doc(hidden)]
             #[no_mangle]
             #vis extern "C" fn #ffi_ident(
-                #(#params,)*
+                #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> #return_impl::ReturnType {
                 ::uniffi::deps::log::debug!(#name);
@@ -264,7 +269,7 @@ pub(super) fn gen_ffi_function(
         quote! {
             #[doc(hidden)]
             #[no_mangle]
-            pub extern "C" fn #ffi_ident(#(#params,)*) -> ::uniffi::Handle {
+            pub extern "C" fn #ffi_ident(#(#param_names: #param_types,)*) -> ::uniffi::Handle {
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 match uniffi_lift_args() {
