@@ -226,6 +226,22 @@ interface SayAfterTrait {
 pub trait SayAfterTrait: Send + Sync {
     async fn say_after(&amp;self, ms: u16, who: String) -&gt; String;
 }</code></pre>
+<h2 id="combining-rust-and-foreign-async-code"><a class="header" href="#combining-rust-and-foreign-async-code">Combining Rust and foreign async code</a></h2>
+<p>Traits with callback interface support that export async methods can be combined with async Rust code.
+See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client">async-api-client example</a> for an example of this.</p>
+<h3 id="python-uniffi_set_event_loop"><a class="header" href="#python-uniffi_set_event_loop">Python: uniffi_set_event_loop()</a></h3>
+<p>Python bindings export a function named <code>uniffi_set_event_loop()</code> which handles a corner case when
+integrating async Rust and Python code. <code>uniffi_set_event_loop()</code> is needed when Python async
+functions run outside of the eventloop, for example:</p>
+<pre><code>- Rust code is executing outside of the eventloop.  Some examples:
+    - Rust code spawned its own thread
+    - Python scheduled the Rust code using `EventLoop.run_in_executor`
+- The Rust code calls a Python async callback method, using something like `pollster` to block
+  on the async call.
+</code></pre>
+<p>In this case, we need an event loop to run the Python async function, but there's no eventloop set for the thread.
+Use <code>uniffi_set_event_loop()</code> to handle this case.
+It should be called before the Rust code makes the async call and passed an eventloop to use.</p>
 
                     </main>
 

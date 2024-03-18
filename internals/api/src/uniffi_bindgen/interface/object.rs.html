@@ -934,6 +934,15 @@
 <a href="#934" id="934">934</a>
 <a href="#935" id="935">935</a>
 <a href="#936" id="936">936</a>
+<a href="#937" id="937">937</a>
+<a href="#938" id="938">938</a>
+<a href="#939" id="939">939</a>
+<a href="#940" id="940">940</a>
+<a href="#941" id="941">941</a>
+<a href="#942" id="942">942</a>
+<a href="#943" id="943">943</a>
+<a href="#944" id="944">944</a>
+<a href="#945" id="945">945</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1069,6 +1078,10 @@
 
     <span class="kw">pub fn </span>has_callback_interface(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.imp.has_callback_interface()
+    }
+
+    <span class="kw">pub fn </span>has_async_method(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.methods.iter().any(Method::is_async)
     }
 
     <span class="kw">pub fn </span>constructors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Constructor&gt; {
@@ -1502,6 +1515,11 @@
                 .flat_map(Argument::iter_types)
                 .chain(<span class="self">self</span>.return_type.iter().flat_map(Type::iter_types)),
         )
+    }
+
+    <span class="doccomment">/// For async callback interface methods, the FFI struct to pass to the completion function.
+    </span><span class="kw">pub fn </span>foreign_future_ffi_result_struct(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiStruct {
+        callbacks::foreign_future_ffi_result_struct(<span class="self">self</span>.return_type.as_ref().map(FfiType::from))
     }
 }
 

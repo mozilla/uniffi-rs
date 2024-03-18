@@ -292,6 +292,20 @@
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -392,6 +406,9 @@
     </span>lift_closure: TokenStream,
     <span class="doccomment">/// Expression to call the Rust function after a successful lift.
     </span>rust_fn_call: TokenStream,
+    <span class="doccomment">/// Convert the result of `rust_fn_call`, stored in a variable named `uniffi_result` into its final value.
+    /// This is used to do things like error conversion / Arc wrapping
+    </span>convert_result: TokenStream,
 }
 
 <span class="kw">impl </span>ScaffoldingBits {
@@ -400,10 +417,10 @@
         <span class="kw">let </span>call_params = sig.rust_call_params(<span class="bool-val">false</span>);
         <span class="kw">let </span>rust_fn_call = <span class="macro">quote! </span>{ #ident(#call_params) };
         <span class="comment">// UDL mode adds an extra conversion (#1749)
-        </span><span class="kw">let </span>rust_fn_call = <span class="kw">if </span>udl_mode &amp;&amp; sig.looks_like_result {
-            <span class="macro">quote! </span>{ #rust_fn_call.map_err(::std::convert::Into::into) }
+        </span><span class="kw">let </span>convert_result = <span class="kw">if </span>udl_mode &amp;&amp; sig.looks_like_result {
+            <span class="macro">quote! </span>{ uniffi_result.map_err(::std::convert::Into::into) }
         } <span class="kw">else </span>{
-            rust_fn_call
+            <span class="macro">quote! </span>{ uniffi_result }
         };
 
         <span class="self">Self </span>{
@@ -411,6 +428,7 @@
             param_types: sig.scaffolding_param_types().collect(),
             lift_closure: sig.lift_closure(<span class="prelude-val">None</span>),
             rust_fn_call,
+            convert_result,
         }
     }
 
@@ -454,10 +472,10 @@
         <span class="kw">let </span>call_params = sig.rust_call_params(<span class="bool-val">true</span>);
         <span class="kw">let </span>rust_fn_call = <span class="macro">quote! </span>{ uniffi_args.<span class="number">0.</span>#ident(#call_params) };
         <span class="comment">// UDL mode adds an extra conversion (#1749)
-        </span><span class="kw">let </span>rust_fn_call = <span class="kw">if </span>udl_mode &amp;&amp; sig.looks_like_result {
-            <span class="macro">quote! </span>{ #rust_fn_call.map_err(::std::convert::Into::into) }
+        </span><span class="kw">let </span>convert_result = <span class="kw">if </span>udl_mode &amp;&amp; sig.looks_like_result {
+            <span class="macro">quote! </span>{ uniffi_result .map_err(::std::convert::Into::into) }
         } <span class="kw">else </span>{
-            rust_fn_call
+            <span class="macro">quote! </span>{ uniffi_result }
         };
 
         <span class="self">Self </span>{
@@ -469,6 +487,7 @@
                 .collect(),
             lift_closure,
             rust_fn_call,
+            convert_result,
         }
     }
 
@@ -477,13 +496,13 @@
         <span class="kw">let </span>call_params = sig.rust_call_params(<span class="bool-val">false</span>);
         <span class="kw">let </span>rust_fn_call = <span class="macro">quote! </span>{ #self_ident::#ident(#call_params) };
         <span class="comment">// UDL mode adds extra conversions (#1749)
-        </span><span class="kw">let </span>rust_fn_call = <span class="kw">match </span>(udl_mode, sig.looks_like_result) {
+        </span><span class="kw">let </span>convert_result = <span class="kw">match </span>(udl_mode, sig.looks_like_result) {
             <span class="comment">// For UDL
-            </span>(<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">quote! </span>{ ::std::sync::Arc::new(#rust_fn_call) },
+            </span>(<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">quote! </span>{ ::std::sync::Arc::new(uniffi_result) },
             (<span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; {
-                <span class="macro">quote! </span>{ #rust_fn_call.map(::std::sync::Arc::new).map_err(::std::convert::Into::into) }
+                <span class="macro">quote! </span>{ uniffi_result.map(::std::sync::Arc::new).map_err(::std::convert::Into::into) }
             }
-            (<span class="bool-val">false</span>, <span class="kw">_</span>) =&gt; rust_fn_call,
+            (<span class="bool-val">false</span>, <span class="kw">_</span>) =&gt; <span class="macro">quote! </span>{ uniffi_result },
         };
 
         <span class="self">Self </span>{
@@ -491,6 +510,7 @@
             param_types: sig.scaffolding_param_types().collect(),
             lift_closure: sig.lift_closure(<span class="prelude-val">None</span>),
             rust_fn_call,
+            convert_result,
         }
     }
 }
@@ -509,6 +529,7 @@
         param_types,
         lift_closure,
         rust_fn_call,
+        convert_result,
     } = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.kind {
         FnKind::Function =&gt; ScaffoldingBits::new_for_function(sig, udl_mode),
         FnKind::Method { self_ident } =&gt; {
@@ -530,6 +551,7 @@
 
     <span class="kw">let </span>ffi_ident = sig.scaffolding_fn_ident()<span class="question-mark">?</span>;
     <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.name;
+    <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.return_ty;
     <span class="kw">let </span>return_impl = <span class="kw-2">&amp;</span>sig.lower_return_impl();
 
     <span class="prelude-val">Ok</span>(<span class="kw">if </span>!sig.is_async {
@@ -545,7 +567,10 @@
                 ::uniffi::rust_call(call_status, || {
                     #return_impl::lower_return(
                         <span class="kw">match </span>uniffi_lift_args() {
-                            <span class="prelude-val">Ok</span>(uniffi_args) =&gt; #rust_fn_call,
+                            <span class="prelude-val">Ok</span>(uniffi_args) =&gt; {
+                                <span class="kw">let </span>uniffi_result = #rust_fn_call;
+                                #convert_result
+                            }
                             <span class="prelude-val">Err</span>((arg_name, anyhow_error)) =&gt; {
                                 #return_impl::handle_failed_lift(arg_name, anyhow_error)
                             },
@@ -568,13 +593,16 @@
                 <span class="kw">let </span>uniffi_lift_args = #lift_closure;
                 <span class="kw">match </span>uniffi_lift_args() {
                     <span class="prelude-val">Ok</span>(uniffi_args) =&gt; {
-                        ::uniffi::rust_future_new(
-                            <span class="kw">async move </span>{ #future_expr.<span class="kw">await </span>},
+                        ::uniffi::rust_future_new::&lt;<span class="kw">_</span>, #return_ty, <span class="kw">_</span>&gt;(
+                            <span class="kw">async move </span>{
+                                <span class="kw">let </span>uniffi_result = #future_expr.<span class="kw">await</span>;
+                                #convert_result
+                            },
                             <span class="kw">crate</span>::UniFfiTag
                         )
                     },
                     <span class="prelude-val">Err</span>((arg_name, anyhow_error)) =&gt; {
-                        ::uniffi::rust_future_new(
+                        ::uniffi::rust_future_new::&lt;<span class="kw">_</span>, #return_ty, <span class="kw">_</span>&gt;(
                             <span class="kw">async move </span>{
                                 #return_impl::handle_failed_lift(arg_name, anyhow_error)
                             },

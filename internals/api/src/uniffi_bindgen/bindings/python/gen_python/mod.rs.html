@@ -568,6 +568,38 @@
 <a href="#568" id="568">568</a>
 <a href="#569" id="569">569</a>
 <a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -937,12 +969,40 @@
                 <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_UniffiRustBuffer{suffix}&quot;</span>),
                 <span class="prelude-val">None </span>=&gt; <span class="string">&quot;_UniffiRustBuffer&quot;</span>.to_string(),
             },
+            FfiType::RustCallStatus =&gt; <span class="string">&quot;_UniffiRustCallStatus&quot;</span>.to_string(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;_UniffiForeignBytes&quot;</span>.to_string(),
             FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
             </span>FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ctypes.POINTER({})&quot;</span>, <span class="self">self</span>.ffi_type_label(inner)),
             FfiType::VoidPointer =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
+        }
+    }
+
+    <span class="doccomment">/// Default values for FFI types
+    ///
+    /// Used to set a default return value when returning an error
+    </span><span class="kw">fn </span>ffi_default_value(<span class="kw-2">&amp;</span><span class="self">self</span>, return_type: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>FfiType&gt;) -&gt; String {
+        <span class="kw">match </span>return_type {
+            <span class="prelude-val">Some</span>(t) =&gt; <span class="kw">match </span>t {
+                FfiType::UInt8
+                | FfiType::Int8
+                | FfiType::UInt16
+                | FfiType::Int16
+                | FfiType::UInt32
+                | FfiType::Int32
+                | FfiType::UInt64
+                | FfiType::Int64 =&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
+                FfiType::Float32 | FfiType::Float64 =&gt; <span class="string">&quot;0.0&quot;</span>.to_owned(),
+                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p()&quot;</span>.to_owned(),
+                FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
+                    <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_UniffiRustBuffer{suffix}.default()&quot;</span>),
+                    <span class="prelude-val">None </span>=&gt; <span class="string">&quot;_UniffiRustBuffer.default()&quot;</span>.to_owned(),
+                },
+                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;FFI return type: {t:?}&quot;</span>),
+            },
+            <span class="comment">// When we need to use a value for void returns, we use a `u8` placeholder
+            </span><span class="prelude-val">None </span>=&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
         }
     }
 
@@ -1069,6 +1129,10 @@
 
     <span class="kw">pub fn </span>ffi_type_name(type_: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(PythonCodeOracle.ffi_type_label(type_))
+    }
+
+    <span class="kw">pub fn </span>ffi_default_value(return_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(PythonCodeOracle.ffi_default_value(return_type.as_ref()))
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).

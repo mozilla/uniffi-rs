@@ -694,6 +694,9 @@
 <a href="#694" id="694">694</a>
 <a href="#695" id="695">695</a>
 <a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1032,6 +1035,7 @@
     <span class="kw">fn </span>ffi_type_label_by_value(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.ByValue&quot;</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
+            FfiType::Struct(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.UniffiByValue&quot;</span>, <span class="self">self</span>.ffi_struct_name(name)),
             <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label(ffi_type),
         }
     }
@@ -1063,8 +1067,9 @@
             FfiType::Float32 =&gt; <span class="string">&quot;0.0f&quot;</span>.to_owned(),
             FfiType::Float64 =&gt; <span class="string">&quot;0.0&quot;</span>.to_owned(),
             FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer.NULL&quot;</span>.to_owned(),
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;UniffiRustBuffer.ByValue()&quot;</span>.to_owned(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.ByValue()&quot;</span>.to_owned(),
             FfiType::Callback(<span class="kw">_</span>) =&gt; <span class="string">&quot;null&quot;</span>.to_owned(),
+            FfiType::RustCallStatus =&gt; <span class="string">&quot;UniffiRustCallStatus.ByValue()&quot;</span>.to_owned(),
             <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;ffi_default_value: {ffi_type:?}&quot;</span>),
         }
     }
@@ -1104,6 +1109,7 @@
             FfiType::RustBuffer(maybe_suffix) =&gt; {
                 <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{}&quot;</span>, maybe_suffix.as_deref().unwrap_or_default())
             }
+            FfiType::RustCallStatus =&gt; <span class="string">&quot;UniffiRustCallStatus.ByValue&quot;</span>.to_string(),
             FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),
             FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
