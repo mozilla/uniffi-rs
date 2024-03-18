@@ -287,6 +287,11 @@
 <a href="#287" id="287">287</a>
 <a href="#288" id="288">288</a>
 <a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -296,7 +301,7 @@
 <span class="kw">use </span>std::iter;
 
 <span class="kw">use </span><span class="kw">super</span>::attributes::AsyncRuntime;
-<span class="kw">use </span><span class="kw">crate</span>::fnsig::{FnKind, FnSignature, NamedArg};
+<span class="kw">use </span><span class="kw">crate</span>::fnsig::{FnKind, FnSignature};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: FnSignature,
@@ -379,8 +384,10 @@
 
 <span class="comment">// Pieces of code for the scaffolding function
 </span><span class="kw">struct </span>ScaffoldingBits {
-    <span class="doccomment">/// Parameters for the scaffolding function
-    </span>params: Vec&lt;TokenStream&gt;,
+    <span class="doccomment">/// Parameter names for the scaffolding function
+    </span>param_names: Vec&lt;TokenStream&gt;,
+    <span class="doccomment">/// Parameter types for the scaffolding function
+    </span>param_types: Vec&lt;TokenStream&gt;,
     <span class="doccomment">/// Lift closure.  See `FnSignature::lift_closure` for an explanation of this.
     </span>lift_closure: TokenStream,
     <span class="doccomment">/// Expression to call the Rust function after a successful lift.
@@ -390,7 +397,6 @@
 <span class="kw">impl </span>ScaffoldingBits {
     <span class="kw">fn </span>new_for_function(sig: <span class="kw-2">&amp;</span>FnSignature, udl_mode: bool) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = sig.args.iter().map(NamedArg::scaffolding_param).collect();
         <span class="kw">let </span>call_params = sig.rust_call_params(<span class="bool-val">false</span>);
         <span class="kw">let </span>rust_fn_call = <span class="macro">quote! </span>{ #ident(#call_params) };
         <span class="comment">// UDL mode adds an extra conversion (#1749)
@@ -401,7 +407,8 @@
         };
 
         <span class="self">Self </span>{
-            params,
+            param_names: sig.scaffolding_param_names().collect(),
+            param_types: sig.scaffolding_param_types().collect(),
             lift_closure: sig.lift_closure(<span class="prelude-val">None</span>),
             rust_fn_call,
         }
@@ -423,9 +430,6 @@
                 &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
             }
         };
-        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = iter::once(<span class="macro">quote! </span>{ uniffi_self_lowered: #lift_impl::FfiType })
-            .chain(sig.scaffolding_params())
-            .collect();
         <span class="kw">let </span>try_lift_self = <span class="kw">if </span>is_trait {
             <span class="comment">// For trait interfaces we need to special case this.  Trait interfaces normally lift
             // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
@@ -457,7 +461,12 @@
         };
 
         <span class="self">Self </span>{
-            params,
+            param_names: iter::once(<span class="macro">quote! </span>{ uniffi_self_lowered })
+                .chain(sig.scaffolding_param_names())
+                .collect(),
+            param_types: iter::once(<span class="macro">quote! </span>{ #lift_impl::FfiType })
+                .chain(sig.scaffolding_param_types())
+                .collect(),
             lift_closure,
             rust_fn_call,
         }
@@ -465,7 +474,6 @@
 
     <span class="kw">fn </span>new_for_constructor(sig: <span class="kw-2">&amp;</span>FnSignature, self_ident: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-        <span class="kw">let </span>params: Vec&lt;<span class="kw">_</span>&gt; = sig.args.iter().map(NamedArg::scaffolding_param).collect();
         <span class="kw">let </span>call_params = sig.rust_call_params(<span class="bool-val">false</span>);
         <span class="kw">let </span>rust_fn_call = <span class="macro">quote! </span>{ #self_ident::#ident(#call_params) };
         <span class="comment">// UDL mode adds extra conversions (#1749)
@@ -479,7 +487,8 @@
         };
 
         <span class="self">Self </span>{
-            params,
+            param_names: sig.scaffolding_param_names().collect(),
+            param_types: sig.scaffolding_param_types().collect(),
             lift_closure: sig.lift_closure(<span class="prelude-val">None</span>),
             rust_fn_call,
         }
@@ -496,7 +505,8 @@
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ScaffoldingBits {
-        params,
+        param_names,
+        param_types,
         lift_closure,
         rust_fn_call,
     } = <span class="kw">match </span><span class="kw-2">&amp;</span>sig.kind {
@@ -527,7 +537,7 @@
             <span class="attr">#[doc(hidden)]
             #[no_mangle]
             </span>#vis <span class="kw">extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(
-                #(#params,)*
+                #(#param_names: #param_types,)*
                 call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
             ) -&gt; #return_impl::ReturnType {
                 <span class="macro">::uniffi::deps::log::debug!</span>(#name);
@@ -553,7 +563,7 @@
         <span class="macro">quote! </span>{
             <span class="attr">#[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(#(#params,)<span class="kw-2">*</span>) -&gt; ::uniffi::Handle {
+            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ffi_ident(#(#param_names: #param_types,)<span class="kw-2">*</span>) -&gt; ::uniffi::Handle {
                 <span class="macro">::uniffi::deps::log::debug!</span>(#name);
                 <span class="kw">let </span>uniffi_lift_args = #lift_closure;
                 <span class="kw">match </span>uniffi_lift_args() {

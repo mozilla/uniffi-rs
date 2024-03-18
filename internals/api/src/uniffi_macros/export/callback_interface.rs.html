@@ -226,6 +226,7 @@
 <a href="#226" id="226">226</a>
 <a href="#227" id="227">227</a>
 <a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -275,10 +276,11 @@
     <span class="kw">let </span>vtable_fields = methods.iter()
         .map(|sig| {
             <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-            <span class="kw">let </span>params = sig.scaffolding_params();
+            <span class="kw">let </span>param_names = sig.scaffolding_param_names();
+            <span class="kw">let </span>param_types = sig.scaffolding_param_types();
             <span class="kw">let </span>lift_return = sig.lift_return_impl();
             <span class="macro">quote! </span>{
-                #ident: <span class="kw">extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(handle: u64, #(#params,)* <span class="kw-2">&amp;mut </span>#lift_return::ReturnType, <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus),
+                #ident: <span class="kw">extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(handle: u64, #(#param_names: #param_types,)* <span class="kw-2">&amp;mut </span>#lift_return::ReturnType, <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus),
             }
         });
 

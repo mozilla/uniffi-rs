@@ -550,6 +550,9 @@
 <a href="#550" id="550">550</a>
 <a href="#551" id="551">551</a>
 <a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -763,8 +766,18 @@
     }
 
     <span class="doccomment">/// Scaffolding parameters expressions for each of our arguments
-    </span><span class="kw">pub fn </span>scaffolding_params(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="self">self</span>.args.iter().map(NamedArg::scaffolding_param)
+    </span><span class="kw">pub fn </span>scaffolding_param_names(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.args.iter().map(|a| {
+            <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>a.ident;
+            <span class="macro">quote! </span>{ #ident }
+        })
+    }
+
+    <span class="kw">pub fn </span>scaffolding_param_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.args.iter().map(|a| {
+            <span class="kw">let </span>lift_impl = a.lift_impl();
+            <span class="macro">quote! </span>{ #lift_impl::FfiType }
+        })
     }
 
     <span class="doccomment">/// Generate metadata items for this function
@@ -1062,13 +1075,6 @@
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
         <span class="kw">let </span>ty = <span class="kw-2">&amp;</span><span class="self">self</span>.ty;
         <span class="macro">quote! </span>{ #ident: #ty }
-    }
-
-    <span class="doccomment">/// Generate the scaffolding parameter for this Arg
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>scaffolding_param(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
-        <span class="kw">let </span>ident = <span class="kw-2">&amp;</span><span class="self">self</span>.ident;
-        <span class="kw">let </span>lift_impl = <span class="self">self</span>.lift_impl();
-        <span class="macro">quote! </span>{ #ident: #lift_impl::FfiType }
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>arg_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TokenStream {
