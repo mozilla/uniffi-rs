@@ -142,7 +142,7 @@
 
             <span class="kw">impl </span>CodeType <span class="kw">for </span><span class="macro-nonterminal">$T  </span>{
                 <span class="kw">fn </span>type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, _ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
-                    <span class="macro-nonterminal">$class_name</span>.into()
+                    <span class="macro">format!</span>(<span class="string">&quot;kotlin.{}&quot;</span>, <span class="macro-nonterminal">$class_name</span>)
                 }
 
                 <span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
