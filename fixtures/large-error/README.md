@@ -1,0 +1,2 @@
+This crate tests the issue discussed in [#1968](https://github.com/mozilla/uniffi-rs/issues/1968) and [#2041](https://github.com/mozilla/uniffi-rs/issues/2041)
+where the `uniffi::Error` proc-macro would fail for large errors (enums).
