@@ -13,7 +13,20 @@ interface ApiError {
 [Trait, WithForeign]
 interface HttpClient {
   [Throws=ApiError, Async]
-  string fetch(string url); // fetch an URL and return the body
+  string fetch(string url, string credentials); // fetch an URL and return the body
+};
+
+// Run Rust tasks in a thread pool.
+// Implemented by the foreign bindings
+[Trait, WithForeign]
+interface TaskRunner {
+  [Async]
+  void run_task(RustTask task);
+};
+
+[Trait]
+interface RustTask {
+  void execute();
 };
 
 dictionary Issue {
@@ -29,7 +42,7 @@ enum IssueState {
 
 // Implemented by the Rust code
 interface ApiClient {
-  constructor(HttpClient http_client);
+  constructor(HttpClient http_client, TaskRunner task_runner);
 
   [Throws=ApiError, Async]
   Issue get_issue(string owner, string repository, u32 issue_number);

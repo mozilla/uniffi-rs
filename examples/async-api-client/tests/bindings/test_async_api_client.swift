@@ -9,7 +9,11 @@ import Foundation // To get `DispatchGroup`
 #endif
 
 class SwiftHttpClient : HttpClient {
-    func fetch(url: String) async throws -> String {
+    func fetch(url: String, credentials: String) async throws -> String {
+        if (credentials != "username:password") {
+            throw ApiError.Http(reason: "Unauthorized")
+        }
+
         // In the real-world we would use an async HTTP library and make a real
         // HTTP request, but to keep the dependencies simple and avoid test
         // fragility we just fake it.
@@ -21,10 +25,17 @@ class SwiftHttpClient : HttpClient {
     }
 }
 
+class SwiftTaskRunner : TaskRunner {
+    func runTask(task: RustTask) async {
+        let swiftTask = Task { task.execute() }
+        let _ = await swiftTask.result
+    }
+}
+
 var counter = DispatchGroup()
 counter.enter()
 Task {
-    let client = ApiClient(httpClient: SwiftHttpClient())
+    let client = ApiClient(httpClient: SwiftHttpClient(), taskRunner: SwiftTaskRunner())
     let issue = try! await client.getIssue(owner: "mozilla", repository: "uniffi-rs", issueNumber: 2017)
     assert(issue.title == "Foreign-implemented async traits")
     counter.leave()
