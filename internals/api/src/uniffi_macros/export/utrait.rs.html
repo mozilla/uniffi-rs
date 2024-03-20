@@ -175,6 +175,12 @@
 <a href="#175" id="175">175</a>
 <a href="#176" id="176">176</a>
 <a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -184,6 +190,7 @@
 <span class="kw">use </span>syn::ext::IdentExt;
 
 <span class="kw">use </span><span class="kw">super</span>::gen_ffi_function;
+<span class="kw">use </span><span class="kw">crate</span>::export::ExportedImplFnArgs;
 <span class="kw">use </span><span class="kw">crate</span>::fnsig::FnSignature;
 <span class="kw">use </span><span class="kw">crate</span>::util::extract_docstring;
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
@@ -341,15 +348,20 @@
         <span class="kw-2">&amp;</span>FnSignature::new_method(
             self_ident.clone(),
             item.sig.clone(),
-            <span class="prelude-val">None</span>,
+            ExportedImplFnArgs::default(),
             docstring.clone(),
         )<span class="question-mark">?</span>,
         <span class="kw-2">&amp;</span><span class="prelude-val">None</span>,
         udl_mode,
     )<span class="question-mark">?</span>;
     <span class="comment">// metadata for the method, which will be packed inside metadata for the trait.
-    </span><span class="kw">let </span>method_meta =
-        FnSignature::new_method(self_ident.clone(), item.sig, <span class="prelude-val">None</span>, docstring)<span class="question-mark">?</span>.metadata_expr()<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>method_meta = FnSignature::new_method(
+        self_ident.clone(),
+        item.sig,
+        ExportedImplFnArgs::default(),
+        docstring,
+    )<span class="question-mark">?
+    </span>.metadata_expr()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>((ffi_func, method_meta))
 }
 </code></pre></div></section></main></body></html>

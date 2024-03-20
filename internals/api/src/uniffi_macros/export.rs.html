@@ -179,6 +179,7 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -201,6 +202,7 @@
     },
 };
 <span class="kw">use </span><span class="kw">crate</span>::util::{ident_to_string, mod_path};
+<span class="kw">pub use </span>attributes::{DefaultMap, ExportFnArgs, ExportedImplFnArgs};
 <span class="kw">pub use </span>callback_interface::ffi_converter_callback_interface_impl;
 
 <span class="comment">// TODO(jplatte): Ensure no generics, …

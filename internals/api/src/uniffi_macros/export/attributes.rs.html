@@ -326,15 +326,94 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::HashSet;
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::{HashMap, HashSet};
 
-<span class="kw">use </span><span class="kw">crate</span>::util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs};
+<span class="kw">use crate</span>::{
+    default::DefaultValue,
+    util::{either_attribute_arg, kw, parse_comma_separated, UniffiAttributeArgs},
+};
 
 <span class="kw">use </span>proc_macro2::TokenStream;
 <span class="kw">use </span>quote::ToTokens;
 <span class="kw">use </span>syn::{
+    parenthesized,
     parse::{Parse, ParseStream},
-    Attribute, LitStr, Meta, PathArguments, PathSegment, Token,
+    Attribute, Ident, LitStr, Meta, PathArguments, PathSegment, Token,
 };
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
 
@@ -395,10 +474,11 @@
     }
 }
 
-<span class="attr">#[derive(Default)]
+<span class="attr">#[derive(Clone, Default)]
 </span><span class="kw">pub struct </span>ExportFnArgs {
     <span class="kw">pub</span>(<span class="kw">crate</span>) async_runtime: <span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) defaults: DefaultMap,
 }
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>ExportFnArgs {
@@ -415,15 +495,20 @@
             <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
                 async_runtime: <span class="prelude-val">Some</span>(input.parse()<span class="question-mark">?</span>),
-                name: <span class="prelude-val">None</span>,
+                ..<span class="self">Self</span>::default()
             })
         } <span class="kw">else if </span>lookahead.peek(kw::name) {
             <span class="kw">let _</span>: kw::name = input.parse()<span class="question-mark">?</span>;
             <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
             <span class="kw">let </span>name = <span class="prelude-val">Some</span>(input.parse::&lt;LitStr&gt;()<span class="question-mark">?</span>.value());
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                async_runtime: <span class="prelude-val">None</span>,
                 name,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::default) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                defaults: DefaultMap::parse(input)<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
             })
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(syn::Error::new(
@@ -437,6 +522,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             async_runtime: either_attribute_arg(<span class="self">self</span>.async_runtime, other.async_runtime)<span class="question-mark">?</span>,
             name: either_attribute_arg(<span class="self">self</span>.name, other.name)<span class="question-mark">?</span>,
+            defaults: <span class="self">self</span>.defaults.merge(other.defaults),
         })
     }
 }
@@ -527,7 +613,8 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>AsyncRuntime {
+<span class="attr">#[derive(Clone)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>AsyncRuntime {
     Tokio(LitStr),
 }
 
@@ -552,25 +639,37 @@
     }
 }
 
-<span class="attr">#[derive(Default)]
-</span><span class="kw">pub struct </span>NonExportArgs {
+<span class="doccomment">/// Arguments for function inside an impl block
+///
+/// This stores the parsed arguments for `uniffi::constructor` and `uniffi::method`
+</span><span class="attr">#[derive(Clone, Default)]
+</span><span class="kw">pub struct </span>ExportedImplFnArgs {
     <span class="kw">pub</span>(<span class="kw">crate</span>) name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) defaults: DefaultMap,
 }
 
-<span class="kw">impl </span>Parse <span class="kw">for </span>NonExportArgs {
+<span class="kw">impl </span>Parse <span class="kw">for </span>ExportedImplFnArgs {
     <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         parse_comma_separated(input)
     }
 }
 
-<span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>NonExportArgs {
+<span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ExportedImplFnArgs {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
         <span class="kw">if </span>lookahead.peek(kw::name) {
             <span class="kw">let _</span>: kw::name = input.parse()<span class="question-mark">?</span>;
             <span class="kw">let _</span>: <span class="macro">Token!</span>[=] = input.parse()<span class="question-mark">?</span>;
             <span class="kw">let </span>name = <span class="prelude-val">Some</span>(input.parse::&lt;LitStr&gt;()<span class="question-mark">?</span>.value());
-            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ name })
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                name,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::default) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                defaults: DefaultMap::parse(input)<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(syn::Error::new(
                 input.span(),
@@ -582,6 +681,7 @@
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             name: either_attribute_arg(<span class="self">self</span>.name, other.name)<span class="question-mark">?</span>,
+            defaults: <span class="self">self</span>.defaults.merge(other.defaults),
         })
     }
 }
@@ -589,7 +689,7 @@
 <span class="attr">#[derive(Default)]
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ExportedImplFnAttributes {
     <span class="kw">pub </span>constructor: bool,
-    <span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="kw">pub </span>args: ExportedImplFnArgs,
 }
 
 <span class="kw">impl </span>ExportedImplFnAttributes {
@@ -607,10 +707,10 @@
             ensure_no_path_args(fst)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>args = <span class="kw">match </span><span class="kw-2">&amp;</span>attr.meta {
-                Meta::List(<span class="kw">_</span>) =&gt; attr.parse_args::&lt;NonExportArgs&gt;()<span class="question-mark">?</span>,
+                Meta::List(<span class="kw">_</span>) =&gt; attr.parse_args::&lt;ExportedImplFnArgs&gt;()<span class="question-mark">?</span>,
                 <span class="kw">_ </span>=&gt; Default::default(),
             };
-            this.name = args.name;
+            this.args = args;
 
             <span class="kw">if </span>segs.len() != <span class="number">2 </span>{
                 <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
@@ -652,6 +752,56 @@
         <span class="prelude-val">Ok</span>(())
     } <span class="kw">else </span>{
         <span class="prelude-val">Err</span>(syn::Error::new_spanned(<span class="kw-2">&amp;</span>seg.arguments, <span class="string">&quot;unexpected syntax&quot;</span>))
+    }
+}
+
+<span class="doccomment">/// Maps arguments to defaults for functions
+</span><span class="attr">#[derive(Clone, Default)]
+</span><span class="kw">pub struct </span>DefaultMap {
+    map: HashMap&lt;Ident, DefaultValue&gt;,
+}
+
+<span class="kw">impl </span>DefaultMap {
+    <span class="kw">pub fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>map = <span class="self">self</span>.map;
+        map.extend(other.map);
+        <span class="self">Self </span>{ map }
+    }
+
+    <span class="kw">pub fn </span>remove(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ident: <span class="kw-2">&amp;</span>Ident) -&gt; <span class="prelude-ty">Option</span>&lt;DefaultValue&gt; {
+        <span class="self">self</span>.map.remove(ident)
+    }
+
+    <span class="kw">pub fn </span>idents(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<span class="kw-2">&amp;</span>Ident&gt; {
+        <span class="self">self</span>.map.keys().collect()
+    }
+}
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>DefaultMap {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let _</span>: kw::default = input.parse()<span class="question-mark">?</span>;
+        <span class="kw">let </span>content;
+        <span class="kw">let _ </span>= <span class="macro">parenthesized!</span>(content <span class="kw">in </span>input);
+        <span class="kw">let </span>pairs = content.parse_terminated(DefaultPair::parse, <span class="macro">Token!</span>[,])<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            map: pairs.into_iter().map(|p| (p.name, p.value)).collect(),
+        })
+    }
+}
+
+<span class="kw">pub struct </span>DefaultPair {
+    <span class="kw">pub </span>name: Ident,
+    <span class="kw">pub </span>eq_token: <span class="macro">Token!</span>[=],
+    <span class="kw">pub </span>value: DefaultValue,
+}
+
+<span class="kw">impl </span>Parse <span class="kw">for </span>DefaultPair {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            name: input.parse()<span class="question-mark">?</span>,
+            eq_token: input.parse()<span class="question-mark">?</span>,
+            value: input.parse()<span class="question-mark">?</span>,
+        })
     }
 }
 </code></pre></div></section></main></body></html>

@@ -225,6 +225,7 @@
 <a href="#225" id="225">225</a>
 <a href="#226" id="226">226</a>
 <a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -235,7 +236,8 @@
 <span class="kw">use </span>quote::ToTokens;
 
 <span class="kw">use </span><span class="kw">super</span>::attributes::{
-    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnAttributes,
+    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnArgs,
+    ExportedImplFnAttributes,
 };
 <span class="kw">use </span><span class="kw">crate</span>::util::extract_docstring;
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
@@ -270,7 +272,7 @@
             syn::Item::Fn(item) =&gt; {
                 <span class="kw">let </span>args: ExportFnArgs = syn::parse(attr_args)<span class="question-mark">?</span>;
                 <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>item.attrs)<span class="question-mark">?</span>;
-                <span class="kw">let </span>sig = FnSignature::new_function(item.sig, args.name.clone(), docstring)<span class="question-mark">?</span>;
+                <span class="kw">let </span>sig = FnSignature::new_function(item.sig, args.clone(), docstring)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Function { sig, args })
             }
             syn::Item::Impl(item) =&gt; <span class="self">Self</span>::from_impl(item, attr_args),
@@ -333,14 +335,14 @@
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
                         impl_fn.sig,
-                        attrs.name,
+                        attrs.args,
                         docstring,
                     )<span class="question-mark">?</span>)
                 } <span class="kw">else </span>{
                     ImplItem::Method(FnSignature::new_method(
                         self_ident.clone(),
                         impl_fn.sig,
-                        attrs.name,
+                        attrs.args,
                         docstring,
                     )<span class="question-mark">?</span>)
                 };
@@ -396,7 +398,7 @@
                     ImplItem::Method(FnSignature::new_trait_method(
                         self_ident.clone(),
                         tim.sig,
-                        <span class="prelude-val">None</span>,
+                        ExportedImplFnArgs::default(),
                         i <span class="kw">as </span>u32,
                         docstring,
                     )<span class="question-mark">?</span>)

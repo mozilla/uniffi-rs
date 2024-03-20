@@ -1486,6 +1486,42 @@ work:</p>
 #[uniffi::export]
 fn do_something(foo: MyFooRef) {
 }</code></pre>
+<h3 id="default-values"><a class="header" href="#default-values">Default values</a></h3>
+<p>Exported functions/methods can have default values using the <code>default</code> argument of the attribute macro that wraps them.
+<code>default</code> inputs a comma-separated list of <code>[name]=[value]</code> items.</p>
+<pre><code class="language-rust">#[uniffi::export(default(text = &quot; &quot;, max_splits = None))]
+pub fn split(
+    text: String,
+    sep: String,
+    max_splits: Option&lt;u32&gt;,
+) -&gt; Vec&lt;String&gt; {
+  ...
+}
+
+#[derive(uniffi::Object)]
+pub struct TextSplitter { ... }
+
+#[uniffi::export]
+impl TextSplitter {
+    #[uniffi::constructor(default(ignore_unicode_errors = false))]
+    fn new(ignore_unicode_errors: boolean) -&gt; Self {
+        ...
+    }
+
+    #[uniffi::method(default(text = &quot; &quot;, max_splits = None))]
+    fn split(
+        text: String,
+        sep: String,
+        max_splits: Option&lt;u32&gt;,
+    ) -&gt; Vec&lt;String&gt; {
+      ...
+    }
+}</code></pre>
+<p>Supported default values:</p>
+<ul>
+<li>String, integer, float, and boolean literals</li>
+<li><code>None</code> for Option<T> types</li>
+</ul>
 <h3 id="renaming-functions-methods-and-constructors"><a class="header" href="#renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</a></h3>
 <p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
 <pre><code class="language-rust">#[uniffi::export(name = &quot;something&quot;)]
@@ -1515,8 +1551,7 @@ will fail).</p>
 pub struct MyRecord {
     pub field_a: String,
     pub field_b: Option&lt;Arc&lt;MyObject&gt;&gt;,
-    // Fields can have a default value.
-    // Currently, only string, integer, float and boolean literals are supported as defaults.
+    // Fields can have a default values
     #[uniffi(default = &quot;hello&quot;)]
     pub greeting: String,
     #[uniffi(default = true)]
