@@ -138,6 +138,46 @@ fn do_something(foo: MyFooRef) {
 }
 ```
 
+### Default values
+
+Exported functions/methods can have default values using the `default` argument of the attribute macro that wraps them.
+`default` inputs a comma-separated list of `[name]=[value]` items.
+
+```rust
+#[uniffi::export(default(text = " ", max_splits = None))]
+pub fn split(
+    text: String,
+    sep: String,
+    max_splits: Option<u32>,
+) -> Vec<String> {
+  ...
+}
+
+#[derive(uniffi::Object)]
+pub struct TextSplitter { ... }
+
+#[uniffi::export]
+impl TextSplitter {
+    #[uniffi::constructor(default(ignore_unicode_errors = false))]
+    fn new(ignore_unicode_errors: boolean) -> Self {
+        ...
+    }
+
+    #[uniffi::method(default(text = " ", max_splits = None))]
+    fn split(
+        text: String,
+        sep: String,
+        max_splits: Option<u32>,
+    ) -> Vec<String> {
+      ...
+    }
+}
+```
+
+Supported default values:
+  - String, integer, float, and boolean literals
+  - `None` for Option<T> types
+
 ### Renaming functions, methods and constructors
 
 A single exported function can specify an alternate name to be used by the bindings by specifying a `name` attribute.
@@ -179,8 +219,7 @@ will fail).
 pub struct MyRecord {
     pub field_a: String,
     pub field_b: Option<Arc<MyObject>>,
-    // Fields can have a default value.
-    // Currently, only string, integer, float and boolean literals are supported as defaults.
+    // Fields can have a default values
     #[uniffi(default = "hello")]
     pub greeting: String,
     #[uniffi(default = true)]

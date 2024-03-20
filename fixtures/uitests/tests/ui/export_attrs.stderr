@@ -53,3 +53,21 @@ error: uniffi::constructor/method attribute `foo` is not supported here.
    |
 50 |     #[uniffi::method(foo)]
    |                      ^^^
+
+error: Unknown default argument: fooo
+  --> tests/ui/export_attrs.rs:55:26
+   |
+55 | #[uniffi::export(default(fooo = 0))]
+   |                          ^^^^
+
+error: Unknown default argument: fooo
+  --> tests/ui/export_attrs.rs:65:35
+   |
+65 |     #[uniffi::constructor(default(fooo = 0))]
+   |                                   ^^^^
+
+error: Unknown default argument: fooo
+  --> tests/ui/export_attrs.rs:73:30
+   |
+73 |     #[uniffi::method(default(fooo = 0))]
+   |                              ^^^^

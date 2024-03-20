@@ -51,4 +51,30 @@ impl OtherAttrs {
     fn two() {}
 }
 
+// Defaults with the wrong argument names
+#[uniffi::export(default(fooo = 0))]
+pub fn func_with_default(foo: u32) -> u32 {
+    foo
+}
+
+#[derive(uniffi::Object)]
+struct ObjWithDefault(u32);
+
+#[uniffi::export]
+impl ObjWithDefault {
+    #[uniffi::constructor(default(fooo = 0))]
+    pub fn new(foo: u32) -> Self {
+        Self(foo)
+    }
+}
+
+#[uniffi::export]
+impl ObjWithDefault {
+    #[uniffi::method(default(fooo = 0))]
+    pub fn foo_matches(&self, foo: u32) -> bool {
+        self.0 == foo
+    }
+}
+
+
 uniffi_macros::setup_scaffolding!();

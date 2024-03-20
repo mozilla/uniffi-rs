@@ -448,13 +448,16 @@ impl<'a> MetadataReader<'a> {
         let len = self.read_u8()?;
         (0..len)
             .map(|_| {
+                let name = self.read_string()?;
+                let ty = self.read_type()?;
+                let default = self.read_default(&name, &ty)?;
                 Ok(FnParamMetadata {
-                    name: self.read_string()?,
-                    ty: self.read_type()?,
+                    name,
+                    ty,
+                    default,
                     // not emitted by macros
                     by_ref: false,
                     optional: false,
-                    default: None,
                 })
             })
             .collect()

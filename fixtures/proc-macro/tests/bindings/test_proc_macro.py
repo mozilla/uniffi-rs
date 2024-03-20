@@ -64,6 +64,20 @@ except FlatError.InvalidInput:
 else:
     raise Exception("do_stuff should throw if its argument is 0")
 
+
+# Defaults
+
+record_with_defaults = RecordWithDefaults(no_default_string="Test")
+assert(record_with_defaults.no_default_string == "Test")
+assert(record_with_defaults.opt_vec == None)
+assert(record_with_defaults.number == 42)
+
+assert(double_with_default() == 42)
+
+obj_with_defaults = ObjectWithDefaults()
+assert(obj_with_defaults.add_to_num() == 42)
+
+# Traits
 class PyTestCallbackInterface(TestCallbackInterface):
     def do_nothing(self):
         pass
