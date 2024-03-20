@@ -874,6 +874,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "large-error"
+version = "0.26.1"
+dependencies = [
+ "thiserror",
+ "uniffi",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

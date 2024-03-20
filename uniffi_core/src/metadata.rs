@@ -80,7 +80,10 @@ pub mod codes {
     pub const LIT_NULL: u8 = 4;
 }
 
-const BUF_SIZE: usize = 4096;
+// For large errors (e.g. enums) a buffer size of ~4k - ~8k
+// is not enough. See issues on Github: #1968 and #2041 and
+// for an example see fixture/large-error
+const BUF_SIZE: usize = 16384;
 
 // This struct is a kludge around the fact that Rust const generic support doesn't quite handle our
 // needs.
