@@ -790,6 +790,31 @@
 <a href="#790" id="790">790</a>
 <a href="#791" id="791">791</a>
 <a href="#792" id="792">792</a>
+<a href="#793" id="793">793</a>
+<a href="#794" id="794">794</a>
+<a href="#795" id="795">795</a>
+<a href="#796" id="796">796</a>
+<a href="#797" id="797">797</a>
+<a href="#798" id="798">798</a>
+<a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
+<a href="#803" id="803">803</a>
+<a href="#804" id="804">804</a>
+<a href="#805" id="805">805</a>
+<a href="#806" id="806">806</a>
+<a href="#807" id="807">807</a>
+<a href="#808" id="808">808</a>
+<a href="#809" id="809">809</a>
+<a href="#810" id="810">810</a>
+<a href="#811" id="811">811</a>
+<a href="#812" id="812">812</a>
+<a href="#813" id="813">813</a>
+<a href="#814" id="814">814</a>
+<a href="#815" id="815">815</a>
+<a href="#816" id="816">816</a>
+<a href="#817" id="817">817</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -802,13 +827,15 @@
 
 <span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>askama::Template;
+<span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">super</span>::Bindings;
 <span class="kw">use </span><span class="kw">crate</span>::backend::TemplateExpression;
+<span class="kw">use </span><span class="kw">crate</span>::bindings::swift;
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
+<span class="kw">use crate</span>::{BindingGenerator, BindingsConfig};
 
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>compounds;
@@ -819,6 +846,29 @@
 <span class="kw">mod </span>object;
 <span class="kw">mod </span>primitives;
 <span class="kw">mod </span>record;
+
+<span class="kw">pub struct </span>SwiftBindingGenerator;
+<span class="kw">impl </span>BindingGenerator <span class="kw">for </span>SwiftBindingGenerator {
+    <span class="kw">type </span>Config = Config;
+
+    <span class="kw">fn </span>write_bindings(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        ci: <span class="kw-2">&amp;</span>ComponentInterface,
+        config: <span class="kw-2">&amp;</span>Config,
+        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+        try_format_code: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        swift::write_bindings(config, ci, out_dir, try_format_code)
+    }
+
+    <span class="kw">fn </span>check_library_path(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _library_path: <span class="kw-2">&amp;</span>Utf8Path,
+        _cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="prelude-val">Ok</span>(())
+    }
+}
 
 <span class="doccomment">/// A trait tor the implementation.
 </span><span class="kw">trait </span>CodeType: Debug {

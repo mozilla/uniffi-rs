@@ -293,7 +293,6 @@
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
 <a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -312,8 +311,8 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 </span><span class="kw">use crate</span>::{
-    bindings::TargetLanguage, load_initial_config, macro_metadata, BindingGenerator,
-    BindingGeneratorDefault, BindingsConfig, ComponentInterface, <span class="prelude-ty">Result</span>,
+    load_initial_config, macro_metadata, BindingGenerator, BindingsConfig, ComponentInterface,
+    <span class="prelude-ty">Result</span>,
 };
 <span class="kw">use </span>anyhow::{bail, Context};
 <span class="kw">use </span>camino::Utf8Path;
@@ -329,23 +328,21 @@
 <span class="doccomment">/// Generate foreign bindings
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
-</span><span class="kw">pub fn </span>generate_bindings(
+</span><span class="kw">pub fn </span>generate_bindings&lt;T: BindingGenerator + <span class="question-mark">?</span>Sized&gt;(
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     crate_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    target_languages: <span class="kw-2">&amp;</span>[TargetLanguage],
+    binding_generator: <span class="kw-2">&amp;</span>T,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     out_dir: <span class="kw-2">&amp;</span>Utf8Path,
     try_format_code: bool,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;<span class="kw">crate</span>::Config&gt;&gt;&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;T::Config&gt;&gt;&gt; {
     generate_external_bindings(
-        BindingGeneratorDefault {
-            target_languages: target_languages.into(),
-            try_format_code,
-        },
+        binding_generator,
         library_path,
-        crate_name,
+        crate_name.clone(),
         config_file_override,
         out_dir,
+        try_format_code,
     )
 }
 
@@ -353,11 +350,12 @@
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
 </span><span class="kw">pub fn </span>generate_external_bindings&lt;T: BindingGenerator&gt;(
-    binding_generator: T,
+    binding_generator: <span class="kw-2">&amp;</span>T,
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
     crate_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+    try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;T::Config&gt;&gt;&gt; {
     <span class="kw">let </span>cargo_metadata = MetadataCommand::new()
         .exec()
@@ -405,7 +403,7 @@
     }
 
     <span class="kw">for </span>source <span class="kw">in </span>sources.iter() {
-        binding_generator.write_bindings(<span class="kw-2">&amp;</span>source.ci, <span class="kw-2">&amp;</span>source.config, out_dir)<span class="question-mark">?</span>;
+        binding_generator.write_bindings(<span class="kw-2">&amp;</span>source.ci, <span class="kw-2">&amp;</span>source.config, out_dir, try_format_code)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(sources)

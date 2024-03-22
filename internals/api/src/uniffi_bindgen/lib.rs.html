@@ -600,6 +600,7 @@
 <a href="#600" id="600">600</a>
 <a href="#601" id="601">601</a>
 <a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -762,15 +763,16 @@
         ci: <span class="kw-2">&amp;</span>ComponentInterface,
         config: <span class="kw-2">&amp;</span><span class="self">Self</span>::Config,
         out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+        try_format_code: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
 
     <span class="doccomment">/// Check if `library_path` used by library mode is valid for this generator
     </span><span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
 }
 
-<span class="kw">struct </span>BindingGeneratorDefault {
-    target_languages: Vec&lt;TargetLanguage&gt;,
-    try_format_code: bool,
+<span class="kw">pub struct </span>BindingGeneratorDefault {
+    <span class="kw">pub </span>target_languages: Vec&lt;TargetLanguage&gt;,
+    <span class="kw">pub </span>try_format_code: bool,
 }
 
 <span class="kw">impl </span>BindingGenerator <span class="kw">for </span>BindingGeneratorDefault {
@@ -781,6 +783,7 @@
         ci: <span class="kw-2">&amp;</span>ComponentInterface,
         config: <span class="kw-2">&amp;</span><span class="self">Self</span>::Config,
         out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+        _try_format_code: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">for </span><span class="kw-2">&amp;</span>language <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.target_languages {
             bindings::write_bindings(
@@ -821,12 +824,13 @@
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it&#39;s [`None`]
 /// - `crate_name`: Override the default crate name that is guessed from UDL file path.
 </span><span class="kw">pub fn </span>generate_external_bindings&lt;T: BindingGenerator&gt;(
-    binding_generator: T,
+    binding_generator: <span class="kw-2">&amp;</span>T,
     udl_file: <span class="kw">impl </span>AsRef&lt;Utf8Path&gt;,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
     out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
     library_file: <span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>AsRef&lt;Utf8Path&gt;&gt;,
     crate_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>crate_name = crate_name
         .map(|c| <span class="prelude-val">Ok</span>(c.to_string()))
@@ -855,7 +859,7 @@
         udl_file.as_ref(),
         out_dir_override.as_ref().map(|p| p.as_ref()),
     )<span class="question-mark">?</span>;
-    binding_generator.write_bindings(<span class="kw-2">&amp;</span>component, <span class="kw-2">&amp;</span>config, <span class="kw-2">&amp;</span>out_dir)
+    binding_generator.write_bindings(<span class="kw-2">&amp;</span>component, <span class="kw-2">&amp;</span>config, <span class="kw-2">&amp;</span>out_dir, try_format_code)
 }
 
 <span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,
@@ -903,25 +907,23 @@
 
 <span class="comment">// Generate the bindings in the target languages that call the scaffolding
 // Rust code.
-</span><span class="kw">pub fn </span>generate_bindings(
+</span><span class="kw">pub fn </span>generate_bindings&lt;T: BindingGenerator&gt;(
     udl_file: <span class="kw-2">&amp;</span>Utf8Path,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
-    target_languages: Vec&lt;TargetLanguage&gt;,
+    binding_generator: T,
     out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     library_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     crate_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
     try_format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     generate_external_bindings(
-        BindingGeneratorDefault {
-            target_languages,
-            try_format_code,
-        },
+        <span class="kw-2">&amp;</span>binding_generator,
         udl_file,
         config_file_override,
         out_dir_override,
         library_file,
         crate_name,
+        try_format_code,
     )
 }
 

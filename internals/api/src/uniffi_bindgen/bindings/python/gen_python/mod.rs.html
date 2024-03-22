@@ -600,12 +600,38 @@
 <a href="#600" id="600">600</a>
 <a href="#601" id="601">601</a>
 <a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>askama::Template;
+<span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>once_cell::sync::Lazy;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -615,8 +641,9 @@
 <span class="kw">use </span>std::fmt::Debug;
 
 <span class="kw">use </span><span class="kw">crate</span>::backend::TemplateExpression;
+<span class="kw">use </span><span class="kw">crate</span>::bindings::python;
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
+<span class="kw">use crate</span>::{BindingGenerator, BindingsConfig};
 
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>compounds;
@@ -627,6 +654,29 @@
 <span class="kw">mod </span>object;
 <span class="kw">mod </span>primitives;
 <span class="kw">mod </span>record;
+
+<span class="kw">pub struct </span>PythonBindingGenerator;
+
+<span class="kw">impl </span>BindingGenerator <span class="kw">for </span>PythonBindingGenerator {
+    <span class="kw">type </span>Config = Config;
+
+    <span class="kw">fn </span>write_bindings(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        ci: <span class="kw-2">&amp;</span>ComponentInterface,
+        config: <span class="kw-2">&amp;</span>Config,
+        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
+        try_format_code: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        python::write_bindings(config, ci, out_dir, try_format_code)
+    }
+
+    <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span>cdylib_name.is_none() {
+            <span class="macro">bail!</span>(<span class="string">&quot;Generate bindings for Python requires a cdylib, but {library_path} was given&quot;</span>);
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+}
 
 <span class="doccomment">/// A trait tor the implementation.
 </span><span class="kw">trait </span>CodeType: Debug {

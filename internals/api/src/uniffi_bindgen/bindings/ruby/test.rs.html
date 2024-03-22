@@ -57,12 +57,17 @@
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span><span class="kw">crate</span>::bindings::TargetLanguage;
 <span class="kw">use </span><span class="kw">crate</span>::library_mode::generate_bindings;
+<span class="kw">use </span><span class="kw">crate</span>::BindingGeneratorDefault;
 <span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>std::env;
@@ -96,7 +101,10 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
     generate_bindings(
         <span class="kw-2">&amp;</span>cdylib_path,
         <span class="prelude-val">None</span>,
-        <span class="kw-2">&amp;</span>[TargetLanguage::Ruby],
+        <span class="kw-2">&amp;</span>BindingGeneratorDefault {
+            target_languages: <span class="macro">vec!</span>[TargetLanguage::Ruby],
+            try_format_code: <span class="bool-val">false</span>,
+        },
         <span class="prelude-val">None</span>,
         <span class="kw-2">&amp;</span>out_dir,
         <span class="bool-val">false</span>,
