@@ -7,6 +7,7 @@ uniffi::build_foreign_language_testcases!(
 #[cfg(test)]
 mod tests {
     use uniffi_bindgen::bindings::TargetLanguage;
+    use uniffi_bindgen::BindingGeneratorDefault;
     use uniffi_testing::UniFFITestHelper;
 
     const DOCSTRINGS: &[&str] = &[
@@ -50,7 +51,10 @@ mod tests {
         uniffi_bindgen::library_mode::generate_bindings(
             &cdylib_path,
             None,
-            &[language],
+            &BindingGeneratorDefault {
+                target_languages: vec![language],
+                try_format_code: false,
+            },
             None,
             &out_dir,
             false,

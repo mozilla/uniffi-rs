@@ -4,6 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 use crate::bindings::TargetLanguage;
 use crate::library_mode::generate_bindings;
+use crate::BindingGeneratorDefault;
 use anyhow::{bail, Context, Result};
 use camino::Utf8Path;
 use std::env;
@@ -37,7 +38,10 @@ pub fn test_script_command(
     generate_bindings(
         &cdylib_path,
         None,
-        &[TargetLanguage::Ruby],
+        &BindingGeneratorDefault {
+            target_languages: vec![TargetLanguage::Ruby],
+            try_format_code: false,
+        },
         None,
         &out_dir,
         false,

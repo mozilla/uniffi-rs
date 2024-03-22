@@ -16,8 +16,8 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 use crate::{
-    bindings::TargetLanguage, load_initial_config, macro_metadata, BindingGenerator,
-    BindingGeneratorDefault, BindingsConfig, ComponentInterface, Result,
+    load_initial_config, macro_metadata, BindingGenerator, BindingsConfig, ComponentInterface,
+    Result,
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
@@ -33,23 +33,21 @@ use uniffi_meta::{
 /// Generate foreign bindings
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
-pub fn generate_bindings(
+pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     library_path: &Utf8Path,
     crate_name: Option<String>,
-    target_languages: &[TargetLanguage],
+    binding_generator: &T,
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
     try_format_code: bool,
-) -> Result<Vec<Source<crate::Config>>> {
+) -> Result<Vec<Source<T::Config>>> {
     generate_external_bindings(
-        BindingGeneratorDefault {
-            target_languages: target_languages.into(),
-            try_format_code,
-        },
+        binding_generator,
         library_path,
-        crate_name,
+        crate_name.clone(),
         config_file_override,
         out_dir,
+        try_format_code,
     )
 }
 
@@ -57,11 +55,12 @@ pub fn generate_bindings(
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
 pub fn generate_external_bindings<T: BindingGenerator>(
-    binding_generator: T,
+    binding_generator: &T,
     library_path: &Utf8Path,
     crate_name: Option<String>,
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
+    try_format_code: bool,
 ) -> Result<Vec<Source<T::Config>>> {
     let cargo_metadata = MetadataCommand::new()
         .exec()
@@ -109,7 +108,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     }
 
     for source in sources.iter() {
-        binding_generator.write_bindings(&source.ci, &source.config, out_dir)?;
+        binding_generator.write_bindings(&source.ci, &source.config, out_dir, try_format_code)?;
     }
 
     Ok(sources)

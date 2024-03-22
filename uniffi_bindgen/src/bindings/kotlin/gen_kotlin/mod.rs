@@ -7,14 +7,16 @@ use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use askama::Template;
+use camino::Utf8Path;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use crate::backend::TemplateExpression;
+use crate::bindings::kotlin;
 use crate::interface::*;
-use crate::BindingsConfig;
+use crate::{BindingGenerator, BindingsConfig};
 
 mod callback_interface;
 mod compounds;
@@ -26,6 +28,28 @@ mod object;
 mod primitives;
 mod record;
 mod variant;
+
+pub struct KotlinBindingGenerator;
+impl BindingGenerator for KotlinBindingGenerator {
+    type Config = Config;
+
+    fn write_bindings(
+        &self,
+        ci: &ComponentInterface,
+        config: &Config,
+        out_dir: &Utf8Path,
+        try_format_code: bool,
+    ) -> Result<()> {
+        kotlin::write_bindings(config, ci, out_dir, try_format_code)
+    }
+
+    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()> {
+        if cdylib_name.is_none() {
+            bail!("Generate bindings for Kotlin requires a cdylib, but {library_path} was given");
+        }
+        Ok(())
+    }
+}
 
 trait CodeType: Debug {
     /// The language specific label used to reference this type. This will be used in

@@ -5,6 +5,7 @@
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
 use uniffi_bindgen::bindings::TargetLanguage;
+use uniffi_bindgen::BindingGeneratorDefault;
 
 // Structs to help our cmdline parsing. Note that docstrings below form part
 // of the "help" output.
@@ -102,7 +103,10 @@ pub fn run_main() -> anyhow::Result<()> {
                 uniffi_bindgen::library_mode::generate_bindings(
                     &source,
                     crate_name,
-                    &language,
+                    &BindingGeneratorDefault {
+                        target_languages: language,
+                        try_format_code: !no_format,
+                    },
                     config.as_deref(),
                     &out_dir,
                     !no_format,
@@ -111,7 +115,10 @@ pub fn run_main() -> anyhow::Result<()> {
                 uniffi_bindgen::generate_bindings(
                     &source,
                     config.as_deref(),
-                    language,
+                    BindingGeneratorDefault {
+                        target_languages: language,
+                        try_format_code: !no_format,
+                    },
                     out_dir.as_deref(),
                     lib_file.as_deref(),
                     crate_name.as_deref(),
