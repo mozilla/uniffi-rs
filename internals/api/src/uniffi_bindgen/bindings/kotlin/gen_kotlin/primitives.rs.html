@@ -84,6 +84,10 @@
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -95,7 +99,11 @@
 
 <span class="kw">fn </span>render_literal(literal: <span class="kw-2">&amp;</span>Literal, _ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
     <span class="kw">fn </span>typed_number(type_: <span class="kw-2">&amp;</span>Type, num_str: String) -&gt; String {
-        <span class="kw">match </span>type_ {
+        <span class="kw">let </span>unwrapped_type = <span class="kw">match </span>type_ {
+            Type::Optional { inner_type } =&gt; inner_type,
+            t =&gt; t,
+        };
+        <span class="kw">match </span>unwrapped_type {
             <span class="comment">// Bytes, Shorts and Ints can all be inferred from the type.
             </span>Type::Int8 | Type::Int16 | Type::Int32 =&gt; num_str,
             Type::Int64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{num_str}L&quot;</span>),
@@ -105,7 +113,7 @@
 
             Type::Float32 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{num_str}f&quot;</span>),
             Type::Float64 =&gt; num_str,
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected literal: {num_str} is not a number&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected literal: {num_str} for type: {type_:?}&quot;</span>),
         }
     }
 

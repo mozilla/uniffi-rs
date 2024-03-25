@@ -95,6 +95,42 @@
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -103,7 +139,9 @@
 <span class="kw">use </span>proc_macro2::TokenStream;
 <span class="kw">use </span>quote::{quote, ToTokens};
 <span class="kw">use </span>syn::{
-    parse::{Parse, ParseStream},
+    bracketed, parenthesized,
+    parse::{Nothing, Parse, ParseStream},
+    token::{Bracket, Paren},
     Lit,
 };
 
@@ -111,14 +149,22 @@
 </span><span class="attr">#[derive(Clone)]
 </span><span class="kw">pub enum </span>DefaultValue {
     Literal(Lit),
-    Null(kw::None),
+    <span class="prelude-val">None</span>(kw::None),
+    <span class="prelude-val">Some </span>{
+        some: kw::Some,
+        paren: Paren,
+        inner: Box&lt;DefaultValue&gt;,
+    },
+    EmptySeq(Bracket),
 }
 
 <span class="kw">impl </span>ToTokens <span class="kw">for </span>DefaultValue {
     <span class="kw">fn </span>to_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, tokens: <span class="kw-2">&amp;mut </span>TokenStream) {
         <span class="kw">match </span><span class="self">self </span>{
             DefaultValue::Literal(lit) =&gt; lit.to_tokens(tokens),
-            DefaultValue::Null(kw) =&gt; kw.to_tokens(tokens),
+            DefaultValue::None(kw) =&gt; kw.to_tokens(tokens),
+            DefaultValue::Some { inner, .. } =&gt; tokens.extend(<span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(#inner) }),
+            DefaultValue::EmptySeq(<span class="kw">_</span>) =&gt; tokens.extend(<span class="macro">quote! </span>{ [] }),
         }
     }
 }
@@ -128,7 +174,21 @@
         <span class="kw">let </span>lookahead = input.lookahead1();
         <span class="kw">if </span>lookahead.peek(kw::None) {
             <span class="kw">let </span>none_kw: kw::None = input.parse()<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Null(none_kw))
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::None(none_kw))
+        } <span class="kw">else if </span>lookahead.peek(kw::Some) {
+            <span class="kw">let </span>some: kw::Some = input.parse()<span class="question-mark">?</span>;
+            <span class="kw">let </span>content;
+            <span class="kw">let </span>paren = <span class="macro">parenthesized!</span>(content <span class="kw">in </span>input);
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Some {
+                some,
+                paren,
+                inner: content.parse()<span class="question-mark">?</span>,
+            })
+        } <span class="kw">else if </span>lookahead.peek(Bracket) {
+            <span class="kw">let </span>content;
+            <span class="kw">let </span>bracket = <span class="macro">bracketed!</span>(content <span class="kw">in </span>input);
+            content.parse::&lt;Nothing&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="self">Self</span>::EmptySeq(bracket))
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Literal(input.parse()<span class="question-mark">?</span>))
         }
@@ -173,9 +233,21 @@
                 <span class="string">&quot;this type of literal is not currently supported as a default&quot;</span>,
             )),
 
-            DefaultValue::Null(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
-                .concat_value(::uniffi::metadata::codes::LIT_NULL)
+            DefaultValue::EmptySeq(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                .concat_value(::uniffi::metadata::codes::LIT_EMPTY_SEQ)
             }),
+
+            DefaultValue::None(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                .concat_value(::uniffi::metadata::codes::LIT_NONE)
+            }),
+
+            DefaultValue::Some { inner, .. } =&gt; {
+                <span class="kw">let </span>inner_calls = inner.metadata_calls()<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+                    .concat_value(::uniffi::metadata::codes::LIT_SOME)
+                    #inner_calls
+                })
+            }
         }
     }
 }

@@ -1520,7 +1520,8 @@ impl TextSplitter {
 <p>Supported default values:</p>
 <ul>
 <li>String, integer, float, and boolean literals</li>
-<li><code>None</code> for Option<T> types</li>
+<li><code>[]</code> for empty Vecs</li>
+<li><code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></li>
 </ul>
 <h3 id="renaming-functions-methods-and-constructors"><a class="header" href="#renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</a></h3>
 <p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>

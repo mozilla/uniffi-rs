@@ -411,6 +411,7 @@
 <a href="#411" id="411">411</a>
 <a href="#412" id="412">412</a>
 <a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -615,7 +616,8 @@
             }
             <span class="comment">// use the double-quote form to match with the other languages, and quote escapes.
             </span>Literal::String(s) =&gt; <span class="macro">format!</span>(<span class="string">&quot;\&quot;{s}\&quot;&quot;</span>),
-            Literal::Null =&gt; <span class="string">&quot;nil&quot;</span>.into(),
+            Literal::None =&gt; <span class="string">&quot;nil&quot;</span>.into(),
+            Literal::Some { inner } =&gt; literal_rb(inner)<span class="question-mark">?</span>,
             Literal::EmptySequence =&gt; <span class="string">&quot;[]&quot;</span>.into(),
             Literal::EmptyMap =&gt; <span class="string">&quot;{}&quot;</span>.into(),
             Literal::Enum(v, type_) =&gt; <span class="kw">match </span>type_ {
