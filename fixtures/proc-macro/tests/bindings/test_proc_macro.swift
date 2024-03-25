@@ -59,8 +59,12 @@ struct SomeOtherError: Error { }
 
 let recordWithDefaults = RecordWithDefaults(noDefaultString: "Test")
 assert(recordWithDefaults.noDefaultString == "Test")
+assert(recordWithDefaults.boolean == true)
+assert(recordWithDefaults.integer == 42)
+assert(recordWithDefaults.float == 4.2)
+assert(recordWithDefaults.vec == [])
 assert(recordWithDefaults.optVec == nil)
-assert(recordWithDefaults.number == 42)
+assert(recordWithDefaults.optInteger == 42)
 
 assert(doubleWithDefault() == 42)
 

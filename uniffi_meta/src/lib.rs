@@ -270,7 +270,8 @@ pub enum LiteralMetadata {
     Enum(String, Type),
     EmptySequence,
     EmptyMap,
-    Null,
+    None,
+    Some { inner: Box<LiteralMetadata> },
 }
 
 impl LiteralMetadata {

@@ -69,8 +69,12 @@ else:
 
 record_with_defaults = RecordWithDefaults(no_default_string="Test")
 assert(record_with_defaults.no_default_string == "Test")
+assert(record_with_defaults.boolean == True)
+assert(record_with_defaults.integer == 42)
+assert(record_with_defaults.float == 4.2)
+assert(record_with_defaults.vec == [])
 assert(record_with_defaults.opt_vec == None)
-assert(record_with_defaults.number == 42)
+assert(record_with_defaults.opt_integer == 42)
 
 assert(double_with_default() == 42)
 

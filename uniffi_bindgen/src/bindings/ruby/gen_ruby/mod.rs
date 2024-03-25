@@ -202,7 +202,8 @@ mod filters {
             }
             // use the double-quote form to match with the other languages, and quote escapes.
             Literal::String(s) => format!("\"{s}\""),
-            Literal::Null => "nil".into(),
+            Literal::None => "nil".into(),
+            Literal::Some { inner } => literal_rb(inner)?,
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {
