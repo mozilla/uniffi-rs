@@ -28,6 +28,9 @@
 
 - Proc-macro record defaults now support empty vecs and Some values.
 
+- Swift: Records and Enums without object references can now be made `Sendable` Swift,
+  by opting in to new Configuration `experimental_sendable_value_types` in `uniffi.toml`.
+
 ### What's fixed?
  
 - Fixed a memory leak in callback interface handling.
