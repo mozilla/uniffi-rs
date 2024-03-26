@@ -15,10 +15,15 @@ class {{ impl_name }}:
 
 {%- match obj.primary_constructor() %}
 {%-     when Some with (cons) %}
+{%-         if cons.is_async() %}
+    def __init__(self, *args, **kw):
+        raise ValueError("async constructors not supported.")
+{%-         else %}
     def __init__(self, {% call py::arg_list_decl(cons) -%}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         self._pointer = {% call py::to_ffi_call(cons) %}
+{%-         endif %}
 {%-     when None %}
     {# no __init__ means simple construction without a pointer works, which can confuse #}
     def __init__(self, *args, **kwargs):
@@ -46,12 +51,27 @@ class {{ impl_name }}:
 {%- for cons in obj.alternate_constructors() %}
 
     @classmethod
+{%-  if cons.is_async() %}
+    async def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+        {%- call py::docstring(cons, 8) %}
+        {%- call py::setup_args_extra_indent(cons) %}
+
+        return await _uniffi_rust_call_async(
+            _UniffiLib.{{ cons.ffi_func().name() }}({% call py::arg_list_lowered(cons) %}),
+            _UniffiLib.{{ cons.ffi_rust_future_poll(ci) }},
+            _UniffiLib.{{ cons.ffi_rust_future_complete(ci) }},
+            _UniffiLib.{{ cons.ffi_rust_future_free(ci) }},
+            {{ ffi_converter_name }}.lift,
+            {% call py::error_ffi_converter(cons) %}
+        )
+{%-  else %}
     def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
         pointer = {% call py::to_ffi_call(cons) %}
         return cls._make_instance_(pointer)
+{%-  endif %}
 {% endfor %}
 
 {%- for meth in obj.methods() -%}

@@ -8,6 +8,9 @@
 
 ### What's new?
 
+- Constructors can be async. Alternate constructors work in Python, Kotlin and Swift;
+  only Swift supports primary constructors.
+
 - Enums created with proc macros can now produce literals for variants in Kotlin and Swift. See
 [the section on enum proc-macros](https://mozilla.github.io/uniffi-rs/proc_macro/index.html#the-uniffienum-derive) for more information.
 

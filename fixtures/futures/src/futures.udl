@@ -8,3 +8,14 @@ interface SayAfterUdlTrait {
     [Async]
     string say_after(u16 ms, string who);
 };
+
+interface UdlMegaphone {
+    [Async]
+    constructor();
+
+    [Async, Name="secondary"]
+    constructor();
+
+    [Async]
+    string say_after(u16 ms, string who);
+};

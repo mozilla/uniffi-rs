@@ -134,9 +134,13 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 
     {%- match obj.primary_constructor() %}
     {%- when Some(cons) %}
+    {%-     if cons.is_async() %}
+    // Note no constructor generated for this object as it is async.
+    {%-     else %}
     {%- call kt::docstring(cons, 4) %}
-    constructor({% call kt::arg_list_decl(cons) -%}) :
+    constructor({% call kt::arg_list(cons, true) -%}) :
         this({% call kt::to_ffi_call(cons) %})
+    {%-     endif %}
     {%- when None %}
     {%- endmatch %}
 
@@ -204,93 +208,26 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
 
     {% for meth in obj.methods() -%}
-    {%- call kt::docstring(meth, 4) %}
-    {%- match meth.throws_type() -%}
-    {%- when Some(throwable) %}
-    @Throws({{ throwable|type_name(ci) }}::class)
-    {%- else -%}
-    {%- endmatch -%}
-    {%- if meth.is_async() %}
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun {{ meth.name()|fn_name }}(
-        {%- call kt::arg_list_decl(meth) -%}
-    ){% match meth.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.{{ meth.ffi_func().name() }}(
-                    thisPtr,
-                    {% call kt::arg_list_lowered(meth) %}
-                )
-            },
-            {{ meth|async_poll(ci) }},
-            {{ meth|async_complete(ci) }},
-            {{ meth|async_free(ci) }},
-            // lift function
-            {%- match meth.return_type() %}
-            {%- when Some(return_type) %}
-            { {{ return_type|lift_fn }}(it) },
-            {%- when None %}
-            { Unit },
-            {% endmatch %}
-            // Error FFI converter
-            {%- match meth.throws_type() %}
-            {%- when Some(e) %}
-            {{ e|type_name(ci) }}.ErrorHandler,
-            {%- when None %}
-            UniffiNullRustCallStatusErrorHandler,
-            {%- endmatch %}
-        )
-    }
-    {%- else -%}
-    {%- match meth.return_type() -%}
-    {%- when Some with (return_type) -%}
-    override fun {{ meth.name()|fn_name }}(
-        {%- call kt::arg_list_protocol(meth) -%}
-    ): {{ return_type|type_name(ci) }} =
-        callWithPointer {
-            {%- call kt::to_ffi_call_with_prefix("it", meth) %}
-        }.let {
-            {{ return_type|lift_fn }}(it)
-        }
-
-    {%- when None -%}
-    override fun {{ meth.name()|fn_name }}(
-        {%- call kt::arg_list_protocol(meth) -%}
-    ) =
-        callWithPointer {
-            {%- call kt::to_ffi_call_with_prefix("it", meth) %}
-        }
-    {% endmatch %}
-    {% endif %}
+    {%- call kt::func_decl("override", meth, 4) %}
     {% endfor %}
 
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
-    {%-         when UniffiTrait::Display { fmt } %}
-    override fun toString(): String =
-        callWithPointer {
-            {%- call kt::to_ffi_call_with_prefix("it", fmt) %}
-        }.let {
-            {{ fmt.return_type().unwrap()|lift_fn }}(it)
-        }
-    {%-         when UniffiTrait::Eq { eq, ne } %}
+    {%         when UniffiTrait::Display { fmt } %}
+    override fun toString(): String {
+        return {{ fmt.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(fmt) %})
+    }
+    {%         when UniffiTrait::Eq { eq, ne } %}
     {# only equals used #}
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is {{ impl_class_name}}) return false
-        return callWithPointer {
-            {%- call kt::to_ffi_call_with_prefix("it", eq) %}
-        }.let {
-            {{ eq.return_type().unwrap()|lift_fn }}(it)
-        }
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(eq) %})
     }
-    {%-         when UniffiTrait::Hash { hash } %}
-    override fun hashCode(): Int =
-        callWithPointer {
-            {%- call kt::to_ffi_call_with_prefix("it", hash) %}
-        }.let {
-            {{ hash.return_type().unwrap()|lift_fn }}(it).toInt()
-        }
+    {%         when UniffiTrait::Hash { hash } %}
+    override fun hashCode(): Int {
+        return {{ hash.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(hash) %}).toInt()
+    }
     {%-         else %}
     {%-     endmatch %}
     {%- endfor %}
@@ -299,9 +236,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
-        {%- call kt::docstring(cons, 4) %}
-        fun {{ cons.name()|fn_name }}({% call kt::arg_list_decl(cons) %}): {{ impl_class_name }} =
-            {{ impl_class_name }}({% call kt::to_ffi_call(cons) %})
+        {% call kt::func_decl("", cons, 4) %}
         {% endfor %}
     }
     {% else if is_error %}

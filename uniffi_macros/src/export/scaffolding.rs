@@ -50,9 +50,6 @@ pub(super) fn gen_constructor_scaffolding(
             "constructors must not have a self parameter",
         ));
     }
-    if sig.is_async {
-        return Err(syn::Error::new(sig.span, "constructors can't be async"));
-    }
     let metadata_items = (!udl_mode).then(|| {
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)

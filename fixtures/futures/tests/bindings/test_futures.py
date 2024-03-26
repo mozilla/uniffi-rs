@@ -76,6 +76,23 @@ class TestFutures(unittest.TestCase):
 
         asyncio.run(test())
 
+    def test_async_constructors(self):
+        # Check the default constructor has been disabled.
+        with self.assertRaises(ValueError) as e:
+            Megaphone()
+        self.assertTrue(str(e.exception).startswith("async constructors not supported"))
+
+        async def test():
+            megaphone = await Megaphone.secondary()
+            result_alice = await megaphone.say_after(0, 'Alice')
+            self.assertEqual(result_alice, 'HELLO, ALICE!')
+
+            udl_megaphone = await UdlMegaphone.secondary()
+            result_udl = await udl_megaphone.say_after(0, 'udl')
+            self.assertEqual(result_udl, 'HELLO, UDL!')
+
+        asyncio.run(test())
+
     def test_async_trait_interface_methods(self):
         async def test():
             traits = get_say_after_traits()

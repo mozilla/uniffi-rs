@@ -19,7 +19,7 @@ class TestTraitMethods(unittest.TestCase):
         self.assertEqual(m, TraitMethods("yo"))
         self.assertNotEqual(m, TraitMethods("yoyo"))
 
-    def test_eq(self):
+    def test_eq_wrong_type(self):
         m = TraitMethods("yo")
         self.assertNotEqual(m, 17)
 

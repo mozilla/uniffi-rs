@@ -528,10 +528,11 @@ Coveralls("using_fakes_with_real_objects_crashes").use { coveralls ->
 // * We need to System.gc() and/or sleep.
 // * There's one stray thing alive, not sure what that is, but it's unrelated.
 for (i in 1..100) {
-    if (getNumAlive() > 1UL) {
-        System.gc()
-        Thread.sleep(100)
+    if (getNumAlive() <= 1UL) {
+        break
     }
+    System.gc()
+    Thread.sleep(100)
 }
 
 assert(getNumAlive() <= 1UL) { "Num alive is ${getNumAlive()}. GC/Cleaner thread has starved" };

@@ -55,11 +55,9 @@ open class {{ impl_class_name }}:
 
     {%- match obj.primary_constructor() %}
     {%- when Some with (cons) %}
-    {%- call swift::docstring(cons, 4) %}
-    public convenience init({% call swift::arg_list_decl(cons) -%}) {% call swift::throws(cons) %} {
-        self.init(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
-    }
+    {%- call swift::ctor_decl(cons, 4) %}
     {%- when None %}
+    // No primary constructor declared for this class.
     {%- endmatch %}
 
     deinit {
@@ -71,66 +69,11 @@ open class {{ impl_class_name }}:
     }
 
     {% for cons in obj.alternate_constructors() %}
-    {%- call swift::docstring(cons, 4) %}
-    public static func {{ cons.name()|fn_name }}({% call swift::arg_list_decl(cons) %}) {% call swift::throws(cons) %} -> {{ impl_class_name }} {
-        return {{ impl_class_name }}(unsafeFromRawPointer: {% call swift::to_ffi_call(cons) %})
-    }
-
+    {%- call swift::func_decl("public static func", cons, 4) %}
     {% endfor %}
 
-    {# // TODO: Maybe merge the two templates (i.e the one with a return type and the one without) #}
     {% for meth in obj.methods() -%}
-    {%- if meth.is_async() %}
-    {%- call swift::docstring(meth, 4) %}
-    open func {{ meth.name()|fn_name }}({%- call swift::arg_list_decl(meth) -%}) async {% call swift::throws(meth) %}{% match meth.return_type() %}{% when Some with (return_type) %} -> {{ return_type|type_name }}{% when None %}{% endmatch %} {
-        return {% call swift::try(meth) %} await uniffiRustCallAsync(
-            rustFutureFunc: {
-                {{ meth.ffi_func().name() }}(
-                    self.uniffiClonePointer()
-                    {%- for arg in meth.arguments() -%}
-                    ,
-                    {{ arg|lower_fn }}({{ arg.name()|var_name }})
-                    {%- endfor %}
-                )
-            },
-            pollFunc: {{ meth.ffi_rust_future_poll(ci) }},
-            completeFunc: {{ meth.ffi_rust_future_complete(ci) }},
-            freeFunc: {{ meth.ffi_rust_future_free(ci) }},
-            {%- match meth.return_type() %}
-            {%- when Some(return_type) %}
-            liftFunc: {{ return_type|lift_fn }},
-            {%- when None %}
-            liftFunc: { $0 },
-            {%- endmatch %}
-            {%- match meth.throws_type() %}
-            {%- when Some with (e) %}
-            errorHandler: {{ e|ffi_error_converter_name }}.lift
-            {%- else %}
-            errorHandler: nil
-            {% endmatch %}
-        )
-    }
-
-    {% else -%}
-
-    {%- match meth.return_type() -%}
-
-    {%- when Some with (return_type) %}
-    {%- call swift::docstring(meth, 4) %}
-    open func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} -> {{ return_type|type_name }} {
-        return {% call swift::try(meth) %} {{ return_type|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", meth) %}
-        )
-    }
-
-    {%- when None %}
-    {%- call swift::docstring(meth, 4) %}
-    open func {{ meth.name()|fn_name }}({% call swift::arg_list_decl(meth) %}) {% call swift::throws(meth) %} {
-        {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", meth) %}
-    }
-
-    {%- endmatch -%}
-    {%- endif -%}
+    {%- call swift::func_decl("open func", meth, 4) %}
     {% endfor %}
 
     {%- for tm in obj.uniffi_traits() %}
@@ -138,25 +81,25 @@ open class {{ impl_class_name }}:
     {%-         when UniffiTrait::Display { fmt } %}
     open var description: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", fmt) %}
+            {% call swift::to_ffi_call(fmt) %}
         )
     }
     {%-         when UniffiTrait::Debug { fmt } %}
     open var debugDescription: String {
         return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", fmt) %}
+            {% call swift::to_ffi_call(fmt) %}
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
-    public static func == (lhs: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
+    public static func == (self: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
         return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("lhs.uniffiClonePointer()", eq) %}
+            {% call swift::to_ffi_call(eq) %}
         )
     }
     {%-         when UniffiTrait::Hash { hash } %}
     open func hash(into hasher: inout Hasher) {
         let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call_with_prefix("self.uniffiClonePointer()", hash) %}
+            {% call swift::to_ffi_call(hash) %}
         )
         hasher.combine(val)
     }

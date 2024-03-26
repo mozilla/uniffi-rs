@@ -161,6 +161,7 @@ pub struct ConstructorMetadata {
     pub module_path: String,
     pub self_name: String,
     pub name: String,
+    pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
     pub throws: Option<Type>,
     pub checksum: Option<u16>,

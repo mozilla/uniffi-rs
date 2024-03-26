@@ -172,6 +172,20 @@ pub struct Megaphone;
 
 #[uniffi::export]
 impl Megaphone {
+    // the default constructor - many bindings will not support this.
+    #[uniffi::constructor]
+    pub async fn new() -> Arc<Self> {
+        TimerFuture::new(Duration::from_millis(0)).await;
+        Arc::new(Self {})
+    }
+
+    // most should support this.
+    #[uniffi::constructor]
+    pub async fn secondary() -> Arc<Self> {
+        TimerFuture::new(Duration::from_millis(0)).await;
+        Arc::new(Self {})
+    }
+
     /// An async method that yells something after a certain time.
     pub async fn say_after(self: Arc<Self>, ms: u16, who: String) -> String {
         say_after(ms, who).await.to_uppercase()
@@ -216,6 +230,22 @@ pub async fn say_after_with_tokio(ms: u16, who: String) -> String {
     tokio::time::sleep(Duration::from_millis(ms.into())).await;
 
     format!("Hello, {who} (with Tokio)!")
+}
+
+pub struct UdlMegaphone;
+
+impl UdlMegaphone {
+    pub async fn new() -> Self {
+        Self {}
+    }
+
+    pub async fn secondary() -> Self {
+        Self {}
+    }
+
+    pub async fn say_after(self: Arc<Self>, ms: u16, who: String) -> String {
+        say_after(ms, who).await.to_uppercase()
+    }
 }
 
 #[derive(uniffi::Record)]
