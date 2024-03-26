@@ -2115,6 +2115,8 @@ individual modules.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="configuration-1"><a class="header" href="#configuration-1">Configuration</a></h1>
 <p>The generated Swift module can be configured using a <code>uniffi.toml</code> configuration file.</p>
 <h2 id="available-options-1"><a class="header" href="#available-options-1">Available options</a></h2>
+<p>The configurations prefixed with <code>experimental_</code> should be regarded as unstable and
+more likely to change than other configurations.</p>
 <div class="table-wrapper"><table><thead><tr><th>Configuration name</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>cdylib_name</code></td><td><code>uniffi_{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td></tr>
 <tr><td><code>module_name</code></td><td><code>{namespace}</code><sup class="footnote-reference"><a href="#1">1</a></sup></td><td>The name of the Swift module containing the high-level foreign-language bindings.</td></tr>
@@ -2123,6 +2125,7 @@ individual modules.</p>
 <tr><td><code>generate_module_map</code></td><td><code>true</code></td><td>Whether to generate a <code>.modulemap</code> file for the lower-level C module with FFI declarations.</td></tr>
 <tr><td><code>omit_argument_labels</code></td><td><code>false</code></td><td>Whether to omit argument labels in Swift function definitions.</td></tr>
 <tr><td><code>generate_immutable_records</code></td><td><code>false</code></td><td>Whether to generate records with immutable fields (<code>let</code> instead of <code>var</code>).</td></tr>
+<tr><td><code>experimental_sendable_value_types</code></td><td><code>false</code></td><td>Whether to mark value types as `Sendable'.</td></tr>
 <tr><td><code>custom_types</code></td><td></td><td>A map which controls how custom types are exposed to Swift. See the <a href="swift/../udl/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td></tr>
 </tbody></table>
 </div>
