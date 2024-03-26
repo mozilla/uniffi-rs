@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.0...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.0...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.27.0) - (_2024-03-26_)
+## v0.27.0 (backend crates: v0.27.0) - (_2024-03-26_)
 
 ### What's new?
 
@@ -58,7 +58,7 @@
   - Rust future continuation data (Replacing `FfiType::RustFutureContinuationData` which was moved).
 - `RustBuffer.len` and `RustBuffer.capacity` are now `u64` rather than `i32`.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.26.1...HEAD).
+[All changes in v0.27.0](https://github.com/mozilla/uniffi-rs/compare/v0.26.1...v0.27.0).
 
 ## v0.26.1 (backend crates: v0.26.1) - (_2024-01-24_)
 
