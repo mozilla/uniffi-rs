@@ -943,6 +943,15 @@
 <a href="#943" id="943">943</a>
 <a href="#944" id="944">944</a>
 <a href="#945" id="945">945</a>
+<a href="#946" id="946">946</a>
+<a href="#947" id="947">947</a>
+<a href="#948" id="948">948</a>
+<a href="#949" id="949">949</a>
+<a href="#950" id="950">950</a>
+<a href="#951" id="951">951</a>
+<a href="#952" id="952">952</a>
+<a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1300,6 +1309,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) object_module_path: String,
+    <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
     <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -1365,8 +1375,10 @@
 
     <span class="kw">fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func.name().is_empty());
-        <span class="self">self</span>.ffi_func.arguments = <span class="self">self</span>.arguments.iter().map(Into::into).collect();
-        <span class="self">self</span>.ffi_func.return_type = <span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="self">self</span>.object_name.clone()));
+        <span class="self">self</span>.ffi_func.init(
+            <span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="self">self</span>.object_name.clone())),
+            <span class="self">self</span>.arguments.iter().map(Into::into),
+        );
     }
 
     <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
@@ -1382,11 +1394,13 @@
 
         <span class="kw">let </span>ffi_func = FfiFunction {
             name: ffi_name,
+            is_async: meta.is_async,
             ..FfiFunction::default()
         };
         <span class="self">Self </span>{
             name: meta.name,
             object_name: meta.self_name,
+            is_async: meta.is_async,
             object_module_path: meta.module_path,
             arguments,
             ffi_func,
@@ -1642,8 +1656,8 @@
     }
 
     <span class="kw">fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="bool-val">false
-    </span>}
+        <span class="self">self</span>.is_async
+    }
 }
 
 <span class="kw">impl </span>Callable <span class="kw">for </span>Method {
@@ -1662,6 +1676,10 @@
     <span class="kw">fn </span>is_async(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.is_async
     }
+
+    <span class="kw">fn </span>takes_self(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="bool-val">true
+    </span>}
 }
 
 <span class="attr">#[cfg(test)]

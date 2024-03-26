@@ -582,12 +582,6 @@
 <a href="#582" id="582">582</a>
 <a href="#583" id="583">583</a>
 <a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -690,13 +684,6 @@
             ReturnType::Type(<span class="kw">_</span>, ty) =&gt; <span class="macro">quote! </span>{ #ty },
         };
         <span class="kw">let </span>is_async = sig.asyncness.is_some();
-
-        <span class="kw">if </span>is_async &amp;&amp; <span class="macro">matches!</span>(kind, FnKind::Constructor { .. }) {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                span,
-                <span class="string">&quot;Async constructors are not supported&quot;</span>,
-            ));
-        }
 
         <span class="kw">let </span><span class="kw-2">mut </span>input_iter = sig
             .inputs
@@ -913,6 +900,7 @@
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
                         .concat_str(#name)
+                        .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
                         .concat(&lt;#return_ty <span class="kw">as </span>::uniffi::LowerReturn&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)

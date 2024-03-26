@@ -839,11 +839,15 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
     // This alternate constructor makes a new TodoList from a list of string items.
     [Name=new_from_items]
     constructor(sequence&lt;string&gt; items);
+    // This alternate constructor is async.
+    [Async, Name=new_async]
+    constructor(sequence&lt;string&gt; items);
     ...
 </code></pre>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying
 Rust struct.</p>
+<p>Constructors can be async, although support for async primary constructors in bindings is minimal.</p>
 <h2 id="exposing-methods-from-standard-rust-traits"><a class="header" href="#exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</a></h2>
 <p>Rust has a number of general purpose traits which add functionality to objects, such
 as <code>Debug</code>, <code>Display</code>, etc. It's possible to tell UniFFI that your object implements these
