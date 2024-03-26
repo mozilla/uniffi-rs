@@ -129,6 +129,7 @@ mod test_type_ids {
         check_type_id::<f64>(Type::Float64);
         check_type_id::<bool>(Type::Boolean);
         check_type_id::<String>(Type::String);
+        check_type_id::<uniffi::BlockingTaskQueue>(Type::BlockingTaskQueue);
     }
 
     #[test]

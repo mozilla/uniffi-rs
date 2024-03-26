@@ -3,18 +3,41 @@
 internal const val UNIFFI_RUST_FUTURE_POLL_READY = 0.toByte()
 internal const val UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1.toByte()
 
-internal val uniffiContinuationHandleMap = UniffiHandleMap<CancellableContinuation<Byte>>()
+/**
+ * Data for an in-progress poll of a RustFuture
+ */
+internal data class UniffiPollData(
+    val continuation: CancellableContinuation<Byte>,
+    val rustFuture: Long,
+    val pollFunc: (Long, UniffiRustFutureContinuationCallback, Long, Long) -> Unit,
+)
+
+// Stores the UniffiPollData instances that correspond to RustFuture callback data
+internal val uniffiPollDataHandleMap = UniffiHandleMap<UniffiPollData>()
+
+// Stores the CoroutineContext instances that correspond to blocking task queue handles
+internal val uniffiBlockingTaskQueueHandleMap = UniffiHandleMap<CoroutineContext>()
 
 // FFI type for Rust future continuations
 internal object uniffiRustFutureContinuationCallbackImpl: UniffiRustFutureContinuationCallback {
-    override fun callback(data: Long, pollResult: Byte) {
-        uniffiContinuationHandleMap.remove(data).resume(pollResult)
+    override fun callback(data: Long, pollResult: Byte, blockingTaskQueueHandle: Long) {
+        if (blockingTaskQueueHandle == 0L) {
+            // Complete the Kotlin continuation
+            uniffiPollDataHandleMap.remove(data).continuation.resume(pollResult)
+        } else {
+            // Call the poll function again, but inside the BlockingTaskQueue coroutine context
+            val coroutineContext = uniffiBlockingTaskQueueHandleMap.get(blockingTaskQueueHandle)
+            val pollData = uniffiPollDataHandleMap.get(data)
+            CoroutineScope(coroutineContext).launch {
+                pollData.pollFunc(pollData.rustFuture, uniffiRustFutureContinuationCallbackImpl, data, blockingTaskQueueHandle)
+            }
+        }
     }
 }
 
 internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
     rustFuture: Long,
-    pollFunc: (Long, UniffiRustFutureContinuationCallback, Long) -> Unit,
+    pollFunc: (Long, UniffiRustFutureContinuationCallback, Long, Long) -> Unit,
     completeFunc: (Long, UniffiRustCallStatus) -> F,
     freeFunc: (Long) -> Unit,
     liftFunc: (F) -> T,
@@ -23,10 +46,12 @@ internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
     try {
         do {
             val pollResult = suspendCancellableCoroutine<Byte> { continuation ->
+                val pollData = UniffiPollData(continuation, rustFuture, pollFunc)
                 pollFunc(
                     rustFuture,
                     uniffiRustFutureContinuationCallbackImpl,
-                    uniffiContinuationHandleMap.insert(continuation)
+                    uniffiPollDataHandleMap.insert(pollData),
+                    0L
                 )
             }
         } while (pollResult != UNIFFI_RUST_FUTURE_POLL_READY);
@@ -113,5 +138,7 @@ internal object uniffiForeignFutureFreeImpl: UniffiForeignFutureFree {
 
 // For testing
 public fun uniffiForeignFutureHandleCount() = uniffiForeignFutureHandleMap.size
-
 {%- endif %}
+
+// For testing
+public fun uniffiPollHandleCount() = uniffiPollDataHandleMap.size

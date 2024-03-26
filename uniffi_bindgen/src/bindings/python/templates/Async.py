@@ -2,8 +2,22 @@
 _UNIFFI_RUST_FUTURE_POLL_READY = 0
 _UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1
 
-# Stores futures for _uniffi_continuation_callback
-_UniffiContinuationHandleMap = _UniffiHandleMap()
+"""
+Data for an in-progress poll of a RustFuture
+"""
+class UniffiPoll(typing.NamedTuple):
+    eventloop: asyncio.AbstractEventLoop
+    future: asyncio.Future
+    rust_future: int
+    # Must be UNIFFI_RUST_FUTURE_CONTINUATION_CALLBACK, but it's not clear how to specify as valid
+    # type for mypy and our current Python version
+    ffi_poll: object
+
+# Stores the UniffiPoll instances that correspond to RustFuture callback data
+_UniffiPollDataHandleMap = _UniffiHandleMap()
+
+# Stores the concurrent.futures.Executor instances that correspond to blocking task queue handles
+_UniffiBlockingTaskQueueHandleMap = _UniffiHandleMap()
 
 UNIFFI_GLOBAL_EVENT_LOOP = None
 
@@ -32,9 +46,22 @@ def _uniffi_get_event_loop():
 # Continuation callback for async functions
 # lift the return value or error and resolve the future, causing the async function to resume.
 @UNIFFI_RUST_FUTURE_CONTINUATION_CALLBACK
-def _uniffi_continuation_callback(future_ptr, poll_code):
-    (eventloop, future) = _UniffiContinuationHandleMap.remove(future_ptr)
-    eventloop.call_soon_threadsafe(_uniffi_set_future_result, future, poll_code)
+def _uniffi_continuation_callback(poll_data_handle, poll_code, blocking_task_queue_handle):
+    if blocking_task_queue_handle == 0:
+        # Complete the Python Future
+        poll_data = _UniffiPollDataHandleMap.remove(poll_data_handle)
+        poll_data.eventloop.call_soon_threadsafe(_uniffi_set_future_result, poll_data.future, poll_code)
+    else:
+        # Call the poll function again, but inside the executor
+        poll_data = _UniffiPollDataHandleMap.get(poll_data_handle)
+        executor = _UniffiBlockingTaskQueueHandleMap.get(blocking_task_queue_handle)
+        executor.submit(
+            poll_data.ffi_poll,
+            poll_data.rust_future,
+            _uniffi_continuation_callback,
+            poll_data_handle,
+            blocking_task_queue_handle
+        )
 
 def _uniffi_set_future_result(future, poll_code):
     if not future.cancelled():
@@ -47,10 +74,17 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
         # Loop and poll until we see a _UNIFFI_RUST_FUTURE_POLL_READY value
         while True:
             future = eventloop.create_future()
+            poll_data = UniffiPoll(
+                eventloop=eventloop,
+                future=future,
+                rust_future=rust_future,
+                ffi_poll=ffi_poll,
+            )
             ffi_poll(
                 rust_future,
                 _uniffi_continuation_callback,
-                _UniffiContinuationHandleMap.insert((eventloop, future)),
+                _UniffiPollDataHandleMap.insert(poll_data),
+                0,
             )
             poll_code = await future
             if poll_code == _UNIFFI_RUST_FUTURE_POLL_READY:

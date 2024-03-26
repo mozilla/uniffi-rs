@@ -21,6 +21,10 @@
 //! 2b. If the async function is cancelled, then call [rust_future_cancel].  This causes the
 //!     continuation function to be called with [RustFuturePoll::Ready] and the [RustFuture] to
 //!     enter a cancelled state.
+//! 2c. If the Rust code wants schedule work to be run in a `BlockingTaskQueue`, then the
+//!     continuation is called with [RustFuturePoll::MaybeReady] and the blocking task queue handle.
+//!     The foreign code is responsible for ensuring the next [rust_future_poll] call happens in
+//!     that blocking task queue and the handle is passed to [rust_future_poll].
 //! 3. Call [rust_future_complete] to get the result of the future.
 //! 4. Call [rust_future_free] to free the future, ideally in a finally block.  This:
 //!    - Releases any resources held by the future
@@ -78,6 +82,7 @@
 use std::{
     future::Future,
     marker::PhantomData,
+    num::NonZeroU64,
     ops::Deref,
     panic,
     pin::Pin,
@@ -85,8 +90,8 @@ use std::{
     task::{Context, Poll, Wake},
 };
 
-use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler};
-use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
+use super::{scheduler, RustFutureContinuationCallback, Scheduler};
+use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus, RustFuturePoll};
 
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
@@ -223,17 +228,26 @@ where
         })
     }
 
-    pub(super) fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
+    pub(super) fn poll(
+        self: Arc<Self>,
+        callback: RustFutureContinuationCallback,
+        data: u64,
+        blocking_task_queue_handle: Option<NonZeroU64>,
+    ) {
+        scheduler::on_poll_start(blocking_task_queue_handle);
+        // Clear out the waked flag, since we're about to poll right now.
+        self.scheduler.lock().unwrap().clear_wake_flag();
         let ready = self.is_cancelled() || {
             let mut locked = self.future.lock().unwrap();
             let waker: std::task::Waker = Arc::clone(&self).into();
             locked.poll(&mut Context::from_waker(&waker))
         };
         if ready {
-            callback(data, RustFuturePoll::Ready)
+            callback(data, RustFuturePoll::Ready, 0)
         } else {
             self.scheduler.lock().unwrap().store(callback, data);
         }
+        scheduler::on_poll_end();
     }
 
     pub(super) fn is_cancelled(&self) -> bool {
@@ -289,7 +303,12 @@ where
 /// only create those functions for each of the 13 possible FFI return types.
 #[doc(hidden)]
 pub trait RustFutureFfi<ReturnType>: Send + Sync {
-    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64);
+    fn ffi_poll(
+        self: Arc<Self>,
+        callback: RustFutureContinuationCallback,
+        data: u64,
+        blocking_task_queue_handle: Option<NonZeroU64>,
+    );
     fn ffi_cancel(&self);
     fn ffi_complete(&self, call_status: &mut RustCallStatus) -> ReturnType;
     fn ffi_free(self: Arc<Self>);
@@ -302,8 +321,13 @@ where
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
-        self.poll(callback, data)
+    fn ffi_poll(
+        self: Arc<Self>,
+        callback: RustFutureContinuationCallback,
+        data: u64,
+        blocking_task_queue_handle: Option<NonZeroU64>,
+    ) {
+        self.poll(callback, data, blocking_task_queue_handle)
     }
 
     fn ffi_cancel(&self) {

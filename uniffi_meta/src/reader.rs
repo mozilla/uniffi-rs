@@ -145,6 +145,7 @@ impl<'a> MetadataReader<'a> {
             codes::TYPE_STRING => Type::String,
             codes::TYPE_DURATION => Type::Duration,
             codes::TYPE_SYSTEM_TIME => Type::Timestamp,
+            codes::TYPE_BLOCKING_TASK_QUEUE => Type::BlockingTaskQueue,
             codes::TYPE_RECORD => Type::Record {
                 module_path: self.read_string()?,
                 name: self.read_string()?,

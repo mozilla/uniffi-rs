@@ -52,6 +52,7 @@ pub mod codes {
     pub const TYPE_RESULT: u8 = 23;
     pub const TYPE_TRAIT_INTERFACE: u8 = 24;
     pub const TYPE_CALLBACK_TRAIT_INTERFACE: u8 = 25;
+    pub const TYPE_BLOCKING_TASK_QUEUE: u8 = 26;
     pub const TYPE_UNIT: u8 = 255;
 
     // Literal codes

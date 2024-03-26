@@ -18,6 +18,7 @@ use crate::bindings::kotlin;
 use crate::interface::*;
 use crate::{BindingGenerator, BindingsConfig};
 
+mod blocking_task_queue;
 mod callback_interface;
 mod compounds;
 mod custom;
@@ -493,6 +494,8 @@ impl<T: AsType> AsCodeType for T {
             Type::Timestamp => Box::new(miscellany::TimestampCodeType),
             Type::Duration => Box::new(miscellany::DurationCodeType),
 
+            Type::BlockingTaskQueue => Box::new(blocking_task_queue::BlockingTaskQueueCodeType),
+
             Type::Enum { name, .. } => Box::new(enum_::EnumCodeType::new(name)),
             Type::Object { name, imp, .. } => Box::new(object::ObjectCodeType::new(name, imp)),
             Type::Record { name, .. } => Box::new(record::RecordCodeType::new(name)),
@@ -668,7 +671,7 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_poll(ci);
         Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}"
+            "{{ future, callback, continuation, blockingTaskQueueHandle -> UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation, blockingTaskQueueHandle) }}"
         ))
     }
 

@@ -84,6 +84,7 @@ impl TypeUniverse {
             Type::Bytes => self.add_type_definition("bytes", type_)?,
             Type::Timestamp => self.add_type_definition("timestamp", type_)?,
             Type::Duration => self.add_type_definition("duration", type_)?,
+            Type::BlockingTaskQueue => self.add_type_definition("BlockingTaskQueue", type_)?,
             Type::Object { name, .. }
             | Type::Record { name, .. }
             | Type::Enum { name, .. }

@@ -7,7 +7,8 @@ class _UniffiHandleMap:
         # type Handle = int
         self._map = {}  # type: Dict[Handle, Any]
         self._lock = threading.Lock()
-        self._counter = itertools.count()
+        # Start at 1, since `0` represents a NULL handle.
+        self._counter = itertools.count(1)
 
     def insert(self, obj):
         with self._lock:
