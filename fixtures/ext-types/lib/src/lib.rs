@@ -11,6 +11,9 @@ use uniffi_one::{
 use uniffi_sublib::SubLibType;
 use url::Url;
 
+uniffi::use_udl_record!(uniffi_sublib, SubLibType);
+uniffi::use_udl_trait!(uniffi_one, UniffiOneTrait);
+
 pub struct CombinedType {
     pub uoe: UniffiOneEnum,
     pub uot: UniffiOneType,
@@ -71,10 +74,7 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
 #[derive(Default, uniffi::Record)]
 pub struct ObjectsType {
     pub maybe_trait: Option<Arc<dyn UniffiOneTrait>>,
-    // XXX - can't refer to UniffiOneInterface here - #1854
-    //pub maybe_interface: Option<Arc<UniffiOneInterface>>,
-    // Use this in the meantime so the tests can still refer to it.
-    pub maybe_interface: Option<u8>,
+    pub maybe_interface: Option<Arc<UniffiOneInterface>>,
     pub sub: SubLibType,
 }
 

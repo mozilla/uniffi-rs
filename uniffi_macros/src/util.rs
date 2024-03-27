@@ -208,19 +208,11 @@ pub(crate) fn tagged_impl_header(
     udl_mode: bool,
 ) -> TokenStream {
     let trait_name = Ident::new(trait_name, Span::call_site());
-    if udl_mode {
-        quote! { impl ::uniffi::#trait_name<crate::UniFfiTag> for #ident }
-    } else {
-        quote! { impl<T> ::uniffi::#trait_name<T> for #ident }
-    }
+    quote! { impl ::uniffi::#trait_name<crate::UniFfiTag> for #ident }
 }
 
 pub(crate) fn derive_all_ffi_traits(ty: &Ident, udl_mode: bool) -> TokenStream {
-    if udl_mode {
-        quote! { ::uniffi::derive_ffi_traits!(local #ty); }
-    } else {
-        quote! { ::uniffi::derive_ffi_traits!(blanket #ty); }
-    }
+    quote! { ::uniffi::derive_ffi_traits!(local #ty); }
 }
 
 pub(crate) fn derive_ffi_traits(
@@ -231,18 +223,10 @@ pub(crate) fn derive_ffi_traits(
     let trait_idents = trait_names
         .iter()
         .map(|name| Ident::new(name, Span::call_site()));
-    if udl_mode {
-        quote! {
-            #(
-                ::uniffi::derive_ffi_traits!(impl #trait_idents<crate::UniFfiTag> for #ty);
-            )*
-        }
-    } else {
-        quote! {
-            #(
-                ::uniffi::derive_ffi_traits!(impl<UT> #trait_idents<UT> for #ty);
-            )*
-        }
+    quote! {
+        #(
+            ::uniffi::derive_ffi_traits!(impl #trait_idents<crate::UniFfiTag> for #ty);
+        )*
     }
 }
 

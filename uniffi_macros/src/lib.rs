@@ -334,6 +334,18 @@ pub fn use_udl_object(tokens: TokenStream) -> TokenStream {
     }.into()
 }
 
+#[proc_macro]
+pub fn use_udl_trait(tokens: TokenStream) -> TokenStream {
+    let util::ExternalTypeItem {
+        crate_ident,
+        type_ident,
+        ..
+    } = parse_macro_input!(tokens);
+    quote! {
+        ::uniffi::ffi_converter_arc_forward!(dyn #type_ident, #crate_ident::UniFfiTag, crate::UniFfiTag);
+    }.into()
+}
+
 /// A helper macro to generate and include component scaffolding.
 ///
 /// This is a convenience macro designed for writing `trybuild`-style tests and
