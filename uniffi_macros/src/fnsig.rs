@@ -4,7 +4,7 @@
 
 use crate::{
     default::{default_value_metadata_calls, DefaultValue},
-    export::{DefaultMap, ExportFnArgs, ExportedImplFnArgs},
+    export::{AsyncRuntime, DefaultMap, ExportFnArgs},
     util::{create_metadata_items, ident_to_string, mod_path, try_metadata_value_from_usize},
 };
 use proc_macro2::{Span, TokenStream};
@@ -20,6 +20,7 @@ pub(crate) struct FnSignature {
     // The foreign name for this function, usually == ident.
     pub name: String,
     pub is_async: bool,
+    pub async_runtime: Option<AsyncRuntime>,
     pub receiver: Option<ReceiverArg>,
     pub args: Vec<NamedArg>,
     pub return_ty: TokenStream,
@@ -36,51 +37,38 @@ impl FnSignature {
         args: ExportFnArgs,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::Function, sig, args.name, args.defaults, docstring)
+        Self::new(FnKind::Function, sig, args, docstring)
     }
 
     pub(crate) fn new_method(
         self_ident: Ident,
         sig: syn::Signature,
-        args: ExportedImplFnArgs,
+        args: ExportFnArgs,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(
-            FnKind::Method { self_ident },
-            sig,
-            args.name,
-            args.defaults,
-            docstring,
-        )
+        Self::new(FnKind::Method { self_ident }, sig, args, docstring)
     }
 
     pub(crate) fn new_constructor(
         self_ident: Ident,
         sig: syn::Signature,
-        args: ExportedImplFnArgs,
+        args: ExportFnArgs,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(
-            FnKind::Constructor { self_ident },
-            sig,
-            args.name,
-            args.defaults,
-            docstring,
-        )
+        Self::new(FnKind::Constructor { self_ident }, sig, args, docstring)
     }
 
     pub(crate) fn new_trait_method(
         self_ident: Ident,
         sig: syn::Signature,
-        args: ExportedImplFnArgs,
+        args: ExportFnArgs,
         index: u32,
         docstring: String,
     ) -> syn::Result<Self> {
         Self::new(
             FnKind::TraitMethod { self_ident, index },
             sig,
-            args.name,
-            args.defaults,
+            args,
             docstring,
         )
     }
@@ -88,8 +76,7 @@ impl FnSignature {
     pub(crate) fn new(
         kind: FnKind,
         sig: syn::Signature,
-        name: Option<String>,
-        mut defaults: DefaultMap,
+        mut export_fn_args: ExportFnArgs,
         docstring: String,
     ) -> syn::Result<Self> {
         let span = sig.span();
@@ -104,7 +91,7 @@ impl FnSignature {
         let mut input_iter = sig
             .inputs
             .into_iter()
-            .map(|a| Arg::new(a, &mut defaults))
+            .map(|a| Arg::new(a, &mut export_fn_args.defaults))
             .peekable();
 
         let receiver = input_iter
@@ -127,10 +114,17 @@ impl FnSignature {
             })
             .collect::<syn::Result<Vec<_>>>()?;
 
-        if let Some(ident) = defaults.idents().first() {
+        if let Some(ident) = export_fn_args.defaults.idents().first() {
             return Err(syn::Error::new(
                 ident.span(),
                 format!("Unknown default argument: {}", ident),
+            ));
+        }
+
+        if !is_async && export_fn_args.async_runtime.is_some() {
+            return Err(syn::Error::new(
+                export_fn_args.async_runtime.span(),
+                "Function not async".to_string(),
             ));
         }
 
@@ -138,9 +132,12 @@ impl FnSignature {
             kind,
             span,
             mod_path: mod_path()?,
-            name: name.unwrap_or_else(|| ident_to_string(&ident)),
+            name: export_fn_args
+                .name
+                .unwrap_or_else(|| ident_to_string(&ident)),
             ident,
             is_async,
+            async_runtime: export_fn_args.async_runtime,
             receiver,
             args,
             return_ty: output,

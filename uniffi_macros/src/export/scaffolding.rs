@@ -11,7 +11,7 @@ use crate::fnsig::{FnKind, FnSignature};
 
 pub(super) fn gen_fn_scaffolding(
     sig: FnSignature,
-    ar: &Option<AsyncRuntime>,
+    ar: Option<&AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
@@ -41,7 +41,7 @@ pub(super) fn gen_fn_scaffolding(
 
 pub(super) fn gen_constructor_scaffolding(
     sig: FnSignature,
-    ar: &Option<AsyncRuntime>,
+    ar: Option<&AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     if sig.receiver.is_some() {
@@ -63,7 +63,7 @@ pub(super) fn gen_constructor_scaffolding(
 
 pub(super) fn gen_method_scaffolding(
     sig: FnSignature,
-    ar: &Option<AsyncRuntime>,
+    ar: Option<&AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let scaffolding_func = if sig.receiver.is_none() {
@@ -210,7 +210,7 @@ impl ScaffoldingBits {
 /// `rust_fn` is the Rust function to call.
 pub(super) fn gen_ffi_function(
     sig: &FnSignature,
-    ar: &Option<AsyncRuntime>,
+    ar: Option<&AsyncRuntime>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
