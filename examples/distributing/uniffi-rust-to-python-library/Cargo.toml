@@ -1,0 +1,23 @@
+[package]
+name = "python"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uniffi = {version = "*", features = [ "cli" ]}
+uniffi_macros = "*"
+uniffi_bindgen = "*"
+
+[build-dependencies]
+uniffi = { version = "*", features = [ "build", "cli" ] }
+
+[[bin]]
+# This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[lib]
+crate-type = ["cdylib"]
+name = "mymath"
