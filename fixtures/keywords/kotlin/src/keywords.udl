@@ -40,3 +40,8 @@ enum class {
 interface fun {
    class(u8 object);
 };
+
+[Error]
+interface Error {
+   class(u8 object);
+};
