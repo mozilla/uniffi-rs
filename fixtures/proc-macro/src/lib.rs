@@ -348,7 +348,7 @@ pub struct RecordWithDefaults {
     #[uniffi(default = 42)]
     integer: i32,
     #[uniffi(default = 4.2)]
-    float: f64,
+    float_var: f64,
     #[uniffi(default=[])]
     vec: Vec<bool>,
     #[uniffi(default=None)]
