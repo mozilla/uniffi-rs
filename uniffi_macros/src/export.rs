@@ -20,7 +20,7 @@ use self::{
     },
 };
 use crate::util::{ident_to_string, mod_path};
-pub use attributes::{DefaultMap, ExportFnArgs, ExportedImplFnArgs};
+pub use attributes::{AsyncRuntime, DefaultMap, ExportFnArgs};
 pub use callback_interface::ffi_converter_callback_interface_impl;
 
 // TODO(jplatte): Ensure no generics, …
@@ -42,7 +42,7 @@ pub(crate) fn expand_export(
 
     match metadata {
         ExportItem::Function { sig, args } => {
-            gen_fn_scaffolding(sig, &args.async_runtime, udl_mode)
+            gen_fn_scaffolding(sig, args.async_runtime.as_ref(), udl_mode)
         }
         ExportItem::Impl {
             items,
@@ -65,10 +65,14 @@ pub(crate) fn expand_export(
                 .into_iter()
                 .map(|item| match item {
                     ImplItem::Constructor(sig) => {
-                        gen_constructor_scaffolding(sig, &args.async_runtime, udl_mode)
+                        let async_runtime =
+                            sig.async_runtime.clone().or(args.async_runtime.clone());
+                        gen_constructor_scaffolding(sig, async_runtime.as_ref(), udl_mode)
                     }
                     ImplItem::Method(sig) => {
-                        gen_method_scaffolding(sig, &args.async_runtime, udl_mode)
+                        let async_runtime =
+                            sig.async_runtime.clone().or(args.async_runtime.clone());
+                        gen_method_scaffolding(sig, async_runtime.as_ref(), udl_mode)
                     }
                 })
                 .collect::<syn::Result<_>>()?;

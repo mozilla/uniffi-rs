@@ -71,6 +71,9 @@ impl UniffiAttributeArgs for ExportTraitArgs {
     }
 }
 
+/// Attribute arguments for function
+///
+/// This includes top-level functions, constructors, and methods.
 #[derive(Clone, Default)]
 pub struct ExportFnArgs {
     pub(crate) async_runtime: Option<AsyncRuntime>,
@@ -110,7 +113,7 @@ impl UniffiAttributeArgs for ExportFnArgs {
         } else {
             Err(syn::Error::new(
                 input.span(),
-                format!("uniffi::export attribute `{input}` is not supported here."),
+                format!("attribute `{input}` is not supported here."),
             ))
         }
     }
@@ -211,7 +214,7 @@ impl UniffiAttributeArgs for ExportStructArgs {
 }
 
 #[derive(Clone)]
-pub(crate) enum AsyncRuntime {
+pub enum AsyncRuntime {
     Tokio(LitStr),
 }
 
@@ -236,57 +239,10 @@ impl ToTokens for AsyncRuntime {
     }
 }
 
-/// Arguments for function inside an impl block
-///
-/// This stores the parsed arguments for `uniffi::constructor` and `uniffi::method`
-#[derive(Clone, Default)]
-pub struct ExportedImplFnArgs {
-    pub(crate) name: Option<String>,
-    pub(crate) defaults: DefaultMap,
-}
-
-impl Parse for ExportedImplFnArgs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        parse_comma_separated(input)
-    }
-}
-
-impl UniffiAttributeArgs for ExportedImplFnArgs {
-    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
-        let lookahead = input.lookahead1();
-        if lookahead.peek(kw::name) {
-            let _: kw::name = input.parse()?;
-            let _: Token![=] = input.parse()?;
-            let name = Some(input.parse::<LitStr>()?.value());
-            Ok(Self {
-                name,
-                ..Self::default()
-            })
-        } else if lookahead.peek(kw::default) {
-            Ok(Self {
-                defaults: DefaultMap::parse(input)?,
-                ..Self::default()
-            })
-        } else {
-            Err(syn::Error::new(
-                input.span(),
-                format!("uniffi::constructor/method attribute `{input}` is not supported here."),
-            ))
-        }
-    }
-
-    fn merge(self, other: Self) -> syn::Result<Self> {
-        Ok(Self {
-            name: either_attribute_arg(self.name, other.name)?,
-            defaults: self.defaults.merge(other.defaults),
-        })
-    }
-}
-
 #[derive(Default)]
 pub(super) struct ExportedImplFnAttributes {
     pub constructor: bool,
-    pub args: ExportedImplFnArgs,
+    pub args: ExportFnArgs,
 }
 
 impl ExportedImplFnAttributes {
@@ -304,7 +260,7 @@ impl ExportedImplFnAttributes {
             ensure_no_path_args(fst)?;
 
             let args = match &attr.meta {
-                Meta::List(_) => attr.parse_args::<ExportedImplFnArgs>()?,
+                Meta::List(_) => attr.parse_args::<ExportFnArgs>()?,
                 _ => Default::default(),
             };
             this.args = args;
