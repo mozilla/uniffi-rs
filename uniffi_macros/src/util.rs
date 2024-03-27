@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::export::ffi_buffer_scaffolding_fn;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use std::path::{Path as StdPath, PathBuf};
@@ -110,15 +111,18 @@ pub fn create_metadata_items(
     let const_ident =
         format_ident!("UNIFFI_META_CONST_{crate_name_upper}_{kind_upper}_{name_upper}");
     let static_ident = format_ident!("UNIFFI_META_{crate_name_upper}_{kind_upper}_{name_upper}");
-
     let checksum_fn = checksum_fn_name.map(|name| {
         let ident = Ident::new(&name, Span::call_site());
+        let checksum_fn_ffi_buffer_version =
+            ffi_buffer_scaffolding_fn(&ident, &quote! { u16 }, &[], false);
         quote! {
             #[doc(hidden)]
             #[no_mangle]
             pub extern "C" fn #ident() -> u16 {
                 #const_ident.checksum()
             }
+
+            #checksum_fn_ffi_buffer_version
         }
     });
 

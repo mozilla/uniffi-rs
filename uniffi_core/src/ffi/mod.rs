@@ -6,6 +6,7 @@
 
 pub mod callbackinterface;
 pub mod ffidefault;
+pub mod ffiserialize;
 pub mod foreignbytes;
 pub mod foreigncallbacks;
 pub mod foreignfuture;
@@ -16,6 +17,7 @@ pub mod rustfuture;
 
 pub use callbackinterface::*;
 pub use ffidefault::FfiDefault;
+pub use ffiserialize::FfiSerialize;
 pub use foreignbytes::*;
 pub use foreigncallbacks::*;
 pub use foreignfuture::*;

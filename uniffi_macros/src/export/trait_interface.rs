@@ -9,7 +9,8 @@ use uniffi_meta::ObjectImpl;
 
 use crate::{
     export::{
-        attributes::ExportTraitArgs, callback_interface, gen_method_scaffolding, item::ImplItem,
+        attributes::ExportTraitArgs, callback_interface, ffi_buffer_scaffolding_fn,
+        gen_method_scaffolding, item::ImplItem,
     },
     object::interface_meta_static_var,
     util::{ident_to_string, tagged_impl_header},
@@ -40,6 +41,19 @@ pub(super) fn gen_trait_scaffolding(
     let free_fn_ident = Ident::new(
         &uniffi_meta::free_fn_symbol_name(mod_path, &trait_name),
         Span::call_site(),
+    );
+
+    let clone_fn_ffi_buffer_version = ffi_buffer_scaffolding_fn(
+        &clone_fn_ident,
+        &quote! { *const ::std::ffi::c_void },
+        &[quote! { *const ::std::ffi::c_void }],
+        true,
+    );
+    let free_fn_ffi_buffer_version = ffi_buffer_scaffolding_fn(
+        &free_fn_ident,
+        &quote! { () },
+        &[quote! { *const ::std::ffi::c_void }],
+        true,
     );
 
     let helper_fn_tokens = quote! {
@@ -79,6 +93,9 @@ pub(super) fn gen_trait_scaffolding(
                 Ok(())
             });
         }
+
+        #clone_fn_ffi_buffer_version
+        #free_fn_ffi_buffer_version
     };
 
     let impl_tokens: TokenStream = items
