@@ -36,7 +36,7 @@ import platform
 {%- endfor %}
 
 # Used for default argument values
-_DEFAULT = object()
+_DEFAULT = object() # type: typing.Any
 
 {% include "RustBufferTemplate.py" %}
 {% include "Helpers.py" %}

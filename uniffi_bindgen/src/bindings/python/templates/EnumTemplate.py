@@ -51,7 +51,6 @@ class {{ type_name }}:
         {%- call py::docstring(field, 8) %}
         {%- endfor %}
 
-        @typing.no_type_check
         def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name }}: "{{- field|type_name }}"{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
             {%- if variant.has_fields() %}
             {%- for field in variant.fields() %}
