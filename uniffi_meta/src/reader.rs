@@ -259,7 +259,7 @@ impl<'a> MetadataReader<'a> {
                     Type::Object { name, imp: ObjectImpl::Struct, .. } if name == &self_name
                 )
             })
-            .context("Constructor return type must be Arc<Self>")?;
+            .context("Constructor return type must be Self or Arc<Self>")?;
 
         Ok(ConstructorMetadata {
             module_path,
