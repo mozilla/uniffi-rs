@@ -84,7 +84,7 @@ pub(super) fn gen_trait_scaffolding(
     let impl_tokens: TokenStream = items
         .into_iter()
         .map(|item| match item {
-            ImplItem::Method(sig) => gen_method_scaffolding(sig, &None, udl_mode),
+            ImplItem::Method(sig) => gen_method_scaffolding(sig, None, udl_mode),
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<_>>()?;

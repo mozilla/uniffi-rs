@@ -8,8 +8,7 @@ use proc_macro2::{Ident, Span};
 use quote::ToTokens;
 
 use super::attributes::{
-    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnArgs,
-    ExportedImplFnAttributes,
+    ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnAttributes,
 };
 use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
@@ -170,7 +169,7 @@ impl ExportItem {
                     ImplItem::Method(FnSignature::new_trait_method(
                         self_ident.clone(),
                         tim.sig,
-                        ExportedImplFnArgs::default(),
+                        ExportFnArgs::default(),
                         i as u32,
                         docstring,
                     )?)

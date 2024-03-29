@@ -7,7 +7,7 @@ use quote::quote;
 use syn::ext::IdentExt;
 
 use super::gen_ffi_function;
-use crate::export::ExportedImplFnArgs;
+use crate::export::ExportFnArgs;
 use crate::fnsig::FnSignature;
 use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
@@ -165,17 +165,17 @@ fn process_uniffi_trait_method(
         &FnSignature::new_method(
             self_ident.clone(),
             item.sig.clone(),
-            ExportedImplFnArgs::default(),
+            ExportFnArgs::default(),
             docstring.clone(),
         )?,
-        &None,
+        None,
         udl_mode,
     )?;
     // metadata for the method, which will be packed inside metadata for the trait.
     let method_meta = FnSignature::new_method(
         self_ident.clone(),
         item.sig,
-        ExportedImplFnArgs::default(),
+        ExportFnArgs::default(),
         docstring,
     )?
     .metadata_expr()?;
