@@ -316,7 +316,7 @@
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: FnSignature,
-    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
+    ar: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if </span>sig.receiver.is_some() {
@@ -346,7 +346,7 @@
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_constructor_scaffolding(
     sig: FnSignature,
-    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
+    ar: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if </span>sig.receiver.is_some() {
@@ -368,7 +368,7 @@
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_method_scaffolding(
     sig: FnSignature,
-    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
+    ar: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>scaffolding_func = <span class="kw">if </span>sig.receiver.is_none() {
@@ -515,7 +515,7 @@
 /// `rust_fn` is the Rust function to call.
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_ffi_function(
     sig: <span class="kw-2">&amp;</span>FnSignature,
-    ar: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
+    ar: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>AsyncRuntime&gt;,
     udl_mode: bool,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>ScaffoldingBits {

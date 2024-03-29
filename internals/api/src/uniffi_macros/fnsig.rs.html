@@ -579,16 +579,13 @@
 <a href="#579" id="579">579</a>
 <a href="#580" id="580">580</a>
 <a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use crate</span>::{
     default::{default_value_metadata_calls, DefaultValue},
-    export::{DefaultMap, ExportFnArgs, ExportedImplFnArgs},
+    export::{AsyncRuntime, DefaultMap, ExportFnArgs},
     util::{create_metadata_items, ident_to_string, mod_path, try_metadata_value_from_usize},
 };
 <span class="kw">use </span>proc_macro2::{Span, TokenStream};
@@ -604,6 +601,7 @@
     <span class="comment">// The foreign name for this function, usually == ident.
     </span><span class="kw">pub </span>name: String,
     <span class="kw">pub </span>is_async: bool,
+    <span class="kw">pub </span>async_runtime: <span class="prelude-ty">Option</span>&lt;AsyncRuntime&gt;,
     <span class="kw">pub </span>receiver: <span class="prelude-ty">Option</span>&lt;ReceiverArg&gt;,
     <span class="kw">pub </span>args: Vec&lt;NamedArg&gt;,
     <span class="kw">pub </span>return_ty: TokenStream,
@@ -620,51 +618,38 @@
         args: ExportFnArgs,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(FnKind::Function, sig, args.name, args.defaults, docstring)
+        <span class="self">Self</span>::new(FnKind::Function, sig, args, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_method(
         self_ident: Ident,
         sig: syn::Signature,
-        args: ExportedImplFnArgs,
+        args: ExportFnArgs,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(
-            FnKind::Method { self_ident },
-            sig,
-            args.name,
-            args.defaults,
-            docstring,
-        )
+        <span class="self">Self</span>::new(FnKind::Method { self_ident }, sig, args, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_constructor(
         self_ident: Ident,
         sig: syn::Signature,
-        args: ExportedImplFnArgs,
+        args: ExportFnArgs,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="self">Self</span>::new(
-            FnKind::Constructor { self_ident },
-            sig,
-            args.name,
-            args.defaults,
-            docstring,
-        )
+        <span class="self">Self</span>::new(FnKind::Constructor { self_ident }, sig, args, docstring)
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_trait_method(
         self_ident: Ident,
         sig: syn::Signature,
-        args: ExportedImplFnArgs,
+        args: ExportFnArgs,
         index: u32,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="self">Self</span>::new(
             FnKind::TraitMethod { self_ident, index },
             sig,
-            args.name,
-            args.defaults,
+            args,
             docstring,
         )
     }
@@ -672,8 +657,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
         kind: FnKind,
         sig: syn::Signature,
-        name: <span class="prelude-ty">Option</span>&lt;String&gt;,
-        <span class="kw-2">mut </span>defaults: DefaultMap,
+        <span class="kw-2">mut </span>export_fn_args: ExportFnArgs,
         docstring: String,
     ) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>span = sig.span();
@@ -688,7 +672,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>input_iter = sig
             .inputs
             .into_iter()
-            .map(|a| Arg::new(a, <span class="kw-2">&amp;mut </span>defaults))
+            .map(|a| Arg::new(a, <span class="kw-2">&amp;mut </span>export_fn_args.defaults))
             .peekable();
 
         <span class="kw">let </span>receiver = input_iter
@@ -711,10 +695,17 @@
             })
             .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(ident) = defaults.idents().first() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(ident) = export_fn_args.defaults.idents().first() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 ident.span(),
                 <span class="macro">format!</span>(<span class="string">&quot;Unknown default argument: {}&quot;</span>, ident),
+            ));
+        }
+
+        <span class="kw">if </span>!is_async &amp;&amp; export_fn_args.async_runtime.is_some() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                export_fn_args.async_runtime.span(),
+                <span class="string">&quot;Function not async&quot;</span>.to_string(),
             ));
         }
 
@@ -722,9 +713,12 @@
             kind,
             span,
             mod_path: mod_path()<span class="question-mark">?</span>,
-            name: name.unwrap_or_else(|| ident_to_string(<span class="kw-2">&amp;</span>ident)),
+            name: export_fn_args
+                .name
+                .unwrap_or_else(|| ident_to_string(<span class="kw-2">&amp;</span>ident)),
             ident,
             is_async,
+            async_runtime: export_fn_args.async_runtime,
             receiver,
             args,
             return_ty: output,

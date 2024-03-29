@@ -267,7 +267,7 @@
     <span class="kw">let </span>impl_tokens: TokenStream = items
         .into_iter()
         .map(|item| <span class="kw">match </span>item {
-            ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="kw-2">&amp;</span><span class="prelude-val">None</span>, udl_mode),
+            ImplItem::Method(sig) =&gt; gen_method_scaffolding(sig, <span class="prelude-val">None</span>, udl_mode),
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;traits have no constructors&quot;</span>),
         })
         .collect::&lt;syn::Result&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
