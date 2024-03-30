@@ -122,7 +122,7 @@ pub unsafe fn rust_future_free<ReturnType, UT>(handle: Handle)
 where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
-    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_free()
+    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::consume_handle(handle).ffi_free()
 }
 
 // Derive HandleAlloc for dyn RustFutureFfi<T> for all FFI return types
