@@ -2,84 +2,69 @@
 
 This document details the general system that UniFFI uses to render the foreign bindings code.
 
-## The Askama template engine
+A language binding has to generate code for two separate but entangled requirements:
+
+* Generate the API in the target language.
+* Implement the FFI - every type needs an FfiConverter.
+
+## API generation
 
 Our foreign bindings generation uses the [Askama](https://djc.github.io/askama/) template rendering engine. Askama uses
 a compile-time macro system that allows the template code to use Rust types directly, calling their methods passing them
 to normal Rust functions.
 
-The task of the templates is to render the `ComponentInterface`, which is the Rust representation of the UDL file, into
-a bindings source file.  This mainly consists of rendering source code for each `Type` from the UDL.
+The templates have access to `ci`, a [`ComponentInterface`](https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/interface/mod.rs), which is the Rust representation of all the UniFFI types in your crate.
 
-## Type matching
+The task of the templates is to render `ci` into a "module" for the foreign binding.  This mainly consists of rendering support for each [`Type`](https://github.com/mozilla/uniffi-rs/blob/main/uniffi_meta/src/types.rs) described in your crate.
 
-One of the main sources of complexity when generating the bindings is handling types.  UniFFI supports a large number of
-types, each of which corresponds to a variant of the [`Type enum`](./api/uniffi_bindgen/interface/types/enum.Type.html).
-At one point there was a fairly large number of "mega-match" functions, each one matching against all `Type` variants.
-This made the code difficult to understand, because the functionality for one kind of type was split up.
+Eg, here's where [Python uses `ci` to iterate over the types](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/templates/Types.py#L3)
 
-Our current system for handling this is to have exactly 2 matches against `Type`:
-  - One match lives in the template code.  We map each `Type` variant to a template file that renders definitions and
-    helper code, including:
-     - Class definitions for records, enums, and objects.
-     - Base classes and helper classes, for example
-       [`ObjectRuntime.kt`](https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/bindings/kotlin/templates/ObjectRuntime.kt)
-       contains shared functionality for all the `Type::Object` types.
-     - The FfiConverter class definition.  This handles [lifting and lowering
-       types across the FFI](./lifting_and_lowering.md) for the type.
-     - Initialization functions
-     - Importing dependencies
-     - See
-       [`Types.kt`](https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/bindings/kotlin/templates/Types.kt)
-       for an example.
-  - The other match lives in the Rust code.  We map each `Type` variant to a implementation of the `CodeType` trait that
-    renders identifiers and names related to the type, including:
-    - The name of the type in the foreign language
-    - The name of the `FfiConverter` class
-    - The name of the initialization function
-    - See
-      [`KotlinCodeOracle::create_code_type()`](https://github.com/mozilla/uniffi-rs/blob/470740289258e1f06171a976d8e15978f028e391/uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs#L198-L230)
-      for an example.
+The templates create foreign-native types for everything from ffi-native types (int/etc) to functions, dictionaries etc. The implementation of these generated types might call your your Rust implemented FFI, as described below.
 
-Why is the code organized like this?  For a few reasons:
-  - **Defining Askama templates in Rust required a lot of boilerplate.**  When the Rust code was responsible for
-    rendering the class definitions, helper classes, etc., it needed to define a lot of `Askama` template structs which
-    lead to a lot of extra lines of code (see PR [#1189](https://github.com/mozilla/uniffi-rs/pull/1189))
-  - **It's easier to access global state from the template code.**  Since the Rust code only handles names and
-    identifiers, it only needs access to the `Type` instance itself, not the
-    [`ComponentInterface`](./api/uniffi_bindgen/interface/struct.ComponentInterface.html) or the
-    [`Config`](./api/uniffi_bindgen/struct.Config.html).  This simplifies the Rust side of things (see PR [#1191](https://github.com/mozilla/uniffi-rs/pull/1191)).
-    Accessing the `ComponentInterface` and `Config` from the template code is easy, we simply define these as fields on
-    the top-level template Struct then they are accessible from all child templates.
-  - **Putting logic in the template code makes it easier to implement [external types](../udl/ext_types_external.md).**  For
-    example, at one point the logic to lift/lower a type lived in the Rust code as a function that generated the
-    expression in the foreign language.  However, it was not clear at all how to make this work for external types,
-    it would probably require parsing multiple UDL files and managing multiple ComponentInterfaces.  Putting the logic
-    to lift/lower the type in the `FfiConverter` class simplifies this, because we can import the external
-    `FfiConverter` class and use that. We only need to know the name of the `FfiConverter` class which is a simpler
-    task.
+Bidings also need to do alot of work to make language identifiers etc work correctly - eg, turn `this_func(this_arg: ThisType)` into `thisFunc(...)`
 
-## Askama extensions
+## Breaking down a Rust function called by Python.
 
-A couple parts of this system require us to "extend" the functionality of Askama (i.e. adding hacks to workaround its
-limitations).
+Let's take a quick look at where [Python generates a top-level public function](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/templates/TopLevelFunctionTemplate.py#L37-L40+)
 
-### Adding imports
+It's making, eg `def this_func(this_arg=0) -> None:` - let's break it down:
 
-We want our type template files to specify what needs to be imported, but we don't want it to render the import
-statements directly. The imports should be rendered at the top of the file and de-duped in case multiple types require
-the same import. We handle this by:
+`def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:`
 
-  - Defining a separate Askama template struct that loops over all types and renders the definition/helper code for them.
-  - That struct also stores a `BTreeSet` that contains the needed import statements and has an `add_import()` method that
-    the template code calls.  Using a `BTreeSet` ensures the imports stay de-duped and sorted.
-  - Rendering this template as a separate pass.  The rendered string and the list of imports get passed to the main
-    template which arranges for them to be placed in the correct location.
+The Askama language does funky things with `{ }` blocks and here we are getting string output into the generated code. The first is the `this_func`:
 
-### Including templates once
+`{{ func.name()|fn_name }}`: [Here is `func.name()`](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/interface/function.rs#L72) - you can see all the other metadata about functions there too.
+The string result from that function goes through an Askama "filter" concept to "pipe" the output to [`fn_name`, this rust function](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/gen_python/mod.rs#L567) - which ends up just handing the fact it might be a Python keyword but otherwise returns the same value.
 
-We want our type template files to render runtime code, but only once.  For example, we only want to render
-`ObjectRuntime.kt` once, even if there are multiple Object types defined in the UDL file.  To handle this the type
-template defines an `include_once_check()` method, which tests if we've included a file before.  The template code then
-uses that to guard the Askama `{% include %}` statement.  See [`Object.kt` for an
-example](https://github.com/mozilla/uniffi-rs/blob/470740289258e1f06171a976d8e15978f028e391/uniffi_bindgen/src/bindings/kotlin/templates/ObjectTemplate.kt#L2)
+`{%- call py::arg_list_decl(func) -%}`: Calling an Askama macro, passing the `func` object linked above. It knows how to turn the function arguments into valid Python code.
+
+Skipping a few lines ahead in that template, we call the FFI function `{% call py::to_ffi_call(func) %}` - which ultimately
+end up a call to an `extern "C"` FFI function you generated named something like `uniffi_some_name_fn_func_this_func(...)`
+
+The bindings also need to do lots of administrivia - eg, calling initialization functions, importing dependencies, etc
+
+### Implementing the FFI.
+
+[All types](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_meta/src/types.rs#L62) must implement an FFI converter.
+
+The FfiConverter is [described here](./lifting_and_lowering.md)
+but tl;dr - this means different things for "native" types (ints etc), but otherwise there's a lot of `RustBuffer`!
+
+eg, [the Swift `Bool`](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/swift/templates/BooleanHelper.swift#L1C39-L1C51) vs [Swift record/struct support](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/swift/templates/RecordTemplate.swift#L38)
+
+## FFI Functions
+
+Above, we mentioned your template will generate a call to, eg, `uniffi_some_name_fn_func_this_func`.
+This function is automatically generated and made public in your Rust crate - it's a function that might look like:
+
+```
+pub extern "C" fn uniffi_some_name_fn_func_this_func(
+    arg: i32,
+    call_status: &mut ::uniffi::RustCallStatus,
+) -> i32 {
+```
+
+The bindings need to use the metadata to create the correct args to make these calls using the FFI converter implementations.
+
+There will be a number of memory/lifetime/etc "adminstrative" FFI functions that will also be used by the generated implementation.
+
