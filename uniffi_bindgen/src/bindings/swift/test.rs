@@ -2,7 +2,9 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{bindings::RunScriptOptions, library_mode::generate_bindings, BindingGeneratorDefault};
+use crate::bindings::RunScriptOptions;
+use crate::library_mode::generate_bindings;
+
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
@@ -11,8 +13,6 @@ use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
-
-use crate::bindings::TargetLanguage;
 
 /// Run Swift tests for a UniFFI test fixture
 pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<()> {
@@ -128,10 +128,7 @@ impl GeneratedSources {
         let sources = generate_bindings(
             cdylib_path,
             None,
-            &BindingGeneratorDefault {
-                target_languages: vec![TargetLanguage::Swift],
-                try_format_code: false,
-            },
+            &super::SwiftBindingGenerator,
             None,
             out_dir,
             false,
@@ -140,7 +137,7 @@ impl GeneratedSources {
             .iter()
             .find(|s| s.package.name == crate_name)
             .unwrap();
-        let main_module = main_source.config.bindings.swift.module_name();
+        let main_module = main_source.config.module_name();
         let modulemap_glob = glob(&out_dir.join("*.modulemap"))?;
         let module_map = match modulemap_glob.len() {
             0 => bail!("No modulemap files found in {out_dir}"),

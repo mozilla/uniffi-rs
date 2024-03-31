@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use askama::Template;
-use camino::Utf8Path;
+
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -14,9 +14,9 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use crate::backend::TemplateExpression;
-use crate::bindings::python;
+
 use crate::interface::*;
-use crate::{BindingGenerator, BindingsConfig};
+use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -27,29 +27,6 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
-
-pub struct PythonBindingGenerator;
-
-impl BindingGenerator for PythonBindingGenerator {
-    type Config = Config;
-
-    fn write_bindings(
-        &self,
-        ci: &ComponentInterface,
-        config: &Config,
-        out_dir: &Utf8Path,
-        try_format_code: bool,
-    ) -> Result<()> {
-        python::write_bindings(config, ci, out_dir, try_format_code)
-    }
-
-    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()> {
-        if cdylib_name.is_none() {
-            bail!("Generate bindings for Python requires a cdylib, but {library_path} was given");
-        }
-        Ok(())
-    }
-}
 
 /// A trait tor the implementation.
 trait CodeType: Debug {
@@ -181,8 +158,6 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| cdylib_name.to_string());
     }
-
-    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.

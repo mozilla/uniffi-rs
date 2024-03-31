@@ -10,15 +10,15 @@ use std::fmt::Debug;
 
 use anyhow::{Context, Result};
 use askama::Template;
-use camino::Utf8Path;
+
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
 use crate::backend::TemplateExpression;
-use crate::bindings::swift;
+
 use crate::interface::*;
-use crate::{BindingGenerator, BindingsConfig};
+use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -29,29 +29,6 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
-
-pub struct SwiftBindingGenerator;
-impl BindingGenerator for SwiftBindingGenerator {
-    type Config = Config;
-
-    fn write_bindings(
-        &self,
-        ci: &ComponentInterface,
-        config: &Config,
-        out_dir: &Utf8Path,
-        try_format_code: bool,
-    ) -> Result<()> {
-        swift::write_bindings(config, ci, out_dir, try_format_code)
-    }
-
-    fn check_library_path(
-        &self,
-        _library_path: &Utf8Path,
-        _cdylib_name: Option<&str>,
-    ) -> Result<()> {
-        Ok(())
-    }
-}
 
 /// A trait tor the implementation.
 trait CodeType: Debug {
@@ -311,8 +288,6 @@ impl BindingsConfig for Config {
         self.cdylib_name
             .get_or_insert_with(|| cdylib_name.to_string());
     }
-
-    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
 /// Generate UniFFI component bindings for Swift, as strings in memory.
@@ -606,10 +581,6 @@ impl SwiftCodeOracle {
         }
     }
 
-    fn ffi_canonical_name(&self, ffi_type: &FfiType) -> String {
-        self.ffi_type_label(ffi_type)
-    }
-
     /// Get the name of the protocol and class name for an object.
     ///
     /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
@@ -704,10 +675,6 @@ pub mod filters {
         Ok(oracle().ffi_type_label(ffi_type))
     }
 
-    pub fn ffi_canonical_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
-        Ok(oracle().ffi_canonical_name(ffi_type))
-    }
-
     pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
         Ok(oracle().ffi_default_value(return_type.as_ref()))
     }
@@ -766,11 +733,6 @@ pub mod filters {
         Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
-    /// Get the idiomatic Swift rendering of an individual enum variant, for contexts (for use in non-declaration contexts where quoting is not needed)
-    pub fn enum_variant_swift(nm: &str) -> Result<String, askama::Error> {
-        Ok(oracle().enum_variant_name(nm))
-    }
-
     /// Get the idiomatic Swift rendering of an FFI callback function name
     pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().ffi_callback_name(nm))
@@ -793,28 +755,6 @@ pub mod filters {
 
         let spaces = usize::try_from(*spaces).unwrap_or_default();
         Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
-    }
-
-    pub fn error_handler(result: &ResultType) -> Result<String, askama::Error> {
-        Ok(match &result.throws_type {
-            Some(t) => format!("{}.lift", ffi_converter_name(t)?),
-            None => "nil".into(),
-        })
-    }
-
-    /// Name of the callback function to handle an async result
-    pub fn future_callback(result: &ResultType) -> Result<String, askama::Error> {
-        Ok(format!(
-            "uniffiFutureCallbackHandler{}{}",
-            match &result.return_type {
-                Some(t) => SwiftCodeOracle.find(t).canonical_name(),
-                None => "Void".into(),
-            },
-            match &result.throws_type {
-                Some(t) => SwiftCodeOracle.find(t).canonical_name(),
-                None => "".into(),
-            }
-        ))
     }
 
     pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
