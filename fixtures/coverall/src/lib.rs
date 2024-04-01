@@ -524,6 +524,18 @@ impl Patch {
     }
 }
 
+struct FalliblePatch {}
+
+impl FalliblePatch {
+    fn new() -> Result<Self> {
+        Err(CoverallError::TooManyHoles)
+    }
+
+    fn secondary() -> Result<Self> {
+        Err(CoverallError::TooManyHoles)
+    }
+}
+
 // This is a small implementation of a counter that allows waiting on one thread,
 // and counting on another thread. We use it to test that the UniFFI generated scaffolding
 // doesn't introduce unexpected locking behaviour between threads.

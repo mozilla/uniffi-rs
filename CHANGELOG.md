@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's fixed?
+
+- Fixed a regression in 0.27.0 which broke throwing constructors (#2061).
+
 ### What's changed
 
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
