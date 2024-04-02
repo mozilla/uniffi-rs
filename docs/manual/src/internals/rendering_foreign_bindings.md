@@ -25,16 +25,25 @@ Bidings also need to do alot of work to make language identifiers etc work corre
 
 ## Breaking down a Rust function called by Python.
 
-Let's take a quick look at where [Python generates a top-level public function](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/templates/TopLevelFunctionTemplate.py#L37-L40+)
+Let's take a look at where [Python generates a top-level public function](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/templates/TopLevelFunctionTemplate.py#L37-L40+).
 
-It's making, eg `def this_func(this_arg=0) -> None:` - let's break it down:
+This will generate code like the following:
 
-`def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:`
+```
+def this_func(this_arg=0) -> None:
+```
 
-The Askama language does funky things with `{ }` blocks and here we are getting string output into the generated code. The first is the `this_func`:
+Let's break the template down:
 
-`{{ func.name()|fn_name }}`: [Here is `func.name()`](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/interface/function.rs#L72) - you can see all the other metadata about functions there too.
-The string result from that function goes through an Askama "filter" concept to "pipe" the output to [`fn_name`, this rust function](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/gen_python/mod.rs#L567) - which ends up just handing the fact it might be a Python keyword but otherwise returns the same value.
+```
+def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:
+```
+
+The Askama language uses double-curly braces (`{ }`) to interpolate blocks of code into the string output.
+
+`{{ func.name()|fn_name }}` becomes `this_func`: [It calls the `name` method on a `Function` object](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/interface/function.rs#L72) (you can see all the other metadata about functions there too).
+Askama uses a "filter" concept: Functions that take the value left of the pipe operator (`|`) to produce a new value.
+The "filter" used in the above template is called`fn_name` and is [defined in the Python bindings generator](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/gen_python/mod.rs#L567) - which ends up just handing the fact it might be a Python keyword but otherwise returns the same value.
 
 `{%- call py::arg_list_decl(func) -%}`: Calling an Askama macro, passing the `func` object linked above. It knows how to turn the function arguments into valid Python code.
 
@@ -47,9 +56,8 @@ The bindings also need to do lots of administrivia - eg, calling initialization 
 
 [All types](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_meta/src/types.rs#L62) must implement an FFI converter.
 
-The FfiConverter is [described here](./lifting_and_lowering.md)
-but tl;dr - this means different things for "native" types (ints etc), but otherwise there's a lot of `RustBuffer`!
-
+The FfiConverter is described in the [Lifting, Lowering and Serialization](./lifting_and_lowering.md) chapter.
+Note that this means different things for "native" types (`int`, etc), but otherwise there's a lot of `RustBuffer`!
 eg, [the Swift `Bool`](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/swift/templates/BooleanHelper.swift#L1C39-L1C51) vs [Swift record/struct support](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/swift/templates/RecordTemplate.swift#L38)
 
 ## FFI Functions
@@ -67,4 +75,3 @@ pub extern "C" fn uniffi_some_name_fn_func_this_func(
 The bindings need to use the metadata to create the correct args to make these calls using the FFI converter implementations.
 
 There will be a number of memory/lifetime/etc "adminstrative" FFI functions that will also be used by the generated implementation.
-
