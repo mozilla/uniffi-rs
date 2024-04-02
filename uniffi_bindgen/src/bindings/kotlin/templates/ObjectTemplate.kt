@@ -111,7 +111,7 @@
 
 {%- call kt::docstring(obj, 0) %}
 {% if (is_error) %}
-open class {{ impl_class_name }} : Exception, Disposable, AutoCloseable, {{ interface_name }} {
+open class {{ impl_class_name }} : kotlin.Exception, Disposable, AutoCloseable, {{ interface_name }} {
 {% else -%}
 open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }} {
 {%- endif %}
