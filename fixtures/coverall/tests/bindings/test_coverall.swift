@@ -274,6 +274,21 @@ do {
     assert(coveralls.getRepairs().count == 2)
 }
 
+// Test fallible constructors.
+do {
+    let _ = try FalliblePatch()
+    fatalError("ctor should have thrown")
+} catch {
+    // OK!
+}
+
+do {
+    let _ = try FalliblePatch.secondary()
+    fatalError("ctor should have thrown")
+} catch {
+    // OK!
+}
+
 // Test bytes
 do {
     let coveralls = Coveralls(name: "test_bytes")

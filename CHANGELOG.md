@@ -8,6 +8,11 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.0...HEAD).
 
+### What's fixed?
+
+- Fixed a regression in 0.27.0 which broke throwing constructors (#2061).
+
+
 ## v0.27.0 (backend crates: v0.27.0) - (_2024-03-26_)
 
 ### What's new?

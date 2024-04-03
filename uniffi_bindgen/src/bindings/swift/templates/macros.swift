@@ -38,9 +38,9 @@
 {%- macro ctor_decl(callable, indent) %}
 {%- call docstring(callable, indent) %}
 public convenience init(
-    {%- call arg_list_decl(callable) -%}) {%- call async(callable) %} {
+    {%- call arg_list_decl(callable) -%}) {%- call async(callable) %} {%- call throws(callable) %} {
     {%- if callable.is_async() %}
-    let pointer = {% call throws(callable) %}
+    let pointer =
         {%- call call_async(callable) %}
         {# The async mechanism returns an already constructed self.
            We work around that by cloning the pointer from that object, then
@@ -48,8 +48,8 @@ public convenience init(
         #}
         .uniffiClonePointer()
     {%- else %}
-    let pointer = {% call throws(callable) %}
-        {%- call to_ffi_call(callable) %}
+    let pointer =
+        {% call to_ffi_call(callable) %}
     {%- endif %}
     self.init(unsafeFromRawPointer: pointer)
 }

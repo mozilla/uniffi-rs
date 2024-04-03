@@ -216,6 +216,14 @@ interface Patch {
     Color get_color();
 };
 
+interface FalliblePatch {
+    [Throws=CoverallError]
+    constructor();
+
+    [Throws=CoverallError, Name="secondary"]
+    constructor();
+};
+
 interface ThreadsafeCounter {
   constructor();
   void busy_wait(i32 ms);
