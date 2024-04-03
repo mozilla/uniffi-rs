@@ -12,6 +12,7 @@
 
 - Fixed a regression in 0.27.0 which broke throwing constructors (#2061).
 
+- Fixed a RustBuffer memory leak (#2056)
 
 ## v0.27.0 (backend crates: v0.27.0) - (_2024-03-26_)
 
