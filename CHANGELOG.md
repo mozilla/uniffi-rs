@@ -6,15 +6,20 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's changed?
+- The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).
+
+## v0.27.1 (backend crates: v0.27.1) - (_2024-04-03_)
+
+[All changes in v0.27.1](https://github.com/mozilla/uniffi-rs/compare/v0.27.0...v0.27.1).
+
 ### What's fixed?
 
 - Fixed a regression in 0.27.0 which broke throwing constructors (#2061).
 
-### What's changed
-
-- The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
-
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.0...HEAD).
+- Fixed a RustBuffer memory leak (#2056)
 
 ## v0.27.0 (backend crates: v0.27.0) - (_2024-03-26_)
 
