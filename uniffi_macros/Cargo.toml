@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_macros"
-version = "0.27.0"
+version = "0.27.1"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (convenience macros)"
 documentation = "https://mozilla.github.io/uniffi-rs"
@@ -24,8 +24,8 @@ quote = "1.0"
 serde = { version = "1.0.136", features = ["derive"] }
 syn = { version = "2.0", features = ["full", "visit-mut"] }
 toml = "0.5.9"
-uniffi_build = { path = "../uniffi_build", version = "=0.27.0", optional = true }
-uniffi_meta = { path = "../uniffi_meta", version = "=0.27.0" }
+uniffi_build = { path = "../uniffi_build", version = "=0.27.1", optional = true }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.27.1" }
 
 [features]
 default = []
