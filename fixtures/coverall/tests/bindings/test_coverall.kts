@@ -511,6 +511,25 @@ FakeCoveralls("using_fakes_and_calling_methods_without_override_crashes").use { 
     assert(exception != null)
 }
 
+FakeCoveralls("using_fallible_constructors").use { coveralls ->
+    var exception: Throwable? = null
+    try {
+        FalliblePatch()
+    } catch (e: Throwable) {
+        exception = e
+    }
+    assert(exception != null)
+
+    exception = null;
+
+    try {
+        FalliblePatch.secondary()
+    } catch (e: Throwable) {
+        exception = e
+    }
+    assert(exception != null)
+}
+
 Coveralls("using_fakes_with_real_objects_crashes").use { coveralls ->
     val patch = FakePatch(Color.RED)
     var exception: Throwable? = null

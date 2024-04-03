@@ -254,6 +254,12 @@ class TestCoverall(unittest.TestCase):
         coveralls = None
         self.assertEqual(get_num_alive(), 0)
 
+    def test_throwing_constructor(self):
+        with self.assertRaises(CoverallError.TooManyHoles):
+            FalliblePatch()
+        with self.assertRaises(CoverallError.TooManyHoles):
+            FalliblePatch.secondary()
+
     def test_bad_objects(self):
         coveralls = Coveralls("test_bad_objects")
         patch = Patch(Color.RED)
