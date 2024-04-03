@@ -6,6 +6,7 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's changed?
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).
