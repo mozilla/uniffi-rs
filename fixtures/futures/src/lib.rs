@@ -232,6 +232,18 @@ pub async fn say_after_with_tokio(ms: u16, who: String) -> String {
     format!("Hello, {who} (with Tokio)!")
 }
 
+#[derive(uniffi::Object)]
+pub struct FallibleMegaphone;
+
+#[uniffi::export]
+impl FallibleMegaphone {
+    // the default constructor - many bindings will not support this.
+    #[uniffi::constructor]
+    pub async fn new() -> Result<Arc<Self>, MyError> {
+        Err(MyError::Foo)
+    }
+}
+
 pub struct UdlMegaphone;
 
 impl UdlMegaphone {

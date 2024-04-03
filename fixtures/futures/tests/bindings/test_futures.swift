@@ -150,6 +150,20 @@ Task {
 	counter.leave()
 }
 
+// Test object with a fallible async ctor.
+counter.enter()
+
+Task {
+	do {
+		let _ = try await FallibleMegaphone()
+		fatalError("async ctor should have thrown")
+	} catch {
+		// OK!
+	}
+
+	counter.leave()
+}
+
 // Test foreign implemented async trait methods
 counter.enter()
 
