@@ -200,7 +200,7 @@ fn test_wake_during_poll() {
         if first_time {
             first_time = false;
             // Wake the future while we are in the middle of polling it
-            ctx.waker().clone().wake();
+            ctx.waker().wake_by_ref();
             Poll::Pending
         } else {
             // The second time we're polled, we're ready

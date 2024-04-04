@@ -39,16 +39,7 @@ Our official Rust version policy is:
 * This policy only applies to the "major" and "minor" versions - a different
   patch level is still considered compliant with this policy.
 
-## Implications of this
-
-All CI for this project will try and pin itself to this same version. At
-time of writing, this means that [our circle CI integration
-](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml) and
-[rust-toolchain configuration](https://github.com/mozilla/uniffi-rs/blob/main/rust-toolchain.toml)
-will specify the version (and where possible, the CI configuration file will
-avoid duplicating the information in `rust-toolchain.toml`)
-
-We should maintain CI to ensure we still build with the "Requires" version.
+# Updating these versions
 
 As versions inside mozilla-central change, we will bump the UniFI versions
 accordingly. While newer versions of Rust can be expected to work correctly
@@ -57,6 +48,22 @@ with the new version. Thus, a PR to bump the minimum version is likely to also
 require a PR to make changes which keep clippy happy.
 
 In the interests of avoiding redundant information which will inevitably
-become stale, the circleci and rust-toolchain configuration links above
+become stale, the circleci and rust-toolchain configuration links below
 should be considered the canonical source of truth for the currently supported
 official Rust version.
+
+Unfortunately these versions are spread out over a few places.
+
+## Updating the "Uses" version
+
+* Update the version specified in [`rust-toolchain.toml`](https://github.com/mozilla/uniffi-rs/blob/main/rust-toolchain.toml)
+* In [our circle CI integration](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml)
+  you will find a number of docker references similar to `cimg/rust:1.XX` - all of these
+  should be updated; while some tasks, such as publishing the docs, are largely indepdenent of
+  the requirements in this policy, we should keep them all consistent where we can.
+
+## Updating the "Minimum Supported Version
+
+* In [our circle CI integration](https://github.com/mozilla/uniffi-rs/blob/main/.circleci/config.yml)
+  you will find a task `prepare-rust-min-version` which specifies this version via executing
+  `rustup update` with the version. This is the version to update.

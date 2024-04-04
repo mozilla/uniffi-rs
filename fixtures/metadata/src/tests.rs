@@ -93,10 +93,10 @@ pub trait Logger {
 }
 
 pub use calc::Calculator;
-pub use error::{ComplexError, FlatError};
+pub use error::FlatError;
 pub use person::Person;
 pub use state::State;
-pub use uniffi_traits::Special;
+
 pub use weapon::Weapon;
 
 mod test_type_ids {
