@@ -856,11 +856,11 @@ mod test {
     fn test_byref_attribute() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[ByRef]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.by_ref(), true));
+        assert!(attrs.by_ref());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = ArgumentAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.by_ref(), false));
+        assert!(!attrs.by_ref());
     }
 
     #[test]
@@ -898,15 +898,15 @@ mod test {
     fn test_enum_attribute_on_interface() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.contains_enum_attr(), true));
+        assert!(attrs.contains_enum_attr());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.contains_enum_attr(), false));
+        assert!(!attrs.contains_enum_attr());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
-        assert!(matches!(attrs.contains_enum_attr(), false));
+        assert!(!attrs.contains_enum_attr());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait, Enum]").unwrap();
         let err = InterfaceAttributes::try_from(&node).unwrap_err();

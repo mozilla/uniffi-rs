@@ -179,7 +179,7 @@ impl NodeTrait for Trait1 {
     }
 
     fn get_parent(&self) -> Option<Arc<dyn NodeTrait>> {
-        (*self.parent.lock().unwrap()).as_ref().map(Arc::clone)
+        (*self.parent.lock().unwrap()).clone()
     }
 }
 
@@ -197,7 +197,7 @@ impl NodeTrait for Trait2 {
     }
 
     fn get_parent(&self) -> Option<Arc<dyn NodeTrait>> {
-        (*self.parent.lock().unwrap()).as_ref().map(Arc::clone)
+        (*self.parent.lock().unwrap()).clone()
     }
 }
 

@@ -108,14 +108,13 @@ pub fn checksum_derive(input: TokenStream) -> TokenStream {
                 .fields
                 .iter()
                 .enumerate()
-                .filter_map(|(num, field)| {
-                    (!has_ignore_attribute(&field.attrs)).then(|| match field.ident.as_ref() {
-                        Some(ident) => quote! { Checksum::checksum(&self.#ident, state); },
-                        None => {
-                            let i = Index::from(num);
-                            quote! { Checksum::checksum(&self.#i, state); }
-                        }
-                    })
+                .filter(|&(_num, field)| (!has_ignore_attribute(&field.attrs)))
+                .map(|(num, field)| match field.ident.as_ref() {
+                    Some(ident) => quote! { Checksum::checksum(&self.#ident, state); },
+                    None => {
+                        let i = Index::from(num);
+                        quote! { Checksum::checksum(&self.#i, state); }
+                    }
                 });
             quote! {
                 #(#stmts)*

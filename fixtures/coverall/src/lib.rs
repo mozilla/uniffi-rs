@@ -158,7 +158,7 @@ fn get_complex_error(e: Option<ComplexError>) -> ComplexError {
 
 #[uniffi::export]
 fn get_error_dict(d: Option<ErrorDict>) -> ErrorDict {
-    d.unwrap_or(Default::default())
+    d.unwrap_or_default()
 }
 
 #[derive(Default, Debug, uniffi::Record)]
@@ -417,7 +417,7 @@ impl Coveralls {
     }
 
     fn get_other(&self) -> Option<Arc<Self>> {
-        (*self.other.lock().unwrap()).as_ref().map(Arc::clone)
+        (*self.other.lock().unwrap()).clone()
     }
 
     fn take_other_fallible(self: Arc<Self>) -> Result<()> {
