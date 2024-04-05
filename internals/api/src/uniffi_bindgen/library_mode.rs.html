@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/library_mode.rs`."><title>library_mode.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/library_mode.rs`."><title>library_mode.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -359,7 +361,7 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;T::Config&gt;&gt;&gt; {
     <span class="kw">let </span>cargo_metadata = MetadataCommand::new()
         .exec()
-        .context(<span class="string">&quot;error running cargo metadata&quot;</span>)<span class="question-mark">?</span>;
+        .context(<span class="string">"error running cargo metadata"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>cdylib_name = calc_cdylib_name(library_path);
     binding_generator.check_library_path(library_path, cdylib_name)<span class="question-mark">?</span>;
 
@@ -370,7 +372,7 @@
         config_file_override,
     )<span class="question-mark">?</span>;
     <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..sources.len() {
-        <span class="comment">// Partition up the sources list because we&#39;re eventually going to call
+        <span class="comment">// Partition up the sources list because we're eventually going to call
         // `update_from_dependency_configs()` which requires an exclusive reference to one source and
         // shared references to all other sources.
         </span><span class="kw">let </span>(sources_before, rest) = sources.split_at_mut(i);
@@ -396,9 +398,9 @@
             .filter(|s| <span class="kw-2">&amp;</span>s.crate_name == crate_name)
             .collect();
         <span class="kw">match </span>matches.len() {
-            <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">&quot;Crate {crate_name} not found in {library_path}&quot;</span>),
+            <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">"Crate {crate_name} not found in {library_path}"</span>),
             <span class="number">1 </span>=&gt; sources.push(matches.pop().unwrap()),
-            n =&gt; <span class="macro">bail!</span>(<span class="string">&quot;{n} crates named {crate_name} found in {library_path}&quot;</span>),
+            n =&gt; <span class="macro">bail!</span>(<span class="string">"{n} crates named {crate_name} found in {library_path}"</span>),
         }
     }
 
@@ -420,9 +422,9 @@
 
 <span class="comment">// If `library_path` is a C dynamic library, return its name
 </span><span class="kw">pub fn </span>calc_cdylib_name(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
-    <span class="kw">let </span>cdylib_extensions = [<span class="string">&quot;.so&quot;</span>, <span class="string">&quot;.dll&quot;</span>, <span class="string">&quot;.dylib&quot;</span>];
+    <span class="kw">let </span>cdylib_extensions = [<span class="string">".so"</span>, <span class="string">".dll"</span>, <span class="string">".dylib"</span>];
     <span class="kw">let </span>filename = library_path.file_name()<span class="question-mark">?</span>;
-    <span class="kw">let </span>filename = filename.strip_prefix(<span class="string">&quot;lib&quot;</span>).unwrap_or(filename);
+    <span class="kw">let </span>filename = filename.strip_prefix(<span class="string">"lib"</span>).unwrap_or(filename);
     <span class="kw">for </span>ext <span class="kw">in </span>cdylib_extensions {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(f) = filename.strip_suffix(ext) {
             <span class="kw">return </span><span class="prelude-val">Some</span>(f);
@@ -450,7 +452,7 @@
         <span class="kw">let </span>crate_root = package
             .manifest_path
             .parent()
-            .context(<span class="string">&quot;manifest path has no parent&quot;</span>)<span class="question-mark">?</span>;
+            .context(<span class="string">"manifest path has no parent"</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>crate_name = group.namespace.crate_name.clone();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>metadata_group) = load_udl_metadata(group, crate_root, <span class="kw-2">&amp;</span>crate_name)<span class="question-mark">? </span>{
             <span class="comment">// fixup the items.
@@ -458,8 +460,8 @@
                 .items
                 .into_iter()
                 .map(|item| fixup_external_type(item, <span class="kw-2">&amp;</span>metadata_groups))
-                <span class="comment">// some items are both in UDL and library metadata. For many that&#39;s fine but
-                // uniffi-traits aren&#39;t trivial to compare meaning we end up with dupes.
+                <span class="comment">// some items are both in UDL and library metadata. For many that's fine but
+                // uniffi-traits aren't trivial to compare meaning we end up with dupes.
                 // We filter out such problematic items here.
                 </span>.filter(|item| !<span class="macro">matches!</span>(item, Metadata::UniffiTrait { .. }))
                 .collect();
@@ -474,7 +476,7 @@
             <span class="kw">let </span>crate_root = package
                 .manifest_path
                 .parent()
-                .context(<span class="string">&quot;manifest path has no parent&quot;</span>)<span class="question-mark">?</span>;
+                .context(<span class="string">"manifest path has no parent"</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span>crate_name = group.namespace.crate_name.clone();
             <span class="kw">let </span><span class="kw-2">mut </span>ci = ComponentInterface::new(<span class="kw-2">&amp;</span>crate_name);
             <span class="kw">if let </span><span class="prelude-val">Some</span>(metadata) = udl_items.remove(<span class="kw-2">&amp;</span>crate_name) {
@@ -506,12 +508,12 @@
         .filter(|p| {
             p.targets
                 .iter()
-                .any(|t| t.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>) == crate_name)
+                .any(|t| t.name.replace(<span class="string">'-'</span>, <span class="string">"_"</span>) == crate_name)
         })
         .collect();
     <span class="kw">match </span>matching.len() {
         <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>(matching[<span class="number">0</span>].clone()),
-        n =&gt; <span class="macro">bail!</span>(<span class="string">&quot;cargo metadata returned {n} packages for crate name {crate_name}&quot;</span>),
+        n =&gt; <span class="macro">bail!</span>(<span class="string">"cargo metadata returned {n} packages for crate name {crate_name}"</span>),
     }
 }
 
@@ -535,22 +537,22 @@
         </span><span class="number">1 </span>=&gt; {
             <span class="kw">if </span>udl_items[<span class="number">0</span>].module_path != crate_name {
                 <span class="macro">bail!</span>(
-                    <span class="string">&quot;UDL is for crate &#39;{}&#39; but this crate name is &#39;{}&#39;&quot;</span>,
+                    <span class="string">"UDL is for crate '{}' but this crate name is '{}'"</span>,
                     udl_items[<span class="number">0</span>].module_path,
                     crate_name
                 );
             }
             <span class="kw">let </span>ci_name = <span class="kw-2">&amp;</span>udl_items[<span class="number">0</span>].file_stub;
-            <span class="kw">let </span>ci_path = crate_root.join(<span class="string">&quot;src&quot;</span>).join(<span class="macro">format!</span>(<span class="string">&quot;{ci_name}.udl&quot;</span>));
+            <span class="kw">let </span>ci_path = crate_root.join(<span class="string">"src"</span>).join(<span class="macro">format!</span>(<span class="string">"{ci_name}.udl"</span>));
             <span class="kw">if </span>ci_path.exists() {
                 <span class="kw">let </span>udl = fs::read_to_string(ci_path)<span class="question-mark">?</span>;
                 <span class="kw">let </span>udl_group = uniffi_udl::parse_udl(<span class="kw-2">&amp;</span>udl, crate_name)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(udl_group))
             } <span class="kw">else </span>{
-                <span class="macro">bail!</span>(<span class="string">&quot;{ci_path} not found&quot;</span>);
+                <span class="macro">bail!</span>(<span class="string">"{ci_path} not found"</span>);
             }
         }
-        n =&gt; <span class="macro">bail!</span>(<span class="string">&quot;{n} UDL files found for {crate_root}&quot;</span>),
+        n =&gt; <span class="macro">bail!</span>(<span class="string">"{n} UDL files found for {crate_root}"</span>),
     }
 }
 
@@ -561,16 +563,16 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>calc_cdylib_name_is_correct() {
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;uniffi&quot;</span>,
-            calc_cdylib_name(<span class="string">&quot;/path/to/libuniffi.so&quot;</span>.into()).unwrap()
+            <span class="string">"uniffi"</span>,
+            calc_cdylib_name(<span class="string">"/path/to/libuniffi.so"</span>.into()).unwrap()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;uniffi&quot;</span>,
-            calc_cdylib_name(<span class="string">&quot;/path/to/libuniffi.dylib&quot;</span>.into()).unwrap()
+            <span class="string">"uniffi"</span>,
+            calc_cdylib_name(<span class="string">"/path/to/libuniffi.dylib"</span>.into()).unwrap()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;uniffi&quot;</span>,
-            calc_cdylib_name(<span class="string">&quot;/path/to/uniffi.dll&quot;</span>.into()).unwrap()
+            <span class="string">"uniffi"</span>,
+            calc_cdylib_name(<span class="string">"/path/to/uniffi.dll"</span>.into()).unwrap()
         );
     }
 
@@ -583,8 +585,8 @@
     #[ignore] </span><span class="comment">// Currently fails.
     </span><span class="kw">fn </span>calc_cdylib_name_is_correct_on_windows() {
         <span class="macro">assert_eq!</span>(
-            <span class="string">&quot;libuniffi&quot;</span>,
-            calc_cdylib_name(<span class="string">&quot;/path/to/libuniffi.dll&quot;</span>.into()).unwrap()
+            <span class="string">"libuniffi"</span>,
+            calc_cdylib_name(<span class="string">"/path/to/libuniffi.dll"</span>.into()).unwrap()
         );
     }
 }

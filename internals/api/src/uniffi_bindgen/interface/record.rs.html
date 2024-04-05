@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/record.rs`."><title>record.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/record.rs`."><title>record.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -287,25 +289,25 @@
 
 </span><span class="doccomment">//! # Record definitions for a `ComponentInterface`.
 //!
-//! This module converts &quot;dictionary&quot; definitions from UDL into [`Record`] structures
+//! This module converts "dictionary" definitions from UDL into [`Record`] structures
 //! that can be added to a `ComponentInterface`, which are the main way we define structured
 //! data types for a UniFFI Rust Component. A [`Record`] has a fixed set of named fields,
 //! each of a specific type.
 //!
-//! (The terminology mismatch between &quot;dictionary&quot; and &quot;record&quot; is a historical artifact
+//! (The terminology mismatch between "dictionary" and "record" is a historical artifact
 //! due to this tool being loosely inspired by WebAssembly Interface Types, which used
-//! the term &quot;record&quot; for this sort of data).
+//! the term "record" for this sort of data).
 //!
 //! A declaration in the UDL like this:
 //!
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! dictionary Example {
 //!   string name;
 //!   u32 value;
 //! };
-//! # &quot;##, &quot;crate_name&quot;)?;
+//! # "##, "crate_name")?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -313,17 +315,17 @@
 //! [`crate::ComponentInterface`]:
 //!
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! # dictionary Example {
 //! #   string name;
 //! #   u32 value;
 //! # };
-//! # &quot;##, &quot;crate_name&quot;)?;
-//! let record = ci.get_record_definition(&quot;Example&quot;).unwrap();
-//! assert_eq!(record.name(), &quot;Example&quot;);
-//! assert_eq!(record.fields()[0].name(), &quot;name&quot;);
-//! assert_eq!(record.fields()[1].name(), &quot;value&quot;);
+//! # "##, "crate_name")?;
+//! let record = ci.get_record_definition("Example").unwrap();
+//! assert_eq!(record.name(), "Example");
+//! assert_eq!(record.fields()[0].name(), "name");
+//! assert_eq!(record.fields()[1].name(), "value");
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 
@@ -333,11 +335,11 @@
 <span class="kw">use </span><span class="kw">super</span>::Literal;
 <span class="kw">use super</span>::{AsType, Type, TypeIterator};
 
-<span class="doccomment">/// Represents a &quot;data class&quot; style object, for passing around complex values.
+<span class="doccomment">/// Represents a "data class" style object, for passing around complex values.
 ///
 /// In the FFI these are represented as a byte buffer, which one side explicitly
-/// serializes the data into and the other serializes it out of. So I guess they&#39;re
-/// kind of like &quot;pass by clone&quot; values.
+/// serializes the data into and the other serializes it out of. So I guess they're
+/// kind of like "pass by clone" values.
 </span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
 </span><span class="kw">pub struct </span>Record {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
@@ -360,7 +362,7 @@
         <span class="self">self</span>.docstring.as_deref()
     }
 
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         Box::new(<span class="self">self</span>.fields.iter().flat_map(Field::iter_types))
     }
 
@@ -418,7 +420,7 @@
         <span class="self">self</span>.docstring.as_deref()
     }
 
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         <span class="self">self</span>.type_.iter_types()
     }
 }
@@ -453,7 +455,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_multiple_record_types() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             dictionary Empty {};
             dictionary Simple {
@@ -464,25 +466,25 @@
                 u32 value = 0;
                 required boolean spin;
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.record_definitions().count(), <span class="number">3</span>);
 
-        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Empty&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Empty&quot;</span>);
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">"Empty"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.name(), <span class="string">"Empty"</span>);
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">0</span>);
 
-        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Simple&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Simple&quot;</span>);
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">"Simple"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.name(), <span class="string">"Simple"</span>);
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;field&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">"field"</span>);
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].as_type(), Type::UInt32);
         <span class="macro">assert!</span>(record.fields()[<span class="number">0</span>].default_value().is_none());
 
-        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Complex&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(record.name(), <span class="string">&quot;Complex&quot;</span>);
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">"Complex"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(record.name(), <span class="string">"Complex"</span>);
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;key&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">"key"</span>);
         <span class="macro">assert_eq!</span>(
             record.fields()[<span class="number">0</span>].as_type(),
             Type::Optional {
@@ -490,32 +492,32 @@
             },
         );
         <span class="macro">assert!</span>(record.fields()[<span class="number">0</span>].default_value().is_none());
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">&quot;value&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">"value"</span>);
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].as_type(), Type::UInt32);
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             record.fields()[<span class="number">1</span>].default_value(),
             <span class="prelude-val">Some</span>(Literal::UInt(<span class="number">0</span>, Radix::Decimal, Type::UInt32))
         ));
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].name(), <span class="string">&quot;spin&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].name(), <span class="string">"spin"</span>);
         <span class="macro">assert_eq!</span>(record.fields()[<span class="number">2</span>].as_type(), Type::Boolean);
         <span class="macro">assert!</span>(record.fields()[<span class="number">2</span>].default_value().is_none());
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_that_all_field_types_become_known() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             dictionary Testing {
                 string? maybe_name;
                 u32 value;
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.record_definitions().count(), <span class="number">1</span>);
-        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
+        <span class="kw">let </span>record = ci.get_record_definition(<span class="string">"Testing"</span>).unwrap();
         <span class="macro">assert_eq!</span>(record.fields().len(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">&quot;maybe_name&quot;</span>);
-        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">&quot;value&quot;</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">0</span>].name(), <span class="string">"maybe_name"</span>);
+        <span class="macro">assert_eq!</span>(record.fields()[<span class="number">1</span>].name(), <span class="string">"value"</span>);
 
         <span class="macro">assert_eq!</span>(ci.iter_types().count(), <span class="number">4</span>);
         <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::UInt32));
@@ -526,41 +528,41 @@
             }));
         <span class="macro">assert!</span>(ci
             .iter_types()
-            .any(|t| <span class="macro">matches!</span>(t, Type::Record { name, .. } <span class="kw">if </span>name == <span class="string">&quot;Testing&quot;</span>)));
+            .any(|t| <span class="macro">matches!</span>(t, Type::Record { name, .. } <span class="kw">if </span>name == <span class="string">"Testing"</span>)));
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_record() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             /// informative docstring
             dictionary Testing { };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(
-            ci.get_record_definition(<span class="string">&quot;Testing&quot;</span>)
+            ci.get_record_definition(<span class="string">"Testing"</span>)
                 .unwrap()
                 .docstring()
                 .unwrap(),
-            <span class="string">&quot;informative docstring&quot;
+            <span class="string">"informative docstring"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_record_field() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             dictionary Testing {
                 /// informative docstring
                 i32 testing;
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(
-            ci.get_record_definition(<span class="string">&quot;Testing&quot;</span>).unwrap().fields()[<span class="number">0</span>]
+            ci.get_record_definition(<span class="string">"Testing"</span>).unwrap().fields()[<span class="number">0</span>]
                 .docstring()
                 .unwrap(),
-            <span class="string">&quot;informative docstring&quot;
+            <span class="string">"informative docstring"
         </span>);
     }
 }

@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/python/gen_python/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/python/gen_python/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -672,7 +674,7 @@
 
     <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">if </span>cdylib_name.is_none() {
-            <span class="macro">bail!</span>(<span class="string">&quot;Generate bindings for Python requires a cdylib, but {library_path} was given&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">"Generate bindings for Python requires a cdylib, but {library_path} was given"</span>);
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -694,14 +696,14 @@
     }
 
     <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label())
+        <span class="macro">unimplemented!</span>(<span class="string">"Unimplemented for {}"</span>, <span class="self">self</span>.type_label())
     }
 
     <span class="doccomment">/// Name of the FfiConverter
     ///
     /// This is the object that contains the lower, write, lift, and read methods for this type.
     </span><span class="kw">fn </span>ffi_converter_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.canonical_name())
+        <span class="macro">format!</span>(<span class="string">"FfiConverter{}"</span>, <span class="self">self</span>.canonical_name())
     }
 
     <span class="doccomment">/// A list of imports that are needed if this type is in use.
@@ -716,45 +718,45 @@
     </span>}
 }
 
-<span class="comment">// Taken from Python&#39;s `keyword.py` module.
+<span class="comment">// Taken from Python's `keyword.py` module.
 </span><span class="kw">static </span>KEYWORDS: Lazy&lt;HashSet&lt;String&gt;&gt; = Lazy::new(|| {
     <span class="kw">let </span>kwlist = <span class="macro">vec!</span>[
-        <span class="string">&quot;False&quot;</span>,
-        <span class="string">&quot;None&quot;</span>,
-        <span class="string">&quot;True&quot;</span>,
-        <span class="string">&quot;__peg_parser__&quot;</span>,
-        <span class="string">&quot;and&quot;</span>,
-        <span class="string">&quot;as&quot;</span>,
-        <span class="string">&quot;assert&quot;</span>,
-        <span class="string">&quot;async&quot;</span>,
-        <span class="string">&quot;await&quot;</span>,
-        <span class="string">&quot;break&quot;</span>,
-        <span class="string">&quot;class&quot;</span>,
-        <span class="string">&quot;continue&quot;</span>,
-        <span class="string">&quot;def&quot;</span>,
-        <span class="string">&quot;del&quot;</span>,
-        <span class="string">&quot;elif&quot;</span>,
-        <span class="string">&quot;else&quot;</span>,
-        <span class="string">&quot;except&quot;</span>,
-        <span class="string">&quot;finally&quot;</span>,
-        <span class="string">&quot;for&quot;</span>,
-        <span class="string">&quot;from&quot;</span>,
-        <span class="string">&quot;global&quot;</span>,
-        <span class="string">&quot;if&quot;</span>,
-        <span class="string">&quot;import&quot;</span>,
-        <span class="string">&quot;in&quot;</span>,
-        <span class="string">&quot;is&quot;</span>,
-        <span class="string">&quot;lambda&quot;</span>,
-        <span class="string">&quot;nonlocal&quot;</span>,
-        <span class="string">&quot;not&quot;</span>,
-        <span class="string">&quot;or&quot;</span>,
-        <span class="string">&quot;pass&quot;</span>,
-        <span class="string">&quot;raise&quot;</span>,
-        <span class="string">&quot;return&quot;</span>,
-        <span class="string">&quot;try&quot;</span>,
-        <span class="string">&quot;while&quot;</span>,
-        <span class="string">&quot;with&quot;</span>,
-        <span class="string">&quot;yield&quot;</span>,
+        <span class="string">"False"</span>,
+        <span class="string">"None"</span>,
+        <span class="string">"True"</span>,
+        <span class="string">"__peg_parser__"</span>,
+        <span class="string">"and"</span>,
+        <span class="string">"as"</span>,
+        <span class="string">"assert"</span>,
+        <span class="string">"async"</span>,
+        <span class="string">"await"</span>,
+        <span class="string">"break"</span>,
+        <span class="string">"class"</span>,
+        <span class="string">"continue"</span>,
+        <span class="string">"def"</span>,
+        <span class="string">"del"</span>,
+        <span class="string">"elif"</span>,
+        <span class="string">"else"</span>,
+        <span class="string">"except"</span>,
+        <span class="string">"finally"</span>,
+        <span class="string">"for"</span>,
+        <span class="string">"from"</span>,
+        <span class="string">"global"</span>,
+        <span class="string">"if"</span>,
+        <span class="string">"import"</span>,
+        <span class="string">"in"</span>,
+        <span class="string">"is"</span>,
+        <span class="string">"lambda"</span>,
+        <span class="string">"nonlocal"</span>,
+        <span class="string">"not"</span>,
+        <span class="string">"or"</span>,
+        <span class="string">"pass"</span>,
+        <span class="string">"raise"</span>,
+        <span class="string">"return"</span>,
+        <span class="string">"try"</span>,
+        <span class="string">"while"</span>,
+        <span class="string">"with"</span>,
+        <span class="string">"yield"</span>,
     ];
     HashSet::from_iter(kwlist.into_iter().map(|s| s.to_string()))
 });
@@ -771,7 +773,7 @@
 
 <span class="attr">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>CustomTypeConfig {
-    <span class="comment">// This `CustomTypeConfig` doesn&#39;t have a `type_name` like the others -- which is why we have
+    <span class="comment">// This `CustomTypeConfig` doesn't have a `type_name` like the others -- which is why we have
     // separate structs rather than a shared one.
     </span>imports: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
     into_custom: TemplateExpression,
@@ -783,7 +785,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.cdylib_name {
             cdylib_name.clone()
         } <span class="kw">else </span>{
-            <span class="string">&quot;uniffi&quot;</span>.into()
+            <span class="string">"uniffi"</span>.into()
         }
     }
 
@@ -791,9 +793,9 @@
     </span><span class="kw">pub fn </span>module_for_namespace(<span class="kw-2">&amp;</span><span class="self">self</span>, ns: <span class="kw-2">&amp;</span>str) -&gt; String {
         <span class="kw">let </span>ns = ns.to_string().to_snake_case();
         <span class="kw">match </span><span class="self">self</span>.external_packages.get(<span class="kw-2">&amp;</span>ns) {
-            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;.{ns}&quot;</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">".{ns}"</span>),
             <span class="prelude-val">Some</span>(value) <span class="kw">if </span>value.is_empty() =&gt; ns,
-            <span class="prelude-val">Some</span>(value) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{value}.{ns}&quot;</span>),
+            <span class="prelude-val">Some</span>(value) =&gt; <span class="macro">format!</span>(<span class="string">"{value}.{ns}"</span>),
         }
     }
 }
@@ -801,7 +803,7 @@
 <span class="kw">impl </span>BindingsConfig <span class="kw">for </span>Config {
     <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
         <span class="self">self</span>.cdylib_name
-            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace()));
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">"uniffi_{}"</span>, ci.namespace()));
     }
 
     <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
@@ -816,7 +818,7 @@
 </span><span class="kw">pub fn </span>generate_python_bindings(config: <span class="kw-2">&amp;</span>Config, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
     PythonWrapper::new(config.clone(), ci)
         .render()
-        .context(<span class="string">&quot;failed to render python bindings&quot;</span>)
+        .context(<span class="string">"failed to render python bindings"</span>)
 }
 
 <span class="doccomment">/// A struct to record a Python import statement.
@@ -841,16 +843,16 @@
     <span class="doccomment">/// Render the Python import statement.
     </span><span class="kw">fn </span>render(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
-            ImportRequirement::Module { mod_name } =&gt; <span class="macro">format!</span>(<span class="string">&quot;import {mod_name}&quot;</span>),
+            ImportRequirement::Module { mod_name } =&gt; <span class="macro">format!</span>(<span class="string">"import {mod_name}"</span>),
             ImportRequirement::Symbol {
                 mod_name,
                 symbol_name,
-            } =&gt; <span class="macro">format!</span>(<span class="string">&quot;from {mod_name} import {symbol_name}&quot;</span>),
+            } =&gt; <span class="macro">format!</span>(<span class="string">"from {mod_name} import {symbol_name}"</span>),
             ImportRequirement::SymbolAs {
                 mod_name,
                 symbol_name,
                 as_name,
-            } =&gt; <span class="macro">format!</span>(<span class="string">&quot;from {mod_name} import {symbol_name} as {as_name}&quot;</span>),
+            } =&gt; <span class="macro">format!</span>(<span class="string">"from {mod_name} import {symbol_name} as {as_name}"</span>),
         }
     }
 }
@@ -860,18 +862,18 @@
 /// This template is a bit different than others in that it stores internal state from the render
 /// process.  Make sure to only call `render()` once.
 </span><span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;py&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.py&quot;</span>)]
-</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    python_config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+#[template(syntax = <span class="string">"py"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"Types.py"</span>)]
+</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">'a</span>&gt; {
+    python_config: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Config,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
     <span class="comment">// Track included modules for the `include_once()` macro
     </span>include_once_names: RefCell&lt;HashSet&lt;String&gt;&gt;,
     <span class="comment">// Track imports added with the `add_import()` macro
     </span>imports: RefCell&lt;BTreeSet&lt;ImportRequirement&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>new(python_config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TypeRenderer&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>new(python_config: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             python_config,
             ci,
@@ -902,7 +904,7 @@
         <span class="self">self</span>.imports.borrow_mut().insert(ImportRequirement::Module {
             mod_name: name.to_owned(),
         });
-        <span class="string">&quot;&quot;
+        <span class="string">""
     </span>}
 
     <span class="comment">// Like add_import, but arranges for `from module import name`.
@@ -911,7 +913,7 @@
             mod_name: mod_name.to_owned(),
             symbol_name: name.to_owned(),
         });
-        <span class="string">&quot;&quot;
+        <span class="string">""
     </span>}
 
     <span class="comment">// Like add_import, but arranges for `from module import name as other`.
@@ -923,20 +925,20 @@
                 symbol_name: symbol_name.to_owned(),
                 as_name: as_name.to_owned(),
             });
-        <span class="string">&quot;&quot;
+        <span class="string">""
     </span>}
 }
 
 <span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;py&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;wrapper.py&quot;</span>)]
-</span><span class="kw">pub struct </span>PythonWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+#[template(syntax = <span class="string">"py"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"wrapper.py"</span>)]
+</span><span class="kw">pub struct </span>PythonWrapper&lt;<span class="lifetime">'a</span>&gt; {
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
     config: Config,
     type_helper_code: String,
     type_imports: BTreeSet&lt;ImportRequirement&gt;,
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; PythonWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; PythonWrapper&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>type_renderer = TypeRenderer::new(<span class="kw-2">&amp;</span>config, ci);
         <span class="kw">let </span>type_helper_code = type_renderer.render().unwrap();
         <span class="kw">let </span>type_imports = type_renderer.imports.into_inner();
@@ -955,7 +957,7 @@
 
 <span class="kw">fn </span>fixup_keyword(name: String) -&gt; String {
     <span class="kw">if </span>KEYWORDS.contains(<span class="kw-2">&amp;</span>name) {
-        <span class="macro">format!</span>(<span class="string">&quot;_{name}&quot;</span>)
+        <span class="macro">format!</span>(<span class="string">"_{name}"</span>)
     } <span class="kw">else </span>{
         name
     }
@@ -991,41 +993,41 @@
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an FFI callback function name
     </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;UNIFFI_{}&quot;</span>, nm.to_shouty_snake_case())
+        <span class="macro">format!</span>(<span class="string">"UNIFFI_{}"</span>, nm.to_shouty_snake_case())
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an FFI struct name
     </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="comment">// The ctypes docs use both SHOUTY_SNAKE_CASE AND UpperCamelCase for structs. Let&#39;s use
+        <span class="comment">// The ctypes docs use both SHOUTY_SNAKE_CASE AND UpperCamelCase for structs. Let's use
         // UpperCamelCase and reserve shouting for global variables
-        </span><span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+        </span><span class="macro">format!</span>(<span class="string">"Uniffi{}"</span>, nm.to_upper_camel_case())
     }
 
     <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;ctypes.c_int8&quot;</span>.to_string(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;ctypes.c_uint8&quot;</span>.to_string(),
-            FfiType::Int16 =&gt; <span class="string">&quot;ctypes.c_int16&quot;</span>.to_string(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;ctypes.c_uint16&quot;</span>.to_string(),
-            FfiType::Int32 =&gt; <span class="string">&quot;ctypes.c_int32&quot;</span>.to_string(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;ctypes.c_uint32&quot;</span>.to_string(),
-            FfiType::Int64 =&gt; <span class="string">&quot;ctypes.c_int64&quot;</span>.to_string(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;ctypes.c_uint64&quot;</span>.to_string(),
-            FfiType::Float32 =&gt; <span class="string">&quot;ctypes.c_float&quot;</span>.to_string(),
-            FfiType::Float64 =&gt; <span class="string">&quot;ctypes.c_double&quot;</span>.to_string(),
-            FfiType::Handle =&gt; <span class="string">&quot;ctypes.c_uint64&quot;</span>.to_string(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
+            FfiType::Int8 =&gt; <span class="string">"ctypes.c_int8"</span>.to_string(),
+            FfiType::UInt8 =&gt; <span class="string">"ctypes.c_uint8"</span>.to_string(),
+            FfiType::Int16 =&gt; <span class="string">"ctypes.c_int16"</span>.to_string(),
+            FfiType::UInt16 =&gt; <span class="string">"ctypes.c_uint16"</span>.to_string(),
+            FfiType::Int32 =&gt; <span class="string">"ctypes.c_int32"</span>.to_string(),
+            FfiType::UInt32 =&gt; <span class="string">"ctypes.c_uint32"</span>.to_string(),
+            FfiType::Int64 =&gt; <span class="string">"ctypes.c_int64"</span>.to_string(),
+            FfiType::UInt64 =&gt; <span class="string">"ctypes.c_uint64"</span>.to_string(),
+            FfiType::Float32 =&gt; <span class="string">"ctypes.c_float"</span>.to_string(),
+            FfiType::Float64 =&gt; <span class="string">"ctypes.c_double"</span>.to_string(),
+            FfiType::Handle =&gt; <span class="string">"ctypes.c_uint64"</span>.to_string(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"ctypes.c_void_p"</span>.to_string(),
             FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_UniffiRustBuffer{suffix}&quot;</span>),
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;_UniffiRustBuffer&quot;</span>.to_string(),
+                <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">"_UniffiRustBuffer{suffix}"</span>),
+                <span class="prelude-val">None </span>=&gt; <span class="string">"_UniffiRustBuffer"</span>.to_string(),
             },
-            FfiType::RustCallStatus =&gt; <span class="string">&quot;_UniffiRustCallStatus&quot;</span>.to_string(),
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;_UniffiForeignBytes&quot;</span>.to_string(),
+            FfiType::RustCallStatus =&gt; <span class="string">"_UniffiRustCallStatus"</span>.to_string(),
+            FfiType::ForeignBytes =&gt; <span class="string">"_UniffiForeignBytes"</span>.to_string(),
             FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             <span class="comment">// Pointer to an `asyncio.EventLoop` instance
-            </span>FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;ctypes.POINTER({})&quot;</span>, <span class="self">self</span>.ffi_type_label(inner)),
-            FfiType::VoidPointer =&gt; <span class="string">&quot;ctypes.c_void_p&quot;</span>.to_string(),
+            </span>FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">"ctypes.POINTER({})"</span>, <span class="self">self</span>.ffi_type_label(inner)),
+            FfiType::VoidPointer =&gt; <span class="string">"ctypes.c_void_p"</span>.to_string(),
         }
     }
 
@@ -1042,17 +1044,17 @@
                 | FfiType::UInt32
                 | FfiType::Int32
                 | FfiType::UInt64
-                | FfiType::Int64 =&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
-                FfiType::Float32 | FfiType::Float64 =&gt; <span class="string">&quot;0.0&quot;</span>.to_owned(),
-                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;ctypes.c_void_p()&quot;</span>.to_owned(),
+                | FfiType::Int64 =&gt; <span class="string">"0"</span>.to_owned(),
+                FfiType::Float32 | FfiType::Float64 =&gt; <span class="string">"0.0"</span>.to_owned(),
+                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"ctypes.c_void_p()"</span>.to_owned(),
                 FfiType::RustBuffer(maybe_suffix) =&gt; <span class="kw">match </span>maybe_suffix {
-                    <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">&quot;_UniffiRustBuffer{suffix}.default()&quot;</span>),
-                    <span class="prelude-val">None </span>=&gt; <span class="string">&quot;_UniffiRustBuffer.default()&quot;</span>.to_owned(),
+                    <span class="prelude-val">Some</span>(suffix) =&gt; <span class="macro">format!</span>(<span class="string">"_UniffiRustBuffer{suffix}.default()"</span>),
+                    <span class="prelude-val">None </span>=&gt; <span class="string">"_UniffiRustBuffer.default()"</span>.to_owned(),
                 },
-                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;FFI return type: {t:?}&quot;</span>),
+                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">"FFI return type: {t:?}"</span>),
             },
             <span class="comment">// When we need to use a value for void returns, we use a `u8` placeholder
-            </span><span class="prelude-val">None </span>=&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
+            </span><span class="prelude-val">None </span>=&gt; <span class="string">"0"</span>.to_owned(),
         }
     }
 
@@ -1067,10 +1069,10 @@
     </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
         <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(obj.name());
         <span class="kw">if </span>obj.has_callback_interface() {
-            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">"{class_name}Impl"</span>);
             (class_name, impl_name)
         } <span class="kw">else </span>{
-            (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Protocol&quot;</span>), class_name)
+            (<span class="macro">format!</span>(<span class="string">"{class_name}Protocol"</span>), class_name)
         }
     }
 }
@@ -1087,7 +1089,7 @@
         // template code.
         //
         //   - When adding additional types here, make sure to also add a match arm to the `Types.py` template.
-        //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
+        //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
         </span><span class="kw">match </span><span class="self">self</span>.as_type() {
             Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
             Type::Int8 =&gt; Box::new(primitives::Int8CodeType),
@@ -1137,7 +1139,7 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>ffi_converter_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(String::from(<span class="string">&quot;_Uniffi&quot;</span>) + <span class="kw-2">&amp;</span>as_ct.as_codetype().ffi_converter_name()[<span class="number">3</span>..])
+        <span class="prelude-val">Ok</span>(String::from(<span class="string">"_Uniffi"</span>) + <span class="kw-2">&amp;</span>as_ct.as_codetype().ffi_converter_name()[<span class="number">3</span>..])
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>canonical_name(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
@@ -1145,23 +1147,23 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lift_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.lift"</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>check_lower_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.check_lower&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.check_lower"</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lower_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.lower"</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>read_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.read"</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>write_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.write"</span>, ffi_converter_name(as_ct)<span class="question-mark">?</span>))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>literal_py(
@@ -1171,9 +1173,9 @@
         <span class="prelude-val">Ok</span>(as_ct.as_codetype().literal(literal))
     }
 
-    <span class="comment">// Get the idiomatic Python rendering of an individual enum variant&#39;s discriminant
+    <span class="comment">// Get the idiomatic Python rendering of an individual enum variant's discriminant
     </span><span class="kw">pub fn </span>variant_discr_literal(e: <span class="kw-2">&amp;</span>Enum, index: <span class="kw-2">&amp;</span>usize) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">&quot;invalid index&quot;</span>);
+        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">"invalid index"</span>);
         <span class="prelude-val">Ok</span>(Type::UInt64.as_codetype().literal(<span class="kw-2">&amp;</span>literal))
     }
 
@@ -1224,12 +1226,12 @@
     </span><span class="kw">pub fn </span>docstring(docstring: <span class="kw-2">&amp;</span>str, spaces: <span class="kw-2">&amp;</span>i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>docstring = textwrap::dedent(docstring);
         <span class="comment">// Escape triple quotes to avoid syntax error
-        </span><span class="kw">let </span>escaped = docstring.replace(<span class="string">r#&quot;&quot;&quot;&quot;&quot;#</span>, <span class="string">r#&quot;\&quot;\&quot;\&quot;&quot;#</span>);
+        </span><span class="kw">let </span>escaped = docstring.replace(<span class="string">r#"""""#</span>, <span class="string">r#"\"\"\""#</span>);
 
-        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">&quot;\&quot;\&quot;\&quot;\n{escaped}\n\&quot;\&quot;\&quot;&quot;</span>);
+        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">"\"\"\"\n{escaped}\n\"\"\""</span>);
 
         <span class="kw">let </span>spaces = usize::try_from(<span class="kw-2">*</span>spaces).unwrap_or_default();
-        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">&quot; &quot;</span>.repeat(spaces)))
+        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">" "</span>.repeat(spaces)))
     }
 }
 
@@ -1237,17 +1239,17 @@
 </span><span class="kw">mod </span>tests {
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_escape() {
-        <span class="kw">let </span>docstring = <span class="string">r#&quot;&quot;&quot;&quot;This is a docstring beginning with triple quotes.
-Contains &quot;quotes&quot; in it.
-It also has a triple quote: &quot;&quot;&quot;
-And a even longer quote: &quot;&quot;&quot;&quot;&quot;&quot;#</span>;
+        <span class="kw">let </span>docstring = <span class="string">r#""""This is a docstring beginning with triple quotes.
+Contains "quotes" in it.
+It also has a triple quote: """
+And a even longer quote: """"""#</span>;
 
-        <span class="kw">let </span>expected = <span class="string">r#&quot;&quot;&quot;&quot;
-\&quot;\&quot;\&quot;This is a docstring beginning with triple quotes.
-Contains &quot;quotes&quot; in it.
-It also has a triple quote: \&quot;\&quot;\&quot;
-And a even longer quote: \&quot;\&quot;\&quot;&quot;&quot;
-&quot;&quot;&quot;&quot;#</span>;
+        <span class="kw">let </span>expected = <span class="string">r#""""
+\"\"\"This is a docstring beginning with triple quotes.
+Contains "quotes" in it.
+It also has a triple quote: \"\"\"
+And a even longer quote: \"\"\"""
+""""#</span>;
 
         <span class="macro">assert_eq!</span>(<span class="kw">super</span>::filters::docstring(docstring, <span class="kw-2">&amp;</span><span class="number">0</span>).unwrap(), expected);
     }

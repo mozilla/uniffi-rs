@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/error.rs`."><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/error.rs`."><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../uniffi_macros/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -337,7 +339,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
-                <span class="string">&quot;This derive currently only supports enums&quot;</span>,
+                <span class="string">"This derive currently only supports enums"</span>,
             ));
         }
     };
@@ -388,7 +390,7 @@
     })
 }
 
-<span class="comment">// FfiConverters for &quot;flat errors&quot;
+<span class="comment">// FfiConverters for "flat errors"
 //
 // These are errors where we only lower the to_string() value, rather than any associated data.
 // We lower the to_string() value unconditionally, whether the enum has associated data or not.
@@ -399,9 +401,9 @@
     attr: <span class="kw-2">&amp;</span>ErrorAttr,
 ) -&gt; TokenStream {
     <span class="kw">let </span>name = ident_to_string(ident);
-    <span class="kw">let </span>lower_impl_spec = tagged_impl_header(<span class="string">&quot;Lower&quot;</span>, ident, udl_mode);
-    <span class="kw">let </span>lift_impl_spec = tagged_impl_header(<span class="string">&quot;Lift&quot;</span>, ident, udl_mode);
-    <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(ident, udl_mode, <span class="kw-2">&amp;</span>[<span class="string">&quot;ConvertError&quot;</span>]);
+    <span class="kw">let </span>lower_impl_spec = tagged_impl_header(<span class="string">"Lower"</span>, ident, udl_mode);
+    <span class="kw">let </span>lift_impl_spec = tagged_impl_header(<span class="string">"Lift"</span>, ident, udl_mode);
+    <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(ident, udl_mode, <span class="kw-2">&amp;</span>[<span class="string">"ConvertError"</span>]);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
@@ -421,7 +423,7 @@
         }).collect();
         <span class="kw">if </span>attr.non_exhaustive.is_some() {
             match_arms.push(<span class="macro">quote! </span>{
-                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unexpected variant in non-exhaustive enum&quot;</span>),
+                <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"Unexpected variant in non-exhaustive enum"</span>),
             })
         }
 
@@ -463,7 +465,7 @@
                 <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                     <span class="prelude-val">Ok</span>(<span class="kw">match </span>::uniffi::deps::bytes::Buf::get_i32(buf) {
                         #(#match_arms)*
-                        v =&gt; <span class="macro">::uniffi::deps::anyhow::bail!</span>(<span class="string">&quot;Invalid #ident enum value: {}&quot;</span>, v),
+                        v =&gt; <span class="macro">::uniffi::deps::anyhow::bail!</span>(<span class="string">"Invalid #ident enum value: {}"</span>, v),
                     })
                 }
 
@@ -478,7 +480,7 @@
     } <span class="kw">else </span>{
         <span class="macro">quote! </span>{
             <span class="comment">// Lifting flat errors is not currently supported, but we still define the trait so
-            // that dicts containing flat errors don&#39;t cause compile errors (see ReturnOnlyDict in
+            // that dicts containing flat errors don't cause compile errors (see ReturnOnlyDict in
             // coverall.rs).
             //
             // Note: it would be better to not derive `Lift` for dictionaries containing flat
@@ -489,11 +491,11 @@
                 <span class="kw">type </span>FfiType = ::uniffi::RustBuffer;
 
                 <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[::std::primitive::u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
-                    <span class="macro">panic!</span>(<span class="string">&quot;Can&#39;t lift flat errors&quot;</span>)
+                    <span class="macro">panic!</span>(<span class="string">"Can't lift flat errors"</span>)
                 }
 
                 <span class="kw">fn </span>try_lift(v: ::uniffi::RustBuffer) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
-                    <span class="macro">panic!</span>(<span class="string">&quot;Can&#39;t lift flat errors&quot;</span>)
+                    <span class="macro">panic!</span>(<span class="string">"Can't lift flat errors"</span>)
                 }
 
                 <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META;
@@ -534,12 +536,12 @@
         .concat_bool(#non_exhaustive)
         .concat_long_str(#docstring)
     });
-    <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">&quot;error&quot;</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
+    <span class="prelude-val">Ok</span>(create_metadata_items(<span class="string">"error"</span>, <span class="kw-2">&amp;</span>name, metadata_expr, <span class="prelude-val">None</span>))
 }
 
 <span class="kw">pub fn </span>flat_error_variant_metadata(enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
     <span class="kw">let </span>variants_len =
-        try_metadata_value_from_usize(enum_.variants.len(), <span class="string">&quot;UniFFI limits enums to 256 variants&quot;</span>)<span class="question-mark">?</span>;
+        try_metadata_value_from_usize(enum_.variants.len(), <span class="string">"UniFFI limits enums to 256 variants"</span>)<span class="question-mark">?</span>;
     std::iter::once(<span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{ .concat_value(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
             <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
@@ -560,7 +562,7 @@
 }
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ErrorAttr {
-    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
         <span class="kw">if </span>lookahead.peek(kw::flat_error) {
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
@@ -596,7 +598,7 @@
 
 <span class="comment">// So ErrorAttr can be used with `parse_macro_input!`
 </span><span class="kw">impl </span>Parse <span class="kw">for </span>ErrorAttr {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         parse_comma_separated(input)
     }
 }
@@ -608,12 +610,12 @@
         <span class="kw">if </span>error_attr.flat.is_some() {
             <span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
-                <span class="string">&quot;flat attribute not valid for rich enum errors&quot;</span>,
+                <span class="string">"flat attribute not valid for rich enum errors"</span>,
             ))
         } <span class="kw">else if </span>error_attr.with_try_read.is_some() {
             <span class="prelude-val">Err</span>(syn::Error::new(
                 Span::call_site(),
-                <span class="string">&quot;with_try_read attribute not valid for rich enum errors&quot;</span>,
+                <span class="string">"with_try_read attribute not valid for rich enum errors"</span>,
             ))
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(EnumAttr {

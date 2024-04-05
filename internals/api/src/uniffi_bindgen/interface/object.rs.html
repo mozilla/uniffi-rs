@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/object.rs`."><title>object.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/object.rs`."><title>object.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -958,24 +960,24 @@
 
 </span><span class="doccomment">//! # Object definitions for a `ComponentInterface`.
 //!
-//! This module converts &quot;interface&quot; definitions from UDL into [`Object`] structures
+//! This module converts "interface" definitions from UDL into [`Object`] structures
 //! that can be added to a `ComponentInterface`, which are the main way we define stateful
 //! objects with behaviour for a UniFFI Rust Component. An [`Object`] is an opaque handle
 //! to some state on which methods can be invoked.
 //!
-//! (The terminology mismatch between &quot;interface&quot; and &quot;object&quot; is a historical artifact of
+//! (The terminology mismatch between "interface" and "object" is a historical artifact of
 //! this tool prior to committing to WebIDL syntax).
 //!
 //! A declaration in the UDL like this:
 //!
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! interface Example {
 //!   constructor(string? name);
 //!   string my_name();
 //! };
-//! # &quot;##, &quot;crate_name&quot;)?;
+//! # "##, "crate_name")?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -983,30 +985,30 @@
 //! to the resulting [`crate::ComponentInterface`]:
 //!
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! # interface Example {
 //! #   constructor(string? name);
 //! #   string my_name();
 //! # };
-//! # &quot;##, &quot;crate_name&quot;)?;
-//! let obj = ci.get_object_definition(&quot;Example&quot;).unwrap();
-//! assert_eq!(obj.name(), &quot;Example&quot;);
+//! # "##, "crate_name")?;
+//! let obj = ci.get_object_definition("Example").unwrap();
+//! assert_eq!(obj.name(), "Example");
 //! assert_eq!(obj.constructors().len(), 1);
-//! assert_eq!(obj.constructors()[0].arguments()[0].name(), &quot;name&quot;);
+//! assert_eq!(obj.constructors()[0].arguments()[0].name(), "name");
 //! assert_eq!(obj.methods().len(),1 );
-//! assert_eq!(obj.methods()[0].name(), &quot;my_name&quot;);
+//! assert_eq!(obj.methods()[0].name(), "my_name");
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
-//! It&#39;s not necessary for all interfaces to have constructors.
+//! It's not necessary for all interfaces to have constructors.
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! # interface Example {};
-//! # &quot;##, &quot;crate_name&quot;)?;
-//! let obj = ci.get_object_definition(&quot;Example&quot;).unwrap();
-//! assert_eq!(obj.name(), &quot;Example&quot;);
+//! # "##, "crate_name")?;
+//! let obj = ci.get_object_definition("Example").unwrap();
+//! assert_eq!(obj.name(), "Example");
 //! assert_eq!(obj.constructors().len(), 0);
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
@@ -1019,20 +1021,20 @@
 <span class="kw">use </span><span class="kw">super</span>::function::{Argument, Callable};
 <span class="kw">use super</span>::{AsType, ObjectImpl, Type, TypeIterator};
 
-<span class="doccomment">/// An &quot;object&quot; is an opaque type that is passed around by reference, can
+<span class="doccomment">/// An "object" is an opaque type that is passed around by reference, can
 /// have methods called on it, and so on - basically your classic Object Oriented Programming
 /// type of deal, except without elaborate inheritance hierarchies. Some can be instantiated.
 ///
 /// In UDL these correspond to the `interface` keyword.
 ///
 /// At the FFI layer, objects are represented by an opaque integer handle and a set of functions
-/// a common prefix. The object&#39;s constructors are functions that return new objects by handle,
+/// a common prefix. The object's constructors are functions that return new objects by handle,
 /// and its methods are functions that take a handle as first argument. The foreign language
 /// binding code is expected to stitch these functions back together into an appropriate class
-/// definition (or that language&#39;s equivalent thereof).
+/// definition (or that language's equivalent thereof).
 ///
 /// TODO:
-///  - maybe &quot;Class&quot; would be a better name than &quot;Object&quot; here?
+///  - maybe "Class" would be a better name than "Object" here?
 </span><span class="attr">#[derive(Debug, Clone, Checksum)]
 </span><span class="kw">pub struct </span>Object {
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
@@ -1041,15 +1043,15 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) constructors: Vec&lt;Constructor&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
-    <span class="comment">// The &quot;trait&quot; methods - they have a (presumably &quot;well known&quot;) name, and
+    <span class="comment">// The "trait" methods - they have a (presumably "well known") name, and
     // a regular method (albeit with a generated name)
     // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) uniffi_traits: Vec&lt;UniffiTrait&gt;,
-    <span class="comment">// We don&#39;t include the FfiFuncs in the hash calculation, because:
+    <span class="comment">// We don't include the FfiFuncs in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
-    //    hash value we&#39;re trying to calculate here, so excluding it
+    //    hash value we're trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
 
     // FFI function to clone a pointer for this object
@@ -1118,7 +1120,7 @@
         <span class="kw">let </span>matches: Vec&lt;<span class="kw">_</span>&gt; = <span class="self">self</span>.methods.iter().filter(|m| m.name() == name).collect();
         <span class="kw">match </span>matches.len() {
             <span class="number">1 </span>=&gt; matches[<span class="number">0</span>].clone(),
-            n =&gt; <span class="macro">panic!</span>(<span class="string">&quot;{n} methods named {name}&quot;</span>),
+            n =&gt; <span class="macro">panic!</span>(<span class="string">"{n} methods named {name}"</span>),
         }
     }
 
@@ -1137,7 +1139,7 @@
     <span class="kw">pub fn </span>ffi_init_callback(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>FfiFunction {
         <span class="self">self</span>.ffi_init_callback
             .as_ref()
-            .unwrap_or_else(|| <span class="macro">panic!</span>(<span class="string">&quot;No ffi_init_callback set for {}&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.name))
+            .unwrap_or_else(|| <span class="macro">panic!</span>(<span class="string">"No ffi_init_callback set for {}"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.name))
     }
 
     <span class="kw">pub fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
@@ -1167,12 +1169,12 @@
         <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func_clone.name().is_empty());
         <span class="macro">assert!</span>(!<span class="self">self</span>.ffi_func_free.name().is_empty());
         <span class="self">self</span>.ffi_func_clone.arguments = <span class="macro">vec!</span>[FfiArgument {
-            name: <span class="string">&quot;ptr&quot;</span>.to_string(),
+            name: <span class="string">"ptr"</span>.to_string(),
             type_: FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()),
         }];
         <span class="self">self</span>.ffi_func_clone.return_type = <span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()));
         <span class="self">self</span>.ffi_func_free.arguments = <span class="macro">vec!</span>[FfiArgument {
-            name: <span class="string">&quot;ptr&quot;</span>.to_string(),
+            name: <span class="string">"ptr"</span>.to_string(),
             type_: FfiType::RustArcPtr(<span class="self">self</span>.name.to_string()),
         }];
         <span class="self">self</span>.ffi_func_free.return_type = <span class="prelude-val">None</span>;
@@ -1233,7 +1235,7 @@
             .collect()
     }
 
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         Box::new(
             <span class="self">self</span>.methods
                 .iter()
@@ -1311,11 +1313,11 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) object_module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) is_async: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
-    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
+    <span class="comment">// We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
-    //    hash value we&#39;re trying to calculate here, so excluding it
+    //    hash value we're trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
@@ -1323,7 +1325,7 @@
     </span><span class="kw">pub</span>(<span class="kw">super</span>) docstring: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) throws: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) checksum_fn_name: String,
-    <span class="comment">// Force a checksum value, or we&#39;ll fallback to the trait.
+    <span class="comment">// Force a checksum value, or we'll fallback to the trait.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) checksum: <span class="prelude-ty">Option</span>&lt;u16&gt;,
 }
@@ -1370,7 +1372,7 @@
     }
 
     <span class="kw">pub fn </span>is_primary_constructor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.name == <span class="string">&quot;new&quot;
+        <span class="self">self</span>.name == <span class="string">"new"
     </span>}
 
     <span class="kw">fn </span>derive_ffi_func(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
@@ -1381,7 +1383,7 @@
         );
     }
 
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         Box::new(<span class="self">self</span>.arguments.iter().flat_map(Argument::iter_types))
     }
 }
@@ -1425,11 +1427,11 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) object_impl: ObjectImpl,
     <span class="kw">pub</span>(<span class="kw">super</span>) arguments: Vec&lt;Argument&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) return_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
-    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
+    <span class="comment">// We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
-    //    hash value we&#39;re trying to calculate here, so excluding it
+    //    hash value we're trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_func: FfiFunction,
@@ -1438,7 +1440,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) throws: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) takes_self_by_arc: bool,
     <span class="kw">pub</span>(<span class="kw">super</span>) checksum_fn_name: String,
-    <span class="comment">// Force a checksum value, or we&#39;ll fallback to the trait.
+    <span class="comment">// Force a checksum value, or we'll fallback to the trait.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) checksum: <span class="prelude-ty">Option</span>&lt;u16&gt;,
 }
@@ -1460,8 +1462,8 @@
     // hence `arguments` and `full_arguments` are different.
     </span><span class="kw">pub fn </span>full_arguments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;Argument&gt; {
         <span class="macro">vec!</span>[Argument {
-            name: <span class="string">&quot;ptr&quot;</span>.to_string(),
-            <span class="comment">// TODO: ideally we&#39;d get this via `ci.resolve_type_expression` so that it
+            name: <span class="string">"ptr"</span>.to_string(),
+            <span class="comment">// TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
             // is contained in the proper `TypeUniverse`, but this works for now.
             </span>type_: Type::Object {
                 name: <span class="self">self</span>.object_name.clone(),
@@ -1522,7 +1524,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         Box::new(
             <span class="self">self</span>.arguments
                 .iter()
@@ -1609,7 +1611,7 @@
 }
 
 <span class="kw">impl </span>UniffiTrait {
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         Box::new(
             <span class="kw">match </span><span class="self">self </span>{
                 UniffiTrait::Display { fmt: m }
@@ -1689,16 +1691,16 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_that_all_argument_and_return_types_become_known() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 constructor(string? name, u16 age);
                 sequence&lt;u32&gt; code_points_of_name();
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.object_definitions().len(), <span class="number">1</span>);
-        ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
+        ci.get_object_definition(<span class="string">"Testing"</span>).unwrap();
 
         <span class="macro">assert_eq!</span>(ci.iter_types().count(), <span class="number">6</span>);
         <span class="macro">assert!</span>(ci.iter_types().any(|t| t == <span class="kw-2">&amp;</span>Type::UInt16));
@@ -1714,41 +1716,41 @@
             }));
         <span class="macro">assert!</span>(ci
             .iter_types()
-            .any(|t| <span class="macro">matches!</span>(t, Type::Object { name, ..} <span class="kw">if </span>name == <span class="string">&quot;Testing&quot;</span>)));
+            .any(|t| <span class="macro">matches!</span>(t, Type::Object { name, ..} <span class="kw">if </span>name == <span class="string">"Testing"</span>)));
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_alternate_constructors() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 constructor();
                 [Name=new_with_u32]
                 constructor(u32 v);
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.object_definitions().len(), <span class="number">1</span>);
 
-        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
+        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">"Testing"</span>).unwrap();
         <span class="macro">assert!</span>(obj.primary_constructor().is_some());
         <span class="macro">assert_eq!</span>(obj.alternate_constructors().len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(obj.methods().len(), <span class="number">0</span>);
 
         <span class="kw">let </span>cons = obj.primary_constructor().unwrap();
-        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">&quot;new&quot;</span>);
+        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">"new"</span>);
         <span class="macro">assert_eq!</span>(cons.arguments.len(), <span class="number">0</span>);
         <span class="macro">assert_eq!</span>(cons.ffi_func.arguments.len(), <span class="number">0</span>);
 
         <span class="kw">let </span>cons = obj.alternate_constructors()[<span class="number">0</span>];
-        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">&quot;new_with_u32&quot;</span>);
+        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">"new_with_u32"</span>);
         <span class="macro">assert_eq!</span>(cons.arguments.len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(cons.ffi_func.arguments.len(), <span class="number">1</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_the_name_new_identifies_the_primary_constructor() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 [Name=newish]
@@ -1756,153 +1758,153 @@
                 [Name=new]
                 constructor(u32 v);
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.object_definitions().len(), <span class="number">1</span>);
 
-        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>).unwrap();
+        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">"Testing"</span>).unwrap();
         <span class="macro">assert!</span>(obj.primary_constructor().is_some());
         <span class="macro">assert_eq!</span>(obj.alternate_constructors().len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(obj.methods().len(), <span class="number">0</span>);
 
         <span class="kw">let </span>cons = obj.primary_constructor().unwrap();
-        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">&quot;new&quot;</span>);
+        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">"new"</span>);
         <span class="macro">assert_eq!</span>(cons.arguments.len(), <span class="number">1</span>);
 
         <span class="kw">let </span>cons = obj.alternate_constructors()[<span class="number">0</span>];
-        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">&quot;newish&quot;</span>);
+        <span class="macro">assert_eq!</span>(cons.name(), <span class="string">"newish"</span>);
         <span class="macro">assert_eq!</span>(cons.arguments.len(), <span class="number">0</span>);
         <span class="macro">assert_eq!</span>(cons.ffi_func.arguments.len(), <span class="number">0</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_the_name_new_is_reserved_for_constructors() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 constructor();
                 void new(u32 v);
             };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
-            <span class="string">&quot;the method name \&quot;new\&quot; is reserved for the default constructor&quot;
+            <span class="string">"the method name \"new\" is reserved for the default constructor"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_duplicate_primary_constructors_not_allowed() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 constructor();
                 constructor(u32 v);
             };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
-        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Duplicate interface member name: \&quot;new\&quot;&quot;</span>);
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">"Duplicate interface member name: \"new\""</span>);
 
-        <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 constructor();
                 [Name=new]
                 constructor(u32 v);
             };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
-        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">&quot;Duplicate interface member name: \&quot;new\&quot;&quot;</span>);
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2, <span class="string">"crate_name"</span>).unwrap_err();
+        <span class="macro">assert_eq!</span>(err.to_string(), <span class="string">"Duplicate interface member name: \"new\""</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_trait_attribute() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface NotATrait {
             };
             [Trait]
             interface ATrait {
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
-        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;NotATrait&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">&quot;r#NotATrait&quot;</span>);
-        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">&quot;ATrait&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">&quot;dyn r#ATrait&quot;</span>);
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
+        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">"NotATrait"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">"r#NotATrait"</span>);
+        <span class="kw">let </span>obj = ci.get_object_definition(<span class="string">"ATrait"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(obj.imp.rust_name_for(<span class="kw-2">&amp;</span>obj.name), <span class="string">"dyn r#ATrait"</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_trait_constructors_not_allowed() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             [Trait]
             interface Testing {
                 constructor();
             };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
-            <span class="string">&quot;Trait interfaces can not have constructors: \&quot;new\&quot;&quot;
+            <span class="string">"Trait interfaces can not have constructors: \"new\""
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_object() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             /// informative docstring
             interface Testing { };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(
-            ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>)
+            ci.get_object_definition(<span class="string">"Testing"</span>)
                 .unwrap()
                 .docstring()
                 .unwrap(),
-            <span class="string">&quot;informative docstring&quot;
+            <span class="string">"informative docstring"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_constructor() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 /// informative docstring
                 constructor();
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(
-            ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>)
+            ci.get_object_definition(<span class="string">"Testing"</span>)
                 .unwrap()
                 .primary_constructor()
                 .unwrap()
                 .docstring()
                 .unwrap(),
-            <span class="string">&quot;informative docstring&quot;
+            <span class="string">"informative docstring"
         </span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_method() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 /// informative docstring
                 void testing();
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(
-            ci.get_object_definition(<span class="string">&quot;Testing&quot;</span>)
+            ci.get_object_definition(<span class="string">"Testing"</span>)
                 .unwrap()
-                .get_method(<span class="string">&quot;testing&quot;</span>)
+                .get_method(<span class="string">"testing"</span>)
                 .docstring()
                 .unwrap(),
-            <span class="string">&quot;informative docstring&quot;
+            <span class="string">"informative docstring"
         </span>);
     }
 }

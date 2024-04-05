@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/kotlin/gen_kotlin/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -768,7 +770,7 @@
 
     <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">if </span>cdylib_name.is_none() {
-            <span class="macro">bail!</span>(<span class="string">&quot;Generate bindings for Kotlin requires a cdylib, but {library_path} was given&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">"Generate bindings for Kotlin requires a cdylib, but {library_path} was given"</span>);
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -787,7 +789,7 @@
     </span><span class="kw">fn </span>canonical_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String;
 
     <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; String {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label(ci))
+        <span class="macro">unimplemented!</span>(<span class="string">"Unimplemented for {}"</span>, <span class="self">self</span>.type_label(ci))
     }
 
     <span class="doccomment">/// Name of the FfiConverter
@@ -799,7 +801,7 @@
     /// read CodeType methods.  Currently only used by Kotlin, but the plan is to move other
     /// backends to using this.
     </span><span class="kw">fn </span>ffi_converter_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.canonical_name())
+        <span class="macro">format!</span>(<span class="string">"FfiConverter{}"</span>, <span class="self">self</span>.canonical_name())
     }
 
     <span class="doccomment">/// A list of imports that are needed if this type is in use.
@@ -849,7 +851,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(package_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.package_name {
             package_name.clone()
         } <span class="kw">else </span>{
-            <span class="string">&quot;uniffi&quot;</span>.into()
+            <span class="string">"uniffi"</span>.into()
         }
     }
 
@@ -857,7 +859,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.cdylib_name {
             cdylib_name.clone()
         } <span class="kw">else </span>{
-            <span class="string">&quot;uniffi&quot;</span>.into()
+            <span class="string">"uniffi"</span>.into()
         }
     }
 
@@ -870,9 +872,9 @@
 <span class="kw">impl </span>BindingsConfig <span class="kw">for </span>Config {
     <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
         <span class="self">self</span>.package_name
-            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi.{}&quot;</span>, ci.namespace()));
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">"uniffi.{}"</span>, ci.namespace()));
         <span class="self">self</span>.cdylib_name
-            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace()));
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">"uniffi_{}"</span>, ci.namespace()));
     }
 
     <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
@@ -894,7 +896,7 @@
 </span><span class="kw">pub fn </span>generate_bindings(config: <span class="kw-2">&amp;</span>Config, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
     KotlinWrapper::new(config.clone(), ci)
         .render()
-        .context(<span class="string">&quot;failed to render kotlin bindings&quot;</span>)
+        .context(<span class="string">"failed to render kotlin bindings"</span>)
 }
 
 <span class="doccomment">/// A struct to record a Kotlin import statement.
@@ -910,9 +912,9 @@
     <span class="doccomment">/// Render the Kotlin import statement.
     </span><span class="kw">fn </span>render(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
-            ImportRequirement::Import { name } =&gt; <span class="macro">format!</span>(<span class="string">&quot;import {name}&quot;</span>),
+            ImportRequirement::Import { name } =&gt; <span class="macro">format!</span>(<span class="string">"import {name}"</span>),
             ImportRequirement::ImportAs { name, as_name } =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;import {name} as {as_name}&quot;</span>)
+                <span class="macro">format!</span>(<span class="string">"import {name} as {as_name}"</span>)
             }
         }
     }
@@ -923,18 +925,18 @@
 /// This template is a bit different than others in that it stores internal state from the render
 /// process.  Make sure to only call `render()` once.
 </span><span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;kt&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.kt&quot;</span>)]
-</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+#[template(syntax = <span class="string">"kt"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"Types.kt"</span>)]
+</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">'a</span>&gt; {
+    config: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Config,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
     <span class="comment">// Track included modules for the `include_once()` macro
     </span>include_once_names: RefCell&lt;HashSet&lt;String&gt;&gt;,
     <span class="comment">// Track imports added with the `add_import()` macro
     </span>imports: RefCell&lt;BTreeSet&lt;ImportRequirement&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TypeRenderer&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             config,
             ci,
@@ -946,11 +948,11 @@
     <span class="comment">// Get the package name for an external type
     </span><span class="kw">fn </span>external_type_package_name(<span class="kw-2">&amp;</span><span class="self">self</span>, module_path: <span class="kw-2">&amp;</span>str, namespace: <span class="kw-2">&amp;</span>str) -&gt; String {
         <span class="comment">// config overrides are keyed by the crate name, default fallback is the namespace.
-        </span><span class="kw">let </span>crate_name = module_path.split(<span class="string">&quot;::&quot;</span>).next().unwrap();
+        </span><span class="kw">let </span>crate_name = module_path.split(<span class="string">"::"</span>).next().unwrap();
         <span class="kw">match </span><span class="self">self</span>.config.external_packages.get(crate_name) {
             <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
             <span class="comment">// unreachable in library mode - all deps are in our config with correct namespace.
-            </span><span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;uniffi.{namespace}&quot;</span>),
+            </span><span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"uniffi.{namespace}"</span>),
         }
     }
 
@@ -976,7 +978,7 @@
         <span class="self">self</span>.imports.borrow_mut().insert(ImportRequirement::Import {
             name: name.to_owned(),
         });
-        <span class="string">&quot;&quot;
+        <span class="string">""
     </span>}
 
     <span class="comment">// Like add_import, but arranges for `import name as as_name`
@@ -987,21 +989,21 @@
                 name: name.to_owned(),
                 as_name: as_name.to_owned(),
             });
-        <span class="string">&quot;&quot;
+        <span class="string">""
     </span>}
 }
 
 <span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;kt&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;wrapper.kt&quot;</span>)]
-</span><span class="kw">pub struct </span>KotlinWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
+#[template(syntax = <span class="string">"kt"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"wrapper.kt"</span>)]
+</span><span class="kw">pub struct </span>KotlinWrapper&lt;<span class="lifetime">'a</span>&gt; {
     config: Config,
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet&lt;ImportRequirement&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; KotlinWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; KotlinWrapper&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>type_renderer = TypeRenderer::new(<span class="kw-2">&amp;</span>config, ci);
         <span class="kw">let </span>type_helper_code = type_renderer.render().unwrap();
         <span class="kw">let </span>type_imports = type_renderer.imports.into_inner();
@@ -1044,20 +1046,20 @@
     }
 
     <span class="kw">fn </span>convert_error_suffix(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="kw">match </span>nm.strip_suffix(<span class="string">&quot;Error&quot;</span>) {
+        <span class="kw">match </span>nm.strip_suffix(<span class="string">"Error"</span>) {
             <span class="prelude-val">None </span>=&gt; nm.to_string(),
-            <span class="prelude-val">Some</span>(stripped) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{stripped}Exception&quot;</span>),
+            <span class="prelude-val">Some</span>(stripped) =&gt; <span class="macro">format!</span>(<span class="string">"{stripped}Exception"</span>),
         }
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a function name.
     </span><span class="kw">fn </span>fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, nm.to_string().to_lower_camel_case())
+        <span class="macro">format!</span>(<span class="string">"`{}`"</span>, nm.to_string().to_lower_camel_case())
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of a variable name.
     </span><span class="kw">fn </span>var_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="self">self</span>.var_name_raw(nm))
+        <span class="macro">format!</span>(<span class="string">"`{}`"</span>, <span class="self">self</span>.var_name_raw(nm))
     }
 
     <span class="doccomment">/// `var_name` without the backticks.  Useful for using in `@Structure.FieldOrder`.
@@ -1072,18 +1074,18 @@
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an FFI callback function name
     </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+        <span class="macro">format!</span>(<span class="string">"Uniffi{}"</span>, nm.to_upper_camel_case())
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of an FFI struct name
     </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+        <span class="macro">format!</span>(<span class="string">"Uniffi{}"</span>, nm.to_upper_camel_case())
     }
 
     <span class="kw">fn </span>ffi_type_label_by_value(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.ByValue&quot;</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
-            FfiType::Struct(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.UniffiByValue&quot;</span>, <span class="self">self</span>.ffi_struct_name(name)),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="macro">format!</span>(<span class="string">"{}.ByValue"</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
+            FfiType::Struct(name) =&gt; <span class="macro">format!</span>(<span class="string">"{}.UniffiByValue"</span>, <span class="self">self</span>.ffi_struct_name(name)),
             <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label(ffi_type),
         }
     }
@@ -1091,12 +1093,12 @@
     <span class="doccomment">/// FFI type name to use inside structs
     ///
     /// The main requirement here is that all types must have default values or else the struct
-    /// won&#39;t work in some JNA contexts.
+    /// won't work in some JNA contexts.
     </span><span class="kw">fn </span>ffi_type_label_for_ffi_struct(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
             <span class="comment">// Make callbacks function pointers nullable. This matches the semantics of a C
             // function pointer better and allows for `null` as a default value.
-            </span>FfiType::Callback(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}?&quot;</span>, <span class="self">self</span>.ffi_callback_name(name)),
+            </span>FfiType::Callback(name) =&gt; <span class="macro">format!</span>(<span class="string">"{}?"</span>, <span class="self">self</span>.ffi_callback_name(name)),
             <span class="kw">_ </span>=&gt; <span class="self">self</span>.ffi_type_label_by_value(ffi_type),
         }
     }
@@ -1108,17 +1110,17 @@
     ///   - Set a default for structs, which JNA sometimes requires
     </span><span class="kw">fn </span>ffi_default_value(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
-            FfiType::UInt8 | FfiType::Int8 =&gt; <span class="string">&quot;0.toByte()&quot;</span>.to_owned(),
-            FfiType::UInt16 | FfiType::Int16 =&gt; <span class="string">&quot;0.toShort()&quot;</span>.to_owned(),
-            FfiType::UInt32 | FfiType::Int32 =&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
-            FfiType::UInt64 | FfiType::Int64 =&gt; <span class="string">&quot;0.toLong()&quot;</span>.to_owned(),
-            FfiType::Float32 =&gt; <span class="string">&quot;0.0f&quot;</span>.to_owned(),
-            FfiType::Float64 =&gt; <span class="string">&quot;0.0&quot;</span>.to_owned(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer.NULL&quot;</span>.to_owned(),
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.ByValue()&quot;</span>.to_owned(),
-            FfiType::Callback(<span class="kw">_</span>) =&gt; <span class="string">&quot;null&quot;</span>.to_owned(),
-            FfiType::RustCallStatus =&gt; <span class="string">&quot;UniffiRustCallStatus.ByValue()&quot;</span>.to_owned(),
-            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;ffi_default_value: {ffi_type:?}&quot;</span>),
+            FfiType::UInt8 | FfiType::Int8 =&gt; <span class="string">"0.toByte()"</span>.to_owned(),
+            FfiType::UInt16 | FfiType::Int16 =&gt; <span class="string">"0.toShort()"</span>.to_owned(),
+            FfiType::UInt32 | FfiType::Int32 =&gt; <span class="string">"0"</span>.to_owned(),
+            FfiType::UInt64 | FfiType::Int64 =&gt; <span class="string">"0.toLong()"</span>.to_owned(),
+            FfiType::Float32 =&gt; <span class="string">"0.0f"</span>.to_owned(),
+            FfiType::Float64 =&gt; <span class="string">"0.0"</span>.to_owned(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"Pointer.NULL"</span>.to_owned(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">"RustBuffer.ByValue()"</span>.to_owned(),
+            FfiType::Callback(<span class="kw">_</span>) =&gt; <span class="string">"null"</span>.to_owned(),
+            FfiType::RustCallStatus =&gt; <span class="string">"UniffiRustCallStatus.ByValue()"</span>.to_owned(),
+            <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">"ffi_default_value: {ffi_type:?}"</span>),
         }
     }
 
@@ -1133,11 +1135,11 @@
             | FfiType::Int64
             | FfiType::UInt64
             | FfiType::Float32
-            | FfiType::Float64 =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}ByReference&quot;</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;PointerByReference&quot;</span>.to_owned(),
+            | FfiType::Float64 =&gt; <span class="macro">format!</span>(<span class="string">"{}ByReference"</span>, <span class="self">self</span>.ffi_type_label(ffi_type)),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"PointerByReference"</span>.to_owned(),
             <span class="comment">// JNA structs default to ByReference
             </span>FfiType::RustBuffer(<span class="kw">_</span>) | FfiType::Struct(<span class="kw">_</span>) =&gt; <span class="self">self</span>.ffi_type_label(ffi_type),
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;{ffi_type:?} by reference is not implemented&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"{ffi_type:?} by reference is not implemented"</span>),
         }
     }
 
@@ -1146,23 +1148,23 @@
             <span class="comment">// Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
             // types from the component API.
-            </span>FfiType::Int8 | FfiType::UInt8 =&gt; <span class="string">&quot;Byte&quot;</span>.to_string(),
-            FfiType::Int16 | FfiType::UInt16 =&gt; <span class="string">&quot;Short&quot;</span>.to_string(),
-            FfiType::Int32 | FfiType::UInt32 =&gt; <span class="string">&quot;Int&quot;</span>.to_string(),
-            FfiType::Int64 | FfiType::UInt64 =&gt; <span class="string">&quot;Long&quot;</span>.to_string(),
-            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.to_string(),
-            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.to_string(),
-            FfiType::Handle =&gt; <span class="string">&quot;Long&quot;</span>.to_string(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
+            </span>FfiType::Int8 | FfiType::UInt8 =&gt; <span class="string">"Byte"</span>.to_string(),
+            FfiType::Int16 | FfiType::UInt16 =&gt; <span class="string">"Short"</span>.to_string(),
+            FfiType::Int32 | FfiType::UInt32 =&gt; <span class="string">"Int"</span>.to_string(),
+            FfiType::Int64 | FfiType::UInt64 =&gt; <span class="string">"Long"</span>.to_string(),
+            FfiType::Float32 =&gt; <span class="string">"Float"</span>.to_string(),
+            FfiType::Float64 =&gt; <span class="string">"Double"</span>.to_string(),
+            FfiType::Handle =&gt; <span class="string">"Long"</span>.to_string(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"Pointer"</span>.to_string(),
             FfiType::RustBuffer(maybe_suffix) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;RustBuffer{}&quot;</span>, maybe_suffix.as_deref().unwrap_or_default())
+                <span class="macro">format!</span>(<span class="string">"RustBuffer{}"</span>, maybe_suffix.as_deref().unwrap_or_default())
             }
-            FfiType::RustCallStatus =&gt; <span class="string">&quot;UniffiRustCallStatus.ByValue&quot;</span>.to_string(),
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes.ByValue&quot;</span>.to_string(),
+            FfiType::RustCallStatus =&gt; <span class="string">"UniffiRustCallStatus.ByValue"</span>.to_string(),
+            FfiType::ForeignBytes =&gt; <span class="string">"ForeignBytes.ByValue"</span>.to_string(),
             FfiType::Callback(name) =&gt; <span class="self">self</span>.ffi_callback_name(name),
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             FfiType::Reference(inner) =&gt; <span class="self">self</span>.ffi_type_label_by_reference(inner),
-            FfiType::VoidPointer =&gt; <span class="string">&quot;Pointer&quot;</span>.to_string(),
+            FfiType::VoidPointer =&gt; <span class="string">"Pointer"</span>.to_string(),
         }
     }
 
@@ -1177,10 +1179,10 @@
     </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
         <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(ci, obj.name());
         <span class="kw">if </span>obj.has_callback_interface() {
-            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">"{class_name}Impl"</span>);
             (class_name, impl_name)
         } <span class="kw">else </span>{
-            (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Interface&quot;</span>), class_name)
+            (<span class="macro">format!</span>(<span class="string">"{class_name}Interface"</span>), class_name)
         }
     }
 }
@@ -1197,7 +1199,7 @@
         // template code.
         //
         //   - When adding additional types here, make sure to also add a match arm to the `Types.kt` template.
-        //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
+        //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
         </span><span class="kw">match </span><span class="self">self</span>.as_type() {
             Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
             Type::Int8 =&gt; Box::new(primitives::Int8CodeType),
@@ -1260,31 +1262,31 @@
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lower_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{}.lower&quot;</span>,
+            <span class="string">"{}.lower"</span>,
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>allocation_size_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{}.allocationSize&quot;</span>,
+            <span class="string">"{}.allocationSize"</span>,
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>write_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{}.write&quot;</span>,
+            <span class="string">"{}.write"</span>,
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>lift_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, as_ct.as_codetype().ffi_converter_name()))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.lift"</span>, as_ct.as_codetype().ffi_converter_name()))
     }
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>read_fn(as_ct: <span class="kw-2">&amp;</span><span class="kw">impl </span>AsCodeType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, as_ct.as_codetype().ffi_converter_name()))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{}.read"</span>, as_ct.as_codetype().ffi_converter_name()))
     }
 
     <span class="kw">pub fn </span>render_literal(
@@ -1300,28 +1302,28 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(t) = t {
             <span class="kw">match </span>t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 =&gt; <span class="prelude-val">Ok</span>(base10),
-                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 =&gt; <span class="prelude-val">Ok</span>(base10 + <span class="string">&quot;u&quot;</span>),
+                Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 =&gt; <span class="prelude-val">Ok</span>(base10 + <span class="string">"u"</span>),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
-                    <span class="string">&quot;Only ints are supported.&quot;</span>.to_string(),
+                    <span class="string">"Only ints are supported."</span>.to_string(),
                 )))),
             }
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
-                <span class="string">&quot;Enum hasn&#39;t defined a repr&quot;</span>.to_string(),
+                <span class="string">"Enum hasn't defined a repr"</span>.to_string(),
             ))))
         }
     }
 
-    <span class="comment">// Get the idiomatic Kotlin rendering of an individual enum variant&#39;s discriminant
+    <span class="comment">// Get the idiomatic Kotlin rendering of an individual enum variant's discriminant
     </span><span class="kw">pub fn </span>variant_discr_literal(e: <span class="kw-2">&amp;</span>Enum, index: <span class="kw-2">&amp;</span>usize) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">&quot;invalid index&quot;</span>);
+        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">"invalid index"</span>);
         <span class="kw">match </span>literal {
-            <span class="comment">// Kotlin doesn&#39;t convert between signed and unsigned by default
-            // so we&#39;ll need to make sure we define the type as appropriately
+            <span class="comment">// Kotlin doesn't convert between signed and unsigned by default
+            // so we'll need to make sure we define the type as appropriately
             </span>LiteralMetadata::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; int_literal(e.variant_discr_type(), v.to_string()),
             LiteralMetadata::Int(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; int_literal(e.variant_discr_type(), v.to_string()),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(askama::Error::Custom(Box::new(UniFFIError::new(
-                <span class="string">&quot;Only ints are supported.&quot;</span>.to_string(),
+                <span class="string">"Only ints are supported."</span>.to_string(),
             )))),
         }
     }
@@ -1391,7 +1393,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_poll(ci);
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{{ future, callback, continuation -&gt; UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}&quot;
+            <span class="string">"{{ future, callback, continuation -&gt; UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}"
         </span>))
     }
 
@@ -1400,7 +1402,7 @@
         ci: <span class="kw-2">&amp;</span>ComponentInterface,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_complete(ci);
-        <span class="kw">let </span>call = <span class="macro">format!</span>(<span class="string">&quot;UniffiLib.INSTANCE.{ffi_func}(future, continuation)&quot;</span>);
+        <span class="kw">let </span>call = <span class="macro">format!</span>(<span class="string">"UniffiLib.INSTANCE.{ffi_func}(future, continuation)"</span>);
         <span class="kw">let </span>call = <span class="kw">match </span>callable.return_type() {
             <span class="prelude-val">Some</span>(Type::External {
                 kind: ExternalKind::DataClass,
@@ -1409,11 +1411,11 @@
             }) =&gt; {
                 <span class="comment">// Need to convert the RustBuffer from our package to the RustBuffer of the external package
                 </span><span class="kw">let </span>suffix = KotlinCodeOracle.class_name(ci, <span class="kw-2">&amp;</span>name);
-                <span class="macro">format!</span>(<span class="string">&quot;{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}&quot;</span>)
+                <span class="macro">format!</span>(<span class="string">"{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}"</span>)
             }
             <span class="kw">_ </span>=&gt; call,
         };
-        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{{ future, continuation -&gt; {call} }}&quot;</span>))
+        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">"{{ future, continuation -&gt; {call} }}"</span>))
     }
 
     <span class="kw">pub fn </span>async_free(
@@ -1422,26 +1424,26 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="kw">let </span>ffi_func = callable.ffi_rust_future_free(ci);
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;{{ future -&gt; UniffiLib.INSTANCE.{ffi_func}(future) }}&quot;
+            <span class="string">"{{ future -&gt; UniffiLib.INSTANCE.{ffi_func}(future) }}"
         </span>))
     }
 
-    <span class="doccomment">/// Remove the &quot;`&quot; chars we put around function/variable names
+    <span class="doccomment">/// Remove the "`" chars we put around function/variable names
     ///
     /// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to
     /// render the name unquoted.  One example is the message property for errors where we want to
     /// display the name for the user.
     </span><span class="kw">pub fn </span>unquote(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="prelude-val">Ok</span>(nm.trim_matches(<span class="string">&#39;`&#39;</span>).to_string())
+        <span class="prelude-val">Ok</span>(nm.trim_matches(<span class="string">'`'</span>).to_string())
     }
 
     <span class="doccomment">/// Get the idiomatic Kotlin rendering of docstring
     </span><span class="kw">pub fn </span>docstring(docstring: <span class="kw-2">&amp;</span>str, spaces: <span class="kw-2">&amp;</span>i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>middle = textwrap::indent(<span class="kw-2">&amp;</span>textwrap::dedent(docstring), <span class="string">&quot; * &quot;</span>);
-        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">&quot;/**\n{middle}\n */&quot;</span>);
+        <span class="kw">let </span>middle = textwrap::indent(<span class="kw-2">&amp;</span>textwrap::dedent(docstring), <span class="string">" * "</span>);
+        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">"/**\n{middle}\n */"</span>);
 
         <span class="kw">let </span>spaces = usize::try_from(<span class="kw-2">*</span>spaces).unwrap_or_default();
-        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">&quot; &quot;</span>.repeat(spaces)))
+        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">" "</span>.repeat(spaces)))
     }
 }
 </code></pre></div></section></main></body></html>

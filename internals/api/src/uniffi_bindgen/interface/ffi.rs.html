@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/ffi.rs`."><title>ffi.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/ffi.rs`."><title>ffi.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -394,20 +396,20 @@
 
 </span><span class="doccomment">//! # Low-level typesystem for the FFI layer of a component interface.
 //!
-//! This module provides the &quot;FFI-level&quot; typesystem of a UniFFI Rust Component, that is,
+//! This module provides the "FFI-level" typesystem of a UniFFI Rust Component, that is,
 //! the C-style functions and structs and primitive datatypes that are used to interface
 //! between the Rust component code and the foreign-language bindings.
 //!
-//! These types are purely an implementation detail of UniFFI, so consumers shouldn&#39;t
-//! need to know about them. But as a developer working on UniFFI itself, you&#39;re likely
+//! These types are purely an implementation detail of UniFFI, so consumers shouldn't
+//! need to know about them. But as a developer working on UniFFI itself, you're likely
 //! to spend a lot of time thinking about how these low-level types are used to represent
-//! the higher-level &quot;interface types&quot; from the [`Type`] enum.
+//! the higher-level "interface types" from the [`Type`] enum.
 /// Represents the restricted set of low-level types that can be used to construct
 /// the C-style FFI layer between a rust component and its foreign language bindings.
 ///
 /// For the types that involve memory allocation, we make a distinction between
-/// &quot;owned&quot; types (the recipient must free it, or pass it to someone else) and
-/// &quot;borrowed&quot; types (the sender must keep it alive for the duration of the call).
+/// "owned" types (the recipient must free it, or pass it to someone else) and
+/// "borrowed" types (the sender must keep it alive for the duration of the call).
 </span><span class="kw">use </span>uniffi_meta::{ExternalKind, Type};
 
 <span class="attr">#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -424,12 +426,12 @@
     Float32,
     Float64,
     <span class="doccomment">/// A `*const c_void` pointer to a rust-owned `Arc&lt;T&gt;`.
-    /// If you&#39;ve got one of these, you must call the appropriate rust function to free it.
+    /// If you've got one of these, you must call the appropriate rust function to free it.
     /// The templates will generate a unique `free` function for each T.
     /// The inner string references the name of the `T` type.
     </span>RustArcPtr(String),
     <span class="doccomment">/// A byte buffer allocated by rust, and owned by whoever currently holds it.
-    /// If you&#39;ve got one of these, you must either call the appropriate rust function to free it
+    /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
     /// If the inner option is Some, it is the name of the external type. The bindings may need
     /// to use this name to import the correct RustBuffer for that type.
@@ -463,21 +465,21 @@
     </span><span class="kw">pub fn </span>return_type_name(return_type: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>FfiType&gt;) -&gt; String {
         <span class="kw">match </span>return_type {
             <span class="prelude-val">Some</span>(t) =&gt; <span class="kw">match </span>t {
-                FfiType::UInt8 =&gt; <span class="string">&quot;u8&quot;</span>.to_owned(),
-                FfiType::Int8 =&gt; <span class="string">&quot;i8&quot;</span>.to_owned(),
-                FfiType::UInt16 =&gt; <span class="string">&quot;u16&quot;</span>.to_owned(),
-                FfiType::Int16 =&gt; <span class="string">&quot;i16&quot;</span>.to_owned(),
-                FfiType::UInt32 =&gt; <span class="string">&quot;u32&quot;</span>.to_owned(),
-                FfiType::Int32 =&gt; <span class="string">&quot;i32&quot;</span>.to_owned(),
-                FfiType::UInt64 =&gt; <span class="string">&quot;u64&quot;</span>.to_owned(),
-                FfiType::Int64 =&gt; <span class="string">&quot;i64&quot;</span>.to_owned(),
-                FfiType::Float32 =&gt; <span class="string">&quot;f32&quot;</span>.to_owned(),
-                FfiType::Float64 =&gt; <span class="string">&quot;f64&quot;</span>.to_owned(),
-                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;pointer&quot;</span>.to_owned(),
-                FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;rust_buffer&quot;</span>.to_owned(),
-                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;FFI return type: {t:?}&quot;</span>),
+                FfiType::UInt8 =&gt; <span class="string">"u8"</span>.to_owned(),
+                FfiType::Int8 =&gt; <span class="string">"i8"</span>.to_owned(),
+                FfiType::UInt16 =&gt; <span class="string">"u16"</span>.to_owned(),
+                FfiType::Int16 =&gt; <span class="string">"i16"</span>.to_owned(),
+                FfiType::UInt32 =&gt; <span class="string">"u32"</span>.to_owned(),
+                FfiType::Int32 =&gt; <span class="string">"i32"</span>.to_owned(),
+                FfiType::UInt64 =&gt; <span class="string">"u64"</span>.to_owned(),
+                FfiType::Int64 =&gt; <span class="string">"i64"</span>.to_owned(),
+                FfiType::Float32 =&gt; <span class="string">"f32"</span>.to_owned(),
+                FfiType::Float64 =&gt; <span class="string">"f64"</span>.to_owned(),
+                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"pointer"</span>.to_owned(),
+                FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">"rust_buffer"</span>.to_owned(),
+                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">"FFI return type: {t:?}"</span>),
             },
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;void&quot;</span>.to_owned(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">"void"</span>.to_owned(),
         }
     }
 }
@@ -486,7 +488,7 @@
 /// `FfiType` value. This conversion tells you which one.
 ///
 /// Note that the conversion is one-way - given an FfiType, it is not in general possible to
-/// tell what the corresponding Type is that it&#39;s being used to represent.
+/// tell what the corresponding Type is that it's being used to represent.
 </span><span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>Type&gt; <span class="kw">for </span>FfiType {
     <span class="kw">fn </span>from(t: <span class="kw-2">&amp;</span>Type) -&gt; FfiType {
         <span class="kw">match </span>t {
@@ -572,9 +574,9 @@
     }
 }
 
-<span class="doccomment">/// Represents an &quot;extern C&quot;-style function that will be part of the FFI.
+<span class="doccomment">/// Represents an "extern C"-style function that will be part of the FFI.
 ///
-/// These can&#39;t be declared explicitly in the UDL, but rather, are derived automatically
+/// These can't be declared explicitly in the UDL, but rather, are derived automatically
 /// from the high-level interface. Each callable thing in the component API will have a
 /// corresponding `FfiFunction` through which it can be invoked, and UniFFI also provides
 /// some built-in `FfiFunction` helpers for use in the foreign language bindings.
@@ -595,7 +597,7 @@
         <span class="self">Self </span>{
             name: uniffi_meta::init_callback_vtable_fn_symbol_name(module_path, trait_name),
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;vtable&quot;</span>.to_string(),
+                name: <span class="string">"vtable"</span>.to_string(),
                 type_: FfiType::Struct(vtable_name).reference(),
             }],
             return_type: <span class="prelude-val">None</span>,
@@ -646,7 +648,7 @@
 <span class="kw">impl </span>Default <span class="kw">for </span>FfiFunction {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            name: <span class="string">&quot;&quot;</span>.into(),
+            name: <span class="string">""</span>.into(),
             is_async: <span class="bool-val">false</span>,
             arguments: Vec::new(),
             return_type: <span class="prelude-val">None</span>,
@@ -682,7 +684,7 @@
     }
 }
 
-<span class="doccomment">/// Represents an &quot;extern C&quot;-style callback function
+<span class="doccomment">/// Represents an "extern C"-style callback function
 ///
 /// These are defined in the foreign code and passed to Rust as a function pointer.
 </span><span class="attr">#[derive(Debug, Default, Clone)]
@@ -775,7 +777,7 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
-    <span class="comment">// There&#39;s not really much to test here to be honest,
-    // it&#39;s mostly type declarations.
+    <span class="comment">// There's not really much to test here to be honest,
+    // it's mostly type declarations.
 </span>}
 </code></pre></div></section></main></body></html>

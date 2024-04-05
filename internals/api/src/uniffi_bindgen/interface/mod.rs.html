@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1351,7 +1353,7 @@
 //!    * The high-level consumer API, in terms of objects and records and methods and so-on
 //!    * The low-level FFI contract through which the foreign language code can call into Rust.
 //!
-//! That&#39;s really the key concept of this crate so it&#39;s worth repeating: a `ComponentInterface` completely
+//! That's really the key concept of this crate so it's worth repeating: a `ComponentInterface` completely
 //! defines the shape and semantics of an interface between the Rust-based implementation of a component
 //! and its foreign language consumers, including details like:
 //!
@@ -1371,11 +1373,11 @@
 //!       * No duplicate names (types, methods, args, etc)
 //!       * No shadowing of builtin names, or names we use in code generation
 //!     We expect that if the user actually does one of these things, then they *should* get a compile
-//!     error when trying to build the component, because the codegen will be invalid. But we can&#39;t
-//!     guarantee that there&#39;s not some edge-case where it produces valid-but-incorrect code.
+//!     error when trying to build the component, because the codegen will be invalid. But we can't
+//!     guarantee that there's not some edge-case where it produces valid-but-incorrect code.
 //!
-//!   * There is a *lot* of cloning going on, in the spirit of &quot;first make it work&quot;. There&#39;s probably
-//!     a good opportunity here for e.g. interned strings, but we&#39;re nowhere near the point were we need
+//!   * There is a *lot* of cloning going on, in the spirit of "first make it work". There's probably
+//!     a good opportunity here for e.g. interned strings, but we're nowhere near the point were we need
 //!     that kind of optimization just yet.
 //!
 //!   * Error messages and general developer experience leave a lot to be desired.
@@ -1418,8 +1420,8 @@
 </span><span class="attr">#[derive(Debug, Default)]
 </span><span class="kw">pub struct </span>ComponentInterface {
     <span class="doccomment">/// All of the types used in the interface.
-    </span><span class="comment">// We can&#39;t checksum `self.types`, but its contents are implied by the other fields
-    // anyway, so it&#39;s safe to ignore it.
+    </span><span class="comment">// We can't checksum `self.types`, but its contents are implied by the other fields
+    // anyway, so it's safe to ignore it.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) types: TypeUniverse,
     <span class="doccomment">/// The high-level API provided by the component.
     </span>enums: BTreeMap&lt;String, Enum&gt;,
@@ -1449,7 +1451,7 @@
     </span><span class="kw">pub fn </span>from_webidl(idl: <span class="kw-2">&amp;</span>str, module_path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="macro">ensure!</span>(
             !module_path.is_empty(),
-            <span class="string">&quot;you must specify a valid crate name&quot;
+            <span class="string">"you must specify a valid crate name"
         </span>);
         <span class="kw">let </span>group = uniffi_udl::parse_udl(idl, module_path)<span class="question-mark">?</span>;
         <span class="self">Self</span>::from_metadata(group)
@@ -1472,7 +1474,7 @@
             <span class="self">self</span>.types.namespace = group.namespace.clone();
         } <span class="kw">else if </span><span class="self">self</span>.types.namespace != group.namespace {
             <span class="macro">bail!</span>(
-                <span class="string">&quot;Namespace mismatch: {:?} - {:?}&quot;</span>,
+                <span class="string">"Namespace mismatch: {:?} - {:?}"</span>,
                 group.namespace,
                 <span class="self">self</span>.types.namespace
             );
@@ -1502,7 +1504,7 @@
 
     <span class="kw">pub fn </span>uniffi_contract_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
         <span class="comment">// This is set by the scripts in the version-mismatch fixture
-        </span><span class="kw">let </span>force_version = std::env::var(<span class="string">&quot;UNIFFI_FORCE_CONTRACT_VERSION&quot;</span>);
+        </span><span class="kw">let </span>force_version = std::env::var(<span class="string">"UNIFFI_FORCE_CONTRACT_VERSION"</span>);
         <span class="kw">match </span>force_version {
             <span class="prelude-val">Ok</span>(v) <span class="kw">if </span>!v.is_empty() =&gt; v.parse().unwrap(),
             <span class="kw">_ </span>=&gt; UNIFFI_CONTRACT_VERSION,
@@ -1553,7 +1555,7 @@
 
     <span class="kw">fn </span>callback_interface_callback_definitions(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiCallbackFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    ) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiCallbackFunction&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.callback_interfaces
             .iter()
             .flat_map(|cbi| cbi.ffi_callbacks())
@@ -1563,7 +1565,7 @@
     <span class="doccomment">/// Get the definitions for callback FFI functions
     ///
     /// These are defined by the foreign code and invoked by Rust.
-    </span><span class="kw">fn </span>callback_interface_vtable_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiStruct&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">fn </span>callback_interface_vtable_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiStruct&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.callback_interface_definitions()
             .iter()
             .map(|cbi| cbi.vtable_definition())
@@ -1614,7 +1616,7 @@
 
     <span class="doccomment">/// Should we generate read (and lift) functions for errors?
     ///
-    /// This is a workaround for the fact that lower/write can&#39;t be generated for some errors,
+    /// This is a workaround for the fact that lower/write can't be generated for some errors,
     /// specifically errors that are defined as flat in the UDL, but actually have fields in the
     /// Rust source.
     </span><span class="kw">pub fn </span>should_generate_error_read(<span class="kw-2">&amp;</span><span class="self">self</span>, e: <span class="kw-2">&amp;</span>Enum) -&gt; bool {
@@ -1651,7 +1653,7 @@
                 ..
             } =&gt; <span class="prelude-val">Some</span>((
                 name,
-                module_path.split(<span class="string">&quot;::&quot;</span>).next().unwrap().to_string(),
+                module_path.split(<span class="string">"::"</span>).next().unwrap().to_string(),
                 <span class="kw-2">*</span>kind,
                 <span class="kw-2">*</span>tagged,
             )),
@@ -1682,7 +1684,7 @@
     /// This method uses `iter_types` to iterate over the types contained within the given type,
     /// but additionally recurses into the definition of user-defined types like records and enums
     /// to yield the types that *they* contain.
-    </span><span class="kw">fn </span>iter_types_in_item&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, item: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type&gt; + <span class="lifetime">&#39;a </span>{
+    </span><span class="kw">fn </span>iter_types_in_item&lt;<span class="lifetime">'a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>, item: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type&gt; + <span class="lifetime">'a </span>{
         RecursiveTypeIterator::new(<span class="self">self</span>, item)
     }
 
@@ -1749,7 +1751,7 @@
     /// ABI as the scaffolding
     </span><span class="kw">pub fn </span>ffi_uniffi_contract_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_uniffi_contract_version&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            name: <span class="macro">format!</span>(<span class="string">"ffi_{}_uniffi_contract_version"</span>, <span class="self">self</span>.ffi_namespace()),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[],
             return_type: <span class="prelude-val">Some</span>(FfiType::UInt32),
@@ -1763,10 +1765,10 @@
     /// complex data types across the FFI.
     </span><span class="kw">pub fn </span>ffi_rustbuffer_alloc(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_alloc&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            name: <span class="macro">format!</span>(<span class="string">"ffi_{}_rustbuffer_alloc"</span>, <span class="self">self</span>.ffi_namespace()),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;size&quot;</span>.to_string(),
+                name: <span class="string">"size"</span>.to_string(),
                 type_: FfiType::UInt64,
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
@@ -1780,10 +1782,10 @@
     /// complex data types across the FFI.
     </span><span class="kw">pub fn </span>ffi_rustbuffer_from_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_from_bytes&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            name: <span class="macro">format!</span>(<span class="string">"ffi_{}_rustbuffer_from_bytes"</span>, <span class="self">self</span>.ffi_namespace()),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;bytes&quot;</span>.to_string(),
+                name: <span class="string">"bytes"</span>.to_string(),
                 type_: FfiType::ForeignBytes,
             }],
             return_type: <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
@@ -1797,10 +1799,10 @@
     /// complex data types returned across the FFI.
     </span><span class="kw">pub fn </span>ffi_rustbuffer_free(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_free&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            name: <span class="macro">format!</span>(<span class="string">"ffi_{}_rustbuffer_free"</span>, <span class="self">self</span>.ffi_namespace()),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;buf&quot;</span>.to_string(),
+                name: <span class="string">"buf"</span>.to_string(),
                 type_: FfiType::RustBuffer(<span class="prelude-val">None</span>),
             }],
             return_type: <span class="prelude-val">None</span>,
@@ -1814,15 +1816,15 @@
     /// complex data types across the FFI.
     </span><span class="kw">pub fn </span>ffi_rustbuffer_reserve(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="macro">format!</span>(<span class="string">&quot;ffi_{}_rustbuffer_reserve&quot;</span>, <span class="self">self</span>.ffi_namespace()),
+            name: <span class="macro">format!</span>(<span class="string">"ffi_{}_rustbuffer_reserve"</span>, <span class="self">self</span>.ffi_namespace()),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[
                 FfiArgument {
-                    name: <span class="string">&quot;buf&quot;</span>.to_string(),
+                    name: <span class="string">"buf"</span>.to_string(),
                     type_: FfiType::RustBuffer(<span class="prelude-val">None</span>),
                 },
                 FfiArgument {
-                    name: <span class="string">&quot;additional&quot;</span>.to_string(),
+                    name: <span class="string">"additional"</span>.to_string(),
                     type_: FfiType::UInt64,
                 },
             ],
@@ -1835,19 +1837,19 @@
     <span class="doccomment">/// Builtin FFI function to poll a Rust future.
     </span><span class="kw">pub fn </span>ffi_rust_future_poll(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">&quot;rust_future_poll&quot;</span>, return_ffi_type),
+            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">"rust_future_poll"</span>, return_ffi_type),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[
                 FfiArgument {
-                    name: <span class="string">&quot;handle&quot;</span>.to_owned(),
+                    name: <span class="string">"handle"</span>.to_owned(),
                     type_: FfiType::Handle,
                 },
                 FfiArgument {
-                    name: <span class="string">&quot;callback&quot;</span>.to_owned(),
-                    type_: FfiType::Callback(<span class="string">&quot;RustFutureContinuationCallback&quot;</span>.to_owned()),
+                    name: <span class="string">"callback"</span>.to_owned(),
+                    type_: FfiType::Callback(<span class="string">"RustFutureContinuationCallback"</span>.to_owned()),
                 },
                 FfiArgument {
-                    name: <span class="string">&quot;callback_data&quot;</span>.to_owned(),
+                    name: <span class="string">"callback_data"</span>.to_owned(),
                     type_: FfiType::Handle,
                 },
             ],
@@ -1857,15 +1859,15 @@
         }
     }
 
-    <span class="doccomment">/// Builtin FFI function to complete a Rust future and get it&#39;s result.
+    <span class="doccomment">/// Builtin FFI function to complete a Rust future and get it's result.
     ///
     /// We generate one of these for each FFI return type.
     </span><span class="kw">pub fn </span>ffi_rust_future_complete(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">&quot;rust_future_complete&quot;</span>, return_ffi_type.clone()),
+            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">"rust_future_complete"</span>, return_ffi_type.clone()),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;handle&quot;</span>.to_owned(),
+                name: <span class="string">"handle"</span>.to_owned(),
                 type_: FfiType::Handle,
             }],
             return_type: return_ffi_type,
@@ -1877,10 +1879,10 @@
     <span class="doccomment">/// Builtin FFI function for cancelling a Rust Future
     </span><span class="kw">pub fn </span>ffi_rust_future_cancel(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">&quot;rust_future_cancel&quot;</span>, return_ffi_type),
+            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">"rust_future_cancel"</span>, return_ffi_type),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;handle&quot;</span>.to_owned(),
+                name: <span class="string">"handle"</span>.to_owned(),
                 type_: FfiType::Handle,
             }],
             return_type: <span class="prelude-val">None</span>,
@@ -1892,10 +1894,10 @@
     <span class="doccomment">/// Builtin FFI function for freeing a Rust Future
     </span><span class="kw">pub fn </span>ffi_rust_future_free(<span class="kw-2">&amp;</span><span class="self">self</span>, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; FfiFunction {
         FfiFunction {
-            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">&quot;rust_future_free&quot;</span>, return_ffi_type),
+            name: <span class="self">self</span>.rust_future_ffi_fn_name(<span class="string">"rust_future_free"</span>, return_ffi_type),
             is_async: <span class="bool-val">false</span>,
             arguments: <span class="macro">vec!</span>[FfiArgument {
-                name: <span class="string">&quot;handle&quot;</span>.to_owned(),
+                name: <span class="string">"handle"</span>.to_owned(),
                 type_: FfiType::Handle,
             }],
             return_type: <span class="prelude-val">None</span>,
@@ -1907,7 +1909,7 @@
     <span class="kw">fn </span>rust_future_ffi_fn_name(<span class="kw-2">&amp;</span><span class="self">self</span>, base_name: <span class="kw-2">&amp;</span>str, return_ffi_type: <span class="prelude-ty">Option</span>&lt;FfiType&gt;) -&gt; String {
         <span class="kw">let </span>namespace = <span class="self">self</span>.ffi_namespace();
         <span class="kw">let </span>return_type_name = FfiType::return_type_name(return_ffi_type.as_ref());
-        <span class="macro">format!</span>(<span class="string">&quot;ffi_{namespace}_{base_name}_{return_type_name}&quot;</span>)
+        <span class="macro">format!</span>(<span class="string">"ffi_{namespace}_{base_name}_{return_type_name}"</span>)
     }
 
     <span class="doccomment">/// Does this interface contain async functions?
@@ -1938,8 +1940,8 @@
     }
 
     <span class="doccomment">/// Iterate over all Ffi definitions
-    </span><span class="kw">pub fn </span>ffi_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiDefinition&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="comment">// Note: for languages like Python it&#39;s important to keep things in dependency order.
+    </span><span class="kw">pub fn </span>ffi_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiDefinition&gt; + <span class="lifetime">'_ </span>{
+        <span class="comment">// Note: for languages like Python it's important to keep things in dependency order.
         // For example some FFI function definitions depend on FFI struct definitions, so the
         // function definitions come last.
         </span><span class="self">self</span>.builtin_ffi_definitions()
@@ -1957,37 +1959,37 @@
             .chain(<span class="self">self</span>.iter_ffi_function_definitions().map(Into::into))
     }
 
-    <span class="kw">fn </span>builtin_ffi_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiDefinition&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">fn </span>builtin_ffi_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = FfiDefinition&gt; + <span class="lifetime">'_ </span>{
         [
             FfiCallbackFunction {
-                name: <span class="string">&quot;RustFutureContinuationCallback&quot;</span>.to_owned(),
+                name: <span class="string">"RustFutureContinuationCallback"</span>.to_owned(),
                 arguments: <span class="macro">vec!</span>[
-                    FfiArgument::new(<span class="string">&quot;data&quot;</span>, FfiType::UInt64),
-                    FfiArgument::new(<span class="string">&quot;poll_result&quot;</span>, FfiType::Int8),
+                    FfiArgument::new(<span class="string">"data"</span>, FfiType::UInt64),
+                    FfiArgument::new(<span class="string">"poll_result"</span>, FfiType::Int8),
                 ],
                 return_type: <span class="prelude-val">None</span>,
                 has_rust_call_status_arg: <span class="bool-val">false</span>,
             }
             .into(),
             FfiCallbackFunction {
-                name: <span class="string">&quot;ForeignFutureFree&quot;</span>.to_owned(),
-                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64)],
+                name: <span class="string">"ForeignFutureFree"</span>.to_owned(),
+                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">"handle"</span>, FfiType::UInt64)],
                 return_type: <span class="prelude-val">None</span>,
                 has_rust_call_status_arg: <span class="bool-val">false</span>,
             }
             .into(),
             FfiCallbackFunction {
-                name: <span class="string">&quot;CallbackInterfaceFree&quot;</span>.to_owned(),
-                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64)],
+                name: <span class="string">"CallbackInterfaceFree"</span>.to_owned(),
+                arguments: <span class="macro">vec!</span>[FfiArgument::new(<span class="string">"handle"</span>, FfiType::UInt64)],
                 return_type: <span class="prelude-val">None</span>,
                 has_rust_call_status_arg: <span class="bool-val">false</span>,
             }
             .into(),
             FfiStruct {
-                name: <span class="string">&quot;ForeignFuture&quot;</span>.to_owned(),
+                name: <span class="string">"ForeignFuture"</span>.to_owned(),
                 fields: <span class="macro">vec!</span>[
-                    FfiField::new(<span class="string">&quot;handle&quot;</span>, FfiType::UInt64),
-                    FfiField::new(<span class="string">&quot;free&quot;</span>, FfiType::Callback(<span class="string">&quot;ForeignFutureFree&quot;</span>.to_owned())),
+                    FfiField::new(<span class="string">"handle"</span>, FfiType::UInt64),
+                    FfiField::new(<span class="string">"free"</span>, FfiType::Callback(<span class="string">"ForeignFutureFree"</span>.to_owned())),
                 ],
             }
             .into(),
@@ -2008,7 +2010,7 @@
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
-    </span><span class="kw">pub fn </span>iter_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>iter_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.iter_user_ffi_function_definitions()
             .cloned()
             .chain(<span class="self">self</span>.iter_rust_buffer_ffi_function_definitions())
@@ -2017,10 +2019,10 @@
             .chain([<span class="self">self</span>.ffi_uniffi_contract_version()])
     }
 
-    <span class="doccomment">/// Alternate version of iter_ffi_function_definitions for languages that don&#39;t support async
+    <span class="doccomment">/// Alternate version of iter_ffi_function_definitions for languages that don't support async
     </span><span class="kw">pub fn </span>iter_ffi_function_definitions_non_async(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.iter_user_ffi_function_definitions()
             .cloned()
             .chain(<span class="self">self</span>.iter_rust_buffer_ffi_function_definitions())
@@ -2034,7 +2036,7 @@
     ///   - Top-level functions
     ///   - Object methods
     ///   - Callback interfaces
-    </span><span class="kw">pub fn </span>iter_user_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>iter_user_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span>FfiFunction&gt; + <span class="lifetime">'_ </span>{
         iter::empty()
             .chain(
                 <span class="self">self</span>.objects
@@ -2074,7 +2076,7 @@
             <span class="prelude-val">Some</span>(FfiType::Float64),
             <span class="comment">// RustBuffer and RustArcPtr have an inner field which we have to fill in with a
             // placeholder value.
-            </span><span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="string">&quot;&quot;</span>.to_owned())),
+            </span><span class="prelude-val">Some</span>(FfiType::RustArcPtr(<span class="string">""</span>.to_owned())),
             <span class="prelude-val">Some</span>(FfiType::RustBuffer(<span class="prelude-val">None</span>)),
             <span class="prelude-val">None</span>,
         ]
@@ -2082,7 +2084,7 @@
     }
 
     <span class="doccomment">/// List all FFI functions definitions for async functionality.
-    </span><span class="kw">pub fn </span>iter_futures_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>iter_futures_ffi_function_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.all_possible_return_ffi_types()
             .flat_map(|return_type| {
                 [
@@ -2097,7 +2099,7 @@
     <span class="doccomment">/// List all API checksums to check
     ///
     /// Returns a list of (export_symbol_name, checksum) items
-    </span><span class="kw">pub fn </span>iter_checksums(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (String, u16)&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>iter_checksums(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (String, u16)&gt; + <span class="lifetime">'_ </span>{
         <span class="kw">let </span>func_checksums = <span class="self">self
             </span>.functions
             .iter()
@@ -2115,7 +2117,7 @@
         <span class="kw">let </span>callback_method_checksums = <span class="self">self</span>.callback_interfaces.iter().flat_map(|cbi| {
             cbi.methods().into_iter().filter_map(|m| {
                 <span class="kw">if </span>m.checksum_fn_name().is_empty() {
-                    <span class="comment">// UDL-based callbacks don&#39;t have checksum functions, skip these
+                    <span class="comment">// UDL-based callbacks don't have checksum functions, skip these
                     </span><span class="prelude-val">None
                 </span>} <span class="kw">else </span>{
                     <span class="prelude-val">Some</span>((m.checksum_fn_name(), m.checksum()))
@@ -2129,7 +2131,7 @@
             .map(|(fn_name, checksum)| (fn_name.to_string(), checksum))
     }
 
-    <span class="kw">pub fn </span>iter_checksum_ffi_functions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">pub fn </span>iter_checksum_ffi_functions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = FfiFunction&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.iter_checksums().map(|(name, <span class="kw">_</span>)| FfiFunction {
             name,
             is_async: <span class="bool-val">false</span>,
@@ -2153,9 +2155,9 @@
                 <span class="kw">let </span>existing_def = o.get();
                 <span class="kw">if </span>defn != <span class="kw-2">*</span>existing_def {
                     <span class="macro">bail!</span>(
-                        <span class="string">&quot;Mismatching definition for enum `{}`!\n\
+                        <span class="string">"Mismatching definition for enum `{}`!\n\
                         existing definition: {existing_def:#?},\n\
-                        new definition: {defn:#?}&quot;</span>,
+                        new definition: {defn:#?}"</span>,
                         defn.name(),
                     );
                 }
@@ -2176,9 +2178,9 @@
                 <span class="kw">let </span>existing_def = o.get();
                 <span class="kw">if </span>defn != <span class="kw-2">*</span>existing_def {
                     <span class="macro">bail!</span>(
-                        <span class="string">&quot;Mismatching definition for record `{}`!\n\
+                        <span class="string">"Mismatching definition for record `{}`!\n\
                          existing definition: {existing_def:#?},\n\
-                         new definition: {defn:#?}&quot;</span>,
+                         new definition: {defn:#?}"</span>,
                         defn.name(),
                     );
                 }
@@ -2193,10 +2195,10 @@
         <span class="comment">// Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
         </span><span class="kw">if </span><span class="self">self</span>.functions.iter().any(|f| f.name == defn.name) {
-            <span class="macro">bail!</span>(<span class="string">&quot;duplicate function definition: \&quot;{}\&quot;&quot;</span>, defn.name);
+            <span class="macro">bail!</span>(<span class="string">"duplicate function definition: \"{}\""</span>, defn.name);
         }
         <span class="kw">if </span><span class="self">self</span>.types.get_type_definition(defn.name()).is_some() {
-            <span class="macro">bail!</span>(<span class="string">&quot;Conflicting type definition for \&quot;{}\&quot;&quot;</span>, defn.name());
+            <span class="macro">bail!</span>(<span class="string">"Conflicting type definition for \"{}\""</span>, defn.name());
         }
         <span class="self">self</span>.types.add_known_types(defn.iter_types())<span class="question-mark">?</span>;
         defn.throws_name()
@@ -2208,7 +2210,7 @@
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_constructor_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: ConstructorMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>object = get_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>meta.self_name)
-            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_constructor_meta: object {} not found&quot;</span>, <span class="kw-2">&amp;</span>meta.self_name))<span class="question-mark">?</span>;
+            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">"add_constructor_meta: object {} not found"</span>, <span class="kw-2">&amp;</span>meta.self_name))<span class="question-mark">?</span>;
         <span class="kw">let </span>defn: Constructor = meta.into();
 
         <span class="self">self</span>.types.add_known_types(defn.iter_types())<span class="question-mark">?</span>;
@@ -2222,7 +2224,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_method_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: <span class="kw">impl </span>Into&lt;Method&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>method: Method = meta.into();
         <span class="kw">let </span>object = get_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, <span class="kw-2">&amp;</span>method.object_name)
-            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_method_meta: object {} not found&quot;</span>, <span class="kw-2">&amp;</span>method.object_name))<span class="question-mark">?</span>;
+            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">"add_method_meta: object {} not found"</span>, <span class="kw-2">&amp;</span>method.object_name))<span class="question-mark">?</span>;
 
         <span class="self">self</span>.types.add_known_types(method.iter_types())<span class="question-mark">?</span>;
         method
@@ -2235,7 +2237,7 @@
 
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_uniffitrait_meta(<span class="kw-2">&amp;mut </span><span class="self">self</span>, meta: UniffiTraitMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>object = get_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>.objects, meta.self_name())
-            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;add_uniffitrait_meta: object not found&quot;</span>))<span class="question-mark">?</span>;
+            .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">"add_uniffitrait_meta: object not found"</span>))<span class="question-mark">?</span>;
         <span class="kw">let </span>ut: UniffiTrait = meta.into();
         <span class="self">self</span>.types.add_known_types(ut.iter_types())<span class="question-mark">?</span>;
         object.uniffi_traits.push(ut);
@@ -2268,7 +2270,7 @@
             // check that here
             </span><span class="kw">if </span>cbi.methods.len() != meta.index <span class="kw">as </span>usize {
                 <span class="macro">bail!</span>(
-                    <span class="string">&quot;UniFFI internal error: callback interface method index mismatch for {}::{} (expected {}, saw {})&quot;</span>,
+                    <span class="string">"UniFFI internal error: callback interface method index mismatch for {}::{} (expected {}, saw {})"</span>,
                     meta.trait_name,
                     meta.name,
                     cbi.methods.len(),
@@ -2293,18 +2295,18 @@
     <span class="doccomment">/// Perform global consistency checks on the declared interface.
     ///
     /// This method checks for consistency problems in the declared interface
-    /// as a whole, and which can only be detected after we&#39;ve finished defining
+    /// as a whole, and which can only be detected after we've finished defining
     /// the entire interface.
     </span><span class="kw">pub fn </span>check_consistency(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">if </span><span class="self">self</span>.namespace().is_empty() {
-            <span class="macro">bail!</span>(<span class="string">&quot;missing namespace definition&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">"missing namespace definition"</span>);
         }
 
-        <span class="comment">// Because functions aren&#39;t first class types, we need to check here that
-        // a function name hasn&#39;t already been used as a type name.
+        <span class="comment">// Because functions aren't first class types, we need to check here that
+        // a function name hasn't already been used as a type name.
         </span><span class="kw">for </span>f <span class="kw">in </span><span class="self">self</span>.functions.iter() {
             <span class="kw">if </span><span class="self">self</span>.types.get_type_definition(f.name()).is_some() {
-                <span class="macro">bail!</span>(<span class="string">&quot;Conflicting type definition for \&quot;{}\&quot;&quot;</span>, f.name());
+                <span class="macro">bail!</span>(<span class="string">"Conflicting type definition for \"{}\""</span>, f.name());
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -2328,21 +2330,21 @@
     }
 }
 
-<span class="kw">fn </span>get_object&lt;<span class="lifetime">&#39;a</span>&gt;(objects: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>[Object], name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Object&gt; {
+<span class="kw">fn </span>get_object&lt;<span class="lifetime">'a</span>&gt;(objects: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>[Object], name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>Object&gt; {
     objects.iter_mut().find(|o| o.name == name)
 }
 
-<span class="kw">fn </span>get_callback_interface&lt;<span class="lifetime">&#39;a</span>&gt;(
-    callback_interfaces: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>[CallbackInterface],
+<span class="kw">fn </span>get_callback_interface&lt;<span class="lifetime">'a</span>&gt;(
+    callback_interfaces: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>[CallbackInterface],
     name: <span class="kw-2">&amp;</span>str,
-) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>CallbackInterface&gt; {
+) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>CallbackInterface&gt; {
     callback_interfaces.iter_mut().find(|o| o.name == name)
 }
 
 <span class="doccomment">/// Stateful iterator for yielding all types contained in a given type.
 ///
 /// This struct is the implementation of [`ComponentInterface::iter_types_in_item`] and should be
-/// considered an opaque implementation detail. It&#39;s a separate struct because I couldn&#39;t
+/// considered an opaque implementation detail. It's a separate struct because I couldn't
 /// figure out a way to implement it using iterators and closures that would make the lifetimes
 /// work out correctly.
 ///
@@ -2355,20 +2357,20 @@
 /// the implementation, we maintain a queue of pending user-defined types that we have seen
 /// but not yet recursed into. (Ironically, the use of an explicit queue means our implementation
 /// is not actually recursive...)
-</span><span class="kw">struct </span>RecursiveTypeIterator&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="kw">struct </span>RecursiveTypeIterator&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// The [`ComponentInterface`] from which this iterator was created.
-    </span>ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
-    <span class="doccomment">/// The currently-active iterator from which we&#39;re yielding.
-    </span>current: TypeIterator&lt;<span class="lifetime">&#39;a</span>&gt;,
+    </span>ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
+    <span class="doccomment">/// The currently-active iterator from which we're yielding.
+    </span>current: TypeIterator&lt;<span class="lifetime">'a</span>&gt;,
     <span class="doccomment">/// A set of names of user-defined types that we have already seen.
-    </span>seen: HashSet&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    </span>seen: HashSet&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
     <span class="doccomment">/// A queue of user-defined types that we need to recurse into.
-    </span>pending: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type&gt;,
+    </span>pending: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RecursiveTypeIterator&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; RecursiveTypeIterator&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Allocate a new `RecursiveTypeIterator` over the given item.
-    </span><span class="kw">fn </span>new(ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface, item: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type) -&gt; RecursiveTypeIterator&lt;<span class="lifetime">&#39;a</span>&gt; {
+    </span><span class="kw">fn </span>new(ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface, item: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type) -&gt; RecursiveTypeIterator&lt;<span class="lifetime">'a</span>&gt; {
         RecursiveTypeIterator {
             ci,
             <span class="comment">// We begin by iterating over the types from the item itself.
@@ -2379,7 +2381,7 @@
     }
 
     <span class="doccomment">/// Add a new type to the queue of pending types, if not previously seen.
-    </span><span class="kw">fn </span>add_pending_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type) {
+    </span><span class="kw">fn </span>add_pending_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>, type_: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type) {
         <span class="kw">match </span>type_ {
             Type::Record { name, .. }
             | Type::Enum { name, .. }
@@ -2399,7 +2401,7 @@
     /// This method is called when the current iterator is empty, and it will select
     /// the next pending type from the queue and start iterating over its contained types.
     /// The return value will be the first item from the new iterator.
-    </span><span class="kw">fn </span>advance_to_next_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type&gt; {
+    </span><span class="kw">fn </span>advance_to_next_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(next_type) = <span class="self">self</span>.pending.pop() {
             <span class="comment">// This is a little awkward because the various definition lookup methods return an `Option&lt;T&gt;`.
             // In the unlikely event that one of them returns `None` then, rather than trying to advance
@@ -2423,17 +2425,17 @@
                 <span class="self">self</span>.current = next_iter;
             }
             <span class="comment">// Advance the new iterator to its first item. If the new iterator happens to be empty,
-            // this will recurse back in to `advance_to_next_type` until we find one that isn&#39;t.
+            // this will recurse back in to `advance_to_next_type` until we find one that isn't.
             </span><span class="self">self</span>.next()
         } <span class="kw">else </span>{
-            <span class="comment">// We&#39;ve completely finished the iteration over all pending types.
+            <span class="comment">// We've completely finished the iteration over all pending types.
             </span><span class="prelude-val">None
         </span>}
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Iterator <span class="kw">for </span>RecursiveTypeIterator&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Type;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Iterator <span class="kw">for </span>RecursiveTypeIterator&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Type;
     <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(type_) = <span class="self">self</span>.current.next() {
             <span class="self">self</span>.add_pending_type(type_);
@@ -2444,13 +2446,13 @@
     }
 }
 
-<span class="comment">// Helpers for functions/methods/constructors which all have the same &quot;throws&quot; semantics.
+<span class="comment">// Helpers for functions/methods/constructors which all have the same "throws" semantics.
 </span><span class="kw">fn </span>throws_name(throws: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Type&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
-    <span class="comment">// Type has no `name()` method, just `canonical_name()` which isn&#39;t what we want.
+    <span class="comment">// Type has no `name()` method, just `canonical_name()` which isn't what we want.
     </span><span class="kw">match </span>throws {
         <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         <span class="prelude-val">Some</span>(Type::Enum { name, .. }) | <span class="prelude-val">Some</span>(Type::Object { name, .. }) =&gt; <span class="prelude-val">Some</span>(name),
-        <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unknown throw type: {throws:?}&quot;</span>),
+        <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"unknown throw type: {throws:?}"</span>),
     }
 }
 
@@ -2463,7 +2465,7 @@
 
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_duplicate_type_names_are_an_error() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 constructor();
@@ -2471,40 +2473,40 @@
             dictionary Testing {
                 u32 field;
             };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
-            <span class="string">&quot;Conflicting type definition for `Testing`! \
-             existing definition: Object { module_path: \&quot;crate_name\&quot;, name: \&quot;Testing\&quot;, imp: Struct }, \
-             new definition: Record { module_path: \&quot;crate_name\&quot;, name: \&quot;Testing\&quot; }&quot;
+            <span class="string">"Conflicting type definition for `Testing`! \
+             existing definition: Object { module_path: \"crate_name\", name: \"Testing\", imp: Struct }, \
+             new definition: Record { module_path: \"crate_name\", name: \"Testing\" }"
         </span>);
 
-        <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL2: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             enum Testing {
-                &quot;one&quot;, &quot;two&quot;
+                "one", "two"
             };
             [Error]
-            enum Testing { &quot;three&quot;, &quot;four&quot; };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
+            enum Testing { "three", "four" };
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL2, <span class="string">"crate_name"</span>).unwrap_err();
         <span class="macro">assert_eq!</span>(
             err.to_string(),
-            <span class="string">&quot;Mismatching definition for enum `Testing`!
+            <span class="string">"Mismatching definition for enum `Testing`!
 existing definition: Enum {
-    name: \&quot;Testing\&quot;,
-    module_path: \&quot;crate_name\&quot;,
+    name: \"Testing\",
+    module_path: \"crate_name\",
     discr_type: None,
     variants: [
         Variant {
-            name: \&quot;one\&quot;,
+            name: \"one\",
             discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
-            name: \&quot;two\&quot;,
+            name: \"two\",
             discr: None,
             fields: [],
             docstring: None,
@@ -2515,18 +2517,18 @@ existing definition: Enum {
     docstring: None,
 },
 new definition: Enum {
-    name: \&quot;Testing\&quot;,
-    module_path: \&quot;crate_name\&quot;,
+    name: \"Testing\",
+    module_path: \"crate_name\",
     discr_type: None,
     variants: [
         Variant {
-            name: \&quot;three\&quot;,
+            name: \"three\",
             discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
-            name: \&quot;four\&quot;,
+            name: \"four\",
             discr: None,
             fields: [],
             docstring: None,
@@ -2535,19 +2537,19 @@ new definition: Enum {
     flat: true,
     non_exhaustive: false,
     docstring: None,
-}&quot;</span>,
+}"</span>,
         );
 
-        <span class="kw">const </span>UDL3: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL3: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{
                 u32 Testing();
             };
             enum Testing {
-                &quot;one&quot;, &quot;two&quot;
+                "one", "two"
             };
-        &quot;#</span>;
-        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL3, <span class="string">&quot;crate_name&quot;</span>).unwrap_err();
-        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">&quot;{err:#}&quot;</span>).contains(<span class="string">&quot;Conflicting type definition for \&quot;Testing\&quot;&quot;</span>));
+        "#</span>;
+        <span class="kw">let </span>err = ComponentInterface::from_webidl(UDL3, <span class="string">"crate_name"</span>).unwrap_err();
+        <span class="macro">assert!</span>(<span class="macro">format!</span>(<span class="string">"{err:#}"</span>).contains(<span class="string">"Conflicting type definition for \"Testing\""</span>));
     }
 
     <span class="attr">#[test]
@@ -2613,23 +2615,23 @@ new definition: Enum {
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_no_infinite_recursion_when_walking_types() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface Testing {
                 void tester(Testing foo);
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert!</span>(!ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object {
-            name: <span class="string">&quot;Testing&quot;</span>.into(),
-            module_path: <span class="string">&quot;&quot;</span>.into(),
+            name: <span class="string">"Testing"</span>.into(),
+            module_path: <span class="string">""</span>.into(),
             imp: ObjectImpl::Struct,
         }));
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_correct_recursion_when_walking_types() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             interface TestObj {
                 void tester(TestRecord foo);
@@ -2640,34 +2642,34 @@ new definition: Enum {
             dictionary NestedRecord {
                 u64 baz;
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert!</span>(ci.item_contains_unsigned_types(<span class="kw-2">&amp;</span>Type::Object {
-            name: <span class="string">&quot;TestObj&quot;</span>.into(),
-            module_path: <span class="string">&quot;&quot;</span>.into(),
+            name: <span class="string">"TestObj"</span>.into(),
+            module_path: <span class="string">""</span>.into(),
             imp: ObjectImpl::Struct,
         }));
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_namespace() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             /// informative docstring
             namespace test{};
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(ci.namespace_docstring().unwrap(), <span class="string">&quot;informative docstring&quot;</span>);
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(ci.namespace_docstring().unwrap(), <span class="string">"informative docstring"</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_multiline_docstring() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             /// informative
             /// docstring
             namespace test{};
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
-        <span class="macro">assert_eq!</span>(ci.namespace_docstring().unwrap(), <span class="string">&quot;informative\ndocstring&quot;</span>);
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
+        <span class="macro">assert_eq!</span>(ci.namespace_docstring().unwrap(), <span class="string">"informative\ndocstring"</span>);
     }
 }
 </code></pre></div></section></main></body></html>

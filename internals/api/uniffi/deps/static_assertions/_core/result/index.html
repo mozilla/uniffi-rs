@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Error handling with the `Result` type."><title>uniffi::deps::static_assertions::_core::result - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../../../uniffi/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../../../../../uniffi/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Module result</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../../../../index.html">uniffi</a>::<wbr><a href="../../../index.html">deps</a>::<wbr><a href="../../index.html">static_assertions</a>::<wbr><a href="../index.html">_core</a>::<wbr><a class="mod" href="#">result</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.0.0">1.0.0</span> · <a class="srclink" href="https://doc.rust-lang.org/1.72.0/src/core/lib.rs.html#361">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Error handling with the <code>Result</code> type.</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Error handling with the `Result` type."><title>uniffi::deps::static_assertions::_core::result - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../../uniffi/index.html">uniffi</a><span class="version">0.27.1</span></h2></div><h2 class="location"><a href="#">Module result</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></section><h2><a href="../index.html">In uniffi::deps::static_assertions::_core</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../../uniffi/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../../../../index.html">uniffi</a>::<wbr><a href="../../../index.html">deps</a>::<wbr><a href="../../index.html">static_assertions</a>::<wbr><a href="../index.html">_core</a>::<wbr><a class="mod" href="#">result</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><span class="since" title="Stable since Rust version 1.0.0">1.0.0</span> · <a class="src" href="https://doc.rust-lang.org/1.77.1/src/core/lib.rs.html#386">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Error handling with the <code>Result</code> type.</p>
 <p><a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result&lt;T, E&gt;</code></a> is the type used for returning and propagating
 errors. It is an enum with the variants, <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok(T)</code></a>, representing
 success and containing a value, and <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err(E)</code></a>, representing error
@@ -17,19 +18,19 @@ defined and used like so:</p>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Debug)]
 </span><span class="kw">enum </span>Version { Version1, Version2 }
 
-<span class="kw">fn </span>parse_version(header: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;Version, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt; {
+<span class="kw">fn </span>parse_version(header: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;Version, <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt; {
     <span class="kw">match </span>header.get(<span class="number">0</span>) {
-        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;invalid header length&quot;</span>),
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">"invalid header length"</span>),
         <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">1</span>) =&gt; <span class="prelude-val">Ok</span>(Version::Version1),
         <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">2</span>) =&gt; <span class="prelude-val">Ok</span>(Version::Version2),
-        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;invalid version&quot;</span>),
+        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="string">"invalid version"</span>),
     }
 }
 
 <span class="kw">let </span>version = parse_version(<span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);
 <span class="kw">match </span>version {
-    <span class="prelude-val">Ok</span>(v) =&gt; <span class="macro">println!</span>(<span class="string">&quot;working with version: {v:?}&quot;</span>),
-    <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">println!</span>(<span class="string">&quot;error parsing header: {e:?}&quot;</span>),
+    <span class="prelude-val">Ok</span>(v) =&gt; <span class="macro">println!</span>(<span class="string">"working with version: {v:?}"</span>),
+    <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">println!</span>(<span class="string">"error parsing header: {e:?}"</span>),
 }</code></pre></div>
 <p>Pattern matching on <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>s is clear and straightforward for
 simple cases, but <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> comes with some convenience methods
@@ -54,7 +55,7 @@ that make working with it more succinct.</p>
 
 <span class="comment">// Consume the result and return the contents with `unwrap`.
 </span><span class="kw">let </span>final_awesome_result = good_result.unwrap();</code></pre></div>
-<h2 id="results-must-be-used"><a href="#results-must-be-used">Results must be used</a></h2>
+<h2 id="results-must-be-used"><a class="doc-anchor" href="#results-must-be-used">§</a>Results must be used</h2>
 <p>A common problem with using return values to indicate errors is
 that it is easy to ignore the return value, thus failing to handle
 the error. <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> is annotated with the <code>#[must_use]</code> attribute,
@@ -79,10 +80,10 @@ something like this:</p>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">&quot;valuable_data.txt&quot;</span>).unwrap();
-<span class="comment">// If `write_all` errors, then we&#39;ll never know, because the return
+<span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">"valuable_data.txt"</span>).unwrap();
+<span class="comment">// If `write_all` errors, then we'll never know, because the return
 // value is ignored.
-</span>file.write_all(<span class="string">b&quot;important message&quot;</span>);</code></pre></div>
+</span>file.write_all(<span class="string">b"important message"</span>);</code></pre></div>
 <p>If you <em>do</em> write that in Rust, the compiler will give you a
 warning (by default, controlled by the <code>unused_must_use</code> lint).</p>
 <p>You might instead, if you don’t want to handle the error, simply
@@ -92,19 +93,19 @@ write fails, providing a marginally useful message indicating why:</p>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">&quot;valuable_data.txt&quot;</span>).unwrap();
-file.write_all(<span class="string">b&quot;important message&quot;</span>).expect(<span class="string">&quot;failed to write message&quot;</span>);</code></pre></div>
+<span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">"valuable_data.txt"</span>).unwrap();
+file.write_all(<span class="string">b"important message"</span>).expect(<span class="string">"failed to write message"</span>);</code></pre></div>
 <p>You might also simply assert success:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">assert!</span>(file.write_all(<span class="string">b&quot;important message&quot;</span>).is_ok());</code></pre></div>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">assert!</span>(file.write_all(<span class="string">b"important message"</span>).is_ok());</code></pre></div>
 <p>Or propagate the error up the call stack with <a href="../ops/trait.Try.html" title="trait uniffi::deps::static_assertions::_core::ops::Try"><code>?</code></a>:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>write_message() -&gt; io::Result&lt;()&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">&quot;valuable_data.txt&quot;</span>)<span class="question-mark">?</span>;
-    file.write_all(<span class="string">b&quot;important message&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">"valuable_data.txt"</span>)<span class="question-mark">?</span>;
+    file.write_all(<span class="string">b"important message"</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
-<h2 id="the-question-mark-operator-"><a href="#the-question-mark-operator-">The question mark operator, <code>?</code></a></h2>
+<h2 id="the-question-mark-operator-"><a class="doc-anchor" href="#the-question-mark-operator-">§</a>The question mark operator, <code>?</code></h2>
 <p>When writing code that calls many functions that return the
 <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> type, the error handling can be tedious. The question mark
 operator, <a href="../ops/trait.Try.html" title="trait uniffi::deps::static_assertions::_core::ops::Try"><code>?</code></a>, hides some of the boilerplate of propagating errors
@@ -123,17 +124,17 @@ up the call stack.</p>
 
 <span class="kw">fn </span>write_info(info: <span class="kw-2">&amp;</span>Info) -&gt; io::Result&lt;()&gt; {
     <span class="comment">// Early return on error
-    </span><span class="kw">let </span><span class="kw-2">mut </span>file = <span class="kw">match </span>File::create(<span class="string">&quot;my_best_friends.txt&quot;</span>) {
+    </span><span class="kw">let </span><span class="kw-2">mut </span>file = <span class="kw">match </span>File::create(<span class="string">"my_best_friends.txt"</span>) {
            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(e),
            <span class="prelude-val">Ok</span>(f) =&gt; f,
     };
-    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = file.write_all(<span class="macro">format!</span>(<span class="string">&quot;name: {}\n&quot;</span>, info.name).as_bytes()) {
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = file.write_all(<span class="macro">format!</span>(<span class="string">"name: {}\n"</span>, info.name).as_bytes()) {
         <span class="kw">return </span><span class="prelude-val">Err</span>(e)
     }
-    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = file.write_all(<span class="macro">format!</span>(<span class="string">&quot;age: {}\n&quot;</span>, info.age).as_bytes()) {
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = file.write_all(<span class="macro">format!</span>(<span class="string">"age: {}\n"</span>, info.age).as_bytes()) {
         <span class="kw">return </span><span class="prelude-val">Err</span>(e)
     }
-    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = file.write_all(<span class="macro">format!</span>(<span class="string">&quot;rating: {}\n&quot;</span>, info.rating).as_bytes()) {
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = file.write_all(<span class="macro">format!</span>(<span class="string">"rating: {}\n"</span>, info.rating).as_bytes()) {
         <span class="kw">return </span><span class="prelude-val">Err</span>(e)
     }
     <span class="prelude-val">Ok</span>(())
@@ -151,11 +152,11 @@ up the call stack.</p>
 }
 
 <span class="kw">fn </span>write_info(info: <span class="kw-2">&amp;</span>Info) -&gt; io::Result&lt;()&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">&quot;my_best_friends.txt&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>file = File::create(<span class="string">"my_best_friends.txt"</span>)<span class="question-mark">?</span>;
     <span class="comment">// Early return on error
-    </span>file.write_all(<span class="macro">format!</span>(<span class="string">&quot;name: {}\n&quot;</span>, info.name).as_bytes())<span class="question-mark">?</span>;
-    file.write_all(<span class="macro">format!</span>(<span class="string">&quot;age: {}\n&quot;</span>, info.age).as_bytes())<span class="question-mark">?</span>;
-    file.write_all(<span class="macro">format!</span>(<span class="string">&quot;rating: {}\n&quot;</span>, info.rating).as_bytes())<span class="question-mark">?</span>;
+    </span>file.write_all(<span class="macro">format!</span>(<span class="string">"name: {}\n"</span>, info.name).as_bytes())<span class="question-mark">?</span>;
+    file.write_all(<span class="macro">format!</span>(<span class="string">"age: {}\n"</span>, info.age).as_bytes())<span class="question-mark">?</span>;
+    file.write_all(<span class="macro">format!</span>(<span class="string">"rating: {}\n"</span>, info.rating).as_bytes())<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }</code></pre></div>
 <p><em>It’s much nicer!</em></p>
@@ -163,13 +164,13 @@ up the call stack.</p>
 is <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>, in which case <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a> is returned early from the enclosing function.</p>
 <p><a href="../ops/trait.Try.html" title="trait uniffi::deps::static_assertions::_core::ops::Try"><code>?</code></a> can be used in functions that return <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> because of the
 early return of <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a> that it provides.</p>
-<h2 id="method-overview"><a href="#method-overview">Method overview</a></h2>
+<h2 id="method-overview"><a class="doc-anchor" href="#method-overview">§</a>Method overview</h2>
 <p>In addition to working with pattern matching, <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> provides a
 wide variety of different methods.</p>
-<h3 id="querying-the-variant"><a href="#querying-the-variant">Querying the variant</a></h3>
-<p>The <a href="enum.Result.html#method.is_ok" title="method uniffi::deps::static_assertions::_core::result::Result::is_ok"><code>is_ok</code></a> and <a href="enum.Result.html#method.is_err" title="method uniffi::deps::static_assertions::_core::result::Result::is_err"><code>is_err</code></a> methods return <a href="https://doc.rust-lang.org/1.72.0/std/primitive.bool.html" title="primitive bool"><code>true</code></a> if the <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>
+<h3 id="querying-the-variant"><a class="doc-anchor" href="#querying-the-variant">§</a>Querying the variant</h3>
+<p>The <a href="enum.Result.html#method.is_ok" title="method uniffi::deps::static_assertions::_core::result::Result::is_ok"><code>is_ok</code></a> and <a href="enum.Result.html#method.is_err" title="method uniffi::deps::static_assertions::_core::result::Result::is_err"><code>is_err</code></a> methods return <a href="https://doc.rust-lang.org/1.77.1/std/primitive.bool.html" title="primitive bool"><code>true</code></a> if the <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>
 is <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> or <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>, respectively.</p>
-<h3 id="adapters-for-working-with-references"><a href="#adapters-for-working-with-references">Adapters for working with references</a></h3>
+<h3 id="adapters-for-working-with-references"><a class="doc-anchor" href="#adapters-for-working-with-references">§</a>Adapters for working with references</h3>
 <ul>
 <li><a href="enum.Result.html#method.as_ref" title="method uniffi::deps::static_assertions::_core::result::Result::as_ref"><code>as_ref</code></a> converts from <code>&amp;Result&lt;T, E&gt;</code> to <code>Result&lt;&amp;T, &amp;E&gt;</code></li>
 <li><a href="enum.Result.html#method.as_mut" title="method uniffi::deps::static_assertions::_core::result::Result::as_mut"><code>as_mut</code></a> converts from <code>&amp;mut Result&lt;T, E&gt;</code> to <code>Result&lt;&amp;mut T, &amp;mut E&gt;</code></li>
@@ -177,7 +178,7 @@ is <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_ass
 <li><a href="enum.Result.html#method.as_deref_mut" title="method uniffi::deps::static_assertions::_core::result::Result::as_deref_mut"><code>as_deref_mut</code></a> converts from <code>&amp;mut Result&lt;T, E&gt;</code> to
 <code>Result&lt;&amp;mut T::Target, &amp;mut E&gt;</code></li>
 </ul>
-<h3 id="extracting-contained-values"><a href="#extracting-contained-values">Extracting contained values</a></h3>
+<h3 id="extracting-contained-values"><a class="doc-anchor" href="#extracting-contained-values">§</a>Extracting contained values</h3>
 <p>These methods extract the contained value in a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result&lt;T, E&gt;</code></a> when it
 is the <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant. If the <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> is <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>:</p>
 <ul>
@@ -198,7 +199,7 @@ trait. If the <a href="enum.Result.html" title="enum uniffi::deps::static_assert
 <li><a href="enum.Result.html#method.expect_err" title="method uniffi::deps::static_assertions::_core::result::Result::expect_err"><code>expect_err</code></a> panics with a provided custom message</li>
 <li><a href="enum.Result.html#method.unwrap_err" title="method uniffi::deps::static_assertions::_core::result::Result::unwrap_err"><code>unwrap_err</code></a> panics with a generic message</li>
 </ul>
-<h3 id="transforming-contained-values"><a href="#transforming-contained-values">Transforming contained values</a></h3>
+<h3 id="transforming-contained-values"><a class="doc-anchor" href="#transforming-contained-values">§</a>Transforming contained values</h3>
 <p>These methods transform <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> to <a href="../option/enum.Option.html" title="enum uniffi::deps::static_assertions::_core::option::Option"><code>Option</code></a>:</p>
 <ul>
 <li><a href="enum.Result.html#method.err" title="method uniffi::deps::static_assertions::_core::result::Result::err"><code>err</code></a> transforms <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result&lt;T, E&gt;</code></a> into <a href="../option/enum.Option.html" title="enum uniffi::deps::static_assertions::_core::option::Option"><code>Option&lt;E&gt;</code></a>,
@@ -230,9 +231,9 @@ different type <code>U</code>:</p>
 of <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a>, or applies the provided default fallback function to the
 contained value of <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a></li>
 </ul>
-<h3 id="boolean-operators"><a href="#boolean-operators">Boolean operators</a></h3>
+<h3 id="boolean-operators"><a class="doc-anchor" href="#boolean-operators">§</a>Boolean operators</h3>
 <p>These methods treat the <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> as a boolean value, where <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a>
-acts like <a href="https://doc.rust-lang.org/1.72.0/std/primitive.bool.html" title="primitive bool"><code>true</code></a> and <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a> acts like <a href="https://doc.rust-lang.org/1.72.0/std/primitive.bool.html" title="primitive bool"><code>false</code></a>. There are two
+acts like <a href="https://doc.rust-lang.org/1.77.1/std/primitive.bool.html" title="primitive bool"><code>true</code></a> and <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a> acts like <a href="https://doc.rust-lang.org/1.77.1/std/primitive.bool.html" title="primitive bool"><code>false</code></a>. There are two
 categories of these methods: ones that take a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> as input, and
 ones that take a function as input (to be lazily evaluated).</p>
 <p>The <a href="enum.Result.html#method.and" title="method uniffi::deps::static_assertions::_core::result::Result::and"><code>and</code></a> and <a href="enum.Result.html#method.or" title="method uniffi::deps::static_assertions::_core::result::Result::or"><code>or</code></a> methods take another <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> as input, and
@@ -263,7 +264,7 @@ than <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_co
 <tr><td><a href="enum.Result.html#method.or_else" title="method uniffi::deps::static_assertions::_core::result::Result::or_else"><code>or_else</code></a></td><td><code>Err(e)</code></td><td><code>e</code></td><td><code>Ok(y)</code></td><td><code>Ok(y)</code></td></tr>
 <tr><td><a href="enum.Result.html#method.or_else" title="method uniffi::deps::static_assertions::_core::result::Result::or_else"><code>or_else</code></a></td><td><code>Ok(x)</code></td><td>(not provided)</td><td>(not evaluated)</td><td><code>Ok(x)</code></td></tr>
 </tbody></table>
-</div><h3 id="comparison-operators"><a href="#comparison-operators">Comparison operators</a></h3>
+</div><h3 id="comparison-operators"><a class="doc-anchor" href="#comparison-operators">§</a>Comparison operators</h3>
 <p>If <code>T</code> and <code>E</code> both implement <a href="../cmp/trait.PartialOrd.html" title="trait uniffi::deps::static_assertions::_core::cmp::PartialOrd"><code>PartialOrd</code></a> then <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result&lt;T, E&gt;</code></a> will
 derive its <a href="../cmp/trait.PartialOrd.html" title="trait uniffi::deps::static_assertions::_core::cmp::PartialOrd"><code>PartialOrd</code></a> implementation.  With this order, an <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a>
 compares as less than any <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>, while two <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> or two <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>
@@ -277,7 +278,7 @@ and <code>E</code> both also implement <a href="../cmp/trait.Ord.html" title="tr
 <span class="kw">let </span>x: <span class="prelude-ty">Result</span>&lt;(), i32&gt; = <span class="prelude-val">Err</span>(<span class="number">0</span>);
 <span class="kw">let </span>y = <span class="prelude-val">Err</span>(<span class="number">1</span>);
 <span class="macro">assert!</span>(x &lt; y);</code></pre></div>
-<h3 id="iterating-over-result"><a href="#iterating-over-result">Iterating over <code>Result</code></a></h3>
+<h3 id="iterating-over-result"><a class="doc-anchor" href="#iterating-over-result">§</a>Iterating over <code>Result</code></h3>
 <p>A <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> can be iterated over. This can be helpful if you need an
 iterator that is conditionally empty. The iterator will either produce
 a single value (when the <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> is <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a>), or produce no values
@@ -302,7 +303,7 @@ advantage of the iterable nature of <a href="enum.Result.html" title="enum uniff
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span><span class="kw-2">mut </span>results = <span class="macro">vec!</span>[];
 <span class="kw">let </span><span class="kw-2">mut </span>errs = <span class="macro">vec!</span>[];
-<span class="kw">let </span>nums: Vec&lt;<span class="kw">_</span>&gt; = [<span class="string">&quot;17&quot;</span>, <span class="string">&quot;not a number&quot;</span>, <span class="string">&quot;99&quot;</span>, <span class="string">&quot;-27&quot;</span>, <span class="string">&quot;768&quot;</span>]
+<span class="kw">let </span>nums: Vec&lt;<span class="kw">_</span>&gt; = [<span class="string">"17"</span>, <span class="string">"not a number"</span>, <span class="string">"99"</span>, <span class="string">"-27"</span>, <span class="string">"768"</span>]
    .into_iter()
    .map(u8::from_str)
    <span class="comment">// Save clones of the raw `Result` values to inspect
@@ -313,18 +314,18 @@ advantage of the iterable nature of <a href="enum.Result.html" title="enum uniff
    .collect();
 <span class="macro">assert_eq!</span>(errs.len(), <span class="number">3</span>);
 <span class="macro">assert_eq!</span>(nums, [<span class="number">17</span>, <span class="number">99</span>]);
-<span class="macro">println!</span>(<span class="string">&quot;results {results:?}&quot;</span>);
-<span class="macro">println!</span>(<span class="string">&quot;errs {errs:?}&quot;</span>);
-<span class="macro">println!</span>(<span class="string">&quot;nums {nums:?}&quot;</span>);</code></pre></div>
-<h3 id="collecting-into-result"><a href="#collecting-into-result">Collecting into <code>Result</code></a></h3>
+<span class="macro">println!</span>(<span class="string">"results {results:?}"</span>);
+<span class="macro">println!</span>(<span class="string">"errs {errs:?}"</span>);
+<span class="macro">println!</span>(<span class="string">"nums {nums:?}"</span>);</code></pre></div>
+<h3 id="collecting-into-result"><a class="doc-anchor" href="#collecting-into-result">§</a>Collecting into <code>Result</code></h3>
 <p><a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> implements the <a href="enum.Result.html#impl-FromIterator%3CResult%3CA,+E%3E%3E-for-Result%3CV,+E%3E" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>FromIterator</code></a> trait,
 which allows an iterator over <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> values to be collected into a
 <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> of a collection of each contained value of the original
 <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a> values, or <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a> if any of the elements was <a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>v = [<span class="prelude-val">Ok</span>(<span class="number">2</span>), <span class="prelude-val">Ok</span>(<span class="number">4</span>), <span class="prelude-val">Err</span>(<span class="string">&quot;err!&quot;</span>), <span class="prelude-val">Ok</span>(<span class="number">8</span>)];
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>v = [<span class="prelude-val">Ok</span>(<span class="number">2</span>), <span class="prelude-val">Ok</span>(<span class="number">4</span>), <span class="prelude-val">Err</span>(<span class="string">"err!"</span>), <span class="prelude-val">Ok</span>(<span class="number">8</span>)];
 <span class="kw">let </span>res: <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw-2">&amp;</span>str&gt; = v.into_iter().collect();
-<span class="macro">assert_eq!</span>(res, <span class="prelude-val">Err</span>(<span class="string">&quot;err!&quot;</span>));
+<span class="macro">assert_eq!</span>(res, <span class="prelude-val">Err</span>(<span class="string">"err!"</span>));
 <span class="kw">let </span>v = [<span class="prelude-val">Ok</span>(<span class="number">2</span>), <span class="prelude-val">Ok</span>(<span class="number">4</span>), <span class="prelude-val">Ok</span>(<span class="number">8</span>)];
 <span class="kw">let </span>res: <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw-2">&amp;</span>str&gt; = v.into_iter().collect();
 <span class="macro">assert_eq!</span>(res, <span class="prelude-val">Ok</span>(<span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">4</span>, <span class="number">8</span>]));</code></pre></div>
@@ -333,10 +334,10 @@ which allows an iterator over <a href="enum.Result.html" title="enum uniffi::dep
 to provide the <a href="../iter/trait.Iterator.html#method.product" title="method uniffi::deps::static_assertions::_core::iter::Iterator::product"><code>product</code></a> and
 <a href="../iter/trait.Iterator.html#method.sum" title="method uniffi::deps::static_assertions::_core::iter::Iterator::sum"><code>sum</code></a> methods.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>v = [<span class="prelude-val">Err</span>(<span class="string">&quot;error!&quot;</span>), <span class="prelude-val">Ok</span>(<span class="number">1</span>), <span class="prelude-val">Ok</span>(<span class="number">2</span>), <span class="prelude-val">Ok</span>(<span class="number">3</span>), <span class="prelude-val">Err</span>(<span class="string">&quot;foo&quot;</span>)];
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>v = [<span class="prelude-val">Err</span>(<span class="string">"error!"</span>), <span class="prelude-val">Ok</span>(<span class="number">1</span>), <span class="prelude-val">Ok</span>(<span class="number">2</span>), <span class="prelude-val">Ok</span>(<span class="number">3</span>), <span class="prelude-val">Err</span>(<span class="string">"foo"</span>)];
 <span class="kw">let </span>res: <span class="prelude-ty">Result</span>&lt;i32, <span class="kw-2">&amp;</span>str&gt; = v.into_iter().sum();
-<span class="macro">assert_eq!</span>(res, <span class="prelude-val">Err</span>(<span class="string">&quot;error!&quot;</span>));
+<span class="macro">assert_eq!</span>(res, <span class="prelude-val">Err</span>(<span class="string">"error!"</span>));
 <span class="kw">let </span>v = [<span class="prelude-val">Ok</span>(<span class="number">1</span>), <span class="prelude-val">Ok</span>(<span class="number">2</span>), <span class="prelude-val">Ok</span>(<span class="number">21</span>)];
 <span class="kw">let </span>res: <span class="prelude-ty">Result</span>&lt;i32, <span class="kw-2">&amp;</span>str&gt; = v.into_iter().product();
 <span class="macro">assert_eq!</span>(res, <span class="prelude-val">Ok</span>(<span class="number">42</span>));</code></pre></div>
-</div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.IntoIter.html" title="struct uniffi::deps::static_assertions::_core::result::IntoIter">IntoIter</a></div><div class="desc docblock-short">An iterator over the value in a <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant of a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.Iter.html" title="struct uniffi::deps::static_assertions::_core::result::Iter">Iter</a></div><div class="desc docblock-short">An iterator over a reference to the <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant of a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.IterMut.html" title="struct uniffi::deps::static_assertions::_core::result::IterMut">IterMut</a></div><div class="desc docblock-short">An iterator over a mutable reference to the <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant of a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>.</div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result">Result</a></div><div class="desc docblock-short"><code>Result</code> is a type that represents either success (<a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a>) or failure (<a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>).</div></li></ul></section></div></main></body></html>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.IntoIter.html" title="struct uniffi::deps::static_assertions::_core::result::IntoIter">IntoIter</a></div><div class="desc docblock-short">An iterator over the value in a <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant of a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.Iter.html" title="struct uniffi::deps::static_assertions::_core::result::Iter">Iter</a></div><div class="desc docblock-short">An iterator over a reference to the <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant of a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.IterMut.html" title="struct uniffi::deps::static_assertions::_core::result::IterMut">IterMut</a></div><div class="desc docblock-short">An iterator over a mutable reference to the <a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a> variant of a <a href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result"><code>Result</code></a>.</div></li></ul><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.Result.html" title="enum uniffi::deps::static_assertions::_core::result::Result">Result</a></div><div class="desc docblock-short"><code>Result</code> is a type that represents either success (<a href="enum.Result.html#variant.Ok" title="variant uniffi::deps::static_assertions::_core::result::Result::Ok"><code>Ok</code></a>) or failure (<a href="enum.Result.html#variant.Err" title="variant uniffi::deps::static_assertions::_core::result::Result::Err"><code>Err</code></a>).</div></li></ul></section></div></main></body></html>

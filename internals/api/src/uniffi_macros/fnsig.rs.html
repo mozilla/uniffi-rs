@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/fnsig.rs`."><title>fnsig.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/fnsig.rs`."><title>fnsig.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../uniffi_macros/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -607,7 +609,7 @@
     <span class="kw">pub </span>return_ty: TokenStream,
     <span class="comment">// Does this the return type look like a result?
     // Only use this in UDL mode.
-    // In general, it&#39;s not reliable because it fails for type aliases.
+    // In general, it's not reliable because it fails for type aliases.
     </span><span class="kw">pub </span>looks_like_result: bool,
     <span class="kw">pub </span>docstring: String,
 }
@@ -689,7 +691,7 @@
                 a.and_then(|a| <span class="kw">match </span>a.kind {
                     ArgKind::Named(named) =&gt; <span class="prelude-val">Ok</span>(named),
                     ArgKind::Receiver(<span class="kw">_</span>) =&gt; {
-                        <span class="prelude-val">Err</span>(syn::Error::new(a.span, <span class="string">&quot;Unexpected receiver argument&quot;</span>))
+                        <span class="prelude-val">Err</span>(syn::Error::new(a.span, <span class="string">"Unexpected receiver argument"</span>))
                     }
                 })
             })
@@ -698,14 +700,14 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ident) = export_fn_args.defaults.idents().first() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 ident.span(),
-                <span class="macro">format!</span>(<span class="string">&quot;Unknown default argument: {}&quot;</span>, ident),
+                <span class="macro">format!</span>(<span class="string">"Unknown default argument: {}"</span>, ident),
             ));
         }
 
         <span class="kw">if </span>!is_async &amp;&amp; export_fn_args.async_runtime.is_some() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
                 export_fn_args.async_runtime.span(),
-                <span class="string">&quot;Function not async&quot;</span>.to_string(),
+                <span class="string">"Function not async"</span>.to_string(),
             ));
         }
 
@@ -745,7 +747,7 @@
     ///
     /// The closure moves all scaffolding arguments into itself and returns:
     ///   - The lifted argument tuple on success
-    ///   - The field name and error on failure (`Err(&amp;&#39;static str, anyhow::Error&gt;`)
+    ///   - The field name and error on failure (`Err(&amp;'static str, anyhow::Error&gt;`)
     </span><span class="kw">pub fn </span>lift_closure(<span class="kw-2">&amp;</span><span class="self">self</span>, self_lift: <span class="prelude-ty">Option</span>&lt;TokenStream&gt;) -&gt; TokenStream {
         <span class="kw">let </span>arg_lifts = <span class="self">self</span>.args.iter().map(|arg| {
             <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>arg.ident;
@@ -786,7 +788,7 @@
     }
 
     <span class="doccomment">/// Parameters expressions for each of our arguments
-    </span><span class="kw">pub fn </span>params(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>params(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.args.iter().map(NamedArg::param)
     }
 
@@ -808,14 +810,14 @@
     }
 
     <span class="doccomment">/// Scaffolding parameters expressions for each of our arguments
-    </span><span class="kw">pub fn </span>scaffolding_param_names(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>scaffolding_param_names(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.args.iter().map(|a| {
             <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>a.ident;
             <span class="macro">quote! </span>{ #ident }
         })
     }
 
-    <span class="kw">pub fn </span>scaffolding_param_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">pub fn </span>scaffolding_param_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TokenStream&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.args.iter().map(|a| {
             <span class="kw">let </span>lift_impl = a.lift_impl();
             <span class="macro">quote! </span>{ #lift_impl::FfiType }
@@ -836,7 +838,7 @@
             <span class="comment">// Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
             // params
             </span><span class="self">self</span>.args.len(),
-            <span class="string">&quot;UniFFI limits functions to 256 arguments&quot;</span>,
+            <span class="string">"UniFFI limits functions to 256 arguments"</span>,
         )<span class="question-mark">?</span>;
         <span class="kw">let </span>arg_metadata_calls = <span class="self">self
             </span>.args
@@ -908,7 +910,7 @@
         <span class="kw">let </span><span class="self">Self </span>{ name, .. } = <span class="kw-2">&amp;</span><span class="self">self</span>;
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.kind {
             FnKind::Function =&gt; <span class="prelude-val">Ok</span>(create_metadata_items(
-                <span class="string">&quot;func&quot;</span>,
+                <span class="string">"func"</span>,
                 name,
                 <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                 <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
@@ -917,8 +919,8 @@
             FnKind::Method { self_ident } =&gt; {
                 <span class="kw">let </span>object_name = ident_to_string(self_ident);
                 <span class="prelude-val">Ok</span>(create_metadata_items(
-                    <span class="string">&quot;method&quot;</span>,
-                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
+                    <span class="string">"method"</span>,
+                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{object_name}_{name}"</span>),
                     <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -927,8 +929,8 @@
             FnKind::TraitMethod { self_ident, .. } =&gt; {
                 <span class="kw">let </span>object_name = ident_to_string(self_ident);
                 <span class="prelude-val">Ok</span>(create_metadata_items(
-                    <span class="string">&quot;method&quot;</span>,
-                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
+                    <span class="string">"method"</span>,
+                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{object_name}_{name}"</span>),
                     <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -937,8 +939,8 @@
             FnKind::Constructor { self_ident } =&gt; {
                 <span class="kw">let </span>object_name = ident_to_string(self_ident);
                 <span class="prelude-val">Ok</span>(create_metadata_items(
-                    <span class="string">&quot;constructor&quot;</span>,
-                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
+                    <span class="string">"constructor"</span>,
+                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{object_name}_{name}"</span>),
                     <span class="self">self</span>.metadata_expr()<span class="question-mark">?</span>,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -975,7 +977,7 @@
                     <span class="comment">// Use param_lifts to calculate this instead of sig.inputs to avoid counting any self
                     // params
                     </span><span class="self">self</span>.args.len(),
-                    <span class="string">&quot;UniFFI limits functions to 256 arguments&quot;</span>,
+                    <span class="string">"UniFFI limits functions to 256 arguments"</span>,
                 )<span class="question-mark">?</span>;
                 <span class="kw">let </span>arg_metadata_calls = <span class="self">self
                     </span>.args
@@ -995,8 +997,8 @@
                         .concat_long_str(#docstring)
                 };
                 <span class="prelude-val">Ok</span>(create_metadata_items(
-                    <span class="string">&quot;method&quot;</span>,
-                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{object_name}_{name}&quot;</span>),
+                    <span class="string">"method"</span>,
+                    <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{object_name}_{name}"</span>),
                     metadata_expr,
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.checksum_symbol_name()),
                 ))
@@ -1004,7 +1006,7 @@
 
             <span class="comment">// This should never happen and indicates an error in the internal code
             </span><span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;metadata_items_for_callback_interface can only be called with `TraitMethod` sigs&quot;
+                <span class="string">"metadata_items_for_callback_interface can only be called with `TraitMethod` sigs"
             </span>),
         }
     }
@@ -1045,7 +1047,7 @@
         <span class="kw">let </span>kind = <span class="kw">match </span>syn_arg {
             FnArg::Typed(p) =&gt; <span class="kw">match </span><span class="kw-2">*</span>p.pat {
                 Pat::Ident(i) =&gt; <span class="prelude-val">Ok</span>(ArgKind::Named(NamedArg::new(i.ident, <span class="kw-2">&amp;</span>p.ty, defaults)<span class="question-mark">?</span>)),
-                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(p, <span class="string">&quot;Argument name missing&quot;</span>)),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(syn::Error::new_spanned(p, <span class="string">"Argument name missing"</span>)),
             },
             FnArg::Receiver(receiver) =&gt; <span class="prelude-val">Ok</span>(ArgKind::Receiver(ReceiverArg::from(receiver))),
         }<span class="question-mark">?</span>;
@@ -1070,7 +1072,7 @@
                 <span class="comment">// This comparison will fail if a user uses a typedef for Arc.  Maybe we could
                 // implement some system like TYPE_ID_META to figure this out from the type system.
                 // However, this seems good enough for now.
-                </span><span class="kw">if </span>segment.ident == <span class="string">&quot;Arc&quot; </span>{
+                </span><span class="kw">if </span>segment.ident == <span class="string">"Arc" </span>{
                     <span class="kw">return </span>ReceiverArg::Arc;
                 }
             }
@@ -1143,7 +1145,7 @@
     <span class="kw">if let </span>ReturnType::Type(<span class="kw">_</span>, ty) = return_type {
         <span class="kw">if let </span>Type::Path(p) = <span class="kw-2">&amp;**</span>ty {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(seg) = p.path.segments.last() {
-                <span class="kw">if </span>seg.ident == <span class="string">&quot;Result&quot; </span>{
+                <span class="kw">if </span>seg.ident == <span class="string">"Result" </span>{
                     <span class="kw">return </span><span class="bool-val">true</span>;
                 }
             }

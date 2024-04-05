@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/util.rs`."><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../uniffi_macros/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_macros/src/util.rs`."><title>util.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../uniffi_macros/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -314,12 +316,12 @@
 
 <span class="kw">pub fn </span>manifest_path() -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
     <span class="kw">let </span>manifest_dir =
-        std::env::var_os(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).ok_or(<span class="string">&quot;`CARGO_MANIFEST_DIR` is not set&quot;</span>)<span class="question-mark">?</span>;
+        std::env::var_os(<span class="string">"CARGO_MANIFEST_DIR"</span>).ok_or(<span class="string">"`CARGO_MANIFEST_DIR` is not set"</span>)<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(StdPath::new(<span class="kw-2">&amp;</span>manifest_dir).join(<span class="string">&quot;Cargo.toml&quot;</span>))
+    <span class="prelude-val">Ok</span>(StdPath::new(<span class="kw-2">&amp;</span>manifest_dir).join(<span class="string">"Cargo.toml"</span>))
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
 </span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;String&gt; {
     <span class="comment">// Without the nightly feature and TokenStream::expand_expr, just return the crate name
 
@@ -349,12 +351,12 @@
         <span class="kw">let </span>cargo_toml_bytes = fs::read(file).map_err(|e| e.to_string())<span class="question-mark">?</span>;
 
         <span class="kw">let </span>cargo_toml = toml::from_slice::&lt;CargoToml&gt;(<span class="kw-2">&amp;</span>cargo_toml_bytes)
-            .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to parse `Cargo.toml`: {e}&quot;</span>))<span class="question-mark">?</span>;
+            .map_err(|e| <span class="macro">format!</span>(<span class="string">"Failed to parse `Cargo.toml`: {e}"</span>))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>lib_crate_name = cargo_toml
             .lib
             .name
-            .unwrap_or_else(|| cargo_toml.package.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>));
+            .unwrap_or_else(|| cargo_toml.package.name.replace(<span class="string">'-'</span>, <span class="string">"_"</span>));
 
         <span class="prelude-val">Ok</span>(lib_crate_name)
     });
@@ -364,7 +366,7 @@
         .map_err(|e| syn::Error::new(Span::call_site(), e))
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">pub fn </span>mod_path() -&gt; syn::Result&lt;String&gt; {
     <span class="kw">use </span>proc_macro::TokenStream;
 
@@ -395,7 +397,7 @@
 }
 
 <span class="kw">pub fn </span>crate_name() -&gt; String {
-    std::env::var(<span class="string">&quot;CARGO_CRATE_NAME&quot;</span>).unwrap().replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>)
+    std::env::var(<span class="string">"CARGO_CRATE_NAME"</span>).unwrap().replace(<span class="string">'-'</span>, <span class="string">"_"</span>)
 }
 
 <span class="kw">pub fn </span>create_metadata_items(
@@ -409,15 +411,15 @@
     <span class="kw">let </span>kind_upper = kind.to_uppercase();
     <span class="kw">let </span>name_upper = name.to_uppercase();
     <span class="kw">let </span>const_ident =
-        <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_CONST_{crate_name_upper}_{kind_upper}_{name_upper}&quot;</span>);
-    <span class="kw">let </span>static_ident = <span class="macro">format_ident!</span>(<span class="string">&quot;UNIFFI_META_{crate_name_upper}_{kind_upper}_{name_upper}&quot;</span>);
+        <span class="macro">format_ident!</span>(<span class="string">"UNIFFI_META_CONST_{crate_name_upper}_{kind_upper}_{name_upper}"</span>);
+    <span class="kw">let </span>static_ident = <span class="macro">format_ident!</span>(<span class="string">"UNIFFI_META_{crate_name_upper}_{kind_upper}_{name_upper}"</span>);
 
     <span class="kw">let </span>checksum_fn = checksum_fn_name.map(|name| {
         <span class="kw">let </span>ident = Ident::new(<span class="kw-2">&amp;</span>name, Span::call_site());
         <span class="macro">quote! </span>{
             <span class="attr">#[doc(hidden)]
             #[no_mangle]
-            </span><span class="kw">pub extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>#ident() -&gt; u16 {
+            </span><span class="kw">pub extern </span><span class="string">"C" </span><span class="kw">fn </span>#ident() -&gt; u16 {
                 #const_ident.checksum()
             }
         }
@@ -447,11 +449,11 @@
 }
 
 <span class="kw">pub trait </span>UniffiAttributeArgs: Default {
-    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt;;
 }
 
-<span class="kw">pub fn </span>parse_comma_separated&lt;T: UniffiAttributeArgs&gt;(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;T&gt; {
+<span class="kw">pub fn </span>parse_comma_separated&lt;T: UniffiAttributeArgs&gt;(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;T&gt; {
     <span class="kw">let </span>punctuated = input.parse_terminated(T::parse_one, <span class="macro">Token!</span>[,])<span class="question-mark">?</span>;
     punctuated.into_iter().try_fold(T::default(), T::merge)
 }
@@ -460,10 +462,10 @@
 </span><span class="kw">struct </span>ArgumentNotAllowedHere;
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>ArgumentNotAllowedHere {
-    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Err</span>(syn::Error::new(
             input.span(),
-            <span class="string">&quot;attribute arguments are not currently recognized in this position&quot;</span>,
+            <span class="string">"attribute arguments are not currently recognized in this position"</span>,
         ))
     }
 
@@ -483,7 +485,7 @@
 <span class="kw">impl </span>AttributeSliceExt <span class="kw">for </span>[Attribute] {
     <span class="kw">fn </span>parse_uniffi_attr_args&lt;T: UniffiAttributeArgs&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;T&gt; {
         <span class="self">self</span>.iter()
-            .filter(|attr| attr.path().is_ident(<span class="string">&quot;uniffi&quot;</span>))
+            .filter(|attr| attr.path().is_ident(<span class="string">"uniffi"</span>))
             .try_fold(T::default(), |res, attr| {
                 <span class="kw">let </span>parsed = attr.parse_args_with(parse_comma_separated)<span class="question-mark">?</span>;
                 res.merge(parsed)
@@ -496,8 +498,8 @@
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         (<span class="prelude-val">Some</span>(val), <span class="prelude-val">None</span>) | (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(val)) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(val)),
         (<span class="prelude-val">Some</span>(a), <span class="prelude-val">Some</span>(b)) =&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>error = syn::Error::new_spanned(a, <span class="string">&quot;redundant attribute argument&quot;</span>);
-            error.combine(syn::Error::new_spanned(b, <span class="string">&quot;note: first one here&quot;</span>));
+            <span class="kw">let </span><span class="kw-2">mut </span>error = syn::Error::new_spanned(a, <span class="string">"redundant attribute argument"</span>);
+            error.combine(syn::Error::new_spanned(b, <span class="string">"note: first one here"</span>));
             <span class="prelude-val">Err</span>(error)
         }
     }
@@ -575,7 +577,7 @@
 }
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>ExternalTypeItem {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             crate_ident: input.parse()<span class="question-mark">?</span>,
             sep: input.parse()<span class="question-mark">?</span>,
@@ -587,7 +589,7 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>extract_docstring(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;String&gt; {
     <span class="kw">return </span>attrs
         .iter()
-        .filter(|attr| attr.path().is_ident(<span class="string">&quot;doc&quot;</span>))
+        .filter(|attr| attr.path().is_ident(<span class="string">"doc"</span>))
         .map(|attr| {
             <span class="kw">let </span>name_value = attr.meta.require_name_value()<span class="question-mark">?</span>;
             <span class="kw">if let </span>Expr::Lit(expr) = <span class="kw-2">&amp;</span>name_value.value {
@@ -595,9 +597,9 @@
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(lit_str.value().trim().to_owned());
                 }
             }
-            <span class="prelude-val">Err</span>(syn::Error::new_spanned(attr, <span class="string">&quot;Cannot parse doc attribute&quot;</span>))
+            <span class="prelude-val">Err</span>(syn::Error::new_spanned(attr, <span class="string">"Cannot parse doc attribute"</span>))
         })
         .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()
-        .map(|lines| lines.join(<span class="string">&quot;\n&quot;</span>));
+        .map(|lines| lines.join(<span class="string">"\n"</span>));
 }
 </code></pre></div></section></main></body></html>

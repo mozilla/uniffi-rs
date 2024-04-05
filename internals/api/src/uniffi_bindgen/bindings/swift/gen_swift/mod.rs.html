@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/swift/gen_swift/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/bindings/swift/gen_swift/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -892,35 +894,35 @@
     }
 
     <span class="kw">fn </span>literal(<span class="kw-2">&amp;</span><span class="self">self</span>, _literal: <span class="kw-2">&amp;</span>Literal) -&gt; String {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Unimplemented for {}&quot;</span>, <span class="self">self</span>.type_label())
+        <span class="macro">unimplemented!</span>(<span class="string">"Unimplemented for {}"</span>, <span class="self">self</span>.type_label())
     }
 
     <span class="doccomment">/// Name of the FfiConverter
     ///
     /// This is the object that contains the lower, write, lift, and read methods for this type.
     </span><span class="kw">fn </span>ffi_converter_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;FfiConverter{}&quot;</span>, <span class="self">self</span>.canonical_name())
+        <span class="macro">format!</span>(<span class="string">"FfiConverter{}"</span>, <span class="self">self</span>.canonical_name())
     }
 
     <span class="comment">// XXX - the below should be removed and replace with the ffi_converter_name reference in the template.
     </span><span class="doccomment">/// An expression for lowering a value into something we can pass over the FFI.
     </span><span class="kw">fn </span>lower(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.lower&quot;</span>, <span class="self">self</span>.ffi_converter_name())
+        <span class="macro">format!</span>(<span class="string">"{}.lower"</span>, <span class="self">self</span>.ffi_converter_name())
     }
 
     <span class="doccomment">/// An expression for writing a value into a byte buffer.
     </span><span class="kw">fn </span>write(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.write&quot;</span>, <span class="self">self</span>.ffi_converter_name())
+        <span class="macro">format!</span>(<span class="string">"{}.write"</span>, <span class="self">self</span>.ffi_converter_name())
     }
 
     <span class="doccomment">/// An expression for lifting a value from something we received over the FFI.
     </span><span class="kw">fn </span>lift(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, <span class="self">self</span>.ffi_converter_name())
+        <span class="macro">format!</span>(<span class="string">"{}.lift"</span>, <span class="self">self</span>.ffi_converter_name())
     }
 
     <span class="doccomment">/// An expression for reading a value from a byte buffer.
     </span><span class="kw">fn </span>read(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.read&quot;</span>, <span class="self">self</span>.ffi_converter_name())
+        <span class="macro">format!</span>(<span class="string">"{}.read"</span>, <span class="self">self</span>.ffi_converter_name())
     }
 
     <span class="doccomment">/// A list of imports that are needed if this type is in use.
@@ -939,66 +941,66 @@
 </span><span class="kw">static </span>KEYWORDS: Lazy&lt;HashSet&lt;String&gt;&gt; = Lazy::new(|| {
     [
         <span class="comment">// Keywords used in declarations:
-        </span><span class="string">&quot;associatedtype&quot;</span>,
-        <span class="string">&quot;class&quot;</span>,
-        <span class="string">&quot;deinit&quot;</span>,
-        <span class="string">&quot;enum&quot;</span>,
-        <span class="string">&quot;extension&quot;</span>,
-        <span class="string">&quot;fileprivate&quot;</span>,
-        <span class="string">&quot;func&quot;</span>,
-        <span class="string">&quot;import&quot;</span>,
-        <span class="string">&quot;init&quot;</span>,
-        <span class="string">&quot;inout&quot;</span>,
-        <span class="string">&quot;internal&quot;</span>,
-        <span class="string">&quot;let&quot;</span>,
-        <span class="string">&quot;open&quot;</span>,
-        <span class="string">&quot;operator&quot;</span>,
-        <span class="string">&quot;private&quot;</span>,
-        <span class="string">&quot;precedencegroup&quot;</span>,
-        <span class="string">&quot;protocol&quot;</span>,
-        <span class="string">&quot;public&quot;</span>,
-        <span class="string">&quot;rethrows&quot;</span>,
-        <span class="string">&quot;static&quot;</span>,
-        <span class="string">&quot;struct&quot;</span>,
-        <span class="string">&quot;subscript&quot;</span>,
-        <span class="string">&quot;typealias&quot;</span>,
-        <span class="string">&quot;var&quot;</span>,
+        </span><span class="string">"associatedtype"</span>,
+        <span class="string">"class"</span>,
+        <span class="string">"deinit"</span>,
+        <span class="string">"enum"</span>,
+        <span class="string">"extension"</span>,
+        <span class="string">"fileprivate"</span>,
+        <span class="string">"func"</span>,
+        <span class="string">"import"</span>,
+        <span class="string">"init"</span>,
+        <span class="string">"inout"</span>,
+        <span class="string">"internal"</span>,
+        <span class="string">"let"</span>,
+        <span class="string">"open"</span>,
+        <span class="string">"operator"</span>,
+        <span class="string">"private"</span>,
+        <span class="string">"precedencegroup"</span>,
+        <span class="string">"protocol"</span>,
+        <span class="string">"public"</span>,
+        <span class="string">"rethrows"</span>,
+        <span class="string">"static"</span>,
+        <span class="string">"struct"</span>,
+        <span class="string">"subscript"</span>,
+        <span class="string">"typealias"</span>,
+        <span class="string">"var"</span>,
         <span class="comment">// Keywords used in statements:
-        </span><span class="string">&quot;break&quot;</span>,
-        <span class="string">&quot;case&quot;</span>,
-        <span class="string">&quot;catch&quot;</span>,
-        <span class="string">&quot;continue&quot;</span>,
-        <span class="string">&quot;default&quot;</span>,
-        <span class="string">&quot;defer&quot;</span>,
-        <span class="string">&quot;do&quot;</span>,
-        <span class="string">&quot;else&quot;</span>,
-        <span class="string">&quot;fallthrough&quot;</span>,
-        <span class="string">&quot;for&quot;</span>,
-        <span class="string">&quot;guard&quot;</span>,
-        <span class="string">&quot;if&quot;</span>,
-        <span class="string">&quot;in&quot;</span>,
-        <span class="string">&quot;repeat&quot;</span>,
-        <span class="string">&quot;return&quot;</span>,
-        <span class="string">&quot;throw&quot;</span>,
-        <span class="string">&quot;switch&quot;</span>,
-        <span class="string">&quot;where&quot;</span>,
-        <span class="string">&quot;while&quot;</span>,
+        </span><span class="string">"break"</span>,
+        <span class="string">"case"</span>,
+        <span class="string">"catch"</span>,
+        <span class="string">"continue"</span>,
+        <span class="string">"default"</span>,
+        <span class="string">"defer"</span>,
+        <span class="string">"do"</span>,
+        <span class="string">"else"</span>,
+        <span class="string">"fallthrough"</span>,
+        <span class="string">"for"</span>,
+        <span class="string">"guard"</span>,
+        <span class="string">"if"</span>,
+        <span class="string">"in"</span>,
+        <span class="string">"repeat"</span>,
+        <span class="string">"return"</span>,
+        <span class="string">"throw"</span>,
+        <span class="string">"switch"</span>,
+        <span class="string">"where"</span>,
+        <span class="string">"while"</span>,
         <span class="comment">// Keywords used in expressions and types:
-        </span><span class="string">&quot;Any&quot;</span>,
-        <span class="string">&quot;as&quot;</span>,
-        <span class="string">&quot;await&quot;</span>,
-        <span class="string">&quot;catch&quot;</span>,
-        <span class="string">&quot;false&quot;</span>,
-        <span class="string">&quot;is&quot;</span>,
-        <span class="string">&quot;nil&quot;</span>,
-        <span class="string">&quot;rethrows&quot;</span>,
-        <span class="string">&quot;self&quot;</span>,
-        <span class="string">&quot;Self&quot;</span>,
-        <span class="string">&quot;super&quot;</span>,
-        <span class="string">&quot;throw&quot;</span>,
-        <span class="string">&quot;throws&quot;</span>,
-        <span class="string">&quot;true&quot;</span>,
-        <span class="string">&quot;try&quot;</span>,
+        </span><span class="string">"Any"</span>,
+        <span class="string">"as"</span>,
+        <span class="string">"await"</span>,
+        <span class="string">"catch"</span>,
+        <span class="string">"false"</span>,
+        <span class="string">"is"</span>,
+        <span class="string">"nil"</span>,
+        <span class="string">"rethrows"</span>,
+        <span class="string">"self"</span>,
+        <span class="string">"Self"</span>,
+        <span class="string">"super"</span>,
+        <span class="string">"throw"</span>,
+        <span class="string">"throws"</span>,
+        <span class="string">"true"</span>,
+        <span class="string">"try"</span>,
     ]
     .iter()
     .map(ToString::to_string)
@@ -1008,7 +1010,7 @@
 <span class="doccomment">/// Quote a name for use in a context where keywords must be quoted
 </span><span class="kw">pub fn </span>quote_general_keyword(nm: String) -&gt; String {
     <span class="kw">if </span>KEYWORDS.contains(<span class="kw-2">&amp;</span>nm) {
-        <span class="macro">format!</span>(<span class="string">&quot;`{nm}`&quot;</span>)
+        <span class="macro">format!</span>(<span class="string">"`{nm}`"</span>)
     } <span class="kw">else </span>{
         nm
     }
@@ -1016,7 +1018,7 @@
 
 <span class="doccomment">/// Per &lt;https://docs.swift.org/swift-book/documentation/the-swift-programming-language/lexicalstructure/#Keywords-and-Punctuation&gt; subset of keywords which need quoting in arg context.
 </span><span class="kw">static </span>ARG_KEYWORDS: Lazy&lt;HashSet&lt;String&gt;&gt; = Lazy::new(|| {
-    [<span class="string">&quot;inout&quot;</span>, <span class="string">&quot;var&quot;</span>, <span class="string">&quot;let&quot;</span>]
+    [<span class="string">"inout"</span>, <span class="string">"var"</span>, <span class="string">"let"</span>]
         .iter()
         .map(ToString::to_string)
         .collect::&lt;HashSet&lt;<span class="kw">_</span>&gt;&gt;()
@@ -1025,7 +1027,7 @@
 <span class="doccomment">/// Quote a name for use in arg context where fewer keywords must be quoted
 </span><span class="kw">pub fn </span>quote_arg_keyword(nm: String) -&gt; String {
     <span class="kw">if </span>ARG_KEYWORDS.contains(<span class="kw-2">&amp;</span>nm) {
-        <span class="macro">format!</span>(<span class="string">&quot;`{nm}`&quot;</span>)
+        <span class="macro">format!</span>(<span class="string">"`{nm}`"</span>)
     } <span class="kw">else </span>{
         nm
     }
@@ -1062,7 +1064,7 @@
     </span><span class="kw">pub fn </span>module_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="kw">match </span><span class="self">self</span>.module_name.as_ref() {
             <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;uniffi&quot;</span>.into(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">"uniffi"</span>.into(),
         }
     }
 
@@ -1070,7 +1072,7 @@
     </span><span class="kw">pub fn </span>ffi_module_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="kw">match </span><span class="self">self</span>.ffi_module_name.as_ref() {
             <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
-            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;{}FFI&quot;</span>, <span class="self">self</span>.module_name()),
+            <span class="prelude-val">None </span>=&gt; <span class="macro">format!</span>(<span class="string">"{}FFI"</span>, <span class="self">self</span>.module_name()),
         }
     }
 
@@ -1084,12 +1086,12 @@
 
     <span class="doccomment">/// The name of the `.modulemap` file for the lower-level C module with FFI declarations.
     </span><span class="kw">pub fn </span>modulemap_filename(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.modulemap&quot;</span>, <span class="self">self</span>.ffi_module_filename())
+        <span class="macro">format!</span>(<span class="string">"{}.modulemap"</span>, <span class="self">self</span>.ffi_module_filename())
     }
 
     <span class="doccomment">/// The name of the `.h` file for the lower-level C module with FFI declarations.
     </span><span class="kw">pub fn </span>header_filename(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}.h&quot;</span>, <span class="self">self</span>.ffi_module_filename())
+        <span class="macro">format!</span>(<span class="string">"{}.h"</span>, <span class="self">self</span>.ffi_module_filename())
     }
 
     <span class="doccomment">/// The name of the compiled Rust library containing the FFI implementation.
@@ -1097,7 +1099,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.cdylib_name {
             cdylib_name.clone()
         } <span class="kw">else </span>{
-            <span class="string">&quot;uniffi&quot;</span>.into()
+            <span class="string">"uniffi"</span>.into()
         }
     }
 
@@ -1116,7 +1118,7 @@
         <span class="self">self</span>.generate_immutable_records.unwrap_or(<span class="bool-val">false</span>)
     }
 
-    <span class="doccomment">/// Whether to mark value types as &#39;Sendable&#39;
+    <span class="doccomment">/// Whether to mark value types as 'Sendable'
     </span><span class="kw">pub fn </span>experimental_sendable_value_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.experimental_sendable_value_types.unwrap_or(<span class="bool-val">false</span>)
     }
@@ -1127,7 +1129,7 @@
         <span class="self">self</span>.module_name
             .get_or_insert_with(|| ci.namespace().into());
         <span class="self">self</span>.cdylib_name
-            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">&quot;uniffi_{}&quot;</span>, ci.namespace()));
+            .get_or_insert_with(|| <span class="macro">format!</span>(<span class="string">"uniffi_{}"</span>, ci.namespace()));
     }
 
     <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
@@ -1143,15 +1145,15 @@
 </span><span class="kw">pub fn </span>generate_bindings(config: <span class="kw-2">&amp;</span>Config, ci: <span class="kw-2">&amp;</span>ComponentInterface) -&gt; <span class="prelude-ty">Result</span>&lt;Bindings&gt; {
     <span class="kw">let </span>header = BridgingHeader::new(config, ci)
         .render()
-        .context(<span class="string">&quot;failed to render Swift bridging header&quot;</span>)<span class="question-mark">?</span>;
+        .context(<span class="string">"failed to render Swift bridging header"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>library = SwiftWrapper::new(config.clone(), ci)
         .render()
-        .context(<span class="string">&quot;failed to render Swift library&quot;</span>)<span class="question-mark">?</span>;
+        .context(<span class="string">"failed to render Swift library"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>modulemap = <span class="kw">if </span>config.generate_module_map() {
         <span class="prelude-val">Some</span>(
             ModuleMap::new(config, ci)
                 .render()
-                .context(<span class="string">&quot;failed to render Swift modulemap&quot;</span>)<span class="question-mark">?</span>,
+                .context(<span class="string">"failed to render Swift modulemap"</span>)<span class="question-mark">?</span>,
         )
     } <span class="kw">else </span>{
         <span class="prelude-val">None
@@ -1168,18 +1170,18 @@
 /// This template is a bit different than others in that it stores internal state from the render
 /// process.  Make sure to only call `render()` once.
 </span><span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;swift&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;Types.swift&quot;</span>)]
-</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config,
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+#[template(syntax = <span class="string">"swift"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"Types.swift"</span>)]
+</span><span class="kw">pub struct </span>TypeRenderer&lt;<span class="lifetime">'a</span>&gt; {
+    config: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Config,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
     <span class="comment">// Track included modules for the `include_once()` macro
     </span>include_once_names: RefCell&lt;HashSet&lt;String&gt;&gt;,
     <span class="comment">// Track imports added with the `add_import()` macro
     </span>imports: RefCell&lt;BTreeSet&lt;String&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TypeRenderer&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TypeRenderer&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             config,
             ci,
@@ -1208,7 +1210,7 @@
     // Returns an empty string so that it can be used inside an askama `{{ }}` block.
     </span><span class="kw">fn </span>add_import(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span>str {
         <span class="self">self</span>.imports.borrow_mut().insert(name.to_owned());
-        <span class="string">&quot;&quot;
+        <span class="string">""
     </span>}
 }
 
@@ -1218,14 +1220,14 @@
 /// by the compiled Rust code. It gets wrapped into a higher-level API by the
 /// code from [`SwiftWrapper`].
 </span><span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;c&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;BridgingHeaderTemplate.h&quot;</span>)]
-</span><span class="kw">pub struct </span>BridgingHeader&lt;<span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>&gt; {
-    _config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config </span>Config,
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci </span>ComponentInterface,
+#[template(syntax = <span class="string">"c"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"BridgingHeaderTemplate.h"</span>)]
+</span><span class="kw">pub struct </span>BridgingHeader&lt;<span class="lifetime">'config</span>, <span class="lifetime">'ci</span>&gt; {
+    _config: <span class="kw-2">&amp;</span><span class="lifetime">'config </span>Config,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'ci </span>ComponentInterface,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>&gt; BridgingHeader&lt;<span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>&gt; {
-    <span class="kw">pub fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'config</span>, <span class="lifetime">'ci</span>&gt; BridgingHeader&lt;<span class="lifetime">'config</span>, <span class="lifetime">'ci</span>&gt; {
+    <span class="kw">pub fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">'config </span>Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'ci </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             _config: config,
             ci,
@@ -1240,28 +1242,28 @@
 /// job is to define the *name* of the Swift module that will contain the FFI functions
 /// so that it can be imported by the higher-level code in from [`SwiftWrapper`].
 </span><span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;c&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;ModuleMapTemplate.modulemap&quot;</span>)]
-</span><span class="kw">pub struct </span>ModuleMap&lt;<span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>&gt; {
-    config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config </span>Config,
-    _ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci </span>ComponentInterface,
+#[template(syntax = <span class="string">"c"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"ModuleMapTemplate.modulemap"</span>)]
+</span><span class="kw">pub struct </span>ModuleMap&lt;<span class="lifetime">'config</span>, <span class="lifetime">'ci</span>&gt; {
+    config: <span class="kw-2">&amp;</span><span class="lifetime">'config </span>Config,
+    _ci: <span class="kw-2">&amp;</span><span class="lifetime">'ci </span>ComponentInterface,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>&gt; ModuleMap&lt;<span class="lifetime">&#39;config</span>, <span class="lifetime">&#39;ci</span>&gt; {
-    <span class="kw">pub fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config </span>Config, _ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;ci </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'config</span>, <span class="lifetime">'ci</span>&gt; ModuleMap&lt;<span class="lifetime">'config</span>, <span class="lifetime">'ci</span>&gt; {
+    <span class="kw">pub fn </span>new(config: <span class="kw-2">&amp;</span><span class="lifetime">'config </span>Config, _ci: <span class="kw-2">&amp;</span><span class="lifetime">'ci </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ config, _ci }
     }
 }
 
 <span class="attr">#[derive(Template)]
-#[template(syntax = <span class="string">&quot;swift&quot;</span>, escape = <span class="string">&quot;none&quot;</span>, path = <span class="string">&quot;wrapper.swift&quot;</span>)]
-</span><span class="kw">pub struct </span>SwiftWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
+#[template(syntax = <span class="string">"swift"</span>, escape = <span class="string">"none"</span>, path = <span class="string">"wrapper.swift"</span>)]
+</span><span class="kw">pub struct </span>SwiftWrapper&lt;<span class="lifetime">'a</span>&gt; {
     config: Config,
-    ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface,
+    ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet&lt;String&gt;,
 }
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; SwiftWrapper&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; SwiftWrapper&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">pub fn </span>new(config: Config, ci: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ComponentInterface) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>type_renderer = TypeRenderer::new(<span class="kw-2">&amp;</span>config, ci);
         <span class="kw">let </span>type_helper_code = type_renderer.render().unwrap();
         <span class="kw">let </span>type_imports = type_renderer.imports.into_inner();
@@ -1296,7 +1298,7 @@
     // template code.
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.swift` template.
-    //   - To keep things manageable, let&#39;s try to limit ourselves to these 2 mega-matches
+    //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
     </span><span class="kw">fn </span>create_code_type(<span class="kw-2">&amp;</span><span class="self">self</span>, type_: Type) -&gt; Box&lt;<span class="kw">dyn </span>CodeType&gt; {
         <span class="kw">match </span>type_ {
             Type::UInt8 =&gt; Box::new(primitives::UInt8CodeType),
@@ -1363,45 +1365,45 @@
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI callback function name
     </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+        <span class="macro">format!</span>(<span class="string">"Uniffi{}"</span>, nm.to_upper_camel_case())
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI struct name
     </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;Uniffi{}&quot;</span>, nm.to_upper_camel_case())
+        <span class="macro">format!</span>(<span class="string">"Uniffi{}"</span>, nm.to_upper_camel_case())
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an if guard name
     </span><span class="kw">fn </span>if_guard_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;UNIFFI_FFIDEF_{}&quot;</span>, nm.to_shouty_snake_case())
+        <span class="macro">format!</span>(<span class="string">"UNIFFI_FFIDEF_{}"</span>, nm.to_shouty_snake_case())
     }
 
     <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {
         <span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;Int8&quot;</span>.into(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;UInt8&quot;</span>.into(),
-            FfiType::Int16 =&gt; <span class="string">&quot;Int16&quot;</span>.into(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;UInt16&quot;</span>.into(),
-            FfiType::Int32 =&gt; <span class="string">&quot;Int32&quot;</span>.into(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;UInt32&quot;</span>.into(),
-            FfiType::Int64 =&gt; <span class="string">&quot;Int64&quot;</span>.into(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
-            FfiType::Float32 =&gt; <span class="string">&quot;Float&quot;</span>.into(),
-            FfiType::Float64 =&gt; <span class="string">&quot;Double&quot;</span>.into(),
-            FfiType::Handle =&gt; <span class="string">&quot;UInt64&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
-            FfiType::RustCallStatus =&gt; <span class="string">&quot;RustCallStatus&quot;</span>.into(),
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
+            FfiType::Int8 =&gt; <span class="string">"Int8"</span>.into(),
+            FfiType::UInt8 =&gt; <span class="string">"UInt8"</span>.into(),
+            FfiType::Int16 =&gt; <span class="string">"Int16"</span>.into(),
+            FfiType::UInt16 =&gt; <span class="string">"UInt16"</span>.into(),
+            FfiType::Int32 =&gt; <span class="string">"Int32"</span>.into(),
+            FfiType::UInt32 =&gt; <span class="string">"UInt32"</span>.into(),
+            FfiType::Int64 =&gt; <span class="string">"Int64"</span>.into(),
+            FfiType::UInt64 =&gt; <span class="string">"UInt64"</span>.into(),
+            FfiType::Float32 =&gt; <span class="string">"Float"</span>.into(),
+            FfiType::Float64 =&gt; <span class="string">"Double"</span>.into(),
+            FfiType::Handle =&gt; <span class="string">"UInt64"</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"UnsafeMutableRawPointer"</span>.into(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">"RustBuffer"</span>.into(),
+            FfiType::RustCallStatus =&gt; <span class="string">"RustCallStatus"</span>.into(),
+            FfiType::ForeignBytes =&gt; <span class="string">"ForeignBytes"</span>.into(),
             <span class="comment">// Note: @escaping is required for Swift versions before 5.7 for callbacks passed into
             // async functions. Swift 5.7 and later does not require it.  We should probably remove
             // it once we upgrade our minimum requirement to 5.7 or later.
-            </span>FfiType::Callback(name) =&gt; <span class="macro">format!</span>(<span class="string">&quot;@escaping {}&quot;</span>, <span class="self">self</span>.ffi_callback_name(name)),
+            </span>FfiType::Callback(name) =&gt; <span class="macro">format!</span>(<span class="string">"@escaping {}"</span>, <span class="self">self</span>.ffi_callback_name(name)),
             FfiType::Struct(name) =&gt; <span class="self">self</span>.ffi_struct_name(name),
             FfiType::Reference(inner) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;UnsafeMutablePointer&lt;{}&gt;&quot;</span>, <span class="self">self</span>.ffi_type_label(inner))
+                <span class="macro">format!</span>(<span class="string">"UnsafeMutablePointer&lt;{}&gt;"</span>, <span class="self">self</span>.ffi_type_label(inner))
             }
-            FfiType::VoidPointer =&gt; <span class="string">&quot;UnsafeMutableRawPointer&quot;</span>.into(),
+            FfiType::VoidPointer =&gt; <span class="string">"UnsafeMutableRawPointer"</span>.into(),
         }
     }
 
@@ -1418,14 +1420,14 @@
                 | FfiType::UInt32
                 | FfiType::Int32
                 | FfiType::UInt64
-                | FfiType::Int64 =&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
-                FfiType::Float32 | FfiType::Float64 =&gt; <span class="string">&quot;0.0&quot;</span>.to_owned(),
-                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;nil&quot;</span>.to_owned(),
-                FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer.empty()&quot;</span>.to_owned(),
-                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;FFI return type: {t:?}&quot;</span>),
+                | FfiType::Int64 =&gt; <span class="string">"0"</span>.to_owned(),
+                FfiType::Float32 | FfiType::Float64 =&gt; <span class="string">"0.0"</span>.to_owned(),
+                FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"nil"</span>.to_owned(),
+                FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">"RustBuffer.empty()"</span>.to_owned(),
+                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">"FFI return type: {t:?}"</span>),
             },
             <span class="comment">// When we need to use a value for void returns, we use a `u8` placeholder
-            </span><span class="prelude-val">None </span>=&gt; <span class="string">&quot;0&quot;</span>.to_owned(),
+            </span><span class="prelude-val">None </span>=&gt; <span class="string">"0"</span>.to_owned(),
         }
     }
 
@@ -1444,10 +1446,10 @@
     </span><span class="kw">fn </span>object_names(<span class="kw-2">&amp;</span><span class="self">self</span>, obj: <span class="kw-2">&amp;</span>Object) -&gt; (String, String) {
         <span class="kw">let </span>class_name = <span class="self">self</span>.class_name(obj.name());
         <span class="kw">if </span>obj.has_callback_interface() {
-            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">&quot;{class_name}Impl&quot;</span>);
+            <span class="kw">let </span>impl_name = <span class="macro">format!</span>(<span class="string">"{class_name}Impl"</span>);
             (class_name, impl_name)
         } <span class="kw">else </span>{
-            (<span class="macro">format!</span>(<span class="string">&quot;{class_name}Protocol&quot;</span>), class_name)
+            (<span class="macro">format!</span>(<span class="string">"{class_name}Protocol"</span>), class_name)
         }
     }
 }
@@ -1457,7 +1459,7 @@
     <span class="kw">pub use </span><span class="kw">crate</span>::backend::filters::<span class="kw-2">*</span>;
     <span class="kw">use </span>uniffi_meta::LiteralMetadata;
 
-    <span class="kw">fn </span>oracle() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>SwiftCodeOracle {
+    <span class="kw">fn </span>oracle() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>SwiftCodeOracle {
         <span class="kw-2">&amp;</span>SwiftCodeOracle
     }
 
@@ -1468,7 +1470,7 @@
     <span class="kw">pub fn </span>return_type_name(as_type: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">impl </span>AsType&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>as_type {
             <span class="prelude-val">Some</span>(as_type) =&gt; oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).type_label(),
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;()&quot;</span>.to_owned(),
+            <span class="prelude-val">None </span>=&gt; <span class="string">"()"</span>.to_owned(),
         })
     }
 
@@ -1484,7 +1486,7 @@
         <span class="comment">// special handling for types used as errors.
         </span><span class="kw">let </span><span class="kw-2">mut </span>name = oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).ffi_converter_name();
         <span class="kw">if </span><span class="macro">matches!</span>(<span class="kw-2">&amp;</span>as_type.as_type(), Type::Object { .. }) {
-            name.push_str(<span class="string">&quot;__as_error&quot;</span>)
+            name.push_str(<span class="string">"__as_error"</span>)
         }
         <span class="prelude-val">Ok</span>(name)
     }
@@ -1512,13 +1514,13 @@
         <span class="prelude-val">Ok</span>(oracle().find(<span class="kw-2">&amp;</span>as_type.as_type()).literal(literal))
     }
 
-    <span class="comment">// Get the idiomatic Swift rendering of an individual enum variant&#39;s discriminant
+    <span class="comment">// Get the idiomatic Swift rendering of an individual enum variant's discriminant
     </span><span class="kw">pub fn </span>variant_discr_literal(e: <span class="kw-2">&amp;</span>Enum, index: <span class="kw-2">&amp;</span>usize) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">&quot;invalid index&quot;</span>);
+        <span class="kw">let </span>literal = e.variant_discr(<span class="kw-2">*</span>index).expect(<span class="string">"invalid index"</span>);
         <span class="kw">match </span>literal {
             LiteralMetadata::UInt(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(v.to_string()),
             LiteralMetadata::Int(v, <span class="kw">_</span>, <span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(v.to_string()),
-            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;expected an UInt!&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">"expected an UInt!"</span>),
         }
     }
 
@@ -1539,27 +1541,27 @@
     /// names.
     </span><span class="kw">pub fn </span>header_ffi_type_name(ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span>ffi_type {
-            FfiType::Int8 =&gt; <span class="string">&quot;int8_t&quot;</span>.into(),
-            FfiType::UInt8 =&gt; <span class="string">&quot;uint8_t&quot;</span>.into(),
-            FfiType::Int16 =&gt; <span class="string">&quot;int16_t&quot;</span>.into(),
-            FfiType::UInt16 =&gt; <span class="string">&quot;uint16_t&quot;</span>.into(),
-            FfiType::Int32 =&gt; <span class="string">&quot;int32_t&quot;</span>.into(),
-            FfiType::UInt32 =&gt; <span class="string">&quot;uint32_t&quot;</span>.into(),
-            FfiType::Int64 =&gt; <span class="string">&quot;int64_t&quot;</span>.into(),
-            FfiType::UInt64 =&gt; <span class="string">&quot;uint64_t&quot;</span>.into(),
-            FfiType::Float32 =&gt; <span class="string">&quot;float&quot;</span>.into(),
-            FfiType::Float64 =&gt; <span class="string">&quot;double&quot;</span>.into(),
-            FfiType::Handle =&gt; <span class="string">&quot;uint64_t&quot;</span>.into(),
-            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">&quot;void*_Nonnull&quot;</span>.into(),
-            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">&quot;RustBuffer&quot;</span>.into(),
-            FfiType::RustCallStatus =&gt; <span class="string">&quot;RustCallStatus&quot;</span>.into(),
-            FfiType::ForeignBytes =&gt; <span class="string">&quot;ForeignBytes&quot;</span>.into(),
+            FfiType::Int8 =&gt; <span class="string">"int8_t"</span>.into(),
+            FfiType::UInt8 =&gt; <span class="string">"uint8_t"</span>.into(),
+            FfiType::Int16 =&gt; <span class="string">"int16_t"</span>.into(),
+            FfiType::UInt16 =&gt; <span class="string">"uint16_t"</span>.into(),
+            FfiType::Int32 =&gt; <span class="string">"int32_t"</span>.into(),
+            FfiType::UInt32 =&gt; <span class="string">"uint32_t"</span>.into(),
+            FfiType::Int64 =&gt; <span class="string">"int64_t"</span>.into(),
+            FfiType::UInt64 =&gt; <span class="string">"uint64_t"</span>.into(),
+            FfiType::Float32 =&gt; <span class="string">"float"</span>.into(),
+            FfiType::Float64 =&gt; <span class="string">"double"</span>.into(),
+            FfiType::Handle =&gt; <span class="string">"uint64_t"</span>.into(),
+            FfiType::RustArcPtr(<span class="kw">_</span>) =&gt; <span class="string">"void*_Nonnull"</span>.into(),
+            FfiType::RustBuffer(<span class="kw">_</span>) =&gt; <span class="string">"RustBuffer"</span>.into(),
+            FfiType::RustCallStatus =&gt; <span class="string">"RustCallStatus"</span>.into(),
+            FfiType::ForeignBytes =&gt; <span class="string">"ForeignBytes"</span>.into(),
             FfiType::Callback(name) =&gt; {
-                <span class="macro">format!</span>(<span class="string">&quot;{} _Nonnull&quot;</span>, SwiftCodeOracle.ffi_callback_name(name))
+                <span class="macro">format!</span>(<span class="string">"{} _Nonnull"</span>, SwiftCodeOracle.ffi_callback_name(name))
             }
             FfiType::Struct(name) =&gt; SwiftCodeOracle.ffi_struct_name(name),
-            FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}* _Nonnull&quot;</span>, header_ffi_type_name(inner)<span class="question-mark">?</span>),
-            FfiType::VoidPointer =&gt; <span class="string">&quot;void* _Nonnull&quot;</span>.into(),
+            FfiType::Reference(inner) =&gt; <span class="macro">format!</span>(<span class="string">"{}* _Nonnull"</span>, header_ffi_type_name(inner)<span class="question-mark">?</span>),
+            FfiType::VoidPointer =&gt; <span class="string">"void* _Nonnull"</span>.into(),
         })
     }
 
@@ -1611,31 +1613,31 @@
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of docstring
     </span><span class="kw">pub fn </span>docstring(docstring: <span class="kw-2">&amp;</span>str, spaces: <span class="kw-2">&amp;</span>i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
-        <span class="kw">let </span>middle = textwrap::indent(<span class="kw-2">&amp;</span>textwrap::dedent(docstring), <span class="string">&quot; * &quot;</span>);
-        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">&quot;/**\n{middle}\n */&quot;</span>);
+        <span class="kw">let </span>middle = textwrap::indent(<span class="kw-2">&amp;</span>textwrap::dedent(docstring), <span class="string">" * "</span>);
+        <span class="kw">let </span>wrapped = <span class="macro">format!</span>(<span class="string">"/**\n{middle}\n */"</span>);
 
         <span class="kw">let </span>spaces = usize::try_from(<span class="kw-2">*</span>spaces).unwrap_or_default();
-        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">&quot; &quot;</span>.repeat(spaces)))
+        <span class="prelude-val">Ok</span>(textwrap::indent(<span class="kw-2">&amp;</span>wrapped, <span class="kw-2">&amp;</span><span class="string">" "</span>.repeat(spaces)))
     }
 
     <span class="kw">pub fn </span>error_handler(result: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="kw">match </span><span class="kw-2">&amp;</span>result.throws_type {
-            <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{}.lift&quot;</span>, ffi_converter_name(t)<span class="question-mark">?</span>),
-            <span class="prelude-val">None </span>=&gt; <span class="string">&quot;nil&quot;</span>.into(),
+            <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">format!</span>(<span class="string">"{}.lift"</span>, ffi_converter_name(t)<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="string">"nil"</span>.into(),
         })
     }
 
     <span class="doccomment">/// Name of the callback function to handle an async result
     </span><span class="kw">pub fn </span>future_callback(result: <span class="kw-2">&amp;</span>ResultType) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;uniffiFutureCallbackHandler{}{}&quot;</span>,
+            <span class="string">"uniffiFutureCallbackHandler{}{}"</span>,
             <span class="kw">match </span><span class="kw-2">&amp;</span>result.return_type {
                 <span class="prelude-val">Some</span>(t) =&gt; SwiftCodeOracle.find(t).canonical_name(),
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Void&quot;</span>.into(),
+                <span class="prelude-val">None </span>=&gt; <span class="string">"Void"</span>.into(),
             },
             <span class="kw">match </span><span class="kw-2">&amp;</span>result.throws_type {
                 <span class="prelude-val">Some</span>(t) =&gt; SwiftCodeOracle.find(t).canonical_name(),
-                <span class="prelude-val">None </span>=&gt; <span class="string">&quot;&quot;</span>.into(),
+                <span class="prelude-val">None </span>=&gt; <span class="string">""</span>.into(),
             }
         ))
     }

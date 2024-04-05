@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["black_box","must_use","spin_loop","unreachable_unchecked"]};
+window.SIDEBAR_ITEMS = {"fn":["assert_unchecked","black_box","must_use","spin_loop","unreachable_unchecked"]};

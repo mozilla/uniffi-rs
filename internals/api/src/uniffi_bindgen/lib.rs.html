@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -608,14 +610,14 @@
 </span><span class="doccomment">//! # Uniffi: easily build cross-platform software components in Rust
 //!
 //! This is a highly-experimental crate for building cross-language software components
-//! in Rust, based on things we&#39;ve learned and patterns we&#39;ve developed in the
+//! in Rust, based on things we've learned and patterns we've developed in the
 //! [mozilla/application-services](https://github.com/mozilla/application-services) project.
 //!
 //! The idea is to let you write your code once, in Rust, and then re-use it from many
-//! other programming languages via Rust&#39;s C-compatible FFI layer and some automagically
+//! other programming languages via Rust's C-compatible FFI layer and some automagically
 //! generated binding code. If you think of it as a kind of [wasm-bindgen](https://github.com/rustwasm/wasm-bindgen)
 //! wannabe, with a clunkier developer experience but support for more target languages,
-//! you&#39;ll be pretty close to the mark.
+//! you'll be pretty close to the mark.
 //!
 //! Currently supported target languages include Kotlin, Swift and Python.
 //!
@@ -667,14 +669,14 @@
 //! code of your crate. If your UDL file is named `example.udl`, then your build script would call:
 //!
 //! ```text
-//! uniffi_build::generate_scaffolding(&quot;src/example.udl&quot;)
+//! uniffi_build::generate_scaffolding("src/example.udl")
 //! ```
 //!
 //! This would output a rust file named `example.uniffi.rs`, ready to be
 //! included into the code of your rust crate like this:
 //!
 //! ```text
-//! include_scaffolding!(&quot;example&quot;);
+//! include_scaffolding!("example");
 //! ```
 //!
 //! ### 4) Generate foreign language bindings for the library
@@ -800,7 +802,7 @@
     <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">for </span><span class="kw-2">&amp;</span>language <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.target_languages {
             <span class="kw">if </span>cdylib_name.is_none() &amp;&amp; language != TargetLanguage::Swift {
-                <span class="macro">bail!</span>(<span class="string">&quot;Generate bindings for {language} requires a cdylib, but {library_path} was given&quot;</span>);
+                <span class="macro">bail!</span>(<span class="string">"Generate bindings for {language} requires a cdylib, but {library_path} was given"</span>);
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -819,9 +821,9 @@
 /// # Arguments
 /// - `binding_generator`: Type that implements BindingGenerator
 /// - `udl_file`: The path to the UDL file
-/// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate&#39;s root.
+/// - `config_file_override`: The path to the configuration toml file, most likely called `uniffi.toml`. If [`None`], the function will try to guess based on the crate's root.
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
-/// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it&#39;s [`None`]
+/// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
 /// - `crate_name`: Override the default crate name that is guessed from UDL file path.
 </span><span class="kw">pub fn </span>generate_external_bindings&lt;T: BindingGenerator&gt;(
     binding_generator: <span class="kw-2">&amp;</span>T,
@@ -839,7 +841,7 @@
     <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>library_file) = library_file {
         macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>component, library_file.as_ref())<span class="question-mark">?</span>;
     }
-    <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file.as_ref()).context(<span class="string">&quot;Failed to guess crate root&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file.as_ref()).context(<span class="string">"Failed to guess crate root"</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
@@ -863,7 +865,7 @@
 }
 
 <span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,
-// such as the `extern &quot;C&quot;` function definitions and record data types.
+// such as the `extern "C"` function definitions and record data types.
 // Locates and parses Cargo.toml to determine the name of the crate.
 </span><span class="kw">pub fn </span>generate_component_scaffolding(
     udl_file: <span class="kw-2">&amp;</span>Utf8Path,
@@ -875,7 +877,7 @@
 }
 
 <span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,
-// such as the `extern &quot;C&quot;` function definitions and record data types, using
+// such as the `extern "C"` function definitions and record data types, using
 // the specified crate name.
 </span><span class="kw">pub fn </span>generate_component_scaffolding_for_crate(
     udl_file: <span class="kw-2">&amp;</span>Utf8Path,
@@ -893,12 +895,12 @@
     out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
     format_code: bool,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>file_stem = udl_file.file_stem().context(<span class="string">&quot;not a file&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>filename = <span class="macro">format!</span>(<span class="string">&quot;{file_stem}.uniffi.rs&quot;</span>);
+    <span class="kw">let </span>file_stem = udl_file.file_stem().context(<span class="string">"not a file"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>filename = <span class="macro">format!</span>(<span class="string">"{file_stem}.uniffi.rs"</span>);
     <span class="kw">let </span>out_path = get_out_dir(udl_file, out_dir_override)<span class="question-mark">?</span>.join(filename);
     <span class="kw">let </span><span class="kw-2">mut </span>f = File::create(<span class="kw-2">&amp;</span>out_path)<span class="question-mark">?</span>;
-    <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, RustScaffolding::new(<span class="kw-2">&amp;</span>component, file_stem))
-        .context(<span class="string">&quot;Failed to write output file&quot;</span>)<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(f, <span class="string">"{}"</span>, RustScaffolding::new(<span class="kw-2">&amp;</span>component, file_stem))
+        .context(<span class="string">"Failed to write output file"</span>)<span class="question-mark">?</span>;
     <span class="kw">if </span>format_code {
         format_code_with_rustfmt(<span class="kw-2">&amp;</span>out_path)<span class="question-mark">?</span>;
     }
@@ -929,14 +931,14 @@
 
 <span class="kw">pub fn </span>print_repr(library_path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     <span class="kw">let </span>metadata = macro_metadata::extract_from_library(library_path)<span class="question-mark">?</span>;
-    <span class="macro">println!</span>(<span class="string">&quot;{metadata:#?}&quot;</span>);
+    <span class="macro">println!</span>(<span class="string">"{metadata:#?}"</span>);
     <span class="prelude-val">Ok</span>(())
 }
 
 <span class="comment">// Given the path to a UDL file, locate and parse the corresponding Cargo.toml to determine
 // the library crate name.
 // Note that this is largely a copy of code in uniffi_macros/src/util.rs, but sharing it
-// isn&#39;t trivial and it&#39;s not particularly complicated so we&#39;ve just copied it.
+// isn't trivial and it's not particularly complicated so we've just copied it.
 </span><span class="kw">fn </span>crate_name_from_cargo_toml(udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
     <span class="attr">#[derive(Deserialize)]
     </span><span class="kw">struct </span>CargoToml {
@@ -955,16 +957,16 @@
         name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     }
 
-    <span class="kw">let </span>file = guess_crate_root(udl_file)<span class="question-mark">?</span>.join(<span class="string">&quot;Cargo.toml&quot;</span>);
+    <span class="kw">let </span>file = guess_crate_root(udl_file)<span class="question-mark">?</span>.join(<span class="string">"Cargo.toml"</span>);
     <span class="kw">let </span>cargo_toml_bytes =
-        fs::read(file).context(<span class="string">&quot;Can&#39;t find Cargo.toml to determine the crate name&quot;</span>)<span class="question-mark">?</span>;
+        fs::read(file).context(<span class="string">"Can't find Cargo.toml to determine the crate name"</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>cargo_toml = toml::from_slice::&lt;CargoToml&gt;(<span class="kw-2">&amp;</span>cargo_toml_bytes)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>lib_crate_name = cargo_toml
         .lib
         .name
-        .unwrap_or_else(|| cargo_toml.package.name.replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>));
+        .unwrap_or_else(|| cargo_toml.package.name.replace(<span class="string">'-'</span>, <span class="string">"_"</span>));
 
     <span class="prelude-val">Ok</span>(lib_crate_name)
 }
@@ -977,11 +979,11 @@
 </span><span class="kw">pub fn </span>guess_crate_root(udl_file: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt; {
     <span class="kw">let </span>path_guess = udl_file
         .parent()
-        .context(<span class="string">&quot;UDL file has no parent folder!&quot;</span>)<span class="question-mark">?
+        .context(<span class="string">"UDL file has no parent folder!"</span>)<span class="question-mark">?
         </span>.parent()
-        .context(<span class="string">&quot;UDL file has no grand-parent folder!&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">if </span>!path_guess.join(<span class="string">&quot;Cargo.toml&quot;</span>).is_file() {
-        <span class="macro">bail!</span>(<span class="string">&quot;UDL file does not appear to be inside a crate&quot;</span>)
+        .context(<span class="string">"UDL file has no grand-parent folder!"</span>)<span class="question-mark">?</span>;
+    <span class="kw">if </span>!path_guess.join(<span class="string">"Cargo.toml"</span>).is_file() {
+        <span class="macro">bail!</span>(<span class="string">"UDL file does not appear to be inside a crate"</span>)
     }
     <span class="prelude-val">Ok</span>(path_guess)
 }
@@ -989,34 +991,34 @@
 <span class="kw">fn </span>get_out_dir(udl_file: <span class="kw-2">&amp;</span>Utf8Path, out_dir_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Utf8PathBuf&gt; {
     <span class="prelude-val">Ok</span>(<span class="kw">match </span>out_dir_override {
         <span class="prelude-val">Some</span>(s) =&gt; {
-            <span class="comment">// Create the directory if it doesn&#39;t exist yet.
+            <span class="comment">// Create the directory if it doesn't exist yet.
             </span>fs::create_dir_all(s)<span class="question-mark">?</span>;
-            s.canonicalize_utf8().context(<span class="string">&quot;Unable to find out-dir&quot;</span>)<span class="question-mark">?
+            s.canonicalize_utf8().context(<span class="string">"Unable to find out-dir"</span>)<span class="question-mark">?
         </span>}
         <span class="prelude-val">None </span>=&gt; udl_file
             .parent()
-            .context(<span class="string">&quot;File has no parent directory&quot;</span>)<span class="question-mark">?
+            .context(<span class="string">"File has no parent directory"</span>)<span class="question-mark">?
             </span>.to_owned(),
     })
 }
 
 <span class="kw">fn </span>parse_udl(udl_file: <span class="kw-2">&amp;</span>Utf8Path, crate_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;ComponentInterface&gt; {
     <span class="kw">let </span>udl = fs::read_to_string(udl_file)
-        .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read UDL from {udl_file}&quot;</span>))<span class="question-mark">?</span>;
+        .with_context(|| <span class="macro">format!</span>(<span class="string">"Failed to read UDL from {udl_file}"</span>))<span class="question-mark">?</span>;
     <span class="kw">let </span>group = uniffi_udl::parse_udl(<span class="kw-2">&amp;</span>udl, crate_name)<span class="question-mark">?</span>;
     ComponentInterface::from_metadata(group)
 }
 
 <span class="kw">fn </span>format_code_with_rustfmt(path: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let </span>status = Command::new(<span class="string">&quot;rustfmt&quot;</span>).arg(path).status().map_err(|e| {
+    <span class="kw">let </span>status = Command::new(<span class="string">"rustfmt"</span>).arg(path).status().map_err(|e| {
         <span class="kw">let </span>ctx = <span class="kw">match </span>e.kind() {
-            ErrorKind::NotFound =&gt; <span class="string">&quot;formatting was requested, but rustfmt was not found&quot;</span>,
-            <span class="kw">_ </span>=&gt; <span class="string">&quot;unknown error when calling rustfmt&quot;</span>,
+            ErrorKind::NotFound =&gt; <span class="string">"formatting was requested, but rustfmt was not found"</span>,
+            <span class="kw">_ </span>=&gt; <span class="string">"unknown error when calling rustfmt"</span>,
         };
         <span class="macro">anyhow!</span>(e).context(ctx)
     })<span class="question-mark">?</span>;
     <span class="kw">if </span>!status.success() {
-        <span class="macro">bail!</span>(<span class="string">&quot;rustmt failed when formatting scaffolding. Note: --no-format can be used to skip formatting&quot;</span>);
+        <span class="macro">bail!</span>(<span class="string">"rustmt failed when formatting scaffolding. Note: --no-format can be used to skip formatting"</span>);
     }
     <span class="prelude-val">Ok</span>(())
 }
@@ -1026,10 +1028,10 @@
     <span class="kw">if let </span><span class="prelude-val">Some</span>(source) = source {
         <span class="kw">if </span>source.exists() {
             <span class="kw">let </span>contents =
-                fs::read_to_string(source).with_context(|| <span class="macro">format!</span>(<span class="string">&quot;read file: {:?}&quot;</span>, source))<span class="question-mark">?</span>;
+                fs::read_to_string(source).with_context(|| <span class="macro">format!</span>(<span class="string">"read file: {:?}"</span>, source))<span class="question-mark">?</span>;
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(
                 toml::de::from_str(<span class="kw-2">&amp;</span>contents)
-                    .with_context(|| <span class="macro">format!</span>(<span class="string">&quot;parse toml: {:?}&quot;</span>, source))<span class="question-mark">?</span>,
+                    .with_context(|| <span class="macro">format!</span>(<span class="string">"parse toml: {:?}"</span>, source))<span class="question-mark">?</span>,
             ));
         }
     }
@@ -1042,11 +1044,11 @@
     crate_root: <span class="kw-2">&amp;</span>Utf8Path,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Config&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>config = load_toml_file(<span class="prelude-val">Some</span>(crate_root.join(<span class="string">&quot;uniffi.toml&quot;</span>).as_path()))
-        .context(<span class="string">&quot;default config&quot;</span>)<span class="question-mark">?
+    <span class="kw">let </span><span class="kw-2">mut </span>config = load_toml_file(<span class="prelude-val">Some</span>(crate_root.join(<span class="string">"uniffi.toml"</span>).as_path()))
+        .context(<span class="string">"default config"</span>)<span class="question-mark">?
         </span>.unwrap_or(toml::value::Table::default());
 
-    <span class="kw">let </span>override_config = load_toml_file(config_file_override).context(<span class="string">&quot;override config&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>override_config = load_toml_file(config_file_override).context(<span class="string">"override config"</span>)<span class="question-mark">?</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(override_config) = override_config {
         merge_toml(<span class="kw-2">&amp;mut </span>config, override_config);
     }
@@ -1127,7 +1129,7 @@
 // see https://github.com/rust-lang/rust/pull/84029
 </span><span class="attr">#[allow(dead_code)]
 </span><span class="kw">mod </span>__unused {
-    <span class="kw">const _</span>: <span class="kw-2">&amp;</span>[u8] = <span class="macro">include_bytes!</span>(<span class="string">&quot;../askama.toml&quot;</span>);
+    <span class="kw">const _</span>: <span class="kw-2">&amp;</span>[u8] = <span class="macro">include_bytes!</span>(<span class="string">"../askama.toml"</span>);
 }
 
 <span class="attr">#[cfg(test)]
@@ -1137,66 +1139,66 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_guessing_of_crate_root_directory_from_udl_file() {
         <span class="comment">// When running this test, this will be the ./uniffi_bindgen directory.
-        </span><span class="kw">let </span>this_crate_root = Utf8PathBuf::from(std::env::var(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>).unwrap());
+        </span><span class="kw">let </span>this_crate_root = Utf8PathBuf::from(std::env::var(<span class="string">"CARGO_MANIFEST_DIR"</span>).unwrap());
 
         <span class="kw">let </span>example_crate_root = this_crate_root
             .parent()
-            .expect(<span class="string">&quot;should have a parent directory&quot;</span>)
-            .join(<span class="string">&quot;examples/arithmetic&quot;</span>);
+            .expect(<span class="string">"should have a parent directory"</span>)
+            .join(<span class="string">"examples/arithmetic"</span>);
         <span class="macro">assert_eq!</span>(
-            guess_crate_root(<span class="kw-2">&amp;</span>example_crate_root.join(<span class="string">&quot;src/arthmetic.udl&quot;</span>)).unwrap(),
+            guess_crate_root(<span class="kw-2">&amp;</span>example_crate_root.join(<span class="string">"src/arthmetic.udl"</span>)).unwrap(),
             example_crate_root
         );
 
-        <span class="kw">let </span>not_a_crate_root = <span class="kw-2">&amp;</span>this_crate_root.join(<span class="string">&quot;src/templates&quot;</span>);
-        <span class="macro">assert!</span>(guess_crate_root(<span class="kw-2">&amp;</span>not_a_crate_root.join(<span class="string">&quot;src/example.udl&quot;</span>)).is_err());
+        <span class="kw">let </span>not_a_crate_root = <span class="kw-2">&amp;</span>this_crate_root.join(<span class="string">"src/templates"</span>);
+        <span class="macro">assert!</span>(guess_crate_root(<span class="kw-2">&amp;</span>not_a_crate_root.join(<span class="string">"src/example.udl"</span>)).is_err());
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_merge_toml() {
-        <span class="kw">let </span>default = <span class="string">r#&quot;
-            foo = &quot;foo&quot;
-            bar = &quot;bar&quot;
+        <span class="kw">let </span>default = <span class="string">r#"
+            foo = "foo"
+            bar = "bar"
 
             [table1]
-            foo = &quot;foo&quot;
-            bar = &quot;bar&quot;
-        &quot;#</span>;
+            foo = "foo"
+            bar = "bar"
+        "#</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>default = toml::de::from_str(default).unwrap();
 
-        <span class="kw">let </span>override_toml = <span class="string">r#&quot;
+        <span class="kw">let </span>override_toml = <span class="string">r#"
             # update key
-            bar = &quot;BAR&quot;
+            bar = "BAR"
             # insert new key
-            baz = &quot;BAZ&quot;
+            baz = "BAZ"
 
             [table1]
             # update key
-            bar = &quot;BAR&quot;
+            bar = "BAR"
             # insert new key
-            baz = &quot;BAZ&quot;
+            baz = "BAZ"
 
             # new table
             [table1.table2]
-            bar = &quot;BAR&quot;
-            baz = &quot;BAZ&quot;
-        &quot;#</span>;
+            bar = "BAR"
+            baz = "BAZ"
+        "#</span>;
         <span class="kw">let </span>override_toml = toml::de::from_str(override_toml).unwrap();
 
-        <span class="kw">let </span>expected = <span class="string">r#&quot;
-            foo = &quot;foo&quot;
-            bar = &quot;BAR&quot;
-            baz = &quot;BAZ&quot;
+        <span class="kw">let </span>expected = <span class="string">r#"
+            foo = "foo"
+            bar = "BAR"
+            baz = "BAZ"
 
             [table1]
-            foo = &quot;foo&quot;
-            bar = &quot;BAR&quot;
-            baz = &quot;BAZ&quot;
+            foo = "foo"
+            bar = "BAR"
+            baz = "BAZ"
 
             [table1.table2]
-            bar = &quot;BAR&quot;
-            baz = &quot;BAZ&quot;
-        &quot;#</span>;
+            bar = "BAR"
+            baz = "BAZ"
+        "#</span>;
         <span class="kw">let </span>expected: toml::value::Table = toml::de::from_str(expected).unwrap();
 
         merge_toml(<span class="kw-2">&amp;mut </span>default, override_toml);

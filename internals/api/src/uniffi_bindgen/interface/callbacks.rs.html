@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/callbacks.rs`."><title>callbacks.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../uniffi_bindgen/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `uniffi_bindgen/src/interface/callbacks.rs`."><title>callbacks.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi_bindgen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../uniffi_bindgen/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -330,12 +332,12 @@
 //! can be added to a `ComponentInterface`. A declaration in the UDL like this:
 //!
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! callback interface Example {
 //!   string hello();
 //! };
-//! # &quot;##, &quot;crate_name&quot;)?;
+//! # "##, "crate_name")?;
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 //!
@@ -343,15 +345,15 @@
 //! [`crate::ComponentInterface`]:
 //!
 //! ```
-//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##&quot;
+//! # let ci = uniffi_bindgen::interface::ComponentInterface::from_webidl(r##"
 //! # namespace example {};
 //! # callback interface Example {
 //! #  string hello();
 //! # };
-//! # &quot;##, &quot;crate_name&quot;)?;
-//! let callback = ci.get_callback_interface_definition(&quot;Example&quot;).unwrap();
-//! assert_eq!(callback.name(), &quot;Example&quot;);
-//! assert_eq!(callback.methods()[0].name(), &quot;hello&quot;);
+//! # "##, "crate_name")?;
+//! let callback = ci.get_callback_interface_definition("Example").unwrap();
+//! assert_eq!(callback.name(), "Example");
+//! assert_eq!(callback.methods()[0].name(), "hello");
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 
@@ -369,11 +371,11 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) name: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) methods: Vec&lt;Method&gt;,
-    <span class="comment">// We don&#39;t include the FFIFunc in the hash calculation, because:
+    <span class="comment">// We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
     //  - its `name` property includes a checksum derived from  the very
-    //    hash value we&#39;re trying to calculate here, so excluding it
+    //    hash value we're trying to calculate here, so excluding it
     //    avoids a weird circular dependency in the calculation.
     </span><span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) ffi_init_callback: FfiFunction,
@@ -423,7 +425,7 @@
             .collect()
     }
 
-    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">pub fn </span>iter_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TypeIterator&lt;<span class="lifetime">'_</span>&gt; {
         Box::new(<span class="self">self</span>.methods.iter().flat_map(Method::iter_types))
     }
 
@@ -472,11 +474,11 @@
     <span class="kw">if </span>!method.is_async() {
         FfiCallbackFunction {
             name: method_ffi_callback_name(trait_name, index),
-            arguments: iter::once(FfiArgument::new(<span class="string">&quot;uniffi_handle&quot;</span>, FfiType::UInt64))
+            arguments: iter::once(FfiArgument::new(<span class="string">"uniffi_handle"</span>, FfiType::UInt64))
                 .chain(method.arguments().into_iter().map(Into::into))
                 .chain(iter::once(<span class="kw">match </span>method.return_type() {
-                    <span class="prelude-val">Some</span>(t) =&gt; FfiArgument::new(<span class="string">&quot;uniffi_out_return&quot;</span>, FfiType::from(t).reference()),
-                    <span class="prelude-val">None </span>=&gt; FfiArgument::new(<span class="string">&quot;uniffi_out_return&quot;</span>, FfiType::VoidPointer),
+                    <span class="prelude-val">Some</span>(t) =&gt; FfiArgument::new(<span class="string">"uniffi_out_return"</span>, FfiType::from(t).reference()),
+                    <span class="prelude-val">None </span>=&gt; FfiArgument::new(<span class="string">"uniffi_out_return"</span>, FfiType::VoidPointer),
                 }))
                 .collect(),
             has_rust_call_status_arg: <span class="bool-val">true</span>,
@@ -487,17 +489,17 @@
             ffi_foreign_future_complete(method.return_type().map(FfiType::from));
         FfiCallbackFunction {
             name: method_ffi_callback_name(trait_name, index),
-            arguments: iter::once(FfiArgument::new(<span class="string">&quot;uniffi_handle&quot;</span>, FfiType::UInt64))
+            arguments: iter::once(FfiArgument::new(<span class="string">"uniffi_handle"</span>, FfiType::UInt64))
                 .chain(method.arguments().into_iter().map(Into::into))
                 .chain([
                     FfiArgument::new(
-                        <span class="string">&quot;uniffi_future_callback&quot;</span>,
+                        <span class="string">"uniffi_future_callback"</span>,
                         FfiType::Callback(completion_callback.name),
                     ),
-                    FfiArgument::new(<span class="string">&quot;uniffi_callback_data&quot;</span>, FfiType::UInt64),
+                    FfiArgument::new(<span class="string">"uniffi_callback_data"</span>, FfiType::UInt64),
                     FfiArgument::new(
-                        <span class="string">&quot;uniffi_out_return&quot;</span>,
-                        FfiType::Struct(<span class="string">&quot;ForeignFuture&quot;</span>.to_owned()).reference(),
+                        <span class="string">"uniffi_out_return"</span>,
+                        FfiType::Struct(<span class="string">"ForeignFuture"</span>.to_owned()).reference(),
                     ),
                 ])
                 .collect(),
@@ -512,17 +514,17 @@
     <span class="kw">let </span>return_type_name =
         FfiType::return_type_name(return_ffi_type.as_ref()).to_upper_camel_case();
     FfiStruct {
-        name: <span class="macro">format!</span>(<span class="string">&quot;ForeignFutureStruct{return_type_name}&quot;</span>),
+        name: <span class="macro">format!</span>(<span class="string">"ForeignFutureStruct{return_type_name}"</span>),
         fields: <span class="kw">match </span>return_ffi_type {
             <span class="prelude-val">Some</span>(return_ffi_type) =&gt; <span class="macro">vec!</span>[
-                FfiField::new(<span class="string">&quot;return_value&quot;</span>, return_ffi_type),
-                FfiField::new(<span class="string">&quot;call_status&quot;</span>, FfiType::RustCallStatus),
+                FfiField::new(<span class="string">"return_value"</span>, return_ffi_type),
+                FfiField::new(<span class="string">"call_status"</span>, FfiType::RustCallStatus),
             ],
             <span class="prelude-val">None </span>=&gt; <span class="macro">vec!</span>[
                 <span class="comment">// In Rust, `return_value` is `()` -- a ZST.
                 // ZSTs are not valid in `C`, but they also take up 0 space.
                 // Skip the `return_value` field to make the layout correct.
-                </span>FfiField::new(<span class="string">&quot;call_status&quot;</span>, FfiType::RustCallStatus),
+                </span>FfiField::new(<span class="string">"call_status"</span>, FfiType::RustCallStatus),
             ],
         },
     }
@@ -533,12 +535,12 @@
     <span class="kw">let </span>return_type_name =
         FfiType::return_type_name(return_ffi_type.as_ref()).to_upper_camel_case();
     FfiCallbackFunction {
-        name: <span class="macro">format!</span>(<span class="string">&quot;ForeignFutureComplete{return_type_name}&quot;</span>),
+        name: <span class="macro">format!</span>(<span class="string">"ForeignFutureComplete{return_type_name}"</span>),
         arguments: <span class="macro">vec!</span>[
-            FfiArgument::new(<span class="string">&quot;callback_data&quot;</span>, FfiType::UInt64),
+            FfiArgument::new(<span class="string">"callback_data"</span>, FfiType::UInt64),
             FfiArgument::new(
-                <span class="string">&quot;result&quot;</span>,
-                FfiType::Struct(<span class="macro">format!</span>(<span class="string">&quot;ForeignFutureStruct{return_type_name}&quot;</span>)),
+                <span class="string">"result"</span>,
+                FfiType::Struct(<span class="macro">format!</span>(<span class="string">"ForeignFutureStruct{return_type_name}"</span>)),
             ),
         ],
         return_type: <span class="prelude-val">None</span>,
@@ -559,23 +561,23 @@
             .map(|(i, method)| {
                 FfiField::new(
                     method.name(),
-                    FfiType::Callback(<span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{trait_name}Method{i}&quot;</span>)),
+                    FfiType::Callback(<span class="macro">format!</span>(<span class="string">"CallbackInterface{trait_name}Method{i}"</span>)),
                 )
             })
             .chain([FfiField::new(
-                <span class="string">&quot;uniffi_free&quot;</span>,
-                FfiType::Callback(<span class="string">&quot;CallbackInterfaceFree&quot;</span>.to_owned()),
+                <span class="string">"uniffi_free"</span>,
+                FfiType::Callback(<span class="string">"CallbackInterfaceFree"</span>.to_owned()),
             )])
             .collect(),
     }
 }
 
 <span class="kw">pub fn </span>method_ffi_callback_name(trait_name: <span class="kw-2">&amp;</span>str, index: usize) -&gt; String {
-    <span class="macro">format!</span>(<span class="string">&quot;CallbackInterface{trait_name}Method{index}&quot;</span>)
+    <span class="macro">format!</span>(<span class="string">"CallbackInterface{trait_name}Method{index}"</span>)
 }
 
 <span class="kw">pub fn </span>vtable_name(trait_name: <span class="kw-2">&amp;</span>str) -&gt; String {
-    <span class="macro">format!</span>(<span class="string">&quot;VTableCallbackInterface{trait_name}&quot;</span>)
+    <span class="macro">format!</span>(<span class="string">"VTableCallbackInterface{trait_name}"</span>)
 }
 
 <span class="attr">#[cfg(test)]
@@ -584,15 +586,15 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_empty_interface() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             // Weird, but allowed.
             callback interface Testing {};
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.callback_interface_definitions().len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
-            ci.get_callback_interface_definition(<span class="string">&quot;Testing&quot;</span>)
+            ci.get_callback_interface_definition(<span class="string">"Testing"</span>)
                 .unwrap()
                 .methods()
                 .len(),
@@ -602,7 +604,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_multiple_interfaces() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             callback interface One {
                 void one();
@@ -611,34 +613,34 @@
                 u32 two();
                 u64 too();
             };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(ci.callback_interface_definitions().len(), <span class="number">2</span>);
 
-        <span class="kw">let </span>callbacks_one = ci.get_callback_interface_definition(<span class="string">&quot;One&quot;</span>).unwrap();
+        <span class="kw">let </span>callbacks_one = ci.get_callback_interface_definition(<span class="string">"One"</span>).unwrap();
         <span class="macro">assert_eq!</span>(callbacks_one.methods().len(), <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(callbacks_one.methods()[<span class="number">0</span>].name(), <span class="string">&quot;one&quot;</span>);
+        <span class="macro">assert_eq!</span>(callbacks_one.methods()[<span class="number">0</span>].name(), <span class="string">"one"</span>);
 
-        <span class="kw">let </span>callbacks_two = ci.get_callback_interface_definition(<span class="string">&quot;Two&quot;</span>).unwrap();
+        <span class="kw">let </span>callbacks_two = ci.get_callback_interface_definition(<span class="string">"Two"</span>).unwrap();
         <span class="macro">assert_eq!</span>(callbacks_two.methods().len(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(callbacks_two.methods()[<span class="number">0</span>].name(), <span class="string">&quot;two&quot;</span>);
-        <span class="macro">assert_eq!</span>(callbacks_two.methods()[<span class="number">1</span>].name(), <span class="string">&quot;too&quot;</span>);
+        <span class="macro">assert_eq!</span>(callbacks_two.methods()[<span class="number">0</span>].name(), <span class="string">"two"</span>);
+        <span class="macro">assert_eq!</span>(callbacks_two.methods()[<span class="number">1</span>].name(), <span class="string">"too"</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_docstring_callback_interface() {
-        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#&quot;
+        <span class="kw">const </span>UDL: <span class="kw-2">&amp;</span>str = <span class="string">r#"
             namespace test{};
             /// informative docstring
             callback interface Testing { };
-        &quot;#</span>;
-        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">&quot;crate_name&quot;</span>).unwrap();
+        "#</span>;
+        <span class="kw">let </span>ci = ComponentInterface::from_webidl(UDL, <span class="string">"crate_name"</span>).unwrap();
         <span class="macro">assert_eq!</span>(
-            ci.get_callback_interface_definition(<span class="string">&quot;Testing&quot;</span>)
+            ci.get_callback_interface_definition(<span class="string">"Testing"</span>)
                 .unwrap()
                 .docstring()
                 .unwrap(),
-            <span class="string">&quot;informative docstring&quot;
+            <span class="string">"informative docstring"
         </span>);
     }
 }
