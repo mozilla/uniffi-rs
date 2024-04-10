@@ -382,4 +382,24 @@ impl ObjectWithDefaults {
     }
 }
 
+pub struct CustomNewtype(pub String);
+uniffi::custom_newtype!(CustomNewtype, String);
+
+// This newtype contains another newtype and alphabetically comes before it,
+// so forward references are required for generating valid Python.
+pub struct ASecondCustomNewtype(pub CustomNewtype);
+uniffi::custom_newtype!(ASecondCustomNewtype, CustomNewtype);
+
+#[derive(uniffi::Object)]
+pub struct ObjectWithNewtype {
+    pub str: ASecondCustomNewtype,
+}
+#[uniffi::export]
+impl ObjectWithNewtype {
+    #[uniffi::constructor]
+    fn new(str: ASecondCustomNewtype) -> Self {
+        Self { str }
+    }
+}
+
 uniffi::include_scaffolding!("proc-macro");
