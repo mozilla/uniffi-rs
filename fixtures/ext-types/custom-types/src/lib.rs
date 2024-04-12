@@ -1,5 +1,9 @@
-// A trivial guid.
+// A trivial guid, declared as `[Custom]` in the UDL.
 pub struct Guid(pub String);
+
+// Ditto, using a proc-macro.
+pub struct Ouid(pub String);
+uniffi::custom_newtype!(Ouid, String);
 
 // This error is represented in the UDL.
 #[derive(Debug, thiserror::Error)]
@@ -44,6 +48,11 @@ fn try_get_guid(guid: Option<Guid>) -> std::result::Result<Guid, GuidError> {
         }
         None => Guid("NewGuid".to_string()),
     })
+}
+
+#[uniffi::export]
+pub fn get_ouid(ouid: Option<Ouid>) -> Ouid {
+    ouid.unwrap_or_else(|| Ouid("Ouid".to_string()))
 }
 
 pub struct GuidHelper {
@@ -96,4 +105,4 @@ impl UniffiCustomTypeConverter for Guid {
     }
 }
 
-uniffi::include_scaffolding!("guid");
+uniffi::include_scaffolding!("custom_types");
