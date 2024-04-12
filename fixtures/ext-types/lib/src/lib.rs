@@ -1,5 +1,5 @@
 use custom_types::Handle;
-use ext_types_custom::Guid;
+use ext_types_custom::{ANestedGuid, Guid, Ouid};
 use ext_types_external_crate::{
     ExternalCrateDictionary, ExternalCrateInterface, ExternalCrateNonExhaustiveEnum,
 };
@@ -10,6 +10,18 @@ use uniffi_one::{
 };
 use uniffi_sublib::SubLibType;
 use url::Url;
+
+// #1988
+uniffi::ffi_converter_forward!(
+    ext_types_custom::Ouid,
+    ext_types_custom::UniFfiTag,
+    crate::UniFfiTag
+);
+uniffi::ffi_converter_forward!(
+    ext_types_custom::ANestedGuid,
+    ext_types_custom::UniFfiTag,
+    crate::UniFfiTag
+);
 
 pub struct CombinedType {
     pub uoe: UniffiOneEnum,
@@ -98,6 +110,40 @@ fn get_maybe_url(url: Option<Url>) -> Option<Url> {
 
 fn get_maybe_urls(urls: Vec<Option<Url>>) -> Vec<Option<Url>> {
     urls
+}
+
+// XXX - #1854
+// fn get_imported_guid(guid: Guid) -> Guid {
+
+#[uniffi::export]
+fn get_imported_ouid(ouid: Ouid) -> Ouid {
+    ouid
+}
+
+// external custom types wrapping external custom types.
+#[uniffi::export]
+fn get_imported_nested_guid(guid: Option<ANestedGuid>) -> ANestedGuid {
+    guid.unwrap_or_else(|| ANestedGuid(Guid("nested".to_string())))
+}
+
+#[uniffi::export]
+fn get_imported_nested_ouid(guid: Option<ANestedGuid>) -> ANestedGuid {
+    guid.unwrap_or_else(|| ANestedGuid(Guid("nested".to_string())))
+}
+
+// A local custom type wrapping an external imported UDL type
+// XXX - #1854
+// pub struct NestedExternalGuid(pub Guid);
+// ...
+// fn get_nested_external_guid(nguid: Option<NestedExternalGuid>) -> NestedExternalGuid {
+
+// A local custom type wrapping an external imported procmacro type
+pub struct NestedExternalOuid(pub Ouid);
+uniffi::custom_newtype!(NestedExternalOuid, Ouid);
+
+#[uniffi::export]
+fn get_nested_external_ouid(ouid: Option<NestedExternalOuid>) -> NestedExternalOuid {
+    ouid.unwrap_or_else(|| NestedExternalOuid(Ouid("nested-external-ouid".to_string())))
 }
 
 // A struct

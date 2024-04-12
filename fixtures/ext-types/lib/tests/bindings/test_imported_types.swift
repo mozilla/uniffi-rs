@@ -30,6 +30,13 @@ assert(getMaybeUrl(url: nil) == nil)
 assert(getUrls(urls: [url]) == [url])
 assert(getMaybeUrls(urls: [url, nil]) == [url, nil])
 
+assert(getGuid(value: "guid") ==  "guid")
+assert(getOuid(ouid: "ouid") ==  "ouid")
+assert(getImportedOuid(ouid: "ouid") ==  "ouid")
+assert(getNestedOuid(nouid: "ouid") ==  "ouid")
+assert(getImportedNestedGuid(guid: nil) == "nested")
+assert(getNestedExternalOuid(ouid: nil) == "nested-external-ouid")
+
 assert(getUniffiOneType(t: UniffiOneType(sval: "hello")).sval == "hello")
 assert(getMaybeUniffiOneType(t: UniffiOneType(sval: "hello"))!.sval == "hello")
 assert(getMaybeUniffiOneType(t: nil) == nil)

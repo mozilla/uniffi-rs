@@ -55,5 +55,8 @@ class TestGuid(unittest.TestCase):
         self.assertEqual(guid, "callback-test-payload")
         self.assertEqual(test_callback.saw_guid, "callback-test-payload")
 
+    def test_custom(self):
+        get_nested_object(InnerObject())
+
 if __name__=='__main__':
     unittest.main()

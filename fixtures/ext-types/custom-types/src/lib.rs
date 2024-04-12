@@ -105,4 +105,68 @@ impl UniffiCustomTypeConverter for Guid {
     }
 }
 
+pub struct ANestedGuid(pub Guid);
+
+impl UniffiCustomTypeConverter for ANestedGuid {
+    type Builtin = Guid;
+
+    // This is a "fixture" rather than an "example", so we are free to do things that don't really
+    // make sense for real apps.
+    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+        Ok(ANestedGuid(val))
+    }
+
+    fn from_custom(obj: Self) -> Self::Builtin {
+        obj.0
+    }
+}
+
+#[uniffi::export]
+fn get_nested_guid(nguid: Option<ANestedGuid>) -> ANestedGuid {
+    nguid.unwrap_or_else(|| ANestedGuid(Guid("ANestedGuid".to_string())))
+}
+
+// Dependent types might come in the "wrong" order - #2067 triggered
+// a bug here because of the alphabetical order of these types.
+pub struct ANestedOuid(pub Ouid);
+uniffi::custom_newtype!(ANestedOuid, Ouid);
+
+#[uniffi::export]
+fn get_nested_ouid(nouid: Option<ANestedOuid>) -> ANestedOuid {
+    nouid.unwrap_or_else(|| ANestedOuid(Ouid("ANestedOuid".to_string())))
+}
+
+// And custom types around other objects.
+#[derive(uniffi::Object)]
+pub struct InnerObject;
+
+#[uniffi::export]
+impl InnerObject {
+    #[uniffi::constructor]
+    fn new() -> Self {
+        Self
+    }
+}
+
+pub struct NestedObject(pub std::sync::Arc<InnerObject>);
+uniffi::custom_newtype!(NestedObject, std::sync::Arc<InnerObject>);
+
+#[uniffi::export]
+pub fn get_nested_object(n: NestedObject) -> NestedObject {
+    n
+}
+
+#[derive(uniffi::Record)]
+pub struct InnerRecord {
+    i: i32,
+}
+
+pub struct NestedRecord(pub InnerRecord);
+uniffi::custom_newtype!(NestedRecord, InnerRecord);
+
+#[uniffi::export]
+pub fn get_nested_record(n: NestedRecord) -> NestedRecord {
+    n
+}
+
 uniffi::include_scaffolding!("custom_types");

@@ -1,6 +1,10 @@
 [Custom]
 typedef string Guid;
 
+// Wrapping another custom type.
+[Custom]
+typedef Guid ANestedGuid;
+
 [Error]
 enum GuidError {
     "TooShort"

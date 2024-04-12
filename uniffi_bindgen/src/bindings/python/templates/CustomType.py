@@ -1,9 +1,6 @@
 {%- match python_config.custom_types.get(name.as_str())  %}
 {% when None %}
 {#- No custom type config, just forward all methods to our builtin type #}
-# Type alias
-{{ type_name }} = {{ builtin|type_name }}
-
 class _UniffiConverterType{{ name }}:
     @staticmethod
     def write(value, buf):
@@ -34,9 +31,6 @@ class _UniffiConverterType{{ name }}:
 {%- endfor %}
 {%- else %}
 {%- endmatch %}
-
-# Type alias
-{{ type_name }} = {{ builtin|type_name }}
 
 {#- Custom type config supplied, use it to convert the builtin type #}
 class _UniffiConverterType{{ name }}:
