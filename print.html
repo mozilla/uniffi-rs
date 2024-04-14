@@ -277,7 +277,11 @@ name = &quot;&lt;library name&gt;&quot;
 </code></pre>
 <p>to your crate's <code>Cargo.toml</code>.</p>
 <p><strong>Note:</strong> You also need to add <code>staticlib</code> crate type if you target iOS.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="the-udl-file"><a class="header" href="#the-udl-file">The UDL file</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="describing-the-interface"><a class="header" href="#describing-the-interface">Describing the interface</a></h1>
+<p>There are two ways of describing your interface:
+1 - with a UDL file (a type of IDL, Interface Definition Language);
+2 - with <a href="tutorial/../proc_macro/index.html">Rust procmacros</a>, similarly to how <code>wasm-bindgen</code> work. This avoids repeating your interface definitions in a separate file. Unfortunately, our docs aren't quite as good for that yet though.</p>
+<h2 id="the-udl-file"><a class="header" href="#the-udl-file">The UDL File</a></h2>
 <p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
 Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
 <pre><code class="language-idl">namespace math {
@@ -291,9 +295,6 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 <li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! See the <a href="tutorial/../udl/builtin_types.html">Built-in Types</a> chapter for more information on mapping types between Rust and UDL.</li>
 </ul>
 <p><strong>Note:</strong> If any of the things you expose in the <code>udl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
-<p><strong>Note</strong> It's also possible to use <a href="tutorial/../proc_macro/index.html">Rust procmacros</a> to describe your interface and you can avoid
-UDL files entirely if you choose.
-Unfortunately the docs aren't quite as good for that yet though.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="rust-scaffolding"><a class="header" href="#rust-scaffolding">Rust scaffolding</a></h1>
 <h2 id="rust-scaffolding-code"><a class="header" href="#rust-scaffolding-code">Rust scaffolding code</a></h2>
 <p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
