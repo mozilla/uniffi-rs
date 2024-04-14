@@ -4,8 +4,6 @@
 
 mod config;
 pub mod filters;
-mod types;
 
 pub use crate::interface::{Literal, Type};
 pub use config::TemplateExpression;
-pub use types::CodeType;
