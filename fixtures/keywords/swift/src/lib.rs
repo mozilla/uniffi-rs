@@ -44,4 +44,13 @@ pub enum func {
     class { object: u8 },
 }
 
+#[allow(non_camel_case_types)]
+pub struct r#else(pub r#func);
+uniffi::custom_newtype!(r#else, r#func);
+
+#[uniffi::export]
+pub fn get_else(e: r#else) -> r#else {
+    e
+}
+
 uniffi::include_scaffolding!("keywords");

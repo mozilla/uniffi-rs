@@ -6,6 +6,12 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's fixed?
+- Custom Type names are now treated as type names by all bindings. This means if they will work if they happen to be
+  keywords in the language. There's a very small risk of this being a breaking change if you used a type name which
+  did not already start with a capital letter, but this changes makes all type naming consistent.
+  ([#2073](https://github.com/mozilla/uniffi-rs/issues/2073))
+
 ### What's changed?
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 

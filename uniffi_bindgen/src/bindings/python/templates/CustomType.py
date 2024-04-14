@@ -2,7 +2,7 @@
 {% when None %}
 {#- No custom type config, just forward all methods to our builtin type #}
 # Type alias
-{{ name }} = {{ builtin|type_name }}
+{{ type_name }} = {{ builtin|type_name }}
 
 class _UniffiConverterType{{ name }}:
     @staticmethod
@@ -36,7 +36,7 @@ class _UniffiConverterType{{ name }}:
 {%- endmatch %}
 
 # Type alias
-{{ name }} = {{ builtin|type_name }}
+{{ type_name }} = {{ builtin|type_name }}
 
 {#- Custom type config supplied, use it to convert the builtin type #}
 class _UniffiConverterType{{ name }}:
