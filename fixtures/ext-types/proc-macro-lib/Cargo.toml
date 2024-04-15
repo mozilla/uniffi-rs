@@ -8,7 +8,7 @@ publish = false
 
 [package.metadata.uniffi.testing]
 external-crates = [
-    "uniffi-fixture-ext-types-guid",
+    "uniffi-fixture-ext-types-custom-types",
     "uniffi-fixture-ext-types-lib-one",
     "uniffi-example-custom-types",
 ]
@@ -23,7 +23,7 @@ bytes = "1.3"
 uniffi = { workspace = true }
 
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
-uniffi-fixture-ext-types-guid = {path = "../guid"}
+uniffi-fixture-ext-types-custom-types = {path = "../custom-types"}
 
 # Reuse one of our examples.
 uniffi-example-custom-types = {path = "../../../examples/custom-types"}

@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import unittest
-from ext_types_guid import *
+from ext_types_custom import *
 
 class TestCallback(GuidCallback):
     def run(self, guid):
@@ -14,6 +14,7 @@ class TestGuid(unittest.TestCase):
     def test_get_guid(self):
         self.assertEqual(get_guid(None), "NewGuid")
         self.assertEqual(get_guid("SomeGuid"), "SomeGuid")
+        self.assertEqual(get_ouid(None), "Ouid")
 
     def test_guid_helper(self):
         helper = get_guid_helper(None)

@@ -5,7 +5,7 @@
 import asyncio
 import unittest
 import urllib
-from ext_types_guid import *
+from ext_types_custom import *
 from imported_types_lib import *
 from uniffi_one_ns import *
 

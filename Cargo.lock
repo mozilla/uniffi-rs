@@ -1680,19 +1680,15 @@ dependencies = [
  "bytes",
  "uniffi",
  "uniffi-example-custom-types",
+ "uniffi-fixture-ext-types-custom-types",
  "uniffi-fixture-ext-types-external-crate",
- "uniffi-fixture-ext-types-guid",
  "uniffi-fixture-ext-types-lib-one",
  "uniffi-fixture-ext-types-sub-lib",
  "url",
 ]
 
 [[package]]
-name = "uniffi-fixture-ext-types-external-crate"
-version = "0.22.0"
-
-[[package]]
-name = "uniffi-fixture-ext-types-guid"
+name = "uniffi-fixture-ext-types-custom-types"
 version = "0.22.0"
 dependencies = [
  "anyhow",
@@ -1700,6 +1696,10 @@ dependencies = [
  "thiserror",
  "uniffi",
 ]
+
+[[package]]
+name = "uniffi-fixture-ext-types-external-crate"
+version = "0.22.0"
 
 [[package]]
 name = "uniffi-fixture-ext-types-http-headermap"
@@ -1729,7 +1729,7 @@ dependencies = [
  "bytes",
  "uniffi",
  "uniffi-example-custom-types",
- "uniffi-fixture-ext-types-guid",
+ "uniffi-fixture-ext-types-custom-types",
  "uniffi-fixture-ext-types-lib-one",
  "url",
 ]

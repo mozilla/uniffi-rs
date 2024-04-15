@@ -1,8 +1,8 @@
 use custom_types::Handle;
+use ext_types_custom::Guid;
 use ext_types_external_crate::{
     ExternalCrateDictionary, ExternalCrateInterface, ExternalCrateNonExhaustiveEnum,
 };
-use ext_types_guid::Guid;
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
