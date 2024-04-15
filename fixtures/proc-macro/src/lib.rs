@@ -144,7 +144,6 @@ fn make_hashmap(k: i8, v: u64) -> HashMap<i8, u64> {
     HashMap::from([(k, v)])
 }
 
-// XXX - fails to call this from python - https://github.com/mozilla/uniffi-rs/issues/1774
 #[uniffi::export]
 fn return_hashmap(h: HashMap<i8, u64>) -> HashMap<i8, u64> {
     h
