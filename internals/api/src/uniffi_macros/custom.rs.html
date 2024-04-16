@@ -85,6 +85,7 @@
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -151,7 +152,8 @@
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter
 
-        #type_converter
+        <span class="attr">#[allow(non_camel_case_types)]
+        </span>#type_converter
     })
 }
 
