@@ -2,6 +2,7 @@ use std::sync::Arc;
 use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneTrait};
 
 uniffi::use_udl_object!(uniffi_one, UniffiOneInterface);
+uniffi::use_udl_trait!(uniffi_one, UniffiOneTrait);
 uniffi::use_udl_enum!(uniffi_one, UniffiOneEnum);
 
 #[derive(Default, uniffi::Record)]

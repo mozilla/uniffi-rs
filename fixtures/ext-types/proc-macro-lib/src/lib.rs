@@ -13,6 +13,9 @@ uniffi::use_udl_record!(ext_types_custom, Guid);
 uniffi::use_udl_record!(custom_types, Url);
 uniffi::use_udl_record!(custom_types, Handle);
 
+uniffi::use_udl_trait!(uniffi_one, UniffiOneTrait);
+uniffi::use_udl_record!(uniffi_one, UniffiOneProcMacroType);
+
 #[derive(uniffi::Record)]
 pub struct CombinedType {
     pub uoe: UniffiOneEnum,
