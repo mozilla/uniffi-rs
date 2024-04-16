@@ -17,7 +17,7 @@ impl CustomCodeType {
 
 impl CodeType for CustomCodeType {
     fn type_label(&self) -> String {
-        self.name.clone()
+        super::SwiftCodeOracle.class_name(&self.name)
     }
 
     fn canonical_name(&self) -> String {

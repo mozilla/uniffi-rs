@@ -68,4 +68,13 @@ pub enum r#for {
     r#yield { r#async: u8 },
 }
 
+#[allow(non_camel_case_types)]
+pub struct r#else(pub r#for);
+uniffi::custom_newtype!(r#else, r#for);
+
+#[uniffi::export]
+pub fn get_else(e: r#else) -> r#else {
+    e
+}
+
 uniffi::include_scaffolding!("keywords");

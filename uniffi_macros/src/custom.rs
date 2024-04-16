@@ -64,6 +64,7 @@ pub(crate) fn expand_ffi_converter_custom_newtype(
     Ok(quote! {
         #ffi_converter
 
+        #[allow(non_camel_case_types)]
         #type_converter
     })
 }
