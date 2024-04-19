@@ -627,6 +627,33 @@
 <a href="#625" id="625">625</a>
 <a href="#626" id="626">626</a>
 <a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -927,6 +954,33 @@
             });
         <span class="string">""
     </span>}
+
+    <span class="comment">// An inefficient algo to return type aliases needed for custom types
+    // in an order such that dependencies are in the correct order.
+    // Eg, if there's a custom type `Guid` -&gt; `str` and another `GuidWrapper` -&gt; `Guid`,
+    // it's important the type alias for `Guid` appears first. Fails to handle
+    // another level of indirection (eg, `A { builtin: C}, B { }, C { builtin: B })`)
+    // but that's pathological :)
+    </span><span class="kw">fn </span>get_custom_type_aliases(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;(String, <span class="kw-2">&amp;</span>Type)&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>ordered = <span class="macro">vec!</span>[];
+        <span class="kw">for </span>type_ <span class="kw">in </span><span class="self">self</span>.ci.iter_types() {
+            <span class="kw">if let </span>Type::Custom { name, builtin, .. } = type_ {
+                <span class="kw">match </span>ordered
+                    .iter()
+                    .position(|x: <span class="kw-2">&amp;</span>(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>Type)| <span class="kw-2">*</span>name == x.<span class="number">1</span>.as_codetype().type_label())
+                {
+                    <span class="comment">// This 'name' appears as a builtin, so we must insert our type first.
+                    </span><span class="prelude-val">Some</span>(pos) =&gt; ordered.insert(pos, (name, builtin)),
+                    <span class="comment">// Otherwise at the end.
+                    </span><span class="prelude-val">None </span>=&gt; ordered.push((name, builtin)),
+                }
+            }
+        }
+        ordered
+            .into_iter()
+            .map(|(n, t)| (PythonCodeOracle.class_name(n), t))
+            .collect()
+    }
 }
 
 <span class="attr">#[derive(Template)]
