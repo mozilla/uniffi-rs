@@ -7,6 +7,7 @@ import urllib
 from imported_types_lib import *
 from imported_types_sublib import *
 from uniffi_one_ns import *
+from ext_types_custom import *
 
 class TestIt(unittest.TestCase):
     def test_it(self):
@@ -39,6 +40,12 @@ class TestIt(unittest.TestCase):
         self.assertEqual(get_maybe_url(url), url)
         self.assertEqual(get_maybe_url(None), None)
         self.assertEqual(get_maybe_urls([url, None]), [url, None])
+
+    def test_custom_types(self):
+        self.assertEqual(get_guid("guid"), "guid")
+        self.assertEqual(get_ouid("ouid"), "ouid")
+        self.assertEqual(get_ouid("uuid"), "uuid")
+        self.assertEqual(get_nested_guid("uuid"), "uuid")
 
     def test_get_uniffi_one_type(self):
         t1 = UniffiOneType(sval="hello")

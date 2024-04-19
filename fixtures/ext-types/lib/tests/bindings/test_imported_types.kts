@@ -5,6 +5,7 @@
 import uniffi.imported_types_lib.*
 import uniffi.imported_types_sublib.*
 import uniffi.uniffi_one_ns.*
+import uniffi.ext_types_custom.*
 
 val ct = getCombinedType(null)
 assert(ct.uot.sval == "hello")
@@ -27,6 +28,11 @@ assert(getMaybeUrl(url)!! ==  url)
 assert(getMaybeUrl(null) ==  null)
 assert(getUrls(listOf(url)) ==  listOf(url))
 assert(getMaybeUrls(listOf(url, null)) == listOf(url, null))
+
+assert(getGuid("guid") == "guid")
+assert(getOuid("ouid") == "ouid")
+//assert(getImportedGuid("guid") == "guid")
+assert(getImportedOuid("ouid") == "ouid")
 
 val uot = UniffiOneType("hello")
 assert(getUniffiOneType(uot) == uot)

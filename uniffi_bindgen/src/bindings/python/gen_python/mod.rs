@@ -298,6 +298,33 @@ impl<'a> TypeRenderer<'a> {
             });
         ""
     }
+
+    // An inefficient algo to return type aliases needed for custom types
+    // in an order such that dependencies are in the correct order.
+    // Eg, if there's a custom type `Guid` -> `str` and another `GuidWrapper` -> `Guid`,
+    // it's important the type alias for `Guid` appears first. Fails to handle
+    // another level of indirection (eg, `A { builtin: C}, B { }, C { builtin: B })`)
+    // but that's pathological :)
+    fn get_custom_type_aliases(&self) -> Vec<(String, &Type)> {
+        let mut ordered = vec![];
+        for type_ in self.ci.iter_types() {
+            if let Type::Custom { name, builtin, .. } = type_ {
+                match ordered
+                    .iter()
+                    .position(|x: &(&str, &Type)| *name == x.1.as_codetype().type_label())
+                {
+                    // This 'name' appears as a builtin, so we must insert our type first.
+                    Some(pos) => ordered.insert(pos, (name, builtin)),
+                    // Otherwise at the end.
+                    None => ordered.push((name, builtin)),
+                }
+            }
+        }
+        ordered
+            .into_iter()
+            .map(|(n, t)| (PythonCodeOracle.class_name(n), t))
+            .collect()
+    }
 }
 
 #[derive(Template)]
