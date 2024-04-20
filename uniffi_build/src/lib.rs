@@ -39,9 +39,6 @@ pub fn generate_scaffolding_for_crate(
     // The UNIFFI_TESTS_DISABLE_EXTENSIONS variable disables some bindings, but it is evaluated
     // at *build* time, so we need to rebuild when it changes.
     println!("cargo:rerun-if-env-changed=UNIFFI_TESTS_DISABLE_EXTENSIONS");
-    // Why don't we just depend on uniffi-bindgen and call the public functions?
-    // Calling the command line helps making sure that the generated swift/Kotlin/whatever
-    // bindings were generated with the same version of uniffi as the Rust scaffolding code.
     let out_dir = env::var("OUT_DIR").context("$OUT_DIR missing?!")?;
     uniffi_bindgen::generate_component_scaffolding_for_crate(
         udl_file,

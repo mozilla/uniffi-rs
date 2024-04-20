@@ -33,7 +33,7 @@ ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindgen?/ffi-trace"]
 # Support for features needed by the `build.rs` script. Enable this in your
 # `build-dependencies`.
 build = [ "dep:uniffi_build" ]
-# Support for `uniffi_bindgen::{generate_bindings, generate_component_scaffolding}`.
+# Support for `uniffi_bindgen::generate_bindings`.
 # Enable this feature for your `uniffi-bindgen` binaries if you don't need the full CLI.
 bindgen = ["dep:uniffi_bindgen"]
 cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata"]

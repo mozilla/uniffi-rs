@@ -19,8 +19,7 @@ pub use uniffi_bindgen::{
     bindings::{
         KotlinBindingGenerator, PythonBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator,
     },
-    generate_bindings, generate_component_scaffolding, generate_component_scaffolding_for_crate,
-    print_repr,
+    generate_bindings, print_repr,
 };
 #[cfg(feature = "build")]
 pub use uniffi_build::{generate_scaffolding, generate_scaffolding_for_crate};

@@ -32,6 +32,11 @@ or use UDL with types from more than one crate.
 - Various `use_udl_*`/`use_remote_type` etc macros have been removed.
 
 [Detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
+
+- `uniffi::generate_component_scaffolding` has been removed. It's almost certainly unused as it is
+  behind the wrong feature and undocumented. `uniffi::generate_scaffolding` does exacly the same thing and is
+  correctly behind the `build` feature.
+
 ### What's new?
 
 - Kotlin and Swift: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
