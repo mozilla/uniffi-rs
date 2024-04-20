@@ -1,0 +1,74 @@
+# mkdocs:
+# Prepare: pip install mkdocs; mkdocs-material
+# Testing: python -m mkdocs serve
+# Build into ./target/rendered-docs: python -m mkdocs build
+# In CI, `cargo doc` output will have been copied to some deep 'api/' directory, you may see warnings for that.
+# We should see if we can move that process into here via an extension?
+
+site_name: The UniFFI user guide
+docs_dir: docs/manual/src
+site_dir:  'target/rendered-docs'
+repo_url: 'https://github.com/mozilla/uniffi-rs'
+use_directory_urls: false
+
+theme:
+  name: 'material'
+  language: 'en'
+
+# XXX - not getting highlighting in, eg, ```rust``` blocks???
+# tried this :(
+# markdown_extensions:
+#  - codehilite
+
+# This lists all the files that become part of the documentation
+nav:
+- ./Motivation.md
+- 'Tutorial':
+  - ./Getting_started.md
+  - ./tutorial/Prerequisites.md
+  - ./tutorial/udl_file.md
+  - ./tutorial/Rust_scaffolding.md
+  - ./tutorial/foreign_language_bindings.md
+- 'The UDL file':
+  - ./udl_file_spec.md
+  - ./udl/namespace.md
+  - ./udl/builtin_types.md
+  -  ./udl/enumerations.md
+  -  ./udl/structs.md
+  - 'Functions':
+    - ./udl/functions.md
+    - ./udl/errors.md
+  - 'Interfaces and Objects':
+    - ./udl/interfaces.md
+    - ./udl/callback_interfaces.md
+  - 'External Types':
+    - ./udl/ext_types.md
+    - ./udl/ext_types_external.md
+    - ./udl/custom_types.md
+  - ./udl/docstrings.md
+- ./proc_macro/index.md
+- ./futures.md
+
+- 'Bindings':
+  - ./bindings.md
+  - ./foreign_traits.md
+
+  - 'Kotlin':
+    - ./kotlin/configuration.md
+    - ./kotlin/gradle.md
+    - ./kotlin/lifetimes.md
+
+  - 'Swift':
+    - ./swift/overview.md
+    - ./swift/configuration.md
+    - ./swift/module.md
+    - ./swift/xcode.md
+
+  - 'Python': ./python/configuration.md
+
+- Internals:
+  - ./internals/design_principles.md
+  - ./internals/crates.md
+  - ./internals/lifting_and_lowering.md
+  - ./internals/object_references.md
+  - ./internals/rendering_foreign_bindings.md

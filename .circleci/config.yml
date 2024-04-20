@@ -3,19 +3,17 @@
 version: 2.1
 
 commands:
-  install-mdbook:
+  install-mkdocs:
     steps:
       - run:
           name: Install mdBook
           command: |
-            mkdir -p $HOME/.bin
-            pushd $HOME/.bin
-            # mdbook
-            curl -sfSL --retry 5 --retry-delay 10 https://github.com/rust-lang-nursery/mdBook/releases/download/v0.4.35/mdbook-v0.4.35-x86_64-unknown-linux-gnu.tar.gz | tar xz
-            # mdbook-link-check
-            curl -sfSL --retry 5 --retry-delay 10 https://github.com/Michael-F-Bryan/mdbook-linkcheck/releases/download/v0.7.7/mdbook-linkcheck.x86_64-unknown-linux-gnu.zip -o mdbook-linkcheck.zip && unzip mdbook-linkcheck.zip && chmod +x mdbook-linkcheck
-            echo 'export PATH="$HOME/.bin:$PATH"' >> $BASH_ENV
-            popd
+            sudo apt-get update -qq
+            sudo apt-get install -qy --no-install-recommends python3-pip
+            sudo apt-get clean
+            pip install mkdocs
+            pip install mkdocs-material
+
   # Our policy for updating rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
   # See also rust-toolchain.toml in the root of this repo, which is used to specify our official target version.
   prepare-rust-target-version:
@@ -127,10 +125,10 @@ jobs:
       - prepare-rust-target-version
       - build-api-docs
       - run: cp -r ./target/doc ./docs/manual/src/internals/api
-      - install-mdbook
-      - run: mdbook build docs/manual
+      - install-mkdocs
+      - run: python -m mkdocs build
       - gh-pages/deploy:
-          build-dir: docs/manual/book/html
+          build-dir: target/rendered-docs
           ssh-fingerprints: "ac:68:a3:78:ea:ee:00:05:30:e1:dc:1f:2e:2f:7c:81"
 
   Deploy Docker:
