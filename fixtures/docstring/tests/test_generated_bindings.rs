@@ -7,8 +7,7 @@ uniffi::build_foreign_language_testcases!(
 #[cfg(test)]
 mod tests {
     use camino::Utf8PathBuf;
-    use uniffi_bindgen::bindings::TargetLanguage;
-    use uniffi_bindgen::BindingGeneratorDefault;
+    use uniffi_bindgen::{bindings::*, BindingGenerator};
     use uniffi_testing::UniFFITestHelper;
 
     const DOCSTRINGS: &[&str] = &[
@@ -36,23 +35,23 @@ mod tests {
         "<docstring-record>",
     ];
 
-    fn test_docstring(language: TargetLanguage, file_extension: &str) {
+    fn test_docstring<T: BindingGenerator>(gen: T, file_extension: &str) {
         let test_helper = UniFFITestHelper::new(std::env!("CARGO_PKG_NAME")).unwrap();
 
         let out_dir = test_helper
             .create_out_dir(
                 std::env!("CARGO_TARGET_TMPDIR"),
-                format!("test-docstring-{}", language),
+                format!(
+                    "test-docstring-{}",
+                    file_extension.to_string().replace('.', "")
+                ),
             )
             .unwrap();
 
         uniffi_bindgen::generate_bindings(
             &Utf8PathBuf::from("src/docstring.udl"),
             None,
-            BindingGeneratorDefault {
-                target_languages: vec![language],
-                try_format_code: false,
-            },
+            gen,
             Some(&out_dir),
             None,
             None,
@@ -87,16 +86,16 @@ mod tests {
 
     #[test]
     fn test_docstring_kotlin() {
-        test_docstring(TargetLanguage::Kotlin, "kt");
+        test_docstring(KotlinBindingGenerator, "kt");
     }
 
     #[test]
     fn test_docstring_python() {
-        test_docstring(TargetLanguage::Python, "py");
+        test_docstring(PythonBindingGenerator, "py");
     }
 
     #[test]
     fn test_docstring_swift() {
-        test_docstring(TargetLanguage::Swift, "swift");
+        test_docstring(SwiftBindingGenerator, "swift");
     }
 }

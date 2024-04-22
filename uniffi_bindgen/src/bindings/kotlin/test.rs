@@ -2,8 +2,8 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::TargetLanguage;
-use crate::{bindings::RunScriptOptions, library_mode::generate_bindings, BindingGeneratorDefault};
+use crate::bindings::RunScriptOptions;
+use crate::library_mode::generate_bindings;
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env;
@@ -38,10 +38,7 @@ pub fn run_script(
     generate_bindings(
         &cdylib_path,
         None,
-        &BindingGeneratorDefault {
-            target_languages: vec![TargetLanguage::Kotlin],
-            try_format_code: false,
-        },
+        &super::KotlinBindingGenerator,
         None,
         &out_dir,
         false,

@@ -29,22 +29,20 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use std::process::Command;
-
+use crate::{BindingGenerator, ComponentInterface};
 use anyhow::Result;
 use camino::Utf8Path;
 use fs_err as fs;
+use std::process::Command;
 
-pub mod gen_swift;
-pub use gen_swift::{generate_bindings, Config};
+mod gen_swift;
+use gen_swift::{generate_bindings, Config};
 mod test;
-
-use super::super::interface::ComponentInterface;
 pub use test::{run_script, run_test};
 
 /// The Swift bindings generated from a [`ComponentInterface`].
 ///
-pub struct Bindings {
+struct Bindings {
     /// The contents of the generated `.swift` file, as a string.
     library: String,
     /// The contents of the generated `.h` file, as a string.
@@ -53,45 +51,66 @@ pub struct Bindings {
     modulemap: Option<String>,
 }
 
-/// Write UniFFI component bindings for Swift as files on disk.
-///
-/// Unlike other target languages, binding to Rust code from Swift involves more than just
-/// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
-/// declarations, and a `.modulemap` file to tell Swift how to use it.
-pub fn write_bindings(
-    config: &Config,
-    ci: &ComponentInterface,
-    out_dir: &Utf8Path,
-    try_format_code: bool,
-) -> Result<()> {
-    let Bindings {
-        header,
-        library,
-        modulemap,
-    } = generate_bindings(config, ci)?;
+pub struct SwiftBindingGenerator;
+impl BindingGenerator for SwiftBindingGenerator {
+    type Config = Config;
 
-    let source_file = out_dir.join(format!("{}.swift", config.module_name()));
-    fs::write(&source_file, library)?;
-
-    let header_file = out_dir.join(config.header_filename());
-    fs::write(header_file, header)?;
-
-    if let Some(modulemap) = modulemap {
-        let modulemap_file = out_dir.join(config.modulemap_filename());
-        fs::write(modulemap_file, modulemap)?;
+    fn new_config(&self, root_toml: &toml::Value) -> Result<Self::Config> {
+        Ok(
+            match root_toml.get("bindings").and_then(|b| b.get("swift")) {
+                Some(v) => v.clone().try_into()?,
+                None => Default::default(),
+            },
+        )
     }
 
-    if try_format_code {
-        if let Err(e) = Command::new("swiftformat")
-            .arg(source_file.as_str())
-            .output()
-        {
-            println!(
-                "Warning: Unable to auto-format {} using swiftformat: {e:?}",
-                source_file.file_name().unwrap(),
-            );
+    /// Unlike other target languages, binding to Rust code from Swift involves more than just
+    /// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
+    /// declarations, and a `.modulemap` file to tell Swift how to use it.
+    fn write_bindings(
+        &self,
+        ci: &ComponentInterface,
+        config: &Config,
+        out_dir: &Utf8Path,
+        try_format_code: bool,
+    ) -> Result<()> {
+        let Bindings {
+            header,
+            library,
+            modulemap,
+        } = generate_bindings(config, ci)?;
+
+        let source_file = out_dir.join(format!("{}.swift", config.module_name()));
+        fs::write(&source_file, library)?;
+
+        let header_file = out_dir.join(config.header_filename());
+        fs::write(header_file, header)?;
+
+        if let Some(modulemap) = modulemap {
+            let modulemap_file = out_dir.join(config.modulemap_filename());
+            fs::write(modulemap_file, modulemap)?;
         }
+
+        if try_format_code {
+            if let Err(e) = Command::new("swiftformat")
+                .arg(source_file.as_str())
+                .output()
+            {
+                println!(
+                    "Warning: Unable to auto-format {} using swiftformat: {e:?}",
+                    source_file.file_name().unwrap(),
+                );
+            }
+        }
+
+        Ok(())
     }
 
-    Ok(())
+    fn check_library_path(
+        &self,
+        _library_path: &Utf8Path,
+        _cdylib_name: Option<&str>,
+    ) -> Result<()> {
+        Ok(())
+    }
 }

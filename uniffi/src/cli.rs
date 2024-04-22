@@ -4,8 +4,7 @@
 
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
-use uniffi_bindgen::bindings::TargetLanguage;
-use uniffi_bindgen::BindingGeneratorDefault;
+use uniffi_bindgen::bindings::*;
 
 // Structs to help our cmdline parsing. Note that docstrings below form part
 // of the "help" output.
@@ -79,6 +78,112 @@ enum Commands {
     },
 }
 
+fn gen_library_mode(
+    library_path: &camino::Utf8Path,
+    crate_name: Option<String>,
+    languages: Vec<TargetLanguage>,
+    cfo: Option<&camino::Utf8Path>,
+    out_dir: &camino::Utf8Path,
+    fmt: bool,
+) -> anyhow::Result<()> {
+    use uniffi_bindgen::library_mode::generate_bindings;
+    for language in languages {
+        // Type-bounds on trait implementations makes selecting between languages a bit tedious.
+        match language {
+            TargetLanguage::Kotlin => generate_bindings(
+                library_path,
+                crate_name.clone(),
+                &KotlinBindingGenerator,
+                cfo,
+                out_dir,
+                fmt,
+            )?
+            .len(),
+            TargetLanguage::Python => generate_bindings(
+                library_path,
+                crate_name.clone(),
+                &PythonBindingGenerator,
+                cfo,
+                out_dir,
+                fmt,
+            )?
+            .len(),
+            TargetLanguage::Ruby => generate_bindings(
+                library_path,
+                crate_name.clone(),
+                &RubyBindingGenerator,
+                cfo,
+                out_dir,
+                fmt,
+            )?
+            .len(),
+            TargetLanguage::Swift => generate_bindings(
+                library_path,
+                crate_name.clone(),
+                &SwiftBindingGenerator,
+                cfo,
+                out_dir,
+                fmt,
+            )?
+            .len(),
+        };
+    }
+    Ok(())
+}
+
+fn gen_bindings(
+    udl_file: &camino::Utf8Path,
+    cfo: Option<&camino::Utf8Path>,
+    languages: Vec<TargetLanguage>,
+    odo: Option<&camino::Utf8Path>,
+    library_file: Option<&camino::Utf8Path>,
+    crate_name: Option<&str>,
+    fmt: bool,
+) -> anyhow::Result<()> {
+    use uniffi_bindgen::generate_bindings;
+    for language in languages {
+        match language {
+            TargetLanguage::Kotlin => generate_bindings(
+                udl_file,
+                cfo,
+                KotlinBindingGenerator,
+                odo,
+                library_file,
+                crate_name,
+                fmt,
+            )?,
+            TargetLanguage::Python => generate_bindings(
+                udl_file,
+                cfo,
+                PythonBindingGenerator,
+                odo,
+                library_file,
+                crate_name,
+                fmt,
+            )?,
+            TargetLanguage::Ruby => generate_bindings(
+                udl_file,
+                cfo,
+                RubyBindingGenerator,
+                odo,
+                library_file,
+                crate_name,
+                fmt,
+            )?,
+            TargetLanguage::Swift => generate_bindings(
+                udl_file,
+                cfo,
+                SwiftBindingGenerator,
+                odo,
+                library_file,
+                crate_name,
+                fmt,
+            )?,
+        };
+    }
+    Ok(())
+}
+
 pub fn run_main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     match cli.command {
@@ -100,25 +205,19 @@ pub fn run_main() -> anyhow::Result<()> {
                 if language.is_empty() {
                     panic!("please specify at least one language with --language")
                 }
-                uniffi_bindgen::library_mode::generate_bindings(
+                gen_library_mode(
                     &source,
                     crate_name,
-                    &BindingGeneratorDefault {
-                        target_languages: language,
-                        try_format_code: !no_format,
-                    },
+                    language,
                     config.as_deref(),
                     &out_dir,
                     !no_format,
                 )?;
             } else {
-                uniffi_bindgen::generate_bindings(
+                gen_bindings(
                     &source,
                     config.as_deref(),
-                    BindingGeneratorDefault {
-                        target_languages: language,
-                        try_format_code: !no_format,
-                    },
+                    language,
                     out_dir.as_deref(),
                     lib_file.as_deref(),
                     crate_name.as_deref(),

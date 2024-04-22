@@ -69,6 +69,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     binding_generator.check_library_path(library_path, cdylib_name)?;
 
     let mut sources = find_sources(
+        binding_generator,
         &cargo_metadata,
         library_path,
         cdylib_name,
@@ -136,12 +137,13 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     None
 }
 
-fn find_sources<Config: BindingsConfig>(
+fn find_sources<T: BindingGenerator>(
+    generator: &T,
     cargo_metadata: &cargo_metadata::Metadata,
     library_path: &Utf8Path,
     cdylib_name: Option<&str>,
     config_file_override: Option<&Utf8Path>,
-) -> Result<Vec<Source<Config>>> {
+) -> Result<Vec<Source<T::Config>>> {
     let items = macro_metadata::extract_from_library(library_path)?;
     let mut metadata_groups = create_metadata_groups(&items);
     group_metadata(&mut metadata_groups, items)?;
@@ -186,7 +188,8 @@ fn find_sources<Config: BindingsConfig>(
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;
-            let mut config = load_initial_config::<Config>(crate_root, config_file_override)?;
+            let mut config =
+                generator.new_config(&load_initial_config(crate_root, config_file_override)?)?;
             if let Some(cdylib_name) = cdylib_name {
                 config.update_from_cdylib_name(cdylib_name);
             }

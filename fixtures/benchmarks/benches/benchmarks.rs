@@ -5,7 +5,9 @@
 use clap::Parser;
 use std::env;
 use uniffi_benchmarks::Args;
-use uniffi_bindgen::bindings::{kotlin, python, swift, RunScriptOptions};
+use uniffi_bindgen::bindings::{
+    kotlin_run_script, python_run_script, swift_run_script, RunScriptOptions,
+};
 
 fn main() {
     let args = Args::parse();
@@ -18,7 +20,7 @@ fn main() {
     };
 
     if args.should_run_python() {
-        python::run_script(
+        python_run_script(
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
             "benches/bindings/run_benchmarks.py",
@@ -29,7 +31,7 @@ fn main() {
     }
 
     if args.should_run_kotlin() {
-        kotlin::run_script(
+        kotlin_run_script(
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
             "benches/bindings/run_benchmarks.kts",
@@ -40,7 +42,7 @@ fn main() {
     }
 
     if args.should_run_swift() {
-        swift::run_script(
+        swift_run_script(
             std::env!("CARGO_TARGET_TMPDIR"),
             "uniffi-fixture-benchmarks",
             "benches/bindings/run_benchmarks.swift",
