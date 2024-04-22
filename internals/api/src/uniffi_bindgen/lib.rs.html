@@ -510,99 +510,6 @@
 <a href="#508" id="508">508</a>
 <a href="#509" id="509">509</a>
 <a href="#510" id="510">510</a>
-<a href="#511" id="511">511</a>
-<a href="#512" id="512">512</a>
-<a href="#513" id="513">513</a>
-<a href="#514" id="514">514</a>
-<a href="#515" id="515">515</a>
-<a href="#516" id="516">516</a>
-<a href="#517" id="517">517</a>
-<a href="#518" id="518">518</a>
-<a href="#519" id="519">519</a>
-<a href="#520" id="520">520</a>
-<a href="#521" id="521">521</a>
-<a href="#522" id="522">522</a>
-<a href="#523" id="523">523</a>
-<a href="#524" id="524">524</a>
-<a href="#525" id="525">525</a>
-<a href="#526" id="526">526</a>
-<a href="#527" id="527">527</a>
-<a href="#528" id="528">528</a>
-<a href="#529" id="529">529</a>
-<a href="#530" id="530">530</a>
-<a href="#531" id="531">531</a>
-<a href="#532" id="532">532</a>
-<a href="#533" id="533">533</a>
-<a href="#534" id="534">534</a>
-<a href="#535" id="535">535</a>
-<a href="#536" id="536">536</a>
-<a href="#537" id="537">537</a>
-<a href="#538" id="538">538</a>
-<a href="#539" id="539">539</a>
-<a href="#540" id="540">540</a>
-<a href="#541" id="541">541</a>
-<a href="#542" id="542">542</a>
-<a href="#543" id="543">543</a>
-<a href="#544" id="544">544</a>
-<a href="#545" id="545">545</a>
-<a href="#546" id="546">546</a>
-<a href="#547" id="547">547</a>
-<a href="#548" id="548">548</a>
-<a href="#549" id="549">549</a>
-<a href="#550" id="550">550</a>
-<a href="#551" id="551">551</a>
-<a href="#552" id="552">552</a>
-<a href="#553" id="553">553</a>
-<a href="#554" id="554">554</a>
-<a href="#555" id="555">555</a>
-<a href="#556" id="556">556</a>
-<a href="#557" id="557">557</a>
-<a href="#558" id="558">558</a>
-<a href="#559" id="559">559</a>
-<a href="#560" id="560">560</a>
-<a href="#561" id="561">561</a>
-<a href="#562" id="562">562</a>
-<a href="#563" id="563">563</a>
-<a href="#564" id="564">564</a>
-<a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a>
-<a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
-<a href="#598" id="598">598</a>
-<a href="#599" id="599">599</a>
-<a href="#600" id="600">600</a>
-<a href="#601" id="601">601</a>
-<a href="#602" id="602">602</a>
-<a href="#603" id="603">603</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -700,7 +607,7 @@
 </span><span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>fs_err::{<span class="self">self </span><span class="kw">as </span>fs, File};
-<span class="kw">use </span>serde::{de::DeserializeOwned, Deserialize, Serialize};
+<span class="kw">use </span>serde::{de::DeserializeOwned, Deserialize};
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::io::ErrorKind;
 <span class="kw">use </span>std::{collections::HashMap, process::Command};
@@ -712,7 +619,6 @@
 <span class="kw">pub mod </span>macro_metadata;
 <span class="kw">pub mod </span>scaffolding;
 
-<span class="kw">use </span>bindings::TargetLanguage;
 <span class="kw">pub use </span>interface::ComponentInterface;
 <span class="kw">use </span>scaffolding::RustScaffolding;
 
@@ -733,17 +639,7 @@
     ///
     /// config_map maps crate names to config instances. This is mostly used to set up external
     /// types.
-    </span><span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;);
-}
-
-<span class="doccomment">/// Binding generator config with no members
-</span><span class="attr">#[derive(Clone, Debug, Deserialize, Hash, PartialEq, PartialOrd, Ord, Eq)]
-</span><span class="kw">pub struct </span>EmptyBindingsConfig;
-
-<span class="kw">impl </span>BindingsConfig <span class="kw">for </span>EmptyBindingsConfig {
-    <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _ci: <span class="kw-2">&amp;</span>ComponentInterface) {}
-    <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _cdylib_name: <span class="kw-2">&amp;</span>str) {}
-    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {}
+    </span><span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {}
 }
 
 <span class="doccomment">/// A trait representing a UniFFI Binding Generator
@@ -753,6 +649,9 @@
 </span><span class="kw">pub trait </span>BindingGenerator: Sized {
     <span class="doccomment">/// Handles configuring the bindings
     </span><span class="kw">type </span>Config: BindingsConfig;
+
+    <span class="doccomment">/// Creates a new config.
+    </span><span class="kw">fn </span>new_config(<span class="kw-2">&amp;</span><span class="self">self</span>, root_toml: <span class="kw-2">&amp;</span>toml::Value) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Config&gt;;
 
     <span class="doccomment">/// Writes the bindings to the output directory
     ///
@@ -770,43 +669,6 @@
 
     <span class="doccomment">/// Check if `library_path` used by library mode is valid for this generator
     </span><span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
-}
-
-<span class="kw">pub struct </span>BindingGeneratorDefault {
-    <span class="kw">pub </span>target_languages: Vec&lt;TargetLanguage&gt;,
-    <span class="kw">pub </span>try_format_code: bool,
-}
-
-<span class="kw">impl </span>BindingGenerator <span class="kw">for </span>BindingGeneratorDefault {
-    <span class="kw">type </span>Config = Config;
-
-    <span class="kw">fn </span>write_bindings(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        ci: <span class="kw-2">&amp;</span>ComponentInterface,
-        config: <span class="kw-2">&amp;</span><span class="self">Self</span>::Config,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-        _try_format_code: bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">for </span><span class="kw-2">&amp;</span>language <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.target_languages {
-            bindings::write_bindings(
-                <span class="kw-2">&amp;</span>config.bindings,
-                ci,
-                out_dir,
-                language,
-                <span class="self">self</span>.try_format_code,
-            )<span class="question-mark">?</span>;
-        }
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">for </span><span class="kw-2">&amp;</span>language <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.target_languages {
-            <span class="kw">if </span>cdylib_name.is_none() &amp;&amp; language != TargetLanguage::Swift {
-                <span class="macro">bail!</span>(<span class="string">"Generate bindings for {language} requires a cdylib, but {library_path} was given"</span>);
-            }
-        }
-        <span class="prelude-val">Ok</span>(())
-    }
 }
 
 <span class="doccomment">/// Generate bindings for an external binding generator
@@ -846,7 +708,8 @@
     <span class="kw">let </span>config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     <span class="kw">let </span>config = {
-        <span class="kw">let </span><span class="kw-2">mut </span>config = load_initial_config::&lt;T::Config&gt;(crate_root, config_file_override)<span class="question-mark">?</span>;
+        <span class="kw">let </span>toml = load_initial_config(crate_root, config_file_override)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>config = binding_generator.new_config(<span class="kw-2">&amp;</span>toml)<span class="question-mark">?</span>;
         config.update_from_ci(<span class="kw-2">&amp;</span>component);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>library_file) = library_file {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw">crate</span>::library_mode::calc_cdylib_name(library_file.as_ref())
@@ -1040,10 +903,10 @@
 }
 
 <span class="doccomment">/// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
-</span><span class="kw">fn </span>load_initial_config&lt;Config: DeserializeOwned&gt;(
+</span><span class="kw">fn </span>load_initial_config(
     crate_root: <span class="kw-2">&amp;</span>Utf8Path,
     config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Config&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;toml::Value&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>config = load_toml_file(<span class="prelude-val">Some</span>(crate_root.join(<span class="string">"uniffi.toml"</span>).as_path()))
         .context(<span class="string">"default config"</span>)<span class="question-mark">?
         </span>.unwrap_or(toml::value::Table::default());
@@ -1053,7 +916,7 @@
         merge_toml(<span class="kw-2">&amp;mut </span>config, override_config);
     }
 
-    <span class="prelude-val">Ok</span>(toml::Value::from(config).try_into()<span class="question-mark">?</span>)
+    <span class="prelude-val">Ok</span>(toml::Value::from(config))
 }
 
 <span class="kw">fn </span>merge_toml(a: <span class="kw-2">&amp;mut </span>toml::value::Table, b: toml::value::Table) {
@@ -1069,55 +932,6 @@
                 a.insert(key, value);
             }
         }
-    }
-}
-
-<span class="attr">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-</span><span class="kw">pub struct </span>Config {
-    <span class="attr">#[serde(default)]
-    </span>bindings: bindings::Config,
-}
-
-<span class="kw">impl </span>BindingsConfig <span class="kw">for </span>Config {
-    <span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface) {
-        <span class="self">self</span>.bindings.kotlin.update_from_ci(ci);
-        <span class="self">self</span>.bindings.swift.update_from_ci(ci);
-        <span class="self">self</span>.bindings.python.update_from_ci(ci);
-        <span class="self">self</span>.bindings.ruby.update_from_ci(ci);
-    }
-
-    <span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str) {
-        <span class="self">self</span>.bindings.kotlin.update_from_cdylib_name(cdylib_name);
-        <span class="self">self</span>.bindings.swift.update_from_cdylib_name(cdylib_name);
-        <span class="self">self</span>.bindings.python.update_from_cdylib_name(cdylib_name);
-        <span class="self">self</span>.bindings.ruby.update_from_cdylib_name(cdylib_name);
-    }
-
-    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {
-        <span class="self">self</span>.bindings.kotlin.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.kotlin))
-                .collect(),
-        );
-        <span class="self">self</span>.bindings.swift.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.swift))
-                .collect(),
-        );
-        <span class="self">self</span>.bindings.python.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.python))
-                .collect(),
-        );
-        <span class="self">self</span>.bindings.ruby.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (<span class="kw-2">*</span>key, <span class="kw-2">&amp;</span>config.bindings.ruby))
-                .collect(),
-        );
     }
 }
 

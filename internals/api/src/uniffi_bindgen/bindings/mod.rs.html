@@ -97,34 +97,6 @@
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -135,16 +107,23 @@
 //! along with some helpers for executing foreign language scripts or tests.
 
 </span><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
-<span class="kw">use </span>camino::Utf8Path;
-<span class="kw">use </span>serde::{Deserialize, Serialize};
+
 <span class="kw">use </span>std::fmt;
 
-<span class="kw">use </span><span class="kw">crate</span>::interface::ComponentInterface;
-
-<span class="kw">pub mod </span>kotlin;
-<span class="kw">pub mod </span>python;
-<span class="kw">pub mod </span>ruby;
-<span class="kw">pub mod </span>swift;
+<span class="kw">mod </span>kotlin;
+<span class="kw">pub use </span>kotlin::{
+    run_script <span class="kw">as </span>kotlin_run_script, run_test <span class="kw">as </span>kotlin_run_test, KotlinBindingGenerator,
+};
+<span class="kw">mod </span>python;
+<span class="kw">pub use </span>python::{
+    run_script <span class="kw">as </span>python_run_script, run_test <span class="kw">as </span>python_run_test, PythonBindingGenerator,
+};
+<span class="kw">mod </span>ruby;
+<span class="kw">pub use </span>ruby::{run_test <span class="kw">as </span>ruby_run_test, RubyBindingGenerator};
+<span class="kw">mod </span>swift;
+<span class="kw">pub use </span>swift::{
+    run_script <span class="kw">as </span>swift_run_script, run_test <span class="kw">as </span>swift_run_test, SwiftBindingGenerator,
+};
 
 <span class="doccomment">/// Enumeration of all foreign language targets currently supported by this crate.
 ///
@@ -214,40 +193,5 @@
     <span class="kw">fn </span>try_from(value: String) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         TryFrom::try_from(value.as_str())
     }
-}
-
-<span class="attr">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-</span><span class="kw">pub struct </span>Config {
-    <span class="attr">#[serde(default)]
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) kotlin: kotlin::Config,
-    <span class="attr">#[serde(default)]
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) swift: swift::Config,
-    <span class="attr">#[serde(default)]
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) python: python::Config,
-    <span class="attr">#[serde(default)]
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) ruby: ruby::Config,
-}
-
-<span class="doccomment">/// Generate foreign language bindings from a compiled `uniffi` library.
-</span><span class="kw">pub fn </span>write_bindings(
-    config: <span class="kw-2">&amp;</span>Config,
-    ci: <span class="kw-2">&amp;</span>ComponentInterface,
-    out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-    language: TargetLanguage,
-    try_format_code: bool,
-) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">match </span>language {
-        TargetLanguage::Kotlin =&gt; {
-            kotlin::write_bindings(<span class="kw-2">&amp;</span>config.kotlin, ci, out_dir, try_format_code)<span class="question-mark">?
-        </span>}
-        TargetLanguage::Swift =&gt; {
-            swift::write_bindings(<span class="kw-2">&amp;</span>config.swift, ci, out_dir, try_format_code)<span class="question-mark">?
-        </span>}
-        TargetLanguage::Python =&gt; {
-            python::write_bindings(<span class="kw-2">&amp;</span>config.python, ci, out_dir, try_format_code)<span class="question-mark">?
-        </span>}
-        TargetLanguage::Ruby =&gt; ruby::write_bindings(<span class="kw-2">&amp;</span>config.ruby, ci, out_dir, try_format_code)<span class="question-mark">?</span>,
-    }
-    <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div></section></main></body></html>

@@ -207,14 +207,13 @@
 <a href="#205" id="205">205</a>
 <a href="#206" id="206">206</a>
 <a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use crate</span>::{bindings::RunScriptOptions, library_mode::generate_bindings, BindingGeneratorDefault};
+</span><span class="kw">use </span><span class="kw">crate</span>::bindings::RunScriptOptions;
+<span class="kw">use </span><span class="kw">crate</span>::library_mode::generate_bindings;
+
 <span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
@@ -223,8 +222,6 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::process::{Command, Stdio};
 <span class="kw">use </span>uniffi_testing::UniFFITestHelper;
-
-<span class="kw">use </span><span class="kw">crate</span>::bindings::TargetLanguage;
 
 <span class="doccomment">/// Run Swift tests for a UniFFI test fixture
 </span><span class="kw">pub fn </span>run_test(tmp_dir: <span class="kw-2">&amp;</span>str, fixture_name: <span class="kw-2">&amp;</span>str, script_file: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -340,10 +337,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         <span class="kw">let </span>sources = generate_bindings(
             cdylib_path,
             <span class="prelude-val">None</span>,
-            <span class="kw-2">&amp;</span>BindingGeneratorDefault {
-                target_languages: <span class="macro">vec!</span>[TargetLanguage::Swift],
-                try_format_code: <span class="bool-val">false</span>,
-            },
+            <span class="kw-2">&amp;</span><span class="kw">super</span>::SwiftBindingGenerator,
             <span class="prelude-val">None</span>,
             out_dir,
             <span class="bool-val">false</span>,
@@ -352,7 +346,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
             .iter()
             .find(|s| s.package.name == crate_name)
             .unwrap();
-        <span class="kw">let </span>main_module = main_source.config.bindings.swift.module_name();
+        <span class="kw">let </span>main_module = main_source.config.module_name();
         <span class="kw">let </span>modulemap_glob = glob(<span class="kw-2">&amp;</span>out_dir.join(<span class="string">"*.modulemap"</span>))<span class="question-mark">?</span>;
         <span class="kw">let </span>module_map = <span class="kw">match </span>modulemap_glob.len() {
             <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">"No modulemap files found in {out_dir}"</span>),

@@ -701,28 +701,6 @@
 <a href="#699" id="699">699</a>
 <a href="#700" id="700">700</a>
 <a href="#701" id="701">701</a>
-<a href="#702" id="702">702</a>
-<a href="#703" id="703">703</a>
-<a href="#704" id="704">704</a>
-<a href="#705" id="705">705</a>
-<a href="#706" id="706">706</a>
-<a href="#707" id="707">707</a>
-<a href="#708" id="708">708</a>
-<a href="#709" id="709">709</a>
-<a href="#710" id="710">710</a>
-<a href="#711" id="711">711</a>
-<a href="#712" id="712">712</a>
-<a href="#713" id="713">713</a>
-<a href="#714" id="714">714</a>
-<a href="#715" id="715">715</a>
-<a href="#716" id="716">716</a>
-<a href="#717" id="717">717</a>
-<a href="#718" id="718">718</a>
-<a href="#719" id="719">719</a>
-<a href="#720" id="720">720</a>
-<a href="#721" id="721">721</a>
-<a href="#722" id="722">722</a>
-<a href="#723" id="723">723</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -732,16 +710,16 @@
 <span class="kw">use </span>std::collections::{BTreeSet, HashMap, HashSet};
 <span class="kw">use </span>std::fmt::Debug;
 
-<span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>askama::Template;
-<span class="kw">use </span>camino::Utf8Path;
+
 <span class="kw">use </span>heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">crate</span>::backend::TemplateExpression;
-<span class="kw">use </span><span class="kw">crate</span>::bindings::kotlin;
+
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use crate</span>::{BindingGenerator, BindingsConfig};
+<span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>compounds;
@@ -753,28 +731,6 @@
 <span class="kw">mod </span>primitives;
 <span class="kw">mod </span>record;
 <span class="kw">mod </span>variant;
-
-<span class="kw">pub struct </span>KotlinBindingGenerator;
-<span class="kw">impl </span>BindingGenerator <span class="kw">for </span>KotlinBindingGenerator {
-    <span class="kw">type </span>Config = Config;
-
-    <span class="kw">fn </span>write_bindings(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        ci: <span class="kw-2">&amp;</span>ComponentInterface,
-        config: <span class="kw-2">&amp;</span>Config,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-        try_format_code: bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        kotlin::write_bindings(config, ci, out_dir, try_format_code)
-    }
-
-    <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if </span>cdylib_name.is_none() {
-            <span class="macro">bail!</span>(<span class="string">"Generate bindings for Kotlin requires a cdylib, but {library_path} was given"</span>);
-        }
-        <span class="prelude-val">Ok</span>(())
-    }
-}
 
 <span class="kw">trait </span>CodeType: Debug {
     <span class="doccomment">/// The language specific label used to reference this type. This will be used in

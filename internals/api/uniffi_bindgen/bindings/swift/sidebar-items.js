@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run_script","run_test","write_bindings"],"mod":["gen_swift","test"],"struct":["Bindings"]};
+window.SIDEBAR_ITEMS = {"mod":["gen_swift","test"],"struct":["Bindings","SwiftBindingGenerator"]};

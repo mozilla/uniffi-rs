@@ -629,38 +629,13 @@
 <a href="#627" id="627">627</a>
 <a href="#628" id="628">628</a>
 <a href="#629" id="629">629</a>
-<a href="#630" id="630">630</a>
-<a href="#631" id="631">631</a>
-<a href="#632" id="632">632</a>
-<a href="#633" id="633">633</a>
-<a href="#634" id="634">634</a>
-<a href="#635" id="635">635</a>
-<a href="#636" id="636">636</a>
-<a href="#637" id="637">637</a>
-<a href="#638" id="638">638</a>
-<a href="#639" id="639">639</a>
-<a href="#640" id="640">640</a>
-<a href="#641" id="641">641</a>
-<a href="#642" id="642">642</a>
-<a href="#643" id="643">643</a>
-<a href="#644" id="644">644</a>
-<a href="#645" id="645">645</a>
-<a href="#646" id="646">646</a>
-<a href="#647" id="647">647</a>
-<a href="#648" id="648">648</a>
-<a href="#649" id="649">649</a>
-<a href="#650" id="650">650</a>
-<a href="#651" id="651">651</a>
-<a href="#652" id="652">652</a>
-<a href="#653" id="653">653</a>
-<a href="#654" id="654">654</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
+</span><span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>askama::Template;
-<span class="kw">use </span>camino::Utf8Path;
+
 <span class="kw">use </span>heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>once_cell::sync::Lazy;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -670,9 +645,9 @@
 <span class="kw">use </span>std::fmt::Debug;
 
 <span class="kw">use </span><span class="kw">crate</span>::backend::TemplateExpression;
-<span class="kw">use </span><span class="kw">crate</span>::bindings::python;
+
 <span class="kw">use </span><span class="kw">crate</span>::interface::<span class="kw-2">*</span>;
-<span class="kw">use crate</span>::{BindingGenerator, BindingsConfig};
+<span class="kw">use </span><span class="kw">crate</span>::BindingsConfig;
 
 <span class="kw">mod </span>callback_interface;
 <span class="kw">mod </span>compounds;
@@ -683,29 +658,6 @@
 <span class="kw">mod </span>object;
 <span class="kw">mod </span>primitives;
 <span class="kw">mod </span>record;
-
-<span class="kw">pub struct </span>PythonBindingGenerator;
-
-<span class="kw">impl </span>BindingGenerator <span class="kw">for </span>PythonBindingGenerator {
-    <span class="kw">type </span>Config = Config;
-
-    <span class="kw">fn </span>write_bindings(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        ci: <span class="kw-2">&amp;</span>ComponentInterface,
-        config: <span class="kw-2">&amp;</span>Config,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-        try_format_code: bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        python::write_bindings(config, ci, out_dir, try_format_code)
-    }
-
-    <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if </span>cdylib_name.is_none() {
-            <span class="macro">bail!</span>(<span class="string">"Generate bindings for Python requires a cdylib, but {library_path} was given"</span>);
-        }
-        <span class="prelude-val">Ok</span>(())
-    }
-}
 
 <span class="doccomment">/// A trait tor the implementation.
 </span><span class="kw">trait </span>CodeType: Debug {
@@ -837,8 +789,6 @@
         <span class="self">self</span>.cdylib_name
             .get_or_insert_with(|| cdylib_name.to_string());
     }
-
-    <span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {}
 }
 
 <span class="comment">// Generate python bindings for the given ComponentInterface, as a string.
