@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["calc_cdylib_name","find_package_by_crate_name","find_sources","generate_bindings","generate_external_bindings","load_udl_metadata"],"struct":["Source"]};
+window.SIDEBAR_ITEMS = {"fn":["calc_cdylib_name","find_components","find_package_by_crate_name","generate_bindings","generate_external_bindings","load_udl_metadata"],"struct":["Source"]};

@@ -1336,6 +1336,11 @@
 <a href="#1334" id="1334">1334</a>
 <a href="#1335" id="1335">1335</a>
 <a href="#1336" id="1336">1336</a>
+<a href="#1337" id="1337">1337</a>
+<a href="#1338" id="1338">1338</a>
+<a href="#1339" id="1339">1339</a>
+<a href="#1340" id="1340">1340</a>
+<a href="#1341" id="1341">1341</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1500,6 +1505,11 @@
 
     <span class="kw">pub fn </span>namespace_docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
         <span class="self">self</span>.types.namespace_docstring.as_deref()
+    }
+
+    <span class="doccomment">/// The crate this interfaces lives in.
+    </span><span class="kw">pub fn </span>crate_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.types.namespace.crate_name
     }
 
     <span class="kw">pub fn </span>uniffi_contract_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {

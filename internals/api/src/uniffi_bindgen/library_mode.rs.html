@@ -292,12 +292,6 @@
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
 <a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -368,13 +362,27 @@
     <span class="kw">let </span>cdylib_name = calc_cdylib_name(library_path);
     binding_generator.check_library_path(library_path, cdylib_name)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>sources = find_sources(
-        binding_generator,
-        <span class="kw-2">&amp;</span>cargo_metadata,
-        library_path,
-        cdylib_name,
-        config_file_override,
-    )<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>sources = find_components(<span class="kw-2">&amp;</span>cargo_metadata, library_path)<span class="question-mark">?
+        </span>.into_iter()
+        .map(|(ci, package)| {
+            <span class="kw">let </span>crate_root = package
+                .manifest_path
+                .parent()
+                .context(<span class="string">"manifest path has no parent"</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>config = binding_generator
+                .new_config(<span class="kw-2">&amp;</span>load_initial_config(crate_root, config_file_override)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = cdylib_name {
+                config.update_from_cdylib_name(cdylib_name);
+            }
+            config.update_from_ci(<span class="kw-2">&amp;</span>ci);
+            <span class="prelude-val">Ok</span>(Source {
+                config,
+                ci,
+                package,
+            })
+        })
+        .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+
     <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..sources.len() {
         <span class="comment">// Partition up the sources list because we're eventually going to call
         // `update_from_dependency_configs()` which requires an exclusive reference to one source and
@@ -389,7 +397,7 @@
             .filter_map(|s| {
                 dependencies
                     .contains(s.package.name.as_str())
-                    .then_some((s.crate_name.as_str(), <span class="kw-2">&amp;</span>s.config))
+                    .then_some((s.ci.crate_name(), <span class="kw-2">&amp;</span>s.config))
             })
             .collect();
         <span class="comment">// We can finally call update_from_dependency_configs
@@ -399,7 +407,7 @@
     <span class="kw">if let </span><span class="prelude-val">Some</span>(crate_name) = <span class="kw-2">&amp;</span>crate_name {
         <span class="kw">let </span>old_elements = sources.drain(..);
         <span class="kw">let </span><span class="kw-2">mut </span>matches: Vec&lt;<span class="kw">_</span>&gt; = old_elements
-            .filter(|s| <span class="kw-2">&amp;</span>s.crate_name == crate_name)
+            .filter(|s| s.ci.crate_name() == crate_name)
             .collect();
         <span class="kw">match </span>matches.len() {
             <span class="number">0 </span>=&gt; <span class="macro">bail!</span>(<span class="string">"Crate {crate_name} not found in {library_path}"</span>),
@@ -419,7 +427,6 @@
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Source&lt;Config: BindingsConfig&gt; {
     <span class="kw">pub </span>package: Package,
-    <span class="kw">pub </span>crate_name: String,
     <span class="kw">pub </span>ci: ComponentInterface,
     <span class="kw">pub </span>config: Config,
 }
@@ -437,13 +444,10 @@
     <span class="prelude-val">None
 </span>}
 
-<span class="kw">fn </span>find_sources&lt;T: BindingGenerator&gt;(
-    generator: <span class="kw-2">&amp;</span>T,
+<span class="kw">fn </span>find_components(
     cargo_metadata: <span class="kw-2">&amp;</span>cargo_metadata::Metadata,
     library_path: <span class="kw-2">&amp;</span>Utf8Path,
-    cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
-    config_file_override: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Utf8Path&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Source&lt;T::Config&gt;&gt;&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(ComponentInterface, Package)&gt;&gt; {
     <span class="kw">let </span>items = macro_metadata::extract_from_library(library_path)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_groups = create_metadata_groups(<span class="kw-2">&amp;</span>items);
     group_metadata(<span class="kw-2">&amp;mut </span>metadata_groups, items)<span class="question-mark">?</span>;
@@ -478,28 +482,12 @@
         .into_values()
         .map(|group| {
             <span class="kw">let </span>package = find_package_by_crate_name(cargo_metadata, <span class="kw-2">&amp;</span>group.namespace.crate_name)<span class="question-mark">?</span>;
-            <span class="kw">let </span>crate_root = package
-                .manifest_path
-                .parent()
-                .context(<span class="string">"manifest path has no parent"</span>)<span class="question-mark">?</span>;
-            <span class="kw">let </span>crate_name = group.namespace.crate_name.clone();
-            <span class="kw">let </span><span class="kw-2">mut </span>ci = ComponentInterface::new(<span class="kw-2">&amp;</span>crate_name);
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(metadata) = udl_items.remove(<span class="kw-2">&amp;</span>crate_name) {
+            <span class="kw">let </span><span class="kw-2">mut </span>ci = ComponentInterface::new(<span class="kw-2">&amp;</span>group.namespace.crate_name);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(metadata) = udl_items.remove(<span class="kw-2">&amp;</span>group.namespace.crate_name) {
                 ci.add_metadata(metadata)<span class="question-mark">?</span>;
             };
             ci.add_metadata(group)<span class="question-mark">?</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>config =
-                generator.new_config(<span class="kw-2">&amp;</span>load_initial_config(crate_root, config_file_override)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = cdylib_name {
-                config.update_from_cdylib_name(cdylib_name);
-            }
-            config.update_from_ci(<span class="kw-2">&amp;</span>ci);
-            <span class="prelude-val">Ok</span>(Source {
-                config,
-                crate_name,
-                ci,
-                package,
-            })
+            <span class="prelude-val">Ok</span>((ci, package))
         })
         .collect()
 }
