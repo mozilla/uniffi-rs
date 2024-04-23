@@ -88,6 +88,7 @@ pub enum Type {
         // How the object is implemented.
         imp: ObjectImpl,
     },
+    BlockingTaskQueue,
     // Types defined in the component API, each of which has a string name.
     Record {
         module_path: String,

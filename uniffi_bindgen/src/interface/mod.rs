@@ -519,6 +519,10 @@ impl ComponentInterface {
                     name: "callback_data".to_owned(),
                     type_: FfiType::Handle,
                 },
+                FfiArgument {
+                    name: "blocking_task_queue_handle".to_owned(),
+                    type_: FfiType::UInt64,
+                },
             ],
             return_type: None,
             has_rust_call_status_arg: false,
@@ -633,6 +637,7 @@ impl ComponentInterface {
                 arguments: vec![
                     FfiArgument::new("data", FfiType::UInt64),
                     FfiArgument::new("poll_result", FfiType::Int8),
+                    FfiArgument::new("blocking_task_queue_handle", FfiType::UInt64),
                 ],
                 return_type: None,
                 has_rust_call_status_arg: false,
@@ -652,11 +657,39 @@ impl ComponentInterface {
                 has_rust_call_status_arg: false,
             }
             .into(),
+            FfiCallbackFunction {
+                name: "BlockingTaskQueueClone".to_owned(),
+                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
+                return_type: Some(FfiType::UInt64),
+                has_rust_call_status_arg: false,
+            }
+            .into(),
+            FfiCallbackFunction {
+                name: "BlockingTaskQueueFree".to_owned(),
+                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
+                return_type: None,
+                has_rust_call_status_arg: false,
+            }
+            .into(),
             FfiStruct {
                 name: "ForeignFuture".to_owned(),
                 fields: vec![
                     FfiField::new("handle", FfiType::UInt64),
                     FfiField::new("free", FfiType::Callback("ForeignFutureFree".to_owned())),
+                ],
+            }
+            .into(),
+            FfiStruct {
+                name: "BlockingTaskQueueVTable".to_owned(),
+                fields: vec![
+                    FfiField::new(
+                        "clone",
+                        FfiType::Callback("BlockingTaskQueueClone".to_owned()),
+                    ),
+                    FfiField::new(
+                        "free",
+                        FfiType::Callback("BlockingTaskQueueFree".to_owned()),
+                    ),
                 ],
             }
             .into(),
@@ -870,8 +903,11 @@ impl ComponentInterface {
         self.types.add_known_types(defn.iter_types())?;
         defn.throws_name()
             .map(|n| self.errors.insert(n.to_string()));
+        if defn.is_async() {
+            self.types
+                .add_known_type(&uniffi_meta::Type::BlockingTaskQueue)?;
+        }
         self.functions.push(defn);
-
         Ok(())
     }
 

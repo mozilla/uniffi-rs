@@ -11,7 +11,10 @@ use std::{
     time::Duration,
 };
 
-use futures::future::{AbortHandle, Abortable, Aborted};
+use futures::{
+    future::{AbortHandle, Abortable, Aborted},
+    stream::{FuturesUnordered, StreamExt},
+};
 
 /// Non-blocking timer future.
 pub struct TimerFuture {
@@ -496,6 +499,60 @@ async fn cancel_delay_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32) {
     });
     let future = Abortable::new(obj.delay(delay_ms), abort_registration);
     assert_eq!(future.await, Err(Aborted));
+}
+
+/// Async function that uses a blocking task queue to do its work
+#[uniffi::export]
+pub async fn calc_square(queue: uniffi::BlockingTaskQueue, value: i32) -> i32 {
+    queue.execute(|| value * value).await
+}
+
+/// Same as before, but this one runs multiple tasks
+#[uniffi::export]
+pub async fn calc_squares(queue: uniffi::BlockingTaskQueue, items: Vec<i32>) -> Vec<i32> {
+    // Use `FuturesUnordered` to test our blocking task queue code which is known to be a tricky API to work with.
+    // In particular, if we don't notify the waker then FuturesUnordered will not poll again.
+    let mut futures: FuturesUnordered<_> = (0..items.len())
+        .map(|i| {
+            // Test that we can use references from the surrounding scope
+            let items = &items;
+            queue.execute(move || items[i] * items[i])
+        })
+        .collect();
+    let mut results = vec![];
+    while let Some(result) = futures.next().await {
+        results.push(result);
+    }
+    results.sort();
+    results
+}
+
+/// ...and this one uses multiple BlockingTaskQueues
+#[uniffi::export]
+pub async fn calc_squares_multi_queue(
+    queues: Vec<uniffi::BlockingTaskQueue>,
+    items: Vec<i32>,
+) -> Vec<i32> {
+    let mut futures: FuturesUnordered<_> = (0..items.len())
+        .map(|i| {
+            // Test that we can use references from the surrounding scope
+            let items = &items;
+            queues[i].execute(move || items[i] * items[i])
+        })
+        .collect();
+    let mut results = vec![];
+    while let Some(result) = futures.next().await {
+        results.push(result);
+    }
+    results.sort();
+    results
+}
+
+/// Like calc_square, but it clones the BlockingTaskQueue first then drops both copies.  Used to
+/// test that a) the clone works and b) we correctly drop the references.
+#[uniffi::export]
+pub async fn calc_square_with_clone(queue: uniffi::BlockingTaskQueue, value: i32) -> i32 {
+    queue.clone().execute(|| value * value).await
 }
 
 uniffi::include_scaffolding!("futures");

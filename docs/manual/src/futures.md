@@ -93,3 +93,62 @@ In this case, we need an event loop to run the Python async function, but there'
 Use `uniffi_set_event_loop()` to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.
 
+## Blocking tasks
+
+Rust executors are designed around an assumption that the `Future::poll` function will return quickly.
+This assumption, combined with cooperative scheduling, allows for a large number of futures to be handled by a small number of threads.
+Foreign executors make similar assumptions and sometimes more extreme ones.
+For example, the Python eventloop is single threaded -- if any task spends a long time between `await` points, then it will block all other tasks from progressing.
+
+This raises the question of how async code can interact with blocking code that performs blocking IO, long-running computations without `await` breaks, etc.
+UniFFI defines the `BlockingTaskQueue` type, which is a foreign object that schedules work on a thread where it's okay to block.
+
+On Rust, `BlockingTaskQueue` is a UniFFI type that can safely run blocking code.
+It's `execute` method works like tokio's [block_in_place](https://docs.rs/tokio/latest/tokio/task/fn.block_in_place.html) function.
+It inputs a closure and runs it in the `BlockingTaskQueue`.
+This closure can reference the outside scope (i.e. it does not need to be `'static`).
+For example:
+
+```rust
+#[derive(uniffi::Object)]
+struct DataStore {
+  // Used to run blocking tasks
+  queue: uniffi::BlockingTaskQueue,
+  // Low-level DB object with blocking methods
+  db: Mutex<Database>,
+}
+
+#[uniffi::export]
+impl DataStore {
+  #[uniffi::constructor]
+  fn new(queue: uniffi::BlockingTaskQueue) -> Self {
+      Self {
+          queue,
+          db: Mutex::new(Database::new())
+      }
+  }
+
+  async fn fetch_all_items(&self) -> Vec<DbItem> {
+     self.queue.execute(|| self.db.lock().fetch_all_items()).await
+  }
+}
+```
+
+On the foreign side `BlockingTaskQueue` corresponds to a language-dependent class.
+
+### Kotlin
+Kotlin uses `CoroutineContext` for its `BlockingTaskQueue`.
+Any `CoroutineContext` will work, but `Dispatchers.IO` is usually a good choice.
+A DataStore from the example above can be created with `DataStore(Dispatchers.IO)`.
+
+### Swift
+Swift uses `DispatchQueue` for its `BlockingTaskQueue`.
+The user-initiated global queue is normally a good choice.
+A DataStore from the example above can be created with `DataStore(queue: DispatchQueue.global(qos: .userInitiated)`.
+The `DispatchQueue` should be concurrent.
+
+### Python
+
+Python uses a `futures.Executor` for its `BlockingTaskQueue`.
+`ThreadPoolExecutor` is typically a good choice.
+A DataStore from the example above can be created with `DataStore(ThreadPoolExecutor())`.

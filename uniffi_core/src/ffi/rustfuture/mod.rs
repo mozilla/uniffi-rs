@@ -4,8 +4,11 @@
 
 use std::{future::Future, sync::Arc};
 
+mod blocking_task_queue;
 mod future;
 mod scheduler;
+
+pub use blocking_task_queue::*;
 use future::*;
 use scheduler::*;
 
@@ -28,7 +31,16 @@ pub enum RustFuturePoll {
 ///
 /// The Rust side of things calls this when the foreign side should call [rust_future_poll] again
 /// to continue progress on the future.
-pub type RustFutureContinuationCallback = extern "C" fn(callback_data: u64, RustFuturePoll);
+///
+/// WARNING: the call to [rust_future_poll] must be scheduled to happen soon after the callback is
+/// called, but not inside the callback itself.  If [rust_future_poll] is called inside the
+/// callback, some futures will deadlock and our scheduler code might as well.
+///
+/// * `callback_data` is the handle that the foreign code passed to `poll()`
+/// * `poll_result` is the result of the poll
+/// * If `blocking_task_task_queue` is non-zero, it's the BlockingTaskQueue handle that the next `poll()` should run on
+pub type RustFutureContinuationCallback =
+    extern "C" fn(callback_data: u64, poll_result: RustFuturePoll, blocking_task_queue_handle: u64);
 
 // === Public FFI API ===
 
@@ -62,6 +74,9 @@ where
 /// a [RustFuturePoll] value. For each [rust_future_poll] call the continuation will be called
 /// exactly once.
 ///
+/// If this is running in a BlockingTaskQueue, then `blocking_task_queue_handle` must be the handle
+/// for it.  If not, `blocking_task_queue_handle` must be `0`.
+///
 /// # Safety
 ///
 /// The [Handle] must not previously have been passed to [rust_future_free]
@@ -69,10 +84,15 @@ pub unsafe fn rust_future_poll<ReturnType, UT>(
     handle: Handle,
     callback: RustFutureContinuationCallback,
     data: u64,
+    blocking_task_queue_handle: u64,
 ) where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
-    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_poll(callback, data)
+    <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_poll(
+        callback,
+        data,
+        blocking_task_queue_handle.try_into().ok(),
+    )
 }
 
 /// Cancel a Rust future

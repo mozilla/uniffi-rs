@@ -3,7 +3,8 @@
 // This is used pass an opaque 64-bit handle representing a foreign object to the Rust code.
 internal class UniffiHandleMap<T: Any> {
     private val map = ConcurrentHashMap<Long, T>()
-    private val counter = java.util.concurrent.atomic.AtomicLong(0)
+    // Start at 1, since `0` represents a NULL handle.
+    private val counter = java.util.concurrent.atomic.AtomicLong(1)
 
     val size: Int
         get() = map.size

@@ -20,6 +20,7 @@ use crate::backend::TemplateExpression;
 use crate::interface::*;
 use crate::BindingsConfig;
 
+mod blocking_task_queue;
 mod callback_interface;
 mod compounds;
 mod custom;
@@ -467,6 +468,8 @@ impl SwiftCodeOracle {
 
             Type::Timestamp => Box::new(miscellany::TimestampCodeType),
             Type::Duration => Box::new(miscellany::DurationCodeType),
+
+            Type::BlockingTaskQueue => Box::new(blocking_task_queue::BlockingTaskQueueCodeType),
 
             Type::Enum { name, .. } => Box::new(enum_::EnumCodeType::new(name)),
             Type::Object { name, imp, .. } => Box::new(object::ObjectCodeType::new(name, imp)),
