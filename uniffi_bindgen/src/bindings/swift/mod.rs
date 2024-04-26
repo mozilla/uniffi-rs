@@ -4,7 +4,7 @@
 
 //! # Swift bindings backend for UniFFI
 //!
-//! This module generates Swift bindings from a [`ComponentInterface`] definition,
+//! This module generates Swift bindings from a [`crate::ComponentInterface`] definition,
 //! using Swift's builtin support for loading C header files.
 //!
 //! Conceptually, the generated bindings are split into two Swift modules, one for the low-level
@@ -17,7 +17,7 @@
 //!   * A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
 //!    to provide the higher-level Swift API.
 //!
-//! Most of the concepts in a [`ComponentInterface`] have an obvious counterpart in Swift,
+//! Most of the concepts in a [`crate::ComponentInterface`] have an obvious counterpart in Swift,
 //! with the details documented in inline comments where appropriate.
 //!
 //! To handle lifting/lowering/serializing types across the FFI boundary, the Swift code
@@ -29,9 +29,8 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use crate::{BindingGenerator, ComponentInterface};
+use crate::{BindingGenerator, Component, GenerationSettings};
 use anyhow::Result;
-use camino::Utf8Path;
 use fs_err as fs;
 use std::process::Command;
 
@@ -40,7 +39,7 @@ use gen_swift::{generate_bindings, Config};
 mod test;
 pub use test::{run_script, run_test};
 
-/// The Swift bindings generated from a [`ComponentInterface`].
+/// The Swift bindings generated from a [`crate::ComponentInterface`].
 ///
 struct Bindings {
     /// The contents of the generated `.swift` file, as a string.
@@ -64,53 +63,66 @@ impl BindingGenerator for SwiftBindingGenerator {
         )
     }
 
+    fn update_component_configs(
+        &self,
+        settings: &GenerationSettings,
+        components: &mut Vec<Component<Self::Config>>,
+    ) -> Result<()> {
+        for c in &mut *components {
+            c.config
+                .module_name
+                .get_or_insert_with(|| c.ci.namespace().into());
+            c.config.cdylib_name.get_or_insert_with(|| {
+                settings
+                    .cdylib
+                    .clone()
+                    .unwrap_or_else(|| format!("uniffi_{}", c.ci.namespace()))
+            });
+        }
+        Ok(())
+    }
+
     /// Unlike other target languages, binding to Rust code from Swift involves more than just
     /// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
     /// declarations, and a `.modulemap` file to tell Swift how to use it.
     fn write_bindings(
         &self,
-        ci: &ComponentInterface,
-        config: &Config,
-        out_dir: &Utf8Path,
-        try_format_code: bool,
+        settings: &GenerationSettings,
+        components: &[Component<Self::Config>],
     ) -> Result<()> {
-        let Bindings {
-            header,
-            library,
-            modulemap,
-        } = generate_bindings(config, ci)?;
+        for Component { ci, config, .. } in components {
+            let Bindings {
+                header,
+                library,
+                modulemap,
+            } = generate_bindings(config, ci)?;
 
-        let source_file = out_dir.join(format!("{}.swift", config.module_name()));
-        fs::write(&source_file, library)?;
+            let source_file = settings
+                .out_dir
+                .join(format!("{}.swift", config.module_name()));
+            fs::write(&source_file, library)?;
 
-        let header_file = out_dir.join(config.header_filename());
-        fs::write(header_file, header)?;
+            let header_file = settings.out_dir.join(config.header_filename());
+            fs::write(header_file, header)?;
 
-        if let Some(modulemap) = modulemap {
-            let modulemap_file = out_dir.join(config.modulemap_filename());
-            fs::write(modulemap_file, modulemap)?;
-        }
+            if let Some(modulemap) = modulemap {
+                let modulemap_file = settings.out_dir.join(config.modulemap_filename());
+                fs::write(modulemap_file, modulemap)?;
+            }
 
-        if try_format_code {
-            if let Err(e) = Command::new("swiftformat")
-                .arg(source_file.as_str())
-                .output()
-            {
-                println!(
-                    "Warning: Unable to auto-format {} using swiftformat: {e:?}",
-                    source_file.file_name().unwrap(),
-                );
+            if settings.try_format_code {
+                if let Err(e) = Command::new("swiftformat")
+                    .arg(source_file.as_str())
+                    .output()
+                {
+                    println!(
+                        "Warning: Unable to auto-format {} using swiftformat: {e:?}",
+                        source_file.file_name().unwrap(),
+                    );
+                }
             }
         }
 
-        Ok(())
-    }
-
-    fn check_library_path(
-        &self,
-        _library_path: &Utf8Path,
-        _cdylib_name: Option<&str>,
-    ) -> Result<()> {
         Ok(())
     }
 }

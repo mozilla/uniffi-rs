@@ -95,10 +95,10 @@
 use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::Deserialize;
 use std::io::prelude::*;
 use std::io::ErrorKind;
-use std::{collections::HashMap, process::Command};
+use std::process::Command;
 
 pub mod backend;
 pub mod bindings;
@@ -110,24 +110,16 @@ pub mod scaffolding;
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
-/// Trait for bindings configuration.  Each bindings language defines one of these.
-///
-/// BindingsConfigs are initially loaded from `uniffi.toml` file.  Then the trait methods are used
-/// to fill in missing values.
-pub trait BindingsConfig: DeserializeOwned {
-    /// Update missing values using the `ComponentInterface`
-    fn update_from_ci(&mut self, ci: &ComponentInterface);
-
-    /// Update missing values using the dylib file for the main crate, when in library mode.
-    ///
-    /// cdylib_name will be the library filename without the leading `lib` and trailing extension
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str);
-
-    /// Update missing values from config instances from dependent crates
-    ///
-    /// config_map maps crate names to config instances. This is mostly used to set up external
-    /// types.
-    fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
+/// The options used when creating bindings. Named such
+/// it doesn't cause confusion that it's settings specific to
+/// the generator itself.
+// TODO: We should try and move the public interface of the module to
+// this struct. For now, only the BindingGenerator uses it.
+#[derive(Debug, Default)]
+pub struct GenerationSettings {
+    pub out_dir: Utf8PathBuf,
+    pub try_format_code: bool,
+    pub cdylib: Option<String>,
 }
 
 /// A trait representing a UniFFI Binding Generator
@@ -136,27 +128,47 @@ pub trait BindingsConfig: DeserializeOwned {
 /// and call the [`generate_external_bindings`] using a type that implements this trait.
 pub trait BindingGenerator: Sized {
     /// Handles configuring the bindings
-    type Config: BindingsConfig;
+    type Config;
 
     /// Creates a new config.
     fn new_config(&self, root_toml: &toml::Value) -> Result<Self::Config>;
 
+    /// Update the various config items in preparation to write one or more of them.
+    ///
+    /// # Arguments
+    /// - `cdylib`: The name of the cdylib file, if known.
+    /// - `library_path`: The name of library used to extract the symbols.
+    /// - `components`: A mutable array of [`Component`]s to be updated.
+    fn update_component_configs(
+        &self,
+        settings: &GenerationSettings,
+        components: &mut Vec<Component<Self::Config>>,
+    ) -> Result<()>;
+
     /// Writes the bindings to the output directory
     ///
     /// # Arguments
-    /// - `ci`: A [`ComponentInterface`] representing the interface
-    /// - `config`: An instance of the [`BindingsConfig`] associated with this type
+    /// - `components`: An array of [`Component`]s representing the items to be generated.
     /// - `out_dir`: The path to where the binding generator should write the output bindings
     fn write_bindings(
         &self,
-        ci: &ComponentInterface,
-        config: &Self::Config,
-        out_dir: &Utf8Path,
-        try_format_code: bool,
+        settings: &GenerationSettings,
+        components: &[Component<Self::Config>],
     ) -> Result<()>;
+}
 
-    /// Check if `library_path` used by library mode is valid for this generator
-    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()>;
+/// Everything needed to generate a ComponentInterface.
+#[derive(Debug)]
+pub struct Component<Config> {
+    pub ci: ComponentInterface,
+    pub config: Config,
+    pub package_name: Option<String>,
+}
+
+/// A convenience function for the CLI to help avoid using static libs
+/// in places cdylibs are required.
+pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
+    crate::library_mode::calc_cdylib_name(library_file.as_ref()).is_some()
 }
 
 /// Generate bindings for an external binding generator
@@ -165,7 +177,6 @@ pub trait BindingGenerator: Sized {
 /// Implements an entry point for external binding generators.
 /// The function does the following:
 /// - It parses the `udl` in a [`ComponentInterface`]
-/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingsConfig`]
 /// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
 ///
 /// # Arguments
@@ -187,9 +198,9 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let crate_name = crate_name
         .map(|c| Ok(c.to_string()))
         .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file.as_ref()))?;
-    let mut component = parse_udl(udl_file.as_ref(), &crate_name)?;
+    let mut ci = parse_udl(udl_file.as_ref(), &crate_name)?;
     if let Some(ref library_file) = library_file {
-        macro_metadata::add_to_ci_from_library(&mut component, library_file.as_ref())?;
+        macro_metadata::add_to_ci_from_library(&mut ci, library_file.as_ref())?;
     }
     let crate_root = &guess_crate_root(udl_file.as_ref()).context("Failed to guess crate root")?;
 
@@ -197,22 +208,30 @@ pub fn generate_external_bindings<T: BindingGenerator>(
 
     let config = {
         let toml = load_initial_config(crate_root, config_file_override)?;
-        let mut config = binding_generator.new_config(&toml)?;
-        config.update_from_ci(&component);
-        if let Some(ref library_file) = library_file {
-            if let Some(cdylib_name) = crate::library_mode::calc_cdylib_name(library_file.as_ref())
-            {
-                config.update_from_cdylib_name(cdylib_name)
-            }
-        };
-        config
+        binding_generator.new_config(&toml)?
     };
 
-    let out_dir = get_out_dir(
-        udl_file.as_ref(),
-        out_dir_override.as_ref().map(|p| p.as_ref()),
-    )?;
-    binding_generator.write_bindings(&component, &config, &out_dir, try_format_code)
+    let settings = GenerationSettings {
+        cdylib: match library_file {
+            Some(ref library_file) => {
+                crate::library_mode::calc_cdylib_name(library_file.as_ref()).map(ToOwned::to_owned)
+            }
+            None => None,
+        },
+        out_dir: get_out_dir(
+            udl_file.as_ref(),
+            out_dir_override.as_ref().map(|p| p.as_ref()),
+        )?,
+        try_format_code,
+    };
+
+    let mut components = vec![Component {
+        ci,
+        config,
+        package_name: None,
+    }];
+    binding_generator.update_component_configs(&settings, &mut components)?;
+    binding_generator.write_bindings(&settings, &components)
 }
 
 // Generate the infrastructural Rust code for implementing the UDL interface,

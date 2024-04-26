@@ -16,7 +16,6 @@ use serde::{Deserialize, Serialize};
 use crate::backend::TemplateExpression;
 
 use crate::interface::*;
-use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -72,13 +71,13 @@ trait CodeType: Debug {
 // config options to customize the generated Kotlin.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
-    package_name: Option<String>,
-    cdylib_name: Option<String>,
+    pub(super) package_name: Option<String>,
+    pub(super) cdylib_name: Option<String>,
     generate_immutable_records: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
-    external_packages: HashMap<String, String>,
+    pub(super) external_packages: HashMap<String, String>,
     #[serde(default)]
     android: bool,
     #[serde(default)]
@@ -119,29 +118,6 @@ impl Config {
     /// Whether to generate immutable records (`val` instead of `var`)
     pub fn generate_immutable_records(&self) -> bool {
         self.generate_immutable_records.unwrap_or(false)
-    }
-}
-
-impl BindingsConfig for Config {
-    fn update_from_ci(&mut self, ci: &ComponentInterface) {
-        self.package_name
-            .get_or_insert_with(|| format!("uniffi.{}", ci.namespace()));
-        self.cdylib_name
-            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
-    }
-
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
-        self.cdylib_name
-            .get_or_insert_with(|| cdylib_name.to_string());
-    }
-
-    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>) {
-        for (crate_name, config) in config_map {
-            if !self.external_packages.contains_key(crate_name) {
-                self.external_packages
-                    .insert(crate_name.to_string(), config.package_name());
-            }
-        }
     }
 }
 

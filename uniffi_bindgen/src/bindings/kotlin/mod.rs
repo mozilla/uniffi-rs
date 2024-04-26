@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{BindingGenerator, ComponentInterface};
+use crate::{BindingGenerator, Component, GenerationSettings};
 use anyhow::Result;
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err as fs;
+use std::collections::HashMap;
 use std::process::Command;
 
 mod gen_kotlin;
@@ -26,33 +27,60 @@ impl BindingGenerator for KotlinBindingGenerator {
         )
     }
 
-    fn write_bindings(
+    fn update_component_configs(
         &self,
-        ci: &ComponentInterface,
-        config: &Config,
-        out_dir: &Utf8Path,
-        try_format_code: bool,
+        settings: &GenerationSettings,
+        components: &mut Vec<Component<Self::Config>>,
     ) -> Result<()> {
-        let mut kt_file = full_bindings_path(config, out_dir);
-        fs::create_dir_all(&kt_file)?;
-        kt_file.push(format!("{}.kt", ci.namespace()));
-        fs::write(&kt_file, generate_bindings(config, ci)?)?;
-        if try_format_code {
-            if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
-                println!(
-                    "Warning: Unable to auto-format {} using ktlint: {e:?}",
-                    kt_file.file_name().unwrap(),
-                );
+        for c in &mut *components {
+            c.config
+                .package_name
+                .get_or_insert_with(|| format!("uniffi.{}", c.ci.namespace()));
+            c.config.cdylib_name.get_or_insert_with(|| {
+                settings
+                    .cdylib
+                    .clone()
+                    .unwrap_or_else(|| format!("uniffi_{}", c.ci.namespace()))
+            });
+        }
+        // We need to update package names
+        let packages = HashMap::<String, String>::from_iter(
+            components
+                .iter()
+                .map(|c| (c.ci.crate_name().to_string(), c.config.package_name())),
+        );
+        for c in components {
+            for (ext_crate, ext_package) in &packages {
+                if ext_crate != c.ci.crate_name()
+                    && !c.config.external_packages.contains_key(ext_crate)
+                {
+                    c.config
+                        .external_packages
+                        .insert(ext_crate.to_string(), ext_package.clone());
+                }
             }
         }
         Ok(())
     }
 
-    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()> {
-        if cdylib_name.is_none() {
-            anyhow::bail!(
-                "Generate bindings for Kotlin requires a cdylib, but {library_path} was given"
-            );
+    fn write_bindings(
+        &self,
+        settings: &GenerationSettings,
+        components: &[Component<Self::Config>],
+    ) -> Result<()> {
+        for Component { ci, config, .. } in components {
+            let mut kt_file = full_bindings_path(config, &settings.out_dir);
+            fs::create_dir_all(&kt_file)?;
+            kt_file.push(format!("{}.kt", ci.namespace()));
+            fs::write(&kt_file, generate_bindings(config, ci)?)?;
+            if settings.try_format_code {
+                if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
+                    println!(
+                        "Warning: Unable to auto-format {} using ktlint: {e:?}",
+                        kt_file.file_name().unwrap(),
+                    );
+                }
+            }
         }
         Ok(())
     }

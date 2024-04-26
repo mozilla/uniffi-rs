@@ -124,7 +124,7 @@ struct GeneratedSources {
 }
 
 impl GeneratedSources {
-    fn new(crate_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
+    fn new(package_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
         let sources = generate_bindings(
             cdylib_path,
             None,
@@ -135,7 +135,7 @@ impl GeneratedSources {
         )?;
         let main_source = sources
             .iter()
-            .find(|s| s.package.name == crate_name)
+            .find(|s| s.package_name.as_deref() == Some(package_name))
             .unwrap();
         let main_module = main_source.config.module_name();
         let modulemap_glob = glob(&out_dir.join("*.modulemap"))?;

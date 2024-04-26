@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 
 use crate::interface::*;
-use crate::BindingsConfig;
 
 const RESERVED_WORDS: &[&str] = &[
     "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do", "else",
@@ -82,7 +81,7 @@ pub fn canonical_name(t: &Type) -> String {
 // since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    cdylib_name: Option<String>,
+    pub(super) cdylib_name: Option<String>,
     cdylib_path: Option<String>,
 }
 
@@ -99,18 +98,6 @@ impl Config {
 
     pub fn cdylib_path(&self) -> String {
         self.cdylib_path.clone().unwrap_or_default()
-    }
-}
-
-impl BindingsConfig for Config {
-    fn update_from_ci(&mut self, ci: &ComponentInterface) {
-        self.cdylib_name
-            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
-    }
-
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
-        self.cdylib_name
-            .get_or_insert_with(|| cdylib_name.to_string());
     }
 }
 
