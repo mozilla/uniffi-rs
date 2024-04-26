@@ -263,6 +263,11 @@
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -400,6 +405,7 @@
     <span class="kw">let </span>dyn_trait = <span class="macro">quote! </span>{ <span class="kw">dyn </span>#trait_ident };
     <span class="kw">let </span>box_dyn_trait = <span class="macro">quote! </span>{ ::std::boxed::Box&lt;#dyn_trait&gt; };
     <span class="kw">let </span>lift_impl_spec = tagged_impl_header(<span class="string">"Lift"</span>, <span class="kw-2">&amp;</span>box_dyn_trait, udl_mode);
+    <span class="kw">let </span>type_id_impl_spec = tagged_impl_header(<span class="string">"TypeId"</span>, <span class="kw-2">&amp;</span>box_dyn_trait, udl_mode);
     <span class="kw">let </span>derive_ffi_traits = derive_ffi_traits(<span class="kw-2">&amp;</span>box_dyn_trait, udl_mode, <span class="kw-2">&amp;</span>[<span class="string">"LiftRef"</span>, <span class="string">"LiftReturn"</span>]);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
@@ -421,7 +427,11 @@
                 ::uniffi::check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
                 &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(buf.get_u64())
             }
+        }
 
+        <span class="attr">#[doc(hidden)]
+        #[automatically_derived]
+        </span>#type_id_impl_spec {
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
                 ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
             )
@@ -521,7 +531,7 @@
 
     iter::once(<span class="prelude-val">Ok</span>(callback_interface_items))
         .chain(items.iter().map(|item| <span class="kw">match </span>item {
-            ImplItem::Method(sig) =&gt; sig.metadata_items_for_callback_interface(),
+            ImplItem::Method(sig) =&gt; sig.metadata_items(),
             <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">"traits have no constructors"</span>),
         }))
         .collect()

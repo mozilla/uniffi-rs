@@ -289,7 +289,7 @@
             // TYPE_ID_META should be the same for both traits.
             </span><span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                 .concat_str(#name)
-                .concat(&lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                .concat(&lt;#ty <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                 #default
                 .concat_long_str(#docstring)
             })

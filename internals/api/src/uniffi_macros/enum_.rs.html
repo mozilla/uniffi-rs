@@ -603,7 +603,7 @@
     </span>};
     metadata_expr.extend(<span class="kw">match </span>discr_type {
         <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">false</span>) },
-        <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">true</span>).concat(&lt;#t <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META) }
+        <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">true</span>).concat(&lt;#t <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META) }
     });
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     metadata_expr.extend(<span class="macro">quote! </span>{
@@ -701,7 +701,7 @@
                 .concat_value(#fields_len)
                     #(
                         .concat_str(#field_names)
-                        .concat(&lt;#field_types <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        .concat(&lt;#field_types <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
                         <span class="comment">// field defaults not yet supported for enums
                         </span>.concat_bool(<span class="bool-val">false</span>)
                         .concat_long_str(#field_docstrings)

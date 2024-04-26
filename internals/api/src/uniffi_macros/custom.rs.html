@@ -133,7 +133,7 @@
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
                 .concat_str(#mod_path)
                 .concat_str(#name)
-                .concat(&lt;#builtin <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META);
+                .concat(&lt;#builtin <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META);
         }
 
         #derive_ffi_traits

@@ -179,6 +179,9 @@
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
 <a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
@@ -245,6 +248,7 @@
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">"FfiConverterArc"</span>, ident, udl_mode);
     <span class="kw">let </span>lower_return_impl_spec = tagged_impl_header(<span class="string">"LowerReturn"</span>, ident, udl_mode);
+    <span class="kw">let </span>type_id_impl_spec = tagged_impl_header(<span class="string">"TypeId"</span>, ident, udl_mode);
     <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">"LiftRef"</span>, ident, udl_mode);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
@@ -323,12 +327,14 @@
             <span class="kw">fn </span>lower_return(obj: <span class="self">Self</span>) -&gt; ::std::result::Result&lt;<span class="self">Self</span>::ReturnType, ::uniffi::RustBuffer&gt; {
                 <span class="prelude-val">Ok</span>(&lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(::std::sync::Arc::new(obj)))
             }
-
-            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META;
         }
 
         <span class="kw">unsafe </span>#lift_ref_impl_spec {
             <span class="kw">type </span>LiftType = ::std::sync::Arc&lt;<span class="self">Self</span>&gt;;
+        }
+
+        #type_id_impl_spec {
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::FfiConverterArc&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META;
         }
     }
 }
