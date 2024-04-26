@@ -135,6 +135,7 @@ pub fn ffi_converter_callback_interface_impl(
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
     let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, udl_mode);
+    let type_id_impl_spec = tagged_impl_header("TypeId", &box_dyn_trait, udl_mode);
     let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, udl_mode, &["LiftRef", "LiftReturn"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -156,7 +157,11 @@ pub fn ffi_converter_callback_interface_impl(
                 ::uniffi::check_remaining(buf, 8)?;
                 <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(buf.get_u64())
             }
+        }
 
+        #[doc(hidden)]
+        #[automatically_derived]
+        #type_id_impl_spec {
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
                 ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
             )
@@ -256,7 +261,7 @@ pub(super) fn metadata_items(
 
     iter::once(Ok(callback_interface_items))
         .chain(items.iter().map(|item| match item {
-            ImplItem::Method(sig) => sig.metadata_items_for_callback_interface(),
+            ImplItem::Method(sig) => sig.metadata_items(),
             _ => unreachable!("traits have no constructors"),
         }))
         .collect()

@@ -132,7 +132,7 @@ pub(crate) fn record_meta_static_var(
             // TYPE_ID_META should be the same for both traits.
             Ok(quote! {
                 .concat_str(#name)
-                .concat(<#ty as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
+                .concat(<#ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
                 #default
                 .concat_long_str(#docstring)
             })

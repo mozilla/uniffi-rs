@@ -230,7 +230,7 @@ pub(crate) fn enum_meta_static_var(
     };
     metadata_expr.extend(match discr_type {
         None => quote! { .concat_bool(false) },
-        Some(t) => quote! { .concat_bool(true).concat(<#t as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META) }
+        Some(t) => quote! { .concat_bool(true).concat(<#t as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META) }
     });
     metadata_expr.extend(variant_metadata(enum_)?);
     metadata_expr.extend(quote! {
@@ -328,7 +328,7 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                 .concat_value(#fields_len)
                     #(
                         .concat_str(#field_names)
-                        .concat(<#field_types as ::uniffi::Lower<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(<#field_types as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
                         // field defaults not yet supported for enums
                         .concat_bool(false)
                         .concat_long_str(#field_docstrings)
