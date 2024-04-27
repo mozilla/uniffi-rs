@@ -6,10 +6,13 @@ use syn::{
     Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit, Variant,
 };
 
-use crate::util::{
-    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
-    ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+use crate::{
+    ffiops,
+    util::{
+        create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
+        ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
+        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+    },
 };
 
 fn extract_repr(attrs: &[Attribute]) -> syn::Result<Option<Ident>> {
@@ -134,10 +137,8 @@ fn enum_or_error_ffi_converter_impl(
             let idx = Index::from(i + 1);
             let write_fields =
                 std::iter::zip(v.fields.iter(), field_idents.iter()).map(|(f, ident)| {
-                    let ty = &f.ty;
-                    quote! {
-                        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(#ident, buf);
-                    }
+                    let write = ffiops::write(&f.ty);
+                    quote! { #write(#ident, buf); }
                 });
             let is_tuple = v.fields.iter().any(|f| f.ident.is_none());
             let fields = if is_tuple {
@@ -230,7 +231,10 @@ pub(crate) fn enum_meta_static_var(
     };
     metadata_expr.extend(match discr_type {
         None => quote! { .concat_bool(false) },
-        Some(t) => quote! { .concat_bool(true).concat(<#t as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META) }
+        Some(t) => {
+            let type_id_meta = ffiops::type_id_meta(t);
+            quote! { .concat_bool(true).concat(#type_id_meta) }
+        }
     });
     metadata_expr.extend(variant_metadata(enum_)?);
     metadata_expr.extend(quote! {
@@ -315,12 +319,12 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
             let name = ident_to_string(&v.ident);
             let value_tokens = variant_value(v)?;
             let docstring = extract_docstring(&v.attrs)?;
-            let field_types = v.fields.iter().map(|f| &f.ty);
             let field_docstrings = v
                 .fields
                 .iter()
                 .map(|f| extract_docstring(&f.attrs))
                 .collect::<syn::Result<Vec<_>>>()?;
+            let field_type_id_metas = v.fields.iter().map(|f| ffiops::type_id_meta(&f.ty));
 
             Ok(quote! {
                 .concat_str(#name)
@@ -328,7 +332,7 @@ pub fn variant_metadata(enum_: &DataEnum) -> syn::Result<Vec<TokenStream>> {
                 .concat_value(#fields_len)
                     #(
                         .concat_str(#field_names)
-                        .concat(<#field_types as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(#field_type_id_metas)
                         // field defaults not yet supported for enums
                         .concat_bool(false)
                         .concat_long_str(#field_docstrings)

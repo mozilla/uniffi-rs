@@ -4,6 +4,7 @@ use syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Token};
 
 use crate::{
     default::{default_value_metadata_calls, DefaultValue},
+    ffiops,
     util::{
         create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
         ident_to_string, kw, mod_path, tagged_impl_header, try_metadata_value_from_usize,
@@ -76,10 +77,9 @@ pub(crate) fn record_ffi_converter_impl(
 
 fn write_field(f: &Field) -> TokenStream {
     let ident = &f.ident;
-    let ty = &f.ty;
-
+    let write = ffiops::write(&f.ty);
     quote! {
-        <#ty as ::uniffi::Lower<crate::UniFfiTag>>::write(obj.#ident, buf);
+        #write(obj.#ident, buf);
     }
 }
 
@@ -125,14 +125,14 @@ pub(crate) fn record_meta_static_var(
 
             let name = ident_to_string(f.ident.as_ref().unwrap());
             let docstring = extract_docstring(&f.attrs)?;
-            let ty = &f.ty;
             let default = default_value_metadata_calls(&attrs.default)?;
+            let type_id_meta = ffiops::type_id_meta(&f.ty);
 
             // Note: fields need to implement both `Lower` and `Lift` to be used in a record.  The
             // TYPE_ID_META should be the same for both traits.
             Ok(quote! {
                 .concat_str(#name)
-                .concat(<#ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+                .concat(#type_id_meta)
                 #default
                 .concat_long_str(#docstring)
             })

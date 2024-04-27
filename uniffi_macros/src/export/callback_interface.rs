@@ -4,6 +4,7 @@
 
 use crate::{
     export::ImplItem,
+    ffiops,
     fnsig::{FnKind, FnSignature, ReceiverArg},
     util::{
         create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
@@ -44,33 +45,32 @@ pub(super) fn trait_impl(
         })
         .collect::<syn::Result<Vec<_>>>()?;
 
-    let vtable_fields = methods.iter()
-        .map(|sig| {
-            let ident = &sig.ident;
-            let param_names = sig.scaffolding_param_names();
-            let param_types = sig.scaffolding_param_types();
-            let lift_return = sig.lift_return_impl();
-            if !sig.is_async {
-                quote! {
-                    #ident: extern "C" fn(
-                        uniffi_handle: u64,
-                        #(#param_names: #param_types,)*
-                        uniffi_out_return: &mut #lift_return::ReturnType,
-                        uniffi_out_call_status: &mut ::uniffi::RustCallStatus,
-                    ),
-                }
-            } else {
-                quote! {
-                    #ident: extern "C" fn(
-                        uniffi_handle: u64,
-                        #(#param_names: #param_types,)*
-                        uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return::ReturnType>,
-                        uniffi_callback_data: u64,
-                        uniffi_out_return: &mut ::uniffi::ForeignFuture,
-                    ),
-                }
+    let vtable_fields = methods.iter().map(|sig| {
+        let ident = &sig.ident;
+        let param_names = sig.scaffolding_param_names();
+        let param_types = sig.scaffolding_param_types();
+        let lift_return_type = ffiops::lift_return_type(&sig.return_ty);
+        if !sig.is_async {
+            quote! {
+                #ident: extern "C" fn(
+                    uniffi_handle: u64,
+                    #(#param_names: #param_types,)*
+                    uniffi_out_return: &mut #lift_return_type,
+                    uniffi_out_call_status: &mut ::uniffi::RustCallStatus,
+                ),
             }
-        });
+        } else {
+            quote! {
+                #ident: extern "C" fn(
+                    uniffi_handle: u64,
+                    #(#param_names: #param_types,)*
+                    uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
+                    uniffi_callback_data: u64,
+                    uniffi_out_return: &mut ::uniffi::ForeignFuture,
+                ),
+            }
+        }
+    });
 
     let trait_impl_methods = methods
         .iter()
@@ -141,6 +141,7 @@ pub fn ffi_converter_callback_interface_impl(
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
     };
+    let try_lift_self = ffiops::try_lift(quote! { Self });
 
     quote! {
         #[doc(hidden)]
@@ -155,7 +156,7 @@ pub fn ffi_converter_callback_interface_impl(
             fn try_read(buf: &mut &[u8]) -> ::uniffi::deps::anyhow::Result<Self> {
                 use uniffi::deps::bytes::Buf;
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(buf.get_u64())
+                #try_lift_self(buf.get_u64())
             }
         }
 
@@ -209,21 +210,22 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
 
     let params = sig.params();
     let lower_exprs = sig.args.iter().map(|a| {
-        let lower_impl = a.lower_impl();
+        let lower = ffiops::lower(&a.ty);
         let ident = &a.ident;
-        quote! { #lower_impl::lower(#ident) }
+        quote! { #lower(#ident) }
     });
 
-    let lift_return = sig.lift_return_impl();
+    let lift_return_type = ffiops::lift_return_type(&sig.return_ty);
+    let lift_foreign_return = ffiops::lift_foreign_return(&sig.return_ty);
 
     if !is_async {
         Ok(quote! {
             fn #ident(#self_param, #(#params),*) -> #return_ty {
                 let vtable = #vtable_cell.get();
                 let mut uniffi_call_status = ::uniffi::RustCallStatus::new();
-                let mut uniffi_return_value: #lift_return::ReturnType = ::uniffi::FfiDefault::ffi_default();
+                let mut uniffi_return_value: #lift_return_type = ::uniffi::FfiDefault::ffi_default();
                 (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut uniffi_return_value, &mut uniffi_call_status);
-                #lift_return::lift_foreign_return(uniffi_return_value, uniffi_call_status)
+                #lift_foreign_return(uniffi_return_value, uniffi_call_status)
             }
         })
     } else {

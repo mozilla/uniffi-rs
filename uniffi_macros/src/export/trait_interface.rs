@@ -11,6 +11,7 @@ use crate::{
     export::{
         attributes::ExportTraitArgs, callback_interface, gen_method_scaffolding, item::ImplItem,
     },
+    ffiops,
     object::interface_meta_static_var,
     util::{ident_to_string, tagged_impl_header},
 };
@@ -139,6 +140,8 @@ pub(crate) fn ffi_converter(
     } else {
         quote! { ::uniffi::metadata::codes::TYPE_TRAIT_INTERFACE }
     };
+    let lower_self = ffiops::lower(quote! { ::std::sync::Arc<Self> });
+    let try_lift_self = ffiops::try_lift(quote! { ::std::sync::Arc<Self> });
 
     quote! {
         // All traits must be `Sync + Send`. The generated scaffolding will fail to compile
@@ -160,15 +163,14 @@ pub(crate) fn ffi_converter(
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::deps::bytes::BufMut::put_u64(
                     buf,
-                    <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64,
+                    #lower_self(obj) as u64,
                 );
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(
-                    ::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                #try_lift_self(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)

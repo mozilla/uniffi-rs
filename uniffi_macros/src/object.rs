@@ -2,8 +2,11 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::DeriveInput;
 
-use crate::util::{
-    create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
+use crate::{
+    ffiops,
+    util::{
+        create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
+    },
 };
 use uniffi_meta::ObjectImpl;
 
@@ -70,6 +73,12 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
     };
+    let arc_self_type = quote! { ::std::sync::Arc<Self> };
+    let lower = ffiops::lower(&arc_self_type);
+    let type_id_meta = ffiops::type_id_meta(&arc_self_type);
+    let try_lift = ffiops::try_lift(&arc_self_type);
+    let lower_return_type = ffiops::lower_return_type(&arc_self_type);
+    let lower_return = ffiops::lower_return(&arc_self_type);
 
     quote! {
         // All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
@@ -118,7 +127,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
             /// function for other types may lead to undefined behaviour.
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(obj) as u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower(obj) as u64);
             }
 
             /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
@@ -129,7 +138,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                #try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
@@ -138,10 +147,10 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         }
 
         unsafe #lower_return_impl_spec {
-            type ReturnType = <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::FfiType;
+            type ReturnType = #lower_return_type;
 
             fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustBuffer> {
-                Ok(<Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::lower(::std::sync::Arc::new(obj)))
+                #lower_return(::std::sync::Arc::new(obj))
             }
         }
 
@@ -150,7 +159,7 @@ pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
         }
 
         #type_id_impl_spec {
-            const TYPE_ID_META: ::uniffi::MetadataBuffer = <Self as ::uniffi::FfiConverterArc<crate::UniFfiTag>>::TYPE_ID_META;
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = #type_id_meta;
         }
     }
 }
