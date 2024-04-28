@@ -211,11 +211,12 @@ pub struct CustomTypeConfig {
 
 impl Config {
     /// The name of the Swift module containing the high-level foreign-language bindings.
+    /// Panics if the module name hasn't been configured.
     pub fn module_name(&self) -> String {
-        match self.module_name.as_ref() {
-            Some(name) => name.clone(),
-            None => "uniffi".into(),
-        }
+        self.module_name
+            .as_ref()
+            .expect("module name should have been set in update_component_configs")
+            .clone()
     }
 
     /// The name of the lower-level C module containing the FFI declarations.
