@@ -99,20 +99,19 @@ pub struct CustomTypeConfig {
 }
 
 impl Config {
+    // We insist someone has already configured us - any defaults we supply would be wrong.
     pub fn package_name(&self) -> String {
-        if let Some(package_name) = &self.package_name {
-            package_name.clone()
-        } else {
-            "uniffi".into()
-        }
+        self.package_name
+            .as_ref()
+            .expect("package name should have been set in update_component_configs")
+            .clone()
     }
 
     pub fn cdylib_name(&self) -> String {
-        if let Some(cdylib_name) = &self.cdylib_name {
-            cdylib_name.clone()
-        } else {
-            "uniffi".into()
-        }
+        self.cdylib_name
+            .as_ref()
+            .expect("cdylib name should have been set in update_component_configs")
+            .clone()
     }
 
     /// Whether to generate immutable records (`val` instead of `var`)
