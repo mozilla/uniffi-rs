@@ -16,3 +16,5 @@ do {
 let e = getError(message: "the error")
 assert(String(describing: e) == "the error")
 assert(String(reflecting: e) == "ErrorInterface { e: the error }")
+assert(Error.self is Swift.Error.Type)
+assert(Error.self != Swift.Error.self)

@@ -23,7 +23,7 @@ open class {{ impl_class_name }}:
     {%-    endmatch %}
     {%- endfor %}
     {%- if is_error %}
-    Error,
+    Swift.Error,
     {% endif %}
     {{ protocol_name }} {
     fileprivate let pointer: UnsafeMutableRawPointer!
