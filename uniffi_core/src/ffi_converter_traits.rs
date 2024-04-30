@@ -9,7 +9,7 @@
 //! proc-macro generated code.  The goal is to allow the proc-macros to go from a type name to the
 //! correct function for a given FFI operation.
 //!
-//! The traits form a sort-of tree structure from general to specific:
+//! The main traits form a sort-of tree structure from general to specific:
 //! ```ignore
 //!
 //!                   [FfiConverter]
@@ -22,6 +22,10 @@
 //!           |                       |            |
 //!       [LowerReturn]           [LiftRef]  [LiftReturn]
 //! ```
+//!
+//! There's also:
+//!   - [TypeId], which is implemented for all types that implement any of the above traits.
+//!   - [ConvertError], which is implement for errors that can be used in callback interfaces.
 //!
 //! The `derive_ffi_traits` macro can be used to derive the specific traits from the general ones.
 //! Here's the main ways we implement these traits:
@@ -39,7 +43,7 @@
 //!
 //! ## Safety
 //!
-//! All traits are unsafe (implementing it requires `unsafe impl`) because we can't guarantee
+//! Most traits are unsafe (implementing it requires `unsafe impl`) because we can't guarantee
 //! that it's safe to pass your type out to foreign-language code and back again. Buggy
 //! implementations of this trait might violate some assumptions made by the generated code,
 //! or might not match with the corresponding code in the generated foreign-language bindings.
@@ -128,8 +132,6 @@ pub unsafe trait FfiConverter<UT>: Sized {
     fn try_read(buf: &mut &[u8]) -> Result<Self>;
 
     /// Type ID metadata, serialized into a [MetadataBuffer].
-    ///
-    /// If a type implements multiple FFI traits, `TYPE_ID_META` must be the same for all of them.
     const TYPE_ID_META: MetadataBuffer;
 }
 
@@ -217,8 +219,6 @@ pub unsafe trait Lift<UT>: Sized {
             n => bail!("junk data left in buffer after lifting (count: {n})",),
         }
     }
-
-    const TYPE_ID_META: MetadataBuffer;
 }
 
 /// Lower Rust values to pass them to the foreign code
@@ -249,8 +249,6 @@ pub unsafe trait Lower<UT>: Sized {
         Self::write(obj, &mut buf);
         RustBuffer::from_vec(buf)
     }
-
-    const TYPE_ID_META: MetadataBuffer;
 }
 
 /// Return Rust values to the foreign code
@@ -288,8 +286,6 @@ pub unsafe trait LowerReturn<UT>: Sized {
     fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> Self {
         panic!("Failed to convert arg '{arg_name}': {e}")
     }
-
-    const TYPE_ID_META: MetadataBuffer;
 }
 
 /// Return foreign values to Rust
@@ -355,8 +351,6 @@ pub unsafe trait LiftReturn<UT>: Sized {
     fn handle_callback_unexpected_error(e: UnexpectedUniFFICallbackError) -> Self {
         panic!("Callback interface failure: {e}")
     }
-
-    const TYPE_ID_META: MetadataBuffer;
 }
 
 /// Lift references
@@ -375,6 +369,14 @@ pub unsafe trait LiftReturn<UT>: Sized {
 /// `&T` using the Arc.
 pub unsafe trait LiftRef<UT> {
     type LiftType: Lift<UT> + Borrow<Self>;
+}
+
+/// Type ID metadata
+///
+/// This is used to build up more complex metadata.  For example, the `MetadataBuffer` for function
+/// signatures includes a copy of this metadata for each argument and return type.
+pub trait TypeId<UT> {
+    const TYPE_ID_META: MetadataBuffer;
 }
 
 pub trait ConvertError<UT>: Sized {
@@ -468,6 +470,7 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl<UT> LiftReturn<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> LiftRef<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> ConvertError<UT> for $ty);
+        $crate::derive_ffi_traits!(impl<UT> TypeId<UT> for $ty);
     };
 
     (local $ty:ty) => {
@@ -477,6 +480,7 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl LiftReturn<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl LiftRef<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl ConvertError<crate::UniFfiTag> for $ty);
+        $crate::derive_ffi_traits!(impl TypeId<crate::UniFfiTag> for $ty);
     };
 
     (impl $(<$($generic:ident),*>)? $(::uniffi::)? Lower<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
@@ -491,8 +495,6 @@ macro_rules! derive_ffi_traits {
             fn write(obj: Self, buf: &mut ::std::vec::Vec<u8>) {
                 <Self as $crate::FfiConverter<$ut>>::write(obj, buf)
             }
-
-            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter<$ut>>::TYPE_ID_META;
         }
     };
 
@@ -508,8 +510,6 @@ macro_rules! derive_ffi_traits {
             fn try_read(buf: &mut &[u8]) -> $crate::deps::anyhow::Result<Self> {
                 <Self as $crate::FfiConverter<$ut>>::try_read(buf)
             }
-
-            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter<$ut>>::TYPE_ID_META;
         }
     };
 
@@ -521,8 +521,6 @@ macro_rules! derive_ffi_traits {
             fn lower_return(obj: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustBuffer> {
                 Ok(<Self as $crate::Lower<$ut>>::lower(obj))
             }
-
-            const TYPE_ID_META: $crate::MetadataBuffer =<Self as $crate::Lower<$ut>>::TYPE_ID_META;
         }
     };
 
@@ -534,8 +532,6 @@ macro_rules! derive_ffi_traits {
             fn try_lift_successful_return(v: Self::ReturnType) -> $crate::Result<Self> {
                 <Self as $crate::Lift<$ut>>::try_lift(v)
             }
-
-            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::Lift<$ut>>::TYPE_ID_META;
         }
     };
 
@@ -583,6 +579,13 @@ macro_rules! derive_ffi_traits {
                     )
                 }
             }
+        }
+    };
+
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? TypeId<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
+        impl $(<$($generic),*>)* $crate::TypeId<$ut> for $ty $(where $($where)*)*
+        {
+            const TYPE_ID_META: $crate::MetadataBuffer = <Self as $crate::FfiConverter<$ut>>::TYPE_ID_META;
         }
     };
 }

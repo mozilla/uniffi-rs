@@ -6,7 +6,21 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's fixed?
+- Custom Type names are now treated as type names by all bindings. This means if they will work if they happen to be
+  keywords in the language. There's a very small risk of this being a breaking change if you used a type name which
+  did not already start with a capital letter, but this changes makes all type naming consistent.
+  ([#2073](https://github.com/mozilla/uniffi-rs/issues/2073))
+
+- Python: Fix custom types generating invalid code when there are forward references.
+  ([#2067](https://github.com/mozilla/uniffi-rs/issues/2067))
+
 ### What's changed?
+- The internal bindings generation has changed to make it friendlier for external language bindings.
+  However, this is likely to be a small **breaking change** for these bindings.
+  No consumers of any languages are impacted, only the maintainers of these language bindings.
+  ([#2066](https://github.com/mozilla/uniffi-rs/issues/2066))
+
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).

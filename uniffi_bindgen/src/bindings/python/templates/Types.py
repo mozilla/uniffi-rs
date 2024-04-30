@@ -97,3 +97,11 @@
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
+
+{#-
+Setup type aliases for our custom types, has complications due to
+forward type references, #2067
+-#}
+{%- for (name, ty) in self.get_custom_type_aliases() %}
+{{ name }} = {{ ty|type_name }}
+{%- endfor %}

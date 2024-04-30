@@ -3,5 +3,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 fn main() {
-    uniffi::generate_scaffolding("src/guid.udl").unwrap();
+    uniffi::generate_scaffolding("src/custom_types.udl").unwrap();
 }

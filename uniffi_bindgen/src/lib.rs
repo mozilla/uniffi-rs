@@ -95,7 +95,7 @@
 use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize};
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::{collections::HashMap, process::Command};
@@ -107,7 +107,6 @@ pub mod library_mode;
 pub mod macro_metadata;
 pub mod scaffolding;
 
-use bindings::TargetLanguage;
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
@@ -128,16 +127,6 @@ pub trait BindingsConfig: DeserializeOwned {
     ///
     /// config_map maps crate names to config instances. This is mostly used to set up external
     /// types.
-    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>);
-}
-
-/// Binding generator config with no members
-#[derive(Clone, Debug, Deserialize, Hash, PartialEq, PartialOrd, Ord, Eq)]
-pub struct EmptyBindingsConfig;
-
-impl BindingsConfig for EmptyBindingsConfig {
-    fn update_from_ci(&mut self, _ci: &ComponentInterface) {}
-    fn update_from_cdylib_name(&mut self, _cdylib_name: &str) {}
     fn update_from_dependency_configs(&mut self, _config_map: HashMap<&str, &Self>) {}
 }
 
@@ -148,6 +137,9 @@ impl BindingsConfig for EmptyBindingsConfig {
 pub trait BindingGenerator: Sized {
     /// Handles configuring the bindings
     type Config: BindingsConfig;
+
+    /// Creates a new config.
+    fn new_config(&self, root_toml: &toml::Value) -> Result<Self::Config>;
 
     /// Writes the bindings to the output directory
     ///
@@ -165,43 +157,6 @@ pub trait BindingGenerator: Sized {
 
     /// Check if `library_path` used by library mode is valid for this generator
     fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()>;
-}
-
-pub struct BindingGeneratorDefault {
-    pub target_languages: Vec<TargetLanguage>,
-    pub try_format_code: bool,
-}
-
-impl BindingGenerator for BindingGeneratorDefault {
-    type Config = Config;
-
-    fn write_bindings(
-        &self,
-        ci: &ComponentInterface,
-        config: &Self::Config,
-        out_dir: &Utf8Path,
-        _try_format_code: bool,
-    ) -> Result<()> {
-        for &language in &self.target_languages {
-            bindings::write_bindings(
-                &config.bindings,
-                ci,
-                out_dir,
-                language,
-                self.try_format_code,
-            )?;
-        }
-        Ok(())
-    }
-
-    fn check_library_path(&self, library_path: &Utf8Path, cdylib_name: Option<&str>) -> Result<()> {
-        for &language in &self.target_languages {
-            if cdylib_name.is_none() && language != TargetLanguage::Swift {
-                bail!("Generate bindings for {language} requires a cdylib, but {library_path} was given");
-            }
-        }
-        Ok(())
-    }
 }
 
 /// Generate bindings for an external binding generator
@@ -241,7 +196,8 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     let config = {
-        let mut config = load_initial_config::<T::Config>(crate_root, config_file_override)?;
+        let toml = load_initial_config(crate_root, config_file_override)?;
+        let mut config = binding_generator.new_config(&toml)?;
         config.update_from_ci(&component);
         if let Some(ref library_file) = library_file {
             if let Some(cdylib_name) = crate::library_mode::calc_cdylib_name(library_file.as_ref())
@@ -435,10 +391,10 @@ fn load_toml_file(source: Option<&Utf8Path>) -> Result<Option<toml::value::Table
 }
 
 /// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
-fn load_initial_config<Config: DeserializeOwned>(
+fn load_initial_config(
     crate_root: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
-) -> Result<Config> {
+) -> Result<toml::Value> {
     let mut config = load_toml_file(Some(crate_root.join("uniffi.toml").as_path()))
         .context("default config")?
         .unwrap_or(toml::value::Table::default());
@@ -448,7 +404,7 @@ fn load_initial_config<Config: DeserializeOwned>(
         merge_toml(&mut config, override_config);
     }
 
-    Ok(toml::Value::from(config).try_into()?)
+    Ok(toml::Value::from(config))
 }
 
 fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
@@ -464,55 +420,6 @@ fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
                 a.insert(key, value);
             }
         }
-    }
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct Config {
-    #[serde(default)]
-    bindings: bindings::Config,
-}
-
-impl BindingsConfig for Config {
-    fn update_from_ci(&mut self, ci: &ComponentInterface) {
-        self.bindings.kotlin.update_from_ci(ci);
-        self.bindings.swift.update_from_ci(ci);
-        self.bindings.python.update_from_ci(ci);
-        self.bindings.ruby.update_from_ci(ci);
-    }
-
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
-        self.bindings.kotlin.update_from_cdylib_name(cdylib_name);
-        self.bindings.swift.update_from_cdylib_name(cdylib_name);
-        self.bindings.python.update_from_cdylib_name(cdylib_name);
-        self.bindings.ruby.update_from_cdylib_name(cdylib_name);
-    }
-
-    fn update_from_dependency_configs(&mut self, config_map: HashMap<&str, &Self>) {
-        self.bindings.kotlin.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (*key, &config.bindings.kotlin))
-                .collect(),
-        );
-        self.bindings.swift.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (*key, &config.bindings.swift))
-                .collect(),
-        );
-        self.bindings.python.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (*key, &config.bindings.python))
-                .collect(),
-        );
-        self.bindings.ruby.update_from_dependency_configs(
-            config_map
-                .iter()
-                .map(|(key, config)| (*key, &config.bindings.ruby))
-                .collect(),
-        );
     }
 }
 

@@ -164,6 +164,11 @@ impl ComponentInterface {
         self.types.namespace_docstring.as_deref()
     }
 
+    /// The crate this interfaces lives in.
+    pub fn crate_name(&self) -> &str {
+        &self.types.namespace.crate_name
+    }
+
     pub fn uniffi_contract_version(&self) -> u32 {
         // This is set by the scripts in the version-mismatch fixture
         let force_version = std::env::var("UNIFFI_FORCE_CONTRACT_VERSION");

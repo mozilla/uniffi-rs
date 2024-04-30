@@ -43,10 +43,9 @@ typedef extern UniffiOneUDLTrait;
 [ExternalExport="uniffi_one"]
 typedef extern UniffiOneProcMacroType;
 
-// A "wrapped" type defined in the guid crate (ie, defined in `../../guid/src/lib.rs` and
-// "declared" in `../../guid/src/guid.udl`). But it's still "external" from our POV,
-// So same as the `.udl` type above!
-[External="ext_types_guid"]
+// A Custom (ie, "wrapped") type defined externally in `../../custom-types/src/lib.rs`,
+// but because it's in a UDL it's still "external" from our POV, so same as the `.udl` type above.
+[External="ext_types_custom"]
 typedef extern Guid;
 
 // And re-use the `custom-types` example - this exposes `Url` and `Handle`

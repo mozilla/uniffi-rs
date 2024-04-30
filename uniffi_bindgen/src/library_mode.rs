@@ -68,12 +68,27 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let cdylib_name = calc_cdylib_name(library_path);
     binding_generator.check_library_path(library_path, cdylib_name)?;
 
-    let mut sources = find_sources(
-        &cargo_metadata,
-        library_path,
-        cdylib_name,
-        config_file_override,
-    )?;
+    let mut sources = find_components(&cargo_metadata, library_path)?
+        .into_iter()
+        .map(|(ci, package)| {
+            let crate_root = package
+                .manifest_path
+                .parent()
+                .context("manifest path has no parent")?;
+            let mut config = binding_generator
+                .new_config(&load_initial_config(crate_root, config_file_override)?)?;
+            if let Some(cdylib_name) = cdylib_name {
+                config.update_from_cdylib_name(cdylib_name);
+            }
+            config.update_from_ci(&ci);
+            Ok(Source {
+                config,
+                ci,
+                package,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+
     for i in 0..sources.len() {
         // Partition up the sources list because we're eventually going to call
         // `update_from_dependency_configs()` which requires an exclusive reference to one source and
@@ -88,7 +103,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
             .filter_map(|s| {
                 dependencies
                     .contains(s.package.name.as_str())
-                    .then_some((s.crate_name.as_str(), &s.config))
+                    .then_some((s.ci.crate_name(), &s.config))
             })
             .collect();
         // We can finally call update_from_dependency_configs
@@ -98,7 +113,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     if let Some(crate_name) = &crate_name {
         let old_elements = sources.drain(..);
         let mut matches: Vec<_> = old_elements
-            .filter(|s| &s.crate_name == crate_name)
+            .filter(|s| s.ci.crate_name() == crate_name)
             .collect();
         match matches.len() {
             0 => bail!("Crate {crate_name} not found in {library_path}"),
@@ -118,7 +133,6 @@ pub fn generate_external_bindings<T: BindingGenerator>(
 #[derive(Debug)]
 pub struct Source<Config: BindingsConfig> {
     pub package: Package,
-    pub crate_name: String,
     pub ci: ComponentInterface,
     pub config: Config,
 }
@@ -136,12 +150,10 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     None
 }
 
-fn find_sources<Config: BindingsConfig>(
+fn find_components(
     cargo_metadata: &cargo_metadata::Metadata,
     library_path: &Utf8Path,
-    cdylib_name: Option<&str>,
-    config_file_override: Option<&Utf8Path>,
-) -> Result<Vec<Source<Config>>> {
+) -> Result<Vec<(ComponentInterface, Package)>> {
     let items = macro_metadata::extract_from_library(library_path)?;
     let mut metadata_groups = create_metadata_groups(&items);
     group_metadata(&mut metadata_groups, items)?;
@@ -176,27 +188,12 @@ fn find_sources<Config: BindingsConfig>(
         .into_values()
         .map(|group| {
             let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
-            let crate_root = package
-                .manifest_path
-                .parent()
-                .context("manifest path has no parent")?;
-            let crate_name = group.namespace.crate_name.clone();
-            let mut ci = ComponentInterface::new(&crate_name);
-            if let Some(metadata) = udl_items.remove(&crate_name) {
+            let mut ci = ComponentInterface::new(&group.namespace.crate_name);
+            if let Some(metadata) = udl_items.remove(&group.namespace.crate_name) {
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;
-            let mut config = load_initial_config::<Config>(crate_root, config_file_override)?;
-            if let Some(cdylib_name) = cdylib_name {
-                config.update_from_cdylib_name(cdylib_name);
-            }
-            config.update_from_ci(&ci);
-            Ok(Source {
-                config,
-                crate_name,
-                ci,
-                package,
-            })
+            Ok((ci, package))
         })
         .collect()
 }

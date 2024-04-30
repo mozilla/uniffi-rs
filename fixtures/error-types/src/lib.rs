@@ -142,14 +142,14 @@ fn return_proc_error(e: String) -> Arc<ProcErrorInterface> {
 
 // Enums have good coverage elsewhere, but simple coverage here is good.
 #[derive(thiserror::Error, uniffi::Error, Debug)]
-pub enum EnumError {
+pub enum Error {
     #[error("Oops")]
     Oops,
 }
 
 #[uniffi::export]
-fn oops_enum() -> Result<(), EnumError> {
-    Err(EnumError::Oops)
+fn oops_enum() -> Result<(), Error> {
+    Err(Error::Oops)
 }
 
 uniffi::include_scaffolding!("error_types");

@@ -66,4 +66,13 @@ pub enum Error {
     class { object: u8 },
 }
 
+#[allow(non_camel_case_types)]
+pub struct r#else(pub r#return);
+uniffi::custom_newtype!(r#else, r#return);
+
+#[uniffi::export]
+pub fn get_else(e: r#else) -> r#else {
+    e
+}
+
 uniffi::include_scaffolding!("keywords");

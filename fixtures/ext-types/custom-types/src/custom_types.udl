@@ -1,6 +1,10 @@
 [Custom]
 typedef string Guid;
 
+// Wrapping another custom type.
+[Custom]
+typedef Guid ANestedGuid;
+
 [Error]
 enum GuidError {
     "TooShort"
@@ -16,7 +20,7 @@ callback interface GuidCallback {
    Guid run(Guid arg);
 };
 
-namespace ext_types_guid {
+namespace ext_types_custom {
     // Note this intentionally does not throw an error - uniffi will panic if
     // a Guid can't be converted.
     Guid get_guid(optional Guid? value);

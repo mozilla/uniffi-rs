@@ -8,16 +8,23 @@
 //! along with some helpers for executing foreign language scripts or tests.
 
 use anyhow::{bail, Result};
-use camino::Utf8Path;
-use serde::{Deserialize, Serialize};
+
 use std::fmt;
 
-use crate::interface::ComponentInterface;
-
-pub mod kotlin;
-pub mod python;
-pub mod ruby;
-pub mod swift;
+mod kotlin;
+pub use kotlin::{
+    run_script as kotlin_run_script, run_test as kotlin_run_test, KotlinBindingGenerator,
+};
+mod python;
+pub use python::{
+    run_script as python_run_script, run_test as python_run_test, PythonBindingGenerator,
+};
+mod ruby;
+pub use ruby::{run_test as ruby_run_test, RubyBindingGenerator};
+mod swift;
+pub use swift::{
+    run_script as swift_run_script, run_test as swift_run_test, SwiftBindingGenerator,
+};
 
 /// Enumeration of all foreign language targets currently supported by this crate.
 ///
@@ -87,39 +94,4 @@ impl TryFrom<String> for TargetLanguage {
     fn try_from(value: String) -> Result<Self> {
         TryFrom::try_from(value.as_str())
     }
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct Config {
-    #[serde(default)]
-    pub(crate) kotlin: kotlin::Config,
-    #[serde(default)]
-    pub(crate) swift: swift::Config,
-    #[serde(default)]
-    pub(crate) python: python::Config,
-    #[serde(default)]
-    pub(crate) ruby: ruby::Config,
-}
-
-/// Generate foreign language bindings from a compiled `uniffi` library.
-pub fn write_bindings(
-    config: &Config,
-    ci: &ComponentInterface,
-    out_dir: &Utf8Path,
-    language: TargetLanguage,
-    try_format_code: bool,
-) -> Result<()> {
-    match language {
-        TargetLanguage::Kotlin => {
-            kotlin::write_bindings(&config.kotlin, ci, out_dir, try_format_code)?
-        }
-        TargetLanguage::Swift => {
-            swift::write_bindings(&config.swift, ci, out_dir, try_format_code)?
-        }
-        TargetLanguage::Python => {
-            python::write_bindings(&config.python, ci, out_dir, try_format_code)?
-        }
-        TargetLanguage::Ruby => ruby::write_bindings(&config.ruby, ci, out_dir, try_format_code)?,
-    }
-    Ok(())
 }
