@@ -250,49 +250,47 @@ impl ExportedImplFnAttributes {
         let mut this = Self::default();
         for attr in attrs {
             let segs = &attr.path().segments;
+            let uniffi_pos = segs.iter().position(|seg| seg.ident == "uniffi");
 
-            let fst = segs
-                .first()
-                .expect("attributes have at least one path segment");
-            if fst.ident != "uniffi" {
-                continue;
-            }
-            ensure_no_path_args(fst)?;
+            if let Some(pos) = uniffi_pos {
+                ensure_no_path_args(&segs[pos])?;
 
-            let args = match &attr.meta {
-                Meta::List(_) => attr.parse_args::<ExportFnArgs>()?,
-                _ => Default::default(),
-            };
-            this.args = args;
-
-            if segs.len() != 2 {
-                return Err(syn::Error::new_spanned(
-                    segs,
-                    "unsupported uniffi attribute",
-                ));
-            }
-            let snd = &segs[1];
-            ensure_no_path_args(snd)?;
-
-            match snd.ident.to_string().as_str() {
-                "constructor" => {
-                    if this.constructor {
-                        return Err(syn::Error::new_spanned(
-                            attr,
-                            "duplicate constructor attribute",
-                        ));
-                    }
-                    this.constructor = true;
+                if pos + 1 >= segs.len() {
+                    return Err(syn::Error::new_spanned(
+                        &segs[pos],
+                        "expected 'constructor' or 'method' after 'uniffi'",
+                    ));
                 }
-                "method" => {
-                    if this.constructor {
-                        return Err(syn::Error::new_spanned(
-                            attr,
-                            "confused constructor/method attributes",
-                        ));
+                let next = &segs[pos + 1];
+
+                ensure_no_path_args(next)?;
+
+                match next.ident.to_string().as_str() {
+                    "constructor" => {
+                        if this.constructor {
+                            return Err(syn::Error::new_spanned(
+                                attr,
+                                "duplicate constructor attribute",
+                            ));
+                        }
+                        this.constructor = true;
                     }
+                    "method" => {
+                        if this.constructor {
+                            return Err(syn::Error::new_spanned(
+                                attr,
+                                "confused constructor/method attributes",
+                            ));
+                        }
+                    }
+                    _ => return Err(syn::Error::new_spanned(next, "unknown uniffi attribute")),
                 }
-                _ => return Err(syn::Error::new_spanned(snd, "unknown uniffi attribute")),
+
+                let args = match &attr.meta {
+                    Meta::List(_) => attr.parse_args::<ExportFnArgs>()?,
+                    _ => Default::default(),
+                };
+                this.args = args;
             }
         }
 
