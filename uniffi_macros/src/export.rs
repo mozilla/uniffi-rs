@@ -133,7 +133,7 @@ pub(crate) fn expand_export(
                 quote! { #(#items)* }
             });
             let ffi_converter_tokens =
-                ffi_converter_callback_interface_impl(&self_ident, &trait_impl_ident, udl_mode);
+                ffi_converter_callback_interface_impl(&self_ident, &trait_impl_ident);
 
             Ok(quote! {
                 #trait_impl

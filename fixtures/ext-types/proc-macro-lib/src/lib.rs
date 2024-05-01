@@ -6,12 +6,7 @@ use uniffi_one::{
 };
 use url::Url;
 
-uniffi::use_udl_record!(uniffi_one, UniffiOneType);
-uniffi::use_udl_enum!(uniffi_one, UniffiOneEnum);
-uniffi::use_udl_object!(uniffi_one, UniffiOneInterface);
-uniffi::use_udl_record!(ext_types_custom, Guid);
-uniffi::use_udl_record!(custom_types, Url);
-uniffi::use_udl_record!(custom_types, Handle);
+uniffi::remote_type!(Url, custom_types);
 
 #[derive(uniffi::Record)]
 pub struct CombinedType {

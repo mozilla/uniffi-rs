@@ -1663,6 +1663,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-example-remote-types"
+version = "0.22.0"
+dependencies = [
+ "anyhow",
+ "log",
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-example-rondpoint"
 version = "0.22.0"
 dependencies = [

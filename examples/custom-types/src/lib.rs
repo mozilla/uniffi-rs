@@ -62,6 +62,8 @@ uniffi::custom_newtype!(TimeIntervalSecFlt, f32);
 
 // `Url` gets converted to a `String` to pass across the FFI.
 uniffi::custom_type!(Url, String, {
+    // Remote is required since `Url` is from a different crate
+    remote,
     try_lift: |val| Ok(Url::parse(&val)?),
     lower: |obj| obj.into(),
 });

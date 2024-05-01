@@ -2,8 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::literal::convert_default_value;
-use crate::InterfaceCollector;
+use crate::{attributes::DictionaryAttributes, literal::convert_default_value, InterfaceCollector};
 use anyhow::{bail, Result};
 
 use uniffi_meta::{
@@ -92,15 +91,14 @@ impl APIConverter<VariantMetadata> for weedle::interface::OperationInterfaceMemb
 
 impl APIConverter<RecordMetadata> for weedle::DictionaryDefinition<'_> {
     fn convert(&self, ci: &mut InterfaceCollector) -> Result<RecordMetadata> {
-        if self.attributes.is_some() {
-            bail!("dictionary attributes are not supported yet");
-        }
+        let attributes = DictionaryAttributes::try_from(self.attributes.as_ref())?;
         if self.inheritance.is_some() {
             bail!("dictionary inheritance is not supported");
         }
         Ok(RecordMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
+            remote: attributes.contains_remote(),
             fields: self.members.body.convert(ci)?,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
         })

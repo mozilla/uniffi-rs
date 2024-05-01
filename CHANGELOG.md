@@ -13,6 +13,13 @@
   We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
   See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
 
+- Handling of remote and external types has changed significantly:
+    - UDL users need to add the `[Remote]` attribute for remote types
+    - The `use_udl_*` macros are no longer needed and have been removed.
+    - To share remote type implementations between crates, use the `use_remote_type` macro.
+    - The UDL syntax for external types in the UDL has been changed.
+    - See https://mozilla.github.io/uniffi-rs/udl/remote_ext_types.html for details
+
 ### What's fixed?
 
 - Fixed bug in metadata extraction with large ELF files.

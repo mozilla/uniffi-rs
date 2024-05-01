@@ -7,7 +7,7 @@ use rinja::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
-use heck::{ToShoutySnakeCase, ToSnakeCase};
+use heck::ToShoutySnakeCase;
 
 #[derive(Template)]
 #[template(syntax = "rs", escape = "none", path = "scaffolding_template.rs")]
@@ -70,10 +70,5 @@ mod filters {
             } => format!("::std::sync::Arc<dyn r#{name}>"),
             Type::External { name, .. } => format!("r#{name}"),
         })
-    }
-
-    // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
-    pub fn crate_name_rs(nm: &str) -> Result<String, rinja::Error> {
-        Ok(format!("r#{}", nm.to_string().to_snake_case()))
     }
 }
