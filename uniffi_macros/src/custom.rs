@@ -2,7 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header};
+use crate::{
+    ffiops,
+    util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header},
+};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::Path;
@@ -18,6 +21,14 @@ pub(crate) fn expand_ffi_converter_custom_type(
     let derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
+    let from_custom = quote! { <#ident as crate::UniffiCustomTypeConverter>::from_custom };
+    let into_custom = quote! { <#ident as crate::UniffiCustomTypeConverter>::into_custom };
+    let lower_type = ffiops::lower_type(builtin);
+    let lower = ffiops::lower(builtin);
+    let write = ffiops::write(builtin);
+    let try_lift = ffiops::try_lift(builtin);
+    let try_read = ffiops::try_read(builtin);
+    let type_id_meta = ffiops::type_id_meta(builtin);
 
     Ok(quote! {
         #[automatically_derived]
@@ -25,27 +36,27 @@ pub(crate) fn expand_ffi_converter_custom_type(
             // Note: the builtin type needs to implement both `Lower` and `Lift'.  We use the
             // `Lower` trait to get the associated type `FfiType` and const `TYPE_ID_META`.  These
             // can't differ between `Lower` and `Lift`.
-            type FfiType = <#builtin as ::uniffi::Lower<crate::UniFfiTag>>::FfiType;
+            type FfiType = #lower_type;
             fn lower(obj: #ident ) -> Self::FfiType {
-                <#builtin as ::uniffi::Lower<crate::UniFfiTag>>::lower(<#ident as crate::UniffiCustomTypeConverter>::from_custom(obj))
+                #lower(#from_custom(obj))
             }
 
             fn try_lift(v: Self::FfiType) -> uniffi::Result<#ident> {
-                <#ident as crate::UniffiCustomTypeConverter>::into_custom(<#builtin as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(v)?)
+                #into_custom(#try_lift(v)?)
             }
 
             fn write(obj: #ident, buf: &mut Vec<u8>) {
-                <#builtin as ::uniffi::Lower<crate::UniFfiTag>>::write(<#ident as crate::UniffiCustomTypeConverter>::from_custom(obj), buf);
+                #write(#from_custom(obj), buf);
             }
 
             fn try_read(buf: &mut &[u8]) -> uniffi::Result<#ident> {
-                <#ident as crate::UniffiCustomTypeConverter>::into_custom(<#builtin as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?)
+                #into_custom(#try_read(buf)?)
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
                 .concat_str(#mod_path)
                 .concat_str(#name)
-                .concat(<#builtin as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META);
+                .concat(#type_id_meta);
         }
 
         #derive_ffi_traits

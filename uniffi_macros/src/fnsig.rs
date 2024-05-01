@@ -5,6 +5,7 @@
 use crate::{
     default::{default_value_metadata_calls, DefaultValue},
     export::{AsyncRuntime, DefaultMap, ExportFnArgs},
+    ffiops,
     util::{create_metadata_items, ident_to_string, mod_path, try_metadata_value_from_usize},
 };
 use proc_macro2::{Span, TokenStream};
@@ -146,20 +147,6 @@ impl FnSignature {
         })
     }
 
-    pub fn lower_return_impl(&self) -> TokenStream {
-        let return_ty = &self.return_ty;
-        quote! {
-            <#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>
-        }
-    }
-
-    pub fn lift_return_impl(&self) -> TokenStream {
-        let return_ty = &self.return_ty;
-        quote! {
-            <#return_ty as ::uniffi::LiftReturn<crate::UniFfiTag>>
-        }
-    }
-
     /// Generate a closure that tries to lift all arguments into a tuple.
     ///
     /// The closure moves all scaffolding arguments into itself and returns:
@@ -168,10 +155,10 @@ impl FnSignature {
     pub fn lift_closure(&self, self_lift: Option<TokenStream>) -> TokenStream {
         let arg_lifts = self.args.iter().map(|arg| {
             let ident = &arg.ident;
-            let lift_impl = arg.lift_impl();
+            let try_lift = ffiops::try_lift(&arg.ty);
             let name = &arg.name;
             quote! {
-                match #lift_impl::try_lift(#ident) {
+                match #try_lift(#ident) {
                     Ok(v) => v,
                     Err(e) => return Err((#name, e)),
                 }
@@ -235,10 +222,7 @@ impl FnSignature {
     }
 
     pub fn scaffolding_param_types(&self) -> impl Iterator<Item = TokenStream> + '_ {
-        self.args.iter().map(|a| {
-            let lift_impl = a.lift_impl();
-            quote! { #lift_impl::FfiType }
-        })
+        self.args.iter().map(|a| ffiops::lift_type(&a.ty))
     }
 
     /// Generate metadata items for this function
@@ -263,6 +247,8 @@ impl FnSignature {
             .map(NamedArg::arg_metadata)
             .collect::<syn::Result<Vec<_>>>()?;
 
+        let type_id_meta = ffiops::type_id_meta(return_ty);
+
         match &self.kind {
             FnKind::Function => Ok(quote! {
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
@@ -271,7 +257,7 @@ impl FnSignature {
                     .concat_bool(#is_async)
                     .concat_value(#args_len)
                     #(#arg_metadata_calls)*
-                    .concat(<#return_ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+                    .concat(#type_id_meta)
                     .concat_long_str(#docstring)
             }),
 
@@ -285,7 +271,7 @@ impl FnSignature {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(#type_id_meta)
                         .concat_long_str(#docstring)
                 })
             }
@@ -301,7 +287,7 @@ impl FnSignature {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(#type_id_meta)
                         .concat_long_str(#docstring)
                 })
             }
@@ -316,7 +302,7 @@ impl FnSignature {
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
                         #(#arg_metadata_calls)*
-                        .concat(<#return_ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+                        .concat(#type_id_meta)
                         .concat_long_str(#docstring)
                 })
             }
@@ -450,7 +436,7 @@ impl NamedArg {
                 let inner = &r.elem;
                 Self {
                     name: ident_to_string(&ident),
-                    ty: quote! { <#inner as ::uniffi::LiftRef<crate::UniFfiTag>>::LiftType },
+                    ty: ffiops::lift_ref_type(inner),
                     ref_type: Some(*inner.clone()),
                     default: defaults.remove(&ident),
                     ident,
@@ -466,16 +452,6 @@ impl NamedArg {
         })
     }
 
-    pub(crate) fn lift_impl(&self) -> TokenStream {
-        let ty = &self.ty;
-        quote! { <#ty as ::uniffi::Lift<crate::UniFfiTag>> }
-    }
-
-    pub(crate) fn lower_impl(&self) -> TokenStream {
-        let ty = &self.ty;
-        quote! { <#ty as ::uniffi::Lower<crate::UniFfiTag>> }
-    }
-
     /// Generate the parameter for this Arg
     pub(crate) fn param(&self) -> TokenStream {
         let ident = &self.ident;
@@ -485,11 +461,11 @@ impl NamedArg {
 
     pub(crate) fn arg_metadata(&self) -> syn::Result<TokenStream> {
         let name = &self.name;
-        let ty = &self.ty;
+        let type_id_meta = ffiops::type_id_meta(&self.ty);
         let default_calls = default_value_metadata_calls(&self.default)?;
         Ok(quote! {
             .concat_str(#name)
-            .concat(<#ty as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
+            .concat(#type_id_meta)
             #default_calls
         })
     }

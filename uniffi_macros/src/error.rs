@@ -7,6 +7,7 @@ use syn::{
 
 use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumAttr},
+    ffiops,
     util::{
         chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, extract_docstring,
         ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
@@ -97,22 +98,30 @@ fn flat_error_ffi_converter_impl(
     };
 
     let lower_impl = {
-        let mut match_arms: Vec<_> = enum_.variants.iter().enumerate().map(|(i, v)| {
-            let v_ident = &v.ident;
-            let idx = Index::from(i + 1);
+        let mut match_arms: Vec<_> = enum_
+            .variants
+            .iter()
+            .enumerate()
+            .map(|(i, v)| {
+                let v_ident = &v.ident;
+                let idx = Index::from(i + 1);
+                let write_string = ffiops::write(quote! { ::std::string::String });
 
-            quote! {
-                Self::#v_ident { .. } => {
-                    ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    <::std::string::String as ::uniffi::Lower<crate::UniFfiTag>>::write(error_msg, buf);
+                quote! {
+                    Self::#v_ident { .. } => {
+                        ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
+                        #write_string(error_msg, buf);
+                    }
                 }
-            }
-        }).collect();
+            })
+            .collect();
         if attr.non_exhaustive.is_some() {
             match_arms.push(quote! {
                 _ => panic!("Unexpected variant in non-exhaustive enum"),
             })
         }
+
+        let lower = ffiops::lower_into_rust_buffer(quote! { Self });
 
         quote! {
             #[automatically_derived]
@@ -125,7 +134,7 @@ fn flat_error_ffi_converter_impl(
                 }
 
                 fn lower(obj: Self) -> ::uniffi::RustBuffer {
-                    <Self as ::uniffi::Lower<crate::UniFfiTag>>::lower_into_rust_buffer(obj)
+                    #lower(obj)
                 }
             }
         }
@@ -140,6 +149,7 @@ fn flat_error_ffi_converter_impl(
                 #idx => Self::#v_ident,
             }
         });
+        let try_lift = ffiops::try_lift_from_rust_buffer(quote! { Self });
         quote! {
             #[automatically_derived]
             unsafe #lift_impl_spec {
@@ -153,7 +163,7 @@ fn flat_error_ffi_converter_impl(
                 }
 
                 fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
-                    <Self as ::uniffi::Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(v)
+                    #try_lift(v)
                 }
             }
         }

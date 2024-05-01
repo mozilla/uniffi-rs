@@ -20,6 +20,7 @@ mod default;
 mod enum_;
 mod error;
 mod export;
+mod ffiops;
 mod fnsig;
 mod object;
 mod record;

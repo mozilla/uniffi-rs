@@ -7,7 +7,10 @@ use quote::quote;
 use std::iter;
 
 use super::attributes::AsyncRuntime;
-use crate::fnsig::{FnKind, FnSignature};
+use crate::{
+    ffiops,
+    fnsig::{FnKind, FnSignature},
+};
 
 pub(super) fn gen_fn_scaffolding(
     sig: FnSignature,
@@ -128,15 +131,13 @@ impl ScaffoldingBits {
         udl_mode: bool,
     ) -> Self {
         let ident = &sig.ident;
-        let lift_impl = if is_trait {
-            quote! {
-                <::std::sync::Arc<dyn #self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
-            }
+        let self_type = if is_trait {
+            quote! { ::std::sync::Arc<dyn #self_ident> }
         } else {
-            quote! {
-                <::std::sync::Arc<#self_ident> as ::uniffi::Lift<crate::UniFfiTag>>
-            }
+            quote! { ::std::sync::Arc<#self_ident> }
         };
+        let lift_type = ffiops::lift_type(&self_type);
+        let try_lift = ffiops::try_lift(&self_type);
         let try_lift_self = if is_trait {
             // For trait interfaces we need to special case this.  Trait interfaces normally lift
             // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
@@ -149,7 +150,7 @@ impl ScaffoldingBits {
                 }
             }
         } else {
-            quote! { #lift_impl::try_lift(uniffi_self_lowered) }
+            quote! { #try_lift(uniffi_self_lowered) }
         };
 
         let lift_closure = sig.lift_closure(Some(quote! {
@@ -171,7 +172,7 @@ impl ScaffoldingBits {
             param_names: iter::once(quote! { uniffi_self_lowered })
                 .chain(sig.scaffolding_param_names())
                 .collect(),
-            param_types: iter::once(quote! { #lift_impl::FfiType })
+            param_types: iter::once(quote! { #lift_type })
                 .chain(sig.scaffolding_param_types())
                 .collect(),
             lift_closure,
@@ -241,7 +242,9 @@ pub(super) fn gen_ffi_function(
     let ffi_ident = sig.scaffolding_fn_ident()?;
     let name = &sig.name;
     let return_ty = &sig.return_ty;
-    let return_impl = &sig.lower_return_impl();
+    let ffi_return_ty = ffiops::lower_return_type(return_ty);
+    let lower_return = ffiops::lower_return(return_ty);
+    let handle_failed_lift = ffiops::lower_return_handle_failed_lift(return_ty);
 
     Ok(if !sig.is_async {
         quote! {
@@ -250,21 +253,19 @@ pub(super) fn gen_ffi_function(
             #vis extern "C" fn #ffi_ident(
                 #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
-            ) -> #return_impl::ReturnType {
+            ) -> #ffi_return_ty {
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
-                    #return_impl::lower_return(
-                        match uniffi_lift_args() {
-                            Ok(uniffi_args) => {
-                                let uniffi_result = #rust_fn_call;
-                                #convert_result
-                            }
-                            Err((arg_name, anyhow_error)) => {
-                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
-                            },
+                    #lower_return(match uniffi_lift_args() {
+                        Ok(uniffi_args) => {
+                            let uniffi_result = #rust_fn_call;
+                            #convert_result
                         }
-                    )
+                        Err((arg_name, anyhow_error)) => {
+                            #handle_failed_lift(arg_name, anyhow_error)
+                        },
+                    })
                 })
             }
         }
@@ -292,9 +293,7 @@ pub(super) fn gen_ffi_function(
                     },
                     Err((arg_name, anyhow_error)) => {
                         ::uniffi::rust_future_new::<_, #return_ty, _>(
-                            async move {
-                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
-                            },
+                            async move { #handle_failed_lift(arg_name, anyhow_error) },
                             crate::UniFfiTag,
                         )
                     },
