@@ -354,44 +354,8 @@ impl Foo {
 
 ## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 
-There are 2 macros available which allow procmacros to support "custom types" as described in the
-[UDL documentation for Custom Types](../udl/custom_types.md)
-
-The `uniffi::custom_type!` macro requires you to specify the name of the custom type, and the name of the
-builtin which implements this type. Use of this macro requires you to manually implement the
-`UniffiCustomTypeConverter` trait for for your type, as shown below.
-```rust
-pub struct Uuid {
-    val: String,
-}
-
-// Use `Uuid` as a custom type, with `String` as the Builtin
-uniffi::custom_type!(Uuid, String);
-
-impl UniffiCustomTypeConverter for Uuid {
-    type Builtin = String;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Uuid { val })
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.val
-    }
-}
-```
-
-There's also a `uniffi::custom_newtype!` macro, designed for custom types which use the
-"new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
-is able to make assumptions about how the type is laid out, `UniffiCustomTypeConverter`
-is implemented automatically.
-
-```rust
-uniffi::custom_newtype!(NewTypeHandle, i64);
-pub struct NewtypeHandle(i64);
-```
-
-and that's it!
+See the [UDL documentation for Custom Types](../udl/custom_types.md).  It works exactly the same for
+proc-macros.
 
 ## The `uniffi::Error` derive
 
@@ -463,32 +427,7 @@ pub trait Person {
 // }
 ```
 
-## Types from dependent crates
+## Mixing UDL and proc-macros
 
-When using proc-macros, you can use types from dependent crates in your exported library, as long as
-the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
-exceptions:
-
-### Types from UDL-based dependent crates
-
-If the dependent crate uses a UDL file to define their types, then you must invoke one of the
-`uniffi::use_udl_*!` macros, for example:
-
-```rust
-uniffi::use_udl_record!(dependent_crate, RecordType);
-uniffi::use_udl_enum!(dependent_crate, EnumType);
-uniffi::use_udl_error!(dependent_crate, ErrorType);
-uniffi::use_udl_object!(dependent_crate, ObjectType);
-```
-
-### Non-UniFFI types from dependent crates
-
-If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
-then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
-to fix this limitation soon.
-
-## Other limitations
-
-In addition to the per-item limitations of the macros presented above, there is also currently a
-global restriction: You can only use the proc-macros inside a crate whose name is the same as the
-namespace in your UDL file. This restriction will be lifted in the future.
+If you use both UDL and proc-macro generation, then your crate name must match the namespace in your
+UDL file. This restriction will be lifted in the future.

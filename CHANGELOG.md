@@ -29,6 +29,16 @@
   No consumers of any languages are impacted, only the maintainers of these language bindings.
   ([#2066](https://github.com/mozilla/uniffi-rs/issues/2066)), ([#2094](https://github.com/mozilla/uniffi-rs/pull/2094))
 
+### ⚠️ Breaking Changes ⚠️
+
+- Handling of remote/custom/external types has changed significantly:
+    - UDL users need to add the `[Remote]` attribute for remote types
+    - The `UniffiCustomTypeConverter` trait is no longer used.  Instead, use the `custom_type!` macro.
+    - The `use_udl_*` macros are no longer needed and have been removed.
+    - To share remote type implementations between crates, use the `use_remote_type` macro.
+    - The UDL syntax for external types in the UDL has been changed.
+    - See https://mozilla.github.io/uniffi-rs/udl/remote_custom_ext_types.html for details
+
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 
 - Removed the dependency on the `oneshot' crate (https://github.com/mozilla/uniffi-rs/issues/1736)

@@ -108,9 +108,10 @@ To work around this we do several things:
  - We generate a unit struct named `UniFfiTag` in the root of each UniFFIed crate.
  - Each crate uses the `FfiConverter<crate::UniFfiTag>` trait to lower/lift/serialize values for its scaffolding functions.
 
-This allows us to work around the orphan rules when defining `FfiConverter` implementations.
- - UniFFI consumer crates can implement lifting/lowering/serializing types for their own scaffolding functions, for example `impl FfiConverter<crate::UniFfiTag> for serde_json::Value`.  This is allowed since `UniFfiTag` is a local type.
+This allows us to work around the orphan rules when defining ffi trait implementations.
  - The `uniffi` crate can implement lifting/lowering/serializing types for all scaffolding functions using a generic impl, for example `impl<UT> FfiConverter<UT> for u8`.  "UT" is short for "UniFFI Tag"
- - We don't currently use this, but crates can also implement lifting/lowering/serializing their local types for all scaffolding functions using a similar generic impl (`impl<UT> FfiConverter<UT> for MyLocalType`).
+ - UniFFI consumer crates usually implement lifting/lowering/serializing types the same way.
+ - However, for remote types, they must only implement ffi traits for their local tag, for example `impl FfiConverter<crate::UniFfiTag> for serde_json::Value`.  This is valid since `UniFfiTag` is a local type.
+ - If other crates also want to use the same remote type implementation, the need to implement the ffi traits for their local tag as well.  This is what the `use_remote_type!` macro does.
 
 For more details on the specifics of the "orphan rule" and why these are legal implementations, see the [Rust Chalk Book](https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules-in-rustc)
