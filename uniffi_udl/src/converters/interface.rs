@@ -130,6 +130,7 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
         Ok(ObjectMetadata {
             module_path: ci.module_path(),
             name: object_name.to_string(),
+            remote: attributes.contains_remote(),
             imp: object_impl,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
         })

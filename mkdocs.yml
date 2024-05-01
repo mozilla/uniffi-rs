@@ -50,10 +50,8 @@ nav:
   - 'Interfaces and Objects':
     - ./udl/interfaces.md
     - ./udl/callback_interfaces.md
-  - 'External Types':
-    - ./udl/ext_types.md
-    - ./udl/ext_types_external.md
-    - ./udl/custom_types.md
+  - ./udl/remote_ext_types.md
+  - ./udl/custom_types.md
   - ./udl/docstrings.md
 - ./proc_macro/index.md
 - ./futures.md

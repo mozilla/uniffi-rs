@@ -10,6 +10,8 @@ pub struct HttpHeader {
 
 // Expose `http::HeaderMap` to Uniffi.
 uniffi::custom_type!(HeaderMap, Vec<HttpHeader>, {
+    // remote is required since HttpHeader is from another crate
+    remote,
     lower: |obj| {
         obj.iter()
             .map(|(k, v)| HttpHeader {

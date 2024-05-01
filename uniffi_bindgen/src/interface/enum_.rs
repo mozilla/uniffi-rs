@@ -174,6 +174,7 @@ use super::{AsType, Literal, Type, TypeIterator};
 pub struct Enum {
     pub(super) name: String,
     pub(super) module_path: String,
+    pub(super) remote: bool,
     pub(super) discr_type: Option<Type>,
     pub(super) variants: Vec<Variant>,
     pub(super) shape: EnumShape,
@@ -189,6 +190,10 @@ impl Enum {
 
     pub fn rename(&mut self, name: String) {
         self.name = name;
+    }
+
+    pub fn remote(&self) -> bool {
+        self.remote
     }
 
     pub fn variants(&self) -> &[Variant] {
@@ -261,6 +266,7 @@ impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
         Ok(Self {
             name: meta.name,
             module_path: meta.module_path,
+            remote: meta.remote,
             discr_type: meta.discr_type,
             variants: meta
                 .variants
@@ -662,6 +668,7 @@ mod test {
         let mut e = Enum {
             module_path: "test".to_string(),
             name: "test".to_string(),
+            remote: false,
             discr_type: None,
             variants: vec![],
             shape: EnumShape::Enum,

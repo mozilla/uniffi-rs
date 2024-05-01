@@ -454,39 +454,15 @@ pub trait Person {
 // }
 ```
 
-## Types from dependent crates
+## Conditional compilation
 
-When using proc-macros, you can use types from dependent crates in your exported library, as long as
-the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
-exceptions:
-
-### Types from UDL-based dependent crates
-
-If the dependent crate uses a UDL file to define their types, then you must invoke one of the
-`uniffi::use_udl_*!` macros, for example:
-
-```rust
-uniffi::use_udl_record!(dependent_crate, RecordType);
-uniffi::use_udl_enum!(dependent_crate, EnumType);
-uniffi::use_udl_error!(dependent_crate, ErrorType);
-uniffi::use_udl_object!(dependent_crate, ObjectType);
-```
-
-### Non-UniFFI types from dependent crates
-
-If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
-then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
-to fix this limitation soon.
-
-## Other limitations
-
-In addition to the per-item limitations of the macros presented above, there is also currently a
-global restriction: You can only use the proc-macros inside a crate whose name is the same as the
-namespace in your UDL file. This restriction will be lifted in the future.
-
-### Conditional compilation
 `uniffi::constructor|method` will work if wrapped with `cfg_attr` attribute:
 ```rust
 #[cfg_attr(feature = "foo", uniffi::constructor)]
 ```
 Other attributes are not currently supported, see [#2000](https://github.com/mozilla/uniffi-rs/issues/2000) for more details.
+
+## Mixing UDL and proc-macros
+
+If you use both UDL and proc-macro generation, then your crate name must match the namespace in your
+UDL file. This restriction will be lifted in the future.

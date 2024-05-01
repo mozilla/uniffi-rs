@@ -129,14 +129,15 @@ pub fn trait_impl_ident(trait_name: &str) -> Ident {
 pub fn ffi_converter_callback_interface_impl(
     trait_ident: &Ident,
     trait_impl_ident: &Ident,
-    udl_mode: bool,
 ) -> TokenStream {
+    // TODO: support remote callback interfaces
+    let remote = false;
     let trait_name = ident_to_string(trait_ident);
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
-    let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, udl_mode);
-    let type_id_impl_spec = tagged_impl_header("TypeId", &box_dyn_trait, udl_mode);
-    let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, udl_mode, &["LiftRef", "LiftReturn"]);
+    let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, remote);
+    let type_id_impl_spec = tagged_impl_header("TypeId", &box_dyn_trait, remote);
+    let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, remote, &["LiftRef", "LiftReturn"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),

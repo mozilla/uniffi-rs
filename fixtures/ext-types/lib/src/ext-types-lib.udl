@@ -55,17 +55,20 @@ typedef extern Url;
 [External="custom_types"]
 typedef extern Handle;
 
-// Here are some different kinds of "external" types - the types are described
+// Here are some different kinds of remote types - the types are described
 // in this UDL, but the types themselves are defined in a different crate.
+
+[Remote]
 dictionary ExternalCrateDictionary {
     string sval;
 };
 
+[Remote]
 interface ExternalCrateInterface {
     string value();
 };
 
-[NonExhaustive]
+[Remote, NonExhaustive]
 enum ExternalCrateNonExhaustiveEnum {
     "One",
     "Two",

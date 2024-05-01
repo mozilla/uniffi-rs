@@ -58,10 +58,7 @@ pub struct CustomTypeOptions {
 
 impl CustomTypeOptions {
     fn is_remote(&self) -> bool {
-        // FIXME(#2087): Force all custom types to act as if `remote` was present.  This causes the
-        // generate code to only implement FfiConverter for the local tag, which is the current way
-        // of doing things.
-        true
+        self.remote.is_some()
     }
 }
 
@@ -88,12 +85,11 @@ impl UniffiAttributeArgs for CustomTypeOptions {
                 try_lift: Some(input.parse()?),
                 ..Self::default()
             })
-        // Temporarily disabled until we land #2087 and get the new remote types system
-        // } else if lookahead.peek(kw::remote) {
-        //     Ok(Self {
-        //         remote: Some(input.parse()?),
-        //         ..Self::default()
-        //     })
+        } else if lookahead.peek(kw::remote) {
+            Ok(Self {
+                remote: Some(input.parse()?),
+                ..Self::default()
+            })
         } else {
             Err(lookahead.error())
         }
