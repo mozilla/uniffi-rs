@@ -371,6 +371,10 @@
 <a href="#369" id="369">369</a>
 <a href="#370" id="370">370</a>
 <a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -379,10 +383,13 @@
     Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit, Variant,
 };
 
-<span class="kw">use </span><span class="kw">crate</span>::util::{
-    create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
-    ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
-    try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+<span class="kw">use crate</span>::{
+    ffiops,
+    util::{
+        create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
+        ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
+        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+    },
 };
 
 <span class="kw">fn </span>extract_repr(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;Ident&gt;&gt; {
@@ -507,10 +514,8 @@
             <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
             <span class="kw">let </span>write_fields =
                 std::iter::zip(v.fields.iter(), field_idents.iter()).map(|(f, ident)| {
-                    <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
-                    <span class="macro">quote! </span>{
-                        &lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(#ident, buf);
-                    }
+                    <span class="kw">let </span>write = ffiops::write(<span class="kw-2">&amp;</span>f.ty);
+                    <span class="macro">quote! </span>{ #write(#ident, buf); }
                 });
             <span class="kw">let </span>is_tuple = v.fields.iter().any(|f| f.ident.is_none());
             <span class="kw">let </span>fields = <span class="kw">if </span>is_tuple {
@@ -603,7 +608,10 @@
     </span>};
     metadata_expr.extend(<span class="kw">match </span>discr_type {
         <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">false</span>) },
-        <span class="prelude-val">Some</span>(t) =&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">true</span>).concat(&lt;#t <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META) }
+        <span class="prelude-val">Some</span>(t) =&gt; {
+            <span class="kw">let </span>type_id_meta = ffiops::type_id_meta(t);
+            <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">true</span>).concat(#type_id_meta) }
+        }
     });
     metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
     metadata_expr.extend(<span class="macro">quote! </span>{
@@ -688,12 +696,12 @@
             <span class="kw">let </span>name = ident_to_string(<span class="kw-2">&amp;</span>v.ident);
             <span class="kw">let </span>value_tokens = variant_value(v)<span class="question-mark">?</span>;
             <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>v.attrs)<span class="question-mark">?</span>;
-            <span class="kw">let </span>field_types = v.fields.iter().map(|f| <span class="kw-2">&amp;</span>f.ty);
             <span class="kw">let </span>field_docstrings = v
                 .fields
                 .iter()
                 .map(|f| extract_docstring(<span class="kw-2">&amp;</span>f.attrs))
                 .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
+            <span class="kw">let </span>field_type_id_metas = v.fields.iter().map(|f| ffiops::type_id_meta(<span class="kw-2">&amp;</span>f.ty));
 
             <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                 .concat_str(#name)
@@ -701,7 +709,7 @@
                 .concat_value(#fields_len)
                     #(
                         .concat_str(#field_names)
-                        .concat(&lt;#field_types <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                        .concat(#field_type_id_metas)
                         <span class="comment">// field defaults not yet supported for enums
                         </span>.concat_bool(<span class="bool-val">false</span>)
                         .concat_long_str(#field_docstrings)

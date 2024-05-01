@@ -304,7 +304,6 @@
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -314,7 +313,10 @@
 <span class="kw">use </span>std::iter;
 
 <span class="kw">use </span><span class="kw">super</span>::attributes::AsyncRuntime;
-<span class="kw">use </span><span class="kw">crate</span>::fnsig::{FnKind, FnSignature};
+<span class="kw">use crate</span>::{
+    ffiops,
+    fnsig::{FnKind, FnSignature},
+};
 
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>gen_fn_scaffolding(
     sig: FnSignature,
@@ -435,15 +437,13 @@
         udl_mode: bool,
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-        <span class="kw">let </span>lift_impl = <span class="kw">if </span>is_trait {
-            <span class="macro">quote! </span>{
-                &lt;::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt; <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
-            }
+        <span class="kw">let </span>self_type = <span class="kw">if </span>is_trait {
+            <span class="macro">quote! </span>{ ::std::sync::Arc&lt;<span class="kw">dyn </span>#self_ident&gt; }
         } <span class="kw">else </span>{
-            <span class="macro">quote! </span>{
-                &lt;::std::sync::Arc&lt;#self_ident&gt; <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;
-            }
+            <span class="macro">quote! </span>{ ::std::sync::Arc&lt;#self_ident&gt; }
         };
+        <span class="kw">let </span>lift_type = ffiops::lift_type(<span class="kw-2">&amp;</span>self_type);
+        <span class="kw">let </span>try_lift = ffiops::try_lift(<span class="kw-2">&amp;</span>self_type);
         <span class="kw">let </span>try_lift_self = <span class="kw">if </span>is_trait {
             <span class="comment">// For trait interfaces we need to special case this.  Trait interfaces normally lift
             // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
@@ -456,7 +456,7 @@
                 }
             }
         } <span class="kw">else </span>{
-            <span class="macro">quote! </span>{ #lift_impl::try_lift(uniffi_self_lowered) }
+            <span class="macro">quote! </span>{ #try_lift(uniffi_self_lowered) }
         };
 
         <span class="kw">let </span>lift_closure = sig.lift_closure(<span class="prelude-val">Some</span>(<span class="macro">quote! </span>{
@@ -478,7 +478,7 @@
             param_names: iter::once(<span class="macro">quote! </span>{ uniffi_self_lowered })
                 .chain(sig.scaffolding_param_names())
                 .collect(),
-            param_types: iter::once(<span class="macro">quote! </span>{ #lift_impl::FfiType })
+            param_types: iter::once(<span class="macro">quote! </span>{ #lift_type })
                 .chain(sig.scaffolding_param_types())
                 .collect(),
             lift_closure,
@@ -548,7 +548,9 @@
     <span class="kw">let </span>ffi_ident = sig.scaffolding_fn_ident()<span class="question-mark">?</span>;
     <span class="kw">let </span>name = <span class="kw-2">&amp;</span>sig.name;
     <span class="kw">let </span>return_ty = <span class="kw-2">&amp;</span>sig.return_ty;
-    <span class="kw">let </span>return_impl = <span class="kw-2">&amp;</span>sig.lower_return_impl();
+    <span class="kw">let </span>ffi_return_ty = ffiops::lower_return_type(return_ty);
+    <span class="kw">let </span>lower_return = ffiops::lower_return(return_ty);
+    <span class="kw">let </span>handle_failed_lift = ffiops::lower_return_handle_failed_lift(return_ty);
 
     <span class="prelude-val">Ok</span>(<span class="kw">if </span>!sig.is_async {
         <span class="macro">quote! </span>{
@@ -557,21 +559,19 @@
             </span>#vis <span class="kw">extern </span><span class="string">"C" </span><span class="kw">fn </span>#ffi_ident(
                 #(#param_names: #param_types,)*
                 call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-            ) -&gt; #return_impl::ReturnType {
+            ) -&gt; #ffi_return_ty {
                 <span class="macro">::uniffi::deps::log::debug!</span>(#name);
                 <span class="kw">let </span>uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
-                    #return_impl::lower_return(
-                        <span class="kw">match </span>uniffi_lift_args() {
-                            <span class="prelude-val">Ok</span>(uniffi_args) =&gt; {
-                                <span class="kw">let </span>uniffi_result = #rust_fn_call;
-                                #convert_result
-                            }
-                            <span class="prelude-val">Err</span>((arg_name, anyhow_error)) =&gt; {
-                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
-                            },
+                    #lower_return(<span class="kw">match </span>uniffi_lift_args() {
+                        <span class="prelude-val">Ok</span>(uniffi_args) =&gt; {
+                            <span class="kw">let </span>uniffi_result = #rust_fn_call;
+                            #convert_result
                         }
-                    )
+                        <span class="prelude-val">Err</span>((arg_name, anyhow_error)) =&gt; {
+                            #handle_failed_lift(arg_name, anyhow_error)
+                        },
+                    })
                 })
             }
         }
@@ -599,9 +599,7 @@
                     },
                     <span class="prelude-val">Err</span>((arg_name, anyhow_error)) =&gt; {
                         ::uniffi::rust_future_new::&lt;<span class="kw">_</span>, #return_ty, <span class="kw">_</span>&gt;(
-                            <span class="kw">async move </span>{
-                                #return_impl::handle_failed_lift(arg_name, anyhow_error)
-                            },
+                            <span class="kw">async move </span>{ #handle_failed_lift(arg_name, anyhow_error) },
                             <span class="kw">crate</span>::UniFfiTag,
                         )
                     },

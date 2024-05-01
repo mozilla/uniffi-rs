@@ -301,11 +301,13 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
+</span><span class="kw">use </span><span class="kw">crate</span>::ffiops;
+<span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::{format_ident, quote, ToTokens};
 <span class="kw">use </span>std::path::{Path <span class="kw">as </span>StdPath, PathBuf};
 <span class="kw">use </span>syn::{
@@ -380,14 +382,14 @@
 
 <span class="kw">pub fn </span>try_read_field(f: <span class="kw-2">&amp;</span>syn::Field) -&gt; TokenStream {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
-    <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
+    <span class="kw">let </span>try_read = ffiops::try_read(<span class="kw-2">&amp;</span>f.ty);
 
     <span class="kw">match </span>ident {
         <span class="prelude-val">Some</span>(ident) =&gt; <span class="macro">quote! </span>{
-            #ident: &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+            #ident: #try_read(buf)<span class="question-mark">?</span>,
         },
         <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{
-            &lt;#ty <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>,
+            #try_read(buf)<span class="question-mark">?</span>,
         },
     }
 }

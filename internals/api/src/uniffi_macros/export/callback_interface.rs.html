@@ -268,12 +268,15 @@
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use crate</span>::{
     export::ImplItem,
+    ffiops,
     fnsig::{FnKind, FnSignature, ReceiverArg},
     util::{
         create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
@@ -314,33 +317,32 @@
         })
         .collect::&lt;syn::Result&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>vtable_fields = methods.iter()
-        .map(|sig| {
-            <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
-            <span class="kw">let </span>param_names = sig.scaffolding_param_names();
-            <span class="kw">let </span>param_types = sig.scaffolding_param_types();
-            <span class="kw">let </span>lift_return = sig.lift_return_impl();
-            <span class="kw">if </span>!sig.is_async {
-                <span class="macro">quote! </span>{
-                    #ident: <span class="kw">extern </span><span class="string">"C" </span><span class="kw">fn</span>(
-                        uniffi_handle: u64,
-                        #(#param_names: #param_types,)*
-                        uniffi_out_return: <span class="kw-2">&amp;mut </span>#lift_return::ReturnType,
-                        uniffi_out_call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
-                    ),
-                }
-            } <span class="kw">else </span>{
-                <span class="macro">quote! </span>{
-                    #ident: <span class="kw">extern </span><span class="string">"C" </span><span class="kw">fn</span>(
-                        uniffi_handle: u64,
-                        #(#param_names: #param_types,)*
-                        uniffi_future_callback: ::uniffi::ForeignFutureCallback&lt;#lift_return::ReturnType&gt;,
-                        uniffi_callback_data: u64,
-                        uniffi_out_return: <span class="kw-2">&amp;mut </span>::uniffi::ForeignFuture,
-                    ),
-                }
+    <span class="kw">let </span>vtable_fields = methods.iter().map(|sig| {
+        <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>sig.ident;
+        <span class="kw">let </span>param_names = sig.scaffolding_param_names();
+        <span class="kw">let </span>param_types = sig.scaffolding_param_types();
+        <span class="kw">let </span>lift_return_type = ffiops::lift_return_type(<span class="kw-2">&amp;</span>sig.return_ty);
+        <span class="kw">if </span>!sig.is_async {
+            <span class="macro">quote! </span>{
+                #ident: <span class="kw">extern </span><span class="string">"C" </span><span class="kw">fn</span>(
+                    uniffi_handle: u64,
+                    #(#param_names: #param_types,)*
+                    uniffi_out_return: <span class="kw-2">&amp;mut </span>#lift_return_type,
+                    uniffi_out_call_status: <span class="kw-2">&amp;mut </span>::uniffi::RustCallStatus,
+                ),
             }
-        });
+        } <span class="kw">else </span>{
+            <span class="macro">quote! </span>{
+                #ident: <span class="kw">extern </span><span class="string">"C" </span><span class="kw">fn</span>(
+                    uniffi_handle: u64,
+                    #(#param_names: #param_types,)*
+                    uniffi_future_callback: ::uniffi::ForeignFutureCallback&lt;#lift_return_type&gt;,
+                    uniffi_callback_data: u64,
+                    uniffi_out_return: <span class="kw-2">&amp;mut </span>::uniffi::ForeignFuture,
+                ),
+            }
+        }
+    });
 
     <span class="kw">let </span>trait_impl_methods = methods
         .iter()
@@ -411,6 +413,7 @@
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
     };
+    <span class="kw">let </span>try_lift_self = ffiops::try_lift(<span class="macro">quote! </span>{ <span class="self">Self </span>});
 
     <span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
@@ -425,7 +428,7 @@
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
                 <span class="kw">use </span>uniffi::deps::bytes::Buf;
                 ::uniffi::check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
-                &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(buf.get_u64())
+                #try_lift_self(buf.get_u64())
             }
         }
 
@@ -479,21 +482,22 @@
 
     <span class="kw">let </span>params = sig.params();
     <span class="kw">let </span>lower_exprs = sig.args.iter().map(|a| {
-        <span class="kw">let </span>lower_impl = a.lower_impl();
+        <span class="kw">let </span>lower = ffiops::lower(<span class="kw-2">&amp;</span>a.ty);
         <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>a.ident;
-        <span class="macro">quote! </span>{ #lower_impl::lower(#ident) }
+        <span class="macro">quote! </span>{ #lower(#ident) }
     });
 
-    <span class="kw">let </span>lift_return = sig.lift_return_impl();
+    <span class="kw">let </span>lift_return_type = ffiops::lift_return_type(<span class="kw-2">&amp;</span>sig.return_ty);
+    <span class="kw">let </span>lift_foreign_return = ffiops::lift_foreign_return(<span class="kw-2">&amp;</span>sig.return_ty);
 
     <span class="kw">if </span>!is_async {
         <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
             <span class="kw">fn </span>#ident(#self_param, #(#params),<span class="kw-2">*</span>) -&gt; #return_ty {
                 <span class="kw">let </span>vtable = #vtable_cell.get();
                 <span class="kw">let </span><span class="kw-2">mut </span>uniffi_call_status = ::uniffi::RustCallStatus::new();
-                <span class="kw">let </span><span class="kw-2">mut </span>uniffi_return_value: #lift_return::ReturnType = ::uniffi::FfiDefault::ffi_default();
+                <span class="kw">let </span><span class="kw-2">mut </span>uniffi_return_value: #lift_return_type = ::uniffi::FfiDefault::ffi_default();
                 (vtable.#ident)(<span class="self">self</span>.handle, #(#lower_exprs,)* <span class="kw-2">&amp;mut </span>uniffi_return_value, <span class="kw-2">&amp;mut </span>uniffi_call_status);
-                #lift_return::lift_foreign_return(uniffi_return_value, uniffi_call_status)
+                #lift_foreign_return(uniffi_return_value, uniffi_call_status)
             }
         })
     } <span class="kw">else </span>{

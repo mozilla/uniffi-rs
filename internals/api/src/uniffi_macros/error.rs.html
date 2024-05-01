@@ -312,6 +312,16 @@
 <a href="#310" id="310">310</a>
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -321,6 +331,7 @@
 
 <span class="kw">use crate</span>::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumAttr},
+    ffiops,
     util::{
         chain, create_metadata_items, derive_ffi_traits, either_attribute_arg, extract_docstring,
         ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
@@ -411,22 +422,30 @@
     };
 
     <span class="kw">let </span>lower_impl = {
-        <span class="kw">let </span><span class="kw-2">mut </span>match_arms: Vec&lt;<span class="kw">_</span>&gt; = enum_.variants.iter().enumerate().map(|(i, v)| {
-            <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
-            <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>match_arms: Vec&lt;<span class="kw">_</span>&gt; = enum_
+            .variants
+            .iter()
+            .enumerate()
+            .map(|(i, v)| {
+                <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
+                <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
+                <span class="kw">let </span>write_string = ffiops::write(<span class="macro">quote! </span>{ ::std::string::String });
 
-            <span class="macro">quote! </span>{
-                <span class="self">Self</span>::#v_ident { .. } =&gt; {
-                    ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
-                    &lt;::std::string::String <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(error_msg, buf);
+                <span class="macro">quote! </span>{
+                    <span class="self">Self</span>::#v_ident { .. } =&gt; {
+                        ::uniffi::deps::bytes::BufMut::put_i32(buf, #idx);
+                        #write_string(error_msg, buf);
+                    }
                 }
-            }
-        }).collect();
+            })
+            .collect();
         <span class="kw">if </span>attr.non_exhaustive.is_some() {
             match_arms.push(<span class="macro">quote! </span>{
                 <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"Unexpected variant in non-exhaustive enum"</span>),
             })
         }
+
+        <span class="kw">let </span>lower = ffiops::lower_into_rust_buffer(<span class="macro">quote! </span>{ <span class="self">Self </span>});
 
         <span class="macro">quote! </span>{
             <span class="attr">#[automatically_derived]
@@ -439,7 +458,7 @@
                 }
 
                 <span class="kw">fn </span>lower(obj: <span class="self">Self</span>) -&gt; ::uniffi::RustBuffer {
-                    &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower_into_rust_buffer(obj)
+                    #lower(obj)
                 }
             }
         }
@@ -454,6 +473,7 @@
                 #idx =&gt; <span class="self">Self</span>::#v_ident,
             }
         });
+        <span class="kw">let </span>try_lift = ffiops::try_lift_from_rust_buffer(<span class="macro">quote! </span>{ <span class="self">Self </span>});
         <span class="macro">quote! </span>{
             <span class="attr">#[automatically_derived]
             </span><span class="kw">unsafe </span>#lift_impl_spec {
@@ -467,7 +487,7 @@
                 }
 
                 <span class="kw">fn </span>try_lift(v: ::uniffi::RustBuffer) -&gt; ::uniffi::deps::anyhow::Result&lt;<span class="self">Self</span>&gt; {
-                    &lt;<span class="self">Self </span><span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift_from_rust_buffer(v)
+                    #try_lift(v)
                 }
             }
         }

@@ -161,6 +161,7 @@
 
 <span class="kw">use crate</span>::{
     default::{default_value_metadata_calls, DefaultValue},
+    ffiops,
     util::{
         create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
         ident_to_string, kw, mod_path, tagged_impl_header, try_metadata_value_from_usize,
@@ -233,10 +234,9 @@
 
 <span class="kw">fn </span>write_field(f: <span class="kw-2">&amp;</span>Field) -&gt; TokenStream {
     <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>f.ident;
-    <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
-
+    <span class="kw">let </span>write = ffiops::write(<span class="kw-2">&amp;</span>f.ty);
     <span class="macro">quote! </span>{
-        &lt;#ty <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(obj.#ident, buf);
+        #write(obj.#ident, buf);
     }
 }
 
@@ -282,14 +282,14 @@
 
             <span class="kw">let </span>name = ident_to_string(f.ident.as_ref().unwrap());
             <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>f.attrs)<span class="question-mark">?</span>;
-            <span class="kw">let </span>ty = <span class="kw-2">&amp;</span>f.ty;
             <span class="kw">let </span>default = default_value_metadata_calls(<span class="kw-2">&amp;</span>attrs.default)<span class="question-mark">?</span>;
+            <span class="kw">let </span>type_id_meta = ffiops::type_id_meta(<span class="kw-2">&amp;</span>f.ty);
 
             <span class="comment">// Note: fields need to implement both `Lower` and `Lift` to be used in a record.  The
             // TYPE_ID_META should be the same for both traits.
             </span><span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
                 .concat_str(#name)
-                .concat(&lt;#ty <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META)
+                .concat(#type_id_meta)
                 #default
                 .concat_long_str(#docstring)
             })

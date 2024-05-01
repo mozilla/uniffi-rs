@@ -86,11 +86,25 @@
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header};
+</span><span class="kw">use crate</span>::{
+    ffiops,
+    util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header},
+};
 <span class="kw">use </span>proc_macro2::{Ident, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::Path;
@@ -106,6 +120,14 @@
     <span class="kw">let </span>derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
+    <span class="kw">let </span>from_custom = <span class="macro">quote! </span>{ &lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::from_custom };
+    <span class="kw">let </span>into_custom = <span class="macro">quote! </span>{ &lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::into_custom };
+    <span class="kw">let </span>lower_type = ffiops::lower_type(builtin);
+    <span class="kw">let </span>lower = ffiops::lower(builtin);
+    <span class="kw">let </span>write = ffiops::write(builtin);
+    <span class="kw">let </span>try_lift = ffiops::try_lift(builtin);
+    <span class="kw">let </span>try_read = ffiops::try_read(builtin);
+    <span class="kw">let </span>type_id_meta = ffiops::type_id_meta(builtin);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[automatically_derived]
@@ -113,27 +135,27 @@
             <span class="comment">// Note: the builtin type needs to implement both `Lower` and `Lift'.  We use the
             // `Lower` trait to get the associated type `FfiType` and const `TYPE_ID_META`.  These
             // can't differ between `Lower` and `Lift`.
-            </span><span class="kw">type </span>FfiType = &lt;#builtin <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::FfiType;
+            </span><span class="kw">type </span>FfiType = #lower_type;
             <span class="kw">fn </span>lower(obj: #ident ) -&gt; <span class="self">Self</span>::FfiType {
-                &lt;#builtin <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::lower(&lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::from_custom(obj))
+                #lower(#from_custom(obj))
             }
 
             <span class="kw">fn </span>try_lift(v: <span class="self">Self</span>::FfiType) -&gt; uniffi::Result&lt;#ident&gt; {
-                &lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::into_custom(&lt;#builtin <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_lift(v)<span class="question-mark">?</span>)
+                #into_custom(#try_lift(v)<span class="question-mark">?</span>)
             }
 
             <span class="kw">fn </span>write(obj: #ident, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
-                &lt;#builtin <span class="kw">as </span>::uniffi::Lower&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::write(&lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::from_custom(obj), buf);
+                #write(#from_custom(obj), buf);
             }
 
             <span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; uniffi::Result&lt;#ident&gt; {
-                &lt;#ident <span class="kw">as </span><span class="kw">crate</span>::UniffiCustomTypeConverter&gt;::into_custom(&lt;#builtin <span class="kw">as </span>::uniffi::Lift&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::try_read(buf)<span class="question-mark">?</span>)
+                #into_custom(#try_read(buf)<span class="question-mark">?</span>)
             }
 
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
                 .concat_str(#mod_path)
                 .concat_str(#name)
-                .concat(&lt;#builtin <span class="kw">as </span>::uniffi::TypeId&lt;<span class="kw">crate</span>::UniFfiTag&gt;&gt;::TYPE_ID_META);
+                .concat(#type_id_meta);
         }
 
         #derive_ffi_traits
