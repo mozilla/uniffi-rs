@@ -96,7 +96,7 @@ pub(super) fn gen_trait_scaffolding(
         } else {
             ObjectImpl::Trait
         };
-        interface_meta_static_var(&self_ident, imp, mod_path, docstring)
+        interface_meta_static_var(&self_ident, imp, mod_path, docstring.as_str())
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, udl_mode, with_foreign);

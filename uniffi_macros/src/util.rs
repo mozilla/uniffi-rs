@@ -259,6 +259,10 @@ pub mod kw {
     syn::custom_keyword!(with_try_read);
     syn::custom_keyword!(name);
     syn::custom_keyword!(non_exhaustive);
+    syn::custom_keyword!(Record);
+    syn::custom_keyword!(Enum);
+    syn::custom_keyword!(Error);
+    syn::custom_keyword!(Object);
     syn::custom_keyword!(Debug);
     syn::custom_keyword!(Display);
     syn::custom_keyword!(Eq);

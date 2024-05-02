@@ -17,6 +17,7 @@ use syn::{
 
 mod custom;
 mod default;
+mod derive;
 mod enum_;
 mod error;
 mod export;
@@ -29,8 +30,8 @@ mod test;
 mod util;
 
 use self::{
-    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
-    record::expand_record,
+    derive::DeriveOptions, enum_::expand_enum, error::expand_error, export::expand_export,
+    object::expand_object, record::expand_record,
 };
 
 struct CustomTypeInfo {
@@ -107,28 +108,28 @@ fn do_export(attr_args: TokenStream, input: TokenStream, udl_mode: bool) -> Toke
 
 #[proc_macro_derive(Record, attributes(uniffi))]
 pub fn derive_record(input: TokenStream) -> TokenStream {
-    expand_record(parse_macro_input!(input), false)
+    expand_record(parse_macro_input!(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 #[proc_macro_derive(Enum)]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
-    expand_enum(parse_macro_input!(input), None, false)
+    expand_enum(parse_macro_input!(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 #[proc_macro_derive(Object)]
 pub fn derive_object(input: TokenStream) -> TokenStream {
-    expand_object(parse_macro_input!(input), false)
+    expand_object(parse_macro_input!(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 #[proc_macro_derive(Error, attributes(uniffi))]
 pub fn derive_error(input: TokenStream) -> TokenStream {
-    expand_error(parse_macro_input!(input), None, false)
+    expand_error(parse_macro_input!(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -154,28 +155,11 @@ pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
         .into()
 }
 
-// == derive_for_udl and export_for_udl ==
+// Derive items for UDL mode
 //
-// The Askama templates generate placeholder items wrapped with these attributes. The goal is to
-// have all scaffolding generation go through the same code path.
-//
-// The one difference is that derive-style attributes are not allowed inside attribute macro
-// inputs.  Instead, we take the attributes from the macro invocation itself.
-//
-// Instead of:
-//
-// ```
-// #[derive(Error)
-// #[uniffi(flat_error])
-// enum { .. }
-// ```
-//
-// We have:
-//
-// ```
-// #[derive_error_for_udl(flat_error)]
-// enum { ... }
-//  ```
+// The Askama templates generate placeholder items wrapped with the `#[udl_derive(<kind>)]`
+// attribute.  The macro code then generates derived items based on the input.  This system ensures
+// that the same code path is used for UDL-based code and proc-macros.
 //
 // # Differences between UDL-mode and normal mode
 //
@@ -199,47 +183,21 @@ pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
 //
 // With proc-macros this system isn't so natural.  Instead, we create a blanket implementation
 // for all UT and support for remote types is still TODO.
-
 #[doc(hidden)]
 #[proc_macro_attribute]
-pub fn derive_record_for_udl(_attrs: TokenStream, input: TokenStream) -> TokenStream {
-    expand_record(syn::parse_macro_input!(input), true)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
-}
-
-#[doc(hidden)]
-#[proc_macro_attribute]
-pub fn derive_enum_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
-    expand_enum(
-        syn::parse_macro_input!(input),
-        Some(syn::parse_macro_input!(attrs)),
-        true,
+pub fn udl_derive(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    derive::expand_derive(
+        parse_macro_input!(attrs),
+        parse_macro_input!(input),
+        DeriveOptions::udl_derive(),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
     .into()
 }
 
-#[doc(hidden)]
-#[proc_macro_attribute]
-pub fn derive_error_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {
-    expand_error(
-        syn::parse_macro_input!(input),
-        Some(syn::parse_macro_input!(attrs)),
-        true,
-    )
-    .unwrap_or_else(syn::Error::into_compile_error)
-    .into()
-}
-
-#[doc(hidden)]
-#[proc_macro_attribute]
-pub fn derive_object_for_udl(_attrs: TokenStream, input: TokenStream) -> TokenStream {
-    expand_object(syn::parse_macro_input!(input), true)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
-}
-
+// Generate export items for UDL mode
+//
+// This works similarly to `udl_derive`, but for #[export].
 #[doc(hidden)]
 #[proc_macro_attribute]
 pub fn export_for_udl(attrs: TokenStream, input: TokenStream) -> TokenStream {

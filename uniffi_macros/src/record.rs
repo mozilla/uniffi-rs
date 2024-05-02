@@ -6,34 +6,65 @@ use crate::{
     default::{default_value_metadata_calls, DefaultValue},
     ffiops,
     util::{
-        create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
-        ident_to_string, kw, mod_path, tagged_impl_header, try_metadata_value_from_usize,
-        try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+        create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
+        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
+    DeriveOptions,
 };
 
-pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
+/// Stores parsed data from the Derive Input for the struct.
+struct RecordItem {
+    ident: Ident,
+    record: DataStruct,
+    docstring: String,
+}
+
+impl RecordItem {
+    fn new(input: DeriveInput) -> syn::Result<Self> {
+        let record = match input.data {
+            Data::Struct(s) => s,
+            _ => {
+                return Err(syn::Error::new(
+                    Span::call_site(),
+                    "This derive must only be used on structs",
+                ));
+            }
+        };
+        Ok(Self {
+            ident: input.ident,
+            record,
+            docstring: extract_docstring(&input.attrs)?,
+        })
+    }
+
+    fn ident(&self) -> &Ident {
+        &self.ident
+    }
+
+    fn name(&self) -> String {
+        ident_to_string(&self.ident)
+    }
+
+    fn struct_(&self) -> &DataStruct {
+        &self.record
+    }
+
+    fn docstring(&self) -> &str {
+        self.docstring.as_str()
+    }
+}
+
+pub fn expand_record(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
     if let Some(e) = input.attrs.uniffi_attr_args_not_allowed_here() {
         return Err(e);
     }
-    let record = match input.data {
-        Data::Struct(s) => s,
-        _ => {
-            return Err(syn::Error::new(
-                Span::call_site(),
-                "This derive must only be used on structs",
-            ));
-        }
-    };
-
-    let ident = &input.ident;
-    let docstring = extract_docstring(&input.attrs)?;
-    let ffi_converter = record_ffi_converter_impl(ident, &record, udl_mode)
-        .unwrap_or_else(syn::Error::into_compile_error);
-    let meta_static_var = (!udl_mode).then(|| {
-        record_meta_static_var(ident, docstring, &record)
-            .unwrap_or_else(syn::Error::into_compile_error)
-    });
+    let record = RecordItem::new(input)?;
+    let ffi_converter =
+        record_ffi_converter_impl(&record, &options).unwrap_or_else(syn::Error::into_compile_error);
+    let meta_static_var = options
+        .generate_metadata
+        .then(|| record_meta_static_var(&record).unwrap_or_else(syn::Error::into_compile_error));
 
     Ok(quote! {
         #ffi_converter
@@ -41,17 +72,17 @@ pub fn expand_record(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
     })
 }
 
-pub(crate) fn record_ffi_converter_impl(
-    ident: &Ident,
-    record: &DataStruct,
-    udl_mode: bool,
+fn record_ffi_converter_impl(
+    record: &RecordItem,
+    options: &DeriveOptions,
 ) -> syn::Result<TokenStream> {
-    let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
+    let ident = record.ident();
+    let impl_spec = options.ffi_impl_header("FfiConverter", ident);
+    let derive_ffi_traits = options.derive_all_ffi_traits(ident);
     let name = ident_to_string(ident);
     let mod_path = mod_path()?;
-    let write_impl: TokenStream = record.fields.iter().map(write_field).collect();
-    let try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
+    let write_impl: TokenStream = record.struct_().fields.iter().map(write_field).collect();
+    let try_read_fields: TokenStream = record.struct_().fields.iter().map(try_read_field).collect();
 
     Ok(quote! {
         #[automatically_derived]
@@ -105,17 +136,17 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
     }
 }
 
-pub(crate) fn record_meta_static_var(
-    ident: &Ident,
-    docstring: String,
-    record: &DataStruct,
-) -> syn::Result<TokenStream> {
-    let name = ident_to_string(ident);
+fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
+    let name = record.name();
+    let docstring = record.docstring();
     let module_path = mod_path()?;
-    let fields_len =
-        try_metadata_value_from_usize(record.fields.len(), "UniFFI limits structs to 256 fields")?;
+    let fields_len = try_metadata_value_from_usize(
+        record.struct_().fields.len(),
+        "UniFFI limits structs to 256 fields",
+    )?;
 
     let concat_fields: TokenStream = record
+        .struct_()
         .fields
         .iter()
         .map(|f| {

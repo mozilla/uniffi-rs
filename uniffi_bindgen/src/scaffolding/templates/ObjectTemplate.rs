@@ -33,7 +33,7 @@ pub trait r#{{ obj.name() }} {
 #[uniffi::export(Eq)]
 {%      endmatch %}
 {% endfor %}
-#[::uniffi::derive_object_for_udl]
+#[::uniffi::udl_derive(Object)]
 struct {{ obj.rust_name() }} { }
 
 {%- for cons in obj.constructors() %}

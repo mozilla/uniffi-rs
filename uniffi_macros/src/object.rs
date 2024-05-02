@@ -4,17 +4,43 @@ use syn::DeriveInput;
 
 use crate::{
     ffiops,
-    util::{
-        create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
-    },
+    util::{create_metadata_items, extract_docstring, ident_to_string, mod_path},
+    DeriveOptions,
 };
 use uniffi_meta::ObjectImpl;
 
-pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStream> {
+/// Stores parsed data from the Derive Input for the struct/enum.
+struct ObjectItem {
+    ident: Ident,
+    docstring: String,
+}
+
+impl ObjectItem {
+    fn new(input: DeriveInput) -> syn::Result<Self> {
+        Ok(Self {
+            ident: input.ident,
+            docstring: extract_docstring(&input.attrs)?,
+        })
+    }
+
+    fn ident(&self) -> &Ident {
+        &self.ident
+    }
+
+    fn name(&self) -> String {
+        ident_to_string(&self.ident)
+    }
+
+    fn docstring(&self) -> &str {
+        self.docstring.as_str()
+    }
+}
+
+pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
     let module_path = mod_path()?;
-    let ident = &input.ident;
-    let docstring = extract_docstring(&input.attrs)?;
-    let name = ident_to_string(ident);
+    let object = ObjectItem::new(input)?;
+    let name = object.name();
+    let ident = object.ident();
     let clone_fn_ident = Ident::new(
         &uniffi_meta::clone_fn_symbol_name(&module_path, &name),
         Span::call_site(),
@@ -23,11 +49,16 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
         &uniffi_meta::free_fn_symbol_name(&module_path, &name),
         Span::call_site(),
     );
-    let meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(ident, ObjectImpl::Struct, &module_path, docstring)
-            .unwrap_or_else(syn::Error::into_compile_error)
+    let meta_static_var = options.generate_metadata.then(|| {
+        interface_meta_static_var(
+            object.ident(),
+            ObjectImpl::Struct,
+            &module_path,
+            object.docstring(),
+        )
+        .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let interface_impl = interface_impl(ident, udl_mode);
+    let interface_impl = interface_impl(&object, &options);
 
     Ok(quote! {
         #[doc(hidden)]
@@ -63,12 +94,13 @@ pub fn expand_object(input: DeriveInput, udl_mode: bool) -> syn::Result<TokenStr
     })
 }
 
-pub(crate) fn interface_impl(ident: &Ident, udl_mode: bool) -> TokenStream {
-    let name = ident_to_string(ident);
-    let impl_spec = tagged_impl_header("FfiConverterArc", ident, udl_mode);
-    let lower_return_impl_spec = tagged_impl_header("LowerReturn", ident, udl_mode);
-    let type_id_impl_spec = tagged_impl_header("TypeId", ident, udl_mode);
-    let lift_ref_impl_spec = tagged_impl_header("LiftRef", ident, udl_mode);
+fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
+    let name = object.name();
+    let ident = object.ident();
+    let impl_spec = options.ffi_impl_header("FfiConverterArc", ident);
+    let lower_return_impl_spec = options.ffi_impl_header("LowerReturn", ident);
+    let type_id_impl_spec = options.ffi_impl_header("TypeId", ident);
+    let lift_ref_impl_spec = options.ffi_impl_header("LiftRef", ident);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),
@@ -168,7 +200,7 @@ pub(crate) fn interface_meta_static_var(
     ident: &Ident,
     imp: ObjectImpl,
     module_path: &str,
-    docstring: String,
+    docstring: &str,
 ) -> syn::Result<TokenStream> {
     let name = ident_to_string(ident);
     let code = match imp {
