@@ -260,6 +260,8 @@ you decide whether this project is a good fit for your needs.</p>
 <p>And top brass would like you to expose this <em>business-critical</em> operation to Kotlin and Swift.<br />
 <strong>Don't panic!</strong> We will show you how do that using UniFFI.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h1>
+<p>This tutorial builds on our <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/arithmetic"><code>arithmetic</code></a> and (creatively-named) <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/arithmetic-procmacro"><code>arithmetic-procmacro</code></a> examples, which will be useful when we've omitted things.</p>
+<p>Here we will be creating a <code>math</code> library - so we assume a <code>cargo new --lib math</code> environment.</p>
 <h2 id="add-uniffi-as-a-dependency-and-build-dependency"><a class="header" href="#add-uniffi-as-a-dependency-and-build-dependency">Add <code>uniffi</code> as a dependency and build-dependency</a></h2>
 <p>In your crate's <code>Cargo.toml</code> add:</p>
 <pre><code class="language-toml">[dependencies]
@@ -270,10 +272,10 @@ uniffi = { version = &quot;[latest-version]&quot;, features = [ &quot;build&quot
 </code></pre>
 <p>UniFFI has not reached version <code>1.0</code> yet.  Versions are typically specified as <code>0.[minor-version]</code>.</p>
 <h2 id="build-your-crate-as-a-cdylib"><a class="header" href="#build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
-<p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
+<p>Ensure your crate builds as a <code>cdylib</code> so looks something like</p>
 <pre><code class="language-toml">[lib]
 crate-type = [&quot;cdylib&quot;]
-name = &quot;&lt;library name&gt;&quot;
+name = &quot;math&quot; # This is our crate name in this tutorial
 </code></pre>
 <p>to your crate's <code>Cargo.toml</code>.</p>
 <p><strong>Note:</strong> You also need to add <code>staticlib</code> crate type if you target iOS.</p>
@@ -290,37 +292,29 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 </code></pre>
 <p>Here you can note multiple things:</p>
 <ul>
-<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed function (e.g. <code>namespace foo {}</code>).</li>
+<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed functions (e.g. <code>namespace foo {}</code>).
+It will typically your crate name.</li>
 <li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
 <li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! See the <a href="tutorial/../udl/builtin_types.html">Built-in Types</a> chapter for more information on mapping types between Rust and UDL.</li>
 </ul>
 <p><strong>Note:</strong> If any of the things you expose in the <code>udl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="rust-scaffolding"><a class="header" href="#rust-scaffolding">Rust scaffolding</a></h1>
-<h2 id="rust-scaffolding-code"><a class="header" href="#rust-scaffolding-code">Rust scaffolding code</a></h2>
-<p>Now we generate some Rust helper code to make the <code>add</code> method available to foreign-language bindings.</p>
-<p>First, add <code>uniffi</code> to your crate as both a dependency and build-dependency.  Enable the <code>build</code> feature for the build-dependencies.  This adds the runtime support code that powers UniFFI and build-time support for generating the Rust scaffolding code.</p>
-<pre><code class="language-toml">[dependencies]
-uniffi = &quot;0.XX.0&quot;
-
-[build-dependencies]
-uniffi = { version = &quot;0.XX.0&quot;, features = [&quot;build&quot;] }
-</code></pre>
-<p>As noted in <a href="tutorial/udl_file.html">Describing the interface</a>, UniFFI currently supports two methods of interface definitions: UDL files and proc macros.
-If you are using only proc macros, you can skip some boilerplate in your crate setup as well.</p>
-<h3 id="setup-for-crates-using-udl"><a class="header" href="#setup-for-crates-using-udl">Setup for crates using UDL</a></h3>
+<p>As already noted UniFFI supports two methods of interface definitions: UDL files and proc macros.</p>
+<p>If you use proc macros you can skip the next section, but if you use UDL files, you need to generate Rust &quot;scaffolding&quot; - code to implement what's described in the UDL.</p>
+<h2 id="rust-scaffolding-code-for-udl"><a class="header" href="#rust-scaffolding-code-for-udl">Rust scaffolding code for UDL</a></h2>
 <p>Crates using UDL need a <code>build.rs</code> file next to <code>Cargo.toml</code>. This uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
 <pre><code class="language-rust">fn main() {
     uniffi::generate_scaffolding(&quot;src/math.udl&quot;).unwrap();
 }</code></pre>
+<p>It will generate <code>&lt;namespace&gt;.uniffi.rs</code> under your <code>target</code> directory.</p>
 <p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code> using this handy macro:</p>
 <pre><code class="language-rust">uniffi::include_scaffolding!(&quot;math&quot;);</code></pre>
-<p><strong>Note:</strong> The file name is always <code>&lt;namespace&gt;.uniffi.rs</code>.</p>
 <h3 id="setup-for-crates-using-only-proc-macros"><a class="header" href="#setup-for-crates-using-only-proc-macros">Setup for crates using only proc macros</a></h3>
 <p>If you are only using proc macros, you can skip <code>build.rs</code> entirely!
-All you need to do is add this to the top of <code>lib.rs</code>
-NOTE: This function takes an optional parameter, the <a href="tutorial/../udl/namespace.html"><code>namespace</code></a> used by the component.
-If not specified, the crate name will be used as the namespace.</p>
+All you need to do is add this to the top of <code>lib.rs</code></p>
 <pre><code class="language-rust">uniffi::setup_scaffolding!();</code></pre>
+<p>NOTE: This function takes an optional parameter, the <a href="tutorial/../udl/namespace.html"><code>namespace</code></a> used by the component.
+If not specified, the crate name will be used as the namespace.</p>
 <p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>
 <h3 id="libraries-that-depend-on-uniffi-components"><a class="header" href="#libraries-that-depend-on-uniffi-components">Libraries that depend on UniFFI components</a></h3>
 <p>Suppose you want to create a shared library that includes one or more
@@ -337,7 +331,8 @@ UniFFI will add workaround code that forces the functions to be re-exported.</p>
 This avoids name collisions when combining multiple UniFFI components into
 one library.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="foreign-language-bindings"><a class="header" href="#foreign-language-bindings">Foreign-language bindings</a></h1>
-<p>As stated in the <a href="tutorial/../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
+<p>By now you have setup your crate and <code>cargo build</code> has successfully created your library.</p>
+<p>As stated in the <a href="tutorial/../Overview.html">Overview</a>, UniFFI does not help shipping a Rust library on mobile, only how to generate bindings for it.</p>
 <h2 id="creating-the-bindgen-binary"><a class="header" href="#creating-the-bindgen-binary">Creating the bindgen binary</a></h2>
 <p>First, make sure you have installed all the <a href="tutorial/./Prerequisites.html">prerequisites</a>.</p>
 <p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings.  However, this
@@ -363,15 +358,16 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 <li>Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
 <p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
-<h2 id="running-uniffi-bindgen-using-a-library-file-recommended"><a class="header" href="#running-uniffi-bindgen-using-a-library-file-recommended">Running uniffi-bindgen using a library file (RECOMMENDED)</a></h2>
+<h2 id="running-uniffi-bindgen-using-a-library-file"><a class="header" href="#running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</a></h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
-This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
-The plan is to make library mode the default in a future UniFFI version, and it is highly recommended to specify the flag for now (because some features simply don't work otherwise).</p>
-<p>Taking <code>example/arithmetic</code> as an example, you can generate the bindings with:</p>
+This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
+This should be used where possible - some &quot;external type&quot; features don't work otherwise.</p>
+<p>In our example, we generate the bindings with:</p>
 <pre><code>cargo build --release
-cargo run --bin uniffi-bindgen generate --library target/release/libarithmetical.so --language kotlin --out-dir out
+cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
 </code></pre>
-<p>Then check out the <code>out</code> directory.</p>
+<p>(maybe <code>.dylib</code>, good luck with <code>.dll</code>!)</p>
+<p>Then look in the <code>out</code> directory.</p>
 <p>When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.</p>
 <p>Library mode comes with some extra requirements:</p>
 <ul>
@@ -382,17 +378,18 @@ e.g. by using feature flags.</li>
 <li>Rust sources must use <code>uniffi::include_scaffolding!</code> to include the scaffolding code.</li>
 </ul>
 <h2 id="running-uniffi-bindgen-with-a-single-udl-file"><a class="header" href="#running-uniffi-bindgen-with-a-single-udl-file">Running uniffi-bindgen with a single UDL file</a></h2>
+<p>As noted above, library mode is encouraged - building from a single UDL is not recommended.</p>
 <p>Use the <code>generate</code> command to generate bindings by specifying a UDL file.</p>
 <h3 id="kotlin"><a class="header" href="#kotlin">Kotlin</a></h3>
-<p>From the <code>example/arithmetic</code> directory, run:</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language kotlin
+<p>From the example directory, run:</p>
+<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
 </code></pre>
-<p>then have a look at <code>src/uniffi/arithmetic/arithmetic.kt</code></p>
+<p>then have a look at <code>src/uniffi/math/math.kt</code></p>
 <h3 id="swift"><a class="header" href="#swift">Swift</a></h3>
 <p>Run</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language swift
+<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
 </code></pre>
-<p>then check out <code>src/arithmetic.swift</code></p>
+<p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>
 <p>This is it, you have an MVP integration of UniFFI in your project.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="the-udl-file-1"><a class="header" href="#the-udl-file-1">The UDL file</a></h1>

@@ -175,7 +175,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="foreign-language-bindings"><a class="header" href="#foreign-language-bindings">Foreign-language bindings</a></h1>
-<p>As stated in the <a href="../Overview.html">Overview</a>, this library and tutorial does not cover <em>how</em> to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.</p>
+<p>By now you have setup your crate and <code>cargo build</code> has successfully created your library.</p>
+<p>As stated in the <a href="../Overview.html">Overview</a>, UniFFI does not help shipping a Rust library on mobile, only how to generate bindings for it.</p>
 <h2 id="creating-the-bindgen-binary"><a class="header" href="#creating-the-bindgen-binary">Creating the bindgen binary</a></h2>
 <p>First, make sure you have installed all the <a href="./Prerequisites.html">prerequisites</a>.</p>
 <p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings.  However, this
@@ -201,15 +202,16 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 <li>Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
 <p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
-<h2 id="running-uniffi-bindgen-using-a-library-file-recommended"><a class="header" href="#running-uniffi-bindgen-using-a-library-file-recommended">Running uniffi-bindgen using a library file (RECOMMENDED)</a></h2>
+<h2 id="running-uniffi-bindgen-using-a-library-file"><a class="header" href="#running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</a></h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
-This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
-The plan is to make library mode the default in a future UniFFI version, and it is highly recommended to specify the flag for now (because some features simply don't work otherwise).</p>
-<p>Taking <code>example/arithmetic</code> as an example, you can generate the bindings with:</p>
+This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
+This should be used where possible - some &quot;external type&quot; features don't work otherwise.</p>
+<p>In our example, we generate the bindings with:</p>
 <pre><code>cargo build --release
-cargo run --bin uniffi-bindgen generate --library target/release/libarithmetical.so --language kotlin --out-dir out
+cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
 </code></pre>
-<p>Then check out the <code>out</code> directory.</p>
+<p>(maybe <code>.dylib</code>, good luck with <code>.dll</code>!)</p>
+<p>Then look in the <code>out</code> directory.</p>
 <p>When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.</p>
 <p>Library mode comes with some extra requirements:</p>
 <ul>
@@ -220,17 +222,18 @@ e.g. by using feature flags.</li>
 <li>Rust sources must use <code>uniffi::include_scaffolding!</code> to include the scaffolding code.</li>
 </ul>
 <h2 id="running-uniffi-bindgen-with-a-single-udl-file"><a class="header" href="#running-uniffi-bindgen-with-a-single-udl-file">Running uniffi-bindgen with a single UDL file</a></h2>
+<p>As noted above, library mode is encouraged - building from a single UDL is not recommended.</p>
 <p>Use the <code>generate</code> command to generate bindings by specifying a UDL file.</p>
 <h3 id="kotlin"><a class="header" href="#kotlin">Kotlin</a></h3>
-<p>From the <code>example/arithmetic</code> directory, run:</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language kotlin
+<p>From the example directory, run:</p>
+<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
 </code></pre>
-<p>then have a look at <code>src/uniffi/arithmetic/arithmetic.kt</code></p>
+<p>then have a look at <code>src/uniffi/math/math.kt</code></p>
 <h3 id="swift"><a class="header" href="#swift">Swift</a></h3>
 <p>Run</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language swift
+<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
 </code></pre>
-<p>then check out <code>src/arithmetic.swift</code></p>
+<p>then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>
 <p>This is it, you have an MVP integration of UniFFI in your project.</p>
 

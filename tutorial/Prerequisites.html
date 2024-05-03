@@ -175,6 +175,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h1>
+<p>This tutorial builds on our <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/arithmetic"><code>arithmetic</code></a> and (creatively-named) <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/arithmetic-procmacro"><code>arithmetic-procmacro</code></a> examples, which will be useful when we've omitted things.</p>
+<p>Here we will be creating a <code>math</code> library - so we assume a <code>cargo new --lib math</code> environment.</p>
 <h2 id="add-uniffi-as-a-dependency-and-build-dependency"><a class="header" href="#add-uniffi-as-a-dependency-and-build-dependency">Add <code>uniffi</code> as a dependency and build-dependency</a></h2>
 <p>In your crate's <code>Cargo.toml</code> add:</p>
 <pre><code class="language-toml">[dependencies]
@@ -185,10 +187,10 @@ uniffi = { version = &quot;[latest-version]&quot;, features = [ &quot;build&quot
 </code></pre>
 <p>UniFFI has not reached version <code>1.0</code> yet.  Versions are typically specified as <code>0.[minor-version]</code>.</p>
 <h2 id="build-your-crate-as-a-cdylib"><a class="header" href="#build-your-crate-as-a-cdylib">Build your crate as a cdylib</a></h2>
-<p>Ensure your crate builds as a <code>cdylib</code> by adding</p>
+<p>Ensure your crate builds as a <code>cdylib</code> so looks something like</p>
 <pre><code class="language-toml">[lib]
 crate-type = [&quot;cdylib&quot;]
-name = &quot;&lt;library name&gt;&quot;
+name = &quot;math&quot; # This is our crate name in this tutorial
 </code></pre>
 <p>to your crate's <code>Cargo.toml</code>.</p>
 <p><strong>Note:</strong> You also need to add <code>staticlib</code> crate type if you target iOS.</p>
