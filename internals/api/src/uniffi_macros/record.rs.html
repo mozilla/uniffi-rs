@@ -155,6 +155,37 @@
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
 <a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Token};
@@ -163,34 +194,65 @@
     default::{default_value_metadata_calls, DefaultValue},
     ffiops,
     util::{
-        create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
-        ident_to_string, kw, mod_path, tagged_impl_header, try_metadata_value_from_usize,
-        try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+        create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
+        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
+    DeriveOptions,
 };
 
-<span class="kw">pub fn </span>expand_record(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="doccomment">/// Stores parsed data from the Derive Input for the struct.
+</span><span class="kw">struct </span>RecordItem {
+    ident: Ident,
+    record: DataStruct,
+    docstring: String,
+}
+
+<span class="kw">impl </span>RecordItem {
+    <span class="kw">fn </span>new(input: DeriveInput) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>record = <span class="kw">match </span>input.data {
+            Data::Struct(s) =&gt; s,
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                    Span::call_site(),
+                    <span class="string">"This derive must only be used on structs"</span>,
+                ));
+            }
+        };
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            ident: input.ident,
+            record,
+            docstring: extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>,
+        })
+    }
+
+    <span class="kw">fn </span>ident(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Ident {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.ident
+    }
+
+    <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        ident_to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.ident)
+    }
+
+    <span class="kw">fn </span>struct_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>DataStruct {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.record
+    }
+
+    <span class="kw">fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.docstring.as_str()
+    }
+}
+
+<span class="kw">pub fn </span>expand_record(input: DeriveInput, options: DeriveOptions) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(e) = input.attrs.uniffi_attr_args_not_allowed_here() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(e);
     }
-    <span class="kw">let </span>record = <span class="kw">match </span>input.data {
-        Data::Struct(s) =&gt; s,
-        <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                Span::call_site(),
-                <span class="string">"This derive must only be used on structs"</span>,
-            ));
-        }
-    };
-
-    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
-    <span class="kw">let </span>ffi_converter = record_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>record, udl_mode)
-        .unwrap_or_else(syn::Error::into_compile_error);
-    <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        record_meta_static_var(ident, docstring, <span class="kw-2">&amp;</span>record)
-            .unwrap_or_else(syn::Error::into_compile_error)
-    });
+    <span class="kw">let </span>record = RecordItem::new(input)<span class="question-mark">?</span>;
+    <span class="kw">let </span>ffi_converter =
+        record_ffi_converter_impl(<span class="kw-2">&amp;</span>record, <span class="kw-2">&amp;</span>options).unwrap_or_else(syn::Error::into_compile_error);
+    <span class="kw">let </span>meta_static_var = options
+        .generate_metadata
+        .then(|| record_meta_static_var(<span class="kw-2">&amp;</span>record).unwrap_or_else(syn::Error::into_compile_error));
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter
@@ -198,17 +260,17 @@
     })
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>record_ffi_converter_impl(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    record: <span class="kw-2">&amp;</span>DataStruct,
-    udl_mode: bool,
+<span class="kw">fn </span>record_ffi_converter_impl(
+    record: <span class="kw-2">&amp;</span>RecordItem,
+    options: <span class="kw-2">&amp;</span>DeriveOptions,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">"FfiConverter"</span>, ident, udl_mode);
-    <span class="kw">let </span>derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
+    <span class="kw">let </span>ident = record.ident();
+    <span class="kw">let </span>impl_spec = options.ffi_impl_header(<span class="string">"FfiConverter"</span>, ident);
+    <span class="kw">let </span>derive_ffi_traits = options.derive_all_ffi_traits(ident);
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>mod_path = mod_path()<span class="question-mark">?</span>;
-    <span class="kw">let </span>write_impl: TokenStream = record.fields.iter().map(write_field).collect();
-    <span class="kw">let </span>try_read_fields: TokenStream = record.fields.iter().map(try_read_field).collect();
+    <span class="kw">let </span>write_impl: TokenStream = record.struct_().fields.iter().map(write_field).collect();
+    <span class="kw">let </span>try_read_fields: TokenStream = record.struct_().fields.iter().map(try_read_field).collect();
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[automatically_derived]
@@ -262,17 +324,17 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>record_meta_static_var(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    docstring: String,
-    record: <span class="kw-2">&amp;</span>DataStruct,
-) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>name = ident_to_string(ident);
+<span class="kw">fn </span>record_meta_static_var(record: <span class="kw-2">&amp;</span>RecordItem) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>name = record.name();
+    <span class="kw">let </span>docstring = record.docstring();
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
-    <span class="kw">let </span>fields_len =
-        try_metadata_value_from_usize(record.fields.len(), <span class="string">"UniFFI limits structs to 256 fields"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>fields_len = try_metadata_value_from_usize(
+        record.struct_().fields.len(),
+        <span class="string">"UniFFI limits structs to 256 fields"</span>,
+    )<span class="question-mark">?</span>;
 
     <span class="kw">let </span>concat_fields: TokenStream = record
+        .struct_()
         .fields
         .iter()
         .map(|f| {

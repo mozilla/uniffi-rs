@@ -375,75 +375,195 @@
 <a href="#373" id="373">373</a>
 <a href="#374" id="374">374</a>
 <a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
-    parse::{Parse, ParseStream},
-    spanned::Spanned,
-    Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit, Variant,
+    parse::ParseStream, spanned::Spanned, Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit,
+    Variant,
 };
 
 <span class="kw">use crate</span>::{
     ffiops,
     util::{
-        create_metadata_items, derive_all_ffi_traits, either_attribute_arg, extract_docstring,
-        ident_to_string, kw, mod_path, parse_comma_separated, tagged_impl_header,
-        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
+        create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
+        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
+        UniffiAttributeArgs,
     },
+    DeriveOptions,
 };
 
-<span class="kw">fn </span>extract_repr(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;Ident&gt;&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="prelude-val">None</span>;
-    <span class="kw">for </span>attr <span class="kw">in </span>attrs {
-        <span class="kw">if </span>attr.path().is_ident(<span class="string">"repr"</span>) {
-            attr.parse_nested_meta(|meta| {
-                result = <span class="kw">match </span>meta.path.get_ident() {
-                    <span class="prelude-val">Some</span>(i) =&gt; {
-                        <span class="kw">let </span>s = i.to_string();
-                        <span class="kw">match </span>s.as_str() {
-                            <span class="string">"u8" </span>| <span class="string">"u16" </span>| <span class="string">"u32" </span>| <span class="string">"u64" </span>| <span class="string">"usize" </span>| <span class="string">"i8" </span>| <span class="string">"i16" </span>| <span class="string">"i32"
-                            </span>| <span class="string">"i64" </span>| <span class="string">"isize" </span>=&gt; <span class="prelude-val">Some</span>(i.clone()),
-                            <span class="comment">// while the default repr for an enum is `isize` we don't apply that default here.
-                            </span><span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-                        }
-                    }
-                    <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-                };
-                <span class="prelude-val">Ok</span>(())
-            })<span class="question-mark">?
-        </span>}
-    }
-    <span class="prelude-val">Ok</span>(result)
+<span class="doccomment">/// Stores parsed data from the Derive Input for the enum.
+</span><span class="kw">pub struct </span>EnumItem {
+    ident: Ident,
+    enum_: DataEnum,
+    docstring: String,
+    discr_type: <span class="prelude-ty">Option</span>&lt;Ident&gt;,
+    non_exhaustive: bool,
+    attr: EnumAttr,
 }
 
-<span class="kw">pub fn </span>expand_enum(
-    input: DeriveInput,
-    <span class="comment">// Attributes from #[derive_error_for_udl()], if we are in udl mode
-    </span>attr_from_udl_mode: <span class="prelude-ty">Option</span>&lt;EnumAttr&gt;,
-    udl_mode: bool,
-) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
-        Data::Enum(e) =&gt; e,
-        <span class="kw">_ </span>=&gt; {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
-                Span::call_site(),
-                <span class="string">"This derive must only be used on enums"</span>,
-            ))
-        }
-    };
-    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
-    <span class="kw">let </span>discr_type = extract_repr(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>attr: EnumAttr = input.attrs.parse_uniffi_attr_args()<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_from_udl_mode) = attr_from_udl_mode {
-        attr = attr.merge(attr_from_udl_mode)<span class="question-mark">?</span>;
+<span class="kw">impl </span>EnumItem {
+    <span class="kw">pub fn </span>new(input: DeriveInput) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>enum_ = <span class="kw">match </span>input.data {
+            Data::Enum(e) =&gt; e,
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                    Span::call_site(),
+                    <span class="string">"This derive must only be used on enums"</span>,
+                ))
+            }
+        };
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            enum_,
+            ident: input.ident,
+            docstring: extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>,
+            discr_type: <span class="self">Self</span>::extract_repr(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>,
+            non_exhaustive: <span class="self">Self</span>::extract_non_exhaustive(<span class="kw-2">&amp;</span>input.attrs),
+            attr: input.attrs.parse_uniffi_attr_args()<span class="question-mark">?</span>,
+        })
     }
-    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(ident, <span class="kw-2">&amp;</span>enum_, udl_mode, <span class="kw-2">&amp;</span>attr);
 
-    <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        enum_meta_static_var(ident, docstring, discr_type, <span class="kw-2">&amp;</span>enum_, <span class="kw-2">&amp;</span>attr)
-            .unwrap_or_else(syn::Error::into_compile_error)
-    });
+    <span class="kw">pub fn </span>extract_repr(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;<span class="prelude-ty">Option</span>&lt;Ident&gt;&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="prelude-val">None</span>;
+        <span class="kw">for </span>attr <span class="kw">in </span>attrs {
+            <span class="kw">if </span>attr.path().is_ident(<span class="string">"repr"</span>) {
+                attr.parse_nested_meta(|meta| {
+                    result = <span class="kw">match </span>meta.path.get_ident() {
+                        <span class="prelude-val">Some</span>(i) =&gt; {
+                            <span class="kw">let </span>s = i.to_string();
+                            <span class="kw">match </span>s.as_str() {
+                                <span class="string">"u8" </span>| <span class="string">"u16" </span>| <span class="string">"u32" </span>| <span class="string">"u64" </span>| <span class="string">"usize" </span>| <span class="string">"i8" </span>| <span class="string">"i16" </span>| <span class="string">"i32"
+                                </span>| <span class="string">"i64" </span>| <span class="string">"isize" </span>=&gt; <span class="prelude-val">Some</span>(i.clone()),
+                                <span class="comment">// while the default repr for an enum is `isize` we don't apply that default here.
+                                </span><span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+                            }
+                        }
+                        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+                    };
+                    <span class="prelude-val">Ok</span>(())
+                })<span class="question-mark">?
+            </span>}
+        }
+        <span class="prelude-val">Ok</span>(result)
+    }
+
+    <span class="kw">pub fn </span>extract_non_exhaustive(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; bool {
+        attrs.iter().any(|a| a.path().is_ident(<span class="string">"non_exhaustive"</span>))
+    }
+
+    <span class="kw">pub fn </span>check_attributes_valid_for_enum(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; syn::Result&lt;()&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(flat_error) = <span class="kw-2">&amp;</span><span class="self">self</span>.attr.flat_error {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                flat_error.span(),
+                <span class="string">"flat_error not allowed for non-error enums"</span>,
+            ));
+        }
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(with_try_read) = <span class="kw-2">&amp;</span><span class="self">self</span>.attr.with_try_read {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new(
+                with_try_read.span(),
+                <span class="string">"with_try_read not allowed for non-error enums"</span>,
+            ));
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub fn </span>ident(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Ident {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.ident
+    }
+
+    <span class="kw">pub fn </span>enum_(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>DataEnum {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.enum_
+    }
+
+    <span class="kw">pub fn </span>is_non_exhaustive(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.non_exhaustive
+    }
+
+    <span class="kw">pub fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.docstring.as_str()
+    }
+
+    <span class="kw">pub fn </span>discr_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Ident&gt; {
+        <span class="self">self</span>.discr_type.as_ref()
+    }
+
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        ident_to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.ident)
+    }
+
+    <span class="kw">pub fn </span>is_flat_error(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.attr.flat_error.is_some()
+    }
+
+    <span class="kw">pub fn </span>generate_error_try_read(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.attr.with_try_read.is_some()
+    }
+}
+
+<span class="kw">pub fn </span>expand_enum(input: DeriveInput, options: DeriveOptions) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>item = EnumItem::new(input)<span class="question-mark">?</span>;
+    item.check_attributes_valid_for_enum()<span class="question-mark">?</span>;
+    <span class="kw">let </span>ffi_converter_impl = enum_ffi_converter_impl(<span class="kw-2">&amp;</span>item, <span class="kw-2">&amp;</span>options);
+
+    <span class="kw">let </span>meta_static_var = options
+        .generate_metadata
+        .then(|| enum_meta_static_var(<span class="kw-2">&amp;</span>item).unwrap_or_else(syn::Error::into_compile_error));
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         #ffi_converter_impl
@@ -451,51 +571,40 @@
     })
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_ffi_converter_impl(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    enum_: <span class="kw-2">&amp;</span>DataEnum,
-    udl_mode: bool,
-    attr: <span class="kw-2">&amp;</span>EnumAttr,
-) -&gt; TokenStream {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_ffi_converter_impl(item: <span class="kw-2">&amp;</span>EnumItem, options: <span class="kw-2">&amp;</span>DeriveOptions) -&gt; TokenStream {
     enum_or_error_ffi_converter_impl(
-        ident,
-        enum_,
-        udl_mode,
-        attr,
+        item,
+        options,
         <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rich_error_ffi_converter_impl(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    enum_: <span class="kw-2">&amp;</span>DataEnum,
-    udl_mode: bool,
-    attr: <span class="kw-2">&amp;</span>EnumAttr,
+    item: <span class="kw-2">&amp;</span>EnumItem,
+    options: <span class="kw-2">&amp;</span>DeriveOptions,
 ) -&gt; TokenStream {
     enum_or_error_ffi_converter_impl(
-        ident,
-        enum_,
-        udl_mode,
-        attr,
+        item,
+        options,
         <span class="macro">quote! </span>{ ::uniffi::metadata::codes::TYPE_ENUM },
     )
 }
 
 <span class="kw">fn </span>enum_or_error_ffi_converter_impl(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    enum_: <span class="kw-2">&amp;</span>DataEnum,
-    udl_mode: bool,
-    attr: <span class="kw-2">&amp;</span>EnumAttr,
+    item: <span class="kw-2">&amp;</span>EnumItem,
+    options: <span class="kw-2">&amp;</span>DeriveOptions,
     metadata_type_code: TokenStream,
 ) -&gt; TokenStream {
-    <span class="kw">let </span>name = ident_to_string(ident);
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">"FfiConverter"</span>, ident, udl_mode);
-    <span class="kw">let </span>derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
+    <span class="kw">let </span>name = item.name();
+    <span class="kw">let </span>ident = item.ident();
+    <span class="kw">let </span>impl_spec = options.ffi_impl_header(<span class="string">"FfiConverter"</span>, ident);
+    <span class="kw">let </span>derive_ffi_traits = options.derive_all_ffi_traits(ident);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
     };
-    <span class="kw">let </span><span class="kw-2">mut </span>write_match_arms: Vec&lt;<span class="kw">_</span>&gt; = enum_
+    <span class="kw">let </span><span class="kw-2">mut </span>write_match_arms: Vec&lt;<span class="kw">_</span>&gt; = item
+        .enum_()
         .variants
         .iter()
         .enumerate()
@@ -532,7 +641,7 @@
             }
         })
         .collect();
-    <span class="kw">if </span>attr.non_exhaustive.is_some() {
+    <span class="kw">if </span>item.is_non_exhaustive() {
         write_match_arms.push(<span class="macro">quote! </span>{
             <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"Unexpected variant in non-exhaustive enum"</span>),
         })
@@ -541,7 +650,7 @@
         <span class="kw">match </span>obj { #(#write_match_arms)* }
     };
 
-    <span class="kw">let </span>try_read_match_arms = enum_.variants.iter().enumerate().map(|(i, v)| {
+    <span class="kw">let </span>try_read_match_arms = item.enum_().variants.iter().enumerate().map(|(i, v)| {
         <span class="kw">let </span>idx = Index::from(i + <span class="number">1</span>);
         <span class="kw">let </span>v_ident = <span class="kw-2">&amp;</span>v.ident;
         <span class="kw">let </span>is_tuple = v.fields.iter().any(|f| f.ident.is_none());
@@ -557,7 +666,7 @@
             }
         }
     });
-    <span class="kw">let </span>error_format_string = <span class="macro">format!</span>(<span class="string">"Invalid {ident} enum value: {{}}"</span>);
+    <span class="kw">let </span>error_format_string = <span class="macro">format!</span>(<span class="string">"Invalid {name} enum value: {{}}"</span>);
     <span class="kw">let </span>try_read_impl = <span class="macro">quote! </span>{
         ::uniffi::check_remaining(buf, <span class="number">4</span>)<span class="question-mark">?</span>;
 
@@ -589,16 +698,11 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(
-    ident: <span class="kw-2">&amp;</span>Ident,
-    docstring: String,
-    discr_type: <span class="prelude-ty">Option</span>&lt;Ident&gt;,
-    enum_: <span class="kw-2">&amp;</span>DataEnum,
-    attr: <span class="kw-2">&amp;</span>EnumAttr,
-) -&gt; syn::Result&lt;TokenStream&gt; {
-    <span class="kw">let </span>name = ident_to_string(ident);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enum_meta_static_var(item: <span class="kw-2">&amp;</span>EnumItem) -&gt; syn::Result&lt;TokenStream&gt; {
+    <span class="kw">let </span>name = item.name();
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
-    <span class="kw">let </span>non_exhaustive = attr.non_exhaustive.is_some();
+    <span class="kw">let </span>non_exhaustive = item.is_non_exhaustive();
+    <span class="kw">let </span>docstring = item.docstring();
 
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
@@ -606,14 +710,14 @@
             .concat_str(#name)
             .concat_option_bool(<span class="prelude-val">None</span>) <span class="comment">// forced_flatness
     </span>};
-    metadata_expr.extend(<span class="kw">match </span>discr_type {
+    metadata_expr.extend(<span class="kw">match </span>item.discr_type() {
         <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">false</span>) },
         <span class="prelude-val">Some</span>(t) =&gt; {
             <span class="kw">let </span>type_id_meta = ffiops::type_id_meta(t);
             <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">true</span>).concat(#type_id_meta) }
         }
     });
-    metadata_expr.extend(variant_metadata(enum_)<span class="question-mark">?</span>);
+    metadata_expr.extend(variant_metadata(item)<span class="question-mark">?</span>);
     metadata_expr.extend(<span class="macro">quote! </span>{
         .concat_bool(#non_exhaustive)
         .concat_long_str(#docstring)
@@ -677,7 +781,8 @@
     })
 }
 
-<span class="kw">pub fn </span>variant_metadata(enum_: <span class="kw-2">&amp;</span>DataEnum) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
+<span class="kw">pub fn </span>variant_metadata(item: <span class="kw-2">&amp;</span>EnumItem) -&gt; syn::Result&lt;Vec&lt;TokenStream&gt;&gt; {
+    <span class="kw">let </span>enum_ = item.enum_();
     <span class="kw">let </span>variants_len =
         try_metadata_value_from_usize(enum_.variants.len(), <span class="string">"UniFFI limits enums to 256 variants"</span>)<span class="question-mark">?</span>;
     std::iter::once(<span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{ .concat_value(#variants_len) }))
@@ -720,25 +825,31 @@
         .collect()
 }
 
-<span class="attr">#[derive(Default)]
+<span class="doccomment">/// Handle #[uniffi(...)] attributes for enums
+</span><span class="attr">#[derive(Clone, Default)]
 </span><span class="kw">pub struct </span>EnumAttr {
-    <span class="kw">pub </span>non_exhaustive: <span class="prelude-ty">Option</span>&lt;kw::non_exhaustive&gt;,
-}
-
-<span class="comment">// So ErrorAttr can be used with `parse_macro_input!`
-</span><span class="kw">impl </span>Parse <span class="kw">for </span>EnumAttr {
-    <span class="kw">fn </span>parse(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
-        parse_comma_separated(input)
-    }
+    <span class="comment">// All of these attributes are only relevant for errors, but they're defined here so that we
+    // can reuse EnumItem for errors.
+    </span><span class="kw">pub </span>flat_error: <span class="prelude-ty">Option</span>&lt;kw::flat_error&gt;,
+    <span class="kw">pub </span>with_try_read: <span class="prelude-ty">Option</span>&lt;kw::with_try_read&gt;,
 }
 
 <span class="kw">impl </span>UniffiAttributeArgs <span class="kw">for </span>EnumAttr {
     <span class="kw">fn </span>parse_one(input: ParseStream&lt;<span class="lifetime">'_</span>&gt;) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>lookahead = input.lookahead1();
-        <span class="kw">if </span>lookahead.peek(kw::non_exhaustive) {
+        <span class="kw">if </span>lookahead.peek(kw::flat_error) {
             <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-                non_exhaustive: input.parse()<span class="question-mark">?</span>,
+                flat_error: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
             })
+        } <span class="kw">else if </span>lookahead.peek(kw::with_try_read) {
+            <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+                with_try_read: input.parse()<span class="question-mark">?</span>,
+                ..<span class="self">Self</span>::default()
+            })
+        } <span class="kw">else if </span>lookahead.peek(kw::handle_unknown_callback_error) {
+            <span class="comment">// Not used anymore, but still allowed
+            </span><span class="prelude-val">Ok</span>(<span class="self">Self</span>::default())
         } <span class="kw">else </span>{
             <span class="prelude-val">Err</span>(lookahead.error())
         }
@@ -746,7 +857,8 @@
 
     <span class="kw">fn </span>merge(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            non_exhaustive: either_attribute_arg(<span class="self">self</span>.non_exhaustive, other.non_exhaustive)<span class="question-mark">?</span>,
+            flat_error: either_attribute_arg(<span class="self">self</span>.flat_error, other.flat_error)<span class="question-mark">?</span>,
+            with_try_read: either_attribute_arg(<span class="self">self</span>.with_try_read, other.with_try_read)<span class="question-mark">?</span>,
         })
     }
 }

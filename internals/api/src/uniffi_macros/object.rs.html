@@ -191,23 +191,81 @@
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
 <a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
 
 <span class="kw">use crate</span>::{
     ffiops,
-    util::{
-        create_metadata_items, extract_docstring, ident_to_string, mod_path, tagged_impl_header,
-    },
+    util::{create_metadata_items, extract_docstring, ident_to_string, mod_path},
+    DeriveOptions,
 };
 <span class="kw">use </span>uniffi_meta::ObjectImpl;
 
-<span class="kw">pub fn </span>expand_object(input: DeriveInput, udl_mode: bool) -&gt; syn::Result&lt;TokenStream&gt; {
+<span class="doccomment">/// Stores parsed data from the Derive Input for the struct/enum.
+</span><span class="kw">struct </span>ObjectItem {
+    ident: Ident,
+    docstring: String,
+}
+
+<span class="kw">impl </span>ObjectItem {
+    <span class="kw">fn </span>new(input: DeriveInput) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            ident: input.ident,
+            docstring: extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>,
+        })
+    }
+
+    <span class="kw">fn </span>ident(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Ident {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.ident
+    }
+
+    <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        ident_to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.ident)
+    }
+
+    <span class="kw">fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.docstring.as_str()
+    }
+}
+
+<span class="kw">pub fn </span>expand_object(input: DeriveInput, options: DeriveOptions) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
-    <span class="kw">let </span>ident = <span class="kw-2">&amp;</span>input.ident;
-    <span class="kw">let </span>docstring = extract_docstring(<span class="kw-2">&amp;</span>input.attrs)<span class="question-mark">?</span>;
-    <span class="kw">let </span>name = ident_to_string(ident);
+    <span class="kw">let </span>object = ObjectItem::new(input)<span class="question-mark">?</span>;
+    <span class="kw">let </span>name = object.name();
+    <span class="kw">let </span>ident = object.ident();
     <span class="kw">let </span>clone_fn_ident = Ident::new(
         <span class="kw-2">&amp;</span>uniffi_meta::clone_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name),
         Span::call_site(),
@@ -216,11 +274,16 @@
         <span class="kw-2">&amp;</span>uniffi_meta::free_fn_symbol_name(<span class="kw-2">&amp;</span>module_path, <span class="kw-2">&amp;</span>name),
         Span::call_site(),
     );
-    <span class="kw">let </span>meta_static_var = (!udl_mode).then(|| {
-        interface_meta_static_var(ident, ObjectImpl::Struct, <span class="kw-2">&amp;</span>module_path, docstring)
-            .unwrap_or_else(syn::Error::into_compile_error)
+    <span class="kw">let </span>meta_static_var = options.generate_metadata.then(|| {
+        interface_meta_static_var(
+            object.ident(),
+            ObjectImpl::Struct,
+            <span class="kw-2">&amp;</span>module_path,
+            object.docstring(),
+        )
+        .unwrap_or_else(syn::Error::into_compile_error)
     });
-    <span class="kw">let </span>interface_impl = interface_impl(ident, udl_mode);
+    <span class="kw">let </span>interface_impl = interface_impl(<span class="kw-2">&amp;</span>object, <span class="kw-2">&amp;</span>options);
 
     <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
         <span class="attr">#[doc(hidden)]
@@ -256,12 +319,13 @@
     })
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>interface_impl(ident: <span class="kw-2">&amp;</span>Ident, udl_mode: bool) -&gt; TokenStream {
-    <span class="kw">let </span>name = ident_to_string(ident);
-    <span class="kw">let </span>impl_spec = tagged_impl_header(<span class="string">"FfiConverterArc"</span>, ident, udl_mode);
-    <span class="kw">let </span>lower_return_impl_spec = tagged_impl_header(<span class="string">"LowerReturn"</span>, ident, udl_mode);
-    <span class="kw">let </span>type_id_impl_spec = tagged_impl_header(<span class="string">"TypeId"</span>, ident, udl_mode);
-    <span class="kw">let </span>lift_ref_impl_spec = tagged_impl_header(<span class="string">"LiftRef"</span>, ident, udl_mode);
+<span class="kw">fn </span>interface_impl(object: <span class="kw-2">&amp;</span>ObjectItem, options: <span class="kw-2">&amp;</span>DeriveOptions) -&gt; TokenStream {
+    <span class="kw">let </span>name = object.name();
+    <span class="kw">let </span>ident = object.ident();
+    <span class="kw">let </span>impl_spec = options.ffi_impl_header(<span class="string">"FfiConverterArc"</span>, ident);
+    <span class="kw">let </span>lower_return_impl_spec = options.ffi_impl_header(<span class="string">"LowerReturn"</span>, ident);
+    <span class="kw">let </span>type_id_impl_spec = options.ffi_impl_header(<span class="string">"TypeId"</span>, ident);
+    <span class="kw">let </span>lift_ref_impl_spec = options.ffi_impl_header(<span class="string">"LiftRef"</span>, ident);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
         <span class="prelude-val">Ok</span>(p) =&gt; p,
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
@@ -361,7 +425,7 @@
     ident: <span class="kw-2">&amp;</span>Ident,
     imp: ObjectImpl,
     module_path: <span class="kw-2">&amp;</span>str,
-    docstring: String,
+    docstring: <span class="kw-2">&amp;</span>str,
 ) -&gt; syn::Result&lt;TokenStream&gt; {
     <span class="kw">let </span>name = ident_to_string(ident);
     <span class="kw">let </span>code = <span class="kw">match </span>imp {

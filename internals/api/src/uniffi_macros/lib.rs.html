@@ -352,48 +352,6 @@
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
-<a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a>
-<a href="#369" id="369">369</a>
-<a href="#370" id="370">370</a>
-<a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
-<a href="#390" id="390">390</a>
-<a href="#391" id="391">391</a>
-<a href="#392" id="392">392</a>
-<a href="#393" id="393">393</a>
-<a href="#394" id="394">394</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -413,6 +371,7 @@
 
 <span class="kw">mod </span>custom;
 <span class="kw">mod </span>default;
+<span class="kw">mod </span>derive;
 <span class="kw">mod </span>enum_;
 <span class="kw">mod </span>error;
 <span class="kw">mod </span>export;
@@ -425,8 +384,8 @@
 <span class="kw">mod </span>util;
 
 <span class="kw">use </span><span class="self">self</span>::{
-    enum_::expand_enum, error::expand_error, export::expand_export, object::expand_object,
-    record::expand_record,
+    derive::DeriveOptions, enum_::expand_enum, error::expand_error, export::expand_export,
+    object::expand_object, record::expand_record,
 };
 
 <span class="kw">struct </span>CustomTypeInfo {
@@ -503,28 +462,28 @@
 
 <span class="attr">#[proc_macro_derive(Record, attributes(uniffi))]
 </span><span class="kw">pub fn </span>derive_record(input: TokenStream) -&gt; TokenStream {
-    expand_record(<span class="macro">parse_macro_input!</span>(input), <span class="bool-val">false</span>)
+    expand_record(<span class="macro">parse_macro_input!</span>(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 <span class="attr">#[proc_macro_derive(Enum)]
 </span><span class="kw">pub fn </span>derive_enum(input: TokenStream) -&gt; TokenStream {
-    expand_enum(<span class="macro">parse_macro_input!</span>(input), <span class="prelude-val">None</span>, <span class="bool-val">false</span>)
+    expand_enum(<span class="macro">parse_macro_input!</span>(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 <span class="attr">#[proc_macro_derive(Object)]
 </span><span class="kw">pub fn </span>derive_object(input: TokenStream) -&gt; TokenStream {
-    expand_object(<span class="macro">parse_macro_input!</span>(input), <span class="bool-val">false</span>)
+    expand_object(<span class="macro">parse_macro_input!</span>(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
 <span class="attr">#[proc_macro_derive(Error, attributes(uniffi))]
 </span><span class="kw">pub fn </span>derive_error(input: TokenStream) -&gt; TokenStream {
-    expand_error(<span class="macro">parse_macro_input!</span>(input), <span class="prelude-val">None</span>, <span class="bool-val">false</span>)
+    expand_error(<span class="macro">parse_macro_input!</span>(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
@@ -550,28 +509,11 @@
         .into()
 }
 
-<span class="comment">// == derive_for_udl and export_for_udl ==
+<span class="comment">// Derive items for UDL mode
 //
-// The Askama templates generate placeholder items wrapped with these attributes. The goal is to
-// have all scaffolding generation go through the same code path.
-//
-// The one difference is that derive-style attributes are not allowed inside attribute macro
-// inputs.  Instead, we take the attributes from the macro invocation itself.
-//
-// Instead of:
-//
-// ```
-// #[derive(Error)
-// #[uniffi(flat_error])
-// enum { .. }
-// ```
-//
-// We have:
-//
-// ```
-// #[derive_error_for_udl(flat_error)]
-// enum { ... }
-//  ```
+// The Askama templates generate placeholder items wrapped with the `#[udl_derive(&lt;kind&gt;)]`
+// attribute.  The macro code then generates derived items based on the input.  This system ensures
+// that the same code path is used for UDL-based code and proc-macros.
 //
 // # Differences between UDL-mode and normal mode
 //
@@ -595,48 +537,22 @@
 //
 // With proc-macros this system isn't so natural.  Instead, we create a blanket implementation
 // for all UT and support for remote types is still TODO.
-
 </span><span class="attr">#[doc(hidden)]
 #[proc_macro_attribute]
-</span><span class="kw">pub fn </span>derive_record_for_udl(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    expand_record(<span class="macro">syn::parse_macro_input!</span>(input), <span class="bool-val">true</span>)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
-}
-
-<span class="attr">#[doc(hidden)]
-#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>derive_enum_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    expand_enum(
-        <span class="macro">syn::parse_macro_input!</span>(input),
-        <span class="prelude-val">Some</span>(<span class="macro">syn::parse_macro_input!</span>(attrs)),
-        <span class="bool-val">true</span>,
+</span><span class="kw">pub fn </span>udl_derive(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+    derive::expand_derive(
+        <span class="macro">parse_macro_input!</span>(attrs),
+        <span class="macro">parse_macro_input!</span>(input),
+        DeriveOptions::udl_derive(),
     )
     .unwrap_or_else(syn::Error::into_compile_error)
     .into()
 }
 
-<span class="attr">#[doc(hidden)]
-#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>derive_error_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    expand_error(
-        <span class="macro">syn::parse_macro_input!</span>(input),
-        <span class="prelude-val">Some</span>(<span class="macro">syn::parse_macro_input!</span>(attrs)),
-        <span class="bool-val">true</span>,
-    )
-    .unwrap_or_else(syn::Error::into_compile_error)
-    .into()
-}
-
-<span class="attr">#[doc(hidden)]
-#[proc_macro_attribute]
-</span><span class="kw">pub fn </span>derive_object_for_udl(_attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
-    expand_object(<span class="macro">syn::parse_macro_input!</span>(input), <span class="bool-val">true</span>)
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
-}
-
-<span class="attr">#[doc(hidden)]
+<span class="comment">// Generate export items for UDL mode
+//
+// This works similarly to `udl_derive`, but for #[export].
+</span><span class="attr">#[doc(hidden)]
 #[proc_macro_attribute]
 </span><span class="kw">pub fn </span>export_for_udl(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     do_export(attrs, input, <span class="bool-val">true</span>)
