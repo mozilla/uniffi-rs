@@ -16,7 +16,7 @@ cargo install cargo-release
     git checkout -b bump-X.Y.Z+vA.B.C
     ```
 
-- Update changelog in [README.md](../README.md) to include the changes that were made since last
+- Update changelog in [CHANGELOG.md](../CHANGELOG.md) to include the changes that were made since last
     version. Commit the changelog with message `Update CHANGELOG.md`.
 
 - Update version numbers in `Cargo.toml` files, creates a commit.

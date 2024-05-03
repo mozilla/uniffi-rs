@@ -4,7 +4,7 @@ public object FfiConverterTimestamp: FfiConverterRustBuffer<java.time.Instant> {
         // Type mismatch (should be u32) but we check for overflow/underflow below
         val nanoseconds = buf.getInt().toLong()
         if (nanoseconds < 0) {
-            throw java.time.DateTimeException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
+            throw IllegalArgumentException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
         }
         if (seconds >= 0) {
             return java.time.Instant.EPOCH.plus(java.time.Duration.ofSeconds(seconds, nanoseconds))

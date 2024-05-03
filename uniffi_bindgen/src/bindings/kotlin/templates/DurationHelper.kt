@@ -5,10 +5,10 @@ public object FfiConverterDuration: FfiConverterRustBuffer<java.time.Duration> {
         // Type mismatch (should be u32) but we check for overflow/underflow below
         val nanoseconds = buf.getInt().toLong()
         if (seconds < 0) {
-            throw java.time.DateTimeException("Duration exceeds minimum or maximum value supported by uniffi")
+            throw IllegalArgumentException("Duration exceeds minimum or maximum value supported by uniffi")
         }
         if (nanoseconds < 0) {
-            throw java.time.DateTimeException("Duration nanoseconds exceed minimum or maximum supported by uniffi")
+            throw IllegalArgumentException("Duration nanoseconds exceed minimum or maximum supported by uniffi")
         }
         return java.time.Duration.ofSeconds(seconds, nanoseconds)
     }

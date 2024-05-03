@@ -5,6 +5,12 @@ scheme, and will be removed in the future. The legacy tags have a corresponding 
 
 ----
 
+### v0.3.3+v0.25.0
+
+- **IMPORTANT**: Kotlin: for out of range Duration/Timestamp values passed into generated bindings,
+    throw `IllegalArgumentException` instead of `java.time.DateTimeException`. This brings down the
+    Android min SDK requirement from 26 to 24.
+
 ### v0.3.2+v0.25.0
 
 - Fix callbacks lifetimes [#17](https://github.com/NordSecurity/uniffi-rs/pull/17)
