@@ -28,4 +28,6 @@ uniffi_meta = { path = "../uniffi_meta", version = "=0.27.2" }
 uniffi_testing = { path = "../uniffi_testing", version = "=0.27.2" }
 uniffi_udl = { path = "../uniffi_udl", version = "=0.27.2" }
 clap = { version = "4", default-features = false, features = ["std", "derive"], optional = true }
-textwrap = "0.16"
+# Don't include the `unicode-linebreak` or `unicode-width` since that functionality isn't needed for
+# docstrings.
+textwrap = { version = "0.16", features=["smawk"], default-features = false }
