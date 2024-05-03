@@ -155,6 +155,43 @@ pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
         .into()
 }
 
+/// `#[remote(<kind>)]` attribute
+///
+/// `remote()` generates the same code that `#[derive(uniffi::<kind>)]` would, except it only
+/// implements the FFI traits for the local UniFfiTag.
+///
+/// Use this to wrap the definition of an item defined in a remote crate.
+/// See https://mozilla.github.io/uniffi-rs/udl/remote_ext_types.html for details.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    derive::expand_derive(
+        parse_macro_input!(attrs),
+        parse_macro_input!(input),
+        DeriveOptions::remote(),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
+}
+
+/// `#[udl_remote(<kind>)]` attribute
+///
+/// Alternate version of `#[remote]` for UDL-based generation
+///
+/// The difference is that it doesn't generate metadata items, since we get those from parsing the
+/// UDL.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn udl_remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    derive::expand_derive(
+        parse_macro_input!(attrs),
+        parse_macro_input!(input),
+        DeriveOptions::udl_remote(),
+    )
+    .unwrap_or_else(syn::Error::into_compile_error)
+    .into()
+}
+
 // Derive items for UDL mode
 //
 // The Askama templates generate placeholder items wrapped with the `#[udl_derive(<kind>)]`

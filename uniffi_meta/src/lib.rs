@@ -297,6 +297,7 @@ pub enum Radix {
 pub struct RecordMetadata {
     pub module_path: String,
     pub name: String,
+    pub remote: bool, // only used when generating scaffolding from UDL
     pub fields: Vec<FieldMetadata>,
     pub docstring: Option<String>,
 }
@@ -313,6 +314,7 @@ pub struct FieldMetadata {
 pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
+    pub remote: bool, // only used when generating scaffolding from UDL
     pub forced_flatness: Option<bool>,
     pub variants: Vec<VariantMetadata>,
     pub discr_type: Option<Type>,
@@ -332,6 +334,7 @@ pub struct VariantMetadata {
 pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
+    pub remote: bool, // only used when generating scaffolding from UDL
     pub imp: types::ObjectImpl,
     pub docstring: Option<String>,
 }

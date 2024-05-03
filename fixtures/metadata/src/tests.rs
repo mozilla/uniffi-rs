@@ -181,6 +181,7 @@ mod test_metadata {
             RecordMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Person".into(),
+                remote: false,
                 fields: vec![
                     FieldMetadata {
                         name: "name".into(),
@@ -207,6 +208,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Weapon".into(),
+                remote: false,
                 forced_flatness: None,
                 discr_type: None,
                 variants: vec![
@@ -242,6 +244,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "State".into(),
+                remote: false,
                 forced_flatness: None,
                 discr_type: None,
                 variants: vec![
@@ -290,6 +293,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ReprU8".into(),
+                remote: false,
                 forced_flatness: None,
                 discr_type: Some(Type::UInt8),
                 variants: vec![
@@ -325,6 +329,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "NoRepr".into(),
+                remote: false,
                 forced_flatness: None,
                 discr_type: None,
                 variants: vec![VariantMetadata {
@@ -346,6 +351,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "FlatError".into(),
+                remote: false,
                 forced_flatness: Some(true),
                 discr_type: None,
                 variants: vec![
@@ -375,6 +381,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ComplexError".into(),
+                remote: false,
                 forced_flatness: Some(false),
                 discr_type: None,
                 variants: vec![
@@ -423,6 +430,7 @@ mod test_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Calculator".into(),
+                remote: false,
                 imp: ObjectImpl::Struct,
                 docstring: None,
             },
@@ -731,6 +739,7 @@ mod test_function_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "CalculatorDisplay".into(),
+                remote: false,
                 imp: ObjectImpl::Trait,
                 docstring: None,
             },
@@ -744,6 +753,7 @@ mod test_function_metadata {
             ObjectMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "TraitWithForeign".into(),
+                remote: false,
                 imp: ObjectImpl::CallbackTrait,
                 docstring: None,
             },

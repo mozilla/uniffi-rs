@@ -70,6 +70,23 @@ impl DeriveOptions {
     /// Construct DeriveOptions for `udl_derive`
     pub fn udl_derive() -> Self {
         Self {
+            // TODO: change this to false
+            local_tag: true,
+            generate_metadata: false,
+        }
+    }
+
+    /// DeriveOptions for `#[remote]`
+    pub fn remote() -> Self {
+        Self {
+            local_tag: true,
+            generate_metadata: true,
+        }
+    }
+
+    /// DeriveOptions for `#[udl_remote]`
+    pub fn udl_remote() -> Self {
+        Self {
             local_tag: true,
             generate_metadata: false,
         }

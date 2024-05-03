@@ -17,6 +17,7 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
+            remote: attributes.contains_remote(),
             forced_flatness: None,
             discr_type: None,
             variants: self
@@ -48,6 +49,7 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
+            remote: attributes.contains_remote(),
             forced_flatness: Some(false),
             variants: self
                 .members

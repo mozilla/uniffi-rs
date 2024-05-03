@@ -299,6 +299,7 @@ impl<'a> MetadataReader<'a> {
         Ok(RecordMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
+            remote: false, // only used when generating scaffolding from UDL
             fields: self.read_fields()?,
             docstring: self.read_optional_long_string()?,
         })
@@ -327,6 +328,7 @@ impl<'a> MetadataReader<'a> {
         Ok(EnumMetadata {
             module_path,
             name,
+            remote: false, // only used when generating scaffolding from UDL
             forced_flatness,
             discr_type,
             variants,
@@ -339,6 +341,7 @@ impl<'a> MetadataReader<'a> {
         Ok(ObjectMetadata {
             module_path: self.read_string()?,
             name: self.read_string()?,
+            remote: false, // only used when generating scaffolding from UDL
             imp,
             docstring: self.read_optional_long_string()?,
         })

@@ -85,6 +85,7 @@ pub struct Object {
     /// How this object is implemented in Rust
     pub(super) imp: ObjectImpl,
     pub(super) module_path: String,
+    pub(super) remote: bool,
     pub(super) constructors: Vec<Constructor>,
     pub(super) methods: Vec<Method>,
     // The "trait" methods - they have a (presumably "well known") name, and
@@ -125,6 +126,10 @@ impl Object {
 
     pub fn imp(&self) -> &ObjectImpl {
         &self.imp
+    }
+
+    pub fn remote(&self) -> bool {
+        self.remote
     }
 
     pub fn is_trait_interface(&self) -> bool {
@@ -309,6 +314,7 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             module_path: meta.module_path,
             name: meta.name,
             imp: meta.imp,
+            remote: meta.remote,
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
