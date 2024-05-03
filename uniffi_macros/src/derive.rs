@@ -70,8 +70,7 @@ impl DeriveOptions {
     /// Construct DeriveOptions for `udl_derive`
     pub fn udl_derive() -> Self {
         Self {
-            // TODO: change this to false
-            local_tag: true,
+            local_tag: false,
             generate_metadata: false,
         }
     }

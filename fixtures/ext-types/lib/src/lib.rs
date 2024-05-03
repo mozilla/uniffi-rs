@@ -11,17 +11,9 @@ use uniffi_one::{
 use uniffi_sublib::SubLibType;
 use url::Url;
 
-// #1988
-uniffi::ffi_converter_forward!(
-    ext_types_custom::Ouid,
-    ext_types_custom::UniFfiTag,
-    crate::UniFfiTag
-);
-uniffi::ffi_converter_forward!(
-    ext_types_custom::ANestedGuid,
-    ext_types_custom::UniFfiTag,
-    crate::UniFfiTag
-);
+// Remote types require a macro call in the Rust source
+
+uniffi::remote_type!(Url, custom_types);
 
 pub struct CombinedType {
     pub uoe: UniffiOneEnum,
