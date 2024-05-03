@@ -23,8 +23,8 @@
 /// "UT" means an arbitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerReturn, MetadataBuffer,
-    Result, RustBuffer, TypeId, UnexpectedUniFFICallbackError,
+    ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerError, LowerReturn,
+    MetadataBuffer, Result, RustBuffer, TypeId, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -32,7 +32,7 @@ use paste::paste;
 use std::{
     collections::HashMap,
     convert::TryFrom,
-    error::Error,
+    fmt::{Debug, Display},
     sync::Arc,
     time::{Duration, SystemTime},
 };
@@ -425,14 +425,17 @@ derive_ffi_traits!(blanket SystemTime);
 // Note that this means we don't get specialized return handling.  For example, if we could return
 // an `Option<Result<>>` we would always return that type directly and never throw.
 derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Option<T> where Option<T>: Lower<UT>);
+derive_ffi_traits!(impl<T, UT> LowerError<UT> for Option<T> where Option<T>: Lower<UT>);
 derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Option<T> where Option<T>: Lift<UT>);
 derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Option<T> where Option<T>: Lift<UT>);
 
 derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Vec<T> where Vec<T>: Lower<UT>);
+derive_ffi_traits!(impl<T, UT> LowerError<UT> for Vec<T> where Vec<T>: Lower<UT>);
 derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Vec<T> where Vec<T>: Lift<UT>);
 derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Vec<T> where Vec<T>: Lift<UT>);
 
 derive_ffi_traits!(impl<K, V, UT> LowerReturn<UT> for HashMap<K, V> where HashMap<K, V>: Lower<UT>);
+derive_ffi_traits!(impl<K, V, UT> LowerError<UT> for HashMap<K, V> where HashMap<K, V>: Lower<UT>);
 derive_ffi_traits!(impl<K, V, UT> LiftReturn<UT> for HashMap<K, V> where HashMap<K, V>: Lift<UT>);
 derive_ffi_traits!(impl<K, V, UT> LiftRef<UT> for HashMap<K, V> where HashMap<K, V>: Lift<UT>);
 
@@ -440,6 +443,7 @@ derive_ffi_traits!(impl<K, V, UT> LiftRef<UT> for HashMap<K, V> where HashMap<K,
 derive_ffi_traits!(impl<T, UT> Lower<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> Lift<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Arc<T> where Arc<T>: Lower<UT>, T: ?Sized);
+derive_ffi_traits!(impl<T, UT> LowerError<UT> for Arc<T> where Arc<T>: Lower<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Arc<T> where Arc<T>: Lift<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Arc<T> where Arc<T>: Lift<UT>, T: ?Sized);
 derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<UT>, T: ?Sized);
@@ -472,14 +476,14 @@ impl<UT> TypeId<UT> for () {
 unsafe impl<UT, R, E> LowerReturn<UT> for Result<R, E>
 where
     R: LowerReturn<UT>,
-    E: Lower<UT> + Error + Send + Sync + 'static,
+    E: LowerError<UT> + Display + Debug + Send + Sync + 'static,
 {
     type ReturnType = R::ReturnType;
 
     fn lower_return(v: Self) -> Result<Self::ReturnType, RustBuffer> {
         match v {
             Ok(r) => R::lower_return(r),
-            Err(e) => Err(E::lower_into_rust_buffer(e)),
+            Err(e) => Err(E::lower_error(e)),
         }
     }
 

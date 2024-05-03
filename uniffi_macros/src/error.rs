@@ -60,7 +60,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
     let lower_impl_spec = options.ffi_impl_header("Lower", ident);
     let lift_impl_spec = options.ffi_impl_header("Lift", ident);
     let type_id_impl_spec = options.ffi_impl_header("TypeId", ident);
-    let derive_ffi_traits = options.derive_ffi_traits(ident, &["ConvertError"]);
+    let derive_ffi_traits = options.derive_ffi_traits(ident, &["LowerError", "ConvertError"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),

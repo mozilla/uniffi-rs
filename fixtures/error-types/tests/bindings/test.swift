@@ -5,6 +5,12 @@ do {
 } catch let e as ErrorInterface {
     assert(String(describing: e) == "because uniffi told me so\n\nCaused by:\n    oops")
 }
+do {
+    try oopsNowrap()
+    fatalError("Should have thrown")
+} catch let e as ErrorInterface {
+    assert(String(describing: e) == "because uniffi told me so\n\nCaused by:\n    oops")
+}
 
 do {
     try toops()

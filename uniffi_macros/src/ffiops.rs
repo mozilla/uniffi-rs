@@ -67,6 +67,13 @@ pub fn lower_return(ty: impl ToTokens) -> TokenStream {
     }
 }
 
+/// Lower error function
+pub fn lower_error(ty: impl ToTokens) -> TokenStream {
+    quote! {
+        <#ty as ::uniffi::LowerError<crate::UniFfiTag>>::lower_error
+    }
+}
+
 /// Lift return type
 pub fn lift_return_type(ty: impl ToTokens) -> TokenStream {
     quote! {
