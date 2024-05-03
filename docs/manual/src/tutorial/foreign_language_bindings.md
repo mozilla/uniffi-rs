@@ -1,6 +1,8 @@
 # Foreign-language bindings
 
-As stated in the [Overview](../Overview.md), this library and tutorial does not cover *how* to ship a Rust library on mobile, but how to generate bindings for it, so this section will only cover that.
+By now you have setup your crate and `cargo build` has successfully created your library.
+
+As stated in the [Overview](../Overview.md), UniFFI does not help shipping a Rust library on mobile, only how to generate bindings for it.
 
 ## Creating the bindgen binary
 
@@ -38,19 +40,20 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 
 Then your can run `uniffi-bindgen` from any create in your project using `cargo run -p uniffi-bindgen [args]`
 
-## Running uniffi-bindgen using a library file (RECOMMENDED)
+## Running uniffi-bindgen using a library file
 
 Use `generate --library` to generate foreign bindings by using a cdylib file built for your library.
-This flag was added in UniFFI 0.24 and can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
-The plan is to make library mode the default in a future UniFFI version, and it is highly recommended to specify the flag for now (because some features simply don't work otherwise).
+This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
+This should be used where possible - some "external type" features don't work otherwise.
 
-Taking `example/arithmetic` as an example, you can generate the bindings with:
+In our example, we generate the bindings with:
 ```
 cargo build --release
-cargo run --bin uniffi-bindgen generate --library target/release/libarithmetical.so --language kotlin --out-dir out
+cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
 ```
+(maybe `.dylib`, good luck with `.dll`!)
 
-Then check out the `out` directory.
+Then look in the `out` directory.
 
 When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.
 
@@ -63,23 +66,25 @@ Library mode comes with some extra requirements:
 
 ## Running uniffi-bindgen with a single UDL file
 
+As noted above, library mode is encouraged - building from a single UDL is not recommended.
+
 Use the `generate` command to generate bindings by specifying a UDL file.
 
 ### Kotlin
 
-From the `example/arithmetic` directory, run:
+From the example directory, run:
 ```
-cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language kotlin
+cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
 ```
-then have a look at `src/uniffi/arithmetic/arithmetic.kt`
+then have a look at `src/uniffi/math/math.kt`
 
 ### Swift
 
 Run
 ```
-cargo run --bin uniffi-bindgen generate src/arithmetic.udl --language swift
+cargo run --bin uniffi-bindgen generate src/math.udl --language swift
 ```
-then check out `src/arithmetic.swift`
+then check out `src/math.swift`
 
 Note that these commands could be integrated as part of your gradle/Xcode build process.
 
