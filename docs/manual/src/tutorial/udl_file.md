@@ -17,7 +17,8 @@ namespace math {
 
 Here you can note multiple things:
 
-- The `namespace` directive: it will be the name of your Kotlin/Swift package. It **must** be present in any udl file, even if there ain't any exposed function (e.g. `namespace foo {}`).
+- The `namespace` directive: it will be the name of your Kotlin/Swift package. It **must** be present in any udl file, even if there ain't any exposed functions (e.g. `namespace foo {}`).
+It will typically your crate name.
 - The `add` function is in the `namespace` block. That's because on the Rust side it is a top-level _function_, we will see later how to to handle _methods_.
 - Rust's `u32` is also UDL's `u32`, but it is not always true! See the [Built-in Types](../udl/builtin_types.md) chapter for more information on mapping types between Rust and UDL.
 
