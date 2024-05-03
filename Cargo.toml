@@ -22,6 +22,7 @@ members = [
   "examples/sprites",
   "examples/todolist",
   "examples/traits",
+  "examples/distributing/uniffi-rust-to-python-library",
 
   "fixtures/benchmarks",
   "fixtures/coverall",

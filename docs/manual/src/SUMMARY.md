@@ -38,6 +38,10 @@
 
   - [Python](./python/configuration.md)
 
+# Python
+
+- [setup project](./python/setup.md)
+
 # Internals
 - [Design Principles](./internals/design_principles.md)
 - [Navigating the Code](./internals/crates.md)
