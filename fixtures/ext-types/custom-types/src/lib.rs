@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 // A trivial guid, declared as `[Custom]` in the UDL.
 pub struct Guid(pub String);
 
@@ -134,6 +136,23 @@ uniffi::custom_newtype!(ANestedOuid, Ouid);
 #[uniffi::export]
 fn get_nested_ouid(nouid: Option<ANestedOuid>) -> ANestedOuid {
     nouid.unwrap_or_else(|| ANestedOuid(Ouid("ANestedOuid".to_string())))
+}
+
+// Dependent types that are nested deeper inside of other types
+// need to also be taken into account when ordering aliases.
+#[derive(PartialEq, Eq, Hash)]
+pub struct StringWrapper(pub String);
+uniffi::custom_newtype!(StringWrapper, String);
+
+pub struct IntWrapper(pub u32);
+uniffi::custom_newtype!(IntWrapper, u32);
+
+pub struct MapUsingStringWrapper(pub HashMap<StringWrapper, IntWrapper>);
+uniffi::custom_newtype!(MapUsingStringWrapper, HashMap<StringWrapper, IntWrapper>);
+
+#[uniffi::export]
+fn get_map_using_string_wrapper(maybe_map: Option<MapUsingStringWrapper>) -> MapUsingStringWrapper {
+    maybe_map.unwrap_or_else(|| MapUsingStringWrapper(HashMap::new()))
 }
 
 // And custom types around other objects.
