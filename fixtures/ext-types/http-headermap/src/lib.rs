@@ -8,14 +8,17 @@ pub struct HttpHeader {
     pub(crate) val: String,
 }
 
-/// Expose `http::HeaderMap` to Uniffi.
-impl crate::UniffiCustomTypeConverter for http::HeaderMap {
-    /// http::HeaderMap is a multimap so there may be multiple values
-    /// per key. We represent this as a vector of `HttpHeader` (AKA
-    /// `key` & `val`) where `key` may repeat.
-    type Builtin = Vec<HttpHeader>;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
+// Expose `http::HeaderMap` to Uniffi.
+uniffi::custom_type!(HeaderMap, Vec<HttpHeader>, {
+    from_custom: |obj| {
+        obj.iter()
+            .map(|(k, v)| HttpHeader {
+                key: k.as_str().to_string(),
+                val: v.to_str().unwrap().to_string(),
+            })
+            .collect()
+    },
+    try_into_custom: |val| {
         Ok(http::HeaderMap::from_iter(val.into_iter().filter_map(
             |h| {
                 let n = http::HeaderName::from_str(&h.key).ok()?;
@@ -23,17 +26,10 @@ impl crate::UniffiCustomTypeConverter for http::HeaderMap {
                 Some((n, v))
             },
         )))
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.iter()
-            .map(|(k, v)| HttpHeader {
-                key: k.as_str().to_string(),
-                val: v.to_str().unwrap().to_string(),
-            })
-            .collect()
-    }
-}
+    },
+    // Must specify remote since http::HeaderMap is defined in a different crate.
+    remote,
+});
 
 pub fn get_headermap(v: String) -> HeaderMap {
     let n = http::HeaderName::from_str("test-header").unwrap();

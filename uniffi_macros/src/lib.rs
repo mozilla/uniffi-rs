@@ -10,10 +10,7 @@
 use camino::Utf8Path;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{
-    parse::{Parse, ParseStream},
-    parse_macro_input, Ident, LitStr, Path, Token,
-};
+use syn::{parse_macro_input, LitStr};
 
 mod custom;
 mod default;
@@ -33,20 +30,6 @@ use self::{
     derive::DeriveOptions, enum_::expand_enum, error::expand_error, export::expand_export,
     object::expand_object, record::expand_record,
 };
-
-struct CustomTypeInfo {
-    ident: Ident,
-    builtin: Path,
-}
-
-impl Parse for CustomTypeInfo {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let ident = input.parse()?;
-        input.parse::<Token![,]>()?;
-        let builtin = input.parse()?;
-        Ok(Self { ident, builtin })
-    }
-}
 
 /// A macro to build testcases for a component's generated bindings.
 ///
@@ -134,23 +117,18 @@ pub fn derive_error(input: TokenStream) -> TokenStream {
         .into()
 }
 
-/// Generate the `FfiConverter` implementation for a Custom Type - ie,
-/// for a `<T>` which implements `UniffiCustomTypeConverter`.
+/// Generate FFI code for a custom type
 #[proc_macro]
 pub fn custom_type(tokens: TokenStream) -> TokenStream {
-    let input: CustomTypeInfo = syn::parse_macro_input!(tokens);
-    custom::expand_ffi_converter_custom_type(&input.ident, &input.builtin, true)
+    custom::expand_custom_type(parse_macro_input!(tokens))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
-/// Generate the `FfiConverter` and the `UniffiCustomTypeConverter` implementations for a
-/// Custom Type - ie, for a `<T>` which implements `UniffiCustomTypeConverter` via the
-/// newtype idiom.
+/// Generate FFI code for a custom newtype
 #[proc_macro]
 pub fn custom_newtype(tokens: TokenStream) -> TokenStream {
-    let input: CustomTypeInfo = syn::parse_macro_input!(tokens);
-    custom::expand_ffi_converter_custom_newtype(&input.ident, &input.builtin, true)
+    custom::expand_custom_newtype(parse_macro_input!(tokens))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

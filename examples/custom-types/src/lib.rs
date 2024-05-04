@@ -1,98 +1,72 @@
 use url::Url;
 
 // A custom guid defined via a proc-macro (ie, not referenced in the UDL)
-// By far the easiest way to define custom types.
 pub struct ExampleCustomType(String);
+
+// custom_newtype! is the easiest way to define custom types.
 uniffi::custom_newtype!(ExampleCustomType, String);
 
 // Custom Handle type which trivially wraps an i64.
 pub struct Handle(pub i64);
 
+// This one could also use custom_newtype!, but let's use Into and TryFrom instead
+uniffi::custom_type!(Handle, i64);
+
+// Defining `From<Handle> for i64` also gives us `Into<i64> for Handle`
+impl From<Handle> for i64 {
+    fn from(val: Handle) -> Self {
+        val.0
+    }
+}
+
+impl TryFrom<i64> for Handle {
+    type Error = std::convert::Infallible;
+
+    fn try_from(val: i64) -> Result<Handle, Self::Error> {
+        Ok(Handle(val))
+    }
+}
+
 // Custom TimeIntervalMs type which trivially wraps an i64.
 pub struct TimeIntervalMs(pub i64);
+
+// Another custom type, this time we will define an infallible conversion back to Rust.
+uniffi::custom_type!(TimeIntervalMs, i64);
+
+impl From<TimeIntervalMs> for i64 {
+    fn from(val: TimeIntervalMs) -> Self {
+        val.0
+    }
+}
+// Defining `From<i64> for Handle` also gives us `Into<Handle> for i64`
+impl From<i64> for TimeIntervalMs {
+    fn from(val: i64) -> TimeIntervalMs {
+        TimeIntervalMs(val)
+    }
+}
 
 // Custom TimeIntervalSecDbl type which trivially wraps an f64.
 pub struct TimeIntervalSecDbl(pub f64);
 
+// custom_type! can take an additional parameter with closures to control the conversions
+uniffi::custom_type!(TimeIntervalSecDbl, f64, {
+    from_custom: |time_interval| time_interval.0,
+    try_into_custom: |val| Ok(TimeIntervalSecDbl(val)),
+});
+
 // Custom TimeIntervalSecFlt type which trivially wraps an f32.
 pub struct TimeIntervalSecFlt(pub f32);
 
-// We must implement the UniffiCustomTypeConverter trait for each custom type on the scaffolding side
-impl UniffiCustomTypeConverter for Handle {
-    // The `Builtin` type will be used to marshall values across the FFI
-    type Builtin = i64;
+// Let's go back to custom_newtype for this one.
+uniffi::custom_newtype!(TimeIntervalSecFlt, f32);
 
-    // Convert Builtin to our custom type
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Handle(val))
-    }
-
-    // Convert our custom type to Builtin
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.0
-    }
-}
-
-// Use `url::Url` as a custom type, with `String` as the Builtin
-impl UniffiCustomTypeConverter for Url {
-    type Builtin = String;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Url::parse(&val)?)
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.into()
-    }
-}
-
-// We must implement the UniffiCustomTypeConverter trait for each custom type on the scaffolding side
-impl UniffiCustomTypeConverter for TimeIntervalMs {
-    // The `Builtin` type will be used to marshall values across the FFI
-    type Builtin = i64;
-
-    // Convert Builtin to our custom type
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(TimeIntervalMs(val))
-    }
-
-    // Convert our custom type to Builtin
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.0
-    }
-}
-
-// We must implement the UniffiCustomTypeConverter trait for each custom type on the scaffolding side
-impl UniffiCustomTypeConverter for TimeIntervalSecDbl {
-    // The `Builtin` type will be used to marshall values across the FFI
-    type Builtin = f64;
-
-    // Convert Builtin to our custom type
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(TimeIntervalSecDbl(val))
-    }
-
-    // Convert our custom type to Builtin
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.0
-    }
-}
-
-// We must implement the UniffiCustomTypeConverter trait for each custom type on the scaffolding side
-impl UniffiCustomTypeConverter for TimeIntervalSecFlt {
-    // The `Builtin` type will be used to marshall values across the FFI
-    type Builtin = f32;
-
-    // Convert Builtin to our custom type
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(TimeIntervalSecFlt(val))
-    }
-
-    // Convert our custom type to Builtin
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.0
-    }
-}
+// `Url` gets converted to a `String` to pass across the FFI.
+// Use the `remote` param when types are defined in a different crate
+uniffi::custom_type!(Url, String, {
+    try_into_custom: |val| Ok(Url::parse(&val)?),
+    from_custom: |obj| obj.into(),
+    remote,
+});
 
 // And a little struct and function that ties them together.
 pub struct CustomTypesDemo {

@@ -215,14 +215,6 @@ pub(crate) fn tagged_impl_header(
     }
 }
 
-pub(crate) fn derive_all_ffi_traits(ty: &Ident, udl_mode: bool) -> TokenStream {
-    if udl_mode {
-        quote! { ::uniffi::derive_ffi_traits!(local #ty); }
-    } else {
-        quote! { ::uniffi::derive_ffi_traits!(blanket #ty); }
-    }
-}
-
 pub(crate) fn derive_ffi_traits(
     ty: impl ToTokens,
     udl_mode: bool,
@@ -258,6 +250,9 @@ pub mod kw {
     syn::custom_keyword!(with_try_read);
     syn::custom_keyword!(name);
     syn::custom_keyword!(non_exhaustive);
+    syn::custom_keyword!(from_custom);
+    syn::custom_keyword!(try_into_custom);
+    syn::custom_keyword!(remote);
     syn::custom_keyword!(Record);
     syn::custom_keyword!(Enum);
     syn::custom_keyword!(Error);
