@@ -21,7 +21,7 @@ a [compatible error type](./udl/errors.md) - see below for more on error handlin
 
 For example:
 
-```rust,no_run
+```rust
 pub trait Keychain: Send + Sync + Debug {
   fn get(&self, key: String) -> Result<Option<String>, KeyChainError>;
   fn put(&self, key: String, value: String) -> Result<(), KeyChainError>;
@@ -57,7 +57,7 @@ interface Authenticator {
 
 In Rust we'd write:
 
-```rust,no_run
+```rust
 struct Authenticator {
   keychain: Arc<dyn Keychain>,
 }

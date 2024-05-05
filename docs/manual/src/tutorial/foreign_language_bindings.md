@@ -1,6 +1,7 @@
 # Foreign-language bindings
 
 By now you have setup your crate and `cargo build` has successfully created your library.
+This describes how to generate foreign bindings.
 
 As stated in the [Overview](../Overview.md), UniFFI does not help shipping a Rust library on mobile, only how to generate bindings for it.
 

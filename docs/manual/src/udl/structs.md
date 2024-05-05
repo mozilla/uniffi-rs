@@ -6,7 +6,7 @@ Think of them like a Rust struct without any methods.
 
 A Rust struct like this:
 
-```rust,no_run
+```rust
 struct TodoEntry {
     done: bool,
     due_date: u64,
@@ -50,7 +50,7 @@ dictionary TodoEntry {
 
 Then the corresponding Rust code would need to look like this:
 
-```rust,no_run
+```rust
 struct TodoEntry {
     owner: std::sync::Arc<User>,
     text: String,
@@ -102,7 +102,7 @@ dictionary TodoEntry {
 
 The corresponding Rust struct would need to look like this:
 
-```rust,no_run
+```rust
 struct TodoEntry {
     done: bool,
     text: Option<String>,
