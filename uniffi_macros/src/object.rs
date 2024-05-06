@@ -99,6 +99,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
     let ident = object.ident();
     let impl_spec = options.ffi_impl_header("FfiConverterArc", ident);
     let lower_return_impl_spec = options.ffi_impl_header("LowerReturn", ident);
+    let lower_error_impl_spec = options.ffi_impl_header("LowerError", ident);
     let type_id_impl_spec = options.ffi_impl_header("TypeId", ident);
     let lift_ref_impl_spec = options.ffi_impl_header("LiftRef", ident);
     let mod_path = match mod_path() {
@@ -106,11 +107,12 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         Err(e) => return e.into_compile_error(),
     };
     let arc_self_type = quote! { ::std::sync::Arc<Self> };
-    let lower = ffiops::lower(&arc_self_type);
-    let type_id_meta = ffiops::type_id_meta(&arc_self_type);
-    let try_lift = ffiops::try_lift(&arc_self_type);
-    let lower_return_type = ffiops::lower_return_type(&arc_self_type);
-    let lower_return = ffiops::lower_return(&arc_self_type);
+    let lower_arc = ffiops::lower(&arc_self_type);
+    let type_id_meta_arc = ffiops::type_id_meta(&arc_self_type);
+    let try_lift_arc = ffiops::try_lift(&arc_self_type);
+    let lower_return_type_arc = ffiops::lower_return_type(&arc_self_type);
+    let lower_return_arc = ffiops::lower_return(&arc_self_type);
+    let lower_error_arc = ffiops::lower_error(&arc_self_type);
 
     quote! {
         // All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
@@ -159,7 +161,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// function for other types may lead to undefined behaviour.
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower(obj) as u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower_arc(obj) as u64);
             }
 
             /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
@@ -170,7 +172,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                #try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                #try_lift_arc(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
@@ -179,10 +181,16 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         }
 
         unsafe #lower_return_impl_spec {
-            type ReturnType = #lower_return_type;
+            type ReturnType = #lower_return_type_arc;
 
             fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustBuffer> {
-                #lower_return(::std::sync::Arc::new(obj))
+                #lower_return_arc(::std::sync::Arc::new(obj))
+            }
+        }
+
+        unsafe #lower_error_impl_spec {
+            fn lower_error(obj: Self) -> ::uniffi::RustBuffer {
+                #lower_error_arc(::std::sync::Arc::new(obj))
             }
         }
 
@@ -191,7 +199,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         }
 
         #type_id_impl_spec {
-            const TYPE_ID_META: ::uniffi::MetadataBuffer = #type_id_meta;
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = #type_id_meta_arc;
         }
     }
 }

@@ -15,6 +15,15 @@ try {
 }
 
 try {
+    oopsNowrap()
+    throw RuntimeException("Should have failed")
+} catch (e: ErrorInterface) {
+    assert(e.toString() == "because uniffi told me so\n\nCaused by:\n    oops")
+    assert(e.chain().size == 2)
+    assert(e.link(0U) == "because uniffi told me so")
+}
+
+try {
     toops()
     throw RuntimeException("Should have failed")
 } catch (e: ErrorTrait) {

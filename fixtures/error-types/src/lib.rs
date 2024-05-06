@@ -27,13 +27,22 @@ impl From<anyhow::Error> for ErrorInterface {
     }
 }
 
-// must do explicit conversion...
+// Test an interface as the error type
 fn oops() -> Result<(), Arc<ErrorInterface>> {
+    // must do explicit conversion to convert anyhow::Error into ErrorInterface
     Err(Arc::new(
         anyhow::Error::msg("oops")
             .context("because uniffi told me so")
             .into(),
     ))
+}
+
+// Like `oops`, but let UniFFI handle wrapping the interface with an arc
+fn oops_nowrap() -> Result<(), ErrorInterface> {
+    // must do explicit conversion to convert anyhow::Error into ErrorInterface
+    Err(anyhow::Error::msg("oops")
+        .context("because uniffi told me so")
+        .into())
 }
 
 #[uniffi::export]

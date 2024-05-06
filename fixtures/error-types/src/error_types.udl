@@ -2,6 +2,9 @@ namespace error_types {
     [Throws=ErrorInterface]
     void oops();
 
+    [Throws=ErrorInterface]
+    void oops_nowrap();
+
     ErrorInterface get_error(string message);
 
     [Throws=RichError]

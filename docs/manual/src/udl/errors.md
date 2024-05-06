@@ -83,9 +83,9 @@ impl From<anyhow::Error> for MyError {
 You can't yet use `anyhow` directly in your exposed functions - you need a wrapper:
 
 ```rs
-fn oops() -> Result<(), Arc<MyError>> {
+fn oops() -> Result<(), MyError> {
     let e = anyhow::Error::msg("oops");
-    Err(Arc::new(e.into()))
+    Err(e.into())
 }
 ```
 then in Python:

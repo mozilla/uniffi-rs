@@ -12,15 +12,15 @@
 //! The main traits form a sort-of tree structure from general to specific:
 //! ```ignore
 //!
-//!                   [FfiConverter]
-//!                        |
-//!           -----------------------------
-//!           |                           |
-//!       [Lower]                      [Lift]
-//!           |                           |
-//!           |                       --------------
-//!           |                       |            |
-//!       [LowerReturn]           [LiftRef]  [LiftReturn]
+//!                         [FfiConverter]
+//!                               |
+//!            -----------------------------------------
+//!            |                                       |
+//!         [Lower]                                  [Lift]
+//!            |                                       |
+//!        -----------------                    --------------
+//!        |               |                    |            |
+//!   [LowerReturn]  [LowerError]          [LiftRef]  [LiftReturn]
 //! ```
 //!
 //! There's also:
@@ -253,7 +253,7 @@ pub unsafe trait Lower<UT>: Sized {
 
 /// Return Rust values to the foreign code
 ///
-/// This is usually derived from [Lift], but we special case types like `Result<>` and `()`.
+/// This is usually derived from [Lower], but we special case types like `Result<>` and `()`.
 ///
 /// ## Safety
 ///
@@ -286,6 +286,26 @@ pub unsafe trait LowerReturn<UT>: Sized {
     fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> Self {
         panic!("Failed to convert arg '{arg_name}': {e}")
     }
+}
+
+/// Return Rust error values
+///
+/// This is implemented for types that can be the `E` param in `Result<T, E>`.
+/// It's is usually derived from [Lower], but we sometimes special case it.
+///
+/// ## Safety
+///
+/// All traits are unsafe (implementing it requires `unsafe impl`) because we can't guarantee
+/// that it's safe to pass your type out to foreign-language code and back again. Buggy
+/// implementations of this trait might violate some assumptions made by the generated code,
+/// or might not match with the corresponding code in the generated foreign-language bindings.
+/// These traits should not be used directly, only in generated code, and the generated code should
+/// have fixture tests to test that everything works correctly together.
+pub unsafe trait LowerError<UT>: Sized {
+    /// Lower this value for scaffolding function return
+    ///
+    /// Lower the type into a RustBuffer.  `RustCallStatus.error_buf` will be set to this.
+    fn lower_error(obj: Self) -> RustBuffer;
 }
 
 /// Return foreign values to Rust
@@ -467,6 +487,7 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl<UT> Lower<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> Lift<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> LowerReturn<UT> for $ty);
+        $crate::derive_ffi_traits!(impl<UT> LowerError<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> LiftReturn<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> LiftRef<UT> for $ty);
         $crate::derive_ffi_traits!(impl<UT> ConvertError<UT> for $ty);
@@ -477,6 +498,7 @@ macro_rules! derive_ffi_traits {
         $crate::derive_ffi_traits!(impl Lower<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl Lift<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl LowerReturn<crate::UniFfiTag> for $ty);
+        $crate::derive_ffi_traits!(impl LowerError<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl LiftReturn<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl LiftRef<crate::UniFfiTag> for $ty);
         $crate::derive_ffi_traits!(impl ConvertError<crate::UniFfiTag> for $ty);
@@ -520,6 +542,15 @@ macro_rules! derive_ffi_traits {
 
             fn lower_return(obj: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustBuffer> {
                 Ok(<Self as $crate::Lower<$ut>>::lower(obj))
+            }
+        }
+    };
+
+    (impl $(<$($generic:ident),*>)? $(::uniffi::)? LowerError<$ut:path> for $ty:ty $(where $($where:tt)*)?) => {
+        unsafe impl $(<$($generic),*>)* $crate::LowerError<$ut> for $ty $(where $($where)*)*
+        {
+            fn lower_error(obj: Self) -> $crate::RustBuffer {
+                <Self as $crate::Lower<$ut>>::lower_into_rust_buffer(obj)
             }
         }
     };

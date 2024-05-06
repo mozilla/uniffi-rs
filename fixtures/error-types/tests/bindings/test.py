@@ -14,6 +14,13 @@ class TestErrorTypes(unittest.TestCase):
         except ErrorInterface as e:
            self.assertEqual(str(e), "because uniffi told me so\n\nCaused by:\n    oops")
 
+    def test_normal_catch_with_implit_arc_wrapping(self):
+        try:
+            oops_nowrap()
+            self.fail("must fail")
+        except ErrorInterface as e:
+           self.assertEqual(str(e), "because uniffi told me so\n\nCaused by:\n    oops")
+
     def test_error_interface(self):
         with self.assertRaises(ErrorInterface) as cm:
             oops()
