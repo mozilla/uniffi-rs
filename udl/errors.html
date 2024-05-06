@@ -1517,9 +1517,9 @@ impl From&lt;anyhow::Error&gt; for MyError {
 }
 </code></pre>
 <p>You can't yet use <code>anyhow</code> directly in your exposed functions - you need a wrapper:</p>
-<pre><code class="language-rs">fn oops() -&gt; Result&lt;(), Arc&lt;MyError&gt;&gt; {
+<pre><code class="language-rs">fn oops() -&gt; Result&lt;(), MyError&gt; {
     let e = anyhow::Error::msg(&quot;oops&quot;);
-    Err(Arc::new(e.into()))
+    Err(e.into())
 }
 </code></pre>
 <p>then in Python:</p>

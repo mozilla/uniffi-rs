@@ -223,6 +223,14 @@
 <a href="#221" id="221">221</a>
 <a href="#222" id="222">222</a>
 <a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::DeriveInput;
@@ -324,6 +332,7 @@
     <span class="kw">let </span>ident = object.ident();
     <span class="kw">let </span>impl_spec = options.ffi_impl_header(<span class="string">"FfiConverterArc"</span>, ident);
     <span class="kw">let </span>lower_return_impl_spec = options.ffi_impl_header(<span class="string">"LowerReturn"</span>, ident);
+    <span class="kw">let </span>lower_error_impl_spec = options.ffi_impl_header(<span class="string">"LowerError"</span>, ident);
     <span class="kw">let </span>type_id_impl_spec = options.ffi_impl_header(<span class="string">"TypeId"</span>, ident);
     <span class="kw">let </span>lift_ref_impl_spec = options.ffi_impl_header(<span class="string">"LiftRef"</span>, ident);
     <span class="kw">let </span>mod_path = <span class="kw">match </span>mod_path() {
@@ -331,11 +340,12 @@
         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into_compile_error(),
     };
     <span class="kw">let </span>arc_self_type = <span class="macro">quote! </span>{ ::std::sync::Arc&lt;<span class="self">Self</span>&gt; };
-    <span class="kw">let </span>lower = ffiops::lower(<span class="kw-2">&amp;</span>arc_self_type);
-    <span class="kw">let </span>type_id_meta = ffiops::type_id_meta(<span class="kw-2">&amp;</span>arc_self_type);
-    <span class="kw">let </span>try_lift = ffiops::try_lift(<span class="kw-2">&amp;</span>arc_self_type);
-    <span class="kw">let </span>lower_return_type = ffiops::lower_return_type(<span class="kw-2">&amp;</span>arc_self_type);
-    <span class="kw">let </span>lower_return = ffiops::lower_return(<span class="kw-2">&amp;</span>arc_self_type);
+    <span class="kw">let </span>lower_arc = ffiops::lower(<span class="kw-2">&amp;</span>arc_self_type);
+    <span class="kw">let </span>type_id_meta_arc = ffiops::type_id_meta(<span class="kw-2">&amp;</span>arc_self_type);
+    <span class="kw">let </span>try_lift_arc = ffiops::try_lift(<span class="kw-2">&amp;</span>arc_self_type);
+    <span class="kw">let </span>lower_return_type_arc = ffiops::lower_return_type(<span class="kw-2">&amp;</span>arc_self_type);
+    <span class="kw">let </span>lower_return_arc = ffiops::lower_return(<span class="kw-2">&amp;</span>arc_self_type);
+    <span class="kw">let </span>lower_error_arc = ffiops::lower_error(<span class="kw-2">&amp;</span>arc_self_type);
 
     <span class="macro">quote! </span>{
         <span class="comment">// All Object structs must be `Sync + Send`. The generated scaffolding will fail to compile
@@ -384,7 +394,7 @@
             /// function for other types may lead to undefined behaviour.
             </span><span class="kw">fn </span>write(obj: ::std::sync::Arc&lt;<span class="self">Self</span>&gt;, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
                 <span class="macro">::uniffi::deps::static_assertions::const_assert!</span>(::std::mem::size_of::&lt;<span class="kw-2">*const </span>::std::ffi::c_void&gt;() &lt;= <span class="number">8</span>);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower(obj) <span class="kw">as </span>u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower_arc(obj) <span class="kw">as </span>u64);
             }
 
             <span class="doccomment">/// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
@@ -395,7 +405,7 @@
             </span><span class="kw">fn </span>try_read(buf: <span class="kw-2">&amp;mut &amp;</span>[u8]) -&gt; ::uniffi::Result&lt;::std::sync::Arc&lt;<span class="self">Self</span>&gt;&gt; {
                 <span class="macro">::uniffi::deps::static_assertions::const_assert!</span>(::std::mem::size_of::&lt;<span class="kw-2">*const </span>::std::ffi::c_void&gt;() &lt;= <span class="number">8</span>);
                 ::uniffi::check_remaining(buf, <span class="number">8</span>)<span class="question-mark">?</span>;
-                #try_lift(::uniffi::deps::bytes::Buf::get_u64(buf) <span class="kw">as </span><span class="self">Self</span>::FfiType)
+                #try_lift_arc(::uniffi::deps::bytes::Buf::get_u64(buf) <span class="kw">as </span><span class="self">Self</span>::FfiType)
             }
 
             <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
@@ -404,10 +414,16 @@
         }
 
         <span class="kw">unsafe </span>#lower_return_impl_spec {
-            <span class="kw">type </span>ReturnType = #lower_return_type;
+            <span class="kw">type </span>ReturnType = #lower_return_type_arc;
 
             <span class="kw">fn </span>lower_return(obj: <span class="self">Self</span>) -&gt; ::std::result::Result&lt;<span class="self">Self</span>::ReturnType, ::uniffi::RustBuffer&gt; {
-                #lower_return(::std::sync::Arc::new(obj))
+                #lower_return_arc(::std::sync::Arc::new(obj))
+            }
+        }
+
+        <span class="kw">unsafe </span>#lower_error_impl_spec {
+            <span class="kw">fn </span>lower_error(obj: <span class="self">Self</span>) -&gt; ::uniffi::RustBuffer {
+                #lower_error_arc(::std::sync::Arc::new(obj))
             }
         }
 
@@ -416,7 +432,7 @@
         }
 
         #type_id_impl_spec {
-            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = #type_id_meta;
+            <span class="kw">const </span>TYPE_ID_META: ::uniffi::MetadataBuffer = #type_id_meta_arc;
         }
     }
 }
