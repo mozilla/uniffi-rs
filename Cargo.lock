@@ -1613,6 +1613,7 @@ dependencies = [
  "once_cell",
  "thiserror",
  "uniffi",
+ "uniffi_meta",
 ]
 
 [[package]]

@@ -9,6 +9,9 @@ use std::time::SystemTime;
 
 use once_cell::sync::Lazy;
 
+#[cfg(test)]
+mod ffi_buffer_scaffolding_test;
+
 mod traits;
 pub use traits::{
     ancestor_names, get_string_util_traits, get_traits, make_rust_getters, test_getters,
@@ -230,6 +233,13 @@ fn try_input_return_only_dict(_d: ReturnOnlyDict) {
     // can't be lifted by Rust.  There's a Python test that the UniFFI code panics before we get here.
     //
     // FIXME: should be a compile-time error rather than a runtime error (#1850)
+}
+
+pub fn divide_by_text(value: f32, value_as_text: String) -> Result<f32, ComplexError> {
+    match value_as_text.parse::<f32>() {
+        Ok(divisor) if divisor != 0.0 => Ok(value / divisor),
+        _ => Err(ComplexError::UnknownError),
+    }
 }
 
 #[derive(Debug, Clone)]

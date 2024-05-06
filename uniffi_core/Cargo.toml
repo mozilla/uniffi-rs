@@ -33,3 +33,6 @@ default = []
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["dep:async-compat"]
+
+# Enable support for the ffi buffer scaffolding functions
+scaffolding-ffi-buffer-fns = []
