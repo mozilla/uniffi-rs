@@ -27,6 +27,8 @@
 
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 
+- Removed the dependency on the `oneshot' crate (https://github.com/mozilla/uniffi-rs/issues/1736)
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).
 
 ## v0.27.1 (backend crates: v0.27.1) - (_2024-04-03_)
