@@ -1005,12 +1005,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
-name = "oneshot-uniffi"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c548d5c78976f6955d72d0ced18c48ca07030f7a1d4024529fedd7c1c01b29c"
-
-[[package]]
 name = "oorandom"
 version = "11.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1987,7 +1981,6 @@ dependencies = [
  "camino",
  "log",
  "once_cell",
- "oneshot-uniffi",
  "paste",
  "static_assertions",
 ]
