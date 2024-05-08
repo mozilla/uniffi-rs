@@ -68,6 +68,7 @@ members = [
   "fixtures/large-enum",
   "fixtures/large-error",
   "fixtures/enum-types",
+  "fixtures/swift-perform-checksum-once",
 ]
 
 resolver = "2"

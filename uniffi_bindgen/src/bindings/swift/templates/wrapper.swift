@@ -38,7 +38,7 @@ private enum InitializationResult {
     case contractVersionMismatch
     case apiChecksumMismatch
 }
-// Use a global variables to perform the versioning checks. Swift ensures that
+// Use a global variable to perform the versioning checks. Swift ensures that
 // the code inside is only computed once.
 private var initializationResult: InitializationResult = {
     // Get the bindings contract version from our ComponentInterface
