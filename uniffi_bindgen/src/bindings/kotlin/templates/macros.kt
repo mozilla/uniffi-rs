@@ -134,10 +134,15 @@ v{{- field_num -}}
 
 // Macro for destroying fields
 {%- macro destroy_fields(member) %}
-    Disposable.destroy(
     {%- for field in member.fields() %}
-        this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
-    {% endfor -%})
+        {%- if field.name().is_empty() %} 
+            // No Label
+        {% else %}
+            Disposable.destroy(
+            this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
+            )
+        {% endif %}
+    {% endfor -%}
 {%- endmacro -%}
 
 {%- macro docstring_value(maybe_docstring, indent_spaces) %}

@@ -39,6 +39,31 @@ pub enum AnimalSignedInt {
     Wombat,  // 1
 }
 
+#[derive(uniffi::Record)]
+pub struct AnimalRecord {
+    value: u8,
+}
+
+#[derive(uniffi::Object)]
+pub struct AnimalObject {
+    pub value: AnimalRecord,
+}
+
+use std::sync::Arc;
+// Adding an enum with a Associated Type that is a exported Arc<Object> with a exported Record field.
+// This is done to check for compilation errors.
+#[derive(uniffi::Enum)]
+pub(crate) enum AnimalAssociatedType {
+    Dog(Arc<AnimalObject>),
+    Cat,
+}
+
+#[derive(uniffi::Enum)]
+pub(crate) enum AnimalNamedAssociatedType {
+    Dog { value: Arc<AnimalObject> },
+    Cat,
+}
+
 #[uniffi::export]
 fn get_animal(a: Option<Animal>) -> Animal {
     a.unwrap_or(Animal::Dog)
