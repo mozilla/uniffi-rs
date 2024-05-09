@@ -1324,13 +1324,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "swift-perform-checksum-once"
-version = "0.27.1"
-dependencies = [
- "uniffi",
-]
-
-[[package]]
 name = "syn"
 version = "2.0.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
