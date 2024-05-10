@@ -244,8 +244,12 @@ pub(super) fn gen_ffi_function(
     let return_impl = &sig.lower_return_impl();
 
     Ok(if !sig.is_async {
-        let scaffolding_fn_ffi_buffer_version =
-            ffi_buffer_scaffolding_fn(&ffi_ident, &ffi_return_ty, &param_types, true);
+        let scaffolding_fn_ffi_buffer_version = ffi_buffer_scaffolding_fn(
+            &ffi_ident,
+            &quote! { <#return_ty as ::uniffi::LowerReturn<crate::UniFfiTag>>::ReturnType },
+            &param_types,
+            true,
+        );
         quote! {
             #[doc(hidden)]
             #[no_mangle]

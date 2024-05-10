@@ -6,6 +6,12 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- Added the `scaffolding-ffi-buffer-fns` feature.  When enabled, UniFFI will generate an alternate
+  FFI layer that can simplify the foreign bindings code.  It's currently being tested out for the
+  gecko-js external binding, but other external bindings may also find it useful.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).
 
 ## v0.27.1 (backend crates: v0.27.1) - (_2024-04-03_)
