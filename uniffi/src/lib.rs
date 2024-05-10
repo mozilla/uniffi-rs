@@ -18,8 +18,7 @@ pub use uniffi_bindgen::bindings::swift_run_test;
 #[cfg(feature = "bindgen")]
 pub use uniffi_bindgen::{
     bindings::{
-        KotlinBindingGenerator, PythonBindingGenerator, RubyBindingGenerator,
-        SwiftBindingGenerator, TargetLanguage,
+        KotlinBindingGenerator, PythonBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator,
     },
     generate_bindings, generate_component_scaffolding, generate_component_scaffolding_for_crate,
     print_repr,

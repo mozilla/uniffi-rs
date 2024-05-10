@@ -2,9 +2,62 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use anyhow::{bail, Result};
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
+use std::fmt;
 use uniffi_bindgen::bindings::*;
+
+/// Enumeration of all foreign language targets currently supported by our CLI.
+///
+#[derive(Copy, Clone, Eq, PartialEq, Hash, clap::ValueEnum)]
+enum TargetLanguage {
+    Kotlin,
+    Swift,
+    Python,
+    Ruby,
+}
+
+impl fmt::Display for TargetLanguage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Kotlin => write!(f, "kotlin"),
+            Self::Swift => write!(f, "swift"),
+            Self::Python => write!(f, "python"),
+            Self::Ruby => write!(f, "ruby"),
+        }
+    }
+}
+
+impl TryFrom<&str> for TargetLanguage {
+    type Error = anyhow::Error;
+    fn try_from(value: &str) -> Result<Self> {
+        Ok(match value.to_ascii_lowercase().as_str() {
+            "kotlin" | "kt" | "kts" => TargetLanguage::Kotlin,
+            "swift" => TargetLanguage::Swift,
+            "python" | "py" => TargetLanguage::Python,
+            "ruby" | "rb" => TargetLanguage::Ruby,
+            _ => bail!("Unknown or unsupported target language: \"{value}\""),
+        })
+    }
+}
+
+impl TryFrom<&std::ffi::OsStr> for TargetLanguage {
+    type Error = anyhow::Error;
+    fn try_from(value: &std::ffi::OsStr) -> Result<Self> {
+        match value.to_str() {
+            None => bail!("Unreadable target language"),
+            Some(s) => s.try_into(),
+        }
+    }
+}
+
+impl TryFrom<String> for TargetLanguage {
+    type Error = anyhow::Error;
+    fn try_from(value: String) -> Result<Self> {
+        TryFrom::try_from(value.as_str())
+    }
+}
 
 // Structs to help our cmdline parsing. Note that docstrings below form part
 // of the "help" output.
