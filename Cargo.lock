@@ -1922,7 +1922,6 @@ dependencies = [
  "askama",
  "camino",
  "cargo_metadata",
- "clap",
  "fs-err",
  "glob",
  "goblin",
