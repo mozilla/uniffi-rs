@@ -135,13 +135,13 @@ v{{- field_num -}}
 // Macro for destroying fields
 {%- macro destroy_fields(member) %}
     {%- for field in member.fields() %}
-        {%- if field.name().is_empty() %} 
-            // No Label
-        {% else %}
             Disposable.destroy(
+        {%- if field.name().is_empty() %} 
+            this.{%- call field_name(field, loop.index) -%}
+        {% else %}
             this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
-            )
         {% endif %}
+            )
     {% endfor -%}
 {%- endmacro -%}
 
