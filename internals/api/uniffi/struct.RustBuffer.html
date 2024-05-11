@@ -66,7 +66,7 @@ be used outside of this module.</p>
 <h5 id="safety"><a class="doc-anchor" href="#safety">§</a>Safety</h5>
 <p>You must ensure that the raw parts uphold the documented invariants of this class.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.len" class="method"><h4 class="code-header">pub fn <a href="#method.len" class="fn">len</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.usize.html">usize</a></h4></section></summary><div class="docblock"><p>Get the current length of the buffer, as a <code>usize</code>.</p>
-<p>This is mostly a helper function to convert the <code>i32</code> length field
+<p>This is mostly a helper function to convert the <code>u64</code> length field
 into a <code>usize</code>, which is what Rust code usually expects.</p>
 <h5 id="panics"><a class="doc-anchor" href="#panics">§</a>Panics</h5>
 <p>Panics if called on an invalid struct obtained from foreign-language code,
@@ -77,13 +77,13 @@ in which the <code>len</code> field is negative.</p>
 <p>The resulting vector will not be automatically dropped; you must
 arrange to call <code>destroy</code> or <code>destroy_into_vec</code> when finished with it.</p>
 <h5 id="panics-1"><a class="doc-anchor" href="#panics-1">§</a>Panics</h5>
-<p>Panics if the requested size is too large to fit in an <code>i32</code>, and
+<p>Panics if the requested size is too large to fit in an <code>u64</code>, and
 hence would risk incompatibility with some foreign-language code.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.from_vec" class="method"><h4 class="code-header">pub fn <a href="#method.from_vec" class="fn">from_vec</a>(v: <a class="struct" href="https://doc.rust-lang.org/1.77.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;) -&gt; <a class="struct" href="struct.RustBuffer.html" title="struct uniffi::RustBuffer">RustBuffer</a></h4></section></summary><div class="docblock"><p>Consumes a <code>Vec&lt;u8&gt;</code> and returns its raw parts as a <code>RustBuffer</code>.</p>
 <p>The resulting vector will not be automatically dropped; you must
 arrange to call <code>destroy</code> or <code>destroy_into_vec</code> when finished with it.</p>
 <h5 id="panics-2"><a class="doc-anchor" href="#panics-2">§</a>Panics</h5>
-<p>Panics if the vector’s length or capacity are too large to fit in an <code>i32</code>,
+<p>Panics if the vector’s length or capacity are too large to fit in an <code>u64</code>,
 and hence would risk incompatibility with some foreign-language code.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.destroy_into_vec" class="method"><h4 class="code-header">pub fn <a href="#method.destroy_into_vec" class="fn">destroy_into_vec</a>(self) -&gt; <a class="struct" href="https://doc.rust-lang.org/1.77.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Converts this <code>RustBuffer</code> back into an owned <code>Vec&lt;u8&gt;</code>.</p>
 <p>This restores ownership of the underlying buffer to Rust, meaning it will
