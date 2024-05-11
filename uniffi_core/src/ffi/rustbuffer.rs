@@ -94,7 +94,7 @@ impl RustBuffer {
 
     /// Get the current length of the buffer, as a `usize`.
     ///
-    /// This is mostly a helper function to convert the `i32` length field
+    /// This is mostly a helper function to convert the `u64` length field
     /// into a `usize`, which is what Rust code usually expects.
     ///
     /// # Panics
@@ -130,7 +130,7 @@ impl RustBuffer {
     ///
     /// # Panics
     ///
-    /// Panics if the requested size is too large to fit in an `i32`, and
+    /// Panics if the requested size is too large to fit in an `u64`, and
     /// hence would risk incompatibility with some foreign-language code.
     pub fn new_with_size(size: u64) -> Self {
         Self::from_vec(vec![0u8; size as usize])
@@ -143,7 +143,7 @@ impl RustBuffer {
     ///
     /// # Panics
     ///
-    /// Panics if the vector's length or capacity are too large to fit in an `i32`,
+    /// Panics if the vector's length or capacity are too large to fit in an `u64`,
     /// and hence would risk incompatibility with some foreign-language code.
     pub fn from_vec(v: Vec<u8>) -> Self {
         let capacity = u64::try_from(v.capacity()).expect("buffer capacity cannot fit into a u64.");
