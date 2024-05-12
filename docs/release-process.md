@@ -56,12 +56,19 @@ Steps:
 1. Create a PR with the changes and get it approved
 
 1. Publish the new release:
-  * Run `cargo login` if you're not already logged in
-  * Run `./tools/publish-release.sh`
+    * Run `cargo login` if you're not already logged in
+    * Run `./tools/publish-release.sh`
 
 1. Push the tag: `git push v{MAJOR}.{MINOR}.{PATCH}`
 
 1. Create a PR to merge the changes back to the main branch
+
+1. Publish the docs for the new version. See the [README](../manual/src/README.md) for details, but the short version is:
+    * Execute `pip install -r tools/requirements_docs.txt`
+    * Execute `mike deploy {MAJOR}.{MINOR} latest --update-aliases --push`
+    * Wait for the deployment fairies.
+    * Visit https://mozilla.github.io/uniffi-rs and make sure this new version shows
+      up in the version selector and is correctly treated as the latest.
 
 ## Why avoid breaking changes for the uniffi crate?
 

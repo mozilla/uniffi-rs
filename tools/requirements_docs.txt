@@ -1,4 +1,6 @@
+mike==2.1.1
 mkdocs==1.6.0
 mkdocs-material==9.5.22
+mkdocs-no-sitemap-plugin=0.0.1
 pygments==2.18.0
 pymdown-extensions==10.8.1
