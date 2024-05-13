@@ -11,8 +11,7 @@ commands:
             sudo apt-get update -qq
             sudo apt-get install -qy --no-install-recommends python3-pip
             sudo apt-get clean
-            pip install mkdocs
-            pip install mkdocs-material
+            pip install -r tools/requirements_docs.txt
 
   # Our policy for updating rust versions is at https://github.com/mozilla/uniffi-rs/tree/main/docs/policies/rust-versions.md
   # See also rust-toolchain.toml in the root of this repo, which is used to specify our official target version.
