@@ -15,10 +15,10 @@ theme:
   name: 'material'
   language: 'en'
 
-# XXX - not getting highlighting in, eg, ```rust``` blocks???
-# tried this :(
-# markdown_extensions:
-#  - codehilite
+# This also enables code highlighting
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.highlight
 
 # This lists all the files that become part of the documentation
 nav:
