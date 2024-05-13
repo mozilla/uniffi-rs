@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1537,42 +1537,41 @@
 <h1 id="declaring-external-types">Declaring External Types</h1>
 <p>It is possible to use types defined by UniFFI in an external crate. For example, let's assume
 that you have an existing crate named <code>demo_crate</code> with the following UDL:</p>
-<pre><code class="language-idl">dictionary DemoDict {
-  string string_val;
-  boolean bool_val;
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>DemoDict<span class="w"> </span>{
+<span class="w">  </span><span class="nb">string</span><span class="w"> </span>string_val;
+<span class="w">  </span>boolean<span class="w"> </span>bool_val;
 };
-</code></pre>
+</code></pre></div>
 <p>Inside another crate, <code>consuming_crate</code>, you'd like to use this dictionary.
 Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
 <code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
-<pre><code class="language-idl">[External=&quot;demo_crate&quot;]
-typedef extern DemoDict;
+<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;demo_crate&quot;</span>]
+typedef<span class="w"> </span>extern<span class="w"> </span>DemoDict;
 
-// Now define our own dictionary which references the imported type.
-dictionary ConsumingDict {
-  DemoDict demo_dict;
-  boolean another_bool;
+<span class="o">//</span><span class="w"> </span>Now<span class="w"> </span>define<span class="w"> </span>our<span class="w"> </span>own<span class="w"> </span>dictionary<span class="w"> </span>which<span class="w"> </span>references<span class="w"> </span>the<span class="w"> </span>imported<span class="w"> </span>type.
+dictionary<span class="w"> </span>ConsumingDict<span class="w"> </span>{
+<span class="w">  </span>DemoDict<span class="w"> </span>demo_dict;
+<span class="w">  </span>boolean<span class="w"> </span>another_bool;
 };
-
-</code></pre>
+</code></pre></div>
 <p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
 <code>consuming_crate</code>'s <code>lib.rs</code> might look like:</p>
-<pre><code class="language-rust">use demo_crate::DemoDict;
+<div class="highlight"><pre><span></span><code><span class="k">use</span><span class="w"> </span><span class="n">demo_crate</span><span class="p">::</span><span class="n">DemoDict</span><span class="p">;</span>
 
-pub struct ConsumingDict {
-    demo_dict: DemoDict,
-    another_bool: bool,
-}
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">ConsumingDict</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">demo_dict</span><span class="p">:</span><span class="w"> </span><span class="nc">DemoDict</span><span class="p">,</span>
+<span class="w">    </span><span class="n">another_bool</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<span class="p">}</span>
 
-uniffi::include_scaffolding!(&quot;consuming_crate&quot;);
-</code></pre>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">include_scaffolding</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;consuming_crate&quot;</span><span class="p">);</span>
+</code></pre></div>
 <p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
 <p>The <code>External</code> attribute can be specified on dictionaries, enums, errors.</p>
 <h2 id="external-interface-and-trait-types">External interface and trait types</h2>
 <p>If the external type is an <a href="interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
-<pre><code class="language-idl">[ExternalInterface=&quot;demo_crate&quot;]
-typedef extern DemoInterface;
-</code></pre>
+<div class="highlight"><pre><span></span><code>[ExternalInterface<span class="o">=</span><span class="s2">&quot;demo_crate&quot;</span>]
+typedef<span class="w"> </span>extern<span class="w"> </span>DemoInterface;
+</code></pre></div>
 <p>similarly for traits: use <code>[ExternalTrait]</code>.</p>
 <h2 id="external-procmacro-types">External procmacro types</h2>
 <p>The above examples assume the external types were defined via UDL.
@@ -1590,10 +1589,10 @@ which varies slightly for each language:</p>
 If you use <code>generate [udl-path]</code> then the generated code needs to know how to import
 the external types from the Kotlin module that corresponds to the Rust crate.
 By default, UniFFI assumes that the Kotlin module name matches the Rust crate name, but this can be configured in <code>uniffi.toml</code> with an entry like this:</p>
-<pre><code>[bindings.kotlin.external_packages]
+<div class="highlight"><pre><span></span><code>[bindings.kotlin.external_packages]
 # Map the crate names from [External={name}] into Kotlin package names
 rust-crate-name = &quot;kotlin.package.name&quot;
-</code></pre>
+</code></pre></div>
 <h3 id="swift">Swift</h3>
 <p>For Swift, you must compile all generated <code>.swift</code> files together in a single
 module since the generate code expects that it can access external types
@@ -1647,7 +1646,7 @@ without importing them.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

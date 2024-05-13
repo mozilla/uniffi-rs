@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1455,10 +1455,10 @@
 <h2 id="the-udl-file">The UDL File</h2>
 <p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
 Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
-<pre><code class="language-idl">namespace math {
-  u32 add(u32 a, u32 b);
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>math<span class="w"> </span>{
+<span class="w">  </span>u32<span class="w"> </span>add(u32<span class="w"> </span>a,<span class="w"> </span>u32<span class="w"> </span>b);
 };
-</code></pre>
+</code></pre></div>
 <p>Here you can note multiple things:</p>
 <ul>
 <li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed functions (e.g. <code>namespace foo {}</code>).
@@ -1516,7 +1516,7 @@ It will typically your crate name.</li>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

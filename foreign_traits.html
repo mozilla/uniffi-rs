@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1408,80 +1408,80 @@ by the host operating system (e.g. the key chain).</p>
 <p>All methods of the Rust trait should return a <code>Result&lt;&gt;</code> with the error half being
 a <a href="udl/errors.html">compatible error type</a> - see below for more on error handling.</p>
 <p>For example:</p>
-<pre><code class="language-rust">pub trait Keychain: Send + Sync + Debug {
-  fn get(&amp;self, key: String) -&gt; Result&lt;Option&lt;String&gt;, KeyChainError&gt;;
-  fn put(&amp;self, key: String, value: String) -&gt; Result&lt;(), KeyChainError&gt;;
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Keychain</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Debug</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">fn</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">KeyChainError</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">fn</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">KeyChainError</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>If you are using macros add <code>#[uniffi::export(with_foreign)]</code> above the trait.
 Otherwise define this trait in your UDL file:</p>
-<pre><code class="language-webidl">[Trait, WithForeign]
-interface Keychain {
-    [Throws=KeyChainError]
-    string? get(string key);
+<div class="highlight"><pre><span></span><code><span class="p">[</span><span class="nd">Trait</span><span class="p">,</span> <span class="nd">WithForeign</span><span class="p">]</span>
+<span class="k">interface</span> <span class="nc">Keychain</span> <span class="p">{</span>
+    <span class="p">[</span><span class="nd">Throws</span><span class="p">=</span><span class="n">KeyChainError</span><span class="p">]</span>
+    <span class="nc">string</span><span class="p">?</span> <span class="nf">get</span><span class="p">(</span><span class="nc">string</span> <span class="nv">key</span><span class="p">);</span>
 
-    [Throws=KeyChainError]
-    void put(string key, string data);
-};
-</code></pre>
+    <span class="p">[</span><span class="nd">Throws</span><span class="p">=</span><span class="n">KeyChainError</span><span class="p">]</span>
+    <span class="kt">void</span> <span class="nf">put</span><span class="p">(</span><span class="nc">string</span> <span class="nv">key</span><span class="p">,</span> <span class="nc">string</span> <span class="nv">data</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div>
 <p>The <code>with_foreign</code> / <code>WithForeign</code> attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.</p>
 <h2 id="2-allow-it-to-be-passed-into-rust">2. Allow it to be passed into Rust</h2>
 <p>Here, we define a new object with a constructor which takes a keychain.</p>
-<pre><code class="language-webidl">interface Authenticator {
-    constructor(Keychain keychain);
-    void login();
-};
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">interface</span> <span class="nc">Authenticator</span> <span class="p">{</span>
+    <span class="nc">constructor</span><span class="p">(</span><span class="nc">Keychain</span> <span class="nv">keychain</span><span class="p">);</span>
+    <span class="kt">void</span> <span class="nf">login</span><span class="p">();</span>
+<span class="p">};</span>
+</code></pre></div>
 <p>In Rust we'd write:</p>
-<pre><code class="language-rust">struct Authenticator {
-  keychain: Arc&lt;dyn Keychain&gt;,
-}
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">Authenticator</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">keychain</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Keychain</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
 
-impl Authenticator {
-  pub fn new(keychain: Arc&lt;dyn Keychain&gt;) -&gt; Self {
-    Self { keychain }
-  }
+<span class="k">impl</span><span class="w"> </span><span class="n">Authenticator</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="n">keychain</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Keychain</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="bp">Self</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keychain</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
 
-  pub fn login(&amp;self) {
-    let username = self.keychain.get(&quot;username&quot;.into());
-    let password = self.keychain.get(&quot;password&quot;.into());
-  }
-}
-</code></pre>
+<span class="w">  </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">keychain</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;username&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">());</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">keychain</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;password&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">());</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="3-create-a-foreign-language-implementation-of-the-trait">3. Create a foreign language implementation of the trait</h2>
 <p>Here's a Kotlin implementation:</p>
-<pre><code class="language-kotlin">class KotlinKeychain: Keychain {
-    override fun get(key: String): String? {
-        // … elide the implementation.
-        return value
-    }
-    override fun put(key: String) {
-        // … elide the implementation.
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">KotlinKeychain</span><span class="p">:</span><span class="w"> </span><span class="n">Keychain</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">):</span><span class="w"> </span><span class="kt">String?</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// … elide the implementation.</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">value</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// … elide the implementation.</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>…and Swift:</p>
-<pre><code class="language-swift">class SwiftKeychain: Keychain {
-    func get(key: String) -&gt; String? {
-        // … elide the implementation.
-        return value
-    }
-    func put(key: String) {
-        // … elide the implementation.
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span> <span class="nc">SwiftKeychain</span><span class="p">:</span> <span class="n">Keychain</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">String</span><span class="p">?</span> <span class="p">{</span>
+        <span class="c1">// … elide the implementation.</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="p">}</span>
+    <span class="kd">func</span> <span class="nf">put</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// … elide the implementation.</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="4-pass-the-implementation-to-rust">4. Pass the implementation to Rust</h2>
 <p>Again, in Kotlin</p>
-<pre><code class="language-kt">val authenticator = Authenticator(KotlinKeychain())
+<div class="highlight"><pre><span></span><code>val authenticator = Authenticator(KotlinKeychain())
 // later on:
 authenticator.login()
-</code></pre>
+</code></pre></div>
 <p>and in Swift:</p>
-<pre><code class="language-swift">let authenticator = Authenticator(SwiftKeychain())
-// later on:
-authenticator.login()
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">let</span> <span class="nv">authenticator</span> <span class="p">=</span> <span class="n">Authenticator</span><span class="p">(</span><span class="n">SwiftKeychain</span><span class="p">())</span>
+<span class="c1">// later on:</span>
+<span class="n">authenticator</span><span class="p">.</span><span class="n">login</span><span class="p">()</span>
+</code></pre></div>
 <p>Care is taken to ensure that things are cleaned up in the foreign language once all Rust references drop.</p>
 <h2 id="avoid-cycles">⚠️  Avoid cycles</h2>
 <p>Foreign trait implementations make it easy to create cycles between Rust and foreign objects causing memory leaks.
@@ -1545,7 +1545,7 @@ In other words, you really should implement this!</p>
     <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

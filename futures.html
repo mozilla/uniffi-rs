@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1516,34 +1516,34 @@
 <p>UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust <code>Future</code>/<code>async fn</code> to and from foreign native futures (<code>async</code>/<code>await</code> in Python/Swift, <code>suspend fun</code> in Kotlin etc.)</p>
 <p>Check out the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/futures">examples</a> or the more terse and thorough <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures">fixtures</a>.</p>
 <h2 id="example">Example</h2>
-<p>This is a short "async sleep()" example:</p>
-<pre><code class="language-Rust">use std::time::Duration;
-use async_std::future::{timeout, pending};
+<p>This is a short "async sleep()" example:
+<div class="highlight"><pre><span></span><code><span class="k">use</span><span class="w"> </span><span class="n">std</span><span class="p">::</span><span class="n">time</span><span class="p">::</span><span class="n">Duration</span><span class="p">;</span>
+<span class="k">use</span><span class="w"> </span><span class="n">async_std</span><span class="p">::</span><span class="n">future</span><span class="p">::{</span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="n">pending</span><span class="p">};</span>
 
-/// Async function that says something after a certain time.
-#[uniffi::export]
-pub async fn say_after(ms: u64, who: String) -&gt; String {
-    let never = pending::&lt;()&gt;();
-    timeout(Duration::from_millis(ms), never).await.unwrap_err();
-    format!(&quot;Hello, {who}!&quot;)
+<span class="sd">/// Async function that says something after a certain time.</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">say_after</span><span class="p">(</span><span class="n">ms</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">who</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">never</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pending</span><span class="p">::</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">    </span><span class="n">timeout</span><span class="p">(</span><span class="n">Duration</span><span class="p">::</span><span class="n">from_millis</span><span class="p">(</span><span class="n">ms</span><span class="p">),</span><span class="w"> </span><span class="n">never</span><span class="p">).</span><span class="k">await</span><span class="p">.</span><span class="n">unwrap_err</span><span class="p">();</span>
+<span class="w">    </span><span class="fm">format!</span><span class="p">(</span><span class="s">&quot;Hello, {who}!&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>This can be called by the following Python code:
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">uniffi_example_futures</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="k">await</span> <span class="n">say_after</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;Alice&#39;</span><span class="p">))</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div></p>
+<p>Async functions can also be defined in UDL:
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>example<span class="w"> </span>{
+<span class="w">    </span>[Async]
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span>say_after(u64<span class="w"> </span>ms,<span class="w"> </span><span class="nb">string</span><span class="w"> </span>who);
 }
-</code></pre>
-<p>This can be called by the following Python code:</p>
-<pre><code class="language-python">import asyncio
-from uniffi_example_futures import *
-
-async def main():
-    print(await say_after(20, 'Alice'))
-
-if __name__ == '__main__':
-    asyncio.run(main())
-</code></pre>
-<p>Async functions can also be defined in UDL:</p>
-<pre><code class="language-idl">namespace example {
-    [Async]
-    string say_after(u64 ms, string who);
-}
-</code></pre>
+</code></pre></div></p>
 <p>This code uses <code>asyncio</code> to drive the future to completion, while our exposed function is used with <code>await</code>.</p>
 <p>In Rust <code>Future</code> terminology this means the foreign bindings supply the "executor" - think event-loop, or async runtime. In this example it's <code>asyncio</code>. There's no requirement for a Rust event loop.</p>
 <p>There are <a href="https://docs.rs/uniffi_core/latest/uniffi_core/ffi/rustfuture/index.html">some great API docs</a> on the implementation that are well worth a read.</p>
@@ -1552,19 +1552,19 @@ if __name__ == '__main__':
 be used to export trait interfaces over the FFI.</p>
 <p>When using UDL, wrap your trait with the <code>#[async_trait]</code> attribute.  In the UDL, annotate all async
 methods with <code>[Async]</code>:</p>
-<pre><code class="language-idl">[Trait]
-interface SayAfterTrait {
-    [Async]
-    string say_after(u16 ms, string who);
+<div class="highlight"><pre><span></span><code>[Trait]
+interface<span class="w"> </span>SayAfterTrait<span class="w"> </span>{
+<span class="w">    </span>[Async]
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span>say_after(u16<span class="w"> </span>ms,<span class="w"> </span><span class="nb">string</span><span class="w"> </span>who);
 };
-</code></pre>
+</code></pre></div>
 <p>When using proc-macros, make sure to put <code>#[uniffi::export]</code> outside the <code>#[async_trait]</code> attribute:</p>
-<pre><code class="language-rust">#[uniffi::export]
-#[async_trait::async_trait]
-pub trait SayAfterTrait: Send + Sync {
-    async fn say_after(&amp;self, ms: u16, who: String) -&gt; String;
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="cp">#[async_trait::async_trait]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">SayAfterTrait</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">async</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">say_after</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">ms</span><span class="p">:</span><span class="w"> </span><span class="kt">u16</span><span class="p">,</span><span class="w"> </span><span class="n">who</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="combining-rust-and-foreign-async-code">Combining Rust and foreign async code</h2>
 <p>Traits with callback interface support that export async methods can be combined with async Rust code.
 See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client">async-api-client example</a> for an example of this.</p>
@@ -1572,12 +1572,12 @@ See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-a
 <p>Python bindings export a function named <code>uniffi_set_event_loop()</code> which handles a corner case when
 integrating async Rust and Python code. <code>uniffi_set_event_loop()</code> is needed when Python async
 functions run outside of the eventloop, for example:</p>
-<pre><code>- Rust code is executing outside of the eventloop.  Some examples:
+<div class="highlight"><pre><span></span><code>- Rust code is executing outside of the eventloop.  Some examples:
     - Rust code spawned its own thread
     - Python scheduled the Rust code using `EventLoop.run_in_executor`
 - The Rust code calls a Python async callback method, using something like `pollster` to block
   on the async call.
-</code></pre>
+</code></pre></div>
 <p>In this case, we need an event loop to run the Python async function, but there's no eventloop set for the thread.
 Use <code>uniffi_set_event_loop()</code> to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.</p>
@@ -1630,7 +1630,7 @@ It should be called before the Rust code makes the async call and passed an even
     <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

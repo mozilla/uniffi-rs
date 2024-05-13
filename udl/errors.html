@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1454,18 +1454,18 @@
 <p>It is often the case that a function does not return <code>T</code> in Rust but <code>Result&lt;T, E&gt;</code> to reflect that it is fallible.<br />
 For UniFFI to expose this error, your error type (<code>E</code>) must be an <code>enum</code> and implement <code>std::error::Error</code> (<a href="https://crates.io/crates/thiserror">thiserror</a> works!).</p>
 <p>Here's how you would write a Rust failible function and how you'd expose it in UDL:</p>
-<pre><code class="language-rust">#[derive(Debug, thiserror::Error)]
-enum ArithmeticError {
-    #[error(&quot;Integer overflow on an operation with {a} and {b}&quot;)]
-    IntegerOverflow { a: u64, b: u64 },
-}
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, thiserror::Error)]</span>
+<span class="k">enum</span><span class="w"> </span><span class="nc">ArithmeticError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[error(</span><span class="s">&quot;Integer overflow on an operation with {a} and {b}&quot;</span><span class="cp">)]</span>
+<span class="w">    </span><span class="n">IntegerOverflow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="w"> </span><span class="p">},</span>
+<span class="p">}</span>
 
-fn add(a: u64, b: u64) -&gt; Result&lt;u64, ArithmeticError&gt; {
-    a.checked_add(b).ok_or(ArithmeticError::IntegerOverflow { a, b })
-}
-</code></pre>
+<span class="k">fn</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">ArithmeticError</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">a</span><span class="p">.</span><span class="n">checked_add</span><span class="p">(</span><span class="n">b</span><span class="p">).</span><span class="n">ok_or</span><span class="p">(</span><span class="n">ArithmeticError</span><span class="p">::</span><span class="n">IntegerOverflow</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>And in UDL:</p>
-<pre><code>[Error]
+<div class="highlight"><pre><span></span><code>[Error]
 enum ArithmeticError {
   &quot;IntegerOverflow&quot;,
 };
@@ -1475,21 +1475,21 @@ namespace arithmetic {
   [Throws=ArithmeticError]
   u64 add(u64 a, u64 b);
 }
-</code></pre>
+</code></pre></div>
 <p>On the other side (Kotlin, Swift etc.), a proper exception will be thrown if <code>Result::is_err()</code> is <code>true</code>.</p>
 <p>If you want to expose the associated data as fields on the exception, use this syntax:</p>
-<pre><code>[Error]
+<div class="highlight"><pre><span></span><code>[Error]
 interface ArithmeticError {
   IntegerOverflow(u64 a, u64 b);
 };
-</code></pre>
+</code></pre></div>
 <h2 id="interfaces-as-errors">Interfaces as errors</h2>
 <p>It's possible to use an <code>interface</code> (ie, a rust struct impl or a <code>dyn Trait</code>) as an error;
 the thrown object will have methods instead of fields.
 This can be particularly useful when working with <code>anyhow</code> style errors, where
 an enum can't easily represent certain errors.</p>
-<p>In your UDL:</p>
-<pre><code>namespace error {
+<p>In your UDL:
+<div class="highlight"><pre><span></span><code>namespace error {
   [Throws=MyError]
   void bail(string message);
 }
@@ -1498,44 +1498,44 @@ an enum can't easily represent certain errors.</p>
 interface MyError {
   string message();
 };
-</code></pre>
-<p>and Rust:</p>
-<pre><code class="language-rs">#[derive(Debug, thiserror::Error)]
-#[error(&quot;{e:?}&quot;)] // default message is from anyhow.
-pub struct MyError {
-    e: anyhow::Error,
-}
+</code></pre></div>
+and Rust:
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, thiserror::Error)]</span>
+<span class="cp">#[error(</span><span class="s">&quot;{e:?}&quot;</span><span class="cp">)]</span><span class="w"> </span><span class="c1">// default message is from anyhow.</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="nc">anyhow</span><span class="p">::</span><span class="n">Error</span><span class="p">,</span>
+<span class="p">}</span>
 
-impl MyError {
-    fn message(&amp;self) -&gt; String&gt; { self.to_string() }
-}
+<span class="k">impl</span><span class="w"> </span><span class="n">MyError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">message</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">to_string</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
 
-impl From&lt;anyhow::Error&gt; for MyError {
-    fn from(e: anyhow::Error) -&gt; Self {
-        Self { e }
-    }
-}
-</code></pre>
-<p>You can't yet use <code>anyhow</code> directly in your exposed functions - you need a wrapper:</p>
-<pre><code class="language-rs">fn oops() -&gt; Result&lt;(), MyError&gt; {
-    let e = anyhow::Error::msg(&quot;oops&quot;);
-    Err(e.into())
-}
-</code></pre>
-<p>then in Python:</p>
-<pre><code class="language-py">try:
-  oops()
-except MyError as e:
-  print(&quot;oops&quot;, e.message())
-</code></pre>
-<p>This works for procmacros too - just derive or export the types.</p>
-<pre><code class="language-rs">#[derive(Debug, uniffi::Error)]
-pub struct MyError { ... }
-#[uniffi::export]
-impl MyError { ... }
-#[uniffi::export]
-fn oops(e: String) -&gt; Result&lt;(), Arc&lt;MyError&gt;&gt; { ... }
-</code></pre>
+<span class="k">impl</span><span class="w"> </span><span class="nb">From</span><span class="o">&lt;</span><span class="n">anyhow</span><span class="p">::</span><span class="n">Error</span><span class="o">&gt;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">MyError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">from</span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="nc">anyhow</span><span class="p">::</span><span class="n">Error</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">Self</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+You can't yet use <code>anyhow</code> directly in your exposed functions - you need a wrapper:</p>
+<p><div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">oops</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">MyError</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anyhow</span><span class="p">::</span><span class="n">Error</span><span class="p">::</span><span class="n">msg</span><span class="p">(</span><span class="s">&quot;oops&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">into</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div>
+then in Python:
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+  <span class="n">oops</span><span class="p">()</span>
+<span class="k">except</span> <span class="n">MyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;oops&quot;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">())</span>
+</code></pre></div></p>
+<p>This works for procmacros too - just derive or export the types.
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, uniffi::Error)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyError</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">MyError</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">oops</span><span class="p">(</span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">MyError</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div></p>
 <p><a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/error-types">See our tests this feature.</a></p>
 
 
@@ -1586,7 +1586,7 @@ fn oops(e: String) -&gt; Result&lt;(), Arc&lt;MyError&gt;&gt; { ... }
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

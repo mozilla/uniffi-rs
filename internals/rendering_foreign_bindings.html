@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -22,7 +22,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1531,11 +1531,11 @@ to normal Rust functions.</p>
 <h2 id="breaking-down-a-rust-function-called-by-python">Breaking down a Rust function called by Python.</h2>
 <p>Let's take a look at where <a href="https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/templates/TopLevelFunctionTemplate.py#L37-L40+">Python generates a top-level public function</a>.</p>
 <p>This will generate code like the following:</p>
-<pre><code>def this_func(this_arg=0) -&gt; None:
-</code></pre>
+<div class="highlight"><pre><span></span><code>def this_func(this_arg=0) -&gt; None:
+</code></pre></div>
 <p>Let's break the template down:</p>
-<pre><code>def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -&gt; None:
-</code></pre>
+<div class="highlight"><pre><span></span><code>def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -&gt; None:
+</code></pre></div>
 <p>The Askama language uses double-curly braces (<code>{ }</code>) to interpolate blocks of code into the string output.</p>
 <p><code>{{ func.name()|fn_name }}</code> becomes <code>this_func</code>: <a href="https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/interface/function.rs#L72">It calls the <code>name</code> method on a <code>Function</code> object</a> (you can see all the other metadata about functions there too).
 Askama uses a "filter" concept: Functions that take the value left of the pipe operator (<code>|</code>) to produce a new value.
@@ -1552,11 +1552,11 @@ eg, <a href="https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21
 <h2 id="ffi-functions">FFI Functions</h2>
 <p>Above, we mentioned your template will generate a call to, eg, <code>uniffi_some_name_fn_func_this_func</code>.
 This function is automatically generated and made public in your Rust crate - it's a function that might look like:</p>
-<pre><code>pub extern &quot;C&quot; fn uniffi_some_name_fn_func_this_func(
+<div class="highlight"><pre><span></span><code>pub extern &quot;C&quot; fn uniffi_some_name_fn_func_this_func(
     arg: i32,
     call_status: &amp;mut ::uniffi::RustCallStatus,
 ) -&gt; i32 {
-</code></pre>
+</code></pre></div>
 <p>The bindings need to use the metadata to create the correct args to make these calls using the FFI converter implementations.</p>
 <p>There will be a number of memory/lifetime/etc "adminstrative" FFI functions that will also be used by the generated implementation.</p>
 
@@ -1608,7 +1608,7 @@ This function is automatically generated and made public in your Rust crate - it
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

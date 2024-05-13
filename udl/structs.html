@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1489,19 +1489,19 @@
 They consist of one of more named <em>fields</em>, each of which holds a value of a particular type.
 Think of them like a Rust struct without any methods.</p>
 <p>A Rust struct like this:</p>
-<pre><code class="language-rust">struct TodoEntry {
-    done: bool,
-    due_date: u64,
-    text: String,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">done</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<span class="w">    </span><span class="n">due_date</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Can be exposed via UniFFI using UDL like this:</p>
-<pre><code class="language-idl">dictionary TodoEntry {
-    boolean done;
-    u64 due_date;
-    string text;
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>boolean<span class="w"> </span>done;
+<span class="w">    </span>u64<span class="w"> </span>due_date;
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span><span class="nb">text</span>;
 };
-</code></pre>
+</code></pre></div>
 <p>The fields in a dictionary can be of almost any type, including objects or other dictionaries.
 The current limitations are:</p>
 <ul>
@@ -1513,21 +1513,21 @@ The current limitations are:</p>
 field will hold a <em>reference</em> to an underlying instance of a Rust struct. The Rust code for
 working with such fields must store them as an <code>Arc</code> in order to help properly manage the
 lifetime of the instance. So if the UDL interface looked like this:</p>
-<pre><code class="language-idl">interface User {
-    // Some sort of &quot;user&quot; object that can own todo items
+<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>User<span class="w"> </span>{
+<span class="w">    </span><span class="o">//</span><span class="w"> </span>Some<span class="w"> </span><span class="nb">sort</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="w"> </span>object<span class="w"> </span>that<span class="w"> </span>can<span class="w"> </span>own<span class="w"> </span>todo<span class="w"> </span>items
 };
 
-dictionary TodoEntry {
-    User owner;
-    string text;
+dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>User<span class="w"> </span>owner;
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span><span class="nb">text</span>;
 }
-</code></pre>
+</code></pre></div>
 <p>Then the corresponding Rust code would need to look like this:</p>
-<pre><code class="language-rust">struct TodoEntry {
-    owner: std::sync::Arc&lt;User&gt;,
-    text: String,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="nc">std</span><span class="p">::</span><span class="n">sync</span><span class="p">::</span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">User</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Depending on the language, the foreign-language bindings may also need to be aware of
 these embedded references. For example in Kotlin, each Object instance must be explicitly
 destroyed to avoid leaking the underlying memory, and this also applies to Objects stored
@@ -1535,56 +1535,56 @@ in record fields.</p>
 <p>You can read more about managing object references in the section on <a href="interfaces.html">interfaces</a>.</p>
 <h2 id="default-values-for-fields">Default values for fields</h2>
 <p>Fields can be specified with a default value:</p>
-<pre><code class="language-idl">dictionary TodoEntry {
-    boolean done = false;
-    string text;
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>boolean<span class="w"> </span>done<span class="w"> </span><span class="o">=</span><span class="w"> </span>false;
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span><span class="nb">text</span>;
 };
-</code></pre>
+</code></pre></div>
 <p>The corresponding generated Kotlin code would be equivalent to:</p>
-<pre><code class="language-kotlin">data class TodoEntry (
-    var done: Boolean = false,
-    var text: String
-)  {
-    // ...
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">done</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">text</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span>
+<span class="p">)</span><span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>This works for Swift and Python targets too.
 If not set otherwise the default value for a field is used when constructing the Rust struct.</p>
 <h2 id="optional-fields-and-default-values">Optional fields and default values</h2>
 <p>Fields can be made optional using a <code>T?</code> type.</p>
-<pre><code class="language-idl">dictionary TodoEntry {
-    boolean done;
-    string? text;
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>boolean<span class="w"> </span>done;
+<span class="w">    </span><span class="nb">string</span>?<span class="w"> </span><span class="nb">text</span>;
 };
-</code></pre>
+</code></pre></div>
 <p>The corresponding Rust struct would need to look like this:</p>
-<pre><code class="language-rust">struct TodoEntry {
-    done: bool,
-    text: Option&lt;String&gt;,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">done</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>The corresponding generated Kotlin code would be equivalent to:</p>
-<pre><code class="language-kotlin">data class TodoEntry (
-    var done: Boolean,
-    var text: String?
-)  {
-    // ...
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">done</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">text</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span>
+<span class="p">)</span><span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Optional fields can also be set to a default <code>null</code> value:</p>
-<pre><code class="language-idl">dictionary TodoEntry {
-    boolean done;
-    string? text = null;
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>boolean<span class="w"> </span>done;
+<span class="w">    </span><span class="nb">string</span>?<span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>null;
 };
-</code></pre>
+</code></pre></div>
 <p>The corresponding generated Kotlin code would be equivalent to:</p>
-<pre><code class="language-kotlin">data class TodoEntry (
-    var done: Boolean,
-    var text: String? = null
-)  {
-    // ...
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">done</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">text</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span>
+<span class="p">)</span><span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>This works for Swift and Python targets too.</p>
 
 
@@ -1635,7 +1635,7 @@ If not set otherwise the default value for a field is used when constructing the
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

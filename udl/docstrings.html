@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1509,76 +1509,76 @@ UDL comments are the comment syntax specific to each language. Docstrings can be
 declarations in UDL file. Docstrings are parsed as AST nodes, so incorrectly placed docstrings will
 generate parse errors. Docstrings in UDL are comments prefixed with <code>///</code>.</p>
 <h2 id="docstrings-in-udl">Docstrings in UDL</h2>
-<pre><code class="language-java">/// The list of supported capitalization options
-enum Capitalization {
-    /// Lowercase, i.e. `hello, world!`
-    Lower,
+<div class="highlight"><pre><span></span><code><span class="c1">/// The list of supported capitalization options</span>
+<span class="kd">enum</span><span class="w"> </span><span class="n">Capitalization</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">/// Lowercase, i.e. `hello, world!`</span>
+<span class="w">    </span><span class="n">Lower</span><span class="p">,</span>
 
-    /// Uppercase, i.e. `Hello, World!`
-    Upper
-};
+<span class="w">    </span><span class="c1">/// Uppercase, i.e. `Hello, World!`</span>
+<span class="w">    </span><span class="n">Upper</span>
+<span class="p">};</span>
 
-namespace example {
-    /// Return a greeting message, using `capitalization` for capitalization
-    string hello_world(Capitalization capitalization);
-}
-</code></pre>
+<span class="n">namespace</span><span class="w"> </span><span class="n">example</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">/// Return a greeting message, using `capitalization` for capitalization</span>
+<span class="w">    </span><span class="n">string</span><span class="w"> </span><span class="nf">hello_world</span><span class="p">(</span><span class="n">Capitalization</span><span class="w"> </span><span class="n">capitalization</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="docstrings-in-generated-kotlin-bindings">Docstrings in generated Kotlin bindings</h2>
-<pre><code class="language-kotlin">/**
- * The list of supported capitalization options
- */
-enum class Capitalization {
-    /**
-     * Lowercase, i.e. `hello, world!`
-     */
-    LOWER,
+<div class="highlight"><pre><span></span><code><span class="cm">/**</span>
+<span class="cm"> * The list of supported capitalization options</span>
+<span class="cm"> */</span>
+<span class="kd">enum</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">Capitalization</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/**</span>
+<span class="cm">     * Lowercase, i.e. `hello, world!`</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="n">LOWER</span><span class="p">,</span>
 
-    /**
-     * Uppercase, i.e. `Hello, World!`
-     */
-    UPPER;
-}
+<span class="w">    </span><span class="cm">/**</span>
+<span class="cm">     * Uppercase, i.e. `Hello, World!`</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="n">UPPER</span><span class="p">;</span>
+<span class="p">}</span>
 
-/**
- * Return a greeting message, using `capitalization` for capitalization
- */
-fun `helloWorld`(`capitalization`: Capitalization): String { .. }
-</code></pre>
+<span class="cm">/**</span>
+<span class="cm"> * Return a greeting message, using `capitalization` for capitalization</span>
+<span class="cm"> */</span>
+<span class="kd">fun</span><span class="w"> </span><span class="nf">`helloWorld`</span><span class="p">(</span><span class="n">`capitalization`</span><span class="p">:</span><span class="w"> </span><span class="n">Capitalization</span><span class="p">):</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">..</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
 <h2 id="docstrings-in-generated-swift-bindings">Docstrings in generated Swift bindings</h2>
-<pre><code class="language-swift">/**
- * The list of supported capitalization options
- */
-public enum Capitalization {
-    /**
-     * Lowercase, i.e. `hello, world!`
-     */
-    case lower
+<div class="highlight"><pre><span></span><code><span class="cm">/**</span>
+<span class="cm"> * The list of supported capitalization options</span>
+<span class="cm"> */</span>
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">Capitalization</span> <span class="p">{</span>
+    <span class="cm">/**</span>
+<span class="cm">     * Lowercase, i.e. `hello, world!`</span>
+<span class="cm">     */</span>
+    <span class="k">case</span> <span class="n">lower</span>
 
-    /**
-     * Uppercase, i.e. `Hello, World!`
-     */
-    case upper
-}
+    <span class="cm">/**</span>
+<span class="cm">     * Uppercase, i.e. `Hello, World!`</span>
+<span class="cm">     */</span>
+    <span class="k">case</span> <span class="n">upper</span>
+<span class="p">}</span>
 
-/**
- * Return a greeting message, using `capitalization` for capitalization
- */
-public func helloWorld(capitalization: Capitalization) -&gt; String;
-</code></pre>
+<span class="cm">/**</span>
+<span class="cm"> * Return a greeting message, using `capitalization` for capitalization</span>
+<span class="cm"> */</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">helloWorld</span><span class="p">(</span><span class="n">capitalization</span><span class="p">:</span> <span class="n">Capitalization</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">String</span><span class="p">;</span>
+</code></pre></div>
 <h2 id="docstrings-in-generated-python-bindings">Docstrings in generated Python bindings</h2>
-<pre><code class="language-python">class Capitalization(enum.Enum):
-    &quot;&quot;&quot;The list of supported capitalization options&quot;&quot;&quot;
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Capitalization</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The list of supported capitalization options&quot;&quot;&quot;</span>
 
-    LOWER = 1
-    &quot;&quot;&quot;Lowercase, i.e. `hello, world!`&quot;&quot;&quot;
+    <span class="n">LOWER</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lowercase, i.e. `hello, world!`&quot;&quot;&quot;</span>
 
-    UPPER = 2
-    &quot;&quot;&quot;Uppercase, i.e. `Hello, World!`&quot;&quot;&quot;
+    <span class="n">UPPER</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Uppercase, i.e. `Hello, World!`&quot;&quot;&quot;</span>
 
-def hello_world(capitalization: &quot;Capitalization&quot;) -&gt; &quot;str&quot;:
-    &quot;&quot;&quot;Return a greeting message, using `capitalization` for capitalization&quot;&quot;&quot;
-    ..
-</code></pre>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">capitalization</span><span class="p">:</span> <span class="s2">&quot;Capitalization&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;str&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a greeting message, using `capitalization` for capitalization&quot;&quot;&quot;</span>
+    <span class="o">..</span>
+</code></pre></div>
 
 
 
@@ -1628,7 +1628,7 @@ def hello_world(capitalization: &quot;Capitalization&quot;) -&gt; &quot;str&quot
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

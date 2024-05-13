@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1479,21 +1479,20 @@ giving more detail.</p>
 <p>If your crate has types defined via <code>#[uniffi::export]</code> etc you can make them available
 to the UDL file in your own crate via a <code>typedef</code> with a <code>[Rust=]</code> attribute. Eg, your Rust
 might have:</p>
-<pre><code class="language-rust">#[derive(uniffi::Record)]
-pub struct One {
-    inner: i32,
-}
-</code></pre>
-<p>you can use it in your UDL:</p>
-<pre><code class="language-idl">[Rust=&quot;record&quot;]
-typedef extern One;
+<p><div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">One</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">inner</span><span class="p">:</span><span class="w"> </span><span class="kt">i32</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+you can use it in your UDL:</p>
+<div class="highlight"><pre><span></span><code>[Rust<span class="o">=</span><span class="s2">&quot;record&quot;</span>]
+typedef<span class="w"> </span>extern<span class="w"> </span>One;
 
-namespace app {
-    // use the procmacro type.
-    One get_one(One? one);
+namespace<span class="w"> </span>app<span class="w"> </span>{
+<span class="w">    </span><span class="o">//</span><span class="w"> </span>use<span class="w"> </span>the<span class="w"> </span>procmacro<span class="w"> </span>type.
+<span class="w">    </span>One<span class="w"> </span>get_one(One?<span class="w"> </span>one);
 }
-
-</code></pre>
+</code></pre></div>
 <p>Supported values:
 *  "enum", "trait", "callback", "trait_with_foreign"
 * For records, either "record" or "dictionary"
@@ -1547,7 +1546,7 @@ namespace app {
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

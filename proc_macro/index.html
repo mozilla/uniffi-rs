@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1753,157 +1753,157 @@ true for all of UniFFI, so proceed with caution and the knowledge that things ma
 <h2 id="build-workflow">Build workflow</h2>
 <p>Be sure to use library mode when using UniFFI proc-macros (See the <a href="../tutorial/foreign_language_bindings.html">Foreign language bindings docs</a> for more info).</p>
 <p>If your crate's API is declared using only proc-macros and not UDL files, call the <code>uniffi::setup_scaffolding</code> macro at the top of your source code:</p>
-<pre><code class="language-rust">uniffi::setup_scaffolding!();
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">setup_scaffolding</span><span class="o">!</span><span class="p">();</span>
+</code></pre></div>
 <p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>
 <h2 id="the-uniffiexport-attribute">The <code>#[uniffi::export]</code> attribute</h2>
 <p>The most important proc-macro is the <code>export</code> attribute. It can be used on functions, <code>impl</code>
 blocks, and <code>trait</code> definitions to make UniFFI aware of them.</p>
-<pre><code class="language-rust">#[uniffi::export]
-fn hello_ffi() {
-    println!(&quot;Hello from Rust!&quot;);
-}
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">hello_ffi</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;Hello from Rust!&quot;</span><span class="p">);</span>
+<span class="p">}</span>
 
-// Corresponding UDL:
-//
-// interface MyObject {};
-#[derive(uniffi::Object)] 
-struct MyObject {
-    // ...
-}
+<span class="c1">// Corresponding UDL:</span>
+<span class="c1">//</span>
+<span class="c1">// interface MyObject {};</span>
+<span class="cp">#[derive(uniffi::Object)]</span><span class="w"> </span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">MyObject</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
 
-#[uniffi::export]
-impl MyObject {
-    // Constructors need to be annotated as such.
-    // The return value can be either `Self` or `Arc&lt;Self&gt;`
-    // It is treated as the primary constructor, so in most languages this is invoked with
-    `MyObject()`.
-    #[uniffi::constructor]
-    fn new(argument: String) -&gt; Arc&lt;Self&gt; {
-        // ...
-    }
+<span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">MyObject</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Constructors need to be annotated as such.</span>
+<span class="w">    </span><span class="c1">// The return value can be either `Self` or `Arc&lt;Self&gt;`</span>
+<span class="w">    </span><span class="c1">// It is treated as the primary constructor, so in most languages this is invoked with</span>
+<span class="w">    </span><span class="err">`</span><span class="n">MyObject</span><span class="p">()</span><span class="err">`</span><span class="p">.</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="n">argument</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">}</span>
 
-    // Constructors with different names are also supported, usually invoked
-    // as `MyObject.named()` (depending on the target language)
-    #[uniffi::constructor]
-    fn named() -&gt; Arc&lt;Self&gt; {
-        // ...
-    }
+<span class="w">    </span><span class="c1">// Constructors with different names are also supported, usually invoked</span>
+<span class="w">    </span><span class="c1">// as `MyObject.named()` (depending on the target language)</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">named</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">}</span>
 
-    // All functions that are not constructors must have a `self` argument
-    fn method_a(&amp;self) {
-        // ...
-    }
+<span class="w">    </span><span class="c1">// All functions that are not constructors must have a `self` argument</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">method_a</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">}</span>
 
-    // Returning objects is also supported, either as `Self` or `Arc&lt;Self&gt;`
-    fn method_b(self: Arc&lt;Self&gt;) {
-        // ...
-    }
-}
+<span class="w">    </span><span class="c1">// Returning objects is also supported, either as `Self` or `Arc&lt;Self&gt;`</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">method_b</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 
-// Corresponding UDL:
-// [Trait]
-// interface MyTrait {};
-#[uniffi::export]
-trait MyTrait {
-    // ...
-}
+<span class="c1">// Corresponding UDL:</span>
+<span class="c1">// [Trait]</span>
+<span class="c1">// interface MyTrait {};</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">trait</span><span class="w"> </span><span class="n">MyTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
 
-// Corresponding UDL:
-// [Trait, WithForeign]
-// interface MyTrait {};
-#[uniffi::export(with_foreign)]
-trait MyTrait {
-    // ...
-}
-</code></pre>
+<span class="c1">// Corresponding UDL:</span>
+<span class="c1">// [Trait, WithForeign]</span>
+<span class="c1">// interface MyTrait {};</span>
+<span class="cp">#[uniffi::export(with_foreign)]</span>
+<span class="k">trait</span><span class="w"> </span><span class="n">MyTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>All owned <a href="../udl/builtin_types.html">builtin types</a> and user-defined types can be used as arguments
 and return types.</p>
 <p>Arguments and receivers can also be references to these types, for example:</p>
-<pre><code class="language-rust">// Input data types as references
-#[uniffi::export]
-fn process_data(a: &amp;MyRecord, b: &amp;MyEnum, c: Option&lt;&amp;MyRecord&gt;) {
-    ...
-}
+<div class="highlight"><pre><span></span><code><span class="c1">// Input data types as references</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">MyRecord</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">MyEnum</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;&amp;</span><span class="n">MyRecord</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
 
-#[uniffi::export]
-impl Foo {
-  // Methods can take a `&amp;self`, which will be borrowed from `Arc&lt;Self&gt;`
-  fn some_method(&amp;self) {
-    ...
-  }
-}
+<span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Methods can take a `&amp;self`, which will be borrowed from `Arc&lt;Self&gt;`</span>
+<span class="w">  </span><span class="k">fn</span><span class="w"> </span><span class="nf">some_method</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 
-// Input foo as an Arc and bar as a reference
-fn call_both(foo: Arc&lt;Foo&gt;, bar: &amp;Foo) {
-  foo.some_method();
-  bar.some_method();
-}
-</code></pre>
+<span class="c1">// Input foo as an Arc and bar as a reference</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">call_both</span><span class="p">(</span><span class="n">foo</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="n">Foo</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">bar</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Foo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">foo</span><span class="p">.</span><span class="n">some_method</span><span class="p">();</span>
+<span class="w">  </span><span class="n">bar</span><span class="p">.</span><span class="n">some_method</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>The one restriction is that the reference must be visible in the function signature.  This wouldn't
 work:</p>
-<pre><code class="language-rust">type MyFooRef = &amp;'static Foo;
+<div class="highlight"><pre><span></span><code><span class="k">type</span><span class="w"> </span><span class="nc">MyFooRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;&#39;</span><span class="nb">static</span><span class="w"> </span><span class="n">Foo</span><span class="p">;</span>
 
-// ERROR: UniFFI won't recognize that the `foo` argument is a reference.
-#[uniffi::export]
-fn do_something(foo: MyFooRef) {
-}
-</code></pre>
+<span class="c1">// ERROR: UniFFI won&#39;t recognize that the `foo` argument is a reference.</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="n">foo</span><span class="p">:</span><span class="w"> </span><span class="nc">MyFooRef</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="p">}</span>
+</code></pre></div>
 <h3 id="default-values">Default values</h3>
 <p>Exported functions/methods can have default values using the <code>default</code> argument of the attribute macro that wraps them.
 <code>default</code> inputs a comma-separated list of <code>[name]=[value]</code> items.</p>
-<pre><code class="language-rust">#[uniffi::export(default(text = &quot; &quot;, max_splits = None))]
-pub fn split(
-    text: String,
-    sep: String,
-    max_splits: Option&lt;u32&gt;,
-) -&gt; Vec&lt;String&gt; {
-  ...
-}
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(default(text = </span><span class="s">&quot; &quot;</span><span class="cp">, max_splits = None))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
+<span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sep</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="n">max_splits</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
 
-#[derive(uniffi::Object)]
-pub struct TextSplitter { ... }
+<span class="cp">#[derive(uniffi::Object)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TextSplitter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 
-#[uniffi::export]
-impl TextSplitter {
-    #[uniffi::constructor(default(ignore_unicode_errors = false))]
-    fn new(ignore_unicode_errors: boolean) -&gt; Self {
-        ...
-    }
+<span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">TextSplitter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor(default(ignore_unicode_errors = false))]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="n">ignore_unicode_errors</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">..</span><span class="p">.</span>
+<span class="w">    </span><span class="p">}</span>
 
-    #[uniffi::method(default(text = &quot; &quot;, max_splits = None))]
-    fn split(
-        text: String,
-        sep: String,
-        max_splits: Option&lt;u32&gt;,
-    ) -&gt; Vec&lt;String&gt; {
-      ...
-    }
-}
-</code></pre>
+<span class="w">    </span><span class="cp">#[uniffi::method(default(text = </span><span class="s">&quot; &quot;</span><span class="cp">, max_splits = None))]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
+<span class="w">        </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">        </span><span class="n">sep</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">        </span><span class="n">max_splits</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="o">..</span><span class="p">.</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>Supported default values:
   - String, integer, float, and boolean literals
   - <code>[]</code> for empty Vecs
   - <code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></p>
 <h3 id="renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</h3>
 <p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
-<pre><code class="language-rust">#[uniffi::export(name = &quot;something&quot;)]
-fn do_something() {
-}
-</code></pre>
-<p>will be exposed to foreign bindings as a namespace function <code>something()</code></p>
-<p>You can also rename constructors and methods:</p>
-<pre><code class="language-rust">#[uniffi::export]
-impl Something {
-    // Set this as the default constructor by naming it `new`
-    #[uniffi::constructor(name = &quot;new&quot;)]
-    fn make_new() -&gt; Arc&lt;Self&gt; { ... }
+<p><div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(name = </span><span class="s">&quot;something&quot;</span><span class="cp">)]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">do_something</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="p">}</span>
+</code></pre></div>
+will be exposed to foreign bindings as a namespace function <code>something()</code></p>
+<p>You can also rename constructors and methods:
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Something</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Set this as the default constructor by naming it `new`</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor(name = </span><span class="s">&quot;new&quot;</span><span class="cp">)]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">make_new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 
-    // Expose this as `obj.something()`
-    #[uniffi::method(name = &quot;something&quot;)]
-    fn do_something(&amp;self) { }
-}
-</code></pre>
+<span class="w">    </span><span class="c1">// Expose this as `obj.something()`</span>
+<span class="w">    </span><span class="cp">#[uniffi::method(name = </span><span class="s">&quot;something&quot;</span><span class="cp">)]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
 <h2 id="the-uniffirecord-derive">The <code>uniffi::Record</code> derive</h2>
 <p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
 supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types
@@ -1912,17 +1912,17 @@ here.</p>
 field types are UniFFI builtin types; user-defined types might be allowed in the future. You also
 have to maintain a consistent field order between the Rust and UDL files (otherwise compilation
 will fail).</p>
-<pre><code class="language-rust">#[derive(uniffi::Record)]
-pub struct MyRecord {
-    pub field_a: String,
-    pub field_b: Option&lt;Arc&lt;MyObject&gt;&gt;,
-    // Fields can have a default values
-    #[uniffi(default = &quot;hello&quot;)]
-    pub greeting: String,
-    #[uniffi(default = true)]
-    pub some_flag: bool,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyRecord</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">field_a</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">field_b</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">MyObject</span><span class="o">&gt;&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// Fields can have a default values</span>
+<span class="w">    </span><span class="cp">#[uniffi(default = </span><span class="s">&quot;hello&quot;</span><span class="cp">)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">greeting</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="cp">#[uniffi(default = true)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">some_flag</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="the-uniffienum-derive">The <code>uniffi::Enum</code> derive</h2>
 <p>The <code>Enum</code> derive macro works much like the <code>Record</code> derive macro. Any fields inside variants must
 be named. All types that are supported as parameter and return types by <code>#[uniffi::export]</code> are
@@ -1930,62 +1930,62 @@ also supported as field types.</p>
 <p>It is permitted to use this macro on a type that is also defined in the UDL file as long as the
 two definitions are equal in the names and ordering of variants and variant fields, and any field
 types inside variants are UniFFI builtin types; user-defined types might be allowed in the future.</p>
-<pre><code class="language-rust">#[derive(uniffi::Enum)]
-pub enum MyEnum {
-    Fieldless,
-    WithFields {
-        foo: u8,
-        bar: Vec&lt;i32&gt;,
-    },
-    WithValue = 3,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Fieldless</span><span class="p">,</span>
+<span class="w">    </span><span class="n">WithFields</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">foo</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span>
+<span class="w">        </span><span class="n">bar</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="n">WithValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <h3 id="variant-discriminants">Variant Discriminants</h3>
 <p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.</p>
 <p>For example this enum:</p>
-<pre><code class="language-rust">#[derive(uniffi::Enum)]
-pub enum MyEnum {
-    Foo = 3,
-    Bar = 4,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>would give you in Kotlin &amp; Swift:</p>
-<pre><code class="language-swift">// kotlin
-enum class MyEnum {
-    FOO,
-    BAR;
-    companion object
-}
-// swift
-public enum MyEnum {
-    case foo
-    case bar
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1">// kotlin</span>
+<span class="kd">enum</span> <span class="nc">class</span> <span class="n">MyEnum</span> <span class="p">{</span>
+    <span class="n">FOO</span><span class="p">,</span>
+    <span class="n">BAR</span><span class="p">;</span>
+    <span class="n">companion</span> <span class="n">object</span>
+<span class="p">}</span>
+<span class="c1">// swift</span>
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">MyEnum</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">foo</span>
+    <span class="k">case</span> <span class="n">bar</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>which means you cannot use the platforms helpful methods like <code>value</code> or <code>rawValue</code> to get the underlying discriminants. Adding a <code>repr</code> will allow the type to be defined in the foreign bindings.</p>
 <p>For example:</p>
-<pre><code class="language-rust">// added the repr(u8), also u16 -&gt; u64 supported
-#[repr(u8)]
-#[derive(uniffi::Enum)]
-pub enum MyEnum {
-    Foo = 3,
-    Bar = 4,
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1">// added the repr(u8), also u16 -&gt; u64 supported</span>
+<span class="cp">#[repr(u8)]</span>
+<span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>will now generate:</p>
-<pre><code class="language-swift">// kotlin
-enum class MyEnum(val value: UByte) {
-    FOO(3u),
-    BAR(4u);
-    companion object
-}
+<div class="highlight"><pre><span></span><code><span class="c1">// kotlin</span>
+<span class="kd">enum</span> <span class="nc">class</span> <span class="n">MyEnum</span><span class="p">(</span><span class="n">val</span> <span class="n">value</span><span class="p">:</span> <span class="n">UByte</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">FOO</span><span class="p">(</span><span class="mi">3</span><span class="n">u</span><span class="p">),</span>
+    <span class="n">BAR</span><span class="p">(</span><span class="mi">4</span><span class="n">u</span><span class="p">);</span>
+    <span class="n">companion</span> <span class="n">object</span>
+<span class="p">}</span>
 
-// swift
-public enum MyEnum : UInt8 {
-    case foo = 3
-    case bar = 4
-}
-</code></pre>
+<span class="c1">// swift</span>
+<span class="kd">public</span> <span class="kd">enum</span> <span class="nc">MyEnum</span> <span class="p">:</span> <span class="nb">UInt8</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">foo</span> <span class="p">=</span> <span class="mi">3</span>
+    <span class="k">case</span> <span class="n">bar</span> <span class="p">=</span> <span class="mi">4</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="the-uniffiobject-derive">The <code>uniffi::Object</code> derive</h2>
 <p>This derive can be used to replace an <code>interface</code> definition in UDL. Every object type must have
 <em>either</em> an <code>interface</code> definition in UDL <em>or</em> use this derive macro. However, <code>#[uniffi::export]</code>
@@ -1993,66 +1993,66 @@ can be used on an impl block for an object type regardless of whether this deriv
 also mix and match, and define some method of an object via proc-macro while falling back to UDL
 for methods that are not supported by <code>#[uniffi::export]</code> yet; just make sure to use separate
 <code>impl</code> blocks:</p>
-<pre><code class="language-idl">// UDL file
+<div class="highlight"><pre><span></span><code><span class="o">//</span><span class="w"> </span>UDL<span class="w"> </span>file
 
-interface Foo {
-    void method_a();
+interface<span class="w"> </span>Foo<span class="w"> </span>{
+<span class="w">    </span>void<span class="w"> </span>method_a();
 };
-</code></pre>
-<pre><code class="language-rust">// Rust file
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// Rust file</span>
 
-// Not deriving uniffi::Object since it is defined in UDL
-struct Foo {
-    // ...
-}
+<span class="c1">// Not deriving uniffi::Object since it is defined in UDL</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Foo</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
 
-// Implementation of the method defined in UDL
-impl Foo {
-    fn method_a(&amp;self) {
-        // ...
-    }
-}
+<span class="c1">// Implementation of the method defined in UDL</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">method_a</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 
-// Another impl block with an additional method
-#[uniffi::export]
-impl Foo {
-    fn method_b(&amp;self) {
-        // ...
-    }
-}
-</code></pre>
+<span class="c1">// Another impl block with an additional method</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">method_b</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="the-unifficustom_type-and-unifficustom_newtype-macros">The <code>uniffi::custom_type</code> and <code>uniffi::custom_newtype</code> macros</h2>
 <p>There are 2 macros available which allow procmacros to support "custom types" as described in the
 <a href="../udl/custom_types.html">UDL documentation for Custom Types</a></p>
 <p>The <code>uniffi::custom_type!</code> macro requires you to specify the name of the custom type, and the name of the
 builtin which implements this type. Use of this macro requires you to manually implement the
-<code>UniffiCustomTypeConverter</code> trait for for your type, as shown below.</p>
-<pre><code class="language-rust">pub struct Uuid {
-    val: String,
-}
+<code>UniffiCustomTypeConverter</code> trait for for your type, as shown below.
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Uuid</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
 
-// Use `Uuid` as a custom type, with `String` as the Builtin
-uniffi::custom_type!(Uuid, String);
+<span class="c1">// Use `Uuid` as a custom type, with `String` as the Builtin</span>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">Uuid</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span><span class="p">);</span>
 
-impl UniffiCustomTypeConverter for Uuid {
-    type Builtin = String;
+<span class="k">impl</span><span class="w"> </span><span class="n">UniffiCustomTypeConverter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Uuid</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="nc">Builtin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
 
-    fn into_custom(val: Self::Builtin) -&gt; uniffi::Result&lt;Self&gt; {
-        Ok(Uuid { val })
-    }
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">into_custom</span><span class="p">(</span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">uniffi</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Uuid</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="p">})</span>
+<span class="w">    </span><span class="p">}</span>
 
-    fn from_custom(obj: Self) -&gt; Self::Builtin {
-        obj.val
-    }
-}
-</code></pre>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">from_custom</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">obj</span><span class="p">.</span><span class="n">val</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
 <p>There's also a <code>uniffi::custom_newtype!</code> macro, designed for custom types which use the
 "new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
 is able to make assumptions about how the type is laid out, <code>UniffiCustomTypeConverter</code>
 is implemented automatically.</p>
-<pre><code class="language-rust">uniffi::custom_newtype!(NewTypeHandle, i64);
-pub struct NewtypeHandle(i64);
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_newtype</span><span class="o">!</span><span class="p">(</span><span class="n">NewTypeHandle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="p">);</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">NewtypeHandle</span><span class="p">(</span><span class="kt">i64</span><span class="p">);</span>
+</code></pre></div>
 <p>and that's it!</p>
 <h2 id="the-uniffierror-derive">The <code>uniffi::Error</code> derive</h2>
 <p>The <code>Error</code> derive registers a type as an error and can be used on any enum that the <code>Enum</code> derive also accepts.
@@ -2060,61 +2060,61 @@ By default, it exposes any variant fields to the foreign code.
 This type can then be used as the <code>E</code> in a <code>Result&lt;T, E&gt;</code> return type of an exported function or method.
 The generated foreign function for an exported function with a <code>Result&lt;T, E&gt;</code> return type
 will have the result's <code>T</code> as its return type and throw the error in case the Rust call returns <code>Err(e)</code>.</p>
-<pre><code class="language-rust">#[derive(uniffi::Error)]
-pub enum MyError {
-    MissingInput,
-    IndexOutOfBounds {
-        index: u32,
-        size: u32,
-    }
-    Generic {
-        message: String,
-    }
-}
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Error)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">MissingInput</span><span class="p">,</span>
+<span class="w">    </span><span class="n">IndexOutOfBounds</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">index</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
+<span class="w">        </span><span class="n">size</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Generic</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 
-#[uniffi::export]
-fn do_thing() -&gt; Result&lt;(), MyError&gt; {
-    // ...
-}
-</code></pre>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">do_thing</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">MyError</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>You can also use the helper attribute <code>#[uniffi(flat_error)]</code> to expose just the variants but none of the fields.
 In this case the error will be serialized using Rust's <code>ToString</code> trait
 and will be accessible as the only field on each of the variants.
 For flat errors your variants can have unnamed fields,
 and the types of the fields don't need to implement any special traits.</p>
-<pre><code class="language-rust">#[derive(uniffi::Error)]
-#[uniffi(flat_error)]
-pub enum MyApiError {
-    Http(reqwest::Error),
-    Json(serde_json::Error),
-}
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Error)]</span>
+<span class="cp">#[uniffi(flat_error)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyApiError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Http</span><span class="p">(</span><span class="n">reqwest</span><span class="p">::</span><span class="n">Error</span><span class="p">),</span>
+<span class="w">    </span><span class="n">Json</span><span class="p">(</span><span class="n">serde_json</span><span class="p">::</span><span class="n">Error</span><span class="p">),</span>
+<span class="p">}</span>
 
-// ToString is not usually implemented directly, but you get it for free by implementing Display.
-// This impl could also be generated by a proc-macro, for example thiserror::Error.
-impl std::fmt::Display for MyApiError {
-    // ...
-}
+<span class="c1">// ToString is not usually implemented directly, but you get it for free by implementing Display.</span>
+<span class="c1">// This impl could also be generated by a proc-macro, for example thiserror::Error.</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">std</span><span class="p">::</span><span class="n">fmt</span><span class="p">::</span><span class="n">Display</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">MyApiError</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
 
-#[uniffi::export]
-fn do_http_request() -&gt; Result&lt;(), MyApiError&gt; {
-    // ...
-}
-</code></pre>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">do_http_request</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">(),</span><span class="w"> </span><span class="n">MyApiError</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="the-uniffiexportcallback_interface-attribute">The <code>#[uniffi::export(callback_interface)]</code> attribute</h2>
 <p><code>#[uniffi::export(callback_interface)]</code> can be used to export a <a href="../udl/callback_interfaces.html">callback interface</a> definition.
 This allows the foreign bindings to implement the interface and pass an instance to the Rust code.</p>
-<pre><code class="language-rust">#[uniffi::export(callback_interface)]
-pub trait Person {
-    fn name() -&gt; String;
-    fn age() -&gt; u32;
-}
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(callback_interface)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Person</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">age</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u32</span><span class="p">;</span>
+<span class="p">}</span>
 
-// Corresponding UDL:
-// callback interface Person {
-//     string name();
-//     u32 age();
-// }
-</code></pre>
+<span class="c1">// Corresponding UDL:</span>
+<span class="c1">// callback interface Person {</span>
+<span class="c1">//     string name();</span>
+<span class="c1">//     u32 age();</span>
+<span class="c1">// }</span>
+</code></pre></div>
 <h2 id="types-from-dependent-crates">Types from dependent crates</h2>
 <p>When using proc-macros, you can use types from dependent crates in your exported library, as long as
 the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
@@ -2122,11 +2122,11 @@ exceptions:</p>
 <h3 id="types-from-udl-based-dependent-crates">Types from UDL-based dependent crates</h3>
 <p>If the dependent crate uses a UDL file to define their types, then you must invoke one of the
 <code>uniffi::use_udl_*!</code> macros, for example:</p>
-<pre><code class="language-rust">uniffi::use_udl_record!(dependent_crate, RecordType);
-uniffi::use_udl_enum!(dependent_crate, EnumType);
-uniffi::use_udl_error!(dependent_crate, ErrorType);
-uniffi::use_udl_object!(dependent_crate, ObjectType);
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_record</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">RecordType</span><span class="p">);</span>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_enum</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">EnumType</span><span class="p">);</span>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_error</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">ErrorType</span><span class="p">);</span>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_object</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">ObjectType</span><span class="p">);</span>
+</code></pre></div>
 <h3 id="non-uniffi-types-from-dependent-crates">Non-UniFFI types from dependent crates</h3>
 <p>If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
 then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
@@ -2184,7 +2184,7 @@ namespace in your UDL file. This restriction will be lifted in the future.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

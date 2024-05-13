@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1518,22 +1518,22 @@
 </tbody>
 </table>
 <h2 id="example">Example</h2>
-<p>Custom types</p>
-<pre><code class="language-toml"># Assuming a Custom Type named URL using a String as the builtin.
-[bindings.kotlin.custom_types.Url]
-# Name of the type in the Kotlin code
-type_name = &quot;URL&quot;
-# Classes that need to be imported
-imports = [ &quot;java.net.URI&quot;, &quot;java.net.URL&quot; ]
-# Functions to convert between strings and URLs
-into_custom = &quot;URI({}).toURL()&quot;
-from_custom = &quot;{}.toString()&quot;
-</code></pre>
-<p>External types</p>
-<pre><code class="language-toml">[bindings.kotlin.external_packages]
-# This specifies that external types from the crate `rust-crate-name` will be referred by by the package `&quot;kotlin.package.name`.
-rust-crate-name = &quot;kotlin.package.name&quot;
-</code></pre>
+<p>Custom types
+<div class="highlight"><pre><span></span><code><span class="c1"># Assuming a Custom Type named URL using a String as the builtin.</span>
+<span class="k">[bindings.kotlin.custom_types.Url]</span>
+<span class="c1"># Name of the type in the Kotlin code</span>
+<span class="n">type_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URL&quot;</span>
+<span class="c1"># Classes that need to be imported</span>
+<span class="n">imports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;java.net.URI&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;java.net.URL&quot;</span><span class="w"> </span><span class="p">]</span>
+<span class="c1"># Functions to convert between strings and URLs</span>
+<span class="n">into_custom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URI({}).toURL()&quot;</span>
+<span class="n">from_custom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{}.toString()&quot;</span>
+</code></pre></div></p>
+<p>External types
+<div class="highlight"><pre><span></span><code><span class="k">[bindings.kotlin.external_packages]</span>
+<span class="c1"># This specifies that external types from the crate `rust-crate-name` will be referred by by the package `&quot;kotlin.package.name`.</span>
+<span class="n">rust-crate-name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;kotlin.package.name&quot;</span>
+</code></pre></div></p>
 
 
 
@@ -1583,7 +1583,7 @@ rust-crate-name = &quot;kotlin.package.name&quot;
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

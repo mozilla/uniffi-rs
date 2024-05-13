@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1471,20 +1471,20 @@
 <p>Here we will be creating a <code>math</code> library - so we assume a <code>cargo new --lib math</code> environment.</p>
 <h2 id="add-uniffi-as-a-dependency-and-build-dependency">Add <code>uniffi</code> as a dependency and build-dependency</h2>
 <p>In your crate's <code>Cargo.toml</code> add:</p>
-<pre><code class="language-toml">[dependencies]
-uniffi = { version = &quot;[latest-version]&quot; }
+<div class="highlight"><pre><span></span><code><span class="k">[dependencies]</span>
+<span class="n">uniffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;[latest-version]&quot;</span><span class="w"> </span><span class="p">}</span>
 
-[build-dependencies]
-uniffi = { version = &quot;[latest-version]&quot;, features = [ &quot;build&quot; ] }
-</code></pre>
+<span class="k">[build-dependencies]</span>
+<span class="n">uniffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;[latest-version]&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">features</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;build&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
 <p>UniFFI has not reached version <code>1.0</code> yet.  Versions are typically specified as <code>0.[minor-version]</code>.</p>
 <h2 id="build-your-crate-as-a-cdylib">Build your crate as a cdylib</h2>
-<p>Ensure your crate builds as a <code>cdylib</code> so looks something like</p>
-<pre><code class="language-toml">[lib]
-crate-type = [&quot;cdylib&quot;]
-name = &quot;math&quot; # This is our crate name in this tutorial
-</code></pre>
-<p>to your crate's <code>Cargo.toml</code>.</p>
+<p>Ensure your crate builds as a <code>cdylib</code> so looks something like
+<div class="highlight"><pre><span></span><code><span class="k">[lib]</span>
+<span class="n">crate-type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;cdylib&quot;</span><span class="p">]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;math&quot;</span><span class="w"> </span><span class="c1"># This is our crate name in this tutorial</span>
+</code></pre></div>
+to your crate's <code>Cargo.toml</code>.</p>
 <p><strong>Note:</strong> You also need to add <code>staticlib</code> crate type if you target iOS.</p>
 
 
@@ -1535,7 +1535,7 @@ name = &quot;math&quot; # This is our crate name in this tutorial
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

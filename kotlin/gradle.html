@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1506,19 +1506,19 @@
 
 <h1 id="integrating-with-gradle">Integrating with Gradle</h1>
 <p>It is possible to generate Kotlin bindings at compile time for Kotlin Android projects. We'd like to make a gradle plugin for that, but until then you can add to your <code>build.gradle</code> the following:</p>
-<pre><code class="language-groovy">android.libraryVariants.all { variant -&gt;
-    def t = tasks.register(&quot;generate${variant.name.capitalize()}UniFFIBindings&quot;, Exec) {
-        workingDir &quot;${project.projectDir}&quot;
-        // Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable
-        commandLine 'uniffi-bindgen', 'generate', '&lt;PATH TO .udl FILE&gt;', '--language', 'kotlin', '--out-dir', &quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;
-    }
-    variant.javaCompileProvider.get().dependsOn(t)
-    def sourceSet = variant.sourceSets.find { it.name == variant.name }
-    sourceSet.java.srcDir new File(buildDir, &quot;generated/source/uniffi/${variant.name}/java&quot;)
-    // XXX: I've been trying to make this work but I can't, so the compiled bindings will show as &quot;regular sources&quot; in Android Studio.
-    idea.module.generatedSourceDirs += file(&quot;${buildDir}/generated/source/uniffi/${variant.name}/java/uniffi&quot;)
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">android</span><span class="o">.</span><span class="na">libraryVariants</span><span class="o">.</span><span class="na">all</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">variant</span><span class="w"> </span><span class="o">-&gt;</span>
+<span class="w">    </span><span class="kt">def</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tasks</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="s2">&quot;generate${variant.name.capitalize()}UniFFIBindings&quot;</span><span class="o">,</span><span class="w"> </span><span class="n">Exec</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="n">workingDir</span><span class="w"> </span><span class="s2">&quot;${project.projectDir}&quot;</span>
+<span class="w">        </span><span class="c1">// Runs the bindings generation, note that you must have uniffi-bindgen installed and in your PATH environment variable</span>
+<span class="w">        </span><span class="n">commandLine</span><span class="w"> </span><span class="s1">&#39;uniffi-bindgen&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;generate&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;&lt;PATH TO .udl FILE&gt;&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;--language&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;kotlin&#39;</span><span class="o">,</span><span class="w"> </span><span class="s1">&#39;--out-dir&#39;</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;${buildDir}/generated/source/uniffi/${variant.name}/java&quot;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="n">variant</span><span class="o">.</span><span class="na">javaCompileProvider</span><span class="o">.</span><span class="na">get</span><span class="o">().</span><span class="na">dependsOn</span><span class="o">(</span><span class="n">t</span><span class="o">)</span>
+<span class="w">    </span><span class="kt">def</span><span class="w"> </span><span class="n">sourceSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variant</span><span class="o">.</span><span class="na">sourceSets</span><span class="o">.</span><span class="na">find</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">it</span><span class="o">.</span><span class="na">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">variant</span><span class="o">.</span><span class="na">name</span><span class="w"> </span><span class="o">}</span>
+<span class="w">    </span><span class="n">sourceSet</span><span class="o">.</span><span class="na">java</span><span class="o">.</span><span class="na">srcDir</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">File</span><span class="o">(</span><span class="n">buildDir</span><span class="o">,</span><span class="w"> </span><span class="s2">&quot;generated/source/uniffi/${variant.name}/java&quot;</span><span class="o">)</span>
+<span class="w">    </span><span class="c1">// XXX: I&#39;ve been trying to make this work but I can&#39;t, so the compiled bindings will show as &quot;regular sources&quot; in Android Studio.</span>
+<span class="w">    </span><span class="n">idea</span><span class="o">.</span><span class="na">module</span><span class="o">.</span><span class="na">generatedSourceDirs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">file</span><span class="o">(</span><span class="s2">&quot;${buildDir}/generated/source/uniffi/${variant.name}/java/uniffi&quot;</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div>
 <p>The generated bindings should appear in the project sources in Android Studio.</p>
 <h2 id="using-experimental-unsigned-types">Using experimental unsigned types</h2>
 <p>Unsigned integers in the defined API are translated to their equivalents in the foreign language binding, e.g. <code>u32</code> becomes Kotlin's <code>UInt</code> type.
@@ -1528,16 +1528,16 @@ As such they require explicit annotations to suppress warnings.
 Uniffi is trying to add these annotations where necessary,
 but currently misses some places, see <a href="https://github.com/mozilla/uniffi-rs/pull/977">PR #977</a> for details.</p>
 <p>To suppress all warnings for experimental unsigned types add this to your project's <code>build.gradle</code> file:</p>
-<pre><code class="language-groovy">allprojects {
-   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-        kotlinOptions {
-            freeCompilerArgs += [
-                &quot;-Xuse-experimental=kotlin.ExperimentalUnsignedTypes&quot;,
-            ]
-        }
-    }
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">allprojects</span><span class="w"> </span><span class="o">{</span>
+<span class="w">   </span><span class="n">tasks</span><span class="o">.</span><span class="na">withType</span><span class="o">(</span><span class="n">org</span><span class="o">.</span><span class="na">jetbrains</span><span class="o">.</span><span class="na">kotlin</span><span class="o">.</span><span class="na">gradle</span><span class="o">.</span><span class="na">tasks</span><span class="o">.</span><span class="na">KotlinCompile</span><span class="o">).</span><span class="na">all</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="n">kotlinOptions</span><span class="w"> </span><span class="o">{</span>
+<span class="w">            </span><span class="n">freeCompilerArgs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="o">[</span>
+<span class="w">                </span><span class="s2">&quot;-Xuse-experimental=kotlin.ExperimentalUnsignedTypes&quot;</span><span class="o">,</span>
+<span class="w">            </span><span class="o">]</span>
+<span class="w">        </span><span class="o">}</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
 <blockquote>
 <h2 id="update">Update</h2>
 <p>As of <a href="https://github.com/mozilla/uniffi-rs/pull/993">PR #993</a>, the Kotlin backend was refactored, and it became harder to support the
@@ -1547,17 +1547,17 @@ but currently misses some places, see <a href="https://github.com/mozilla/uniffi
 <p>UniFFI relies on <a href="https://github.com/java-native-access/jna">JNA</a> for the ability to call native methods.
 JNA 5.12.0 or greater is required.</p>
 <p>Set the dependency in your <code>build.gradle</code>:</p>
-<pre><code class="language-groovy">dependencies {
-    implementation &quot;net.java.dev.jna:jna:5.12.0@aar&quot;
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">dependencies</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">implementation</span><span class="w"> </span><span class="s2">&quot;net.java.dev.jna:jna:5.12.0@aar&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
 <h2 id="coroutines-dependency">Coroutines dependency</h2>
 <p>UniFFI relies on <a href="https://github.com/Kotlin/kotlinx.coroutines">kotlinx coroutines core</a> for future and async support. Version 1.6 or greater is required.</p>
 <p>Set the dependency in your <code>build.gradle</code>:</p>
-<pre><code class="language-groovy">dependencies {
-    implementation &quot;org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4&quot;
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">dependencies</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">implementation</span><span class="w"> </span><span class="s2">&quot;org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
 
 
 
@@ -1607,7 +1607,7 @@ JNA 5.12.0 or greater is required.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

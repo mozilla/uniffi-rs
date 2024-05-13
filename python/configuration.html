@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1584,19 +1584,19 @@ generate the bindings into this directory.</p>
 <code>from module import Type</code>, so each generated module functions outside a package.
 This is used by some UniFFI tests to avoid the test code needing to create a Python package.</p>
 <h2 id="examples">Examples</h2>
-<p>Custom Types</p>
-<pre><code class="language-toml"># Assuming a Custom Type named URL using a String as the builtin.
-[bindings.python.custom_types.Url]
-imports = [&quot;urllib.parse&quot;]
-# Functions to convert between strings and the ParsedUrl class
-into_custom = &quot;urllib.parse.urlparse({})&quot;
-from_custom = &quot;urllib.parse.urlunparse({})&quot;
-</code></pre>
-<p>External Packages</p>
-<pre><code class="language-toml">[bindings.python.external_packages]
-# An external type `Foo` in `crate-name` (which specifies a namespace of `my_module`) will be referenced via `from MyPackageName.my_module import Foo`
-crate-name = &quot;MyPackageName&quot;
-</code></pre>
+<p>Custom Types
+<div class="highlight"><pre><span></span><code><span class="c1"># Assuming a Custom Type named URL using a String as the builtin.</span>
+<span class="k">[bindings.python.custom_types.Url]</span>
+<span class="n">imports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;urllib.parse&quot;</span><span class="p">]</span>
+<span class="c1"># Functions to convert between strings and the ParsedUrl class</span>
+<span class="n">into_custom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;urllib.parse.urlparse({})&quot;</span>
+<span class="n">from_custom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;urllib.parse.urlunparse({})&quot;</span>
+</code></pre></div></p>
+<p>External Packages
+<div class="highlight"><pre><span></span><code><span class="k">[bindings.python.external_packages]</span>
+<span class="c1"># An external type `Foo` in `crate-name` (which specifies a namespace of `my_module`) will be referenced via `from MyPackageName.my_module import Foo`</span>
+<span class="n">crate-name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;MyPackageName&quot;</span>
+</code></pre></div></p>
 
 
 
@@ -1646,7 +1646,7 @@ crate-name = &quot;MyPackageName&quot;
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

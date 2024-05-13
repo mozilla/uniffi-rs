@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1572,16 +1572,16 @@ This describes how to generate foreign bindings.</p>
 is only available with <a href="https://doc.rust-lang.org/cargo/reference/unstable.html#artifact-dependencies">Cargo nightly</a>.
 To work around this, you need to create a binary in your project that does the same thing.</p>
 <p>Add the following to your <code>Cargo.toml</code>:</p>
-<pre><code class="language-toml">[[bin]]
-# This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.
-name = &quot;uniffi-bindgen&quot;
-path = &quot;uniffi-bindgen.rs&quot;
-</code></pre>
-<p>Create <code>uniffi-bindgen.rs</code>:</p>
-<pre><code class="language-rust">fn main() {
-    uniffi::uniffi_bindgen_main()
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">[[bin]]</span>
+<span class="c1"># This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;uniffi-bindgen&quot;</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;uniffi-bindgen.rs&quot;</span>
+</code></pre></div>
+<p>Create <code>uniffi-bindgen.rs</code>:
+<div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">uniffi</span><span class="p">::</span><span class="n">uniffi_bindgen_main</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></p>
 <p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --features=uniffi/cli --bin uniffi-bindgen [args]</code></p>
 <h3 id="multi-crate-workspaces">Multi-crate workspaces</h3>
 <p>If your project consists of multiple crates in a Cargo workspace, then the process outlined above would require you
@@ -1594,11 +1594,11 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
 This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
 This should be used where possible - some "external type" features don't work otherwise.</p>
-<p>In our example, we generate the bindings with:</p>
-<pre><code>cargo build --release
+<p>In our example, we generate the bindings with:
+<div class="highlight"><pre><span></span><code>cargo build --release
 cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
-</code></pre>
-<p>(maybe <code>.dylib</code>, good luck with <code>.dll</code>!)</p>
+</code></pre></div>
+(maybe <code>.dylib</code>, good luck with <code>.dll</code>!)</p>
 <p>Then look in the <code>out</code> directory.</p>
 <p>When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.</p>
 <p>Library mode comes with some extra requirements:
@@ -1611,15 +1611,15 @@ cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --la
 <p>As noted above, library mode is encouraged - building from a single UDL is not recommended.</p>
 <p>Use the <code>generate</code> command to generate bindings by specifying a UDL file.</p>
 <h3 id="kotlin">Kotlin</h3>
-<p>From the example directory, run:</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
-</code></pre>
-<p>then have a look at <code>src/uniffi/math/math.kt</code></p>
+<p>From the example directory, run:
+<div class="highlight"><pre><span></span><code>cargo run --bin uniffi-bindgen generate src/math.udl --language kotlin
+</code></pre></div>
+then have a look at <code>src/uniffi/math/math.kt</code></p>
 <h3 id="swift">Swift</h3>
-<p>Run</p>
-<pre><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
-</code></pre>
-<p>then check out <code>src/math.swift</code></p>
+<p>Run
+<div class="highlight"><pre><span></span><code>cargo run --bin uniffi-bindgen generate src/math.udl --language swift
+</code></pre></div>
+then check out <code>src/math.swift</code></p>
 <p>Note that these commands could be integrated as part of your gradle/Xcode build process.</p>
 <p>This is it, you have an MVP integration of UniFFI in your project.</p>
 
@@ -1671,7 +1671,7 @@ cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --la
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1471,41 +1471,41 @@
 <h1 id="functions">Functions</h1>
 <p>All top-level <em>functions</em> get exposed through the UDL's <code>namespace</code> block.
 For example, if the crate's <code>lib.rs</code> file contains:</p>
-<pre><code class="language-rust">fn hello_world() -&gt; String {
-    &quot;Hello World!&quot;.to_owned()
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">hello_world</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s">&quot;Hello World!&quot;</span><span class="p">.</span><span class="n">to_owned</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>The UDL file will look like:</p>
-<pre><code class="language-idl">namespace Example {
-    string hello_world();
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>Example<span class="w"> </span>{
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span>hello_world();
 }
-</code></pre>
+</code></pre></div>
 <h2 id="optional-arguments-default-values">Optional arguments &amp; default values</h2>
 <p>Function arguments can be marked <code>optional</code> with a default value specified.</p>
 <p>In the UDL file:</p>
-<pre><code class="language-idl">namespace Example {
-    string hello_name(optional string name = &quot;world&quot;);
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>Example<span class="w"> </span>{
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span>hello_name(optional<span class="w"> </span><span class="nb">string</span><span class="w"> </span>name<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;world&quot;</span>);
 }
-</code></pre>
+</code></pre></div>
 <p>The Rust code will take a required argument:</p>
-<pre><code class="language-rust">fn hello_name(name: String) -&gt; String {
-    format!(&quot;Hello {}&quot;, name)
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">hello_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="fm">format!</span><span class="p">(</span><span class="s">&quot;Hello {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>The generated foreign-language bindings will use function parameters with default values.
 This works for the Kotlin, Swift and Python targets.</p>
 <p>For example the generated Kotlin code will be equivalent to:</p>
-<pre><code class="language-kotlin">fun helloName(name: String = &quot;world&quot; ): String {
-    // ...
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kd">fun</span><span class="w"> </span><span class="nf">helloName</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;world&quot;</span><span class="w"> </span><span class="p">):</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="async">Async</h2>
 <p>Async functions can be exposed using the <code>[Async]</code> attribute:</p>
-<pre><code class="language-idl">namespace Example {
-    [Async]
-    string async_hello();
+<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>Example<span class="w"> </span>{
+<span class="w">    </span>[Async]
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span>async_hello();
 }
-</code></pre>
+</code></pre></div>
 <p>See the <a href="../futures.html">Async/Future support section</a> for details.</p>
 
 
@@ -1556,7 +1556,7 @@ This works for the Kotlin, Swift and Python targets.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

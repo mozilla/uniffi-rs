@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1506,11 +1506,11 @@ They are (soft) deprecated, remain now for backwards compatibility, but probably
 should be avoided.</p>
 <p>This document describes the differences from regular traits.</p>
 <h2 id="defining-a-callback">Defining a callback</h2>
-<p>If you must define a callback in UDL it would look like:</p>
-<pre><code class="language-webidl">callback interface Keychain {
-  // as described in the foreign traits docs...
-};
-</code></pre>
+<p>If you must define a callback in UDL it would look like:
+<div class="highlight"><pre><span></span><code><span class="k">callback</span> <span class="k">interface</span> <span class="nc">Keychain</span> <span class="p">{</span>
+  <span class="c1">// as described in the foreign traits docs...</span>
+<span class="p">};</span>
+</code></pre></div></p>
 <p>procmacros support it too, but just don't use it :)</p>
 <h3 id="box-and-send-sync">Box and Send + Sync?</h3>
 <p>Traits defined purely for callbacks probably don't technically need to be <code>Sync</code> in Rust, but
@@ -1571,7 +1571,7 @@ constructor would be <code>fn new(keychain: Box&lt;dyn Keychain&gt;) -&gt; Self<
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

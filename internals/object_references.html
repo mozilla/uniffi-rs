@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1505,12 +1505,12 @@ that the code behaves in the way that UniFFI expects.</p>
 <p>When accepting instances as arguments, the underlying Rust code can choose to accept it as an <code>Arc&lt;T&gt;</code>
 or as the underlying struct <code>T</code>, as there are different use-cases for each scenario.</p>
 <p>For example, given a interface definition like this:</p>
-<pre><code class="language-idl">interface TodoList {
-    constructor();
-    void add_item(string todo);
-    sequence&lt;string&gt; get_items();
+<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>TodoList<span class="w"> </span>{
+<span class="w">    </span>constructor();
+<span class="w">    </span>void<span class="w"> </span>add_item(<span class="nb">string</span><span class="w"> </span>todo);
+<span class="w">    </span>sequence<span class="o">&lt;</span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>get_items();
 };
-</code></pre>
+</code></pre></div>
 <p>On the Rust side of the generated bindings:
  - The instance constructor will create an instance of the corresponding <code>TodoList</code> Rust struct
  - The owned value is wrapped in an <code>Arc&lt;&gt;</code>
@@ -1583,7 +1583,7 @@ UniFFI does not automatically wrap/unwrap the containing <code>Arc</code>.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>

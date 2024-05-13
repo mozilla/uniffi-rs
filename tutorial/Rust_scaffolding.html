@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -1501,19 +1501,19 @@
 <p>If you use proc macros you can skip the next section, but if you use UDL files, you need to generate Rust "scaffolding" - code to implement what's described in the UDL.</p>
 <h2 id="rust-scaffolding-code-for-udl">Rust scaffolding code for UDL</h2>
 <p>Crates using UDL need a <code>build.rs</code> file next to <code>Cargo.toml</code>. This uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
-<pre><code class="language-rust">fn main() {
-    uniffi::generate_scaffolding(&quot;src/math.udl&quot;).unwrap();
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">uniffi</span><span class="p">::</span><span class="n">generate_scaffolding</span><span class="p">(</span><span class="s">&quot;src/math.udl&quot;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
 <p>It will generate <code>&lt;namespace&gt;.uniffi.rs</code> under your <code>target</code> directory.</p>
 <p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code> using this handy macro:</p>
-<pre><code class="language-rust">uniffi::include_scaffolding!(&quot;math&quot;);
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">include_scaffolding</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;math&quot;</span><span class="p">);</span>
+</code></pre></div>
 <h3 id="setup-for-crates-using-only-proc-macros">Setup for crates using only proc macros</h3>
 <p>If you are only using proc macros, you can skip <code>build.rs</code> entirely!
 All you need to do is add this to the top of <code>lib.rs</code></p>
-<pre><code class="language-rust">uniffi::setup_scaffolding!();
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">setup_scaffolding</span><span class="o">!</span><span class="p">();</span>
+</code></pre></div>
 <p>NOTE: This function takes an optional parameter, the <a href="../udl/namespace.html"><code>namespace</code></a> used by the component.
 If not specified, the crate name will be used as the namespace.</p>
 <p><strong>⚠ Warning ⚠</strong> Do not call both <code>uniffi::setup_scaffolding!()</code> and <code>uniffi::include_scaffolding!!()</code> in the same crate.</p>
@@ -1580,7 +1580,7 @@ one library.</p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>
