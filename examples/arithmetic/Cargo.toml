@@ -11,11 +11,12 @@ crate-type = ["lib", "cdylib"]
 name = "arithmetical"
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["scaffolding-ffi-buffer-fns"] }
 thiserror = "1.0"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+# Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
+uniffi = { workspace = true, features = ["build", "scaffolding-ffi-buffer-fns"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

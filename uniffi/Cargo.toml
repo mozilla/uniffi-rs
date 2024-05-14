@@ -43,3 +43,6 @@ bindgen-tests = [ "dep:uniffi_bindgen" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]
+# Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
+# This is needed for the gecko-js bindings.
+scaffolding-ffi-buffer-fns = ["uniffi_core/scaffolding-ffi-buffer-fns", "uniffi_macros/scaffolding-ffi-buffer-fns"]
