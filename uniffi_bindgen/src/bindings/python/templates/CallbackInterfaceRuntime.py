@@ -1,12 +1,12 @@
 # Magic number for the Rust proxy to call using the same mechanism as every other method,
 # to free the callback once it's dropped by Rust.
-IDX_CALLBACK_FREE = 0
+_UNIFFI_IDX_CALLBACK_FREE = 0
 # Return codes for callback calls
 _UNIFFI_CALLBACK_SUCCESS = 0
 _UNIFFI_CALLBACK_ERROR = 1
 _UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
-class UniffiCallbackInterfaceFfiConverter:
+class _UniffiCallbackInterfaceFfiConverter:
     _handle_map = _UniffiHandleMap()
 
     @classmethod

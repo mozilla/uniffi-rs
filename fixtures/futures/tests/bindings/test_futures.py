@@ -176,7 +176,7 @@ class TestFutures(unittest.TestCase):
 
         asyncio.run(test())
         # check that all foreign future handles were released
-        self.assertEqual(len(futures.UNIFFI_FOREIGN_FUTURE_HANDLE_MAP), 0)
+        self.assertEqual(len(futures._UNIFFI_FOREIGN_FUTURE_HANDLE_MAP), 0)
 
     def test_async_object_param(self):
         async def test():
