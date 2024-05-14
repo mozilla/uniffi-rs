@@ -75,9 +75,6 @@ __all__ = [
     {%- for c in ci.callback_interface_definitions() %}
     "{{ c.name()|class_name }}",
     {%- endfor %}
-    {%- if ci.has_async_fns() %}
-    "uniffi_set_event_loop",
-    {%- endif %}
 ]
 
 {% import "macros.py" as py %}
