@@ -1461,8 +1461,8 @@ Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code
 </code></pre></div>
 <p>Here you can note multiple things:</p>
 <ul>
-<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there ain't any exposed functions (e.g. <code>namespace foo {}</code>).
-It will typically your crate name.</li>
+<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there aren't any exposed functions (e.g. <code>namespace foo {}</code>).
+It will typically be your crate name.</li>
 <li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
 <li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! See the <a href="../udl/builtin_types.html">Built-in Types</a> chapter for more information on mapping types between Rust and UDL.</li>
 </ul>
