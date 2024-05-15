@@ -132,12 +132,11 @@ v{{- field_num -}}
 {%- endif -%}
 {%- endmacro %}
 
-// Macro for destroying fields
+ // Macro for destroying fields
 {%- macro destroy_fields(member) %}
-    Disposable.destroy(
     {%- for field in member.fields() %}
-        this.{{ field.name()|var_name }}{%- if !loop.last %}, {% endif -%}
-    {% endfor -%})
+        Disposable.destroy(this.{%- call field_name(field, loop.index) -%})
+    {% endfor -%}
 {%- endmacro -%}
 
 {%- macro docstring_value(maybe_docstring, indent_spaces) %}
