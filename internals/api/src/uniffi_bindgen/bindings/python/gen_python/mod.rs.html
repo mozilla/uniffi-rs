@@ -997,14 +997,14 @@
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an FFI callback function name
     </span><span class="kw">fn </span>ffi_callback_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">"UNIFFI_{}"</span>, nm.to_shouty_snake_case())
+        <span class="macro">format!</span>(<span class="string">"_UNIFFI_{}"</span>, nm.to_shouty_snake_case())
     }
 
     <span class="doccomment">/// Get the idiomatic Python rendering of an FFI struct name
     </span><span class="kw">fn </span>ffi_struct_name(<span class="kw-2">&amp;</span><span class="self">self</span>, nm: <span class="kw-2">&amp;</span>str) -&gt; String {
         <span class="comment">// The ctypes docs use both SHOUTY_SNAKE_CASE AND UpperCamelCase for structs. Let's use
         // UpperCamelCase and reserve shouting for global variables
-        </span><span class="macro">format!</span>(<span class="string">"Uniffi{}"</span>, nm.to_upper_camel_case())
+        </span><span class="macro">format!</span>(<span class="string">"_Uniffi{}"</span>, nm.to_upper_camel_case())
     }
 
     <span class="kw">fn </span>ffi_type_label(<span class="kw-2">&amp;</span><span class="self">self</span>, ffi_type: <span class="kw-2">&amp;</span>FfiType) -&gt; String {

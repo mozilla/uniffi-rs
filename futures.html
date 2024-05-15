@@ -1568,7 +1568,7 @@ interface<span class="w"> </span>SayAfterTrait<span class="w"> </span>{
 <h2 id="combining-rust-and-foreign-async-code">Combining Rust and foreign async code</h2>
 <p>Traits with callback interface support that export async methods can be combined with async Rust code.
 See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client">async-api-client example</a> for an example of this.</p>
-<h3 id="python-uniffi_set_event_loop">Python: uniffi_set_event_loop()</h3>
+<h3 id="python-uniffi_set_event_loop">Python: <code>uniffi_set_event_loop()</code></h3>
 <p>Python bindings export a function named <code>uniffi_set_event_loop()</code> which handles a corner case when
 integrating async Rust and Python code. <code>uniffi_set_event_loop()</code> is needed when Python async
 functions run outside of the eventloop, for example:</p>
@@ -1581,6 +1581,7 @@ functions run outside of the eventloop, for example:</p>
 <p>In this case, we need an event loop to run the Python async function, but there's no eventloop set for the thread.
 Use <code>uniffi_set_event_loop()</code> to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.</p>
+<p>Note that <code>uniffi_set_event_loop</code> cannot be glob-imported because it's not part of the library's <code>__all__</code>.</p>
 
 
 
