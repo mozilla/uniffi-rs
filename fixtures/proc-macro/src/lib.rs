@@ -84,9 +84,9 @@ impl TraitWithForeign for RustTraitImpl {
 #[derive(uniffi::Object)]
 pub struct Object;
 
-#[uniffi::export]
+#[cfg_attr(feature = "myfeature", uniffi::export)]
 impl Object {
-    #[uniffi::constructor]
+    #[cfg_attr(feature = "myfeature", uniffi::constructor)]
     fn new() -> Arc<Self> {
         Arc::new(Self)
     }
