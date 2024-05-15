@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.2...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.2...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.27.2) - (_2024-05-15_)
+## v0.27.2 (backend crates: v0.27.2) - (_2024-05-15_)
 
 ### What's new?
 
@@ -20,7 +20,7 @@
 
 - Removed the dependency on the `oneshot' crate (https://github.com/mozilla/uniffi-rs/issues/1736)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).
+[All changes in v0.27.2](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...v0.27.2).
 
 ## v0.27.1 (backend crates: v0.27.1) - (_2024-04-03_)
 
