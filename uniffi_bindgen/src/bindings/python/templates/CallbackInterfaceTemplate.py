@@ -10,4 +10,4 @@
 {% include "CallbackInterfaceImpl.py" %}
 
 # The _UniffiConverter which transforms the Callbacks in to Handles to pass to Rust.
-{{ ffi_converter_name }} = UniffiCallbackInterfaceFfiConverter()
+{{ ffi_converter_name }} = _UniffiCallbackInterfaceFfiConverter()

@@ -20,14 +20,14 @@ class _UniffiHandleMap:
             with self._lock:
                 return self._map[handle]
         except KeyError:
-            raise InternalError("UniffiHandleMap.get: Invalid handle")
+            raise InternalError("_UniffiHandleMap.get: Invalid handle")
 
     def remove(self, handle):
         try:
             with self._lock:
                 return self._map.pop(handle)
         except KeyError:
-            raise InternalError("UniffiHandleMap.remove: Invalid handle")
+            raise InternalError("_UniffiHandleMap.remove: Invalid handle")
 
     def __len__(self):
         return len(self._map)

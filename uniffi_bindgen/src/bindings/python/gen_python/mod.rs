@@ -366,14 +366,14 @@ impl PythonCodeOracle {
 
     /// Get the idiomatic Python rendering of an FFI callback function name
     fn ffi_callback_name(&self, nm: &str) -> String {
-        format!("UNIFFI_{}", nm.to_shouty_snake_case())
+        format!("_UNIFFI_{}", nm.to_shouty_snake_case())
     }
 
     /// Get the idiomatic Python rendering of an FFI struct name
     fn ffi_struct_name(&self, nm: &str) -> String {
         // The ctypes docs use both SHOUTY_SNAKE_CASE AND UpperCamelCase for structs. Let's use
         // UpperCamelCase and reserve shouting for global variables
-        format!("Uniffi{}", nm.to_upper_camel_case())
+        format!("_Uniffi{}", nm.to_upper_camel_case())
     }
 
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
