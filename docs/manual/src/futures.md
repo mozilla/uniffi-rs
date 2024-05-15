@@ -77,7 +77,7 @@ pub trait SayAfterTrait: Send + Sync {
 Traits with callback interface support that export async methods can be combined with async Rust code.
 See the [async-api-client example](https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client) for an example of this.
 
-### Python: uniffi_set_event_loop()
+### Python: `uniffi_set_event_loop()`
 
 Python bindings export a function named `uniffi_set_event_loop()` which handles a corner case when
 integrating async Rust and Python code. `uniffi_set_event_loop()` is needed when Python async
@@ -93,3 +93,4 @@ In this case, we need an event loop to run the Python async function, but there'
 Use `uniffi_set_event_loop()` to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.
 
+Note that `uniffi_set_event_loop` cannot be glob-imported because it's not part of the library's `__all__`.
