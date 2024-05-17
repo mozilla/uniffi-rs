@@ -68,15 +68,19 @@
 <a href="#66" id="66">66</a>
 <a href="#67" id="67">67</a>
 <a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 </span><span class="kw">use </span>std::process::Command;
 
-<span class="kw">use crate</span>::{BindingGenerator, ComponentInterface};
+<span class="kw">use crate</span>::{BindingGenerator, Component, ComponentInterface, GenerationSettings};
 <span class="kw">use </span>anyhow::{Context, <span class="prelude-ty">Result</span>};
-<span class="kw">use </span>camino::Utf8Path;
 <span class="kw">use </span>fs_err <span class="kw">as </span>fs;
 
 <span class="kw">mod </span>gen_ruby;
@@ -97,33 +101,39 @@
         )
     }
 
-    <span class="kw">fn </span>write_bindings(
+    <span class="kw">fn </span>update_component_configs(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        ci: <span class="kw-2">&amp;</span>ComponentInterface,
-        config: <span class="kw-2">&amp;</span>Config,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-        try_format_code: bool,
+        settings: <span class="kw-2">&amp;</span>GenerationSettings,
+        components: <span class="kw-2">&amp;mut </span>Vec&lt;Component&lt;<span class="self">Self</span>::Config&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span>rb_file = out_dir.join(<span class="macro">format!</span>(<span class="string">"{}.rb"</span>, ci.namespace()));
-        fs::write(<span class="kw-2">&amp;</span>rb_file, generate_ruby_bindings(config, ci)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-
-        <span class="kw">if </span>try_format_code {
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = Command::new(<span class="string">"rubocop"</span>).arg(<span class="string">"-A"</span>).arg(<span class="kw-2">&amp;</span>rb_file).output() {
-                <span class="macro">println!</span>(
-                    <span class="string">"Warning: Unable to auto-format {} using rubocop: {e:?}"</span>,
-                    rb_file.file_name().unwrap(),
-                )
-            }
+        <span class="kw">for </span>c <span class="kw">in </span><span class="kw-2">&amp;mut *</span>components {
+            c.config.cdylib_name.get_or_insert_with(|| {
+                settings
+                    .cdylib
+                    .clone()
+                    .unwrap_or_else(|| <span class="macro">format!</span>(<span class="string">"uniffi_{}"</span>, c.ci.namespace()))
+            });
         }
-
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if </span>cdylib_name.is_none() {
-            <span class="macro">anyhow::bail!</span>(
-                <span class="string">"Generate bindings for Ruby requires a cdylib, but {library_path} was given"
-            </span>);
+    <span class="kw">fn </span>write_bindings(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        settings: <span class="kw-2">&amp;</span>GenerationSettings,
+        components: <span class="kw-2">&amp;</span>[Component&lt;<span class="self">Self</span>::Config&gt;],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">for </span>Component { ci, config, .. } <span class="kw">in </span>components {
+            <span class="kw">let </span>rb_file = settings.out_dir.join(<span class="macro">format!</span>(<span class="string">"{}.rb"</span>, ci.namespace()));
+            fs::write(<span class="kw-2">&amp;</span>rb_file, generate_ruby_bindings(config, ci)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+
+            <span class="kw">if </span>settings.try_format_code {
+                <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = Command::new(<span class="string">"rubocop"</span>).arg(<span class="string">"-A"</span>).arg(<span class="kw-2">&amp;</span>rb_file).output() {
+                    <span class="macro">println!</span>(
+                        <span class="string">"Warning: Unable to auto-format {} using rubocop: {e:?}"</span>,
+                        rb_file.file_name().unwrap(),
+                    )
+                }
+            }
         }
         <span class="prelude-val">Ok</span>(())
     }

@@ -510,6 +510,25 @@
 <a href="#508" id="508">508</a>
 <a href="#509" id="509">509</a>
 <a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -607,10 +626,10 @@
 </span><span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>camino::{Utf8Path, Utf8PathBuf};
 <span class="kw">use </span>fs_err::{<span class="self">self </span><span class="kw">as </span>fs, File};
-<span class="kw">use </span>serde::{de::DeserializeOwned, Deserialize};
+<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::io::ErrorKind;
-<span class="kw">use </span>std::{collections::HashMap, process::Command};
+<span class="kw">use </span>std::process::Command;
 
 <span class="kw">pub mod </span>backend;
 <span class="kw">pub mod </span>bindings;
@@ -622,24 +641,16 @@
 <span class="kw">pub use </span>interface::ComponentInterface;
 <span class="kw">use </span>scaffolding::RustScaffolding;
 
-<span class="doccomment">/// Trait for bindings configuration.  Each bindings language defines one of these.
-///
-/// BindingsConfigs are initially loaded from `uniffi.toml` file.  Then the trait methods are used
-/// to fill in missing values.
-</span><span class="kw">pub trait </span>BindingsConfig: DeserializeOwned {
-    <span class="doccomment">/// Update missing values using the `ComponentInterface`
-    </span><span class="kw">fn </span>update_from_ci(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ci: <span class="kw-2">&amp;</span>ComponentInterface);
-
-    <span class="doccomment">/// Update missing values using the dylib file for the main crate, when in library mode.
-    ///
-    /// cdylib_name will be the library filename without the leading `lib` and trailing extension
-    </span><span class="kw">fn </span>update_from_cdylib_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cdylib_name: <span class="kw-2">&amp;</span>str);
-
-    <span class="doccomment">/// Update missing values from config instances from dependent crates
-    ///
-    /// config_map maps crate names to config instances. This is mostly used to set up external
-    /// types.
-    </span><span class="kw">fn </span>update_from_dependency_configs(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _config_map: HashMap&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span><span class="self">Self</span>&gt;) {}
+<span class="doccomment">/// The options used when creating bindings. Named such
+/// it doesn't cause confusion that it's settings specific to
+/// the generator itself.
+</span><span class="comment">// TODO: We should try and move the public interface of the module to
+// this struct. For now, only the BindingGenerator uses it.
+</span><span class="attr">#[derive(Debug, Default)]
+</span><span class="kw">pub struct </span>GenerationSettings {
+    <span class="kw">pub </span>out_dir: Utf8PathBuf,
+    <span class="kw">pub </span>try_format_code: bool,
+    <span class="kw">pub </span>cdylib: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="doccomment">/// A trait representing a UniFFI Binding Generator
@@ -648,27 +659,47 @@
 /// and call the [`generate_external_bindings`] using a type that implements this trait.
 </span><span class="kw">pub trait </span>BindingGenerator: Sized {
     <span class="doccomment">/// Handles configuring the bindings
-    </span><span class="kw">type </span>Config: BindingsConfig;
+    </span><span class="kw">type </span>Config;
 
     <span class="doccomment">/// Creates a new config.
     </span><span class="kw">fn </span>new_config(<span class="kw-2">&amp;</span><span class="self">self</span>, root_toml: <span class="kw-2">&amp;</span>toml::Value) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Config&gt;;
 
+    <span class="doccomment">/// Update the various config items in preparation to write one or more of them.
+    ///
+    /// # Arguments
+    /// - `cdylib`: The name of the cdylib file, if known.
+    /// - `library_path`: The name of library used to extract the symbols.
+    /// - `components`: A mutable array of [`Component`]s to be updated.
+    </span><span class="kw">fn </span>update_component_configs(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        settings: <span class="kw-2">&amp;</span>GenerationSettings,
+        components: <span class="kw-2">&amp;mut </span>Vec&lt;Component&lt;<span class="self">Self</span>::Config&gt;&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
+
     <span class="doccomment">/// Writes the bindings to the output directory
     ///
     /// # Arguments
-    /// - `ci`: A [`ComponentInterface`] representing the interface
-    /// - `config`: An instance of the [`BindingsConfig`] associated with this type
+    /// - `components`: An array of [`Component`]s representing the items to be generated.
     /// - `out_dir`: The path to where the binding generator should write the output bindings
     </span><span class="kw">fn </span>write_bindings(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        ci: <span class="kw-2">&amp;</span>ComponentInterface,
-        config: <span class="kw-2">&amp;</span><span class="self">Self</span>::Config,
-        out_dir: <span class="kw-2">&amp;</span>Utf8Path,
-        try_format_code: bool,
+        settings: <span class="kw-2">&amp;</span>GenerationSettings,
+        components: <span class="kw-2">&amp;</span>[Component&lt;<span class="self">Self</span>::Config&gt;],
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
+}
 
-    <span class="doccomment">/// Check if `library_path` used by library mode is valid for this generator
-    </span><span class="kw">fn </span>check_library_path(<span class="kw-2">&amp;</span><span class="self">self</span>, library_path: <span class="kw-2">&amp;</span>Utf8Path, cdylib_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;;
+<span class="doccomment">/// Everything needed to generate a ComponentInterface.
+</span><span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>Component&lt;Config&gt; {
+    <span class="kw">pub </span>ci: ComponentInterface,
+    <span class="kw">pub </span>config: Config,
+    <span class="kw">pub </span>package_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+}
+
+<span class="doccomment">/// A convenience function for the CLI to help avoid using static libs
+/// in places cdylibs are required.
+</span><span class="kw">pub fn </span>is_cdylib(library_file: <span class="kw">impl </span>AsRef&lt;Utf8Path&gt;) -&gt; bool {
+    <span class="kw">crate</span>::library_mode::calc_cdylib_name(library_file.as_ref()).is_some()
 }
 
 <span class="doccomment">/// Generate bindings for an external binding generator
@@ -677,7 +708,6 @@
 /// Implements an entry point for external binding generators.
 /// The function does the following:
 /// - It parses the `udl` in a [`ComponentInterface`]
-/// - Parses the `uniffi.toml` and loads it into the type that implements [`BindingsConfig`]
 /// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
 ///
 /// # Arguments
@@ -699,9 +729,9 @@
     <span class="kw">let </span>crate_name = crate_name
         .map(|c| <span class="prelude-val">Ok</span>(c.to_string()))
         .unwrap_or_else(|| crate_name_from_cargo_toml(udl_file.as_ref()))<span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>component = parse_udl(udl_file.as_ref(), <span class="kw-2">&amp;</span>crate_name)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>ci = parse_udl(udl_file.as_ref(), <span class="kw-2">&amp;</span>crate_name)<span class="question-mark">?</span>;
     <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>library_file) = library_file {
-        macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>component, library_file.as_ref())<span class="question-mark">?</span>;
+        macro_metadata::add_to_ci_from_library(<span class="kw-2">&amp;mut </span>ci, library_file.as_ref())<span class="question-mark">?</span>;
     }
     <span class="kw">let </span>crate_root = <span class="kw-2">&amp;</span>guess_crate_root(udl_file.as_ref()).context(<span class="string">"Failed to guess crate root"</span>)<span class="question-mark">?</span>;
 
@@ -709,22 +739,30 @@
 
     <span class="kw">let </span>config = {
         <span class="kw">let </span>toml = load_initial_config(crate_root, config_file_override)<span class="question-mark">?</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>config = binding_generator.new_config(<span class="kw-2">&amp;</span>toml)<span class="question-mark">?</span>;
-        config.update_from_ci(<span class="kw-2">&amp;</span>component);
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>library_file) = library_file {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw">crate</span>::library_mode::calc_cdylib_name(library_file.as_ref())
-            {
-                config.update_from_cdylib_name(cdylib_name)
+        binding_generator.new_config(<span class="kw-2">&amp;</span>toml)<span class="question-mark">?
+    </span>};
+
+    <span class="kw">let </span>settings = GenerationSettings {
+        cdylib: <span class="kw">match </span>library_file {
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>library_file) =&gt; {
+                <span class="kw">crate</span>::library_mode::calc_cdylib_name(library_file.as_ref()).map(ToOwned::to_owned)
             }
-        };
-        config
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+        },
+        out_dir: get_out_dir(
+            udl_file.as_ref(),
+            out_dir_override.as_ref().map(|p| p.as_ref()),
+        )<span class="question-mark">?</span>,
+        try_format_code,
     };
 
-    <span class="kw">let </span>out_dir = get_out_dir(
-        udl_file.as_ref(),
-        out_dir_override.as_ref().map(|p| p.as_ref()),
-    )<span class="question-mark">?</span>;
-    binding_generator.write_bindings(<span class="kw-2">&amp;</span>component, <span class="kw-2">&amp;</span>config, <span class="kw-2">&amp;</span>out_dir, try_format_code)
+    <span class="kw">let </span><span class="kw-2">mut </span>components = <span class="macro">vec!</span>[Component {
+        ci,
+        config,
+        package_name: <span class="prelude-val">None</span>,
+    }];
+    binding_generator.update_component_configs(<span class="kw-2">&amp;</span>settings, <span class="kw-2">&amp;mut </span>components)<span class="question-mark">?</span>;
+    binding_generator.write_bindings(<span class="kw-2">&amp;</span>settings, <span class="kw-2">&amp;</span>components)
 }
 
 <span class="comment">// Generate the infrastructural Rust code for implementing the UDL interface,

@@ -333,7 +333,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 }
 
 <span class="kw">impl </span>GeneratedSources {
-    <span class="kw">fn </span>new(crate_name: <span class="kw-2">&amp;</span>str, cdylib_path: <span class="kw-2">&amp;</span>Utf8Path, out_dir: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>new(package_name: <span class="kw-2">&amp;</span>str, cdylib_path: <span class="kw-2">&amp;</span>Utf8Path, out_dir: <span class="kw-2">&amp;</span>Utf8Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>sources = generate_bindings(
             cdylib_path,
             <span class="prelude-val">None</span>,
@@ -344,7 +344,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
         )<span class="question-mark">?</span>;
         <span class="kw">let </span>main_source = sources
             .iter()
-            .find(|s| s.package.name == crate_name)
+            .find(|s| s.package_name.as_deref() == <span class="prelude-val">Some</span>(package_name))
             .unwrap();
         <span class="kw">let </span>main_module = main_source.config.module_name();
         <span class="kw">let </span>modulemap_glob = glob(<span class="kw-2">&amp;</span>out_dir.join(<span class="string">"*.modulemap"</span>))<span class="question-mark">?</span>;
