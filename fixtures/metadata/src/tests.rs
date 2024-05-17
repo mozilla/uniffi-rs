@@ -207,7 +207,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "Weapon".into(),
-                forced_flatness: None,
+                shape: EnumShape::Enum,
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
@@ -242,7 +242,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "State".into(),
-                forced_flatness: None,
+                shape: EnumShape::Enum,
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
@@ -290,7 +290,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ReprU8".into(),
-                forced_flatness: None,
+                shape: EnumShape::Enum,
                 discr_type: Some(Type::UInt8),
                 variants: vec![
                     VariantMetadata {
@@ -325,7 +325,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "NoRepr".into(),
-                forced_flatness: None,
+                shape: EnumShape::Enum,
                 discr_type: None,
                 variants: vec![VariantMetadata {
                     name: "One".into(),
@@ -346,7 +346,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "FlatError".into(),
-                forced_flatness: Some(true),
+                shape: EnumShape::Error { flat: true },
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {
@@ -375,7 +375,7 @@ mod test_metadata {
             EnumMetadata {
                 module_path: "uniffi_fixture_metadata".into(),
                 name: "ComplexError".into(),
-                forced_flatness: Some(false),
+                shape: EnumShape::Error { flat: false },
                 discr_type: None,
                 variants: vec![
                     VariantMetadata {

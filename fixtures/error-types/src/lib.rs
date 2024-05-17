@@ -149,6 +149,31 @@ fn return_proc_error(e: String) -> Arc<ProcErrorInterface> {
     Arc::new(ProcErrorInterface { e })
 }
 
+#[derive(thiserror::Error, Debug)]
+#[error("NonUniffiTypeValue: {v}")]
+pub struct NonUniffiType {
+    v: String,
+}
+
+// Note: It's important for this test that this error
+// *not* be used directly as the `Err` for any functions etc.
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+pub enum Inner {
+    #[error("{0}")]
+    CaseA(String),
+}
+
+// Note: It's important for this test that this error
+// *not* be used directly as the `Err` for any functions etc.
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+#[uniffi(flat_error)]
+pub enum FlatInner {
+    #[error("{0}")]
+    CaseA(String),
+    #[error("{0}")]
+    CaseB(NonUniffiType),
+}
+
 // Enums have good coverage elsewhere, but simple coverage here is good.
 #[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum Error {
@@ -158,6 +183,13 @@ pub enum Error {
     Value { value: String },
     #[error("IntValue: {value}")]
     IntValue { value: u16 },
+    #[error(transparent)]
+    FlatInnerError {
+        #[from]
+        error: FlatInner,
+    },
+    #[error(transparent)]
+    InnerError { error: Inner },
 }
 
 #[uniffi::export]
@@ -170,6 +202,20 @@ fn oops_enum(i: u16) -> Result<(), Error> {
         })
     } else if i == 2 {
         Err(Error::IntValue { value: i })
+    } else if i == 3 {
+        Err(Error::FlatInnerError {
+            error: FlatInner::CaseA("inner".to_string()),
+        })
+    } else if i == 4 {
+        Err(Error::FlatInnerError {
+            error: FlatInner::CaseB(NonUniffiType {
+                v: "value".to_string(),
+            }),
+        })
+    } else if i == 5 {
+        Err(Error::InnerError {
+            error: Inner::CaseA("inner".to_string()),
+        })
     } else {
         panic!("unknown variant {i}")
     }

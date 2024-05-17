@@ -1,6 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{DeriveInput, Index};
+use uniffi_meta::EnumShape;
 
 use crate::{
     enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem},
@@ -179,14 +180,15 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
 pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
     let name = item.name();
     let module_path = mod_path()?;
-    let flat = item.is_flat_error();
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
+    let flat = item.is_flat_error();
+    let shape = EnumShape::Error { flat }.as_u8();
     let mut metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
                 .concat_str(#module_path)
                 .concat_str(#name)
-                .concat_option_bool(Some(#flat))
+                .concat_value(#shape)
                 .concat_bool(false) // discr_type: None
     };
     if flat {

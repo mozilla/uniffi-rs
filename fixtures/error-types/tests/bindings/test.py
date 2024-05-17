@@ -99,6 +99,23 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(str(cm.exception), "value=2")
         self.assertEqual(repr(cm.exception), "Error.IntValue(value=2)")
 
+    def test_enum_flat_inner(self):
+        with self.assertRaises(Error.FlatInnerError) as cm:
+            oops_enum(3)
+        # XXX - can't compare Python errors.
+        self.assertEqual(str(cm.exception.error), "inner")
+
+        with self.assertRaises(Error.FlatInnerError) as cm:
+            oops_enum(4)
+        # XXX - can't compare Python errors.
+        self.assertEqual(str(cm.exception.error), "NonUniffiTypeValue: value")
+
+    def test_enum_inner(self):
+        with self.assertRaises(Error.InnerError) as cm:
+            oops_enum(5)
+        # XXX - can't compare Python errors.
+        self.assertEqual(cm.exception.error[0], "inner")
+
     def test_tuple_error(self):
         r = get_tuple()
         self.assertEqual(repr(r), "TupleError.Oops('oops')")

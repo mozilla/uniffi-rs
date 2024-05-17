@@ -173,15 +173,6 @@ impl MetadataBuffer {
         self.concat_value(value as u8)
     }
 
-    // Option<bool>
-    pub const fn concat_option_bool(self, value: Option<bool>) -> Self {
-        self.concat_value(match value {
-            None => 0,
-            Some(false) => 1,
-            Some(true) => 2,
-        })
-    }
-
     // Concatenate a string to this buffer. The maximum string length is 255 bytes. For longer strings,
     // use `concat_long_str()`.
     //

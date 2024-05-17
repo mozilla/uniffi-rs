@@ -6,7 +6,7 @@ use super::APIConverter;
 use crate::{attributes::EnumAttributes, converters::convert_docstring, InterfaceCollector};
 use anyhow::{bail, Result};
 
-use uniffi_meta::{EnumMetadata, VariantMetadata};
+use uniffi_meta::{EnumMetadata, EnumShape, VariantMetadata};
 
 // Note that we have 2 `APIConverter` impls here - one for the `enum` case
 // (including an enum with `[Error]`), and one for the `[Error] interface` cas
@@ -14,10 +14,15 @@ use uniffi_meta::{EnumMetadata, VariantMetadata};
 impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
     fn convert(&self, ci: &mut InterfaceCollector) -> Result<EnumMetadata> {
         let attributes = EnumAttributes::try_from(self.attributes.as_ref())?;
+        let shape = if attributes.contains_error_attr() {
+            EnumShape::Error { flat: true }
+        } else {
+            EnumShape::Enum
+        };
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
-            forced_flatness: None,
+            shape,
             discr_type: None,
             variants: self
                 .values
@@ -45,10 +50,15 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
             bail!("interface inheritance is not supported for enum interfaces");
         }
         let attributes = EnumAttributes::try_from(self.attributes.as_ref())?;
+        let shape = if attributes.contains_error_attr() {
+            EnumShape::Error { flat: false }
+        } else {
+            EnumShape::Enum
+        };
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
-            forced_flatness: Some(false),
+            shape,
             variants: self
                 .members
                 .body

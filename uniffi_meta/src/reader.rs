@@ -307,27 +307,21 @@ impl<'a> MetadataReader<'a> {
     fn read_enum(&mut self) -> Result<EnumMetadata> {
         let module_path = self.read_string()?;
         let name = self.read_string()?;
-        let forced_flatness = match self.read_u8()? {
-            0 => None,
-            1 => Some(false),
-            2 => Some(true),
-            _ => unreachable!("invalid flatness"),
-        };
+        let shape = EnumShape::from(self.read_u8()?)?;
         let discr_type = if self.read_bool()? {
             Some(self.read_type()?)
         } else {
             None
         };
-        let variants = if forced_flatness == Some(true) {
-            self.read_flat_variants()?
-        } else {
-            self.read_variants()?
+        let variants = match shape {
+            EnumShape::Enum | EnumShape::Error { flat: false } => self.read_variants()?,
+            EnumShape::Error { flat: true } => self.read_flat_variants()?,
         };
 
         Ok(EnumMetadata {
             module_path,
             name,
-            forced_flatness,
+            shape,
             discr_type,
             variants,
             non_exhaustive: self.read_bool()?,

@@ -69,6 +69,27 @@ try {
 }
 
 try {
+    oopsEnum(3u)
+    throw RuntimeException("Should have failed")
+} catch (e: Exception.FlatInnerException) {
+    assert(e.toString() == "uniffi.error_types.Exception\$FlatInnerException: error=uniffi.error_types.FlatInner${'$'}CaseA: inner")
+}
+
+try {
+    oopsEnum(4u)
+    throw RuntimeException("Should have failed")
+} catch (e: Exception.FlatInnerException) {
+    assert(e.toString() == "uniffi.error_types.Exception\$FlatInnerException: error=uniffi.error_types.FlatInner${'$'}CaseB: NonUniffiTypeValue: value")
+}
+
+try {
+    oopsEnum(5u)
+    throw RuntimeException("Should have failed")
+} catch (e: Exception.InnerException) {
+    assert(e.toString() == "uniffi.error_types.Exception\$InnerException: error=uniffi.error_types.Inner${'$'}CaseA: v1=inner")
+}
+
+try {
     oopsTuple(0u)
     throw RuntimeException("Should have failed")
 } catch (e: TupleException) {
