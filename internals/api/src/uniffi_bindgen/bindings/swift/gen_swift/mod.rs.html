@@ -738,16 +738,6 @@
 <a href="#736" id="736">736</a>
 <a href="#737" id="737">737</a>
 <a href="#738" id="738">738</a>
-<a href="#739" id="739">739</a>
-<a href="#740" id="740">740</a>
-<a href="#741" id="741">741</a>
-<a href="#742" id="742">742</a>
-<a href="#743" id="743">743</a>
-<a href="#744" id="744">744</a>
-<a href="#745" id="745">745</a>
-<a href="#746" id="746">746</a>
-<a href="#747" id="747">747</a>
-<a href="#748" id="748">748</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -940,7 +930,6 @@
 /// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 </span><span class="attr">#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>Config {
-    <span class="kw">pub</span>(<span class="kw">super</span>) cdylib_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) module_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ffi_module_name: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ffi_module_filename: <span class="prelude-ty">Option</span>&lt;String&gt;,
@@ -993,15 +982,6 @@
     <span class="doccomment">/// The name of the `.h` file for the lower-level C module with FFI declarations.
     </span><span class="kw">pub fn </span>header_filename(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="macro">format!</span>(<span class="string">"{}.h"</span>, <span class="self">self</span>.ffi_module_filename())
-    }
-
-    <span class="doccomment">/// The name of the compiled Rust library containing the FFI implementation.
-    </span><span class="kw">pub fn </span>cdylib_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.cdylib_name {
-            cdylib_name.clone()
-        } <span class="kw">else </span>{
-            <span class="string">"uniffi"</span>.into()
-        }
     }
 
     <span class="doccomment">/// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.
