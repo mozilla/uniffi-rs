@@ -149,16 +149,34 @@ fn return_proc_error(e: String) -> Arc<ProcErrorInterface> {
     Arc::new(ProcErrorInterface { e })
 }
 
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+#[uniffi(flat_error)]
+pub enum FlatInner {
+    #[error("{0}")]
+    CaseA(String),
+}
+
 // Enums have good coverage elsewhere, but simple coverage here is good.
 #[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum Error {
     #[error("Oops")]
     Oops,
+    #[error(transparent)]
+    FlatInner {
+        #[from]
+        error: FlatInner,
+    }
+    // TODO: add non-flat inner.
 }
 
 #[uniffi::export]
 fn oops_enum() -> Result<(), Error> {
     Err(Error::Oops)
+}
+
+#[uniffi::export]
+fn oops_flat_inner() -> Result<(), Error> {
+    Err(Error::FlatInner { error: FlatInner::CaseA("inner".to_string()) })
 }
 
 uniffi::include_scaffolding!("error_types");

@@ -19,6 +19,21 @@ do {
     assert(e.msg() == "trait-oops")
 }
 
+do {
+    try oopsEnum()
+    fatalError("Should have thrown")
+} catch let e as Error {
+    assert(String(describing: e) == "Oops")
+}
+
+do {
+    try oopsFlatInner()
+    fatalError("Should have thrown")
+} catch let e as Error {
+    print(String(describing: e))
+    assert(String(describing: e) == "??")
+}
+
 let e = getError(message: "the error")
 assert(String(describing: e) == "the error")
 assert(String(reflecting: e) == "ErrorInterface { e: the error }")

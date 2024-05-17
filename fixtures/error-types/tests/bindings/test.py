@@ -80,5 +80,16 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(cm.exception.message(), "eek")
         self.assertEqual(str(cm.exception), "ProcErrorInterface(eek)")
 
+    def test_enum_errors(self):
+        with self.assertRaises(Error.Oops) as cm:
+            oops_enum()
+        # should be able to see "Oops", right!?
+        #?? self.assertEqual(cm.exception.args[0], "Oops")
+
+    def test_enum_flat_inner(self):
+        with self.assertRaises(Error.Oops) as cm:
+            oops_flat_inner()
+        # check value?
+
 if __name__=='__main__':
     unittest.main()

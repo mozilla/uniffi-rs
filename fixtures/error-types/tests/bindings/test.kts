@@ -30,6 +30,13 @@ try {
     assert(e.msg() == "trait-oops")
 }
 
+try {
+    oopsFlatInner()
+    throw RuntimeException("Should have failed")
+} catch (e: Error.FlatInner) {
+    assert(false)
+}
+
 val e = getError("the error")
 assert(e.toString() == "the error")
 assert(e.link(0U) == "the error")
