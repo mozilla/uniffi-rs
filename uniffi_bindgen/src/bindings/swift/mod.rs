@@ -65,19 +65,13 @@ impl BindingGenerator for SwiftBindingGenerator {
 
     fn update_component_configs(
         &self,
-        settings: &GenerationSettings,
+        _settings: &GenerationSettings,
         components: &mut Vec<Component<Self::Config>>,
     ) -> Result<()> {
         for c in &mut *components {
             c.config
                 .module_name
                 .get_or_insert_with(|| c.ci.namespace().into());
-            c.config.cdylib_name.get_or_insert_with(|| {
-                settings
-                    .cdylib
-                    .clone()
-                    .unwrap_or_else(|| format!("uniffi_{}", c.ci.namespace()))
-            });
         }
         Ok(())
     }
