@@ -190,7 +190,6 @@ pub fn quote_arg_keyword(nm: String) -> String {
 /// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    pub(super) cdylib_name: Option<String>,
     pub(super) module_name: Option<String>,
     ffi_module_name: Option<String>,
     ffi_module_filename: Option<String>,
@@ -243,15 +242,6 @@ impl Config {
     /// The name of the `.h` file for the lower-level C module with FFI declarations.
     pub fn header_filename(&self) -> String {
         format!("{}.h", self.ffi_module_filename())
-    }
-
-    /// The name of the compiled Rust library containing the FFI implementation.
-    pub fn cdylib_name(&self) -> String {
-        if let Some(cdylib_name) = &self.cdylib_name {
-            cdylib_name.clone()
-        } else {
-            "uniffi".into()
-        }
     }
 
     /// Whether to generate a `.modulemap` file for the lower-level C module with FFI declarations.
