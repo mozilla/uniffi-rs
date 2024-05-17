@@ -21,9 +21,9 @@
 
 ### What's changed?
 - The internal bindings generation has changed to make it friendlier for external language bindings.
-  However, this is likely to be a small **breaking change** for these bindings.
+  However, this a **breaking change** for these bindings.
   No consumers of any languages are impacted, only the maintainers of these language bindings.
-  ([#2066](https://github.com/mozilla/uniffi-rs/issues/2066))
+  ([#2066](https://github.com/mozilla/uniffi-rs/issues/2066)), ([#2094](https://github.com/mozilla/uniffi-rs/pull/2094))
 
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 

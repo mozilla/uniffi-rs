@@ -16,7 +16,6 @@ use std::fmt::Debug;
 use crate::backend::TemplateExpression;
 
 use crate::interface::*;
-use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -112,7 +111,7 @@ static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    cdylib_name: Option<String>,
+    pub(super) cdylib_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
@@ -145,18 +144,6 @@ impl Config {
             Some(value) if value.is_empty() => ns,
             Some(value) => format!("{value}.{ns}"),
         }
-    }
-}
-
-impl BindingsConfig for Config {
-    fn update_from_ci(&mut self, ci: &ComponentInterface) {
-        self.cdylib_name
-            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
-    }
-
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
-        self.cdylib_name
-            .get_or_insert_with(|| cdylib_name.to_string());
     }
 }
 

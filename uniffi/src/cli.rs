@@ -141,6 +141,14 @@ fn gen_library_mode(
 ) -> anyhow::Result<()> {
     use uniffi_bindgen::library_mode::generate_bindings;
     for language in languages {
+        // to help avoid mistakes we check the library is actually a cdylib, except
+        // for swift where static libs are often used to extract the metadata.
+        if !matches!(language, TargetLanguage::Swift) && !uniffi_bindgen::is_cdylib(library_path) {
+            anyhow::bail!(
+                "Generate bindings for {language} requires a cdylib, but {library_path} was given"
+            );
+        }
+
         // Type-bounds on trait implementations makes selecting between languages a bit tedious.
         match language {
             TargetLanguage::Kotlin => generate_bindings(

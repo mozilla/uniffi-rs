@@ -18,7 +18,6 @@ use super::Bindings;
 use crate::backend::TemplateExpression;
 
 use crate::interface::*;
-use crate::BindingsConfig;
 
 mod callback_interface;
 mod compounds;
@@ -191,8 +190,8 @@ pub fn quote_arg_keyword(nm: String) -> String {
 /// since the details of the underlying component are entirely determined by the `ComponentInterface`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
-    cdylib_name: Option<String>,
-    module_name: Option<String>,
+    pub(super) cdylib_name: Option<String>,
+    pub(super) module_name: Option<String>,
     ffi_module_name: Option<String>,
     ffi_module_filename: Option<String>,
     generate_module_map: Option<bool>,
@@ -273,20 +272,6 @@ impl Config {
     /// Whether to mark value types as 'Sendable'
     pub fn experimental_sendable_value_types(&self) -> bool {
         self.experimental_sendable_value_types.unwrap_or(false)
-    }
-}
-
-impl BindingsConfig for Config {
-    fn update_from_ci(&mut self, ci: &ComponentInterface) {
-        self.module_name
-            .get_or_insert_with(|| ci.namespace().into());
-        self.cdylib_name
-            .get_or_insert_with(|| format!("uniffi_{}", ci.namespace()));
-    }
-
-    fn update_from_cdylib_name(&mut self, cdylib_name: &str) {
-        self.cdylib_name
-            .get_or_insert_with(|| cdylib_name.to_string());
     }
 }
 
