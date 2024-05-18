@@ -83,4 +83,8 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
 {% endif %}
-extension {{ type_name }}: Swift.Error { }
+extension {{ type_name }}: Foundation.LocalizedError {
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+}

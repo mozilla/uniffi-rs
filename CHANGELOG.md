@@ -10,6 +10,8 @@
 
 - Objects error types can now be as `Result<>` error type without wrapping them in `Arc<>`.
 
+- Swift errors now provide `localizedDescription` ([#2116](https://github.com/mozilla/uniffi-rs/pull/2116))
+
 ### What's fixed?
 - Custom Type names are now treated as type names by all bindings. This means if they will work if they happen to be
   keywords in the language. There's a very small risk of this being a breaking change if you used a type name which
