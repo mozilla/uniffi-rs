@@ -23,11 +23,11 @@ sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references
     class {{ variant_name }}(
         {% for field in variant.fields() -%}
         {%- call kt::docstring(field, 8) %}
-        val {{ field.name()|var_name }}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
+        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
         override val message
-            get() = "{%- for field in variant.fields() %}{{ field.name()|var_name|unquote }}=${ {{field.name()|var_name }} }{% if !loop.last %}, {% endif %}{% endfor %}"
+            get() = "{%- for field in variant.fields() %}{% call kt::field_name_unquoted(field, loop.index) %}=${ {% call kt::field_name(field, loop.index) %} }{% if !loop.last %}, {% endif %}{% endfor %}"
     }
     {% endfor %}
 
@@ -88,7 +88,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 {%- for field in variant.fields() %}
-                + {{ field|allocation_size_fn }}(value.{{ field.name()|var_name }})
+                + {{ field|allocation_size_fn }}(value.{% call kt::field_name(field, loop.index) %})
                 {%- endfor %}
             )
             {%- endfor %}
@@ -102,7 +102,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
             is {{ type_name }}.{{ variant|error_variant_name }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
-                {{ field|write_fn }}(value.{{ field.name()|var_name }}, buf)
+                {{ field|write_fn }}(value.{% call kt::field_name(field, loop.index) %}, buf)
                 {%- endfor %}
                 Unit
             }

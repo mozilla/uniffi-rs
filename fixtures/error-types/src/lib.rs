@@ -154,11 +154,50 @@ fn return_proc_error(e: String) -> Arc<ProcErrorInterface> {
 pub enum Error {
     #[error("Oops")]
     Oops,
+    #[error("Value: {value}")]
+    Value { value: String },
+    #[error("IntValue: {value}")]
+    IntValue { value: u16 },
 }
 
 #[uniffi::export]
-fn oops_enum() -> Result<(), Error> {
-    Err(Error::Oops)
+fn oops_enum(i: u16) -> Result<(), Error> {
+    if i == 0 {
+        Err(Error::Oops)
+    } else if i == 1 {
+        Err(Error::Value {
+            value: "value".to_string(),
+        })
+    } else if i == 2 {
+        Err(Error::IntValue { value: i })
+    } else {
+        panic!("unknown variant {i}")
+    }
+}
+
+// tuple enum as an error.
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+pub enum TupleError {
+    #[error("Oops")]
+    Oops(String),
+    #[error("Value {0}")]
+    Value(u16),
+}
+
+#[uniffi::export]
+fn oops_tuple(i: u16) -> Result<(), TupleError> {
+    if i == 0 {
+        Err(TupleError::Oops("oops".to_string()))
+    } else if i == 1 {
+        Err(TupleError::Value(i))
+    } else {
+        panic!("unknown variant {i}")
+    }
+}
+
+#[uniffi::export(default(t = None))]
+fn get_tuple(t: Option<TupleError>) -> TupleError {
+    t.unwrap_or_else(|| TupleError::Oops("oops".to_string()))
 }
 
 uniffi::include_scaffolding!("error_types");

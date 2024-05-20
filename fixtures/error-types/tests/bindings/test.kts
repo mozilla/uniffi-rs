@@ -47,6 +47,41 @@ try {
     assert(e.toString() == "RichError: \"oh no\"")
 }
 
+try {
+    oopsEnum(0u)
+    throw RuntimeException("Should have failed")
+} catch (e: Exception) {
+    assert(e.toString() == "uniffi.error_types.Exception${'$'}Oops: ")
+}
+
+try {
+    oopsEnum(1u)
+    throw RuntimeException("Should have failed")
+} catch (e: Exception) {
+    assert(e.toString() == "uniffi.error_types.Exception${'$'}Value: value=value")
+}
+
+try {
+    oopsEnum(2u)
+    throw RuntimeException("Should have failed")
+} catch (e: Exception) {
+    assert(e.toString() == "uniffi.error_types.Exception${'$'}IntValue: value=2")
+}
+
+try {
+    oopsTuple(0u)
+    throw RuntimeException("Should have failed")
+} catch (e: TupleException) {
+    assert(e.toString() == "uniffi.error_types.TupleException${'$'}Oops: v1=oops")
+}
+
+try {
+    oopsTuple(1u)
+    throw RuntimeException("Should have failed")
+} catch (e: TupleException) {
+    assert(e.toString() == "uniffi.error_types.TupleException${'$'}Value: v1=1")
+}
+
 runBlocking {
     try {
         aoops()
