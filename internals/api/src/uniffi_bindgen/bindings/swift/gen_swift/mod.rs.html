@@ -738,6 +738,11 @@
 <a href="#736" id="736">736</a>
 <a href="#737" id="737">737</a>
 <a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1446,6 +1451,11 @@
     <span class="doccomment">/// Get the idiomatic Swift rendering of an individual enum variant, quoted if it is a keyword (for use in e.g. declarations)
     </span><span class="kw">pub fn </span>enum_variant_swift_quoted(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
         <span class="prelude-val">Ok</span>(quote_general_keyword(oracle().enum_variant_name(nm)))
+    }
+
+    <span class="doccomment">/// Like enum_variant_swift_quoted, but a class name.
+    </span><span class="kw">pub fn </span>error_variant_swift_quoted(nm: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, askama::Error&gt; {
+        <span class="prelude-val">Ok</span>(quote_general_keyword(oracle().class_name(nm)))
     }
 
     <span class="doccomment">/// Get the idiomatic Swift rendering of an FFI callback function name

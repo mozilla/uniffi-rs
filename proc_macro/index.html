@@ -2067,9 +2067,8 @@ will have the result's <code>T</code> as its return type and throw the error in 
 <span class="w">        </span><span class="n">index</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
 <span class="w">        </span><span class="n">size</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="n">Generic</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="c1">// tuple-enums work.</span>
+<span class="w">    </span><span class="n">Generic</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span>
 <span class="p">}</span>
 
 <span class="cp">#[uniffi::export]</span>
@@ -2080,8 +2079,7 @@ will have the result's <code>T</code> as its return type and throw the error in 
 <p>You can also use the helper attribute <code>#[uniffi(flat_error)]</code> to expose just the variants but none of the fields.
 In this case the error will be serialized using Rust's <code>ToString</code> trait
 and will be accessible as the only field on each of the variants.
-For flat errors your variants can have unnamed fields,
-and the types of the fields don't need to implement any special traits.</p>
+The types of the fields can be any UniFFI supported type and don't need to implement any special traits.</p>
 <div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Error)]</span>
 <span class="cp">#[uniffi(flat_error)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyApiError</span><span class="w"> </span><span class="p">{</span>
