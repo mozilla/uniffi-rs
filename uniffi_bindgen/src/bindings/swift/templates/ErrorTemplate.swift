@@ -37,9 +37,13 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {% else %}
 
         {% for variant in e.variants() %}
-        case {{ loop.index }}: return .{{ variant.name()|class_name }}{% if variant.has_fields() -%}(
+        case {{ loop.index }}: return .{{ variant.name()|error_variant_swift_quoted }}{% if variant.has_fields() %}(
             {% for field in variant.fields() -%}
+            {%-     if variant.has_nameless_fields() -%}
+            try {{ field|read_fn }}(from: &buf)
+            {%-     else -%}
             {{ field.name()|var_name }}: try {{ field|read_fn }}(from: &buf)
+            {%-     endif -%}
             {%- if !loop.last %}, {% endif %}
             {% endfor -%}
         ){% endif -%}
@@ -64,10 +68,10 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
-        case let .{{ variant.name()|class_name }}({% for field in variant.fields() %}{{ field.name()|var_name }}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+        case let .{{ variant.name()|error_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             writeInt(&buf, Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field|write_fn }}({{ field.name()|var_name }}, into: &buf)
+            {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}, into: &buf)
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|class_name }}:

@@ -708,6 +708,11 @@ pub mod filters {
         Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
+    /// Like enum_variant_swift_quoted, but a class name.
+    pub fn error_variant_swift_quoted(nm: &str) -> Result<String, askama::Error> {
+        Ok(quote_general_keyword(oracle().class_name(nm)))
+    }
+
     /// Get the idiomatic Swift rendering of an FFI callback function name
     pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().ffi_callback_name(nm))

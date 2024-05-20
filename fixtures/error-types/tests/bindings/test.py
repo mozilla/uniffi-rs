@@ -80,5 +80,38 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(cm.exception.message(), "eek")
         self.assertEqual(str(cm.exception), "ProcErrorInterface(eek)")
 
+    def test_enum_error(self):
+        with self.assertRaises(Error) as cm:
+            oops_enum(0)
+        # This doesn't seem ideal?
+        self.assertEqual(str(cm.exception), "")
+        self.assertEqual(repr(cm.exception), "Error.Oops()")
+
+    def test_enum_error_value(self):
+        with self.assertRaises(Error) as cm:
+            oops_enum(1)
+        self.assertEqual(str(cm.exception), "value='value'")
+        self.assertEqual(repr(cm.exception), "Error.Value(value='value')")
+
+    def test_enum_error_int_value(self):
+        with self.assertRaises(Error) as cm:
+            oops_enum(2)
+        self.assertEqual(str(cm.exception), "value=2")
+        self.assertEqual(repr(cm.exception), "Error.IntValue(value=2)")
+
+    def test_tuple_error(self):
+        r = get_tuple()
+        self.assertEqual(repr(r), "TupleError.Oops('oops')")
+        # self.assertEqual(get_tuple(r), r)
+        with self.assertRaises(TupleError) as cm:
+            oops_tuple(0)
+        self.assertEqual(str(cm.exception), "'oops'")
+        self.assertEqual(repr(cm.exception), "TupleError.Oops('oops')")
+
+        with self.assertRaises(TupleError) as cm:
+            oops_tuple(1)
+        self.assertEqual(str(cm.exception), "1")
+        self.assertEqual(repr(cm.exception), "TupleError.Value(1)")
+
 if __name__=='__main__':
     unittest.main()

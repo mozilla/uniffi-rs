@@ -27,7 +27,7 @@ class {{ type_name }}:
     {%-  if variant.has_nameless_fields() %}
         def __init__(self, *values):
             if len(values) != {{ variant.fields().len() }}:
-                raise TypeError(f"Expected a tuple of len {{ variant.fields().len() }}, found len {len(values)}")
+                raise TypeError(f"Expected {{ variant.fields().len() }} arguments, found {len(values)}")
         {%- for field in variant.fields() %}
             if not isinstance(values[{{ loop.index0 }}], {{ field|type_name }}):
                 raise TypeError(f"unexpected type for tuple element {{ loop.index0 }} - expected '{{ field|type_name }}', got '{type(values[{{ loop.index0 }}])}'")

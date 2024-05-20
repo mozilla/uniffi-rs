@@ -409,9 +409,8 @@ pub enum MyError {
         index: u32,
         size: u32,
     }
-    Generic {
-        message: String,
-    }
+    // tuple-enums work.
+    Generic(String),
 }
 
 #[uniffi::export]
@@ -423,8 +422,7 @@ fn do_thing() -> Result<(), MyError> {
 You can also use the helper attribute `#[uniffi(flat_error)]` to expose just the variants but none of the fields.
 In this case the error will be serialized using Rust's `ToString` trait
 and will be accessible as the only field on each of the variants.
-For flat errors your variants can have unnamed fields,
-and the types of the fields don't need to implement any special traits.
+The types of the fields can be any UniFFI supported type and don't need to implement any special traits.
 
 ```rust
 #[derive(uniffi::Error)]

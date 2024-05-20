@@ -19,7 +19,7 @@ do {
 }
 
 do {
-    try oopsEnum()
+    try oopsEnum(i: 0)
     fatalError("Should have thrown")
 } catch let e as Error {
     assert(e == Error.Oops)
@@ -27,12 +27,48 @@ do {
     assert(String(reflecting: e) == "error_types.Error.Oops")
 }
 do {
-    try oopsEnum()
+    try oopsEnum(i: 0)
     fatalError("Should have thrown")
 } catch {
     assert(String(describing: error) == "Oops")
     assert(String(reflecting: error) == "error_types.Error.Oops")
     assert(error.localizedDescription == "error_types.Error.Oops")
+}
+
+do {
+    try oopsEnum(i: 1)
+    fatalError("Should have thrown")
+} catch {
+    assert(String(describing: error) == "Value(value: \"value\")")
+    assert(String(reflecting: error) == "error_types.Error.Value(value: \"value\")")
+    assert(error.localizedDescription == "error_types.Error.Value(value: \"value\")")
+}
+
+do {
+    try oopsEnum(i: 2)
+    fatalError("Should have thrown")
+} catch {
+    assert(String(describing: error) == "IntValue(value: 2)")
+    assert(String(reflecting: error) == "error_types.Error.IntValue(value: 2)")
+    assert(error.localizedDescription == "error_types.Error.IntValue(value: 2)")
+}
+
+do {
+    try oopsTuple(i: 0)
+    fatalError("Should have thrown")
+} catch {
+    assert(String(describing: error) == "Oops(\"oops\")")
+    assert(String(reflecting: error) == "error_types.TupleError.Oops(\"oops\")")
+    assert(error.localizedDescription == "error_types.TupleError.Oops(\"oops\")")
+}
+
+do {
+    try oopsTuple(i: 1)
+    fatalError("Should have thrown")
+} catch {
+    assert(String(describing: error) == "Value(1)")
+    assert(String(reflecting: error) == "error_types.TupleError.Value(1)")
+    assert(error.localizedDescription == "error_types.TupleError.Value(1)")
 }
 
 do {
