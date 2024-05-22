@@ -1118,7 +1118,9 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     // Type has no `name()` method, just `canonical_name()` which isn't what we want.
     match throws {
         None => None,
-        Some(Type::Enum { name, .. }) | Some(Type::Object { name, .. }) => Some(name),
+        Some(Type::Enum { name, .. })
+        | Some(Type::Object { name, .. })
+        | Some(Type::External { name, .. }) => Some(name),
         _ => panic!("unknown throw type: {throws:?}"),
     }
 }
