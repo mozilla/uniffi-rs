@@ -140,7 +140,7 @@ fileprivate func writeDouble(_ writer: inout [UInt8], _ value: Double) {
 }
 
 // Protocol for types that transfer other types across the FFI. This is
-// analogous go the Rust trait of the same name.
+// analogous to the Rust trait of the same name.
 fileprivate protocol FfiConverter {
     associatedtype FfiType
     associatedtype SwiftType
