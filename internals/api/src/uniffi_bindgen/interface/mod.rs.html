@@ -1341,6 +1341,11 @@
 <a href="#1339" id="1339">1339</a>
 <a href="#1340" id="1340">1340</a>
 <a href="#1341" id="1341">1341</a>
+<a href="#1342" id="1342">1342</a>
+<a href="#1343" id="1343">1343</a>
+<a href="#1344" id="1344">1344</a>
+<a href="#1345" id="1345">1345</a>
+<a href="#1346" id="1346">1346</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -1395,7 +1400,7 @@
 <span class="kw">use </span>anyhow::{anyhow, bail, ensure, <span class="prelude-ty">Result</span>};
 
 <span class="kw">pub mod </span>universe;
-<span class="kw">pub use </span>uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type};
+<span class="kw">pub use </span>uniffi_meta::{AsType, EnumShape, ExternalKind, ObjectImpl, Type};
 <span class="kw">use </span>universe::{TypeIterator, TypeUniverse};
 
 <span class="kw">mod </span>callbacks;
@@ -2158,6 +2163,9 @@
     </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>add_enum_definition(<span class="kw-2">&amp;mut </span><span class="self">self</span>, defn: Enum) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">match </span><span class="self">self</span>.enums.entry(defn.name().to_owned()) {
             Entry::Vacant(v) =&gt; {
+                <span class="kw">if </span><span class="macro">matches!</span>(defn.shape, EnumShape::Error { .. }) {
+                    <span class="self">self</span>.errors.insert(defn.name.clone());
+                }
                 <span class="self">self</span>.types.add_known_types(defn.iter_types())<span class="question-mark">?</span>;
                 v.insert(defn);
             }
@@ -2522,7 +2530,7 @@ existing definition: Enum {
             docstring: None,
         },
     ],
-    flat: true,
+    shape: Enum,
     non_exhaustive: false,
     docstring: None,
 },
@@ -2544,7 +2552,9 @@ new definition: Enum {
             docstring: None,
         },
     ],
-    flat: true,
+    shape: Error {
+        flat: true,
+    },
     non_exhaustive: false,
     docstring: None,
 }"</span>,

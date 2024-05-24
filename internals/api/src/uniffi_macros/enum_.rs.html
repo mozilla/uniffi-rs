@@ -431,6 +431,8 @@
 <a href="#429" id="429">429</a>
 <a href="#430" id="430">430</a>
 <a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>proc_macro2::{Ident, Span, TokenStream};
 <span class="kw">use </span>quote::quote;
 <span class="kw">use </span>syn::{
@@ -447,6 +449,7 @@
     },
     DeriveOptions,
 };
+<span class="kw">use </span>uniffi_meta::EnumShape;
 
 <span class="doccomment">/// Stores parsed data from the Derive Input for the enum.
 </span><span class="kw">pub struct </span>EnumItem {
@@ -703,13 +706,14 @@
     <span class="kw">let </span>module_path = mod_path()<span class="question-mark">?</span>;
     <span class="kw">let </span>non_exhaustive = item.is_non_exhaustive();
     <span class="kw">let </span>docstring = item.docstring();
+    <span class="kw">let </span>shape = EnumShape::Enum.as_u8();
 
     <span class="kw">let </span><span class="kw-2">mut </span>metadata_expr = <span class="macro">quote! </span>{
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
             .concat_str(#module_path)
             .concat_str(#name)
-            .concat_option_bool(<span class="prelude-val">None</span>) <span class="comment">// forced_flatness
-    </span>};
+            .concat_value(#shape)
+    };
     metadata_expr.extend(<span class="kw">match </span>item.discr_type() {
         <span class="prelude-val">None </span>=&gt; <span class="macro">quote! </span>{ .concat_bool(<span class="bool-val">false</span>) },
         <span class="prelude-val">Some</span>(t) =&gt; {

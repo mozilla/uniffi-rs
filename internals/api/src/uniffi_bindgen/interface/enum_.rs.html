@@ -768,19 +768,6 @@
 <a href="#766" id="766">766</a>
 <a href="#767" id="767">767</a>
 <a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
-<a href="#778" id="778">778</a>
-<a href="#779" id="779">779</a>
-<a href="#780" id="780">780</a>
-<a href="#781" id="781">781</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -943,7 +930,7 @@
 //! ```
 
 </span><span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>uniffi_meta::Checksum;
+<span class="kw">use </span>uniffi_meta::{Checksum, EnumShape};
 
 <span class="kw">use </span><span class="kw">super</span>::record::Field;
 <span class="kw">use super</span>::{AsType, Literal, Type, TypeIterator};
@@ -959,24 +946,7 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) module_path: String,
     <span class="kw">pub</span>(<span class="kw">super</span>) discr_type: <span class="prelude-ty">Option</span>&lt;Type&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) variants: Vec&lt;Variant&gt;,
-    <span class="comment">// NOTE: `flat` is a misleading name and to make matters worse, has 2 different
-    // meanings depending on the context :(
-    // * When used as part of Rust scaffolding generation, it means "is this enum
-    //   used with an Error, and that error should we lowered to foreign bindings
-    //   by converting each variant to a string and lowering the variant with that
-    //   string?". In that context, it should probably be called `lowered_as_string` or
-    //   similar.
-    // * When used as part of bindings generation, it means "does this enum have only
-    //   variants with no associated data"? The foreign binding generators are likely
-    //   to generate significantly different versions of the enum based on that value.
-    //
-    // The reason it is described as "has 2 different meanings" by way of example:
-    // * For an Enum described as being a flat error, but the enum itself has variants with data,
-    //   `flat` will be `true` for the Enum when generating scaffolding and `false` when
-    //   generating bindings.
-    // * For an Enum not used as an error but which has no variants with data, `flat` will be
-    //   false when generating the scaffolding but `true` when generating bindings.
-    </span><span class="kw">pub</span>(<span class="kw">super</span>) flat: bool,
+    <span class="kw">pub</span>(<span class="kw">super</span>) shape: EnumShape,
     <span class="kw">pub</span>(<span class="kw">super</span>) non_exhaustive: bool,
     <span class="attr">#[checksum_ignore]
     </span><span class="kw">pub</span>(<span class="kw">super</span>) docstring: <span class="prelude-ty">Option</span>&lt;String&gt;,
@@ -1031,7 +1001,10 @@
     }
 
     <span class="kw">pub fn </span>is_flat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.flat
+        <span class="kw">match </span><span class="self">self</span>.shape {
+            EnumShape::Error { flat } =&gt; flat,
+            EnumShape::Enum =&gt; <span class="self">self</span>.variants.iter().all(|v| v.fields.is_empty()),
+        }
     }
 
     <span class="kw">pub fn </span>is_non_exhaustive(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
@@ -1045,15 +1018,13 @@
     <span class="kw">pub fn </span>docstring(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
         <span class="self">self</span>.docstring.as_deref()
     }
+}
 
-    <span class="comment">// Sadly can't use TryFrom due to the 'is_flat' complication.
-    </span><span class="kw">pub fn </span>try_from_meta(meta: uniffi_meta::EnumMetadata, flat: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="comment">// This is messy - error enums are considered "flat" if the user
-        // opted in via a special attribute, regardless of whether the enum
-        // is actually flat.
-        // Real enums are considered flat iff they are actually flat.
-        // We don't have that context here, so this is handled by our caller.
-        </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+<span class="kw">impl </span>TryFrom&lt;uniffi_meta::EnumMetadata&gt; <span class="kw">for </span>Enum {
+    <span class="kw">type </span>Error = anyhow::Error;
+
+    <span class="kw">fn </span>try_from(meta: uniffi_meta::EnumMetadata) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             name: meta.name,
             module_path: meta.module_path,
             discr_type: meta.discr_type,
@@ -1062,7 +1033,7 @@
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>,
-            flat,
+            shape: meta.shape,
             non_exhaustive: meta.non_exhaustive,
             docstring: meta.docstring.clone(),
         })
@@ -1197,6 +1168,7 @@
         <span class="comment">// The enum with associated data.
         </span><span class="kw">let </span>ed = ci.get_enum_definition(<span class="string">"TestEnumWithData"</span>).unwrap();
         <span class="macro">assert!</span>(!ed.is_flat());
+        <span class="macro">assert_eq!</span>(ed.shape, EnumShape::Enum);
         <span class="macro">assert_eq!</span>(ed.variants().len(), <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(
             ed.variants().iter().map(|v| v.name()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
@@ -1245,6 +1217,8 @@
         );
         <span class="macro">assert_eq!</span>(ewd.variants()[<span class="number">0</span>].fields().len(), <span class="number">0</span>);
         <span class="macro">assert_eq!</span>(ewd.variants()[<span class="number">1</span>].fields().len(), <span class="number">0</span>);
+        <span class="macro">assert!</span>(ewd.is_flat());
+        <span class="macro">assert_eq!</span>(ewd.shape, EnumShape::Enum);
 
         <span class="comment">// Flat enums pass over the FFI as bytebuffers.
         // (It might be nice to optimize these to pass as plain integers, but that's
@@ -1452,7 +1426,7 @@
             name: <span class="string">"test"</span>.to_string(),
             discr_type: <span class="prelude-val">None</span>,
             variants: <span class="macro">vec!</span>[],
-            flat: <span class="bool-val">false</span>,
+            shape: EnumShape::Enum,
             non_exhaustive: <span class="bool-val">false</span>,
             docstring: <span class="prelude-val">None</span>,
         };

@@ -125,20 +125,11 @@
 <a href="#123" id="123">123</a>
 <a href="#124" id="124">124</a>
 <a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-</span><span class="kw">use </span><span class="kw">crate</span>::interface::{CallbackInterface, ComponentInterface, Enum, Record, Type};
+</span><span class="kw">use </span><span class="kw">crate</span>::interface::{CallbackInterface, ComponentInterface, Record, Type};
 <span class="kw">use </span>anyhow::{bail, Context};
 <span class="kw">use </span>uniffi_meta::{create_metadata_groups, group_metadata, EnumMetadata, Metadata, MetadataGroup};
 
@@ -193,19 +184,13 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>add_enum_to_ci(
-    iface: <span class="kw-2">&amp;mut </span>ComponentInterface,
-    meta: EnumMetadata,
-    is_flat: bool,
-) -&gt; anyhow::Result&lt;()&gt; {
+<span class="kw">fn </span>add_enum_to_ci(iface: <span class="kw-2">&amp;mut </span>ComponentInterface, meta: EnumMetadata) -&gt; anyhow::Result&lt;()&gt; {
     <span class="kw">let </span>ty = Type::Enum {
         name: meta.name.clone(),
         module_path: meta.module_path.clone(),
     };
     iface.types.add_known_type(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>enum_ = Enum::try_from_meta(meta, is_flat)<span class="question-mark">?</span>;
-    iface.add_enum_definition(enum_)<span class="question-mark">?</span>;
+    iface.add_enum_definition(meta.try_into()<span class="question-mark">?</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -232,10 +217,7 @@
             iface.add_record_definition(record)<span class="question-mark">?</span>;
         }
         Metadata::Enum(meta) =&gt; {
-            <span class="kw">let </span>flat = meta
-                .forced_flatness
-                .unwrap_or_else(|| meta.variants.iter().all(|v| v.fields.is_empty()));
-            add_enum_to_ci(iface, meta, flat)<span class="question-mark">?</span>;
+            add_enum_to_ci(iface, meta)<span class="question-mark">?</span>;
         }
         Metadata::Object(meta) =&gt; {
             iface.types.add_known_type(<span class="kw-2">&amp;</span>Type::Object {
