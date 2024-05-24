@@ -254,7 +254,7 @@ impl ExportedImplFnAttributes {
 
             if is_uniffi_path(path) {
                 this.process_path(path, attr, &attr.meta)?;
-            } else if matches!(attr.meta, Meta::List(_)) {
+            } else if is_cfg_attr(attr) {
                 if let Ok(nested) =
                     attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
                 {
@@ -327,6 +327,13 @@ fn is_uniffi_path(path: &Path) -> bool {
         .first()
         .map(|segment| segment.ident == "uniffi")
         .unwrap_or(false)
+}
+
+fn is_cfg_attr(attr: &Attribute) -> bool {
+    attr.meta
+        .path()
+        .get_ident()
+        .is_some_and(|ident| *ident == "cfg_attr")
 }
 
 fn ensure_no_path_args(seg: &PathSegment) -> syn::Result<()> {
