@@ -54,6 +54,29 @@ do {
 }
 
 do {
+    try oopsEnum(i: 3)
+    fatalError("Should have thrown")
+} catch let e as Error {
+    assert(String(describing: e) == "FlatInnerError(error: error_types.FlatInner.CaseA(message: \"inner\"))")
+    assert(String(reflecting: e) == "error_types.Error.FlatInnerError(error: error_types.FlatInner.CaseA(message: \"inner\"))")
+}
+
+do {
+    try oopsEnum(i: 4)
+    fatalError("Should have thrown")
+} catch let e as Error {
+    assert(String(describing: e) == "FlatInnerError(error: error_types.FlatInner.CaseB(message: \"NonUniffiTypeValue: value\"))")
+    assert(String(reflecting: e) == "error_types.Error.FlatInnerError(error: error_types.FlatInner.CaseB(message: \"NonUniffiTypeValue: value\"))")
+}
+
+do {
+    try oopsEnum(i: 5)
+    fatalError("Should have thrown")
+} catch let e as Error {
+    assert(String(describing: e) == "InnerError(error: error_types.Inner.CaseA(\"inner\"))")
+}
+
+do {
     try oopsTuple(i: 0)
     fatalError("Should have thrown")
 } catch {

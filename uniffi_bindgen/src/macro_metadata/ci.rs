@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::interface::{CallbackInterface, ComponentInterface, Enum, Record, Type};
+use crate::interface::{CallbackInterface, ComponentInterface, Record, Type};
 use anyhow::{bail, Context};
 use uniffi_meta::{create_metadata_groups, group_metadata, EnumMetadata, Metadata, MetadataGroup};
 
@@ -57,19 +57,13 @@ pub fn add_group_to_ci(iface: &mut ComponentInterface, group: MetadataGroup) -> 
     Ok(())
 }
 
-fn add_enum_to_ci(
-    iface: &mut ComponentInterface,
-    meta: EnumMetadata,
-    is_flat: bool,
-) -> anyhow::Result<()> {
+fn add_enum_to_ci(iface: &mut ComponentInterface, meta: EnumMetadata) -> anyhow::Result<()> {
     let ty = Type::Enum {
         name: meta.name.clone(),
         module_path: meta.module_path.clone(),
     };
     iface.types.add_known_type(&ty)?;
-
-    let enum_ = Enum::try_from_meta(meta, is_flat)?;
-    iface.add_enum_definition(enum_)?;
+    iface.add_enum_definition(meta.try_into()?)?;
     Ok(())
 }
 
@@ -96,10 +90,7 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
             iface.add_record_definition(record)?;
         }
         Metadata::Enum(meta) => {
-            let flat = meta
-                .forced_flatness
-                .unwrap_or_else(|| meta.variants.iter().all(|v| v.fields.is_empty()));
-            add_enum_to_ci(iface, meta, flat)?;
+            add_enum_to_ci(iface, meta)?;
         }
         Metadata::Object(meta) => {
             iface.types.add_known_type(&Type::Object {

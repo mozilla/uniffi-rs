@@ -14,6 +14,7 @@ use crate::{
     },
     DeriveOptions,
 };
+use uniffi_meta::EnumShape;
 
 /// Stores parsed data from the Derive Input for the enum.
 pub struct EnumItem {
@@ -270,12 +271,13 @@ pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> 
     let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
+    let shape = EnumShape::Enum.as_u8();
 
     let mut metadata_expr = quote! {
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
             .concat_str(#module_path)
             .concat_str(#name)
-            .concat_option_bool(None) // forced_flatness
+            .concat_value(#shape)
     };
     metadata_expr.extend(match item.discr_type() {
         None => quote! { .concat_bool(false) },

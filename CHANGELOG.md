@@ -15,6 +15,9 @@
 - Procmacros support tuple-errors (ie, enums used as errors can be tuple-enums.)
 
 ### What's fixed?
+- Fixed a problem with procmacro defined errors when the error was not used as an `Err` result
+  in the namespace ([#2108](https://github.com/mozilla/uniffi-rs/issues/2108))
+
 - Custom Type names are now treated as type names by all bindings. This means if they will work if they happen to be
   keywords in the language. There's a very small risk of this being a breaking change if you used a type name which
   did not already start with a capital letter, but this changes makes all type naming consistent.

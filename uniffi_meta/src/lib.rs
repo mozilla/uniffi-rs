@@ -309,11 +309,36 @@ pub struct FieldMetadata {
     pub docstring: Option<String>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Checksum)]
+pub enum EnumShape {
+    Enum,
+    Error { flat: bool },
+}
+
+impl EnumShape {
+    pub fn as_u8(&self) -> u8 {
+        match self {
+            EnumShape::Enum => 0,
+            EnumShape::Error { flat: false } => 1,
+            EnumShape::Error { flat: true } => 2,
+        }
+    }
+
+    pub fn from(v: u8) -> anyhow::Result<Self> {
+        Ok(match v {
+            0 => EnumShape::Enum,
+            1 => EnumShape::Error { flat: false },
+            2 => EnumShape::Error { flat: true },
+            _ => anyhow::bail!("invalid enum shape discriminant {v}"),
+        })
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
-    pub forced_flatness: Option<bool>,
+    pub shape: EnumShape,
     pub variants: Vec<VariantMetadata>,
     pub discr_type: Option<Type>,
     pub non_exhaustive: bool,

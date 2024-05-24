@@ -52,7 +52,7 @@ use std::{
 use anyhow::{anyhow, bail, ensure, Result};
 
 pub mod universe;
-pub use uniffi_meta::{AsType, ExternalKind, ObjectImpl, Type};
+pub use uniffi_meta::{AsType, EnumShape, ExternalKind, ObjectImpl, Type};
 use universe::{TypeIterator, TypeUniverse};
 
 mod callbacks;
@@ -815,6 +815,9 @@ impl ComponentInterface {
     pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
         match self.enums.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
+                if matches!(defn.shape, EnumShape::Error { .. }) {
+                    self.errors.insert(defn.name.clone());
+                }
                 self.types.add_known_types(defn.iter_types())?;
                 v.insert(defn);
             }
@@ -1179,7 +1182,7 @@ existing definition: Enum {
             docstring: None,
         },
     ],
-    flat: true,
+    shape: Enum,
     non_exhaustive: false,
     docstring: None,
 },
@@ -1201,7 +1204,9 @@ new definition: Enum {
             docstring: None,
         },
     ],
-    flat: true,
+    shape: Error {
+        flat: true,
+    },
     non_exhaustive: false,
     docstring: None,
 }",
