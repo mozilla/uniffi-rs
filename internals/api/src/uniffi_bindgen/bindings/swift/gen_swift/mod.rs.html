@@ -743,6 +743,7 @@
 <a href="#741" id="741">741</a>
 <a href="#742" id="742">742</a>
 <a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -956,11 +957,12 @@
 
 <span class="kw">impl </span>Config {
     <span class="doccomment">/// The name of the Swift module containing the high-level foreign-language bindings.
+    /// Panics if the module name hasn't been configured.
     </span><span class="kw">pub fn </span>module_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">match </span><span class="self">self</span>.module_name.as_ref() {
-            <span class="prelude-val">Some</span>(name) =&gt; name.clone(),
-            <span class="prelude-val">None </span>=&gt; <span class="string">"uniffi"</span>.into(),
-        }
+        <span class="self">self</span>.module_name
+            .as_ref()
+            .expect(<span class="string">"module name should have been set in update_component_configs"</span>)
+            .clone()
     }
 
     <span class="doccomment">/// The name of the lower-level C module containing the FFI declarations.

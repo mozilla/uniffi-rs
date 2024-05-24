@@ -676,7 +676,6 @@
 <a href="#674" id="674">674</a>
 <a href="#675" id="675">675</a>
 <a href="#676" id="676">676</a>
-<a href="#677" id="677">677</a>
 </pre></div><pre class="rust"><code><span class="comment">/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -778,20 +777,19 @@
 }
 
 <span class="kw">impl </span>Config {
-    <span class="kw">pub fn </span>package_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(package_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.package_name {
-            package_name.clone()
-        } <span class="kw">else </span>{
-            <span class="string">"uniffi"</span>.into()
-        }
+    <span class="comment">// We insist someone has already configured us - any defaults we supply would be wrong.
+    </span><span class="kw">pub fn </span>package_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.package_name
+            .as_ref()
+            .expect(<span class="string">"package name should have been set in update_component_configs"</span>)
+            .clone()
     }
 
     <span class="kw">pub fn </span>cdylib_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(cdylib_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.cdylib_name {
-            cdylib_name.clone()
-        } <span class="kw">else </span>{
-            <span class="string">"uniffi"</span>.into()
-        }
+        <span class="self">self</span>.cdylib_name
+            .as_ref()
+            .expect(<span class="string">"cdylib name should have been set in update_component_configs"</span>)
+            .clone()
     }
 
     <span class="doccomment">/// Whether to generate immutable records (`val` instead of `var`)
