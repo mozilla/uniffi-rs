@@ -39,7 +39,7 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
   - Add this dependency to `Cargo.toml`: `uniffi = {version = "0.XX.0", features = ["cli"] }`
   - Follow the steps from the previous section to add the `uniffi-bindgen` binary target
 
-Then your can run `uniffi-bindgen` from any create in your project using `cargo run -p uniffi-bindgen [args]`
+Then your can run `uniffi-bindgen` from any crate in your project using `cargo run -p uniffi-bindgen [args]`
 
 ## Running uniffi-bindgen using a library file
 
