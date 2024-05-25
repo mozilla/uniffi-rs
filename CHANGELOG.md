@@ -17,7 +17,7 @@
   ([#2073](https://github.com/mozilla/uniffi-rs/issues/2073))
 
 - Macros `uniffi::method` and `uniffi::constructor` can now be used with
-  `attr_cfg`. ([#2113](https://github.com/mozilla/uniffi-rs/pull/2113))
+  `cfg_attr`. ([#2113](https://github.com/mozilla/uniffi-rs/pull/2113))
 
 - Python: Fix custom types generating invalid code when there are forward references.
   ([#2067](https://github.com/mozilla/uniffi-rs/issues/2067))
