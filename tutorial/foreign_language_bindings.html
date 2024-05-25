@@ -1589,7 +1589,7 @@ creating a binary for each crate that uses UniFFI.  You can avoid this by creati
   - Name the crate <code>uniffi-bindgen</code>
   - Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = "0.XX.0", features = ["cli"] }</code>
   - Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</p>
-<p>Then your can run <code>uniffi-bindgen</code> from any create in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
+<p>Then your can run <code>uniffi-bindgen</code> from any crate in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
 <h2 id="running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
 This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
