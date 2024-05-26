@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["ffi_callbacks","ffi_foreign_future_complete","foreign_future_ffi_result_struct","method_ffi_callback","method_ffi_callback_name","vtable_name","vtable_struct"],"struct":["CallbackInterface"]};

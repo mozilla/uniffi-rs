@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Callback interfaces are traits specified in UDL which can be implemented by foreign languages."><title>uniffi::ffi::callbackinterface - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="uniffi" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../../../uniffi/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Module callbackinterface</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../../index.html">uniffi</a>::<wbr><a href="../index.html">ffi</a>::<wbr><a class="mod" href="#">callbackinterface</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Callback interfaces are traits specified in UDL which can be implemented by foreign languages.</p>
+<h2 id="using-callback-interfaces"><a href="#using-callback-interfaces">Using callback interfaces</a></h2>
+<ol>
+<li>Define a Rust trait.</li>
+</ol>
+<p>This toy example defines a way of Rust accessing a key-value store exposed
+by the host operating system (e.g. the key chain).</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">trait </span>Keychain: Send {
+  <span class="kw">fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, key: String) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt;;
+  <span class="kw">fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>, key: String, value: String);
+}</code></pre></div>
+<ol start="2">
+<li>Define a callback interface in the UDL</li>
+</ol>
+<div class="example-wrap"><pre class="language-idl"><code>callback interface Keychain {
+    string? get(string key);
+    void put(string key, string data);
+};
+</code></pre></div>
+<ol start="3">
+<li>And allow it to be passed into Rust.</li>
+</ol>
+<p>Here, we define a constructor to pass the keychain to rust, and then another method
+which may use it.</p>
+<p>In UDL:</p>
+<div class="example-wrap"><pre class="language-idl"><code>object Authenticator {
+    constructor(Keychain keychain);
+    void login();
+}
+</code></pre></div>
+<p>In Rust:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">struct </span>Authenticator {
+  keychain: Box&lt;<span class="kw">dyn </span>Keychain&gt;,
+}
+
+<span class="kw">impl </span>Authenticator {
+  <span class="kw">pub fn </span>new(keychain: Box&lt;<span class="kw">dyn </span>Keychain&gt;) -&gt; <span class="self">Self </span>{
+    <span class="self">Self </span>{ keychain }
+  }
+  <span class="kw">pub fn </span>login(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+    <span class="kw">let </span>username = <span class="self">self</span>.keychain.get(<span class="string">&quot;username&quot;</span>.into());
+    <span class="kw">let </span>password = <span class="self">self</span>.keychain.get(<span class="string">&quot;password&quot;</span>.into());
+  }
+}</code></pre></div>
+<ol start="4">
+<li>Create an foreign language implementation of the callback interface.</li>
+</ol>
+<p>In this example, here’s a Kotlin implementation.</p>
+<div class="example-wrap"><pre class="language-kotlin"><code>class AndroidKeychain: Keychain {
+    override fun get(key: String): String? {
+        // … elide the implementation.
+        return value
+    }
+    override fun put(key: String) {
+        // … elide the implementation.
+    }
+}
+</code></pre></div>
+<ol start="5">
+<li>Pass the implementation to Rust.</li>
+</ol>
+<p>Again, in Kotlin</p>
+<div class="example-wrap"><pre class="language-kotlin"><code>val authenticator = Authenticator(AndroidKeychain())
+authenticator.login()
+</code></pre></div><h2 id="how-it-works"><a href="#how-it-works">How it works.</a></h2><h3 id="high-level"><a href="#high-level">High level</a></h3>
+<p>Uniffi generates a protocol or interface in client code in the foreign language must implement.</p>
+<p>For each callback interface, UniFFI defines a VTable.
+This is a <code>repr(C)</code> struct where each field is a <code>repr(C)</code> callback function pointer.
+There is one field for each method, plus an extra field for the <code>uniffi_free</code> method.
+The foreign code registers one VTable per callback interface with Rust.</p>
+<p>VTable methods have a similar signature to Rust scaffolding functions.
+The one difference is that values are returned via an out pointer to work around a Python bug (https://bugs.python.org/issue5710).</p>
+<p>The foreign object that implements the interface is represented by an opaque handle.
+UniFFI generates a struct that implements the trait by calling VTable methods, passing the handle as the first parameter.
+When the struct is dropped, the <code>uniffi_free</code> method is called.</p>
+</div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.UnexpectedUniFFICallbackError.html" title="struct uniffi::ffi::callbackinterface::UnexpectedUniFFICallbackError">UnexpectedUniFFICallbackError</a></div><div class="desc docblock-short">Used when internal/unexpected error happened when calling a foreign callback, for example when
+a unknown exception is raised</div></li></ul></section></div></main></body></html>

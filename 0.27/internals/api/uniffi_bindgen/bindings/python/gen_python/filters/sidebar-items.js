@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["canonical_name","check_lower_fn","class_name","docstring","enum_variant_py","ffi_callback_name","ffi_converter_name","ffi_default_value","ffi_struct_name","ffi_type_name","fn_name","lift_fn","literal_py","lower_fn","object_names","read_fn","type_name","var_name","variant_discr_literal","write_fn"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["expand_record","record_ffi_converter_impl","record_meta_static_var","write_field"],"struct":["FieldAttributeArguments"]};

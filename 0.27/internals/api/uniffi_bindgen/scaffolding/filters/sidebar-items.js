@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["crate_name_rs","type_rs"]};

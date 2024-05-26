@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["generate_scaffolding","generate_scaffolding_for_crate"]};

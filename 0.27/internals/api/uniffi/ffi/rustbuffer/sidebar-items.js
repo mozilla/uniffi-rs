@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["uniffi_rustbuffer_alloc","uniffi_rustbuffer_free","uniffi_rustbuffer_from_bytes","uniffi_rustbuffer_reserve"],"struct":["RustBuffer"]};

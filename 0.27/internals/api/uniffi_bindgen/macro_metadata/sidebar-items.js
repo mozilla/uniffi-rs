@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["add_group_to_ci","add_to_ci","add_to_ci_from_library","extract_from_library"],"mod":["ci","extract"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["checksum_metadata"],"mod":["codes"],"struct":["MetadataBuffer"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["expand_uniffi_trait_export","process_uniffi_trait_method"]};

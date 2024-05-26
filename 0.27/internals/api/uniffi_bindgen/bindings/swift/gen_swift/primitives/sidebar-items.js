@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["render_literal"],"macro":["impl_code_type_for_primitive"],"struct":["BooleanCodeType","BytesCodeType","Float32CodeType","Float64CodeType","Int16CodeType","Int32CodeType","Int64CodeType","Int8CodeType","StringCodeType","UInt16CodeType","UInt32CodeType","UInt64CodeType","UInt8CodeType"]};

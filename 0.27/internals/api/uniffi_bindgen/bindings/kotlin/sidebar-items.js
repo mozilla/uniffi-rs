@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["full_bindings_path","run_script","run_test","write_bindings"],"mod":["gen_kotlin","test"]};
