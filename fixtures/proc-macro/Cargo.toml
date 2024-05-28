@@ -10,6 +10,10 @@ publish = false
 name = "uniffi_proc_macro"
 crate-type = ["lib", "cdylib"]
 
+[features]
+default = ["myfeature"]
+myfeature = []
+
 [dependencies]
 # Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
 uniffi = { workspace = true, features = ["scaffolding-ffi-buffer-fns"] }

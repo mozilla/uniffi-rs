@@ -492,3 +492,10 @@ to fix this limitation soon.
 In addition to the per-item limitations of the macros presented above, there is also currently a
 global restriction: You can only use the proc-macros inside a crate whose name is the same as the
 namespace in your UDL file. This restriction will be lifted in the future.
+
+### Conditional compilation
+`uniffi::constructor|method` will work if wrapped with `cfg_attr` attribute:
+```rust
+#[cfg_attr(feature = "foo", uniffi::constructor)]
+```
+Other attributes are not currently supported, see [#2000](https://github.com/mozilla/uniffi-rs/issues/2000) for more details.
