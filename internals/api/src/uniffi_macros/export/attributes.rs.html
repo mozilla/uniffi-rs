@@ -359,6 +359,42 @@
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::{HashMap, HashSet};
 
 <span class="kw">use crate</span>::{
@@ -371,7 +407,8 @@
 <span class="kw">use </span>syn::{
     parenthesized,
     parse::{Parse, ParseStream},
-    Attribute, Ident, LitStr, Meta, PathArguments, PathSegment, Token,
+    punctuated::Punctuated,
+    Attribute, Ident, LitStr, Meta, Path, PathArguments, PathSegment, Token,
 };
 <span class="kw">use </span>uniffi_meta::UniffiTraitDiscriminants;
 
@@ -610,55 +647,90 @@
     <span class="kw">pub fn </span>new(attrs: <span class="kw-2">&amp;</span>[Attribute]) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>this = <span class="self">Self</span>::default();
         <span class="kw">for </span>attr <span class="kw">in </span>attrs {
-            <span class="kw">let </span>segs = <span class="kw-2">&amp;</span>attr.path().segments;
+            <span class="kw">let </span>path = attr.path();
 
-            <span class="kw">let </span>fst = segs
-                .first()
-                .expect(<span class="string">"attributes have at least one path segment"</span>);
-            <span class="kw">if </span>fst.ident != <span class="string">"uniffi" </span>{
-                <span class="kw">continue</span>;
-            }
-            ensure_no_path_args(fst)<span class="question-mark">?</span>;
-
-            <span class="kw">let </span>args = <span class="kw">match </span><span class="kw-2">&amp;</span>attr.meta {
-                Meta::List(<span class="kw">_</span>) =&gt; attr.parse_args::&lt;ExportFnArgs&gt;()<span class="question-mark">?</span>,
-                <span class="kw">_ </span>=&gt; Default::default(),
-            };
-            this.args = args;
-
-            <span class="kw">if </span>segs.len() != <span class="number">2 </span>{
-                <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
-                    segs,
-                    <span class="string">"unsupported uniffi attribute"</span>,
-                ));
-            }
-            <span class="kw">let </span>snd = <span class="kw-2">&amp;</span>segs[<span class="number">1</span>];
-            ensure_no_path_args(snd)<span class="question-mark">?</span>;
-
-            <span class="kw">match </span>snd.ident.to_string().as_str() {
-                <span class="string">"constructor" </span>=&gt; {
-                    <span class="kw">if </span>this.constructor {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
-                            attr,
-                            <span class="string">"duplicate constructor attribute"</span>,
-                        ));
+            <span class="kw">if </span>is_uniffi_path(path) {
+                this.process_path(path, attr, <span class="kw-2">&amp;</span>attr.meta)<span class="question-mark">?</span>;
+            } <span class="kw">else if </span>is_cfg_attr(attr) {
+                <span class="kw">if let </span><span class="prelude-val">Ok</span>(nested) =
+                    attr.parse_args_with(Punctuated::&lt;Meta, <span class="macro">Token!</span>[,]&gt;::parse_terminated)
+                {
+                    <span class="kw">for </span>meta <span class="kw">in </span><span class="kw-2">&amp;</span>nested {
+                        <span class="kw">if let </span>Meta::Path(path) = meta {
+                            this.process_path(path, attr, meta)<span class="question-mark">?
+                        </span>}
                     }
-                    this.constructor = <span class="bool-val">true</span>;
-                }
-                <span class="string">"method" </span>=&gt; {
-                    <span class="kw">if </span>this.constructor {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
-                            attr,
-                            <span class="string">"confused constructor/method attributes"</span>,
-                        ));
-                    }
-                }
-                <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(snd, <span class="string">"unknown uniffi attribute"</span>)),
+                };
             }
         }
 
         <span class="prelude-val">Ok</span>(this)
     }
+
+    <span class="kw">fn </span>process_path(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path, attr: <span class="kw-2">&amp;</span>Attribute, meta: <span class="kw-2">&amp;</span>Meta) -&gt; syn::Result&lt;()&gt; {
+        <span class="kw">let </span>segs = <span class="kw-2">&amp;</span>path.segments;
+
+        <span class="kw">let </span>fst = segs
+            .first()
+            .expect(<span class="string">"attributes have at least one path segment"</span>);
+
+        <span class="kw">if </span>fst.ident != <span class="string">"uniffi" </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+        }
+        ensure_no_path_args(fst)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>args = <span class="kw">match </span>meta {
+            Meta::List(<span class="kw">_</span>) =&gt; attr.parse_args::&lt;ExportFnArgs&gt;()<span class="question-mark">?</span>,
+            <span class="kw">_ </span>=&gt; Default::default(),
+        };
+        <span class="self">self</span>.args = args;
+
+        <span class="kw">if </span>segs.len() != <span class="number">2 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                segs,
+                <span class="string">"unsupported uniffi attribute"</span>,
+            ));
+        }
+        <span class="kw">let </span>snd = <span class="kw-2">&amp;</span>segs[<span class="number">1</span>];
+        ensure_no_path_args(snd)<span class="question-mark">?</span>;
+
+        <span class="kw">match </span>snd.ident.to_string().as_str() {
+            <span class="string">"constructor" </span>=&gt; {
+                <span class="kw">if </span><span class="self">self</span>.constructor {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                        attr,
+                        <span class="string">"duplicate constructor attribute"</span>,
+                    ));
+                }
+                <span class="self">self</span>.constructor = <span class="bool-val">true</span>;
+            }
+            <span class="string">"method" </span>=&gt; {
+                <span class="kw">if </span><span class="self">self</span>.constructor {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(
+                        attr,
+                        <span class="string">"confused constructor/method attributes"</span>,
+                    ));
+                }
+            }
+            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(syn::Error::new_spanned(snd, <span class="string">"unknown uniffi attribute"</span>)),
+        }
+
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
+<span class="kw">fn </span>is_uniffi_path(path: <span class="kw-2">&amp;</span>Path) -&gt; bool {
+    path.segments
+        .first()
+        .map(|segment| segment.ident == <span class="string">"uniffi"</span>)
+        .unwrap_or(<span class="bool-val">false</span>)
+}
+
+<span class="kw">fn </span>is_cfg_attr(attr: <span class="kw-2">&amp;</span>Attribute) -&gt; bool {
+    attr.meta
+        .path()
+        .get_ident()
+        .is_some_and(|ident| <span class="kw-2">*</span>ident == <span class="string">"cfg_attr"</span>)
 }
 
 <span class="kw">fn </span>ensure_no_path_args(seg: <span class="kw-2">&amp;</span>PathSegment) -&gt; syn::Result&lt;()&gt; {

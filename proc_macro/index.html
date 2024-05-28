@@ -1022,6 +1022,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Other limitations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-compilation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional compilation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1714,6 +1729,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Other limitations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conditional-compilation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional compilation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -2133,6 +2163,11 @@ to fix this limitation soon.</p>
 <p>In addition to the per-item limitations of the macros presented above, there is also currently a
 global restriction: You can only use the proc-macros inside a crate whose name is the same as the
 namespace in your UDL file. This restriction will be lifted in the future.</p>
+<h3 id="conditional-compilation">Conditional compilation</h3>
+<p><code>uniffi::constructor|method</code> will work if wrapped with <code>cfg_attr</code> attribute:
+<div class="highlight"><pre><span></span><code><span class="cp">#[cfg_attr(feature = </span><span class="s">&quot;foo&quot;</span><span class="cp">, uniffi::constructor)]</span>
+</code></pre></div>
+Other attributes are not currently supported, see <a href="https://github.com/mozilla/uniffi-rs/issues/2000">#2000</a> for more details.</p>
 
 
 
