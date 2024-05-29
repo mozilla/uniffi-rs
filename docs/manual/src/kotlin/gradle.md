@@ -61,10 +61,32 @@ dependencies {
 }
 ```
 
-> ## Attention
->
-> It's highly recommend to call `AttachCurrentThread` when native threads startup, for example, using `jni-rs`'s [attach_current_thread_permanently].
-> Otherwise, JNA will attach & detach java thread in every uniffi's callback when calling from a rust thread.
+## Advise on rust->java interop
+
+It's highly recommend to call `AttachCurrentThread` when spawning a rust thread, and in that thread we need to call java functions, maybe through uniffi's foreign interface. Otherwise, [JNA] has to attach and detach java thread into native thread in every function call, which is obviously a heavy operation.
+
+For example, if we're using tokio, and we'll call uniffi's callback in the tokio worker threads:
+
+```rust
+static VM: once_cell::sync::OnceCell<jni::JavaVM> = once_cell::sync::OnceCell::new();
+
+// need call this function in java/kotlin first
+#[export_name = "Java_com_xxx_xxx"]
+pub extern "system" fn java_init(
+    env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+    app: jni::objects::JObject,
+) {
+    let vm = env.get_java_vm().unwrap();
+    _ = VM.set(vm);
+}
+
+// create tokio runtime manually
+tokio::runtime::Builder::new_multi_thread().on_thread_start(|| {
+    let vm = VM.get().expect("init java vm");
+    vm.attach_current_thread_permanently().unwrap();
+})
+```
 
 [JNA]: https://github.com/java-native-access/jna
 [attach_current_thread_permanently]: https://docs.rs/jni/latest/jni/struct.JavaVM.html#method.attach_current_thread_permanently
