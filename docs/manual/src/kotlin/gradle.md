@@ -65,8 +65,6 @@ dependencies {
 
 It's highly recommend to call `AttachCurrentThread` when spawning a rust thread, and in that thread we need to call java functions, maybe through uniffi's foreign interface. Otherwise, [JNA] has to attach and detach java thread into native thread in every function call, which is obviously a heavy operation.
 
-For example, if we're using tokio, and we'll call uniffi's callback in the tokio worker threads:
-
 ```rust
 static VM: once_cell::sync::OnceCell<jni::JavaVM> = once_cell::sync::OnceCell::new();
 
@@ -81,7 +79,7 @@ pub extern "system" fn java_init(
     _ = VM.set(vm);
 }
 
-// create tokio runtime manually
+// take tokio for example, and we need to call uniffi's callback in the tokio worker threads -
 tokio::runtime::Builder::new_multi_thread().on_thread_start(|| {
     let vm = VM.get().expect("init java vm");
     vm.attach_current_thread_permanently().unwrap();
