@@ -89,7 +89,6 @@ tokio::runtime::Builder::new_multi_thread().on_thread_start(|| {
 ```
 
 [JNA]: https://github.com/java-native-access/jna
-[attach_current_thread_permanently]: https://docs.rs/jni/latest/jni/struct.JavaVM.html#method.attach_current_thread_permanently
 
 ## Coroutines dependency
 
