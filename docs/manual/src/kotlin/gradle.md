@@ -61,7 +61,13 @@ dependencies {
 }
 ```
 
+> ## Attention
+>
+> It's highly recommend to call `AttachCurrentThread` when native threads startup, for example, using `jni-rs`'s [attach_current_thread_permanently].
+> Otherwise, JNA will attach & detach java thread in every uniffi's callback when calling from a rust thread.
+
 [JNA]: https://github.com/java-native-access/jna
+[attach_current_thread_permanently]: https://docs.rs/jni/latest/jni/struct.JavaVM.html#method.attach_current_thread_permanently
 
 ## Coroutines dependency
 
