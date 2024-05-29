@@ -1,8 +1,11 @@
 namespace regression_logging_callback_interface {
   void install_logger(Logger logger);
-  void log_something();
+  void log_foo_at_warn();
+  void log_bar_at_info();
+  void set_log_level_to_debug();
+  void log_buzz_at_error();
 };
 
 callback interface Logger {
-    void log_message(string message);
+    void log_message(string message, string level);
 };

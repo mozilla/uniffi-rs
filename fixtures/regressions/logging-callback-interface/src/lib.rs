@@ -6,7 +6,7 @@ use std::sync::{Once, RwLock};
 
 // Logger trait that the foreign code implements
 pub trait Logger: Sync + Send {
-    fn log_message(&self, message: String);
+    fn log_message(&self, message: String, level: String);
 }
 
 // Logger struct that implements the `log::Log` trait.
@@ -21,7 +21,7 @@ impl log::Log for RustLogger {
 
     fn log(&self, record: &log::Record<'_>) {
         if let Some(foreign_logger) = &*self.0.read().unwrap() {
-            foreign_logger.log_message(record.args().to_string());
+            foreign_logger.log_message(record.args().to_string(), record.level().to_string());
         }
     }
 
@@ -32,7 +32,7 @@ fn init() {
     static ONCE: Once = Once::new();
     ONCE.call_once(|| {
         log::set_logger(&RUST_LOGGER).expect("Error in install_logger()");
-        log::set_max_level(log::LevelFilter::Debug);
+        log::set_max_level(log::LevelFilter::Trace);
     });
 }
 
@@ -41,8 +41,20 @@ pub fn install_logger(logger: Box<dyn Logger>) {
     *RUST_LOGGER.0.write().unwrap() = Some(logger);
 }
 
-pub fn log_something() {
-    log::warn!("something");
+pub fn log_foo_at_warn() {
+    log::warn!("foo");
+}
+
+pub fn log_bar_at_info() {
+    log::info!("bar");
+}
+
+pub fn set_log_level_to_debug() {
+    log::set_max_level(log::LevelFilter::Debug)
+}
+
+pub fn log_buzz_at_error() {
+    log::error!("buzz");
 }
 
 uniffi::include_scaffolding!("test");

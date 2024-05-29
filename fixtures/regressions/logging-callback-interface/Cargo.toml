@@ -1,6 +1,7 @@
 [package]
 name = "uniffi-fixture-logging-callback-interface"
 edition = "2021"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>", "Viktor Jansson <v.l.jansson@gmail.com>"]
 version = "0.22.0"
 license = "MPL-2.0"
 publish = false
