@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["full_bindings_path"],"mod":["gen_kotlin","test"],"struct":["KotlinBindingGenerator"]};

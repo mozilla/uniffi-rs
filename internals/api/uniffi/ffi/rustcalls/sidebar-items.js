@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RustCallStatusCode"],"fn":["rust_call"],"struct":["RustCallStatus"]};

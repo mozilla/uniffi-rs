@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ffi_type","get_callback_interface_definition","get_enum_definition","get_function_definition","get_object_definition","get_record_definition"],"macro":["lookup_error"],"struct":["UniFFIError"]};

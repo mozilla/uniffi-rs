@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["UniffiTrait"],"struct":["Constructor","Method","Object"]};

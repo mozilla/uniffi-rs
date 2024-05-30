@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DeriveKind"],"fn":["expand_derive"],"struct":["DeriveOptions"]};

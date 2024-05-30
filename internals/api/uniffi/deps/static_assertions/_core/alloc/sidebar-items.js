@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["AllocError","Layout","LayoutError"],"trait":["Allocator","GlobalAlloc"],"type":["LayoutErr"]};

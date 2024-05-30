@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["enum_ffi_converter_impl","enum_meta_static_var","enum_or_error_ffi_converter_impl","expand_enum","rich_error_ffi_converter_impl","variant_metadata","variant_value"],"struct":["EnumAttr","EnumItem"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["extract_from_archive","extract_from_bytes","extract_from_elf","extract_from_library","extract_from_mach","extract_from_macho","extract_from_pe","is_metadata_symbol"],"struct":["ExtractedItems"]};

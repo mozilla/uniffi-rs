@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ffi_converter_callback_interface_impl","gen_method_impl","metadata_items","trait_impl","trait_impl_ident"]};

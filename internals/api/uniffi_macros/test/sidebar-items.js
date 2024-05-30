@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["build_foreign_language_testcases","should_skip_path"],"struct":["BuildForeignLanguageTestCaseInput"]};

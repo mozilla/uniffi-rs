@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["foreign_async_call","foreign_future_complete"],"struct":["ForeignFuture","ForeignFutureResult"],"type":["ForeignFutureCallback","ForeignFutureCallbackData","ForeignFutureHandle"]};

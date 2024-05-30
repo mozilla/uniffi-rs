@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["build_jar","calc_classpath","kotlinc_command","run_script","run_test"]};

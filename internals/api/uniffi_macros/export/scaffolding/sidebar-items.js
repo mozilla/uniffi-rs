@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ffi_buffer_scaffolding_fn","gen_constructor_scaffolding","gen_ffi_function","gen_fn_scaffolding","gen_method_scaffolding"],"struct":["ScaffoldingBits"]};

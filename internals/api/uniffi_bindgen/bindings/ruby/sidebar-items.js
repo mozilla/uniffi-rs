@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["generate_ruby_bindings"],"mod":["gen_ruby","test"],"struct":["RubyBindingGenerator"]};

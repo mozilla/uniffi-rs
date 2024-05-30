@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["expand_object","interface_impl","interface_meta_static_var"],"struct":["ObjectItem"]};

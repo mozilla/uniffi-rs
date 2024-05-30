@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ffi_converter","gen_trait_scaffolding"]};

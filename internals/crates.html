@@ -1395,30 +1395,48 @@
 <h1 id="navigating-the-code">Navigating the code</h1>
 <p>The code for UniFFI is organized into the following crates:</p>
 <ul>
-<li><strong><a href="api/uniffi_bindgen/index.html"><code>./uniffi_bindgen</code></a>:</strong> This is the source for the <code>uniffi-bindgen</code> executable and is where
-  most of the logic for the UniFFI tool lives. Its contents include:<ul>
-<li><strong><a href="api/uniffi_bindgen/interface/index.html"><code>./uniffi_bindgen/src/interface/</code></a>:</strong> The logic for parsing <code>.udl</code> files
-  into an in-memory representation called <a href="api/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a>,
+<li>
+<p><strong><code>./uniffi</code></strong> (<a href="https://docs.rs/uniffi/latest">docs.rs</a>, <a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi">source</a>): The main entry-point to UniFFI - almost all consumers should be able to use facilities expored by this module.</p>
+</li>
+<li>
+<p><strong><code>./uniffi_bindgen</code></strong> (<a href="https://docs.rs/uniffi_bindgen/latest">docs.rs</a>, <a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_bindgen">source</a>): The the source for the <code>uniffi-bindgen</code> executable and is where
+  most of the logic for the foreign bindings generation lives. Its contents include:</p>
+<ul>
+<li><strong><a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_bindgen/src/interface"><code>./uniffi_bindgen/src/interface/</code></a>:</strong> Converting <code>uniffi_meta</code> types into an in-memory representation called <a href="https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a>,
   from which we can generate code for different languages.</li>
-<li><strong><a href="api/uniffi_bindgen/scaffolding/index.html"><code>./uniffi_bindgen/src/scaffolding</code></a>:</strong> This module turns a
-  <a href="api/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a> into <em>Rust scaffolding</em>, the code that
-  wraps the user-provided Rust code and exposes it via a C-compatible FFI layer.</li>
-<li><strong><a href="api/uniffi_bindgen/bindings/index.html"><code>./uniffi_bindgen/src/bindings/</code></a>:</strong> This module turns a
-  <a href="api/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a> into <em>foreign-language bindings</em>,
-  the code that can load the FFI layer exposed by the scaffolding and expose it as a
-  higher-level API in a target language. There is a sub-module for each supported language.</li>
+<li><strong><a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_bindgen/src/scaffolding"><code>./uniffi_bindgen/src/scaffolding</code></a>:</strong> This module generates <code>.rs</code> files for the parts of the 
+  <a href="https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a> defined in UDL</li>
+<li><strong><a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_bindgen/src/bindings"><code>./uniffi_bindgen/src/bindings/</code></a>:</strong> This module turns a
+  <a href="https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/interface/struct.ComponentInterface.html"><code>ComponentInterface</code></a> into <em>foreign-language bindings</em>,
+  the code that can load the FFI layer exposed by Rust and expose it as a
+  higher-level API in a target language. There is a sub-module for each internally supported language.</li>
 </ul>
 </li>
-<li><strong><a href="api/uniffi/index.html"><code>./uniffi</code></a>:</strong> This is a run-time support crate that is used by the generated Rust scaffolding. It
-  controls how values of various types are passed back-and-forth over the FFI layer, by means of the
-  <a href="api/uniffi/trait.FfiConverter.html"><code>FfiConverter</code></a> trait.</li>
-<li><strong><a href="api/uniffi_build/index.html"><code>./uniffi_build</code></a>:</strong> This is a small hook to run <code>uniffi-bindgen</code> from the <code>build.rs</code> script
-  of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.</li>
-<li><strong><a href="api/uniffi_macros/index.html"><code>./uniffi_macros</code></a>:</strong> This contains some helper macros that UniFFI components can use to
-  simplify loading the generated scaffolding, and executing foreign-language tests.</li>
-<li><strong><a href="https://github.com/mozilla/uniffi-rs/tree/main/examples"><code>./examples</code></a>:</strong>
-  This contains code examples that you can use to explore the code generation
-  process.</li>
+<li>
+<p><strong><code>./uniffi_meta</code></strong>(<a href="https://docs.rs/uniffi_meta/latest">docs.rs</a>, <a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_meta">source</a>):
+The types used to represent the metadata used to describe the <code>ComponentInterface</code> used to generate the Rust scaffolding and the foreign bindings.</p>
+</li>
+<li>
+<p><strong><code>./uniffi_udl</code></strong>(<a href="https://docs.rs/uniffi_udl/latest">docs.rs</a>, <a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_udl">source</a>) :
+The parsing of UDL files, turning them into <code>uniffi_meta</code> types.</p>
+</li>
+<li>
+<p><strong><code>./uniffi_build</code></strong>(<a href="https://docs.rs/uniffi_build/latest">docs.rs</a>, <a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_build">source</a>):
+A small hook to run <code>uniffi-bindgen</code> from the <code>build.rs</code> script
+of a UniFFI component, in order to automatically generate the Rust scaffolding as part of its build process.</p>
+</li>
+<li>
+<p><strong><code>./uniffi_macros</code></strong>(<a href="https://docs.rs/uniffi_macros/latest">docs.rs</a>, <a href="https://github.com/mozilla/uniffi-rs/tree/main/uniffi_macros">source</a>):
+Contains the proc_macro support, which does much of the heavy-lifting for defining the Rust FFI.</p>
+</li>
+<li>
+<p><strong><a href="https://github.com/mozilla/uniffi-rs/tree/main/examples"><code>./examples</code></a>:</strong>
+Contains code examples demonstrating the capabilites and code generation process.</p>
+</li>
+<li>
+<p><strong><a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures"><code>./fixtures</code></a>:</strong>
+Our test suite.</p>
+</li>
 </ul>
 
 

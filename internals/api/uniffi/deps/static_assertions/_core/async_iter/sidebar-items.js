@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["from_iter"],"struct":["FromIter"],"trait":["AsyncIterator","IntoAsyncIterator"]};

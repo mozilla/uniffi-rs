@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ImportRequirement"],"fn":["fixup_keyword","generate_python_bindings"],"mod":["callback_interface","compounds","custom","enum_","external","filters","miscellany","object","primitives","record"],"static":["KEYWORDS"],"struct":["Config","CustomTypeConfig","PythonCodeOracle","PythonWrapper","TypeRenderer"],"trait":["AsCodeType","CodeType"]};

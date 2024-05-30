@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["calc_cdylib_name","find_components","find_package_by_crate_name","generate_bindings","load_udl_metadata"]};

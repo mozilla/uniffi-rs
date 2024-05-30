@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["UNICODE_VERSION"],"fn":["Case_Ignorable","Cased"],"mod":["conversions"]};

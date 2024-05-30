@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Debug","Display","Enum","Eq","Error","Hash","None","Object","Record","Some","async_runtime","callback_interface","default","flat_error","handle_unknown_callback_error","name","non_exhaustive","with_foreign","with_try_read"]};
