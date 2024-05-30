@@ -61,6 +61,31 @@ dependencies {
 }
 ```
 
+## Advise on rust->java interop
+
+It's highly recommend to call `AttachCurrentThread` when spawning a rust thread, and in that thread we need to call java functions, maybe through uniffi's foreign interface. Otherwise, [JNA] has to attach and detach a java thread into the native thread in every function call, which is a heavy operation.
+
+```rust
+static VM: once_cell::sync::OnceCell<jni::JavaVM> = once_cell::sync::OnceCell::new();
+
+// need call this function in java/kotlin first
+#[export_name = "Java_com_xxx_xxx"]
+pub extern "system" fn java_init(
+    env: jni::JNIEnv,
+    _class: jni::objects::JClass,
+    app: jni::objects::JObject,
+) {
+    let vm = env.get_java_vm().unwrap();
+    _ = VM.set(vm);
+}
+
+// take tokio for example, and we need to call uniffi's callback in the tokio worker threads -
+tokio::runtime::Builder::new_multi_thread().on_thread_start(|| {
+    let vm = VM.get().expect("init java vm");
+    vm.attach_current_thread_permanently().unwrap();
+}).build().unwrap();
+```
+
 [JNA]: https://github.com/java-native-access/jna
 
 ## Coroutines dependency
