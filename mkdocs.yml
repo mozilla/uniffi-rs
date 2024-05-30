@@ -10,6 +10,7 @@ docs_dir: docs/manual/src
 site_dir:  'target/rendered-docs'
 repo_url: 'https://github.com/mozilla/uniffi-rs'
 use_directory_urls: false
+exclude_docs: "README.md"
 
 theme:
   name: 'material'
@@ -19,6 +20,14 @@ theme:
 markdown_extensions:
   - pymdownx.superfences
   - pymdownx.highlight
+
+extra:
+  version:
+    provider: mike
+
+plugins:
+  # otherwise a no-op docs build ends with a diff to sitemap.xml.gz
+  - no-sitemap
 
 # This lists all the files that become part of the documentation
 nav:
