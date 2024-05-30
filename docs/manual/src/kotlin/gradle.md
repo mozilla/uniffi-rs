@@ -83,7 +83,7 @@ pub extern "system" fn java_init(
 tokio::runtime::Builder::new_multi_thread().on_thread_start(|| {
     let vm = VM.get().expect("init java vm");
     vm.attach_current_thread_permanently().unwrap();
-})
+}).build().unwrap();
 ```
 
 [JNA]: https://github.com/java-native-access/jna
