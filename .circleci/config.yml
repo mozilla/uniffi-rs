@@ -121,9 +121,6 @@ jobs:
     resource_class: small
     steps:
       - checkout
-      - prepare-rust-target-version
-      - build-api-docs
-      - run: cp -r ./target/doc ./docs/manual/src/internals/api
       - install-mkdocs
       - run: python -m mkdocs build
       - gh-pages/deploy:

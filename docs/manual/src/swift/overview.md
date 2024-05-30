@@ -41,4 +41,4 @@ in order to reduce the compiled code size, while distributing their Swift wrappe
 individual modules.
 
 For more technical details on how the bindings work internally, please see the
-[module documentation](../internals/api/uniffi_bindgen/bindings/swift/index.html)
+[module documentation](https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/bindings/swift/index.html)
