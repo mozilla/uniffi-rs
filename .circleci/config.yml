@@ -122,10 +122,16 @@ jobs:
     steps:
       - checkout
       - install-mkdocs
-      - run: python -m mkdocs build
-      - gh-pages/deploy:
-          build-dir: target/rendered-docs
-          ssh-fingerprints: "ac:68:a3:78:ea:ee:00:05:30:e1:dc:1f:2e:2f:7c:81"
+      # It should be possible to do something like https://github.com/jimporter/mike/issues/49
+      # So we can automagically deploy on release too!
+      - run:
+          name: Deploy docs
+          # can't use `gh-pages/deploy`, it doesn't handle the versioning.
+          command: |
+            # circle ci docs and jj both do this git config.
+            git config user.name 'uniffi-docs[bot]'
+            git config user.email 'uniffi-docs[bot]@users.noreply.github.io'
+            mike deploy next --push
 
   Deploy Docker:
     docker:
