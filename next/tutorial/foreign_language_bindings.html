@@ -1530,9 +1530,8 @@
 
 
 <h1 id="foreign-language-bindings">Foreign-language bindings</h1>
-<p>By now you have setup your crate and <code>cargo build</code> has successfully created your library.
-This describes how to generate foreign bindings.</p>
-<p>As stated in the <a href="../Overview.md">Overview</a>, UniFFI does not help shipping a Rust library on mobile, only how to generate bindings for it.</p>
+<p>By now you have setup your crate and <code>cargo build</code> has successfully created your library.</p>
+<p>The next step is to have UniFFI generate source code for your foreign language. It doesn't help you build this code, it just generates it for you.</p>
 <h2 id="creating-the-bindgen-binary">Creating the bindgen binary</h2>
 <p>First, make sure you have installed all the <a href="Prerequisites.html">prerequisites</a>.</p>
 <p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings.  However, this
