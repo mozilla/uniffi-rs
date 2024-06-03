@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_checksum_derive"
-version = "0.27.1"
+version = "0.27.3"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (checksum custom derive)"
 documentation = "https://mozilla.github.io/uniffi-rs"

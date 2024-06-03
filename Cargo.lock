@@ -1471,7 +1471,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "camino",
@@ -1916,7 +1916,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "askama",
@@ -1938,7 +1938,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "camino",
@@ -1947,7 +1947,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_checksum_derive"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "quote",
  "syn",
@@ -1955,7 +1955,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_core"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -1969,7 +1969,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "bincode",
  "camino",
@@ -1986,7 +1986,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "bytes",
@@ -1996,7 +1996,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "camino",
@@ -2007,7 +2007,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_udl"
-version = "0.27.1"
+version = "0.27.3"
 dependencies = [
  "anyhow",
  "textwrap",

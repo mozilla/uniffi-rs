@@ -37,9 +37,28 @@
 
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.3...HEAD).
+
+## v0.27.3 (backend crates: v0.27.3) - (_2024-06-03_)
+
+- Removed dependencies on `unicode-linebreak` and `unicode-width`.  They were being pulled in a
+  sub-dependencies for the `textwrap` crate, but weren't really useful.
+
+[All changes in v0.27.3](https://github.com/mozilla/uniffi-rs/compare/v0.27.2...v0.27.3).
+
+## v0.27.2 (backend crates: v0.27.2) - (_2024-05-15_)
+
+### What's new?
+
+- Added the `scaffolding-ffi-buffer-fns` feature.  When enabled, UniFFI will generate an alternate
+  FFI layer that can simplify the foreign bindings code.  It's currently being tested out for the
+  gecko-js external binding, but other external bindings may also find it useful.
+
+### What's changed?
+
 - Removed the dependency on the `oneshot' crate (https://github.com/mozilla/uniffi-rs/issues/1736)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...HEAD).
+[All changes in v0.27.2](https://github.com/mozilla/uniffi-rs/compare/v0.27.1...v0.27.2).
 
 ## v0.27.1 (backend crates: v0.27.1) - (_2024-04-03_)
 
