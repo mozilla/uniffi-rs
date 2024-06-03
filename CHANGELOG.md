@@ -10,6 +10,9 @@
 
 ## v0.27.3 (backend crates: v0.27.3) - (_2024-06-03_)
 
+- Removed dependencies on `unicode-linebreak` and `unicode-width`.  They were being pulled in a
+  sub-dependencies for the `textwrap` crate, but weren't really useful.
+
 [All changes in v0.27.3](https://github.com/mozilla/uniffi-rs/compare/v0.27.2...v0.27.3).
 
 ## v0.27.2 (backend crates: v0.27.2) - (_2024-05-15_)
