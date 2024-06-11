@@ -381,44 +381,8 @@ impl Foo {
 
 ## The `uniffi::custom_type` and `uniffi::custom_newtype` macros
 
-There are 2 macros available which allow procmacros to support "custom types" as described in the
-[UDL documentation for Custom Types](../udl/custom_types.md)
-
-The `uniffi::custom_type!` macro requires you to specify the name of the custom type, and the name of the
-builtin which implements this type. Use of this macro requires you to manually implement the
-`UniffiCustomTypeConverter` trait for for your type, as shown below.
-```rust
-pub struct Uuid {
-    val: String,
-}
-
-// Use `Uuid` as a custom type, with `String` as the Builtin
-uniffi::custom_type!(Uuid, String);
-
-impl UniffiCustomTypeConverter for Uuid {
-    type Builtin = String;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Uuid { val })
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.val
-    }
-}
-```
-
-There's also a `uniffi::custom_newtype!` macro, designed for custom types which use the
-"new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
-is able to make assumptions about how the type is laid out, `UniffiCustomTypeConverter`
-is implemented automatically.
-
-```rust
-uniffi::custom_newtype!(NewTypeHandle, i64);
-pub struct NewtypeHandle(i64);
-```
-
-and that's it!
+See the [UDL documentation for Custom Types](../udl/custom_types.md).  It works exactly the same for
+proc-macros.
 
 ## The `uniffi::Error` derive
 

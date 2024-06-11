@@ -6,6 +6,13 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+
+- The Rust side of the custom type system has changed and users will need to update their code.
+  The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
+  We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
+  See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
+
 ### What's fixed?
 
 - Fixed bug in metadata extraction with large ELF files.

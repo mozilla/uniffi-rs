@@ -82,3 +82,5 @@ nav:
   - ./internals/lifting_and_lowering.md
   - ./internals/object_references.md
   - ./internals/rendering_foreign_bindings.md
+
+- ./Upgrading.md
