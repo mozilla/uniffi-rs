@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_udl"
-version = "0.27.3"
+version = "0.28.0"
 description = "udl parsing for the uniffi project"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -16,5 +16,5 @@ weedle2 = { version = "5.0.0", path = "../weedle2" }
 # Don't include the `unicode-linebreak` or `unicode-width` since that functionality isn't needed for
 # docstrings.
 textwrap = { version = "0.16", features=["smawk"], default-features = false }
-uniffi_meta = { path = "../uniffi_meta", version = "=0.27.3" }
-uniffi_testing = { path = "../uniffi_testing", version = "=0.27.3" }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.28.0" }
+uniffi_testing = { path = "../uniffi_testing", version = "=0.28.0" }

@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.0...HEAD).
+
+## v0.28.0 (backend crates: v0.28.0) - (_2024-06-11_)
+
 ### What's new?
 
 - Objects error types can now be as `Result<>` error type without wrapping them in `Arc<>`.
@@ -37,7 +41,7 @@
 
 - The async runtime can be specified for constructors/methods, this will override the runtime specified at the impl block level.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.27.3...HEAD).
+[All changes in v0.28.0](https://github.com/mozilla/uniffi-rs/compare/v0.27.3...v0.28.0).
 
 ## v0.27.3 (backend crates: v0.27.3) - (_2024-06-03_)
 
