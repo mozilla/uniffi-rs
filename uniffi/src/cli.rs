@@ -108,6 +108,12 @@ enum Commands {
 
         /// Path to the UDL file, or cdylib if `library-mode` is specified
         source: Utf8PathBuf,
+
+        #[clap(long)]
+        package_name: Option<String>,
+        
+        #[clap(long)]
+        crate_root: Option<Utf8PathBuf>,
     },
 
     /// Generate Rust scaffolding code
@@ -138,6 +144,8 @@ fn gen_library_mode(
     cfo: Option<&camino::Utf8Path>,
     out_dir: &camino::Utf8Path,
     fmt: bool,
+    package_name: Option<String>,
+    crate_root: Option<&camino::Utf8Path>,
 ) -> anyhow::Result<()> {
     use uniffi_bindgen::library_mode::generate_bindings;
     for language in languages {
@@ -158,6 +166,8 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                package_name.clone(),
+                crate_root,
             )?
             .len(),
             TargetLanguage::Python => generate_bindings(
@@ -167,6 +177,8 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                package_name.clone(),
+                crate_root,
             )?
             .len(),
             TargetLanguage::Ruby => generate_bindings(
@@ -176,6 +188,8 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                package_name.clone(),
+                crate_root,
             )?
             .len(),
             TargetLanguage::Swift => generate_bindings(
@@ -185,6 +199,8 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                package_name.clone(),
+                crate_root,
             )?
             .len(),
         };
@@ -257,6 +273,8 @@ pub fn run_main() -> anyhow::Result<()> {
             source,
             crate_name,
             library_mode,
+            package_name,
+            crate_root,
         } => {
             if library_mode {
                 if lib_file.is_some() {
@@ -273,6 +291,8 @@ pub fn run_main() -> anyhow::Result<()> {
                     config.as_deref(),
                     &out_dir,
                     !no_format,
+                    package_name,
+                    crate_root.as_deref(),
                 )?;
             } else {
                 gen_bindings(

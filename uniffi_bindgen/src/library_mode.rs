@@ -19,12 +19,11 @@ use crate::{
     load_initial_config, macro_metadata, BindingGenerator, Component, ComponentInterface,
     GenerationSettings, Result,
 };
-use anyhow::{bail, Context};
+use anyhow::bail;
 use camino::Utf8Path;
-use cargo_metadata::{MetadataCommand, Package};
-use std::{collections::HashMap, fs};
+use std::fs;
 use uniffi_meta::{
-    create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
+    create_metadata_groups, group_metadata,
 };
 
 /// Generate foreign bindings
@@ -41,27 +40,20 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
     try_format_code: bool,
+    package_name: Option<String>,
+    crate_root: Option<&Utf8Path>,
 ) -> Result<Vec<Component<T::Config>>> {
-    let cargo_metadata = MetadataCommand::new()
-        .exec()
-        .context("error running cargo metadata")?;
-
-    let mut components = find_components(&cargo_metadata, library_path)?
-        .into_iter()
-        .map(|(ci, package)| {
-            let crate_root = package
-                .manifest_path
-                .parent()
-                .context("manifest path has no parent")?;
-            let config = binding_generator
-                .new_config(&load_initial_config(crate_root, config_file_override)?)?;
-            Ok(Component {
-                ci,
-                config,
-                package_name: Some(package.name),
-            })
-        })
-        .collect::<Result<Vec<_>>>()?;
+    if !package_name.is_some() || !crate_root.is_some() {
+        panic!("This hacked version of library_mode needs a package_name and crate_root");
+    }
+    let ci = find_components(library_path)?;
+    let config = binding_generator
+        .new_config(&load_initial_config(crate_root.unwrap(), config_file_override)?)?;
+    let mut components = vec![Component {
+        ci,
+        config,
+        package_name,
+    }];
 
     let settings = GenerationSettings {
         out_dir: out_dir.to_owned(),
@@ -102,109 +94,19 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
 }
 
 fn find_components(
-    cargo_metadata: &cargo_metadata::Metadata,
     library_path: &Utf8Path,
-) -> Result<Vec<(ComponentInterface, Package)>> {
+) -> Result<ComponentInterface> {
     let items = macro_metadata::extract_from_library(library_path)?;
     let mut metadata_groups = create_metadata_groups(&items);
     group_metadata(&mut metadata_groups, items)?;
 
-    // Collect and process all UDL from all groups at the start - the fixups
-    // of external types makes this tricky to do as we finalize the group.
-    let mut udl_items: HashMap<String, MetadataGroup> = HashMap::new();
-
-    for group in metadata_groups.values() {
-        let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
-        let crate_root = package
-            .manifest_path
-            .parent()
-            .context("manifest path has no parent")?;
-        let crate_name = group.namespace.crate_name.clone();
-        if let Some(mut metadata_group) = load_udl_metadata(group, crate_root, &crate_name)? {
-            // fixup the items.
-            metadata_group.items = metadata_group
-                .items
-                .into_iter()
-                .map(|item| fixup_external_type(item, &metadata_groups))
-                // some items are both in UDL and library metadata. For many that's fine but
-                // uniffi-traits aren't trivial to compare meaning we end up with dupes.
-                // We filter out such problematic items here.
-                .filter(|item| !matches!(item, Metadata::UniffiTrait { .. }))
-                .collect();
-            udl_items.insert(crate_name, metadata_group);
-        };
+    // bad code but there should only be one
+    for group in metadata_groups.into_values() {
+        let mut ci = ComponentInterface::new(&group.namespace.crate_name);
+        ci.add_metadata(group)?;
+        return Ok(ci);
     }
-
-    metadata_groups
-        .into_values()
-        .map(|group| {
-            let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
-            let mut ci = ComponentInterface::new(&group.namespace.crate_name);
-            if let Some(metadata) = udl_items.remove(&group.namespace.crate_name) {
-                ci.add_metadata(metadata)?;
-            };
-            ci.add_metadata(group)?;
-            Ok((ci, package))
-        })
-        .collect()
-}
-
-fn find_package_by_crate_name(
-    metadata: &cargo_metadata::Metadata,
-    crate_name: &str,
-) -> Result<Package> {
-    let matching: Vec<&Package> = metadata
-        .packages
-        .iter()
-        .filter(|p| {
-            p.targets
-                .iter()
-                .any(|t| t.name.replace('-', "_") == crate_name)
-        })
-        .collect();
-    match matching.len() {
-        1 => Ok(matching[0].clone()),
-        n => bail!("cargo metadata returned {n} packages for crate name {crate_name}"),
-    }
-}
-
-fn load_udl_metadata(
-    group: &MetadataGroup,
-    crate_root: &Utf8Path,
-    crate_name: &str,
-) -> Result<Option<MetadataGroup>> {
-    let udl_items = group
-        .items
-        .iter()
-        .filter_map(|i| match i {
-            uniffi_meta::Metadata::UdlFile(meta) => Some(meta),
-            _ => None,
-        })
-        .collect::<Vec<_>>();
-    match udl_items.len() {
-        // No UDL files, load directly from the group
-        0 => Ok(None),
-        // Found a UDL file, use it to load the CI, then add the MetadataGroup
-        1 => {
-            if udl_items[0].module_path != crate_name {
-                bail!(
-                    "UDL is for crate '{}' but this crate name is '{}'",
-                    udl_items[0].module_path,
-                    crate_name
-                );
-            }
-            let ci_name = &udl_items[0].file_stub;
-            let ci_path = crate_root.join("src").join(format!("{ci_name}.udl"));
-            if ci_path.exists() {
-                let udl = fs::read_to_string(ci_path)?;
-                let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
-                Ok(Some(udl_group))
-            } else {
-                bail!("{ci_path} not found");
-            }
-        }
-        n => bail!("{n} UDL files found for {crate_root}"),
-    }
+    Err(std::fmt::Error.into())
 }
 
 #[cfg(test)]

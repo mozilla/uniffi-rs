@@ -132,6 +132,8 @@ impl GeneratedSources {
             None,
             out_dir,
             false,
+            None,
+            None,
         )?;
         let main_source = sources
             .iter()
