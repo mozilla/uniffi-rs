@@ -1,0 +1,23 @@
+error: Failed to generate scaffolding from UDL file at ../../../../fixtures/uitests/src/typedef_extern.udl: `typedef extern` is no longer supported.
+       You must replace `extern` with the type of the object:
+       * "enum" for Enums.
+       * "record", "dictionary" or "struct" for Records.
+       * "object", "impl" or "interface" for objects.
+       * "trait", "callback" or "trait_with_foreign" for traits.
+       * "custom" for Custom Types.
+
+       For example:
+       [External="crate_name"]
+       typedef extern ExternalEnum;
+
+       Would be replaced with:
+       [External="crate_name"]
+       typedef enum ExternalEnum;
+
+       See https://mozilla.github.io/uniffi-rs/next/types/remote_ext_types.html for more.
+ --> tests/ui/typedef_extern.rs:2:1
+  |
+2 | uniffi_macros::generate_and_include_scaffolding!("../../../../fixtures/uitests/src/typedef_extern.udl");
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `uniffi_macros::generate_and_include_scaffolding` (in Nightly builds, run with -Z macro-backtrace for more info)
