@@ -54,6 +54,7 @@ members = [
   "fixtures/regressions/unary-result-alias",
   "fixtures/regressions/nested-module-import",
   "fixtures/regressions/wrong-lower-check",
+  "fixtures/regressions/doc-annotation-fails",
   "fixtures/trait-methods",
   "fixtures/uitests",
   "fixtures/uniffi-fixture-time",
