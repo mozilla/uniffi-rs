@@ -78,9 +78,6 @@ impl RustBuffer {
 
     /// Creates a `RustBuffer` from its constituent fields.
     ///
-    /// This is intended mainly as an internal convenience function and should not
-    /// be used outside of this module.
-    ///
     /// # Safety
     ///
     /// You must ensure that the raw parts uphold the documented invariants of this class.
