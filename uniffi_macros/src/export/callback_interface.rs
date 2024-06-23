@@ -222,7 +222,7 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
         Ok(quote! {
             fn #ident(#self_param, #(#params),*) -> #return_ty {
                 let vtable = #vtable_cell.get();
-                let mut uniffi_call_status = ::uniffi::RustCallStatus::new();
+                let mut uniffi_call_status = ::uniffi::RustCallStatus::default();
                 let mut uniffi_return_value: #lift_return_type = ::uniffi::FfiDefault::ffi_default();
                 (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut uniffi_return_value, &mut uniffi_call_status);
                 #lift_foreign_return(uniffi_return_value, uniffi_call_status)
