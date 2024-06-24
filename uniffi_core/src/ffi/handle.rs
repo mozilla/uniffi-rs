@@ -12,7 +12,7 @@
 /// For all currently supported architectures and hopefully any ones we add in the future:
 /// * 0 is an invalid value.
 /// * The lowest bit will always be set for foreign handles and never set for Rust ones (since the
-///   leaked pointer will be aligned).
+///   leaked pointer will be aligned to `size_of::<Arc<T>>()` == `size_of::<*const T>()`).
 ///
 /// Rust handles are mainly managed is through the [crate::HandleAlloc] trait.
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
