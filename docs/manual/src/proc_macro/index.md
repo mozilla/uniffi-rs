@@ -107,7 +107,7 @@ Arguments and receivers can also be references to these types, for example:
 ```rust
 // Input data types as references
 #[uniffi::export]
-fn process_data(a: &MyRecord, b: &MyEnum, c: Option<&MyRecord>) {
+fn process_data(a: &MyRecord, b: &MyEnum, c: &Option<MyRecord>) {
     ...
 }
 
