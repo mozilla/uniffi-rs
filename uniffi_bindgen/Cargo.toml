@@ -11,11 +11,15 @@ edition = "2021"
 keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
+[features]
+default = ["cargo_metadata"]
+cargo_metadata = ["dep:cargo_metadata"]
+
 [dependencies]
 anyhow = "1"
 askama = { version = "0.12", default-features = false, features = ["config"] }
 camino = "1.0.8"
-cargo_metadata = "0.15"
+cargo_metadata = { version = "0.15", optional = true }
 fs-err = "2.7.0"
 glob = "0.3"
 goblin = "0.8"
