@@ -8,7 +8,7 @@ Note that this tool will not help you ship a Rust library to these platforms, bu
 
 ## Design
 
-UniFFI requires you to describe your interface via either proc-macros or in an Interface Definition Language (based on [WebIDL](https://heycam.github.io/webidl/)) file.
+UniFFI requires you to describe your interface via either proc-macros or in an Interface Definition Language (based on [WebIDL](https://webidl.spec.whatwg.org/)) file.
 These definitions describe the methods and data structures available to the targeted languages, and are used to generate Rust *scaffolding* code and foreign-languages *bindings*.
 This process can take place either during the build process or be manually initiated by the developer.
 
