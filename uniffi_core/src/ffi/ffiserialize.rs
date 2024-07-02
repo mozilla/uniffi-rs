@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::{Handle, RustBuffer, RustCallStatus, RustCallStatusCode};
-use std::{mem::MaybeUninit, ptr::NonNull};
+use std::{mem::ManuallyDrop, ptr::NonNull};
 
 /// FFIBuffer element
 ///
@@ -228,15 +228,13 @@ impl FfiSerialize for RustCallStatus {
         let code = unsafe { buf[0].i8 };
         Self {
             code: RustCallStatusCode::try_from(code).unwrap_or(RustCallStatusCode::UnexpectedError),
-            error_buf: MaybeUninit::new(RustBuffer::get(&buf[1..])),
+            error_buf: ManuallyDrop::new(RustBuffer::get(&buf[1..])),
         }
     }
 
     fn put(buf: &mut [FfiBufferElement], value: Self) {
         buf[0].i8 = value.code as i8;
-        // Safety: This is okay even if the error buf is not initialized.  It just means we'll be
-        // copying the garbage data.
-        unsafe { RustBuffer::put(&mut buf[1..], value.error_buf.assume_init()) }
+        RustBuffer::put(&mut buf[1..], ManuallyDrop::into_inner(value.error_buf))
     }
 }
 
@@ -278,8 +276,8 @@ mod test {
             rust_buffer.capacity(),
         );
         let handle = Handle::from_raw(101).unwrap();
-        let rust_call_status = RustCallStatus::new();
-        let rust_call_status_error_buf = unsafe { rust_call_status.error_buf.assume_init_ref() };
+        let rust_call_status = RustCallStatus::default();
+        let rust_call_status_error_buf = &rust_call_status.error_buf;
         let orig_rust_call_status_buffer_data = (
             rust_call_status_error_buf.data_pointer(),
             rust_call_status_error_buf.len(),
@@ -334,7 +332,7 @@ mod test {
         let rust_call_status2 = <RustCallStatus as FfiSerialize>::read(&mut buf_reader);
         assert_eq!(rust_call_status2.code, RustCallStatusCode::Success);
 
-        let rust_call_status2_error_buf = unsafe { rust_call_status2.error_buf.assume_init() };
+        let rust_call_status2_error_buf = ManuallyDrop::into_inner(rust_call_status2.error_buf);
         assert_eq!(
             (
                 rust_call_status2_error_buf.data_pointer(),
