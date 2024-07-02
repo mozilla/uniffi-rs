@@ -43,6 +43,8 @@ pub fn run_script(
         None,
         &out_dir,
         false,
+        None,
+        None,
     )?;
 
     let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
