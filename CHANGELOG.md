@@ -8,6 +8,12 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.0...HEAD).
 
+### ⚠️ Breaking Changes ⚠️
+
+- The custom type system has changed and users will need to update their code.
+  The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
+  See https://mozilla.github.io/uniffi-rs/latest/udl/custom_types.html for details
+
 ## v0.28.0 (backend crates: v0.28.0) - (_2024-06-11_)
 
 ### What's new?
