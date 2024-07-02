@@ -50,7 +50,7 @@
 //! These traits should not be used directly, only in generated code, and the generated code should
 //! have fixture tests to test that everything works correctly together.
 
-use std::{borrow::Borrow, sync::Arc};
+use std::{borrow::Borrow, mem::ManuallyDrop, sync::Arc};
 
 use anyhow::bail;
 use bytes::Buf;
@@ -339,12 +339,12 @@ pub unsafe trait LiftReturn<UT>: Sized {
                     Self::handle_callback_unexpected_error(UnexpectedUniFFICallbackError::new(e))
                 }),
             RustCallStatusCode::Error => {
-                Self::lift_error(unsafe { call_status.error_buf.assume_init() })
+                Self::lift_error(ManuallyDrop::into_inner(call_status.error_buf))
             }
             _ => {
-                let e = <String as FfiConverter<crate::UniFfiTag>>::try_lift(unsafe {
-                    call_status.error_buf.assume_init()
-                })
+                let e = <String as FfiConverter<crate::UniFfiTag>>::try_lift(
+                    ManuallyDrop::into_inner(call_status.error_buf),
+                )
                 .unwrap_or_else(|e| format!("(Error lifting message: {e}"));
                 Self::handle_callback_unexpected_error(UnexpectedUniFFICallbackError::new(e))
             }

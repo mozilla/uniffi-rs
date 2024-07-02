@@ -12,7 +12,7 @@
 //!      exception
 
 use crate::{FfiDefault, Lower, RustBuffer, UniFfiTag};
-use std::mem::MaybeUninit;
+use std::mem::ManuallyDrop;
 use std::panic;
 
 /// Represents the success/error of a rust call
@@ -42,52 +42,43 @@ use std::panic;
 #[repr(C)]
 pub struct RustCallStatus {
     pub code: RustCallStatusCode,
-    // code is signed because unsigned types are experimental in Kotlin
-    pub error_buf: MaybeUninit<RustBuffer>,
-    // error_buf is MaybeUninit to avoid dropping the value that the consumer code sends in:
-    //   - Consumers should send in a zeroed out RustBuffer.  In this case dropping is a no-op and
-    //     avoiding the drop is a small optimization.
-    //   - If consumers pass in invalid data, then we should avoid trying to drop it.  In
-    //     particular, we don't want to try to free any data the consumer has allocated.
-    //
-    // `MaybeUninit` requires unsafe code, since we are preventing rust from dropping the value.
-    // To use this safely we need to make sure that no code paths set this twice, since that will
-    // leak the first `RustBuffer`.
-}
-
-impl RustCallStatus {
-    pub fn new() -> Self {
-        Self {
-            code: RustCallStatusCode::Success,
-            error_buf: MaybeUninit::new(RustBuffer::new()),
-        }
-    }
-
-    pub fn cancelled() -> Self {
-        Self {
-            code: RustCallStatusCode::Cancelled,
-            error_buf: MaybeUninit::new(RustBuffer::new()),
-        }
-    }
-
-    pub fn error(message: impl Into<String>) -> Self {
-        Self {
-            code: RustCallStatusCode::UnexpectedError,
-            error_buf: MaybeUninit::new(<String as Lower<UniFfiTag>>::lower(message.into())),
-        }
-    }
+    // error_buf is owned by the foreign side.
+    // - Whatever we are passed, we must never free. This however implies we must be passed
+    //   an empty `RustBuffer` otherwise it would leak when we replace it with our own.
+    // - On error we will set it to a `RustBuffer` we expect the foreign side to free.
+    // We assume initialization, which means we can use `ManuallyDrop` instead of
+    // `MaybeUninit`, which avoids unsafe code and clarifies ownership.
+    // We must take care to not set this twice to avoid leaking the first `RustBuffer`.
+    pub error_buf: ManuallyDrop<RustBuffer>,
 }
 
 impl Default for RustCallStatus {
     fn default() -> Self {
         Self {
             code: RustCallStatusCode::Success,
-            error_buf: MaybeUninit::uninit(),
+            error_buf: Default::default(),
+        }
+    }
+}
+
+impl RustCallStatus {
+    pub fn cancelled() -> Self {
+        Self {
+            code: RustCallStatusCode::Cancelled,
+            error_buf: Default::default(),
+        }
+    }
+
+    pub fn error(message: impl Into<String>) -> Self {
+        Self {
+            code: RustCallStatusCode::UnexpectedError,
+            error_buf: ManuallyDrop::new(<String as Lower<UniFfiTag>>::lower(message.into())),
         }
     }
 }
 
 /// Result of a FFI call to a Rust function
+/// Value is signed to avoid Kotlin's experimental unsigned types.
 #[repr(i8)]
 #[derive(Debug, PartialEq, Eq)]
 pub enum RustCallStatusCode {
@@ -171,11 +162,7 @@ where
         // Callback returned an Err.
         Ok(Err(buf)) => {
             out_status.code = RustCallStatusCode::Error;
-            unsafe {
-                // Unsafe because we're setting the `MaybeUninit` value, see above for safety
-                // invariants.
-                out_status.error_buf.as_mut_ptr().write(buf);
-            }
+            *out_status.error_buf = buf;
             None
         }
         // Callback panicked
@@ -196,11 +183,9 @@ where
                 <String as Lower<UniFfiTag>>::lower(message)
             }));
             if let Ok(buf) = message_result {
-                unsafe {
-                    // Unsafe because we're setting the `MaybeUninit` value, see above for safety
-                    // invariants.
-                    out_status.error_buf.as_mut_ptr().write(buf);
-                }
+                // If this was ever set twice we'd leak the old value - but because this is the only
+                // place where it is set, and this is only called once, no leaks should exist in practice.
+                *out_status.error_buf = buf;
             }
             // Ignore the error case.  We've done all that we can at this point.  In the bindings
             // code, we handle this by checking if `error_buf` still has an empty `RustBuffer` and
@@ -215,13 +200,6 @@ mod test {
     use super::*;
     use crate::{test_util::TestError, Lift, LowerReturn};
 
-    fn create_call_status() -> RustCallStatus {
-        RustCallStatus {
-            code: RustCallStatusCode::Success,
-            error_buf: MaybeUninit::new(RustBuffer::new()),
-        }
-    }
-
     fn test_callback(a: u8) -> Result<i8, TestError> {
         match a {
             0 => Ok(100),
@@ -232,7 +210,7 @@ mod test {
 
     #[test]
     fn test_rust_call() {
-        let mut status = create_call_status();
+        let mut status = RustCallStatus::default();
         let return_value = rust_call(&mut status, || {
             <Result<i8, TestError> as LowerReturn<UniFfiTag>>::lower_return(test_callback(0))
         });
@@ -244,23 +222,21 @@ mod test {
             <Result<i8, TestError> as LowerReturn<UniFfiTag>>::lower_return(test_callback(1))
         });
         assert_eq!(status.code, RustCallStatusCode::Error);
-        unsafe {
-            assert_eq!(
-                <TestError as Lift<UniFfiTag>>::try_lift(status.error_buf.assume_init()).unwrap(),
-                TestError("Error".to_owned())
-            );
-        }
+        assert_eq!(
+            <TestError as Lift<UniFfiTag>>::try_lift(ManuallyDrop::into_inner(status.error_buf))
+                .unwrap(),
+            TestError("Error".to_owned())
+        );
 
-        let mut status = create_call_status();
+        let mut status = RustCallStatus::default();
         rust_call(&mut status, || {
             <Result<i8, TestError> as LowerReturn<UniFfiTag>>::lower_return(test_callback(2))
         });
         assert_eq!(status.code, RustCallStatusCode::UnexpectedError);
-        unsafe {
-            assert_eq!(
-                <String as Lift<UniFfiTag>>::try_lift(status.error_buf.assume_init()).unwrap(),
-                "Unexpected value: 2"
-            );
-        }
+        assert_eq!(
+            <String as Lift<UniFfiTag>>::try_lift(ManuallyDrop::into_inner(status.error_buf))
+                .unwrap(),
+            "Unexpected value: 2"
+        );
     }
 }

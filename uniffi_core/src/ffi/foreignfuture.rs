@@ -147,7 +147,7 @@ mod test {
                 *data,
                 ForeignFutureResult {
                     return_value: <String as Lower<crate::UniFfiTag>>::lower(value),
-                    call_status: RustCallStatus::new(),
+                    call_status: RustCallStatus::default(),
                 },
             );
         }

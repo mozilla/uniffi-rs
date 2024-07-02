@@ -1,6 +1,7 @@
 use once_cell::sync::OnceCell;
 use std::{
     future::Future,
+    mem::ManuallyDrop,
     panic,
     pin::Pin,
     sync::{Arc, Mutex},
@@ -126,15 +127,13 @@ fn test_error() {
 
     let (_, call_status) = complete(rust_future);
     assert_eq!(call_status.code, RustCallStatusCode::Error);
-    unsafe {
-        assert_eq!(
-            <TestError as Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(
-                call_status.error_buf.assume_init()
-            )
-            .unwrap(),
-            TestError::from("Something went wrong"),
-        )
-    }
+    assert_eq!(
+        <TestError as Lift<crate::UniFfiTag>>::try_lift_from_rust_buffer(ManuallyDrop::into_inner(
+            call_status.error_buf
+        ))
+        .unwrap(),
+        TestError::from("Something went wrong"),
+    )
 }
 
 // Once `complete` is called, the inner future should be released, even if wakers still hold a
