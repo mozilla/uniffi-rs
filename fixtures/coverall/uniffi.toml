@@ -1,0 +1,3 @@
+[bindings.python.rename]
+say_hello = "say_hi"
+SayHello = "SayHi"

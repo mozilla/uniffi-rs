@@ -116,6 +116,8 @@ pub struct Config {
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
     external_packages: HashMap<String, String>,
+    #[serde(default)]
+    rename: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -197,7 +199,7 @@ impl ImportRequirement {
 #[derive(Template)]
 #[template(syntax = "py", escape = "none", path = "Types.py")]
 pub struct TypeRenderer<'a> {
-    python_config: &'a Config,
+    config: &'a Config,
     ci: &'a ComponentInterface,
     // Track included modules for the `include_once()` macro
     include_once_names: RefCell<HashSet<String>>,
@@ -206,9 +208,9 @@ pub struct TypeRenderer<'a> {
 }
 
 impl<'a> TypeRenderer<'a> {
-    fn new(python_config: &'a Config, ci: &'a ComponentInterface) -> Self {
+    fn new(config: &'a Config, ci: &'a ComponentInterface) -> Self {
         Self {
-            python_config,
+            config,
             ci,
             include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
@@ -426,8 +428,12 @@ impl PythonCodeOracle {
     /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
     /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
     /// only lowers the concrete class.
-    fn object_names(&self, obj: &Object) -> (String, String) {
-        let class_name = self.class_name(obj.name());
+    fn object_names(&self, obj: &Object, config: &Config) -> (String, String) {
+        let mut class_name = self.class_name(obj.name());
+        if let Some(overwrite_class_name) = config.rename.get(&self.class_name(obj.name())) {
+            class_name = overwrite_class_name.to_owned();
+        }
+
         if obj.has_callback_interface() {
             let impl_name = format!("{class_name}Impl");
             (class_name, impl_name)
@@ -494,7 +500,10 @@ pub mod filters {
     use super::*;
     pub use crate::backend::filters::*;
 
-    pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn type_name(as_ct: &impl AsCodeType, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_type_name) = config.rename.get(&as_ct.as_codetype().type_label()) {
+            return Ok(overwrite_type_name.to_owned());
+        }
         Ok(as_ct.as_codetype().type_label())
     }
 
@@ -548,22 +557,34 @@ pub mod filters {
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn class_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_class_name) = config.rename.get(nm) {
+            return Ok(PythonCodeOracle.class_name(overwrite_class_name));
+        }
         Ok(PythonCodeOracle.class_name(nm))
     }
 
     /// Get the idiomatic Python rendering of a function name.
-    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn fn_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_function_name) = config.rename.get(nm) {
+            return Ok(PythonCodeOracle.fn_name(overwrite_function_name));
+        }
         Ok(PythonCodeOracle.fn_name(nm))
     }
 
     /// Get the idiomatic Python rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn var_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_variable_name) = config.rename.get(nm) {
+            return Ok(PythonCodeOracle.var_name(overwrite_variable_name));
+        }
         Ok(PythonCodeOracle.var_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.
-    pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
+    pub fn enum_variant_py(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_enum_variant) = config.rename.get(nm) {
+            return Ok(PythonCodeOracle.enum_variant_name(overwrite_enum_variant));
+        }
         Ok(PythonCodeOracle.enum_variant_name(nm))
     }
 
@@ -578,8 +599,8 @@ pub mod filters {
     }
 
     /// Get the idiomatic Python rendering of an individual enum variant.
-    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
-        Ok(PythonCodeOracle.object_names(obj))
+    pub fn object_names(obj: &Object, config: &Config) -> Result<(String, String), askama::Error> {
+        Ok(PythonCodeOracle.object_names(obj, config))
     }
 
     /// Get the idiomatic Python rendering of docstring

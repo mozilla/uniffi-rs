@@ -34,7 +34,7 @@ _uniffi_rust_call(
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{ arg|lower_fn }}({{ arg.name()|var_name }})
+        {{ arg|lower_fn }}({{ arg.name()|var_name(config) }})
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -54,15 +54,15 @@ _uniffi_rust_call(
 
 {#-
 // Arglist as used in Python declarations of methods, functions and constructors.
-// Note the var_name and type_name filters.
+// Note the var_name(config) and type_name filters.
 -#}
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name }}
+        {{ arg.name()|var_name(config) }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name -}}]" = _DEFAULT
-        {%- else %}: "{{ arg|type_name -}}"
+        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name(config) -}}]" = _DEFAULT
+        {%- else %}: "{{ arg|type_name(config) -}}"
         {%- endmatch %}
         {%- if !loop.last %},{% endif -%}
     {%- endfor %}
@@ -88,10 +88,10 @@ _uniffi_rust_call(
     {%- match arg.default_value() %}
     {%- when None %}
     {%- when Some with(literal) %}
-    if {{ arg.name()|var_name }} is _DEFAULT:
-        {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
+    if {{ arg.name()|var_name(config) }} is _DEFAULT:
+        {{ arg.name()|var_name(config) }} = {{ literal|literal_py(arg.as_type().borrow()) }}
     {%- endmatch %}
-    {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
+    {{ arg|check_lower_fn }}({{ arg.name()|var_name(config) }})
     {% endfor -%}
 {%- endmacro -%}
 
@@ -104,10 +104,10 @@ _uniffi_rust_call(
         {%- match arg.default_value() %}
         {%- when None %}
         {%- when Some with(literal) %}
-        if {{ arg.name()|var_name }} is _DEFAULT:
-            {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
+        if {{ arg.name()|var_name(config) }} is _DEFAULT:
+            {{ arg.name()|var_name(config) }} = {{ literal|literal_py(arg.as_type().borrow()) }}
         {%- endmatch %}
-        {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
+        {{ arg|check_lower_fn }}({{ arg.name()|var_name(config) }})
         {% endfor -%}
 {%- endmacro -%}
 
@@ -119,7 +119,7 @@ _uniffi_rust_call(
 
 {%-     match meth.return_type() %}
 {%-         when Some with (return_type) %}
-    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name(config) }}":
 {%-         when None %}
     async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> None:
 {%      endmatch %}
@@ -148,7 +148,7 @@ _uniffi_rust_call(
 
 {%-         when Some with (return_type) %}
 
-    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name(config) }}":
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(

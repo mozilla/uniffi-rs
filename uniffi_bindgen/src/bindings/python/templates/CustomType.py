@@ -1,4 +1,4 @@
-{%- match python_config.custom_types.get(name.as_str())  %}
+{%- match config.custom_types.get(name.as_str())  %}
 {% when None %}
 {#- No custom type config, just forward all methods to our builtin type #}
 class _UniffiConverterType{{ name }}:
