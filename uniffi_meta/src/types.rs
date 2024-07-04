@@ -146,7 +146,7 @@ impl Type {
 }
 
 // A trait so various things can turn into a type.
-pub trait AsType: core::fmt::Debug {
+pub trait AsType: ::core::fmt::Debug {
     fn as_type(&self) -> Type;
 }
 
