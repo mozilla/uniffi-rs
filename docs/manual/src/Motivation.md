@@ -28,11 +28,11 @@ continues to evolve.
 Using UniFFI, you can:
 
 * Implement your software component as a `cdylib` crate in Rust; let's say the code is in `./src/lib.rs`.
-* Specify the desired component API using an *Interface Definition Language* (specifically, a variant of WebIDL) in a separate file like `./src/lib.udl`.
-* Run `uniffi-bindgen scaffolding ./src/lib.udl` to generate a bunch of boilerplate rust code that exposes this API as a C-compatible FFI layer,
-  and include it as part of your crate.
+* Optionally, describe parts of your component API using proc-macros directly in `lib.rs`.
+* Optionally, describe parts of your component API using an *Interface Definition Language* in a separate file like `./src/lib.udl`. UniFFI will generate a bunch of boilerplate Rust code that exposes this API as a C-compatible FFI layer, and include it as part of your crate.
 * `cargo build` your crate as normal to produce a shared library.
-* Run `uniffi-bindgen generate ./src/lib.udl -l kotlin` to generate a Kotlin library that can load your shared library
+* Run `uniffi-bindgen generate ... -l kotlin` (see [the bindgen docs](./tutorial/foreign_language_bindings.md) for omitted arg details)
+  to generate a Kotlin library that can load your shared library
   and expose it to Kotlin code using your nice high-level component API!
   * Or `-l swift` or `-l python` to produce bindings for other languages.
 
