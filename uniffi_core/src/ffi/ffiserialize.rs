@@ -81,7 +81,7 @@ pub trait FfiSerialize: Sized {
     fn write(buf: &mut &mut [FfiBufferElement], value: Self) {
         Self::put(buf, value);
         // Lifetime dance taken from `bytes::BufMut`
-        let (_, new_buf) = core::mem::take(buf).split_at_mut(Self::SIZE);
+        let (_, new_buf) = ::core::mem::take(buf).split_at_mut(Self::SIZE);
         *buf = new_buf;
     }
 }
