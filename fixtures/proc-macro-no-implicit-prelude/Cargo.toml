@@ -1,0 +1,25 @@
+[package]
+name = "uniffi-fixture-proc-macro-no-implicit-prelude"
+version = "0.22.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+edition = "2018"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_proc_macro"
+crate-type = ["lib", "cdylib"]
+
+[features]
+default = ["myfeature"]
+myfeature = []
+
+[dependencies]
+# Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
+uniffi = { workspace = true, features = ["scaffolding-ffi-buffer-fns"] }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build", "scaffolding-ffi-buffer-fns"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }
