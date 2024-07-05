@@ -36,24 +36,24 @@ mod filters {
             Type::Float32 => "f32".into(),
             Type::Float64 => "f64".into(),
             Type::Boolean => "bool".into(),
-            Type::String => "String".into(),
-            Type::Bytes => "Vec<u8>".into(),
-            Type::Timestamp => "std::time::SystemTime".into(),
-            Type::Duration => "std::time::Duration".into(),
+            Type::String => "::std::string::String".into(),
+            Type::Bytes => "::std::vec::Vec<u8>".into(),
+            Type::Timestamp => "::std::time::SystemTime".into(),
+            Type::Duration => "::std::time::Duration".into(),
             Type::Enum { name, .. } | Type::Record { name, .. } => format!("r#{name}"),
             Type::Object { name, imp, .. } => {
-                format!("std::sync::Arc<{}>", imp.rust_name_for(name))
+                format!("::std::sync::Arc<{}>", imp.rust_name_for(name))
             }
             Type::CallbackInterface { name, .. } => format!("Box<dyn r#{name}>"),
             Type::Optional { inner_type } => {
-                format!("std::option::Option<{}>", type_rs(inner_type)?)
+                format!("::std::option::Option<{}>", type_rs(inner_type)?)
             }
             Type::Sequence { inner_type } => format!("std::vec::Vec<{}>", type_rs(inner_type)?),
             Type::Map {
                 key_type,
                 value_type,
             } => format!(
-                "std::collections::HashMap<{}, {}>",
+                "::std::collections::HashMap<{}, {}>",
                 type_rs(key_type)?,
                 type_rs(value_type)?
             ),
