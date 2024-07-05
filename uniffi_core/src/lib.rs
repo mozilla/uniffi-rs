@@ -176,7 +176,7 @@ macro_rules! ffi_converter_rust_buffer_lift_and_lower {
             let mut buf = vec.as_slice();
             let value = <Self as $crate::FfiConverter<$uniffi_tag>>::try_read(&mut buf)?;
             match $crate::deps::bytes::Buf::remaining(&buf) {
-                0 => Ok(value),
+                0 => ::std::result::Result::Ok(value),
                 n => $crate::deps::anyhow::bail!(
                     "junk data left in buffer after lifting (count: {n})",
                 ),

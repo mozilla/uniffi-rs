@@ -211,7 +211,7 @@ fn enum_or_error_ffi_converter_impl(
         .collect();
     if item.is_non_exhaustive() {
         write_match_arms.push(quote! {
-            _ => panic!("Unexpected variant in non-exhaustive enum"),
+            _ => ::std::panic!("Unexpected variant in non-exhaustive enum"),
         })
     }
     let write_impl = quote! {
@@ -238,7 +238,7 @@ fn enum_or_error_ffi_converter_impl(
     let try_read_impl = quote! {
         ::uniffi::check_remaining(buf, 4)?;
 
-        Ok(match ::uniffi::deps::bytes::Buf::get_i32(buf) {
+        ::std::result::Result::Ok(match ::uniffi::deps::bytes::Buf::get_i32(buf) {
             #(#try_read_match_arms)*
             v => ::uniffi::deps::anyhow::bail!(#error_format_string, v),
         })
