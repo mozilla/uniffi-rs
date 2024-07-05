@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import unittest
-from enum_types import *
+from uniffi_enum_types import *
 
 class TestErrorTypes(unittest.TestCase):
     def test_animals(self):
