@@ -111,11 +111,12 @@ static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
+    pub(super) module_name: Option<String>,
     pub(super) cdylib_name: Option<String>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
-    external_packages: HashMap<String, String>,
+    pub(super) external_packages: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -128,6 +129,14 @@ pub struct CustomTypeConfig {
 }
 
 impl Config {
+    // We insist someone has already configured us - any defaults we supply would be wrong.
+    pub fn module_name(&self) -> String {
+        self.module_name
+            .as_ref()
+            .expect("module name should have been set in update_component_configs")
+            .clone()
+    }
+
     pub fn cdylib_name(&self) -> String {
         if let Some(cdylib_name) = &self.cdylib_name {
             cdylib_name.clone()

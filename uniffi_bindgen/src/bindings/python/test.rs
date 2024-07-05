@@ -56,6 +56,7 @@ pub fn run_script(
         .env("PYTHONPATH", pythonpath)
         .arg(script_path)
         .args(args);
+
     let status = command
         .spawn()
         .context("Failed to spawn `python3` when running script")?
