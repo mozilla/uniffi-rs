@@ -35,7 +35,7 @@ impl crate::BindingGenerator for PythonBindingGenerator {
         for c in &mut *components {
             c.config
                 .module_name
-                .get_or_insert_with(|| format!("{}", c.ci.namespace()));
+                .get_or_insert_with(|| c.ci.namespace().to_string());
             c.config.cdylib_name.get_or_insert_with(|| {
                 settings
                     .cdylib
