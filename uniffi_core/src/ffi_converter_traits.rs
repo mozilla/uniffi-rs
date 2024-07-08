@@ -541,7 +541,7 @@ macro_rules! derive_ffi_traits {
             type ReturnType = <Self as $crate::Lower<$ut>>::FfiType;
 
             fn lower_return(obj: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustBuffer> {
-                Ok(<Self as $crate::Lower<$ut>>::lower(obj))
+                ::std::result::Result::Ok(<Self as $crate::Lower<$ut>>::lower(obj))
             }
         }
     };

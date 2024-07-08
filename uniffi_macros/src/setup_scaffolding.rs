@@ -36,7 +36,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #ffi_contract_version_ident() -> u32 {
+        pub extern "C" fn #ffi_contract_version_ident() -> ::std::primitive::u32 {
             #UNIFFI_CONTRACT_VERSION
         }
 
@@ -45,13 +45,15 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         ///
         /// See `uniffi_bindgen::macro_metadata` for how this is used.
 
-        const #namespace_const_ident: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::NAMESPACE)
-            .concat_str(#module_path)
-            .concat_str(#namespace);
+        const #namespace_const_ident: ::uniffi::MetadataBuffer =
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::NAMESPACE)
+                .concat_str(#module_path)
+                .concat_str(#namespace);
 
         #[doc(hidden)]
         #[no_mangle]
-        pub static #namespace_static_ident: [u8; #namespace_const_ident.size] = #namespace_const_ident.into_array();
+        pub static #namespace_static_ident: [::std::primitive::u8; #namespace_const_ident.size] =
+            #namespace_const_ident.into_array();
 
         // Everybody gets basic buffer support, since it's needed for passing complex types over the FFI.
         //
@@ -60,29 +62,42 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub extern "C" fn #ffi_rustbuffer_alloc_ident(size: u64, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
-            uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
+        pub extern "C" fn #ffi_rustbuffer_alloc_ident(
+            size: ::std::primitive::u64,
+            call_status: &mut ::uniffi::RustCallStatus,
+        ) -> ::uniffi::RustBuffer {
+            ::uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_from_bytes_ident(bytes: uniffi::ForeignBytes, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
-            uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status)
+        pub unsafe extern "C" fn #ffi_rustbuffer_from_bytes_ident(
+            bytes: ::uniffi::ForeignBytes,
+            call_status: &mut ::uniffi::RustCallStatus,
+        ) -> ::uniffi::RustBuffer {
+            ::uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status)
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_free_ident(buf: uniffi::RustBuffer, call_status: &mut uniffi::RustCallStatus) {
-            uniffi::ffi::uniffi_rustbuffer_free(buf, call_status);
+        pub unsafe extern "C" fn #ffi_rustbuffer_free_ident(
+            buf: ::uniffi::RustBuffer,
+            call_status: &mut ::uniffi::RustCallStatus,
+        ) {
+            ::uniffi::ffi::uniffi_rustbuffer_free(buf, call_status);
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[no_mangle]
-        pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(buf: uniffi::RustBuffer, additional: u64, call_status: &mut uniffi::RustCallStatus) -> uniffi::RustBuffer {
-            uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
+        pub unsafe extern "C" fn #ffi_rustbuffer_reserve_ident(
+            buf: ::uniffi::RustBuffer,
+            additional: ::std::primitive::u64,
+            call_status: &mut ::uniffi::RustCallStatus,
+        ) -> ::uniffi::RustBuffer {
+            ::uniffi::ffi::uniffi_rustbuffer_reserve(buf, additional, call_status)
         }
 
         #ffi_rust_future_scaffolding_fns
@@ -121,7 +136,9 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         #[doc(hidden)]
         pub trait UniffiCustomTypeConverter {
             type Builtin;
-            fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> where Self: Sized;
+            fn into_custom(val: Self::Builtin) -> ::uniffi::Result<Self>
+            where
+                Self: ::std::marker::Sized;
             fn from_custom(obj: Self) -> Self::Builtin;
         }
     })

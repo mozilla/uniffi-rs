@@ -94,7 +94,7 @@ fn record_ffi_converter_impl(
             }
 
             fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
-                Ok(Self { #try_read_fields })
+                ::std::result::Result::Ok(Self { #try_read_fields })
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)

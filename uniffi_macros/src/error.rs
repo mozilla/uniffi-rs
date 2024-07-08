@@ -88,7 +88,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
             .collect();
         if item.is_non_exhaustive() {
             match_arms.push(quote! {
-                _ => panic!("Unexpected variant in non-exhaustive enum"),
+                _ => ::std::panic!("Unexpected variant in non-exhaustive enum"),
             })
         }
 
@@ -127,7 +127,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
                 type FfiType = ::uniffi::RustBuffer;
 
                 fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
-                    Ok(match ::uniffi::deps::bytes::Buf::get_i32(buf) {
+                    ::std::result::Result::Ok(match ::uniffi::deps::bytes::Buf::get_i32(buf) {
                         #(#match_arms)*
                         v => ::uniffi::deps::anyhow::bail!("Invalid #ident enum value: {}", v),
                     })
@@ -152,11 +152,11 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
                 type FfiType = ::uniffi::RustBuffer;
 
                 fn try_read(buf: &mut &[::std::primitive::u8]) -> ::uniffi::deps::anyhow::Result<Self> {
-                    panic!("Can't lift flat errors")
+                    ::std::panic!("Can't lift flat errors")
                 }
 
                 fn try_lift(v: ::uniffi::RustBuffer) -> ::uniffi::deps::anyhow::Result<Self> {
-                    panic!("Can't lift flat errors")
+                    ::std::panic!("Can't lift flat errors")
                 }
             }
         }

@@ -195,7 +195,7 @@ macro_rules! convert_unexpected_error {
             fn get_converter(&self) -> $crate::UnexpectedUniFFICallbackErrorConverterSpecialized;
         }
 
-        impl<T: Into<$ty>> GetConverterSpecialized for T {
+        impl<T: ::std::convert::Into<$ty>> GetConverterSpecialized for T {
             fn get_converter(&self) -> $crate::UnexpectedUniFFICallbackErrorConverterSpecialized {
                 $crate::UnexpectedUniFFICallbackErrorConverterSpecialized
             }
