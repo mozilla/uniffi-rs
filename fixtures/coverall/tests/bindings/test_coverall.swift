@@ -198,7 +198,8 @@ do {
     }
     let e = getRootError();
     if case let .Other(error) = e {
-        assert(error == OtherError.unexpected)
+        // Renamed `OtherError` to `AnotherError` via `uniffi.toml`
+        assert(error == AnotherError.unexpected)
     } else {
         fatalError("wrong error variant: \(e)")
     }

@@ -1,3 +1,11 @@
+[bindings.kotlin.rename]
+OtherError = "AnotherError"
+
 [bindings.python.rename]
-say_hello = "say_hi"
-SayHello = "SayHi"
+OtherError = "AnotherError"
+
+#[bindings.ruby.rename]
+#OtherError = "AnotherError"
+
+[bindings.swift.rename]
+OtherError = "AnotherError"

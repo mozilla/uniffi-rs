@@ -164,6 +164,18 @@ class TestCoverall < Test::Unit::TestCase
     end
   end
 
+#   def test_error_values
+#       coveralls = Coverall::Coveralls.new 'test_error_values'
+#       assert_equal coveralls.get_name, 'test_error_values'
+#
+#     assert_raise Coverall::ComplexError do
+#       coveralls.maybe_throw_complex(1)
+#     end
+#
+#     assert_equal err.to_s, 'TEST'
+#   end
+
+
   def test_self_by_arc
     coveralls = Coverall::Coveralls.new 'test_self_by_arc'
 

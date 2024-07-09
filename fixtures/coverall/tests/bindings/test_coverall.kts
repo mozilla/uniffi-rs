@@ -211,7 +211,8 @@ Coveralls("test_error_values").use { _coveralls ->
     }
     val e = getRootError()
     if (e is RootException.Other)
-        assert(e.error == OtherError.UNEXPECTED) {
+        // Renamed `OtherError` to `AnotherError` via `uniffi.toml`
+        assert(e.error == AnotherError.UNEXPECTED) {
     } else {
         throw RuntimeException("Unexpected error subclass")
     }
@@ -555,3 +556,4 @@ for (i in 1..100) {
 }
 
 assert(getNumAlive() <= 1UL) { "Num alive is ${getNumAlive()}. GC/Cleaner thread has starved" };
+
