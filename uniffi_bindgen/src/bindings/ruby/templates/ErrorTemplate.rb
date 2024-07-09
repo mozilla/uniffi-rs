@@ -22,27 +22,27 @@ CALL_PANIC = 2
 {%- for e in ci.enum_definitions() %}
 {% if ci.is_name_used_as_error(e.name()) %}
 {% if e.is_flat() %}
-class {{ e.name()|class_name_rb }}
+class {{ e.name()|class_name_rb(config) }}
     {%- for variant in e.variants() %}
-    {{ variant.name()|class_name_rb }} = Class.new StandardError
+    {{ variant.name()|class_name_rb(config) }} = Class.new StandardError
     {%- endfor %}
 {% else %}
-module {{ e.name()|class_name_rb }}
+module {{ e.name()|class_name_rb(config) }}
   {%- for variant in e.variants() %}
-  class {{ variant.name()|class_name_rb }} < StandardError
-    def initialize({% for field in variant.fields() %}{{ field.name()|var_name_rb }}{% if !loop.last %}, {% endif %}{% endfor %})
+  class {{ variant.name()|class_name_rb(config) }} < StandardError
+    def initialize({% for field in variant.fields() %}{{ field.name()|var_name_rb(config) }}{% if !loop.last %}, {% endif %}{% endfor %})
         {%- for field in variant.fields() %}
-        @{{ field.name()|var_name_rb }} = {{ field.name()|var_name_rb }}
+        @{{ field.name()|var_name_rb(config) }} = {{ field.name()|var_name_rb(config) }}
         {%- endfor %}
         super()
       end
     {%- if variant.has_fields() %}
 
-    attr_reader {% for field in variant.fields() %}:{{ field.name()|var_name_rb }}{% if !loop.last %}, {% endif %}{% endfor %}
+    attr_reader {% for field in variant.fields() %}:{{ field.name()|var_name_rb(config) }}{% if !loop.last %}, {% endif %}{% endfor %}
     {% endif %}
 
     def to_s
-     "#{self.class.name}({% for field in variant.fields() %}{{ field.name()|var_name_rb }}=#{@{{ field.name()|var_name_rb }}.inspect}{% if !loop.last %}, {% endif %}{% endfor %})"
+     "#{self.class.name}({% for field in variant.fields() %}{{ field.name()|var_name_rb(config) }}=#{@{{ field.name()|var_name_rb(config) }}.inspect}{% if !loop.last %}, {% endif %}{% endfor %})"
     end
   end
   {%- endfor %}
@@ -56,8 +56,8 @@ ERROR_MODULE_TO_READER_METHOD = {
 {%- for e in ci.enum_definitions() %}
 {% if ci.is_name_used_as_error(e.name()) %}
 {%- let typ=ci.get_type(e.name()).unwrap() %}
-{%- let canonical_type_name = canonical_name(typ.borrow()).borrow()|class_name_rb %}
-  {{ e.name()|class_name_rb }} => :read{{ canonical_type_name }},
+{%- let canonical_type_name = canonical_name(typ.borrow()).borrow()|class_name_rb(config) %}
+  {{ e.name()|class_name_rb(config) }} => :read{{ canonical_type_name }},
 {% endif %}
 {%- endfor %}
 }

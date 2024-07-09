@@ -64,7 +64,7 @@ typedef
 {% when FfiDefinition::Struct(struct) %}
 typedef struct {{ struct.name()|ffi_struct_name }} {
     {%- for field in struct.fields() %}
-    {{ field.type_().borrow()|header_ffi_type_name }} {{ field.name()|var_name }};
+    {{ field.type_().borrow()|header_ffi_type_name }} {{ field.name()|var_name(_config) }};
     {%- endfor %}
 } {{ struct.name()|ffi_struct_name }};
 {% when FfiDefinition::Function(func) %}

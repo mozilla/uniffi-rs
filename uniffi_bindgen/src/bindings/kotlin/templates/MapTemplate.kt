@@ -1,5 +1,5 @@
-{%- let key_type_name = key_type|type_name(ci) %}
-{%- let value_type_name = value_type|type_name(ci) %}
+{%- let key_type_name = key_type|type_name(ci, config) %}
+{%- let value_type_name = value_type|type_name(ci, config) %}
 public object {{ ffi_converter_name }}: FfiConverterRustBuffer<Map<{{ key_type_name }}, {{ value_type_name }}>> {
     override fun read(buf: ByteBuffer): Map<{{ key_type_name }}, {{ value_type_name }}> {
         val len = buf.getInt()

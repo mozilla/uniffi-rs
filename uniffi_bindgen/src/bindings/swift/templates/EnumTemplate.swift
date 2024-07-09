@@ -6,16 +6,16 @@
 public enum {{ type_name }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
-    case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
+    case {{ variant.name()|enum_variant_swift_quoted(config) }}{% if variant.fields().len() > 0 %}(
         {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
     ){% endif -%}
     {% endfor %}
 }
 {% when Some with (variant_discr_type) %}
-public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
+public enum {{ type_name }} : {{ variant_discr_type|type_name(config) }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
-    case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
+    case {{ variant.name()|enum_variant_swift_quoted(config) }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
         {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
     ){% endif -%}
     {% endfor %}
@@ -29,12 +29,12 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
         {% for variant in e.variants() %}
-        case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift_quoted }}{% if variant.has_fields() %}(
+        case {{ loop.index }}: return .{{ variant.name()|enum_variant_swift_quoted(config) }}{% if variant.has_fields() %}(
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() -%}
             try {{ field|read_fn }}(from: &buf)
             {%- else -%}
-            {{ field.name()|arg_name }}: try {{ field|read_fn }}(from: &buf)
+            {{ field.name()|arg_name(config) }}: try {{ field|read_fn }}(from: &buf)
             {%- endif -%}
             {%- if !loop.last %}, {% endif %}
             {%- endfor %}
@@ -48,13 +48,13 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         switch value {
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
-        case let .{{ variant.name()|enum_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+        case let .{{ variant.name()|enum_variant_swift_quoted(config) }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             writeInt(&buf, Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
             {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}, into: &buf)
             {% endfor -%}
         {% else %}
-        case .{{ variant.name()|enum_variant_swift_quoted }}:
+        case .{{ variant.name()|enum_variant_swift_quoted(config) }}:
             writeInt(&buf, Int32({{ loop.index }}))
         {% endif %}
         {%- endfor %}

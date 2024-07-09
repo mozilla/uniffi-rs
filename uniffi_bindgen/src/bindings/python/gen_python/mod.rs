@@ -430,7 +430,7 @@ impl PythonCodeOracle {
     /// only lowers the concrete class.
     fn object_names(&self, obj: &Object, config: &Config) -> (String, String) {
         let mut class_name = self.class_name(obj.name());
-        if let Some(overwrite_class_name) = config.rename.get(&self.class_name(obj.name())) {
+        if let Some(overwrite_class_name) = config.rename.get(&class_name) {
             class_name = overwrite_class_name.to_owned();
         }
 

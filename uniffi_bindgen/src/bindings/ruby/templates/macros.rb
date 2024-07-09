@@ -7,9 +7,9 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.throws_name() -%}
     {%- when Some with (e) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ e|class_name_rb }},
+      {{ ci.namespace()|class_name_rb(config) }}.rust_call_with_error({{ e|class_name_rb(config) }},
     {%- else -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call(
+      {{ ci.namespace()|class_name_rb(config) }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {%- call _arg_list_ffi_call(func) -%}
@@ -19,9 +19,9 @@
 {%- macro to_ffi_call_with_prefix(prefix, func) -%}
     {%- match func.throws_name() -%}
     {%- when Some with (e) -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call_with_error({{ e|class_name_rb }},
+      {{ ci.namespace()|class_name_rb(config) }}.rust_call_with_error({{ e|class_name_rb(config) }},
     {%- else -%}
-      {{ ci.namespace()|class_name_rb }}.rust_call(
+      {{ ci.namespace()|class_name_rb(config) }}.rust_call(
     {%- endmatch -%}
     :{{ func.ffi_func().name() }},
     {{- prefix }},
@@ -31,7 +31,7 @@
 
 {%- macro _arg_list_ffi_call(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|lower_rb(arg.as_type().borrow()) }}
+        {{- arg.name()|lower_rb(arg.as_type().borrow(), config) }}
         {%- if !loop.last %},{% endif %}
     {%- endfor %}
 {%- endmacro -%}
@@ -43,9 +43,9 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_rb }}
+        {{ arg.name()|var_name_rb(config) }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_rb }}
+        {%- when Some with(literal) %} = {{ literal|literal_rb(config) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -62,14 +62,14 @@
 
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow()) }}
-    {{ arg.name()|check_lower_rb(arg.as_type().borrow()) }}
+    {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb(config), arg.as_type().borrow()) }}
+    {{ arg.name()|check_lower_rb(arg.as_type().borrow(), config) }}
     {% endfor -%}
 {%- endmacro -%}
 
 {%- macro setup_args_extra_indent(meth) %}
         {%- for arg in meth.arguments() %}
-        {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb, arg.as_type().borrow()) }}
-        {{ arg.name()|check_lower_rb(arg.as_type().borrow()) }}
+        {{ arg.name() }} = {{ arg.name()|coerce_rb(ci.namespace()|class_name_rb(config), arg.as_type().borrow()) }}
+        {{ arg.name()|check_lower_rb(arg.as_type().borrow(), config) }}
         {%- endfor %}
 {%- endmacro -%}

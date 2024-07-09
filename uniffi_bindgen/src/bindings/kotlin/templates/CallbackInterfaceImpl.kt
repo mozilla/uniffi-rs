@@ -5,10 +5,10 @@
 // Put the implementation in an object so we don't pollute the top-level namespace
 internal object {{ trait_impl }} {
     {%- for (ffi_callback, meth) in vtable_methods.iter() %}
-    internal object {{ meth.name()|var_name }}: {{ ffi_callback.name()|ffi_callback_name }} {
+    internal object {{ meth.name()|var_name(config) }}: {{ ffi_callback.name()|ffi_callback_name }} {
         override fun callback(
             {%- for arg in ffi_callback.arguments() -%}
-            {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
+            {{ arg.name().borrow()|var_name(config) }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
             {%- endfor -%}
             {%- if ffi_callback.has_rust_call_status_arg() -%}
             uniffiCallStatus: UniffiRustCallStatus,
@@ -20,9 +20,9 @@ internal object {{ trait_impl }} {
         {%- endmatch %} {
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiHandle)
             val makeCall = {% if meth.is_async() %}suspend {% endif %}{ ->
-                uniffiObj.{{ meth.name()|fn_name() }}(
+                uniffiObj.{{ meth.name()|fn_name(config) }}(
                     {%- for arg in meth.arguments() %}
-                    {{ arg|lift_fn }}({{ arg.name()|var_name }}),
+                    {{ arg|lift_fn }}({{ arg.name()|var_name(config) }}),
                     {%- endfor %}
                 )
             }
@@ -30,7 +30,7 @@ internal object {{ trait_impl }} {
 
             {%- match meth.return_type() %}
             {%- when Some(return_type) %}
-            val writeReturn = { value: {{ return_type|type_name(ci) }} -> uniffiOutReturn.setValue({{ return_type|lower_fn }}(value)) }
+            val writeReturn = { value: {{ return_type|type_name(ci, config) }} -> uniffiOutReturn.setValue({{ return_type|lower_fn }}(value)) }
             {%- when None %}
             val writeReturn = { _: Unit -> Unit }
             {%- endmatch %}
@@ -43,12 +43,12 @@ internal object {{ trait_impl }} {
                 uniffiCallStatus,
                 makeCall,
                 writeReturn,
-                { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) }
+                { e: {{error_type|type_name(ci, config) }} -> {{ error_type|lower_fn }}(e) }
             )
             {%- endmatch %}
 
             {%- else %}
-            val uniffiHandleSuccess = { {% if meth.return_type().is_some() %}returnValue{% else %}_{% endif %}: {% match meth.return_type() %}{%- when Some(return_type) %}{{ return_type|type_name(ci) }}{%- when None %}Unit{% endmatch %} ->
+            val uniffiHandleSuccess = { {% if meth.return_type().is_some() %}returnValue{% else %}_{% endif %}: {% match meth.return_type() %}{%- when Some(return_type) %}{{ return_type|type_name(ci, config) }}{%- when None %}Unit{% endmatch %} ->
                 val uniffiResult = {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
                     {%- match meth.return_type() %}
                     {%- when Some(return_type) %}
@@ -87,7 +87,7 @@ internal object {{ trait_impl }} {
                     makeCall,
                     uniffiHandleSuccess,
                     uniffiHandleError,
-                    { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) }
+                    { e: {{error_type|type_name(ci, config) }} -> {{ error_type|lower_fn }}(e) }
                 )
                 {%- endmatch %}
             )
@@ -104,7 +104,7 @@ internal object {{ trait_impl }} {
 
     internal var vtable = {{ vtable|ffi_type_name_by_value }}(
         {%- for (ffi_callback, meth) in vtable_methods.iter() %}
-        {{ meth.name()|var_name() }},
+        {{ meth.name()|var_name(config) }},
         {%- endfor %}
         uniffiFree,
     )

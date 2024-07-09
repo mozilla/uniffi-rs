@@ -22,12 +22,12 @@
 // eg, `public func foo_bar() { body }`
 {%- macro func_decl(func_decl, callable, indent) %}
 {%- call docstring(callable, indent) %}
-{{ func_decl }} {{ callable.name()|fn_name }}(
+{{ func_decl }} {{ callable.name()|fn_name(config) }}(
     {%- call arg_list_decl(callable) -%})
     {%- call async(callable) %}
     {%- call throws(callable) %}
     {%- match callable.return_type() %}
-    {%-  when Some with (return_type) %} -> {{ return_type|type_name }}
+    {%-  when Some with (return_type) %} -> {{ return_type|type_name(config) }}
     {%-  when None %}
     {%- endmatch %} {
     {%- call call_body(callable) %}
@@ -77,7 +77,7 @@ public convenience init(
                     self.uniffiClonePointer(){% if !callable.arguments().is_empty() %},{% endif %}
                     {% endif %}
                     {%- for arg in callable.arguments() -%}
-                    {{ arg|lower_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
+                    {{ arg|lower_fn }}({{ arg.name()|var_name(config) }}){% if !loop.last %},{% endif %}
                     {%- endfor %}
                 )
             },
@@ -101,7 +101,7 @@ public convenience init(
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{ arg|lower_fn }}({{ arg.name()|var_name }}),
+        {{ arg|lower_fn }}({{ arg.name()|var_name(config) }}),
     {%- endfor %}
 {%- endmacro -%}
 
@@ -112,7 +112,7 @@ public convenience init(
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
+        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name(config) }}: {{ arg|type_name(config) -}}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|literal_swift(arg) }}
         {%- else %}
@@ -123,16 +123,16 @@ public convenience init(
 
 {#-
 // Field lists as used in Swift declarations of Records and Enums.
-// Note the var_name and type_name filters.
+// Note the var_name and type_name(config)filters.
 -#}
 {% macro field_list_decl(item, has_nameless_fields) %}
     {%- for field in item.fields() -%}
         {%- call docstring(field, 8) %}
         {%- if has_nameless_fields %}
-        {{- field|type_name -}}
+        {{- field|type_name(config) -}}
         {%- if !loop.last -%}, {%- endif -%}
         {%- else -%}
-        {{ field.name()|var_name }}: {{ field|type_name -}}
+        {{ field.name()|var_name(config) }}: {{ field|type_name(config) -}}
         {%- match field.default_value() %}
             {%- when Some with(literal) %} = {{ literal|literal_swift(field) }}
             {%- else %}
@@ -146,13 +146,13 @@ public convenience init(
 {%- if field.name().is_empty() -%}
 v{{- field_num -}}
 {%- else -%}
-{{ field.name()|var_name }}
+{{ field.name()|var_name(config) }}
 {%- endif -%}
 {%- endmacro %}
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
+        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name(config) }}: {{ arg|type_name(config) -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}

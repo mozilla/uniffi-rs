@@ -34,7 +34,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
 object NoPointer
 
 {%- for type_ in ci.iter_types() %}
-{%- let type_name = type_|type_name(ci) %}
+{%- let type_name = type_|type_name(ci, config) %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
 {%- let contains_object_references = ci.item_contains_object_references(type_) %}

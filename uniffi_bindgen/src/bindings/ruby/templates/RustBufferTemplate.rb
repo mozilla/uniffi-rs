@@ -4,15 +4,15 @@ class RustBuffer < FFI::Struct
          :data,     :pointer
 
   def self.alloc(size)
-    return {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+    return {{ ci.namespace()|class_name_rb(config) }}.rust_call(:{{ ci.ffi_rustbuffer_alloc().name() }}, size)
   end
 
   def self.reserve(rbuf, additional)
-    return {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
+    return {{ ci.namespace()|class_name_rb(config) }}.rust_call(:{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
   end
 
   def free
-    {{ ci.namespace()|class_name_rb }}.rust_call(:{{ ci.ffi_rustbuffer_free().name() }}, self)
+    {{ ci.namespace()|class_name_rb(config) }}.rust_call(:{{ ci.ffi_rustbuffer_free().name() }}, self)
   end
 
   def capacity
@@ -130,7 +130,7 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    {{ "v.{}"|format(field.name()|var_name_rb)|check_lower_rb(field.as_type().borrow()) }}
+    {{ "v.{}"|format(field.name()|var_name_rb(config))|check_lower_rb(field.as_type().borrow(), config) }}
     {%- endfor %}
   end
 
@@ -155,9 +155,9 @@ class RustBuffer < FFI::Struct
   def self.check_lower_{{ canonical_type_name }}(v)
     {%- if !e.is_flat() %}
     {%- for variant in e.variants() %}
-    if v.{{ variant.name()|var_name_rb }}?
+    if v.{{ variant.name()|var_name_rb(config) }}?
       {%- for field in variant.fields() %}
-        {{ "v.{}"|format(field.name())|check_lower_rb(field.as_type().borrow()) }}
+        {{ "v.{}"|format(field.name())|check_lower_rb(field.as_type().borrow(), config) }}
       {%- endfor %}
       return
     end
@@ -184,7 +184,7 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     if not v.nil?
-      {{ "v"|check_lower_rb(inner_type.borrow()) }}
+      {{ "v"|check_lower_rb(inner_type.borrow(), config) }}
     end
   end
 
@@ -206,7 +206,7 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |item|
-      {{ "item"|check_lower_rb(inner_type.borrow()) }}
+      {{ "item"|check_lower_rb(inner_type.borrow(), config) }}
     end
   end
 
@@ -228,8 +228,8 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |k, v|
-      {{ "k"|check_lower_rb(k.borrow()) }}
-      {{ "v"|check_lower_rb(inner_type.borrow()) }}
+      {{ "k"|check_lower_rb(k.borrow(), config) }}
+      {{ "v"|check_lower_rb(inner_type.borrow(), config) }}
     end
   end
 

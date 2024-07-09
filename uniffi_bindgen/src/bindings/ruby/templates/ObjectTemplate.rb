@@ -1,4 +1,4 @@
-class {{ obj.name()|class_name_rb }}
+class {{ obj.name()|class_name_rb(config) }}
 
   # A private helper for initializing instances of the class from a raw pointer,
   # bypassing any initialization logic and ensuring they are GC'd properly.
@@ -15,7 +15,7 @@ class {{ obj.name()|class_name_rb }}
   # to the actual instance, only its underlying pointer.
   def self.uniffi_define_finalizer_by_pointer(pointer, object_id)
     Proc.new do |_id|
-      {{ ci.namespace()|class_name_rb }}.rust_call(
+      {{ ci.namespace()|class_name_rb(config) }}.rust_call(
         :{{ obj.ffi_object_free().name() }},
         pointer
       )
@@ -27,12 +27,12 @@ class {{ obj.name()|class_name_rb }}
   # object in a place where this type is expected, could lead to memory unsafety.
   def self.uniffi_check_lower(inst)
     if not inst.is_a? self
-      raise TypeError.new "Expected a {{ obj.name()|class_name_rb }} instance, got #{inst}"
+      raise TypeError.new "Expected a {{ obj.name()|class_name_rb(config) }} instance, got #{inst}"
     end
   end
 
   def uniffi_clone_pointer()
-    return {{ ci.namespace()|class_name_rb }}.rust_call(
+    return {{ ci.namespace()|class_name_rb(config) }}.rust_call(
       :{{ obj.ffi_object_clone().name() }},
       @pointer
     )
@@ -54,7 +54,7 @@ class {{ obj.name()|class_name_rb }}
   {%- endmatch %}
 
   {% for cons in obj.alternate_constructors() -%}
-  def self.{{ cons.name()|fn_name_rb }}({% call rb::arg_list_decl(cons) %})
+  def self.{{ cons.name()|fn_name_rb(config) }}({% call rb::arg_list_decl(cons) %})
     {%- call rb::setup_args_extra_indent(cons) %}
     # Call the (fallible) function before creating any half-baked object instances.
     # Lightly yucky way to bypass the usual "initialize" logic
@@ -67,14 +67,14 @@ class {{ obj.name()|class_name_rb }}
   {%- match meth.return_type() -%}
 
   {%- when Some with (return_type) -%}
-  def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
+  def {{ meth.name()|fn_name_rb(config) }}({% call rb::arg_list_decl(meth) %})
     {%- call rb::setup_args_extra_indent(meth) %}
     result = {% call rb::to_ffi_call_with_prefix("uniffi_clone_pointer()", meth) %}
-    return {{ "result"|lift_rb(return_type) }}
+    return {{ "result"|lift_rb(return_type, config) }}
   end
 
   {%- when None -%}
-  def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
+  def {{ meth.name()|fn_name_rb(config) }}({% call rb::arg_list_decl(meth) %})
       {%- call rb::setup_args_extra_indent(meth) %}
       {% call rb::to_ffi_call_with_prefix("uniffi_clone_pointer()", meth) %}
   end

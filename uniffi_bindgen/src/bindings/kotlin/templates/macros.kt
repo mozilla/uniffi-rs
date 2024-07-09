@@ -17,7 +17,7 @@
 {%- macro to_raw_ffi_call(func) -%}
     {%- match func.throws_type() %}
     {%- when Some with (e) %}
-    uniffiRustCallWithError({{ e|type_name(ci) }})
+    uniffiRustCallWithError({{ e|type_name(ci, config) }})
     {%- else %}
     uniffiRustCall()
     {%- endmatch %} { _status ->
@@ -32,22 +32,22 @@
     {%- call docstring(callable, indent) %}
     {%- match callable.throws_type() -%}
     {%-     when Some(throwable) %}
-    @Throws({{ throwable|type_name(ci) }}::class)
+    @Throws({{ throwable|type_name(ci, config) }}::class)
     {%-     else -%}
     {%- endmatch -%}
     {%- if callable.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    {{ func_decl }} suspend fun {{ callable.name()|fn_name }}(
+    {{ func_decl }} suspend fun {{ callable.name()|fn_name(config) }}(
         {%- call arg_list(callable, !callable.takes_self()) -%}
-    ){% match callable.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
+    ){% match callable.return_type() %}{% when Some with (return_type) %} : {{ return_type|type_name(ci, config) }}{% when None %}{%- endmatch %} {
         return {% call call_async(callable) %}
     }
     {%- else -%}
-    {{ func_decl }} fun {{ callable.name()|fn_name }}(
+    {{ func_decl }} fun {{ callable.name()|fn_name(config) }}(
         {%- call arg_list(callable, !callable.takes_self()) -%}
     ){%- match callable.return_type() -%}
     {%-         when Some with (return_type) -%}
-        : {{ return_type|type_name(ci) }} {
+        : {{ return_type|type_name(ci, config) }} {
             return {{ return_type|lift_fn }}({% call to_ffi_call(callable) %})
     }
     {%-         when None %}
@@ -81,7 +81,7 @@
         // Error FFI converter
         {%- match callable.throws_type() %}
         {%- when Some(e) %}
-        {{ e|type_name(ci) }}.ErrorHandler,
+        {{ e|type_name(ci, config) }}.ErrorHandler,
         {%- when None %}
         UniffiNullRustCallStatusErrorHandler,
         {%- endmatch %}
@@ -90,7 +90,7 @@
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg|lower_fn }}({{ arg.name()|var_name }}),
+        {{- arg|lower_fn }}({{ arg.name()|var_name(config) }}),
     {%- endfor %}
 {%- endmacro -%}
 
@@ -102,7 +102,7 @@
 
 {% macro arg_list(func, is_decl) %}
 {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name }}: {{ arg|type_name(ci) }}
+        {{ arg.name()|var_name(config) }}: {{ arg|type_name(ci, config) }}
 {%-     if is_decl %}
 {%-         match arg.default_value() %}
 {%-             when Some with(literal) %} = {{ literal|render_literal(arg, ci) }}
@@ -119,7 +119,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value -}},
+        {{- arg.name()|var_name(config) }}: {{ arg.type_().borrow()|ffi_type_name_by_value -}},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}uniffi_out_err: UniffiRustCallStatus, {% endif %}
 {%- endmacro -%}
@@ -128,7 +128,7 @@
 {%- if field.name().is_empty() -%}
 v{{- field_num -}}
 {%- else -%}
-{{ field.name()|var_name }}
+{{ field.name()|var_name(config) }}
 {%- endif -%}
 {%- endmacro %}
 
@@ -136,7 +136,7 @@ v{{- field_num -}}
 {%- if field.name().is_empty() -%}
 v{{- field_num -}}
 {%- else -%}
-{{ field.name()|var_name|unquote }}
+{{ field.name()|var_name(config)|unquote }}
 {%- endif -%}
 {%- endmacro %}
 

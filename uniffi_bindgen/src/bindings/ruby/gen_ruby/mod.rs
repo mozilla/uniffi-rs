@@ -8,6 +8,7 @@ use askama::Template;
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
+use std::collections::HashMap;
 
 use crate::interface::*;
 
@@ -83,6 +84,8 @@ pub fn canonical_name(t: &Type) -> String {
 pub struct Config {
     pub(super) cdylib_name: Option<String>,
     cdylib_path: Option<String>,
+    #[serde(default)]
+    rename: HashMap<String, String>,
 }
 
 impl Config {
@@ -152,7 +155,7 @@ mod filters {
         })
     }
 
-    pub fn literal_rb(literal: &Literal) -> Result<String, askama::Error> {
+    pub fn literal_rb(literal: &Literal, config: &Config) -> Result<String, askama::Error> {
         Ok(match literal {
             Literal::Boolean(v) => {
                 if *v {
@@ -164,12 +167,12 @@ mod filters {
             // use the double-quote form to match with the other languages, and quote escapes.
             Literal::String(s) => format!("\"{s}\""),
             Literal::None => "nil".into(),
-            Literal::Some { inner } => literal_rb(inner)?,
+            Literal::Some { inner } => literal_rb(inner, config)?,
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {
                 Type::Enum { name, .. } => {
-                    format!("{}::{}", class_name_rb(name)?, enum_name_rb(v)?)
+                    format!("{}::{}", class_name_rb(name, config)?, enum_name_rb(v, config)?)
                 }
                 _ => panic!("Unexpected type in enum literal: {type_:?}"),
             },
@@ -188,22 +191,35 @@ mod filters {
         })
     }
 
-    pub fn class_name_rb(nm: &str) -> Result<String, askama::Error> {
+    pub fn class_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_class_name_rb) = config.rename.get(nm) {
+            return Ok(overwrite_class_name_rb.to_owned().to_upper_camel_case());
+        }
         Ok(nm.to_string().to_upper_camel_case())
     }
 
-    pub fn fn_name_rb(nm: &str) -> Result<String, askama::Error> {
+    pub fn fn_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_fn_name_rb) = config.rename.get(nm) {
+            return Ok(overwrite_fn_name_rb.to_owned().to_snake_case());
+        }
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn var_name_rb(nm: &str) -> Result<String, askama::Error> {
+    pub fn var_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         let prefix = if is_reserved_word(&nm) { "_" } else { "" };
+
+        if let Some(overwrite_var_name_rb) = config.rename.get(&nm) {
+            return Ok(format!("{prefix}{}", overwrite_var_name_rb.to_snake_case()));
+        }
 
         Ok(format!("{prefix}{}", nm.to_snake_case()))
     }
 
-    pub fn enum_name_rb(nm: &str) -> Result<String, askama::Error> {
+    pub fn enum_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_enum_name_rb) = config.rename.get(nm) {
+            return Ok(overwrite_enum_name_rb.to_owned().to_shouty_snake_case());
+        }
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
@@ -252,10 +268,10 @@ mod filters {
         })
     }
 
-    pub fn check_lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+    pub fn check_lower_rb(nm: &str, type_: &Type, config: &Config) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Object { name, .. } => {
-                format!("({}.uniffi_check_lower {nm})", class_name_rb(name)?)
+                format!("({}.uniffi_check_lower {nm})", class_name_rb(name, config)?)
             }
             Type::Enum { .. }
             | Type::Record { .. }
@@ -263,14 +279,14 @@ mod filters {
             | Type::Sequence { .. }
             | Type::Map { .. } => format!(
                 "RustBuffer.check_lower_{}({})",
-                class_name_rb(&canonical_name(type_))?,
+                class_name_rb(&canonical_name(type_), config)?,
                 nm
             ),
             _ => "".to_owned(),
         })
     }
 
-    pub fn lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lower_rb(nm: &str, type_: &Type, config: &Config) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -285,7 +301,7 @@ mod filters {
             Type::Boolean => format!("({nm} ? 1 : 0)"),
             Type::String => format!("RustBuffer.allocFromString({nm})"),
             Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
-            Type::Object { name, .. } => format!("({}.uniffi_lower {nm})", class_name_rb(name)?),
+            Type::Object { name, .. } => format!("({}.uniffi_lower {nm})", class_name_rb(name, config)?),
             Type::CallbackInterface { .. } => {
                 panic!("No support for lowering callback interfaces yet")
             }
@@ -297,7 +313,7 @@ mod filters {
             | Type::Duration
             | Type::Map { .. } => format!(
                 "RustBuffer.alloc_from_{}({})",
-                class_name_rb(&canonical_name(type_))?,
+                class_name_rb(&canonical_name(type_), config)?,
                 nm
             ),
             Type::External { .. } => panic!("No support for lowering external types, yet"),
@@ -305,7 +321,7 @@ mod filters {
         })
     }
 
-    pub fn lift_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
+    pub fn lift_rb(nm: &str, type_: &Type, config: &Config) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -319,7 +335,7 @@ mod filters {
             Type::Boolean => format!("1 == {nm}"),
             Type::String => format!("{nm}.consumeIntoString"),
             Type::Bytes => format!("{nm}.consumeIntoBytes"),
-            Type::Object { name, .. } => format!("{}.uniffi_allocate({nm})", class_name_rb(name)?),
+            Type::Object { name, .. } => format!("{}.uniffi_allocate({nm})", class_name_rb(name, config)?),
             Type::CallbackInterface { .. } => {
                 panic!("No support for lifting callback interfaces, yet")
             }
@@ -327,7 +343,7 @@ mod filters {
                 format!(
                     "{}.consumeInto{}",
                     nm,
-                    class_name_rb(&canonical_name(type_))?
+                    class_name_rb(&canonical_name(type_), config)?
                 )
             }
             Type::Record { .. }
@@ -338,7 +354,7 @@ mod filters {
             | Type::Map { .. } => format!(
                 "{}.consumeInto{}",
                 nm,
-                class_name_rb(&canonical_name(type_))?
+                class_name_rb(&canonical_name(type_), config)?
             ),
             Type::External { .. } => panic!("No support for lifting external types, yet"),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),

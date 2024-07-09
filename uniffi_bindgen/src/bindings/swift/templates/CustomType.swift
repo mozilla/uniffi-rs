@@ -6,7 +6,7 @@
  * Typealias from the type name used in the UDL file to the builtin type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
-public typealias {{ type_name }} = {{ builtin|type_name }}
+public typealias {{ type_name }} = {{ builtin|type_name(config) }}
 public struct FfiConverterType{{ name }}: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         return try {{ builtin|read_fn }}(from: &buf)

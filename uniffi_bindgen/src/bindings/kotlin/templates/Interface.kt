@@ -3,9 +3,9 @@ public interface {{ interface_name }} {
     {% for meth in methods.iter() -%}
     {%- call kt::docstring(meth, 4) %}
     {% if meth.is_async() -%}suspend {% endif -%}
-    fun {{ meth.name()|fn_name }}({% call kt::arg_list(meth, true) %})
+    fun {{ meth.name()|fn_name(config) }}({% call kt::arg_list(meth, true) %})
     {%- match meth.return_type() -%}
-    {%- when Some with (return_type) %}: {{ return_type|type_name(ci) -}}
+    {%- when Some with (return_type) %}: {{ return_type|type_name(ci, config) -}}
     {%- else -%}
     {%- endmatch %}
     {% endfor %}

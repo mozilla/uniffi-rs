@@ -28,62 +28,62 @@ class RustBufferBuilder
   end
 
   {% for typ in ci.iter_types() -%}
-  {%- let canonical_type_name = canonical_name(typ).borrow()|class_name_rb -%}
+  {%- let canonical_type_name = canonical_name(typ).borrow()|class_name_rb(config) -%}
   {%- match typ -%}
 
   {% when Type::Int8 -%}
 
   def write_I8(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i8", -2**7, 2**7)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "i8", -2**7, 2**7)
     pack_into(1, 'c', v)
   end
 
   {% when Type::UInt8 -%}
 
   def write_U8(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u8", 0, 2**8)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "u8", 0, 2**8)
     pack_into(1, 'c', v)
   end
 
   {% when Type::Int16 -%}
 
   def write_I16(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i16", -2**15, 2**15)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "i16", -2**15, 2**15)
     pack_into(2, 's>', v)
   end
 
   {% when Type::UInt16 -%}
 
   def write_U16(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u16", 0, 2**16)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "u16", 0, 2**16)
     pack_into(2, 'S>', v)
   end
 
   {% when Type::Int32 -%}
 
   def write_I32(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i32", -2**31, 2**31)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "i32", -2**31, 2**31)
     pack_into(4, 'l>', v)
   end
 
   {% when Type::UInt32 -%}
 
   def write_U32(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u32", 0, 2**32)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "u32", 0, 2**32)
     pack_into(4, 'L>', v)
   end
 
   {% when Type::Int64 -%}
 
   def write_I64(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "i64", -2**63, 2**63)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "i64", -2**63, 2**63)
     pack_into(8, 'q>', v)
   end
 
   {% when Type::UInt64 -%}
 
   def write_U64(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_in_range(v, "u64", 0, 2**64)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_in_range(v, "u64", 0, 2**64)
     pack_into(8, 'Q>', v)
   end
 
@@ -108,7 +108,7 @@ class RustBufferBuilder
   {% when Type::String -%}
 
   def write_String(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_utf8(v)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_utf8(v)
     pack_into 4, 'l>', v.bytes.size
     write v
   end
@@ -116,7 +116,7 @@ class RustBufferBuilder
   {% when Type::Bytes -%}
 
   def write_Bytes(v)
-    v = {{ ci.namespace()|class_name_rb }}::uniffi_bytes(v)
+    v = {{ ci.namespace()|class_name_rb(config) }}::uniffi_bytes(v)
     pack_into 4, 'l>', v.bytes.size
     write v
   end
@@ -163,7 +163,7 @@ class RustBufferBuilder
   # The Object type {{ object_name }}.
 
   def write_{{ canonical_type_name }}(obj)
-    pointer = {{ object_name|class_name_rb}}.uniffi_lower obj
+    pointer = {{ object_name|class_name_rb(config)}}.uniffi_lower obj
     pack_into(8, 'Q>', pointer.address)
   end
 
@@ -177,10 +177,10 @@ class RustBufferBuilder
     pack_into(4, 'l>', v)
     {%- else -%}
     {%- for variant in e.variants() %}
-    if v.{{ variant.name()|var_name_rb }}?
+    if v.{{ variant.name()|var_name_rb(config) }}?
       pack_into(4, 'l>', {{ loop.index }})
       {%- for field in variant.fields() %}
-      self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(v.{{ field.name() }})
+      self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}(v.{{ field.name() }})
       {%- endfor %}
     end
     {%- endfor %}
@@ -194,7 +194,7 @@ class RustBufferBuilder
 
   def write_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(v.{{ field.name()|var_name_rb }})
+    self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}(v.{{ field.name()|var_name_rb(config) }})
     {%- endfor %}
   end
 
@@ -206,7 +206,7 @@ class RustBufferBuilder
       pack_into(1, 'c', 0)
     else
       pack_into(1, 'c', 1)
-      self.write_{{ canonical_name(inner_type).borrow()|class_name_rb }}(v)
+      self.write_{{ canonical_name(inner_type).borrow()|class_name_rb(config) }}(v)
     end
   end
 
@@ -217,7 +217,7 @@ class RustBufferBuilder
     pack_into(4, 'l>', items.size)
 
     items.each do |item|
-      self.write_{{ canonical_name(inner_type).borrow()|class_name_rb }}(item)
+      self.write_{{ canonical_name(inner_type).borrow()|class_name_rb(config) }}(item)
     end
   end
 
@@ -229,7 +229,7 @@ class RustBufferBuilder
 
     items.each do |k, v|
       write_String(k)
-      self.write_{{ canonical_name(inner_type).borrow()|class_name_rb }}(v)
+      self.write_{{ canonical_name(inner_type).borrow()|class_name_rb(config) }}(v)
     end
   end
 

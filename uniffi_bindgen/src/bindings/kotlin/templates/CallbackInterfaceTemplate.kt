@@ -1,6 +1,6 @@
 {%- let cbi = ci|get_callback_interface_definition(name) %}
 {%- let ffi_init_callback = cbi.ffi_init_callback() %}
-{%- let interface_name = cbi|type_name(ci) %}
+{%- let interface_name = cbi|type_name(ci, config) %}
 {%- let interface_docstring = cbi.docstring() %}
 {%- let methods = cbi.methods() %}
 {%- let vtable = cbi.vtable() %}
