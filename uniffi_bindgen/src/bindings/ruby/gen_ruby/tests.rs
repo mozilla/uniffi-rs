@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use super::{is_reserved_word, Config};
+use std::collections::HashMap;
 
 #[test]
 fn when_reserved_word() {
