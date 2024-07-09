@@ -172,7 +172,11 @@ mod filters {
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {
                 Type::Enum { name, .. } => {
-                    format!("{}::{}", class_name_rb(name, config)?, enum_name_rb(v, config)?)
+                    format!(
+                        "{}::{}",
+                        class_name_rb(name, config)?,
+                        enum_name_rb(v, config)?
+                    )
                 }
                 _ => panic!("Unexpected type in enum literal: {type_:?}"),
             },
@@ -268,7 +272,11 @@ mod filters {
         })
     }
 
-    pub fn check_lower_rb(nm: &str, type_: &Type, config: &Config) -> Result<String, askama::Error> {
+    pub fn check_lower_rb(
+        nm: &str,
+        type_: &Type,
+        config: &Config,
+    ) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Object { name, .. } => {
                 format!("({}.uniffi_check_lower {nm})", class_name_rb(name, config)?)
@@ -301,7 +309,9 @@ mod filters {
             Type::Boolean => format!("({nm} ? 1 : 0)"),
             Type::String => format!("RustBuffer.allocFromString({nm})"),
             Type::Bytes => format!("RustBuffer.allocFromBytes({nm})"),
-            Type::Object { name, .. } => format!("({}.uniffi_lower {nm})", class_name_rb(name, config)?),
+            Type::Object { name, .. } => {
+                format!("({}.uniffi_lower {nm})", class_name_rb(name, config)?)
+            }
             Type::CallbackInterface { .. } => {
                 panic!("No support for lowering callback interfaces yet")
             }
@@ -335,7 +345,9 @@ mod filters {
             Type::Boolean => format!("1 == {nm}"),
             Type::String => format!("{nm}.consumeIntoString"),
             Type::Bytes => format!("{nm}.consumeIntoBytes"),
-            Type::Object { name, .. } => format!("{}.uniffi_allocate({nm})", class_name_rb(name, config)?),
+            Type::Object { name, .. } => {
+                format!("{}.uniffi_allocate({nm})", class_name_rb(name, config)?)
+            }
             Type::CallbackInterface { .. } => {
                 panic!("No support for lifting callback interfaces, yet")
             }

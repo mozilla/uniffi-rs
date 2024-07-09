@@ -406,7 +406,12 @@ impl KotlinCodeOracle {
     /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
     /// interfaces, `lower` must lower anything that implements the interface.  If not, then lower
     /// only lowers the concrete class.
-    fn object_names(&self, ci: &ComponentInterface, obj: &Object, config: &Config) -> (String, String) {
+    fn object_names(
+        &self,
+        ci: &ComponentInterface,
+        obj: &Object,
+        config: &Config,
+    ) -> (String, String) {
         let mut class_name = self.class_name(ci, obj.name());
         if let Some(overwrite_class_name) = config.rename.get(&class_name) {
             class_name = overwrite_class_name.to_owned();
@@ -579,7 +584,11 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn class_name(nm: &str, ci: &ComponentInterface, config: &Config) -> Result<String, askama::Error> {
+    pub fn class_name(
+        nm: &str,
+        ci: &ComponentInterface,
+        config: &Config,
+    ) -> Result<String, askama::Error> {
         if let Some(overwrite_class_name) = config.rename.get(nm) {
             return Ok(KotlinCodeOracle.class_name(ci, overwrite_class_name));
         }
@@ -620,7 +629,8 @@ mod filters {
 
     pub fn error_variant_name(v: &Variant, config: &Config) -> Result<String, askama::Error> {
         if let Some(overwrite_error_variant_name) = config.rename.get(v.name()) {
-            return Ok(KotlinCodeOracle.convert_error_suffix(&overwrite_error_variant_name.to_upper_camel_case()));
+            return Ok(KotlinCodeOracle
+                .convert_error_suffix(&overwrite_error_variant_name.to_upper_camel_case()));
         }
         let name = v.name().to_string().to_upper_camel_case();
         Ok(KotlinCodeOracle.convert_error_suffix(&name))
@@ -639,7 +649,7 @@ mod filters {
     pub fn object_names(
         obj: &Object,
         ci: &ComponentInterface,
-        config: &Config
+        config: &Config,
     ) -> Result<(String, String), askama::Error> {
         Ok(KotlinCodeOracle.object_names(ci, obj, config))
     }

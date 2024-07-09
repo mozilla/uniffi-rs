@@ -500,7 +500,10 @@ pub mod filters {
     use super::*;
     pub use crate::backend::filters::*;
 
-    pub(super) fn type_name(as_ct: &impl AsCodeType, config: &Config) -> Result<String, askama::Error> {
+    pub(super) fn type_name(
+        as_ct: &impl AsCodeType,
+        config: &Config,
+    ) -> Result<String, askama::Error> {
         if let Some(overwrite_type_name) = config.rename.get(&as_ct.as_codetype().type_label()) {
             return Ok(overwrite_type_name.to_owned());
         }
