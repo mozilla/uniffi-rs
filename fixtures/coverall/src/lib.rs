@@ -15,7 +15,7 @@ mod ffi_buffer_scaffolding_test;
 mod traits;
 pub use traits::{
     ancestor_names, get_string_util_traits, get_traits, make_rust_getters, test_getters,
-    test_round_trip_through_foreign, test_round_trip_through_rust, Getters, NodeTrait, SayHello,
+    test_round_trip_through_foreign, test_round_trip_through_rust, Getters, NodeTrait,
     StringUtil,
 };
 
@@ -604,7 +604,6 @@ impl ISecond {
         false
     }
 }
-
 pub struct EmptyStruct;
 
 uniffi::include_scaffolding!("coverall");

@@ -164,16 +164,17 @@ class TestCoverall < Test::Unit::TestCase
     end
   end
 
-#   def test_error_values
-#       coveralls = Coverall::Coveralls.new 'test_error_values'
-#       assert_equal coveralls.get_name, 'test_error_values'
+# TODO: Add implementation for `consumeIntoTypeRootError` in `uniffi_bindgen/*/gen_ruby/mod.rs`
+#     def test_error_values
+#         err = assert_raise Coverall::RootError::Complex do
+#           Coverall.throw_root_error
+#         end
 #
-#     assert_raise Coverall::ComplexError do
-#       coveralls.maybe_throw_complex(1)
+#         assert_equal 1, err.error.code
+#
+#         test = Coverall::get_root_error
+#         assert_equal Coverall::AnotherError::UNEXPECTED, test.error
 #     end
-#
-#     assert_equal err.to_s, 'TEST'
-#   end
 
 
   def test_self_by_arc

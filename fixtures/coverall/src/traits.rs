@@ -223,15 +223,3 @@ impl StringUtil for StringUtilImpl2 {
         format!("{a}{b}")
     }
 }
-
-pub struct HelloImpl;
-
-pub trait SayHello: Send + Sync {
-    fn say_hello(&self) -> String;
-}
-
-impl SayHello for HelloImpl {
-    fn say_hello(&self) -> String {
-        "Renamed to be say_hi".to_string()
-    }
-}

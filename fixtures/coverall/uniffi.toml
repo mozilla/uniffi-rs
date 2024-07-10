@@ -4,8 +4,8 @@ OtherError = "AnotherError"
 [bindings.python.rename]
 OtherError = "AnotherError"
 
-#[bindings.ruby.rename]
-#OtherError = "AnotherError"
+[bindings.ruby.rename]
+OtherError = "AnotherError"
 
 [bindings.swift.rename]
 OtherError = "AnotherError"

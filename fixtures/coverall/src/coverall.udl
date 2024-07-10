@@ -296,7 +296,3 @@ interface ISecond {
 
 dictionary EmptyStruct {};
 
-[Trait]
-interface SayHello {
-    string say_hello();
-};
