@@ -51,7 +51,7 @@ class TestCoverall(unittest.TestCase):
         self.assertTrue(d.a_bool)
         self.assertIsNone(d.maybe_a_bool)
         self.assertEqual(d.unsigned8, 1)
-        self.assertIsNone(d.maybe_unsigned8)``
+        self.assertIsNone(d.maybe_unsigned8)
         self.assertEqual(d.unsigned16, 3)
         self.assertIsNone(d.maybe_unsigned16)
         self.assertEqual(d.unsigned64, 18446744073709551615)
