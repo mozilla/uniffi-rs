@@ -603,6 +603,7 @@ impl ISecond {
         false
     }
 }
+
 pub struct EmptyStruct;
 
 uniffi::include_scaffolding!("coverall");
