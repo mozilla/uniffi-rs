@@ -456,15 +456,5 @@ class TraitsTest(unittest.TestCase):
         self.assertEqual(traits[0].concat("cow", "boy"), "cowboy")
         self.assertEqual(traits[1].concat("cow", "boy"), "cowboy")
 
-
-# class TestRenaming(unittest.TestCase):
-#     def test_function_renaming(self):
-#         # Test if the old function name is not available
-#         with self.assertRaises(NameError):
-#             SayHello()  # This should raise NameError since SayHello was renamed to SayHi
-#
-#         with self.assertRaises(ValueError):
-#             SayHi()  # This should raise ValueError since SayHi doesn't have a default constructor
-
 if __name__=='__main__':
     unittest.main()
