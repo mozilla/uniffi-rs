@@ -5,7 +5,7 @@ OtherError = "AnotherError"
 OtherError = "AnotherError"
 
 [bindings.ruby.rename]
-OtherError = "AnotherError"
+UnknownError = "UnspecificError"
 
 [bindings.swift.rename]
 OtherError = "AnotherError"
