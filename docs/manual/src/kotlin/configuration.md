@@ -4,16 +4,16 @@ The generated Kotlin modules can be configured using a `uniffi.toml` configurati
 
 ## Available options
 
-| Configuration name           | Default  | Description |
-|------------------------------| -------  |------------ |
-| `package_name`               |  `uniffi` | The Kotlin package name - ie, the value used in the `package` statement at the top of generated files. |
+| Configuration name           | Default                  | Description |
+|------------------------------|--------------------------|------------ |
+| `package_name`               | `uniffi`                 | The Kotlin package name - ie, the value used in the `package` statement at the top of generated files. |
 | `cdylib_name`                | `uniffi_{namespace}`[^1] | The name of the compiled Rust library containing the FFI implementation (not needed when using `generate --library`). |
-| `generate_immutable_records` | `false` | Whether to generate records with immutable fields (`val` instead of `var`). |
-| `custom_types`               | | A map which controls how custom types are exposed to Kotlin. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code)|
-| `external_packages`          | | A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the [external types section of the manual](../udl/ext_types_external.md#kotlin)
-| `android`                    | `false` | Used to toggle on Android specific optimizations
-| `android_cleaner`            | `android` | Use the [`android.system.SystemCleaner`](https://developer.android.com/reference/android/system/SystemCleaner) instead of [`java.lang.ref.Cleaner`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html). Fallback in both instances is the one shipped with JNA.
-| `use_enum_entries`           | `false` | Uses `EnumClass.entries` instead of `EnumClass.values()` in the bindings, which is more efficient as it reuses the same list instance every time. Note this is only available since Kotlin 1.9.0
+| `generate_immutable_records` | `false`                  | Whether to generate records with immutable fields (`val` instead of `var`). |
+| `custom_types`               |                          | A map which controls how custom types are exposed to Kotlin. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code)|
+| `external_packages`          |                          | A map of packages to be used for the specified external crates. The key is the Rust crate name, the value is the Kotlin package which will be used referring to types in that crate. See the [external types section of the manual](../udl/ext_types_external.md#kotlin)
+| `android`                    | `false`                  | Used to toggle on Android specific optimizations
+| `android_cleaner`            | `android`                | Use the [`android.system.SystemCleaner`](https://developer.android.com/reference/android/system/SystemCleaner) instead of [`java.lang.ref.Cleaner`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html). Fallback in both instances is the one shipped with JNA.
+| `kotlin_target_version`      | `"x.y.z"`                | When provided, it will enable features in the bindings supported for this version. The build process will fail if an invalid format is used.
 
 ## Example
 
