@@ -102,10 +102,9 @@ impl Config {
         self.kotlin_target_version
             .clone()
             .map(|v| {
-                Version::parse(&v).expect(&format!(
-                    "Provided Kotlin target version is not valid: {}",
-                    v
-                ))
+                Version::parse(&v).unwrap_or_else(|_| {
+                    panic!("Provided Kotlin target version is not valid: {}", v)
+                })
             })
             .unwrap_or(Version::new(0, 0, 0))
     }
