@@ -604,10 +604,7 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_var_name) = config.rename.get(nm) {
-            return Ok(KotlinCodeOracle.var_name(overwrite_var_name));
-        }
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name(nm))
     }
 
@@ -620,10 +617,7 @@ mod filters {
     }
 
     /// Get a String representing the name used for an individual enum variant.
-    pub fn variant_name(v: &Variant, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_variant_name) = config.rename.get(v.name()) {
-            return Ok(KotlinCodeOracle.enum_variant_name(overwrite_variant_name));
-        }
+    pub fn variant_name(v: &Variant) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
     }
 

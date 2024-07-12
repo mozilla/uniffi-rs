@@ -5,10 +5,10 @@
 // Put the implementation in an object so we don't pollute the top-level namespace
 internal object {{ trait_impl }} {
     {%- for (ffi_callback, meth) in vtable_methods.iter() %}
-    internal object {{ meth.name()|var_name(config) }}: {{ ffi_callback.name()|ffi_callback_name }} {
+    internal object {{ meth.name()|var_name }}: {{ ffi_callback.name()|ffi_callback_name }} {
         override fun callback(
             {%- for arg in ffi_callback.arguments() -%}
-            {{ arg.name().borrow()|var_name(config) }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
+            {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
             {%- endfor -%}
             {%- if ffi_callback.has_rust_call_status_arg() -%}
             uniffiCallStatus: UniffiRustCallStatus,
@@ -22,7 +22,7 @@ internal object {{ trait_impl }} {
             val makeCall = {% if meth.is_async() %}suspend {% endif %}{ ->
                 uniffiObj.{{ meth.name()|fn_name(config) }}(
                     {%- for arg in meth.arguments() %}
-                    {{ arg|lift_fn }}({{ arg.name()|var_name(config) }}),
+                    {{ arg|lift_fn }}({{ arg.name()|var_name }}),
                     {%- endfor %}
                 )
             }
@@ -104,7 +104,7 @@ internal object {{ trait_impl }} {
 
     internal var vtable = {{ vtable|ffi_type_name_by_value }}(
         {%- for (ffi_callback, meth) in vtable_methods.iter() %}
-        {{ meth.name()|var_name(config) }},
+        {{ meth.name()|var_name }},
         {%- endfor %}
         uniffiFree,
     )

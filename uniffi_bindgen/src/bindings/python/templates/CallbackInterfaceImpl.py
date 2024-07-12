@@ -9,7 +9,7 @@ class {{ trait_impl }}:
     @{{ ffi_callback.name()|ffi_callback_name }}
     def {{ meth.name()|fn_name(config) }}(
             {%- for arg in ffi_callback.arguments() %}
-            {{ arg.name()|var_name(config)}},
+            {{ arg.name()|var_name}},
             {%- endfor -%}
             {%- if ffi_callback.has_rust_call_status_arg() %}
             uniffi_call_status_ptr,
@@ -17,7 +17,7 @@ class {{ trait_impl }}:
         ):
         uniffi_obj = {{ ffi_converter_name }}._handle_map.get(uniffi_handle)
         def make_call():
-            args = ({% for arg in meth.arguments() %}{{ arg|lift_fn }}({{ arg.name()|var_name(config)}}), {% endfor %})
+            args = ({% for arg in meth.arguments() %}{{ arg|lift_fn }}({{ arg.name()|var_name}}), {% endfor %})
             method = uniffi_obj.{{ meth.name()|fn_name(config) }}
             return method(*args)
 

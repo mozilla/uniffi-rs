@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import unittest
-import ctypes
 from datetime import datetime, timezone
 
 from coverall import *

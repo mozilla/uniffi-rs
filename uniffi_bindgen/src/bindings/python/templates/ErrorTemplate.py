@@ -39,15 +39,15 @@ class {{ type_name }}:  # type: ignore
             return self._values[index]
 
     {%-     else %}
-        def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name(config)}}{% endfor %}):
+        def __init__(self{% for field in variant.fields() %}, {{ field.name()|var_name}}{% endfor %}):
             {%- if variant.has_fields() %}
             super().__init__(", ".join([
                 {%- for field in variant.fields() %}
-                "{{ field.name()|var_name(config)}}={!r}".format({{ field.name()|var_name(config)}}),
+                "{{ field.name()|var_name}}={!r}".format({{ field.name()|var_name}}),
                 {%- endfor %}
             ]))
             {%- for field in variant.fields() %}
-            self.{{ field.name()|var_name(config)}} = {{ field.name()|var_name(config)}}
+            self.{{ field.name()|var_name}} = {{ field.name()|var_name}}
             {%- endfor %}
             {%- else %}
             pass
@@ -93,7 +93,7 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
             {%-     if variant.has_nameless_fields() %}
             {{ field|check_lower_fn }}(value._values[{{ loop.index0 }}])
             {%-     else %}
-            {{ field|check_lower_fn }}(value.{{ field.name()|var_name(config)}})
+            {{ field|check_lower_fn }}(value.{{ field.name()|var_name}})
             {%-     endif %}
             {%- endfor %}
             return
@@ -109,7 +109,7 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
             {%-     if variant.has_nameless_fields() %}
             {{ field|write_fn }}(value._values[{{ loop.index0 }}], buf)
             {%-     else %}
-            {{ field|write_fn }}(value.{{ field.name()|var_name(config)}}, buf)
+            {{ field|write_fn }}(value.{{ field.name()|var_name}}, buf)
             {%-     endif %}
             {%- endfor %}
         {%- endfor %}

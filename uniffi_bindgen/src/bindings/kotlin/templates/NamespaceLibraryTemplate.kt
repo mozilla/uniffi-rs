@@ -20,7 +20,7 @@ private inline fun <reified Lib : Library> loadIndirect(
 internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callback {
     fun callback(
         {%- for arg in callback.arguments() -%}
-        {{ arg.name().borrow()|var_name(config) }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
+        {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
         {%- endfor -%}
         {%- if callback.has_rust_call_status_arg() -%}
         uniffiCallStatus: UniffiRustCallStatus,
@@ -35,18 +35,18 @@ internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callbac
 @Structure.FieldOrder({% for field in ffi_struct.fields() %}"{{ field.name()|var_name_raw(config) }}"{% if !loop.last %}, {% endif %}{% endfor %})
 internal open class {{ ffi_struct.name()|ffi_struct_name }}(
     {%- for field in ffi_struct.fields() %}
-    @JvmField internal var {{ field.name()|var_name(config) }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct }} = {{ field.type_()|ffi_default_value }},
+    @JvmField internal var {{ field.name()|var_name }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct }} = {{ field.type_()|ffi_default_value }},
     {%- endfor %}
 ) : Structure() {
     class UniffiByValue(
         {%- for field in ffi_struct.fields() %}
-        {{ field.name()|var_name(config) }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct }} = {{ field.type_()|ffi_default_value }},
+        {{ field.name()|var_name }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct }} = {{ field.type_()|ffi_default_value }},
         {%- endfor %}
-    ): {{ ffi_struct.name()|ffi_struct_name }}({%- for field in ffi_struct.fields() %}{{ field.name()|var_name(config) }}, {%- endfor %}), Structure.ByValue
+    ): {{ ffi_struct.name()|ffi_struct_name }}({%- for field in ffi_struct.fields() %}{{ field.name()|var_name }}, {%- endfor %}), Structure.ByValue
 
    internal fun uniffiSetValue(other: {{ ffi_struct.name()|ffi_struct_name }}) {
         {%- for field in ffi_struct.fields() %}
-        {{ field.name()|var_name(config) }} = other.{{ field.name()|var_name(config) }}
+        {{ field.name()|var_name }} = other.{{ field.name()|var_name }}
         {%- endfor %}
     }
 

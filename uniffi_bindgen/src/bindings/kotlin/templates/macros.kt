@@ -90,7 +90,7 @@
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg|lower_fn }}({{ arg.name()|var_name(config) }}),
+        {{- arg|lower_fn }}({{ arg.name()|var_name }}),
     {%- endfor %}
 {%- endmacro -%}
 
@@ -102,7 +102,7 @@
 
 {% macro arg_list(func, is_decl) %}
 {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name(config) }}: {{ arg|type_name(ci, config) }}
+        {{ arg.name()|var_name }}: {{ arg|type_name(ci, config) }}
 {%-     if is_decl %}
 {%-         match arg.default_value() %}
 {%-             when Some with(literal) %} = {{ literal|render_literal(arg, ci) }}
@@ -119,7 +119,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|var_name(config) }}: {{ arg.type_().borrow()|ffi_type_name_by_value -}},
+        {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value -}},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}uniffi_out_err: UniffiRustCallStatus, {% endif %}
 {%- endmacro -%}
@@ -128,7 +128,7 @@
 {%- if field.name().is_empty() -%}
 v{{- field_num -}}
 {%- else -%}
-{{ field.name()|var_name(config) }}
+{{ field.name()|var_name }}
 {%- endif -%}
 {%- endmacro %}
 
@@ -136,7 +136,7 @@ v{{- field_num -}}
 {%- if field.name().is_empty() -%}
 v{{- field_num -}}
 {%- else -%}
-{{ field.name()|var_name(config)|unquote }}
+{{ field.name()|var_name|unquote }}
 {%- endif -%}
 {%- endmacro %}
 

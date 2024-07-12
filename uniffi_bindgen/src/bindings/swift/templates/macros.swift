@@ -77,7 +77,7 @@ public convenience init(
                     self.uniffiClonePointer(){% if !callable.arguments().is_empty() %},{% endif %}
                     {% endif %}
                     {%- for arg in callable.arguments() -%}
-                    {{ arg|lower_fn }}({{ arg.name()|var_name(config) }}){% if !loop.last %},{% endif %}
+                    {{ arg|lower_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
                     {%- endfor %}
                 )
             },
@@ -101,7 +101,7 @@ public convenience init(
 
 {%- macro arg_list_lowered(func) %}
     {%- for arg in func.arguments() %}
-        {{ arg|lower_fn }}({{ arg.name()|var_name(config) }}),
+        {{ arg|lower_fn }}({{ arg.name()|var_name }}),
     {%- endfor %}
 {%- endmacro -%}
 
@@ -112,7 +112,7 @@ public convenience init(
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name(config) }}: {{ arg|type_name(config) -}}
+        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name(config) -}}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|literal_swift(arg) }}
         {%- else %}
@@ -132,7 +132,7 @@ public convenience init(
         {{- field|type_name(config) -}}
         {%- if !loop.last -%}, {%- endif -%}
         {%- else -%}
-        {{ field.name()|var_name(config) }}: {{ field|type_name(config) -}}
+        {{ field.name()|var_name }}: {{ field|type_name(config) -}}
         {%- match field.default_value() %}
             {%- when Some with(literal) %} = {{ literal|literal_swift(field) }}
             {%- else %}
@@ -146,13 +146,13 @@ public convenience init(
 {%- if field.name().is_empty() -%}
 v{{- field_num -}}
 {%- else -%}
-{{ field.name()|var_name(config) }}
+{{ field.name()|var_name }}
 {%- endif -%}
 {%- endmacro %}
 
 {% macro arg_list_protocol(func) %}
     {%- for arg in func.arguments() -%}
-        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name(config) }}: {{ arg|type_name(config) -}}
+        {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name(config) -}}
         {%- if !loop.last %}, {% endif -%}
     {%- endfor %}
 {%- endmacro %}

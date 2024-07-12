@@ -41,33 +41,33 @@ class {{ type_name }}:
             return f"{{ type_name }}.{{ variant.name()|enum_variant_py(config) }}{self._values!r}"
 
         def __eq__(self, other):
-            if not other.is_{{ variant.name()|var_name(config)}}():
+            if not other.is_{{ variant.name()|var_name}}():
                 return False
             return self._values == other._values
 
     {%-  else -%}
         {%- for field in variant.fields() %}
-        {{ field.name()|var_name(config)}}: "{{ field|type_name(config) }}"
+        {{ field.name()|var_name}}: "{{ field|type_name(config) }}"
         {%- call py::docstring(field, 8) %}
         {%- endfor %}
 
-        def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name(config)}}: "{{- field|type_name(config) }}"{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
+        def __init__(self,{% for field in variant.fields() %}{{ field.name()|var_name}}: "{{- field|type_name(config) }}"{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
             {%- if variant.has_fields() %}
             {%- for field in variant.fields() %}
-            self.{{ field.name()|var_name(config)}} = {{ field.name()|var_name(config)}}
+            self.{{ field.name()|var_name}} = {{ field.name()|var_name}}
             {%- endfor %}
             {%- else %}
             pass
             {%- endif %}
 
         def __str__(self):
-            return "{{ type_name }}.{{ variant.name()|enum_variant_py(config) }}({% for field in variant.fields() %}{{ field.name()|var_name(config)}}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name()|var_name(config)}}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
+            return "{{ type_name }}.{{ variant.name()|enum_variant_py(config) }}({% for field in variant.fields() %}{{ field.name()|var_name}}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name()|var_name}}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
 
         def __eq__(self, other):
-            if not other.is_{{ variant.name()|var_name(config)}}():
+            if not other.is_{{ variant.name()|var_name}}():
                 return False
             {%- for field in variant.fields() %}
-            if self.{{ field.name()|var_name(config)}} != other.{{ field.name()|var_name(config)}}:
+            if self.{{ field.name()|var_name}} != other.{{ field.name()|var_name}}:
                 return False
             {%- endfor %}
             return True
@@ -77,7 +77,7 @@ class {{ type_name }}:
     # For each variant, we have an `is_NAME` method for easily checking
     # whether an instance is that variant.
     {% for variant in e.variants() -%}
-    def is_{{ variant.name()|var_name(config)}}(self) -> bool:
+    def is_{{ variant.name()|var_name}}(self) -> bool:
         return isinstance(self, {{ type_name }}.{{ variant.name()|enum_variant_py(config) }})
     {% endfor %}
 
@@ -118,13 +118,13 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         {%- if e.is_flat() %}
         if value == {{ type_name }}.{{ variant.name()|enum_variant_py(config) }}:
         {%- else %}
-        if value.is_{{ variant.name()|var_name(config)}}():
+        if value.is_{{ variant.name()|var_name}}():
         {%- endif %}
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() %}
             {{ field|check_lower_fn }}(value._values[{{ loop.index0 }}])
             {%- else %}
-            {{ field|check_lower_fn }}(value.{{ field.name()|var_name(config)}})
+            {{ field|check_lower_fn }}(value.{{ field.name()|var_name}})
             {%- endif %}
             {%- endfor %}
             return
@@ -139,13 +139,13 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         if value == {{ type_name }}.{{ variant.name()|enum_variant_py(config) }}:
             buf.write_i32({{ loop.index }})
         {%- else %}
-        if value.is_{{ variant.name()|var_name(config)}}():
+        if value.is_{{ variant.name()|var_name}}():
             buf.write_i32({{ loop.index }})
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() %}
             {{ field|write_fn }}(value._values[{{ loop.index0 }}], buf)
             {%- else %}
-            {{ field|write_fn }}(value.{{ field.name()|var_name(config)}}, buf)
+            {{ field|write_fn }}(value.{{ field.name()|var_name}}, buf)
             {%- endif %}
             {%- endfor %}
         {%- endif %}

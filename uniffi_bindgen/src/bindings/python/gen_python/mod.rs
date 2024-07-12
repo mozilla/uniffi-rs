@@ -576,10 +576,7 @@ pub mod filters {
     }
 
     /// Get the idiomatic Python rendering of a variable name.
-    pub fn var_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_variable_name) = config.rename.get(nm) {
-            return Ok(PythonCodeOracle.var_name(overwrite_variable_name));
-        }
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.var_name(nm))
     }
 

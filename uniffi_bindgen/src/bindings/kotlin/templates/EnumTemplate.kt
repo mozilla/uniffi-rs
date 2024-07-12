@@ -13,7 +13,7 @@
 enum class {{ type_name }} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
-    {{ variant|variant_name(config) }}{% if loop.last %};{% else %},{% endif %}
+    {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
     companion object
 }
@@ -21,7 +21,7 @@ enum class {{ type_name }} {
 enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci, config) }}) {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
-    {{ variant|variant_name(config) }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
+    {{ variant|variant_name }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
     companion object
 }

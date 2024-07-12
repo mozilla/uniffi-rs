@@ -710,12 +710,7 @@ pub mod filters {
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    pub fn var_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_variable_name) = config.rename.get(nm) {
-            return Ok(quote_general_keyword(
-                oracle().var_name(overwrite_variable_name),
-            ));
-        }
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
         Ok(quote_general_keyword(oracle().var_name(nm)))
     }
 
