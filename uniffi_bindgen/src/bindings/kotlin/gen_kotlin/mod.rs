@@ -9,7 +9,7 @@ use std::fmt::Debug;
 
 use anyhow::{Context, Result};
 use askama::Template;
-
+use cargo_metadata::semver::Version;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
@@ -82,11 +82,31 @@ pub struct Config {
     android: bool,
     #[serde(default)]
     android_cleaner: Option<bool>,
+    #[serde(default)]
+    kotlin_target_version: Option<String>,
 }
 
 impl Config {
     pub(crate) fn android_cleaner(&self) -> bool {
         self.android_cleaner.unwrap_or(self.android)
+    }
+
+    pub(crate) fn use_enum_entries(&self) -> bool {
+        self.get_kotlin_version() >= Version::new(1, 9, 0)
+    }
+
+    /// Returns a `Version` with the contents of `kotlin_target_version`.
+    /// If `kotlin_target_version` is not defined, version `0.0.0` will be used as a fallback.
+    /// If it's not valid, this function will panic.
+    fn get_kotlin_version(&self) -> Version {
+        self.kotlin_target_version
+            .clone()
+            .map(|v| {
+                Version::parse(&v).unwrap_or_else(|_| {
+                    panic!("Provided Kotlin target version is not valid: {}", v)
+                })
+            })
+            .unwrap_or(Version::new(0, 0, 0))
     }
 }
 
