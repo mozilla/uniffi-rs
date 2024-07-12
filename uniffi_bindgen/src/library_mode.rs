@@ -149,6 +149,7 @@ impl CratePathMap {
     fn new() -> Result<Self> {
         Ok(Self::from(
             cargo_metadata::MetadataCommand::new()
+                .no_deps()
                 .exec()
                 .context("error running cargo metadata")?,
         ))
