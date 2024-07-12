@@ -10,7 +10,6 @@ use std::fmt::Debug;
 use anyhow::{Context, Result};
 use askama::Template;
 use cargo_metadata::semver::Version;
-use glob::Pattern;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
