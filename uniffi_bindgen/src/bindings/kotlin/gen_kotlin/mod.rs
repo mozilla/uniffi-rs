@@ -7,9 +7,8 @@ use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use askama::Template;
-use cargo_metadata::semver::Version;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
@@ -92,21 +91,49 @@ impl Config {
     }
 
     pub(crate) fn use_enum_entries(&self) -> bool {
-        self.get_kotlin_version() >= Version::new(1, 9, 0)
+        self.get_kotlin_version() >= KotlinVersion::new(1, 9, 0)
     }
 
     /// Returns a `Version` with the contents of `kotlin_target_version`.
     /// If `kotlin_target_version` is not defined, version `0.0.0` will be used as a fallback.
     /// If it's not valid, this function will panic.
-    fn get_kotlin_version(&self) -> Version {
+    fn get_kotlin_version(&self) -> KotlinVersion {
         self.kotlin_target_version
             .clone()
             .map(|v| {
-                Version::parse(&v).unwrap_or_else(|_| {
+                KotlinVersion::parse(&v).unwrap_or_else(|_| {
                     panic!("Provided Kotlin target version is not valid: {}", v)
                 })
             })
-            .unwrap_or(Version::new(0, 0, 0))
+            .unwrap_or(KotlinVersion::new(0, 0, 0))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct KotlinVersion((u16, u16, u16));
+
+impl KotlinVersion {
+    fn new(major: u16, minor: u16, patch: u16) -> Self {
+        Self((major, minor, patch))
+    }
+
+    fn parse(version: &str) -> Result<Self> {
+        let components = version
+            .split('.')
+            .map(|n| {
+                n.parse::<u16>()
+                    .map_err(|_| anyhow!("Invalid version string ({n} is not an integer)"))
+            })
+            .collect::<Result<Vec<u16>>>()?;
+
+        match components.as_slice() {
+            [major, minor, patch] => Ok(Self((*major, *minor, *patch))),
+            [major, minor] => Ok(Self((*major, *minor, 0))),
+            [major] => Ok(Self((*major, 0, 0))),
+            _ => Err(anyhow!(
+                "Invalid version string (expected 1-3 components): {version}"
+            )),
+        }
     }
 }
 
@@ -692,5 +719,32 @@ mod filters {
 
         let spaces = usize::try_from(*spaces).unwrap_or_default();
         Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_kotlin_version() {
+        assert_eq!(
+            KotlinVersion::parse("1.2.3").unwrap(),
+            KotlinVersion::new(1, 2, 3)
+        );
+        assert_eq!(
+            KotlinVersion::parse("2.3").unwrap(),
+            KotlinVersion::new(2, 3, 0),
+        );
+        assert_eq!(
+            KotlinVersion::parse("2").unwrap(),
+            KotlinVersion::new(2, 0, 0),
+        );
+        assert!(KotlinVersion::parse("2.").is_err());
+        assert!(KotlinVersion::parse("").is_err());
+        assert!(KotlinVersion::parse("A.B.C").is_err());
+        assert!(KotlinVersion::new(1, 2, 3) > KotlinVersion::new(0, 1, 2));
+        assert!(KotlinVersion::new(1, 2, 3) > KotlinVersion::new(0, 100, 0));
+        assert!(KotlinVersion::new(10, 0, 0) > KotlinVersion::new(1, 10, 0));
     }
 }
