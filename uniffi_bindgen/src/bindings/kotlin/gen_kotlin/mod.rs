@@ -82,11 +82,17 @@ pub struct Config {
     android: bool,
     #[serde(default)]
     android_cleaner: Option<bool>,
+    #[serde(default)]
+    use_enum_entries: bool,
 }
 
 impl Config {
     pub(crate) fn android_cleaner(&self) -> bool {
         self.android_cleaner.unwrap_or(self.android)
+    }
+
+    pub(crate) fn use_enum_entries(&self) -> bool {
+        self.use_enum_entries
     }
 }
 
