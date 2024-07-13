@@ -56,8 +56,8 @@ use anyhow::bail;
 use bytes::Buf;
 
 use crate::{
-    FfiDefault, Handle, MetadataBuffer, Result, RustBuffer, RustCallStatus, RustCallStatusCode,
-    UnexpectedUniFFICallbackError,
+    FfiDefault, Handle, LiftArgsError, MetadataBuffer, Result, RustBuffer, RustCallError,
+    RustCallStatus, RustCallStatusCode, UnexpectedUniFFICallbackError,
 };
 
 /// Generalized FFI conversions
@@ -269,22 +269,29 @@ pub unsafe trait LowerReturn<UT>: Sized {
     /// When derived, it's the same as `FfiType`.
     type ReturnType: FfiDefault;
 
-    /// Lower this value for scaffolding function return
+    /// Lower the return value from an scaffolding call
     ///
-    /// This method converts values into the `Result<>` type that [rust_call] expects. For
-    /// successful calls, return `Ok(lower_return)`.  For errors that should be translated into
-    /// thrown exceptions on the foreign code, serialize the error into a RustBuffer and return
-    /// `Err(buf)`
-    fn lower_return(obj: Self) -> Result<Self::ReturnType, RustBuffer>;
+    /// Returns values that [rust_call] expects:
+    ///
+    /// - Ok(v) for `Ok` returns and non-result returns, where v is the lowered return value
+    /// - `Err(RustCallError::Error(buf))` for `Err` returns where `buf` is serialized error value.
+    fn lower_return(v: Self) -> Result<Self::ReturnType, RustCallError>;
 
-    /// If possible, get a serialized error for failed argument lifts
+    /// Lower the return value for failed argument lifts
     ///
-    /// By default, we just panic and let `rust_call` handle things.  However, for `Result<_, E>`
-    /// returns, if the anyhow error can be downcast to `E`, then serialize that and return it.
-    /// This results in the foreign code throwing a "normal" exception, rather than an unexpected
-    /// exception.
-    fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> Self {
-        panic!("Failed to convert arg '{arg_name}': {e}")
+    /// This is called when we fail to make a scaffolding call, because of an error lifting an
+    /// argument.  It should return a value that [rust_call] expects:
+    ///
+    /// - By default, this is `Err(RustCallError::InternalError(msg))` where `msg` is message
+    ///   describing the failed lift.
+    /// - For Result types, if we can downcast the error to the `Err` value, then return
+    ///   `Err(RustCallError::Error(buf))`. This results in better exception throws on the foreign
+    ///   side.
+    fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
+        let LiftArgsError { arg_name, error } = error;
+        Err(RustCallError::InternalError(format!(
+            "Failed to convert arg '{arg_name}': {error}"
+        )))
     }
 }
 
@@ -540,8 +547,8 @@ macro_rules! derive_ffi_traits {
         {
             type ReturnType = <Self as $crate::Lower<$ut>>::FfiType;
 
-            fn lower_return(obj: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustBuffer> {
-                ::std::result::Result::Ok(<Self as $crate::Lower<$ut>>::lower(obj))
+            fn lower_return(v: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustCallError> {
+                ::std::result::Result::Ok(<Self as $crate::Lower<$ut>>::lower(v))
             }
         }
     };
