@@ -496,7 +496,11 @@ mod filters {
         ci: &ComponentInterface,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        if let Some(overwrite_type_name) = config.rename.structs.get(&as_ct.as_codetype().type_label(ci)) {
+        if let Some(overwrite_type_name) = config
+            .rename
+            .structs
+            .get(&as_ct.as_codetype().type_label(ci))
+        {
             return Ok(overwrite_type_name.to_owned());
         }
         Ok(as_ct.as_codetype().type_label(ci))

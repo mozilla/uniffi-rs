@@ -597,6 +597,7 @@ pub mod filters {
     pub fn type_name(as_type: &impl AsType, config: &Config) -> Result<String, askama::Error> {
         if let Some(overwrite_type_name) = config
             .rename
+            .structs
             .get(&oracle().find(&as_type.as_type()).type_label())
         {
             return Ok(overwrite_type_name.to_owned());
