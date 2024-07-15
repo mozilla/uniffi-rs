@@ -177,7 +177,7 @@ class RustBufferBuilder
     pack_into(4, 'l>', v)
     {%- else -%}
     {%- for variant in e.variants() %}
-    if v.{{ variant.name()|var_name_rb(config) }}?
+    if v.{{ variant.name()|var_name_rb }}?
       pack_into(4, 'l>', {{ loop.index }})
       {%- for field in variant.fields() %}
       self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}(v.{{ field.name() }})
@@ -194,7 +194,7 @@ class RustBufferBuilder
 
   def write_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}(v.{{ field.name()|var_name_rb(config) }})
+    self.write_{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}(v.{{ field.name()|var_name_rb }})
     {%- endfor %}
   end
 

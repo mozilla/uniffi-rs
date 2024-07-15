@@ -23,7 +23,7 @@ fileprivate struct {{ trait_impl }} {
                 }
                 return {% if meth.throws() %}try {% endif %}{% if meth.is_async() %}await {% endif %}uniffiObj.{{ meth.name()|fn_name(config) }}(
                     {%- for arg in meth.arguments() %}
-                    {% if !config.omit_argument_labels() %} {{ arg.name()|arg_name(config) }}: {% endif %}try {{ arg|lift_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
+                    {% if !config.omit_argument_labels() %} {{ arg.name()|arg_name }}: {% endif %}try {{ arg|lift_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
                     {%- endfor %}
                 )
             }

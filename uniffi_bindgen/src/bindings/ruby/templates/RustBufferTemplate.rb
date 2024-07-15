@@ -130,7 +130,7 @@ class RustBuffer < FFI::Struct
 
   def self.check_lower_{{ canonical_type_name }}(v)
     {%- for field in rec.fields() %}
-    {{ "v.{}"|format(field.name()|var_name_rb(config))|check_lower_rb(field.as_type().borrow(), config) }}
+    {{ "v.{}"|format(field.name()|var_name_rb)|check_lower_rb(field.as_type().borrow(), config) }}
     {%- endfor %}
   end
 
@@ -155,7 +155,7 @@ class RustBuffer < FFI::Struct
   def self.check_lower_{{ canonical_type_name }}(v)
     {%- if !e.is_flat() %}
     {%- for variant in e.variants() %}
-    if v.{{ variant.name()|var_name_rb(config) }}?
+    if v.{{ variant.name()|var_name_rb }}?
       {%- for field in variant.fields() %}
         {{ "v.{}"|format(field.name())|check_lower_rb(field.as_type().borrow(), config) }}
       {%- endfor %}

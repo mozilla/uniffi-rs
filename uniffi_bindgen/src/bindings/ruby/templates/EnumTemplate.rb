@@ -17,12 +17,12 @@ class {{ e.name()|class_name_rb(config) }}
   {% for variant in e.variants() -%}
   class {{ variant.name()|enum_name_rb(config) }}
     {% if variant.has_fields() %}
-    attr_reader {% for field in variant.fields() %}:{{ field.name()|var_name_rb(config) }}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
+    attr_reader {% for field in variant.fields() %}:{{ field.name()|var_name_rb }}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
     {% endif %}
-    def initialize({% for field in variant.fields() %}{{ field.name()|var_name_rb(config) }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
+    def initialize({% for field in variant.fields() %}{{ field.name()|var_name_rb }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
       {% if variant.has_fields() %}
       {%- for field in variant.fields() %}
-      @{{ field.name()|var_name_rb(config) }} = {{ field.name()|var_name_rb(config) }}
+      @{{ field.name()|var_name_rb }} = {{ field.name()|var_name_rb }}
       {%- endfor %}
       {% else %}
       {% endif %}
@@ -33,11 +33,11 @@ class {{ e.name()|class_name_rb(config) }}
     end
 
     def ==(other)
-      if !other.{{ variant.name()|var_name_rb(config) }}?
+      if !other.{{ variant.name()|var_name_rb }}?
         return false
       end
       {%- for field in variant.fields() %}
-      if @{{ field.name()|var_name_rb(config) }} != other.{{ field.name()|var_name_rb(config) }}
+      if @{{ field.name()|var_name_rb }} != other.{{ field.name()|var_name_rb }}
         return false
       end
       {%- endfor %}
@@ -48,7 +48,7 @@ class {{ e.name()|class_name_rb(config) }}
     # For each variant, we have an `NAME?` method for easily checking
     # whether an instance is that variant.
     {% for variant in e.variants() %}
-    def {{ variant.name()|var_name_rb(config) }}?
+    def {{ variant.name()|var_name_rb }}?
       instance_of? {{ e.name()|class_name_rb(config) }}::{{ variant.name()|enum_name_rb(config) }}
     end
     {% endfor %}

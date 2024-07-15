@@ -43,7 +43,7 @@
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name()|var_name_rb(config) }}
+        {{ arg.name()|var_name_rb }}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %} = {{ literal|literal_rb(config) }}
         {%- else %}

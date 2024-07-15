@@ -85,9 +85,15 @@ pub struct Config {
     pub(super) cdylib_name: Option<String>,
     cdylib_path: Option<String>,
     #[serde(default)]
-    rename: HashMap<String, String>,
+    rename: RenameConfig,
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct RenameConfig {
+    functions: HashMap<String, String>,
+    structs: HashMap<String, String>,
+    enums: HashMap<String, String>,
+}
 impl Config {
     pub fn cdylib_name(&self) -> String {
         self.cdylib_name
@@ -196,32 +202,28 @@ mod filters {
     }
 
     pub fn class_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_class_name_rb) = config.rename.get(nm) {
+        if let Some(overwrite_class_name_rb) = config.rename.structs.get(nm) {
             return Ok(overwrite_class_name_rb.to_owned().to_upper_camel_case());
         }
         Ok(nm.to_string().to_upper_camel_case())
     }
 
     pub fn fn_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_fn_name_rb) = config.rename.get(nm) {
+        if let Some(overwrite_fn_name_rb) = config.rename.functions.get(nm) {
             return Ok(overwrite_fn_name_rb.to_owned().to_snake_case());
         }
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn var_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
+    pub fn var_name_rb(nm: &str) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         let prefix = if is_reserved_word(&nm) { "_" } else { "" };
-
-        if let Some(overwrite_var_name_rb) = config.rename.get(&nm) {
-            return Ok(format!("{prefix}{}", overwrite_var_name_rb.to_snake_case()));
-        }
 
         Ok(format!("{prefix}{}", nm.to_snake_case()))
     }
 
     pub fn enum_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_enum_name_rb) = config.rename.get(nm) {
+        if let Some(overwrite_enum_name_rb) = config.rename.enums.get(nm) {
             return Ok(overwrite_enum_name_rb.to_owned().to_shouty_snake_case());
         }
         Ok(nm.to_string().to_shouty_snake_case())

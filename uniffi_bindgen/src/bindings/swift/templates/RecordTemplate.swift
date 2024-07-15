@@ -40,7 +40,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         return {%- if rec.has_fields() %}
             try {{ type_name }}(
             {%- for field in rec.fields() %}
-                {{ field.name()|arg_name(config) }}: {{ field|read_fn }}(from: &buf)
+                {{ field.name()|arg_name }}: {{ field|read_fn }}(from: &buf)
                 {%- if !loop.last %}, {% endif %}
             {%- endfor %}
         )

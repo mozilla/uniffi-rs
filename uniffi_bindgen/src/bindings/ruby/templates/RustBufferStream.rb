@@ -237,7 +237,7 @@ class RustBufferStream
   def read{{ canonical_type_name }}
     {{ rec.name()|class_name_rb(config) }}.new(
       {%- for field in rec.fields() %}
-      {{ field.name()|var_name_rb(config) }}: read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}{% if loop.last %}{% else %},{% endif %}
+      {{ field.name()|var_name_rb }}: read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb(config) }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}
     )
   end

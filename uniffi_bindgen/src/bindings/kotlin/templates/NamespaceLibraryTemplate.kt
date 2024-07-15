@@ -32,7 +32,7 @@ internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callbac
     {%- endmatch %}
 }
 {%- when FfiDefinition::Struct(ffi_struct) %}
-@Structure.FieldOrder({% for field in ffi_struct.fields() %}"{{ field.name()|var_name_raw(config) }}"{% if !loop.last %}, {% endif %}{% endfor %})
+@Structure.FieldOrder({% for field in ffi_struct.fields() %}"{{ field.name()|var_name_raw }}"{% if !loop.last %}, {% endif %}{% endfor %})
 internal open class {{ ffi_struct.name()|ffi_struct_name }}(
     {%- for field in ffi_struct.fields() %}
     @JvmField internal var {{ field.name()|var_name }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct }} = {{ field.type_()|ffi_default_value }},

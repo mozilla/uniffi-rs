@@ -34,7 +34,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
             {%- if variant.has_nameless_fields() -%}
             try {{ field|read_fn }}(from: &buf)
             {%- else -%}
-            {{ field.name()|arg_name(config) }}: try {{ field|read_fn }}(from: &buf)
+            {{ field.name()|arg_name }}: try {{ field|read_fn }}(from: &buf)
             {%- endif -%}
             {%- if !loop.last %}, {% endif %}
             {%- endfor %}
