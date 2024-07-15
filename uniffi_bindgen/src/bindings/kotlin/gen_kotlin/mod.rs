@@ -88,8 +88,11 @@ pub struct Config {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct RenameConfig {
+    #[serde(default)]
     functions: HashMap<String, String>,
+    #[serde(default)]
     structs: HashMap<String, String>,
+    #[serde(default)]
     enums: HashMap<String, String>,
 }
 
@@ -420,7 +423,7 @@ impl KotlinCodeOracle {
         config: &Config,
     ) -> (String, String) {
         let mut class_name = self.class_name(ci, obj.name());
-        if let Some(overwrite_class_name) = config.rename.structs.get(&class_name) {
+        if let Some(overwrite_class_name) = config.rename.enums.get(&class_name) {
             class_name = overwrite_class_name.to_owned();
         }
 
@@ -496,13 +499,13 @@ mod filters {
         ci: &ComponentInterface,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        if let Some(overwrite_type_name) = config
-            .rename
-            .structs
-            .get(&as_ct.as_codetype().type_label(ci))
-        {
-            return Ok(overwrite_type_name.to_owned());
+        // Check if we have an enum or struct name defintion we want to overwrite
+        for map in [&config.rename.enums, &config.rename.structs].iter() {
+            if let Some(overwrite_type_name) = map.get(&as_ct.as_codetype().type_label(ci)) {
+                return Ok(overwrite_type_name.to_owned());
+            }
         }
+
         Ok(as_ct.as_codetype().type_label(ci))
     }
 
@@ -594,14 +597,17 @@ mod filters {
         Ok(KotlinCodeOracle.ffi_default_value(&type_))
     }
 
-    /// Get the idiomatic Kotlin rendering of a function name.
+    /// Get the idiomatic Kotlin rendering of a class name.
     pub fn class_name(
         nm: &str,
         ci: &ComponentInterface,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        if let Some(overwrite_class_name) = config.rename.structs.get(nm) {
-            return Ok(KotlinCodeOracle.class_name(ci, overwrite_class_name));
+        // Check if we have an enum or struct name defintion we want to overwrite
+        for map in [&config.rename.enums, &config.rename.structs].iter() {
+            if let Some(overwrite_class_name) = map.get(nm) {
+                return Ok(KotlinCodeOracle.class_name(ci, overwrite_class_name));
+            }
         }
         Ok(KotlinCodeOracle.class_name(ci, nm))
     }

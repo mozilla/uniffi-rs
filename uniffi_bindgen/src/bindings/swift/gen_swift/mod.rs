@@ -205,8 +205,11 @@ pub struct Config {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct RenameConfig {
+    #[serde(default)]
     functions: HashMap<String, String>,
+    #[serde(default)]
     structs: HashMap<String, String>,
+    #[serde(default)]
     enums: HashMap<String, String>,
 }
 
@@ -595,13 +598,12 @@ pub mod filters {
     }
 
     pub fn type_name(as_type: &impl AsType, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_type_name) = config
-            .rename
-            .structs
-            .get(&oracle().find(&as_type.as_type()).type_label())
-        {
-            return Ok(overwrite_type_name.to_owned());
+        for map in [&config.rename.enums, &config.rename.structs].iter() {
+            if let Some(overwrite_type_name) = map.get(&oracle().find(&as_type.as_type()).type_label()) {
+                return Ok(overwrite_type_name.to_owned());
+            }
         }
+
         Ok(oracle().find(&as_type.as_type()).type_label())
     }
 
@@ -701,9 +703,12 @@ pub mod filters {
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_class_name) = config.rename.structs.get(nm) {
-            return Ok(oracle().class_name(overwrite_class_name));
+        for map in [&config.rename.enums, &config.rename.structs].iter() {
+            if let Some(overwrite_class_name) = map.get(nm) {
+                return Ok(oracle().class_name(overwrite_class_name));
+            }
         }
+
         Ok(oracle().class_name(nm))
     }
 

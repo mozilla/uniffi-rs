@@ -1,11 +1,11 @@
 [bindings.kotlin.rename]
-OtherError = "AnotherError"
+enums.OtherError = "AnotherError"
 
 [bindings.python.rename]
-OtherError = "AnotherError"
+enums.OtherError = "AnotherError"
 
 [bindings.ruby.rename]
-UnknownError = "UnspecificError"
+enums.UnknownError = "UnspecificError"
 
 [bindings.swift.rename]
-OtherError = "AnotherError"
+enums.OtherError = "AnotherError"

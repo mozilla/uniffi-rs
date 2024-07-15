@@ -90,10 +90,14 @@ pub struct Config {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct RenameConfig {
+    #[serde(default)]
     functions: HashMap<String, String>,
+    #[serde(default)]
     structs: HashMap<String, String>,
+    #[serde(default)]
     enums: HashMap<String, String>,
 }
+
 impl Config {
     pub fn cdylib_name(&self) -> String {
         self.cdylib_name
@@ -202,9 +206,12 @@ mod filters {
     }
 
     pub fn class_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_class_name_rb) = config.rename.structs.get(nm) {
-            return Ok(overwrite_class_name_rb.to_owned().to_upper_camel_case());
+        for map in [&config.rename.enums, &config.rename.structs].iter() {
+            if let Some(overwrite_class_name_rb) = map.get(nm) {
+                return Ok(overwrite_class_name_rb.to_owned().to_upper_camel_case());
+            }
         }
+
         Ok(nm.to_string().to_upper_camel_case())
     }
 

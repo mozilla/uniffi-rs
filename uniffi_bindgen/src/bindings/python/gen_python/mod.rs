@@ -122,8 +122,11 @@ pub struct Config {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct RenameConfig {
+    #[serde(default)]
     functions: HashMap<String, String>,
+    #[serde(default)]
     structs: HashMap<String, String>,
+    #[serde(default)]
     enums: HashMap<String, String>,
 }
 
@@ -511,11 +514,13 @@ pub mod filters {
         as_ct: &impl AsCodeType,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        if let Some(overwrite_type_name) =
-            config.rename.structs.get(&as_ct.as_codetype().type_label())
-        {
-            return Ok(overwrite_type_name.to_owned());
+        // Check if we have either an enum or a struct defition we want to overwrite
+        for map in [&config.rename.enums, &config.rename.structs].iter() {
+            if let Some(overwrite_type_name) = map.get(&as_ct.as_codetype().type_label()) {
+                return Ok(overwrite_type_name.to_owned());
+            }
         }
+
         Ok(as_ct.as_codetype().type_label())
     }
 
