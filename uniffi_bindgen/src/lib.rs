@@ -162,7 +162,6 @@ pub trait BindingGenerator: Sized {
 pub struct Component<Config> {
     pub ci: ComponentInterface,
     pub config: Config,
-    pub package_name: Option<String>,
 }
 
 /// A convenience function for the CLI to help avoid using static libs
@@ -207,7 +206,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     let config = {
-        let toml = load_initial_config(crate_root, config_file_override)?;
+        let toml = load_initial_config(Some(crate_root), config_file_override)?;
         binding_generator.new_config(&toml)?
     };
 
@@ -225,11 +224,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
         try_format_code,
     };
 
-    let mut components = vec![Component {
-        ci,
-        config,
-        package_name: None,
-    }];
+    let mut components = vec![Component { ci, config }];
     binding_generator.update_component_configs(&settings, &mut components)?;
     binding_generator.write_bindings(&settings, &components)
 }
@@ -411,10 +406,10 @@ fn load_toml_file(source: Option<&Utf8Path>) -> Result<Option<toml::value::Table
 
 /// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
 fn load_initial_config(
-    crate_root: &Utf8Path,
+    crate_root: Option<&Utf8Path>,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<toml::Value> {
-    let mut config = load_toml_file(Some(crate_root.join("uniffi.toml").as_path()))
+    let mut config = load_toml_file(crate_root.map(|p| p.join("uniffi.toml")).as_deref())
         .context("default config")?
         .unwrap_or(toml::value::Table::default());
 

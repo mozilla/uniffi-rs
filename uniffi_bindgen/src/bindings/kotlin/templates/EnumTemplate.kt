@@ -29,7 +29,11 @@ enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci, config
 
 public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer) = try {
+        {% if config.use_enum_entries() %}
+        {{ type_name }}.entries[buf.getInt() - 1]
+        {% else -%}
         {{ type_name }}.values()[buf.getInt() - 1]
+        {%- endif %}
     } catch (e: IndexOutOfBoundsException) {
         throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
