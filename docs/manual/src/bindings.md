@@ -13,6 +13,13 @@ Each of the bindings reads a file `uniffi.toml` in the root of a crate which sup
 various options which influence how the bindings are generated. Default options will be used
 if this file is missing.
 
+You can rename functions and structures via `[bindings.{language}.rename]` in the `uniffi.toml`. Options include: `enums`, `structs` and `functions`. For example:
+
+```toml
+[bindings.python.rename]
+enums.OtherError = "AnotherError"
+```
+
 `--config` option can be used to specify additional uniffi config file. This config is merged with
 the `uniffi.toml` config present in each crate, with its values taking precedence.
 
