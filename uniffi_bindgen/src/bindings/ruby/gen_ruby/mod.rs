@@ -85,17 +85,7 @@ pub struct Config {
     pub(super) cdylib_name: Option<String>,
     cdylib_path: Option<String>,
     #[serde(default)]
-    rename: RenameConfig,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct RenameConfig {
-    #[serde(default)]
-    functions: HashMap<String, String>,
-    #[serde(default)]
-    structs: HashMap<String, String>,
-    #[serde(default)]
-    enums: HashMap<String, String>,
+    rename: HashMap<String, String>,
 }
 
 impl Config {
@@ -206,17 +196,15 @@ mod filters {
     }
 
     pub fn class_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        for map in [&config.rename.enums, &config.rename.structs].iter() {
-            if let Some(overwrite_class_name_rb) = map.get(nm) {
-                return Ok(overwrite_class_name_rb.to_owned().to_upper_camel_case());
-            }
+        if let Some(overwrite_class_name_rb) = config.rename.get(nm) {
+            return Ok(overwrite_class_name_rb.to_owned().to_upper_camel_case());
         }
 
         Ok(nm.to_string().to_upper_camel_case())
     }
 
     pub fn fn_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_fn_name_rb) = config.rename.functions.get(nm) {
+        if let Some(overwrite_fn_name_rb) = config.rename.get(nm) {
             return Ok(overwrite_fn_name_rb.to_owned().to_snake_case());
         }
         Ok(nm.to_string().to_snake_case())
@@ -230,7 +218,7 @@ mod filters {
     }
 
     pub fn enum_name_rb(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_enum_name_rb) = config.rename.enums.get(nm) {
+        if let Some(overwrite_enum_name_rb) = config.rename.get(nm) {
             return Ok(overwrite_enum_name_rb.to_owned().to_shouty_snake_case());
         }
         Ok(nm.to_string().to_shouty_snake_case())

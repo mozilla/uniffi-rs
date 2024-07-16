@@ -1,4 +1,5 @@
-use super::{is_reserved_word, Config, RenameConfig};
+use super::{is_reserved_word, Config};
+use std::collections::HashMap;
 
 #[test]
 fn when_reserved_word() {
@@ -15,7 +16,7 @@ fn cdylib_name() {
     let config = Config {
         cdylib_name: None,
         cdylib_path: None,
-        rename: RenameConfig::default(),
+        rename: HashMap::default(),
     };
 
     assert_eq!("uniffi", config.cdylib_name());
@@ -23,7 +24,7 @@ fn cdylib_name() {
     let config = Config {
         cdylib_name: Some("todolist".to_string()),
         cdylib_path: None,
-        rename: RenameConfig::default(),
+        rename: HashMap::default(),
     };
 
     assert_eq!("todolist", config.cdylib_name());
@@ -34,7 +35,7 @@ fn cdylib_path() {
     let config = Config {
         cdylib_name: None,
         cdylib_path: None,
-        rename: RenameConfig::default(),
+        rename: HashMap::default(),
     };
 
     assert_eq!("", config.cdylib_path());
@@ -43,7 +44,7 @@ fn cdylib_path() {
     let config = Config {
         cdylib_name: None,
         cdylib_path: Some("/foo/bar".to_string()),
-        rename: RenameConfig::default(),
+        rename: HashMap::default(),
     };
 
     assert_eq!("/foo/bar", config.cdylib_path());

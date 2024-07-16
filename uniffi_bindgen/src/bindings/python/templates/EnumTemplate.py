@@ -118,7 +118,7 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         {%- if e.is_flat() %}
         if value == {{ type_name }}.{{ variant.name()|enum_variant_py(config) }}:
         {%- else %}
-        if value.is_{{ variant.name()|var_name}}():
+        if value.is_{{ variant.name()|var_name }}():
         {%- endif %}
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() %}
@@ -139,7 +139,7 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         if value == {{ type_name }}.{{ variant.name()|enum_variant_py(config) }}:
             buf.write_i32({{ loop.index }})
         {%- else %}
-        if value.is_{{ variant.name()|var_name}}():
+        if value.is_{{ variant.name()|var_name }}():
             buf.write_i32({{ loop.index }})
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() %}

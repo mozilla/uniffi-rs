@@ -117,17 +117,7 @@ pub struct Config {
     #[serde(default)]
     external_packages: HashMap<String, String>,
     #[serde(default)]
-    rename: RenameConfig,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct RenameConfig {
-    #[serde(default)]
-    functions: HashMap<String, String>,
-    #[serde(default)]
-    structs: HashMap<String, String>,
-    #[serde(default)]
-    enums: HashMap<String, String>,
+    rename: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -440,7 +430,7 @@ impl PythonCodeOracle {
     /// only lowers the concrete class.
     fn object_names(&self, obj: &Object, config: &Config) -> (String, String) {
         let mut class_name = self.class_name(obj.name());
-        if let Some(overwrite_class_name) = config.rename.structs.get(&class_name) {
+        if let Some(overwrite_class_name) = config.rename.get(&class_name) {
             class_name = overwrite_class_name.to_owned();
         }
 
@@ -514,11 +504,8 @@ pub mod filters {
         as_ct: &impl AsCodeType,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        // Check if we have either an enum or a struct defition we want to overwrite
-        for map in [&config.rename.enums, &config.rename.structs].iter() {
-            if let Some(overwrite_type_name) = map.get(&as_ct.as_codetype().type_label()) {
-                return Ok(overwrite_type_name.to_owned());
-            }
+        if let Some(overwrite_type_name) = config.rename.get(&as_ct.as_codetype().type_label()) {
+            return Ok(overwrite_type_name.to_owned());
         }
 
         Ok(as_ct.as_codetype().type_label())
@@ -575,7 +562,7 @@ pub mod filters {
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_class_name) = config.rename.structs.get(nm) {
+        if let Some(overwrite_class_name) = config.rename.get(nm) {
             return Ok(PythonCodeOracle.class_name(overwrite_class_name));
         }
         Ok(PythonCodeOracle.class_name(nm))
@@ -583,7 +570,7 @@ pub mod filters {
 
     /// Get the idiomatic Python rendering of a function name.
     pub fn fn_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_function_name) = config.rename.functions.get(nm) {
+        if let Some(overwrite_function_name) = config.rename.get(nm) {
             return Ok(PythonCodeOracle.fn_name(overwrite_function_name));
         }
         Ok(PythonCodeOracle.fn_name(nm))
@@ -596,7 +583,7 @@ pub mod filters {
 
     /// Get the idiomatic Python rendering of an individual enum variant.
     pub fn enum_variant_py(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_enum_variant) = config.rename.enums.get(nm) {
+        if let Some(overwrite_enum_variant) = config.rename.get(nm) {
             return Ok(PythonCodeOracle.enum_variant_name(overwrite_enum_variant));
         }
         Ok(PythonCodeOracle.enum_variant_name(nm))

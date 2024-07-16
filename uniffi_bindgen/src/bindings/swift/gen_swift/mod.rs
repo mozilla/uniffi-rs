@@ -200,17 +200,7 @@ pub struct Config {
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
-    rename: RenameConfig,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct RenameConfig {
-    #[serde(default)]
-    functions: HashMap<String, String>,
-    #[serde(default)]
-    structs: HashMap<String, String>,
-    #[serde(default)]
-    enums: HashMap<String, String>,
+    rename: HashMap<String, String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -598,12 +588,11 @@ pub mod filters {
     }
 
     pub fn type_name(as_type: &impl AsType, config: &Config) -> Result<String, askama::Error> {
-        for map in [&config.rename.enums, &config.rename.structs].iter() {
-            if let Some(overwrite_type_name) =
-                map.get(&oracle().find(&as_type.as_type()).type_label())
-            {
-                return Ok(overwrite_type_name.to_owned());
-            }
+        if let Some(overwrite_type_name) = config
+            .rename
+            .get(&oracle().find(&as_type.as_type()).type_label())
+        {
+            return Ok(overwrite_type_name.to_owned());
         }
 
         Ok(oracle().find(&as_type.as_type()).type_label())
@@ -705,10 +694,8 @@ pub mod filters {
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        for map in [&config.rename.enums, &config.rename.structs].iter() {
-            if let Some(overwrite_class_name) = map.get(nm) {
-                return Ok(oracle().class_name(overwrite_class_name));
-            }
+        if let Some(overwrite_class_name) = config.rename.get(nm) {
+            return Ok(oracle().class_name(overwrite_class_name));
         }
 
         Ok(oracle().class_name(nm))
@@ -716,7 +703,7 @@ pub mod filters {
 
     /// Get the idiomatic Swift rendering of a function name.
     pub fn fn_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_function_name) = config.rename.functions.get(nm) {
+        if let Some(overwrite_function_name) = config.rename.get(nm) {
             return Ok(quote_general_keyword(
                 oracle().fn_name(overwrite_function_name),
             ));
@@ -737,7 +724,7 @@ pub mod filters {
 
     /// Get the idiomatic Swift rendering of an individual enum variant, quoted if it is a keyword (for use in e.g. declarations)
     pub fn enum_variant_swift_quoted(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_enum_variant) = config.rename.enums.get(nm) {
+        if let Some(overwrite_enum_variant) = config.rename.get(nm) {
             return Ok(quote_general_keyword(
                 oracle().enum_variant_name(overwrite_enum_variant),
             ));
@@ -747,7 +734,7 @@ pub mod filters {
 
     /// Like enum_variant_swift_quoted, but a class name.
     pub fn error_variant_swift_quoted(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_error_variant) = config.rename.enums.get(nm) {
+        if let Some(overwrite_error_variant) = config.rename.get(nm) {
             return Ok(quote_general_keyword(
                 oracle().class_name(overwrite_error_variant),
             ));

@@ -83,17 +83,7 @@ pub struct Config {
     android_cleaner: Option<bool>,
     kotlin_target_version: Option<String>,
     #[serde(default)]
-    rename: RenameConfig,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct RenameConfig {
-    #[serde(default)]
-    functions: HashMap<String, String>,
-    #[serde(default)]
-    structs: HashMap<String, String>,
-    #[serde(default)]
-    enums: HashMap<String, String>,
+    rename: HashMap<String, String>,
 }
 
 impl Config {
@@ -469,7 +459,7 @@ impl KotlinCodeOracle {
         config: &Config,
     ) -> (String, String) {
         let mut class_name = self.class_name(ci, obj.name());
-        if let Some(overwrite_class_name) = config.rename.enums.get(&class_name) {
+        if let Some(overwrite_class_name) = config.rename.get(&class_name) {
             class_name = overwrite_class_name.to_owned();
         }
 
@@ -545,11 +535,8 @@ mod filters {
         ci: &ComponentInterface,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        // Check if we have an enum or struct name defintion we want to overwrite
-        for map in [&config.rename.enums, &config.rename.structs].iter() {
-            if let Some(overwrite_type_name) = map.get(&as_ct.as_codetype().type_label(ci)) {
-                return Ok(overwrite_type_name.to_owned());
-            }
+        if let Some(overwrite_type_name) = config.rename.get(&as_ct.as_codetype().type_label(ci)) {
+            return Ok(overwrite_type_name.to_owned());
         }
 
         Ok(as_ct.as_codetype().type_label(ci))
@@ -649,18 +636,16 @@ mod filters {
         ci: &ComponentInterface,
         config: &Config,
     ) -> Result<String, askama::Error> {
-        // Check if we have an enum or struct name defintion we want to overwrite
-        for map in [&config.rename.enums, &config.rename.structs].iter() {
-            if let Some(overwrite_class_name) = map.get(nm) {
-                return Ok(KotlinCodeOracle.class_name(ci, overwrite_class_name));
-            }
+        if let Some(overwrite_class_name) = config.rename.get(nm) {
+            return Ok(KotlinCodeOracle.class_name(ci, overwrite_class_name));
         }
+
         Ok(KotlinCodeOracle.class_name(ci, nm))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
     pub fn fn_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_fn_name) = config.rename.functions.get(nm) {
+        if let Some(overwrite_fn_name) = config.rename.get(nm) {
             return Ok(KotlinCodeOracle.fn_name(overwrite_fn_name));
         }
         Ok(KotlinCodeOracle.fn_name(nm))
@@ -682,7 +667,7 @@ mod filters {
     }
 
     pub fn error_variant_name(v: &Variant, config: &Config) -> Result<String, askama::Error> {
-        if let Some(overwrite_error_variant_name) = config.rename.enums.get(v.name()) {
+        if let Some(overwrite_error_variant_name) = config.rename.get(v.name()) {
             return Ok(KotlinCodeOracle
                 .convert_error_suffix(&overwrite_error_variant_name.to_upper_camel_case()));
         }
