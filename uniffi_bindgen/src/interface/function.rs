@@ -152,8 +152,13 @@ impl Renameable for Function {
     fn name(&self) -> &str {
         &self.name
     }
+    
     fn rename(&mut self, name: String) {
         self.name = name;
+    }
+
+    fn rename_nested(&mut self, _new_name: String) {
+        // Functions do not contain other nested elements
     }
 }
 

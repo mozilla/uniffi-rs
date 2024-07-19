@@ -78,15 +78,17 @@ use uniffi_meta::{
 };
 pub type Literal = LiteralMetadata;
 
-trait Renameable {
+pub trait Renameable {
     fn name(&self) -> &str;
 
     fn rename(&mut self, new_name: String);
+
+    fn rename_nested(&mut self, new_name: String);
 }
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ComponentInterface {
     /// All of the types used in the interface.
     // We can't checksum `self.types`, but its contents are implied by the other fields
@@ -242,7 +244,10 @@ impl ComponentInterface {
                 if item.name() == old_name {
                     item.rename(new_name.clone());
                 }
+                item.rename_nested(new_name.clone());
             }
+
+            self.types.rename_types(old_name.clone(), new_name.clone());
         }
     }
 

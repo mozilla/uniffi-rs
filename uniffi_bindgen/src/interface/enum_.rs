@@ -256,7 +256,15 @@ impl Renameable for Enum {
     }
 
     fn rename(&mut self, name: String) {
+        println!("FOUND NAME");
         self.name = name;
+        println!("ENUM {self:?}");
+    }
+
+    fn rename_nested(&mut self, new_name: String) {
+        for variant in &mut self.variants {
+            variant.name = new_name.clone();
+        }
     }
 }
 

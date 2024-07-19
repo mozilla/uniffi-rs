@@ -21,7 +21,7 @@ pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type,
 /// You could imagine this struct doing some clever interning of names and so-on in future,
 /// to reduce the overhead of passing around [Type] instances. For now we just do a whole
 /// lot of cloning.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) struct TypeUniverse {
     /// The unique prefixes that we'll use for namespacing when exposing this component's API.
     pub namespace: NamespaceMetadata,
@@ -125,6 +125,26 @@ impl TypeUniverse {
     /// Iterator over all the known types in this universe.
     pub fn iter_known_types(&self) -> impl Iterator<Item = &Type> {
         self.all_known_types.iter()
+    }
+
+    pub fn rename_types(&mut self, old_name: String, new_name: String) {
+        // Collect the elements into a vector for easier manipulation
+        let mut types: Vec<_> = self.all_known_types.iter().cloned().collect();
+        for t in &mut types {
+            match t {
+                Type::Object { name, .. }
+                | Type::Record { name, .. }
+                | Type::Enum { name, .. } => {
+                    if old_name.eq(name) {
+                        *name = new_name.to_string();
+                    }
+                }
+                _ => {}
+            }
+        }
+        // Clear the original set and insert the modified elements back
+        self.all_known_types.clear();
+        self.all_known_types.extend(types);
     }
 }
 
