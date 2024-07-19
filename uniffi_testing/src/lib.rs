@@ -159,7 +159,8 @@ fn get_cargo_metadata() -> Metadata {
 
 fn get_cargo_build_messages() -> Vec<Message> {
     let mut child = Command::new(env!("CARGO"))
-        .arg("build")
+        .arg("test")
+        .arg("--no-run")
         .arg("--message-format=json")
         .stdout(Stdio::piped())
         .spawn()
