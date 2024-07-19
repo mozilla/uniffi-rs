@@ -64,10 +64,10 @@ class {{ type_name }}:
             return "{{ type_name }}.{{ variant.name() }}({% for field in variant.fields() %}{{ field.name()  }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields() %}self.{{ field.name()  }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
 
         def __eq__(self, other):
-            if not other.is_{{ variant.name()  }}():
+            if not other.is_{{ variant.name() }}():
                 return False
             {%- for field in variant.fields() %}
-            if self.{{ field.name()  }} != other.{{ field.name()  }}:
+            if self.{{ field.name() }} != other.{{ field.name() }}:
                 return False
             {%- endfor %}
             return True
@@ -77,7 +77,7 @@ class {{ type_name }}:
     # For each variant, we have an `is_NAME` method for easily checking
     # whether an instance is that variant.
     {% for variant in e.variants() -%}
-    def is_{{ variant.name()  }}(self) -> bool:
+    def is_{{ variant.name() }}(self) -> bool:
         return isinstance(self, {{ type_name }}.{{ variant.name() }})
     {% endfor %}
 
@@ -118,13 +118,13 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         {%- if e.is_flat() %}
         if value == {{ type_name }}.{{ variant.name() }}:
         {%- else %}
-        if value.is_{{ variant.name()  }}():
+        if value.is_{{ variant.name() }}():
         {%- endif %}
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() %}
             {{ field|check_lower_fn }}(value._values[{{ loop.index0 }}])
             {%- else %}
-            {{ field|check_lower_fn }}(value.{{ field.name()  }})
+            {{ field|check_lower_fn }}(value.{{ field.name() }})
             {%- endif %}
             {%- endfor %}
             return
@@ -139,13 +139,13 @@ class {{ ffi_converter_name }}(_UniffiConverterRustBuffer):
         if value == {{ type_name }}.{{ variant.name() }}:
             buf.write_i32({{ loop.index }})
         {%- else %}
-        if value.is_{{ variant.name()  }}():
+        if value.is_{{ variant.name() }}():
             buf.write_i32({{ loop.index }})
             {%- for field in variant.fields() %}
             {%- if variant.has_nameless_fields() %}
             {{ field|write_fn }}(value._values[{{ loop.index0 }}], buf)
             {%- else %}
-            {{ field|write_fn }}(value.{{ field.name()  }}, buf)
+            {{ field|write_fn }}(value.{{ field.name() }}, buf)
             {%- endif %}
             {%- endfor %}
         {%- endif %}
