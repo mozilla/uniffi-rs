@@ -47,7 +47,7 @@
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
-use super::Literal;
+use super::{Literal, Renameable};
 use super::{AsType, Type, TypeIterator};
 
 /// Represents a "data class" style object, for passing around complex values.
@@ -83,6 +83,15 @@ impl Record {
 
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
+    }
+}
+
+impl Renameable for Record {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 

@@ -48,6 +48,7 @@ use std::{
     collections::{btree_map::Entry, BTreeMap, BTreeSet, HashSet},
     iter,
 };
+use std::collections::HashMap;
 
 use anyhow::{anyhow, bail, ensure, Result};
 
@@ -76,6 +77,12 @@ use uniffi_meta::{
     UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
+
+trait Renameable {
+    fn name(&self) -> &str;
+
+    fn rename(&mut self, new_name: String);
+}
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
@@ -218,6 +225,25 @@ impl ComponentInterface {
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
         self.objects.iter().find(|o| o.name == name)
+    }
+
+    fn renameable_items_mut(&mut self) -> impl Iterator<Item = &mut dyn Renameable> {
+        self.enums
+            .values_mut()
+            .map(|e| e as &mut dyn Renameable)
+            .chain(self.records.values_mut().map(|r| r as &mut dyn Renameable))
+            .chain(self.functions.iter_mut().map(|f| f as &mut dyn Renameable))
+            .chain(self.objects.iter_mut().map(|o| o as &mut dyn Renameable))
+    }
+
+    pub fn rename_matching(&mut self, renames: HashMap<String, String>) {
+        for (old_name, new_name) in renames {
+            for item in self.renameable_items_mut() {
+                if item.name() == old_name {
+                    item.rename(new_name.clone());
+                }
+            }
+        }
     }
 
     fn callback_interface_callback_definitions(

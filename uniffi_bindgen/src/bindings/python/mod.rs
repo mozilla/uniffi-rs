@@ -48,7 +48,7 @@ impl crate::BindingGenerator for PythonBindingGenerator {
         settings: &GenerationSettings,
         components: &[Component<Self::Config>],
     ) -> Result<()> {
-        for Component { ci, config, .. } in components {
+        for Component { mut ci, config, .. } in components {
             let py_file = settings.out_dir.join(format!("{}.py", ci.namespace()));
             fs::write(&py_file, generate_python_bindings(config, ci)?)?;
 

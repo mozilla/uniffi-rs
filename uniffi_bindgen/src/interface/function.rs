@@ -35,7 +35,7 @@
 use anyhow::Result;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
+use super::{AsType, ComponentInterface, Literal, ObjectImpl, Renameable, Type, TypeIterator};
 use uniffi_meta::Checksum;
 
 /// Represents a standalone function.
@@ -145,6 +145,15 @@ impl From<uniffi_meta::FnParamMetadata> for Argument {
             optional: meta.optional,
             default: meta.default,
         }
+    }
+}
+
+impl Renameable for Function {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 

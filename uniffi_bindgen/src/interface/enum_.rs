@@ -163,7 +163,7 @@ use anyhow::Result;
 use uniffi_meta::{Checksum, EnumShape};
 
 use super::record::Field;
-use super::{AsType, Literal, Type, TypeIterator};
+use super::{AsType, Literal, Renameable, Type, TypeIterator};
 
 /// Represents an enum with named variants, each of which may have named
 /// and typed fields.
@@ -247,6 +247,16 @@ impl Enum {
 
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
+    }
+}
+
+impl Renameable for Enum {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 

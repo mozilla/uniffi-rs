@@ -116,6 +116,8 @@ pub struct Config {
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
     external_packages: HashMap<String, String>,
+    #[serde(default)]
+    renames: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -148,8 +150,8 @@ impl Config {
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.
-pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    PythonWrapper::new(config.clone(), ci)
+pub fn generate_python_bindings(config: &Config, mut ci: ComponentInterface) -> Result<String> {
+    PythonWrapper::new(config.clone(), &mut ci)
         .render()
         .context("failed to render python bindings")
 }
@@ -206,7 +208,7 @@ pub struct TypeRenderer<'a> {
 }
 
 impl<'a> TypeRenderer<'a> {
-    fn new(python_config: &'a Config, ci: &'a ComponentInterface) -> Self {
+    fn new(python_config: &'a Config, ci: &mut ComponentInterface) -> Self {
         Self {
             python_config,
             ci,
@@ -297,11 +299,14 @@ pub struct PythonWrapper<'a> {
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
 }
-impl<'a> PythonWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+impl <'a>PythonWrapper<'a> {
+    pub fn new(config: Config, ci: &mut ComponentInterface) -> Self {
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
+
+        ci.rename_matching(config.renames.clone());
+
         Self {
             config,
             ci,

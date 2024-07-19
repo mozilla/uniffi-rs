@@ -60,7 +60,7 @@
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
-use super::callbacks;
+use super::{callbacks, Renameable};
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
 use super::function::{Argument, Callable};
 use super::{AsType, ObjectImpl, Type, TypeIterator};
@@ -288,6 +288,15 @@ impl Object {
                 .chain(self.constructors.iter().map(Constructor::iter_types))
                 .flatten(),
         )
+    }
+}
+
+impl Renameable for Object {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 }
 
