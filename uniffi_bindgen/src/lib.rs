@@ -112,6 +112,7 @@ pub mod cargo_metadata;
 
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
+use crate::interface::{FfiType, Object};
 
 /// The options used when creating bindings. Named such
 /// it doesn't cause confusion that it's settings specific to
@@ -158,6 +159,51 @@ pub trait BindingGenerator: Sized {
         settings: &GenerationSettings,
         components: &[Component<Self::Config>],
     ) -> Result<()>;
+}
+
+pub trait CodeOracle {
+    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
+    fn class_name(&self, nm: &str) -> String;
+
+    /// Get the idiomatic Python rendering of a function name.
+    fn fn_name(&self, nm: &str) -> String;
+
+    /// Get the idiomatic Python rendering of a variable name.
+    fn var_name(&self, nm: &str) -> String;
+
+    /// Get the idiomatic Python rendering of an individual enum variant.
+    fn enum_variant_name(&self, nm: &str) -> String;
+
+    /// Get the idiomatic Python rendering of an FFI callback function name
+    fn ffi_callback_name(&self, nm: &str) -> String;
+
+    /// Get the idiomatic Python rendering of an FFI struct name
+    fn ffi_struct_name(&self, nm: &str) -> String;
+
+    fn ffi_type_label(&self, ffi_type: &FfiType) -> String;
+
+    /// Default values for FFI types
+    ///
+    /// Used to set a default return value when returning an error
+    fn ffi_default_value(&self, return_type: Option<&FfiType>) -> String;
+
+    /// Get the name of the protocol and class name for an object.
+    ///
+    /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
+    /// Otherwise, the class name is the object name and the protocol name is derived from that.
+    ///
+    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
+    /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
+    /// only lowers the concrete class.
+    fn object_names(&self, obj: &Object) -> (String, String);
+}
+
+pub trait Renameable {
+    fn name(&self) -> &str;
+
+    fn rename(&mut self, new_name: String);
+
+    fn rename_nested(&mut self, new_name: String);
 }
 
 /// Everything needed to generate a ComponentInterface.

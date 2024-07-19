@@ -37,6 +37,7 @@ use anyhow::Result;
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
 use uniffi_meta::Checksum;
+use crate::Renameable;
 
 /// Represents a standalone function.
 ///
@@ -133,6 +134,20 @@ impl Function {
 
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
+    }
+}
+
+impl Renameable for Function {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, name: String) {
+        self.name = name;
+    }
+
+    fn rename_nested(&mut self, _new_name: String) {
+        // Functions do not contain other nested elements
     }
 }
 

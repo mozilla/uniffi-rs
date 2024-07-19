@@ -46,6 +46,7 @@
 
 use anyhow::Result;
 use uniffi_meta::Checksum;
+use crate::Renameable;
 
 use super::Literal;
 use super::{AsType, Type, TypeIterator};
@@ -83,6 +84,20 @@ impl Record {
 
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
+    }
+}
+
+impl Renameable for Record {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn rename(&mut self, name: String) {
+        self.name = name;
+    }
+    fn rename_nested(&mut self, new_name: String) {
+        for field in &mut self.fields {
+            field.name = new_name.clone();
+        }
     }
 }
 

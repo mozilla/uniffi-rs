@@ -59,6 +59,7 @@
 
 use anyhow::Result;
 use uniffi_meta::Checksum;
+use crate::Renameable;
 
 use super::callbacks;
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
@@ -288,6 +289,22 @@ impl Object {
                 .chain(self.constructors.iter().map(Constructor::iter_types))
                 .flatten(),
         )
+    }
+}
+
+impl Renameable for Object {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
+    fn rename_nested(&mut self, new_name: String) {
+        for method in &mut self.methods {
+            method.name = new_name.clone();
+        }
     }
 }
 

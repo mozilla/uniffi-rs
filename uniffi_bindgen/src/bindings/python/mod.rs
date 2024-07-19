@@ -50,7 +50,7 @@ impl crate::BindingGenerator for PythonBindingGenerator {
     ) -> Result<()> {
         for Component { ci, config, .. } in components {
             let py_file = settings.out_dir.join(format!("{}.py", ci.namespace()));
-            fs::write(&py_file, generate_python_bindings(config, ci)?)?;
+            fs::write(&py_file, generate_python_bindings(config, &mut ci.clone())?)?;
 
             if settings.try_format_code {
                 if let Err(e) = Command::new("yapf").arg(&py_file).output() {

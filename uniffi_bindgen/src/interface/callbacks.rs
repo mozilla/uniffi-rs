@@ -37,6 +37,7 @@ use std::iter;
 
 use heck::ToUpperCamelCase;
 use uniffi_meta::Checksum;
+use crate::Renameable;
 
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiField, FfiFunction, FfiStruct, FfiType};
 use super::object::Method;
@@ -111,6 +112,22 @@ impl CallbackInterface {
 
     pub fn has_async_method(&self) -> bool {
         self.methods.iter().any(Method::is_async)
+    }
+}
+
+impl Renameable for CallbackInterface {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, name: String) {
+        println!("FOUND NAME");
+        self.name = name;
+        println!("ENUM {self:?}");
+    }
+
+    fn rename_nested(&mut self, _new_name: String) {
+        // no nested variables
     }
 }
 

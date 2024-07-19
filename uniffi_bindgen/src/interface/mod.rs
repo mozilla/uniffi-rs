@@ -67,6 +67,8 @@ mod record;
 pub use record::{Field, Record};
 
 pub mod ffi;
+mod conventions;
+
 pub use ffi::{
     FfiArgument, FfiCallbackFunction, FfiDefinition, FfiField, FfiFunction, FfiStruct, FfiType,
 };
@@ -79,7 +81,7 @@ pub type Literal = LiteralMetadata;
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct ComponentInterface {
     /// All of the types used in the interface.
     // We can't checksum `self.types`, but its contents are implied by the other fields

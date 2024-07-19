@@ -14,6 +14,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use crate::backend::TemplateExpression;
+use crate::CodeOracle;
 
 use crate::interface::*;
 
@@ -148,7 +149,7 @@ impl Config {
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.
-pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
+pub fn generate_python_bindings(config: &Config, ci: &mut ComponentInterface) -> Result<String> {
     PythonWrapper::new(config.clone(), ci)
         .render()
         .context("failed to render python bindings")
@@ -298,10 +299,13 @@ pub struct PythonWrapper<'a> {
     type_imports: BTreeSet<ImportRequirement>,
 }
 impl<'a> PythonWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+    pub fn new(config: Config, ci: &'a mut ComponentInterface) -> Self {
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
+
+        ci.apply_naming_conventions(PythonCodeOracle::default());
+
         Self {
             config,
             ci,
@@ -330,7 +334,9 @@ impl PythonCodeOracle {
     fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         type_.clone().as_type().as_codetype()
     }
+}
 
+impl CodeOracle for PythonCodeOracle {
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
         fixup_keyword(nm.to_string().to_upper_camel_case())
@@ -548,9 +554,9 @@ pub mod filters {
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.class_name(nm))
-    }
+    // pub fn class_name(nm: &str) -> Result<String, askama::Error> {
+    //     Ok(PythonCodeOracle.class_name(nm))
+    // }
 
     /// Get the idiomatic Python rendering of a function name.
     pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
