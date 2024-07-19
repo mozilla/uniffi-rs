@@ -76,7 +76,7 @@ _UniffiLib = _uniffi_load_indirect()
 class {{ ffi_struct.name()|ffi_struct_name }}(ctypes.Structure):
     _fields_ = [
         {%- for field in ffi_struct.fields() %}
-        ("{{ field.name()|var_name }}", {{ field.type_().borrow()|ffi_type_name }}),
+        ("{{ field.name() }}", {{ field.type_().borrow()|ffi_type_name }}),
         {%- endfor %}
     ]
 {%- when FfiDefinition::Function(func) %}
