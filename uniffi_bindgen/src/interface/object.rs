@@ -300,12 +300,6 @@ impl Renameable for Object {
     fn rename(&mut self, new_name: String) {
         self.name = new_name;
     }
-
-    fn rename_nested(&mut self, new_name: String) {
-        for method in &mut self.methods {
-            method.name = new_name.clone();
-        }
-    }
 }
 
 impl AsType for Object {
@@ -446,6 +440,16 @@ impl Constructor {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.arguments.iter().flat_map(Argument::iter_types))
+    }
+}
+
+impl Renameable for Constructor {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 }
 
@@ -597,6 +601,16 @@ impl Method {
     /// For async callback interface methods, the FFI struct to pass to the completion function.
     pub fn foreign_future_ffi_result_struct(&self) -> FfiStruct {
         callbacks::foreign_future_ffi_result_struct(self.return_type.as_ref().map(FfiType::from))
+    }
+}
+
+impl Renameable for Method {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 }
 

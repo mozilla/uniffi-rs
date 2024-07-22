@@ -146,10 +146,6 @@ impl Renameable for Function {
     fn rename(&mut self, name: String) {
         self.name = name;
     }
-
-    fn rename_nested(&mut self, _new_name: String) {
-        // Functions do not contain other nested elements
-    }
 }
 
 impl From<uniffi_meta::FnParamMetadata> for Argument {
@@ -224,6 +220,16 @@ impl Argument {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
+    }
+}
+
+impl Renameable for Argument {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 }
 

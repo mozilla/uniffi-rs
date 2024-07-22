@@ -123,10 +123,6 @@ impl Renameable for CallbackInterface {
     fn rename(&mut self, name: String) {
         self.name = name;
     }
-
-    fn rename_nested(&mut self, _new_name: String) {
-        // no nested variables
-    }
 }
 
 impl AsType for CallbackInterface {

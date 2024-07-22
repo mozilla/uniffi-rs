@@ -94,11 +94,6 @@ impl Renameable for Record {
     fn rename(&mut self, name: String) {
         self.name = name;
     }
-    fn rename_nested(&mut self, new_name: String) {
-        for field in &mut self.fields {
-            field.name = new_name.clone();
-        }
-    }
 }
 
 impl AsType for Record {
@@ -152,6 +147,15 @@ impl Field {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
+    }
+}
+
+impl Renameable for Field {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 

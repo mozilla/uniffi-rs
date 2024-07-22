@@ -259,12 +259,6 @@ impl Renameable for Enum {
     fn rename(&mut self, name: String) {
         self.name = name;
     }
-
-    fn rename_nested(&mut self, new_name: String) {
-        for variant in &mut self.variants {
-            variant.name = new_name.clone();
-        }
-    }
 }
 
 impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
@@ -302,6 +296,7 @@ impl AsType for Enum {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
 pub struct Variant {
     pub(super) name: String,
+    pub(super) is_name: String,
     pub(super) discr: Option<Literal>,
     pub(super) fields: Vec<Field>,
     #[checksum_ignore]
@@ -312,6 +307,8 @@ impl Variant {
     pub fn name(&self) -> &str {
         &self.name
     }
+
+    pub fn is_name(&self) -> &str { &self.is_name }
 
     pub fn fields(&self) -> &[Field] {
         &self.fields
@@ -332,6 +329,20 @@ impl Variant {
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
     }
+
+    pub fn set_is_name(&mut self, name: String) {
+        self.is_name = name;
+    }
+}
+
+impl Renameable for Variant {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
 }
 
 impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
@@ -339,7 +350,8 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
 
     fn try_from(meta: uniffi_meta::VariantMetadata) -> Result<Self> {
         Ok(Self {
-            name: meta.name,
+            name: meta.name.clone(),
+            is_name: meta.name,
             discr: meta.discr,
             fields: meta
                 .fields

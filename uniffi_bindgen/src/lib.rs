@@ -202,8 +202,6 @@ pub trait Renameable {
     fn name(&self) -> &str;
 
     fn rename(&mut self, new_name: String);
-
-    fn rename_nested(&mut self, new_name: String);
 }
 
 /// Everything needed to generate a ComponentInterface.
