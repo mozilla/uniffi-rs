@@ -27,8 +27,6 @@ impl ComponentInterface {
                     }
                 }
             }
-
-
         }
 
         for record_item in self.records.values_mut() {

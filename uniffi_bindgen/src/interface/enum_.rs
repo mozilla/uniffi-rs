@@ -308,7 +308,9 @@ impl Variant {
         &self.name
     }
 
-    pub fn is_name(&self) -> &str { &self.is_name }
+    pub fn is_name(&self) -> &str {
+        &self.is_name
+    }
 
     pub fn fields(&self) -> &[Field] {
         &self.fields
