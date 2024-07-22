@@ -449,18 +449,24 @@ pub unsafe trait HandleAlloc<UT>: Send + Sync {
     /// This creates a new handle from an existing one.
     /// It's used when the foreign code wants to pass back an owned handle and still keep a copy
     /// for themselves.
-    fn clone_handle(handle: Handle) -> Handle;
+    /// # Safety
+    /// The handle must be valid.
+    unsafe fn clone_handle(handle: Handle) -> Handle;
 
     /// Get a clone of the `Arc<>` using a "borrowed" handle.
     ///
-    /// Take care that the handle can not be destroyed between when it's passed and when
+    /// # Safety
+    /// The handle must be valid. Take care that the handle can
+    /// not be destroyed between when it's passed and when
     /// `get_arc()` is called.  #1797 is a cautionary tale.
-    fn get_arc(handle: Handle) -> Arc<Self> {
+    unsafe fn get_arc(handle: Handle) -> Arc<Self> {
         Self::consume_handle(Self::clone_handle(handle))
     }
 
     /// Consume a handle, getting back the initial `Arc<>`
-    fn consume_handle(handle: Handle) -> Arc<Self>;
+    /// # Safety
+    /// The handle must be valid.
+    unsafe fn consume_handle(handle: Handle) -> Arc<Self>;
 }
 
 /// Derive FFI traits
@@ -596,19 +602,15 @@ macro_rules! derive_ffi_traits {
                 $crate::Handle::from_pointer(::std::sync::Arc::into_raw(::std::sync::Arc::new(value)))
             }
 
-            fn clone_handle(handle: $crate::Handle) -> $crate::Handle {
-                unsafe {
-                    ::std::sync::Arc::<::std::sync::Arc<Self>>::increment_strong_count(handle.as_pointer::<::std::sync::Arc<Self>>());
-                }
+            unsafe fn clone_handle(handle: $crate::Handle) -> $crate::Handle {
+                ::std::sync::Arc::<::std::sync::Arc<Self>>::increment_strong_count(handle.as_pointer::<::std::sync::Arc<Self>>());
                 handle
             }
 
-            fn consume_handle(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
-                unsafe {
-                    ::std::sync::Arc::<Self>::clone(
-                        &std::sync::Arc::<::std::sync::Arc::<Self>>::from_raw(handle.as_pointer::<::std::sync::Arc<Self>>())
-                    )
-                }
+            unsafe fn consume_handle(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
+                ::std::sync::Arc::<Self>::clone(
+                    &std::sync::Arc::<::std::sync::Arc::<Self>>::from_raw(handle.as_pointer::<::std::sync::Arc<Self>>())
+                )
             }
         }
     };
@@ -626,12 +628,12 @@ unsafe impl<T: Send + Sync, UT> HandleAlloc<UT> for T {
         Handle::from_pointer(Arc::into_raw(value))
     }
 
-    fn clone_handle(handle: Handle) -> Handle {
-        unsafe { Arc::increment_strong_count(handle.as_pointer::<T>()) };
+    unsafe fn clone_handle(handle: Handle) -> Handle {
+        Arc::increment_strong_count(handle.as_pointer::<T>());
         handle
     }
 
-    fn consume_handle(handle: Handle) -> Arc<Self> {
-        unsafe { Arc::from_raw(handle.as_pointer()) }
+    unsafe fn consume_handle(handle: Handle) -> Arc<Self> {
+        Arc::from_raw(handle.as_pointer())
     }
 }
