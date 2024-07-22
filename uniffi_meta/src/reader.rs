@@ -59,6 +59,7 @@ impl<'a> MetadataReader<'a> {
             codes::CALLBACK_INTERFACE => self.read_callback_interface()?.into(),
             codes::TRAIT_METHOD => self.read_trait_method()?.into(),
             codes::UNIFFI_TRAIT => self.read_uniffi_trait()?.into(),
+            codes::OBJECT_TRAIT_IMPL => self.read_object_trait_impl()?.into(),
             _ => bail!("Unexpected metadata code: {value:?}"),
         })
     }
@@ -115,6 +116,10 @@ impl<'a> MetadataReader<'a> {
         let slice;
         (slice, self.buf) = self.buf.split_at(size);
         String::from_utf8(slice.into()).context("Invalid string data")
+    }
+
+    fn read_optional_string(&mut self) -> Result<Option<String>> {
+        Ok(Some(self.read_string()?).filter(|str| !str.is_empty()))
     }
 
     fn read_long_string(&mut self) -> Result<String> {
@@ -392,6 +397,14 @@ impl<'a> MetadataReader<'a> {
             takes_self_by_arc: false, // not emitted by macros
             checksum: self.calc_checksum(),
             docstring,
+        })
+    }
+
+    fn read_object_trait_impl(&mut self) -> Result<ObjectTraitImplMetadata> {
+        Ok(ObjectTraitImplMetadata {
+            ty: self.read_type()?,
+            trait_name: self.read_string()?,
+            tr_module_path: self.read_optional_string()?,
         })
     }
 

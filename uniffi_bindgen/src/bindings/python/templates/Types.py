@@ -67,9 +67,6 @@
 {%- when Type::Record { name, module_path } %}
 {%- include "RecordTemplate.py" %}
 
-{%- when Type::Object { name, module_path, imp } %}
-{%- include "ObjectTemplate.py" %}
-
 {%- when Type::Timestamp %}
 {%- include "TimestampHelper.py" %}
 
@@ -94,6 +91,18 @@
 {%- when Type::External { name, module_path, namespace, kind, tagged } %}
 {%- include "ExternalTemplate.py" %}
 
+{%- else %}
+{%- endmatch %}
+{%- endfor %}
+
+# objects.
+{%- for type_ in self.iter_sorted_object_types() %}
+{%- match type_ %}
+{%- when Type::Object { name, module_path, imp } %}
+{%-     let type_name = type_|type_name %}
+{%-     let ffi_converter_name = type_|ffi_converter_name %}
+{%-     let canonical_type_name = type_|canonical_name %}
+{%-     include "ObjectTemplate.py" %}
 {%- else %}
 {%- endmatch %}
 {%- endfor %}

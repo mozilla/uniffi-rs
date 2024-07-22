@@ -81,6 +81,27 @@ impl TraitWithForeign for RustTraitImpl {
     }
 }
 
+// A public struct implementing a public trait.
+#[derive(uniffi::Object)]
+pub struct StructWithTrait {
+    name: String,
+}
+
+#[uniffi::export]
+impl StructWithTrait {
+    #[uniffi::constructor]
+    fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
+#[uniffi::export]
+impl Trait for StructWithTrait {
+    fn concat_strings(&self, a: &str, b: &str) -> String {
+        format!("{}: {a}{b}", self.name)
+    }
+}
+
 #[derive(uniffi::Object)]
 pub struct Object;
 

@@ -138,6 +138,33 @@ fn do_something(foo: MyFooRef) {
 }
 ```
 
+### Structs implementing traits.
+
+You can declare that an object implements a trait. For example:
+
+```
+#[uniffi::export]
+trait MyTrait { .. }
+
+#[derive(uniffi::Object)]
+struct MyObject {}
+
+#[uniffi::export]
+impl MyObject {
+    // ... some methods
+}
+
+#[uniffi::export]
+impl MyTrait for MyObject {
+    // ... the trait methods.
+}
+```
+
+This will mean the bindings are able to use both the methods declared directly on `MyObject`
+but also be able to be used when a `MyTrait` is required.
+
+Not all bindings support this.
+
 ### Default values
 
 Exported functions/methods can have default values using the `default` argument of the attribute macro that wraps them.

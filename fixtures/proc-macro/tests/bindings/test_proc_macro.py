@@ -30,6 +30,8 @@ assert isinstance(trait_impl, Trait)
 assert trait_impl.concat_strings("foo", "bar") == "foobar"
 assert obj.get_trait(trait_impl).concat_strings("foo", "bar") == "foobar"
 assert concat_strings_by_ref(trait_impl, "foo", "bar") == "foobar"
+assert issubclass(StructWithTrait, Trait)
+assert StructWithTrait("me").concat_strings("foo", "bar") == "me: foobar"
 
 trait_impl2 = obj.get_trait_with_foreign(None)
 # This is an instance of `TraitWithForeignImpl` - `TraitWithForeign` is used primarily for subclassing.
