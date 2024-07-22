@@ -504,6 +504,11 @@ pub mod filters {
         Ok(as_ct.as_codetype().type_label())
     }
 
+    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
+    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.class_name(nm))
+    }
+
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }
