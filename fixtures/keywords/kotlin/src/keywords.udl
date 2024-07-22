@@ -15,6 +15,10 @@ callback interface continue {
     record<u8, sequence<class>>? class(record<u8, sequence<class>> v);
 };
 
+callback interface true {
+    void false();
+};
+
 dictionary return {
     u8 class;
     u8? object;

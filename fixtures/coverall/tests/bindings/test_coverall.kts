@@ -415,6 +415,17 @@ getTraits().let { traits ->
     // not possible through the `NodeTrait` interface (see #1787).
 }
 
+// Structs which implement traits.
+Node("node").let { n ->
+    assert(n.describeParent() == "Some(Node { name: Some(\"via node\"), parent: Mutex { data: None, poisoned: false, .. } })")
+    // NOTE same re-wrap problem described in the Python tests.
+    n.setParent(n.getParent())
+    // Expect: as above
+    // Get: `Some(UniFFICallbackHandlerNodeTrait { handle: 18 })`
+    // assert(n.describeParent() == "Some(Node { name: Some(\"via node\"), parent: Mutex { data: None, poisoned: false, .. } })")
+    n.setParent(Node("parent"))
+}
+
 makeRustGetters().let { rustGetters ->
     // Check that these don't cause use-after-free bugs
     testRoundTripThroughRust(rustGetters)

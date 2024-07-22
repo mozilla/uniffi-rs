@@ -151,7 +151,6 @@ impl Type {
             Type::Enum { name, .. } => Some(name),
             Type::External { name, .. } => Some(name),
             Type::Custom { name, .. } => Some(name),
-            Type::Optional { inner_type } | Type::Sequence { inner_type } => inner_type.name(),
             _ => None,
         }
     }
@@ -163,9 +162,6 @@ impl Type {
             Type::Enum { module_path, .. } => Some(module_path),
             Type::External { module_path, .. } => Some(module_path),
             Type::Custom { module_path, .. } => Some(module_path),
-            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-                inner_type.module_path()
-            }
             _ => None,
         }
     }

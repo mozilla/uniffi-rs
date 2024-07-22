@@ -101,7 +101,8 @@
 {%- endif %}
 
 {%- let obj = ci|get_object_definition(name) %}
-{%- let (interface_name, impl_class_name) = obj|object_names(ci) %}
+{%- let interface_name = self::object_interface_name(ci, obj) %}
+{%- let impl_class_name = self::object_impl_name(ci, obj) %}
 {%- let methods = obj.methods() %}
 {%- let interface_docstring = obj.docstring() %}
 {%- let is_error = ci.is_name_used_as_error(name) %}
@@ -113,7 +114,11 @@
 {% if (is_error) %}
 open class {{ impl_class_name }} : kotlin.Exception, Disposable, AutoCloseable, {{ interface_name }} {
 {% else -%}
-open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }} {
+open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }}
+{%- for t in obj.trait_impls() %}
+, {{ self::trait_interface_name(ci, t.trait_name) }}
+{% endfor %}
+{
 {%- endif %}
 
     constructor(pointer: Pointer) {
