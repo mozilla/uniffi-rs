@@ -144,14 +144,28 @@ impl Type {
         Box::new(std::iter::once(self).chain(nested_types))
     }
 
-    pub fn name(&self) -> Option<String> {
+    pub fn name(&self) -> Option<&str> {
         match self {
-            Type::Object { name, .. } => Some(name.to_string()),
-            Type::Record { name, .. } => Some(name.to_string()),
-            Type::Enum { name, .. } => Some(name.to_string()),
-            Type::External { name, .. } => Some(name.to_string()),
-            Type::Custom { name, .. } => Some(name.to_string()),
+            Type::Object { name, .. } => Some(name),
+            Type::Record { name, .. } => Some(name),
+            Type::Enum { name, .. } => Some(name),
+            Type::External { name, .. } => Some(name),
+            Type::Custom { name, .. } => Some(name),
             Type::Optional { inner_type } | Type::Sequence { inner_type } => inner_type.name(),
+            _ => None,
+        }
+    }
+
+    pub fn module_path(&self) -> Option<&str> {
+        match self {
+            Type::Object { module_path, .. } => Some(module_path),
+            Type::Record { module_path, .. } => Some(module_path),
+            Type::Enum { module_path, .. } => Some(module_path),
+            Type::External { module_path, .. } => Some(module_path),
+            Type::Custom { module_path, .. } => Some(module_path),
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+                inner_type.module_path()
+            }
             _ => None,
         }
     }
@@ -170,7 +184,7 @@ impl Type {
     pub fn rename_recursive(&mut self, name_transformer: &impl Fn(&str) -> String) {
         // Rename the current type if it has a name
         if let Some(name) = self.name() {
-            self.rename(name_transformer(&name));
+            self.rename(name_transformer(name));
         }
 
         // Recursively rename nested types

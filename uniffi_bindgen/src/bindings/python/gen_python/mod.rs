@@ -288,6 +288,18 @@ impl<'a> TypeRenderer<'a> {
             .map(|(n, t)| (PythonCodeOracle.class_name(n), t))
             .collect()
     }
+
+    // Fetch and sort the objects to avoid forward references. For now
+    // just support simple things, so traits before everything else is ok.
+    fn iter_sorted_object_types(&self) -> impl Iterator<Item = &Type> {
+        let mut obs: Vec<&Type> = self
+            .ci
+            .iter_types()
+            .filter(|t| matches!(t, Type::Object { .. }))
+            .collect();
+        obs.sort_by_key(|t| !matches!(t, Type::Object { imp, .. } if imp.is_trait_interface()));
+        obs.into_iter()
+    }
 }
 
 #[derive(Template)]

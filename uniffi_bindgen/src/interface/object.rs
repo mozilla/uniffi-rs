@@ -58,7 +58,7 @@
 //! ```
 
 use anyhow::Result;
-use uniffi_meta::Checksum;
+use uniffi_meta::{AsTraitMetadata, Checksum};
 
 use super::callbacks;
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
@@ -91,6 +91,9 @@ pub struct Object {
     // a regular method (albeit with a generated name)
     // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
     pub(super) uniffi_traits: Vec<UniffiTrait>,
+    // These are traits described in our CI which this object has declared it implements.
+    // This allows foreign bindings to implement things like inheritance or whatever makes sense for them.
+    pub(super) as_trait_impls: Vec<AsTraitMetadata>,
     // We don't include the FfiFuncs in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -174,6 +177,10 @@ impl Object {
 
     pub fn uniffi_traits(&self) -> Vec<&UniffiTrait> {
         self.uniffi_traits.iter().collect()
+    }
+
+    pub fn as_trait_impls(&self) -> Vec<&AsTraitMetadata> {
+        self.as_trait_impls.iter().collect()
     }
 
     pub fn ffi_object_clone(&self) -> &FfiFunction {
@@ -316,6 +323,7 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
+            as_trait_impls: Default::default(),
             ffi_func_clone: FfiFunction {
                 name: ffi_clone_name,
                 ..Default::default()

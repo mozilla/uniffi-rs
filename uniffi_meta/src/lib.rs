@@ -385,7 +385,9 @@ impl ObjectMetadata {
     }
 }
 
-/// The list of traits we support generating helper methods for.
+/// The list of "builtin" traits we support generating helper methods for.
+/// Some interesting overlap with AsTraitMetadata, but quite different
+/// implementations for now.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum UniffiTraitMetadata {
     Debug {
@@ -446,6 +448,23 @@ impl UniffiTraitDiscriminants {
     }
 }
 
+/// This notes that a type implements a Trait.
+/// eg, an `impl Tr for Ob` block. Not many types will support this.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct AsTraitMetadata {
+    pub ty: Type,
+    pub trait_name: String,
+    pub tr_module_path: Option<String>,
+}
+
+impl Checksum for AsTraitMetadata {
+    fn checksum<H: Hasher>(&self, state: &mut H) {
+        Checksum::checksum(&self.ty, state);
+        Checksum::checksum(&self.trait_name, state);
+        Checksum::checksum(&self.tr_module_path, state);
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CustomTypeMetadata {
     pub module_path: String,
@@ -478,6 +497,7 @@ pub enum Metadata {
     TraitMethod(TraitMethodMetadata),
     CustomType(CustomTypeMetadata),
     UniffiTrait(UniffiTraitMetadata),
+    AsTrait(AsTraitMetadata),
 }
 
 impl Metadata {
@@ -485,7 +505,7 @@ impl Metadata {
         read_metadata(data)
     }
 
-    pub(crate) fn module_path(&self) -> &String {
+    pub(crate) fn module_path(&self) -> &str {
         match self {
             Metadata::Namespace(meta) => &meta.crate_name,
             Metadata::UdlFile(meta) => &meta.module_path,
@@ -499,6 +519,7 @@ impl Metadata {
             Metadata::TraitMethod(meta) => &meta.module_path,
             Metadata::CustomType(meta) => &meta.module_path,
             Metadata::UniffiTrait(meta) => meta.module_path(),
+            Metadata::AsTrait(t) => t.ty.module_path().expect("type has no module"),
         }
     }
 }
@@ -572,5 +593,11 @@ impl From<CustomTypeMetadata> for Metadata {
 impl From<UniffiTraitMetadata> for Metadata {
     fn from(v: UniffiTraitMetadata) -> Self {
         Self::UniffiTrait(v)
+    }
+}
+
+impl From<AsTraitMetadata> for Metadata {
+    fn from(t: AsTraitMetadata) -> Self {
+        Self::AsTrait(t)
     }
 }
