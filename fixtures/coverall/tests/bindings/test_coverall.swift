@@ -464,6 +464,27 @@ do {
     traits[0].setParent(parent: nil)
 }
 
+// A struct which implements the node trait.
+do {
+    let n = Node(name: "node")
+    assert(String(describing: n).starts(with: "Node { name: Some(\"node\"), parent: Mutex { "))
+    assert(n.getParent()?.name() == "via node")
+
+    n.setParent(parent: n.getParent())
+    // doubly-wrapped :(
+    // Get: "Some(UniFFICallbackHandlerNodeTrait { handle: 19 })"
+    // Want: Like the Rust node above.
+    // debugPrint("parent \(n.describeParent())")
+
+    let rustParent = Node(name: "parent")
+    n.setParent(parent: rustParent)
+    assert(n.getParent()?.name() == "parent")
+
+    let swiftParent = SwiftNode()
+    rustParent.setParent(parent: swiftParent)
+    assert(ancestorNames(node: n) == ["parent", "node-swift"])
+}
+
 // Test round tripping
 do {
     let rustGetters = makeRustGetters()

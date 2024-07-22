@@ -33,8 +33,9 @@ We have [detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrad
 [Detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
 ### What's new?
 
-- Kotlin: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
-  hierarcy to reflect that. [#2297](https://github.com/mozilla/uniffi-rs/pull/2297)
+- Kotlin and Swift: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
+  hierarcy to reflect that.
+  [#2297](https://github.com/mozilla/uniffi-rs/pull/2297), [#2363](https://github.com/mozilla/uniffi-rs/pull/2363)
 
 - Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
   to consumers and could have high overhead when lots of FFI calls are made. Instead, the
