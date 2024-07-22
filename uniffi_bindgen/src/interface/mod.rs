@@ -1172,12 +1172,14 @@ existing definition: Enum {
     variants: [
         Variant {
             name: \"one\",
+            is_name: \"one\",
             discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \"two\",
+            is_name: \"two\",
             discr: None,
             fields: [],
             docstring: None,
@@ -1194,12 +1196,14 @@ new definition: Enum {
     variants: [
         Variant {
             name: \"three\",
+            is_name: \"trhee\",
             discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \"four\",
+            is_name: \"four\",
             discr: None,
             fields: [],
             docstring: None,

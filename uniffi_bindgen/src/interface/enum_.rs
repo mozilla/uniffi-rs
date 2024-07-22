@@ -663,6 +663,7 @@ mod test {
     fn variant(val: Option<u64>) -> Variant {
         Variant {
             name: "v".to_string(),
+            is_name: "v".to_string(),
             discr: val.map(Literal::new_uint),
             fields: vec![],
             docstring: None,
