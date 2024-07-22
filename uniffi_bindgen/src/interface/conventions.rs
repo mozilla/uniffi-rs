@@ -45,6 +45,10 @@ impl ComponentInterface {
             }
         }
 
+        for f in self.function_definitions().iter_mut() {
+            f.rename(oracle.fn_name(f.name()));
+        }
+
         for object_item in self.objects.iter_mut() {
             object_item.rename(oracle.class_name(object_item.name()));
 
@@ -57,7 +61,7 @@ impl ComponentInterface {
             }
         }
 
-        for callback_interface in self.callback_interfaces.iter_mut() {
+        for callback_interface in self.callback_interface_definitions().iter_mut() {
             callback_interface.rename(oracle.class_name(callback_interface.name()));
         }
     }
