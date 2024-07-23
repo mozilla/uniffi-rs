@@ -165,6 +165,8 @@ pub trait CodeOracle {
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String;
 
+    fn external_types_name(&self, nm: &str) -> String;
+
     /// Get the idiomatic Python rendering of a function name.
     fn fn_name(&self, nm: &str) -> String;
 

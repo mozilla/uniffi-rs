@@ -146,48 +146,72 @@ impl Type {
 
     pub fn name(&self) -> Option<String> {
         match self {
-            // Type::Object { name, ..} => {
-            //     Some(name.to_string())
-            // }
-            // Type::Record { name, .. } => {
-            //     Some(name.to_string())
-            // }
-            // Type::Enum { name, ..} => {
-            //     Some(name.to_string())
-            // }
-            // Type::CallbackInterface { name, .. } => {
-            //     Some(name.to_string())
-            // }
-            // Type::Custom { name, .. } => {
-            //     Some(name.to_string())
-            // },
+            Type::Object { name, ..} => {
+                Some(name.to_string())
+            }
+            Type::Record { name, .. } => {
+                Some(name.to_string())
+            }
+            Type::Enum { name, ..} => {
+                Some(name.to_string())
+            }
+            Type::CallbackInterface { name, .. } => {
+                Some(name.to_string())
+            }
+            Type::Custom { name, .. } => {
+                Some(name.to_string())
+            },
             Type::External { name, .. } => {
                 Some(name.to_string())
             },
+            Type::Optional { inner_type} | Type::Sequence { inner_type} => {
+                if inner_type.name().is_some() {
+                    Some(inner_type.name().unwrap())
+                } else {
+                    None
+                }
+            }
+            Type::Map { value_type, .. } => {
+                if value_type.name().is_some() {
+                    Some(value_type.name().unwrap())
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }
 
     pub fn rename(&mut self, new_name: String) {
         match self {
-            // Type::Object { name, ..} => {
-            //     *name = new_name;
-            // }
-            // Type::Record { name, .. } => {
-            //     *name = new_name;
-            // }
-            // Type::Enum { name, ..} => {
-            //     *name = new_name;
-            // }
-            // Type::CallbackInterface { name, .. } => {
-            //     *name = new_name;
-            // }
-            // Type::Custom { name, .. } => {
-            //     *name = new_name;
-            // },
+            Type::Object { name, ..} => {
+                *name = new_name;
+            }
+            Type::Record { name, .. } => {
+                *name = new_name;
+            }
+            Type::Enum { name, ..} => {
+                *name = new_name;
+            }
+            Type::CallbackInterface { name, .. } => {
+                *name = new_name;
+            }
+            Type::Custom { name, builtin, .. } => {
+                *name = new_name;
+            },
             Type::External { name, .. } => {
                 *name = new_name;
             },
+            Type::Optional { inner_type} | Type::Sequence { inner_type} => {
+                if inner_type.name().is_some() {
+                    inner_type.rename(new_name);
+                }
+            }
+            Type::Map { value_type, .. } => {
+                if value_type.name().is_some() {
+                    value_type.rename(new_name);
+                }
+            }
             _ => {}
         }
     }

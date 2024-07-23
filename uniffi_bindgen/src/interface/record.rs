@@ -44,7 +44,6 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use crate::Renameable;
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
@@ -70,6 +69,10 @@ impl Record {
         &self.name
     }
 
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
+    }
+
     pub fn fields(&self) -> &[Field] {
         &self.fields
     }
@@ -84,15 +87,6 @@ impl Record {
 
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
-    }
-}
-
-impl Renameable for Record {
-    fn name(&self) -> &str {
-        &self.name
-    }
-    fn rename(&mut self, name: String) {
-        self.name = name;
     }
 }
 
@@ -137,6 +131,10 @@ impl Field {
         &self.name
     }
 
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
+    }
+
     pub fn default_value(&self) -> Option<&Literal> {
         self.default.as_ref()
     }
@@ -147,15 +145,6 @@ impl Field {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
-    }
-}
-
-impl Renameable for Field {
-    fn name(&self) -> &str {
-        &self.name
-    }
-    fn rename(&mut self, name: String) {
-        self.name = name;
     }
 }
 

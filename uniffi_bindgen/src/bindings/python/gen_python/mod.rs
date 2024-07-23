@@ -301,7 +301,7 @@ pub struct PythonWrapper<'a> {
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a mut ComponentInterface) -> Self {
         ci.apply_naming_conventions(PythonCodeOracle);
-        dbg!("{:#?}", ci.clone());
+
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
@@ -340,6 +340,10 @@ impl CodeOracle for PythonCodeOracle {
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
         fixup_keyword(nm.to_string().to_upper_camel_case())
+    }
+
+    fn external_types_name(&self, nm: &str) -> String {
+        fixup_keyword(nm.to_string())
     }
 
     /// Get the idiomatic Python rendering of a function name.
