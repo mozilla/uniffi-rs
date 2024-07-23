@@ -83,8 +83,6 @@ impl ComponentInterface {
 
         self.records = new_records;
 
-
-
         for object_item in self.objects.iter_mut() {
             object_item.rename(oracle.external_types_name(object_item.name()));
 
