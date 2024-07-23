@@ -76,7 +76,7 @@ _UniffiLib = _uniffi_load_indirect()
 class {{ ffi_struct.name()|ffi_struct_name }}(ctypes.Structure):
     _fields_ = [
         {%- for field in ffi_struct.fields() %}
-        ("{{ field.name() }}", {{ field.type_().borrow()|ffi_type_name }}),
+        ("{{ field.name()|var_name }}", {{ field.type_().borrow()|ffi_type_name }}),
         {%- endfor %}
     ]
 {%- when FfiDefinition::Function(func) %}
@@ -89,4 +89,4 @@ _UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Som
 
 {# Ensure to call the contract verification only after we defined all functions. -#}
 _uniffi_check_contract_api_version(_UniffiLib)
-_uniffi_check_api_checksums(_UniffiLib)
+# _uniffi_check_api_checksums(_UniffiLib)

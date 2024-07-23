@@ -159,7 +159,6 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use crate::Renameable;
 use anyhow::Result;
 use uniffi_meta::{Checksum, EnumShape};
 
@@ -186,6 +185,10 @@ pub struct Enum {
 impl Enum {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
     }
 
     pub fn variants(&self) -> &[Variant] {
@@ -251,16 +254,6 @@ impl Enum {
     }
 }
 
-impl Renameable for Enum {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, name: String) {
-        self.name = name;
-    }
-}
-
 impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
     type Error = anyhow::Error;
 
@@ -308,8 +301,16 @@ impl Variant {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     pub fn is_name(&self) -> &str {
         &self.is_name
+    }
+
+    pub fn set_is_name(&mut self, name: String) {
+        self.is_name = name;
     }
 
     pub fn fields(&self) -> &[Field] {
@@ -330,20 +331,6 @@ impl Variant {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         Box::new(self.fields.iter().flat_map(Field::iter_types))
-    }
-
-    pub fn set_is_name(&mut self, name: String) {
-        self.is_name = name;
-    }
-}
-
-impl Renameable for Variant {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, new_name: String) {
-        self.name = new_name;
     }
 }
 

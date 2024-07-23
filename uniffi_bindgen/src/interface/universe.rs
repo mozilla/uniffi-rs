@@ -28,9 +28,9 @@ pub(crate) struct TypeUniverse {
     pub namespace_docstring: Option<String>,
 
     // Named type definitions (including aliases).
-    type_definitions: HashMap<String, Type>,
+    pub type_definitions: HashMap<String, Type>,
     // All the types in the universe, by canonical type name, in a well-defined order.
-    all_known_types: BTreeSet<Type>,
+    pub all_known_types: BTreeSet<Type>,
 }
 
 impl TypeUniverse {

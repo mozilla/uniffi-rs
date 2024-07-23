@@ -38,8 +38,6 @@ use uniffi_meta::Checksum;
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
 
-use crate::Renameable;
-
 /// Represents a standalone function.
 ///
 /// Each `Function` corresponds to a standalone function in the rust module,
@@ -73,6 +71,10 @@ pub struct Function {
 impl Function {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn is_async(&self) -> bool {
@@ -138,16 +140,6 @@ impl Function {
     }
 }
 
-impl Renameable for Function {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, name: String) {
-        self.name = name;
-    }
-}
-
 impl From<uniffi_meta::FnParamMetadata> for Argument {
     fn from(meta: uniffi_meta::FnParamMetadata) -> Self {
         Argument {
@@ -206,6 +198,10 @@ impl Argument {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     pub fn by_ref(&self) -> bool {
         self.by_ref
     }
@@ -220,16 +216,6 @@ impl Argument {
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
         self.type_.iter_types()
-    }
-}
-
-impl Renameable for Argument {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, new_name: String) {
-        self.name = new_name;
     }
 }
 

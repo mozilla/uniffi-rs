@@ -301,7 +301,7 @@ pub struct PythonWrapper<'a> {
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a mut ComponentInterface) -> Self {
         ci.apply_naming_conventions(PythonCodeOracle);
-
+        dbg!("{:#?}", ci.clone());
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();

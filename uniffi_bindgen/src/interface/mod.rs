@@ -1196,7 +1196,7 @@ new definition: Enum {
     variants: [
         Variant {
             name: \"three\",
-            is_name: \"trhee\",
+            is_name: \"three\",
             discr: None,
             fields: [],
             docstring: None,
