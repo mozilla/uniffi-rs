@@ -1,4 +1,5 @@
 use crate::{CodeOracle, ComponentInterface, Renameable};
+use crate::interface::FfiDefinition;
 
 impl ComponentInterface {
     pub fn apply_naming_conventions<O: CodeOracle>(&mut self, oracle: O) {
@@ -46,19 +47,41 @@ impl ComponentInterface {
         }
 
         for object_item in self.objects.iter_mut() {
-            object_item.rename(oracle.class_name(object_item.name()));
-
             for meth in &mut object_item.methods {
                 meth.rename(oracle.fn_name(meth.name()));
             }
 
+
+            for (ffi_callback, m) in object_item.vtable_methods().iter_mut() {
+                m.rename(oracle.fn_name(m.name()));
+
+                for arg in &mut ffi_callback.arguments {
+                    arg.rename(oracle.var_name(arg.name()));
+                }
+            }
+
             for cons in &mut object_item.constructors {
-                cons.rename(oracle.fn_name(cons.name()));
+                if !cons.is_primary_constructor() {
+                    cons.rename(oracle.fn_name(cons.name()));
+                }
+
             }
         }
+        //
+        // for callback_interface in self.callback_interfaces.iter_mut() {
+        //     callback_interface.rename(oracle.class_name(callback_interface.name()));
+        // }
 
-        for callback_interface in self.callback_interfaces.iter_mut() {
-            callback_interface.rename(oracle.class_name(callback_interface.name()));
-        }
+        // for field in self.ffi_definitions() {
+        //     match field {
+        //         FfiDefinition::Function(_) => {}
+        //         FfiDefinition::CallbackFunction(_) => {}
+        //         FfiDefinition::Struct(mut ffi_struct) => {
+        //             for f in &mut ffi_struct.fields {
+        //                 f.rename(oracle.var_name(f.name()));
+        //             }
+        //         }
+        //     }
+        // }
     }
 }

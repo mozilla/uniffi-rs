@@ -296,6 +296,10 @@ impl FfiArgument {
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
     }
+
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
+    }
 }
 
 /// Represents an "extern C"-style callback function
@@ -368,6 +372,10 @@ impl FfiField {
 
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
+    }
+
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 
