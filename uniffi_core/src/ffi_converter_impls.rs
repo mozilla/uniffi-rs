@@ -23,8 +23,9 @@
 /// "UT" means an arbitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerError, LowerReturn,
-    MetadataBuffer, Result, RustBuffer, TypeId, UnexpectedUniFFICallbackError,
+    ConvertError, FfiConverter, Lift, LiftArgsError, LiftRef, LiftReturn, Lower, LowerError,
+    LowerReturn, MetadataBuffer, Result, RustBuffer, RustCallError, TypeId,
+    UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -453,7 +454,7 @@ derive_ffi_traits!(impl<T, UT> TypeId<UT> for Arc<T> where Arc<T>: FfiConverter<
 unsafe impl<UT> LowerReturn<UT> for () {
     type ReturnType = ();
 
-    fn lower_return(_: ()) -> Result<Self::ReturnType, RustBuffer> {
+    fn lower_return(_: ()) -> Result<Self::ReturnType, RustCallError> {
         Ok(())
     }
 }
@@ -480,17 +481,20 @@ where
 {
     type ReturnType = R::ReturnType;
 
-    fn lower_return(v: Self) -> Result<Self::ReturnType, RustBuffer> {
+    fn lower_return(v: Self) -> Result<Self::ReturnType, RustCallError> {
         match v {
             Ok(r) => R::lower_return(r),
-            Err(e) => Err(E::lower_error(e)),
+            Err(e) => Err(RustCallError::Error(E::lower_error(e))),
         }
     }
 
-    fn handle_failed_lift(arg_name: &str, err: anyhow::Error) -> Self {
-        match err.downcast::<E>() {
-            Ok(actual_error) => Err(actual_error),
-            Err(ohno) => panic!("Failed to convert arg '{arg_name}': {ohno}"),
+    fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
+        match error.error.downcast::<E>() {
+            Ok(downcast) => Err(RustCallError::Error(E::lower_error(downcast))),
+            Err(e) => {
+                let msg = format!("Failed to convert arg '{}': {e}", error.arg_name);
+                Err(RustCallError::InternalError(msg))
+            }
         }
     }
 }

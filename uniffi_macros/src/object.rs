@@ -185,7 +185,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         unsafe #lower_return_impl_spec {
             type ReturnType = #lower_return_type_arc;
 
-            fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustBuffer> {
+            fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustCallError> {
                 #lower_return_arc(::std::sync::Arc::new(obj))
             }
         }

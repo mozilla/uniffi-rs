@@ -13,7 +13,7 @@ use crate::{test_util::TestError, Lift, RustBuffer, RustCallStatusCode};
 
 // Sender/Receiver pair that we use for testing
 struct Channel {
-    result: Option<Result<String, TestError>>,
+    result: Option<Result<Result<String, TestError>, LiftArgsError>>,
     waker: Option<Waker>,
 }
 
@@ -29,7 +29,21 @@ impl Sender {
 
     fn send(&self, value: Result<String, TestError>) {
         let mut inner = self.0.lock().unwrap();
-        if inner.result.replace(value).is_some() {
+        if inner.result.replace(Ok(value)).is_some() {
+            panic!("value already sent");
+        }
+        if let Some(waker) = &inner.waker {
+            waker.wake_by_ref();
+        }
+    }
+
+    fn send_lift_args_error(&self, arg_name: &'static str, error: anyhow::Error) {
+        let mut inner = self.0.lock().unwrap();
+        if inner
+            .result
+            .replace(Err(LiftArgsError { arg_name, error }))
+            .is_some()
+        {
             panic!("value already sent");
         }
         if let Some(waker) = &inner.waker {
@@ -41,12 +55,15 @@ impl Sender {
 struct Receiver(Arc<Mutex<Channel>>);
 
 impl Future for Receiver {
-    type Output = Result<String, TestError>;
+    type Output = Result<Result<String, TestError>, LiftArgsError>;
 
-    fn poll(self: Pin<&mut Self>, context: &mut Context<'_>) -> Poll<Result<String, TestError>> {
+    fn poll(
+        self: Pin<&mut Self>,
+        context: &mut Context<'_>,
+    ) -> Poll<Result<Result<String, TestError>, LiftArgsError>> {
         let mut inner = self.0.lock().unwrap();
-        match &inner.result {
-            Some(v) => Poll::Ready(v.clone()),
+        match inner.result.take() {
+            Some(v) => Poll::Ready(v),
             None => {
                 inner.waker = Some(context.waker().clone());
                 Poll::Pending
@@ -136,6 +153,29 @@ fn test_error() {
     )
 }
 
+#[test]
+fn test_lift_args_error() {
+    let (sender, rust_future) = channel();
+
+    let continuation_result = poll(&rust_future);
+    assert_eq!(continuation_result.get(), None);
+    sender.send_lift_args_error("arg0", anyhow::anyhow!("Invalid handle"));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+
+    let continuation_result = poll(&rust_future);
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
+
+    let (_, call_status) = complete(rust_future);
+    assert_eq!(call_status.code, RustCallStatusCode::UnexpectedError);
+    assert_eq!(
+        <String as Lift<crate::UniFfiTag>>::try_lift(ManuallyDrop::into_inner(
+            call_status.error_buf
+        ))
+        .unwrap(),
+        "Failed to convert arg 'arg0': Invalid handle",
+    )
+}
+
 // Once `complete` is called, the inner future should be released, even if wakers still hold a
 // reference to the RustFuture
 #[test]
@@ -203,7 +243,7 @@ fn test_wake_during_poll() {
             Poll::Pending
         } else {
             // The second time we're polled, we're ready
-            Poll::Ready("All done".to_owned())
+            Poll::Ready(Ok("All done".to_owned()))
         }
     });
     let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> = RustFuture::new(future, crate::UniFfiTag);
