@@ -5,7 +5,7 @@ use uniffi_meta::Type;
 impl ComponentInterface {
     pub fn apply_naming_conventions<O: CodeOracle>(&mut self, oracle: O) {
         // Applying changes to the TypeUniverse
-        for (_, t) in &mut self.types.type_definitions {
+        for t in &mut self.types.type_definitions.values_mut() {
             if t.name().is_some() {
                 t.rename(oracle.class_name(&t.name().unwrap()));
             }
