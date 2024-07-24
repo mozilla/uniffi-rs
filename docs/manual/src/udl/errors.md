@@ -71,7 +71,7 @@ pub struct MyError {
 }
 
 impl MyError {
-    fn message(&self) -> String> { self.to_string() }
+    fn message(&self) -> String { self.to_string() }
 }
 
 impl From<anyhow::Error> for MyError {
