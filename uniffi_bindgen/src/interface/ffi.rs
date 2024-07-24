@@ -353,6 +353,10 @@ impl FfiStruct {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     /// Get the fields for this struct
     pub fn fields(&self) -> &[FfiField] {
         &self.fields

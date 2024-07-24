@@ -173,7 +173,7 @@ impl Type {
 
     pub fn rename(&mut self, new_name: String) {
         if let Type::External { import_name, .. } = self {
-            *import_name = new_name;
+            *import_name = new_name
         }
     }
 }

@@ -509,16 +509,6 @@ pub mod filters {
         Ok(as_ct.as_codetype().type_label())
     }
 
-    /// Get the idiomatic Python rendering of a function name.
-    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.fn_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.var_name(nm))
-    }
-
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }

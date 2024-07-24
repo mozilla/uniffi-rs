@@ -1,4 +1,7 @@
-use crate::{interface::Record, CodeOracle, ComponentInterface, Renameable};
+use crate::{
+    interface::{FfiDefinition, Record},
+    CodeOracle, ComponentInterface, Renameable,
+};
 use std::collections::{BTreeMap, BTreeSet};
 use uniffi_meta::Type;
 
@@ -88,13 +91,23 @@ impl ComponentInterface {
 
         // Conversions for ObjectTemplate.py
         for object_item in self.objects.iter_mut() {
+            // object_item.rename(oracle.class_name(object_item.name()));
             for meth in &mut object_item.methods {
                 meth.rename(oracle.fn_name(meth.name()));
+
+                for arg in meth.arguments.iter_mut() {
+                    arg.rename(oracle.var_name(arg.name()));
+                }
             }
 
             for cons in &mut object_item.constructors {
                 if !cons.is_primary_constructor() {
                     cons.rename(oracle.fn_name(cons.name()));
+                }
+
+                // For macros.py
+                for arg in cons.arguments.iter_mut() {
+                    arg.rename(oracle.var_name(arg.name()));
                 }
             }
         }
@@ -108,6 +121,27 @@ impl ComponentInterface {
 
         for ci_def in self.callback_interfaces.iter_mut() {
             ci_def.rename_display(oracle.class_name(ci_def.name()));
+        }
+
+        // Applying the var_name filter to function arguments,
+        for func in self.functions.iter_mut() {
+            for arg in func.arguments.iter_mut() {
+                arg.rename(oracle.var_name(arg.name()));
+            }
+        }
+
+        //TODO: Renaming the fields for a FfiStruct is currently not being tested
+        // Replace var_name filter for NamespaceLibraryTemplate.py
+        for def in self.ffi_definitions() {
+            match def {
+                FfiDefinition::Function(_) => {}
+                FfiDefinition::CallbackFunction(_) => {}
+                FfiDefinition::Struct(mut ffi_struct) => {
+                    for field in ffi_struct.fields.iter_mut() {
+                        field.rename(oracle.var_name(field.name()));
+                    }
+                }
+            }
         }
     }
 }
