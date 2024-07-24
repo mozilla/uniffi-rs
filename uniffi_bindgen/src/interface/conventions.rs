@@ -1,36 +1,27 @@
 use crate::{interface::Record, CodeOracle, ComponentInterface, Renameable};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
+use uniffi_meta::Type;
 
 impl ComponentInterface {
     pub fn apply_naming_conventions<O: CodeOracle>(&mut self, oracle: O) {
         // Applying changes to the TypeUniverse
-        // for (_, t) in &mut self.types.type_definitions {
-        //
-        //     if t.name().is_some() {
-        //         t.rename(oracle.var_name(&t.name().unwrap()));
-        //
-        //     }
-        // }
-        //
-        // let mut known: BTreeSet<Type> = BTreeSet::new();
-        //
-        // for t in &mut self.types.all_known_types.iter() {
-        //     let mut ty = t.clone();
-        //     if t.name().is_some() {
-        //         ty.rename(oracle.external_types_name(&t.name().unwrap()));
-        //     }
-        //     known.insert(ty.clone());
-        // }
-        //
-        // self.types.all_known_types = known;
-        //
-        // for function_item in self.functions.iter_mut() {
-        //     function_item.rename(oracle.fn_name(function_item.name()));
-        //
-        //     for arg in &mut function_item.arguments {
-        //         arg.rename(oracle.var_name(arg.name()));
-        //     }
-        // }
+        for (_, t) in &mut self.types.type_definitions {
+            if t.name().is_some() {
+                t.rename(oracle.class_name(&t.name().unwrap()));
+            }
+        }
+
+        let mut known: BTreeSet<Type> = BTreeSet::new();
+
+        for t in &mut self.types.all_known_types.iter() {
+            let mut ty = t.clone();
+            if t.name().is_some() {
+                ty.rename(oracle.class_name(&t.name().unwrap()));
+            }
+            known.insert(ty.clone());
+        }
+
+        self.types.all_known_types = known;
 
         // Conversions for CallbackInterfaceImpl.py
         for callback_interface in self.callback_interfaces.iter_mut() {
@@ -81,14 +72,13 @@ impl ComponentInterface {
             let mut record = record_item.clone();
 
             // We just want to prefix reserved keywords for the name, without modifying it
-            record.rename(oracle.external_types_name(record_item.name()));
+            record.rename(oracle.class_name(record_item.name()));
 
             for field in &mut record.fields {
                 field.rename(oracle.var_name(field.name()));
             }
 
-            // We just want to prefix reserved keywords for the name, without modifying it
-            // new_records.insert(oracle.external_types_name(key), record);
+            // new_records.insert(oracle.class_name(key), record);
             new_records.insert(key.to_string(), record);
         }
 
@@ -106,14 +96,18 @@ impl ComponentInterface {
                 if !cons.is_primary_constructor() {
                     cons.rename(oracle.fn_name(cons.name()));
                 }
-
             }
         }
 
         // Conversions for wrapper.py
         //TODO: Renaming the function name in wrapper.py is not currently tested
+        //TODO: Renaming the callback_interface name in wrapper.py is currently not tested
         for func in self.functions.iter_mut() {
             func.rename(oracle.fn_name(func.name()));
+        }
+
+        for ci_def in self.callback_interfaces.iter_mut() {
+            ci_def.rename_display(oracle.class_name(ci_def.name()));
         }
     }
 }

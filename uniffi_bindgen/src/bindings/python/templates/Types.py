@@ -91,7 +91,7 @@
 {%- when Type::Custom { name, module_path, builtin } %}
 {%- include "CustomType.py" %}
 
-{%- when Type::External { name, module_path, namespace, kind, tagged } %}
+{%- when Type::External { name, import_name, module_path, namespace, kind, tagged } %}
 {%- include "ExternalTemplate.py" %}
 
 {%- else %}
