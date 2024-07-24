@@ -96,28 +96,24 @@ impl ComponentInterface {
         // with the adjusted names, and replace it.
         self.records = new_records;
 
-        // for object_item in self.objects.iter_mut() {
-        //     object_item.rename(oracle.class_name(object_item.name()));
-        //
-        //     for meth in &mut object_item.methods {
-        //         meth.rename(oracle.fn_name(meth.name()));
-        //     }
-        //
-        //
-        //     for (ffi_callback, m) in object_item.vtable_methods().iter_mut() {
-        //         m.rename(oracle.fn_name(m.name()));
-        //
-        //         for arg in &mut ffi_callback.arguments {
-        //             arg.rename(oracle.var_name(arg.name()));
-        //         }
-        //     }
-        //
-        //     for cons in &mut object_item.constructors {
-        //         if !cons.is_primary_constructor() {
-        //             cons.rename(oracle.fn_name(cons.name()));
-        //         }
-        //
-        //     }
-        // }
+        // Conversions for ObjectTemplate.py
+        for object_item in self.objects.iter_mut() {
+            for meth in &mut object_item.methods {
+                meth.rename(oracle.fn_name(meth.name()));
+            }
+
+            for cons in &mut object_item.constructors {
+                if !cons.is_primary_constructor() {
+                    cons.rename(oracle.fn_name(cons.name()));
+                }
+
+            }
+        }
+
+        // Conversions for wrapper.py
+        //TODO: Renaming the function name in wrapper.py is not currently tested
+        for func in self.functions.iter_mut() {
+            func.rename(oracle.fn_name(func.name()));
+        }
     }
 }
