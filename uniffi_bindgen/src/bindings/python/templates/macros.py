@@ -59,7 +59,7 @@ _uniffi_rust_call(
 
 {% macro arg_list_decl(func) %}
     {%- for arg in func.arguments() -%}
-        {{ arg.name() }}
+        {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
         {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name -}}]" = _DEFAULT
         {%- else %}: "{{ arg|type_name -}}"
@@ -88,10 +88,10 @@ _uniffi_rust_call(
     {%- match arg.default_value() %}
     {%- when None %}
     {%- when Some with(literal) %}
-    if {{ arg.name() }} is _DEFAULT:
-        {{ arg.name() }} = {{ literal|literal_py(arg.as_type().borrow()) }}
+    if {{ arg.name()|var_name }} is _DEFAULT:
+        {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
     {%- endmatch %}
-    {{ arg|check_lower_fn }}({{ arg.name() }})
+    {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
     {% endfor -%}
 {%- endmacro -%}
 
@@ -104,10 +104,10 @@ _uniffi_rust_call(
         {%- match arg.default_value() %}
         {%- when None %}
         {%- when Some with(literal) %}
-        if {{ arg.name() }} is _DEFAULT:
-            {{ arg.name() }} = {{ literal|literal_py(arg.as_type().borrow()) }}
+        if {{ arg.name()|var_name }} is _DEFAULT:
+            {{ arg.name()|var_name }} = {{ literal|literal_py(arg.as_type().borrow()) }}
         {%- endmatch %}
-        {{ arg|check_lower_fn }}({{ arg.name() }})
+        {{ arg|check_lower_fn }}({{ arg.name()|var_name }})
         {% endfor -%}
 {%- endmacro -%}
 

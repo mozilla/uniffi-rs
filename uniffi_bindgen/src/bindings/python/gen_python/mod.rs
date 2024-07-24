@@ -301,7 +301,7 @@ pub struct PythonWrapper<'a> {
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a mut ComponentInterface) -> Self {
         ci.apply_naming_conventions(PythonCodeOracle);
-        dbg!("{:#?}", ci.clone());
+
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
@@ -509,7 +509,6 @@ pub mod filters {
     }
 
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     pub fn class_name(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.class_name(nm))
     }
@@ -522,11 +521,6 @@ pub mod filters {
     /// Get the idiomatic Python rendering of a variable name.
     pub fn var_name(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.var_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of an individual enum variant.
-    pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.enum_variant_name(nm))
     }
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {

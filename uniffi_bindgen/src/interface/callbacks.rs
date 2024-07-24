@@ -102,11 +102,11 @@ impl CallbackInterface {
     }
 
     /// Vec of (ffi_callback, method) pairs
-    pub fn vtable_methods(&self) -> Vec<(FfiCallbackFunction, &Method)> {
+    pub fn vtable_methods(&self) -> Vec<(FfiCallbackFunction, Method)> {
         self.methods
             .iter()
             .enumerate()
-            .map(|(i, method)| (method_ffi_callback(&self.name, method, i), method))
+            .map(|(i, method)| (method_ffi_callback(&self.name, method, i), method.clone()))
             .collect()
     }
 

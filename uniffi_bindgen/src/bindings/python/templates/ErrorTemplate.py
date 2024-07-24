@@ -39,15 +39,15 @@ class {{ type_name }}:  # type: ignore
             return self._values[index]
 
     {%-     else %}
-        def __init__(self{% for field in variant.fields() %}, {{ field.name() }}{% endfor %}):
+        def __init__(self{% for field in variant.fields() %}, {{ field.name()  }}{% endfor %}):
             {%- if variant.has_fields() %}
             super().__init__(", ".join([
                 {%- for field in variant.fields() %}
-                "{{ field.name() }}={!r}".format({{ field.name() }}),
+                "{{ field.name()  }}={!r}".format({{ field.name()  }}),
                 {%- endfor %}
             ]))
             {%- for field in variant.fields() %}
-            self.{{ field.name() }} = {{ field.name() }}
+            self.{{ field.name()  }} = {{ field.name()  }}
             {%- endfor %}
             {%- else %}
             pass

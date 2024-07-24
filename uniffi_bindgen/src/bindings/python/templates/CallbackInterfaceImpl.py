@@ -7,9 +7,9 @@ class {{ trait_impl }}:
     {%- for (ffi_callback, meth) in vtable_methods.iter() %}
 
     @{{ ffi_callback.name()|ffi_callback_name }}
-    def {{ meth.name()|fn_name }}(
+    def {{ meth.name() }}(
             {%- for arg in ffi_callback.arguments() %}
-            {{ arg.name()|var_name }},
+            {{ arg.name() }},
             {%- endfor -%}
             {%- if ffi_callback.has_rust_call_status_arg() %}
             uniffi_call_status_ptr,
@@ -17,8 +17,8 @@ class {{ trait_impl }}:
         ):
         uniffi_obj = {{ ffi_converter_name }}._handle_map.get(uniffi_handle)
         def make_call():
-            args = ({% for arg in meth.arguments() %}{{ arg|lift_fn }}({{ arg.name()|var_name }}), {% endfor %})
-            method = uniffi_obj.{{ meth.name()|fn_name }}
+            args = ({% for arg in meth.arguments() %}{{ arg|lift_fn }}({{ arg.name() }}), {% endfor %})
+            method = uniffi_obj.{{ meth.name() }}
             return method(*args)
 
         {% if !meth.is_async() %}
@@ -89,7 +89,7 @@ class {{ trait_impl }}:
     # Generate the FFI VTable.  This has a field for each callback interface method.
     _uniffi_vtable = {{ vtable|ffi_type_name }}(
         {%- for (_, meth) in vtable_methods.iter() %}
-        {{ meth.name()|fn_name }},
+        {{ meth.name() }},
         {%- endfor %}
         _uniffi_free
     )

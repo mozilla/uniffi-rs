@@ -67,13 +67,13 @@ __all__ = [
     "{{ record|type_name }}",
     {%- endfor %}
     {%- for func in ci.function_definitions() %}
-    "{{ func.name() }}",
+    "{{ func.name()|fn_name  }}",
     {%- endfor %}
     {%- for obj in ci.object_definitions() %}
     "{{ obj|type_name }}",
     {%- endfor %}
     {%- for c in ci.callback_interface_definitions() %}
-    "{{ c.display() }}",
+    "{{ c.name()|class_name }}",
     {%- endfor %}
 ]
 
