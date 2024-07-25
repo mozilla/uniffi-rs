@@ -40,8 +40,9 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
     try_format_code: bool,
+    no_dep_metadata: bool,
 ) -> Result<Vec<Component<T::Config>>> {
-    let path_map = CratePathMap::new()?;
+    let path_map = CratePathMap::new(no_dep_metadata)?;
     let mut components = find_components(&path_map, library_path)?
         .into_iter()
         .map(|ci| {
@@ -146,16 +147,18 @@ impl CratePathMap {
     // `config_file_override` - what are the semantics of that?)
     // Anyway: for now we just do this.
     #[cfg(feature = "cargo_metadata")]
-    fn new() -> Result<Self> {
+    fn new(no_dep_metadata: bool) -> Result<Self> {
+        let mut command = cargo_metadata::MetadataCommand::new();
+        if no_dep_metadata {
+            command.no_deps();
+        }
         Ok(Self::from(
-            cargo_metadata::MetadataCommand::new()
-                .exec()
-                .context("error running cargo metadata")?,
+            command.exec().context("error running cargo metadata")?,
         ))
     }
 
     #[cfg(not(feature = "cargo_metadata"))]
-    fn new() -> Result<Self> {
+    fn new(_no_dep_metadata: bool) -> Result<Self> {
         Ok(Self::default())
     }
 

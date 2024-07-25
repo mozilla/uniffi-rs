@@ -150,7 +150,7 @@ impl From<&Type> for FfiType {
             } => FfiType::RustBuffer(Some(ExternalMetadata {
                 name: name.clone(),
                 module_path: module_path.clone(),
-                namespace: namespace.clone()
+                namespace: namespace.clone(),
             })),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
         }
@@ -161,7 +161,7 @@ impl From<&Type> for FfiType {
 pub struct ExternalMetadata {
     pub name: String,
     pub module_path: String,
-    pub namespace: String
+    pub namespace: String,
 }
 
 // Needed for rust scaffolding askama template

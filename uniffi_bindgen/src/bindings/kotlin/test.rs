@@ -42,6 +42,7 @@ pub fn run_script(
         None,
         &out_dir,
         false,
+        true,
     )?;
     let jar_file = build_jar(crate_name, &out_dir, options)?;
 

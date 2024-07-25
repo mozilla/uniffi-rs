@@ -408,7 +408,9 @@ impl PythonCodeOracle {
                 FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
                 FfiType::RustArcPtr(_) => "ctypes.c_void_p()".to_owned(),
                 FfiType::RustBuffer(maybe_external) => match maybe_external {
-                    Some(external_meta) => format!("_UniffiRustBuffer{}.default()", external_meta.name),
+                    Some(external_meta) => {
+                        format!("_UniffiRustBuffer{}.default()", external_meta.name)
+                    }
                     None => "_UniffiRustBuffer.default()".to_owned(),
                 },
                 _ => unimplemented!("FFI return type: {t:?}"),

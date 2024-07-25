@@ -40,6 +40,7 @@ pub fn test_script_command(
         None,
         &out_dir,
         false,
+        true,
     )?;
 
     let rubypath = env::var_os("RUBYLIB").unwrap_or_else(|| OsString::from(""));

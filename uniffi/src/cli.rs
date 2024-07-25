@@ -138,6 +138,7 @@ fn gen_library_mode(
     cfo: Option<&camino::Utf8Path>,
     out_dir: &camino::Utf8Path,
     fmt: bool,
+    no_deps: bool,
 ) -> anyhow::Result<()> {
     use uniffi_bindgen::library_mode::generate_bindings;
     for language in languages {
@@ -158,6 +159,7 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                no_deps,
             )?
             .len(),
             TargetLanguage::Python => generate_bindings(
@@ -167,6 +169,7 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                no_deps,
             )?
             .len(),
             TargetLanguage::Ruby => generate_bindings(
@@ -176,6 +179,7 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                no_deps,
             )?
             .len(),
             TargetLanguage::Swift => generate_bindings(
@@ -185,6 +189,7 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
+                no_deps,
             )?
             .len(),
         };
@@ -273,6 +278,7 @@ pub fn run_main() -> anyhow::Result<()> {
                     config.as_deref(),
                     &out_dir,
                     !no_format,
+                    true,
                 )?;
             } else {
                 gen_bindings(
