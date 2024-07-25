@@ -6,6 +6,13 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's changed?
+
+- The library mode internal bindings generation has changed to not fetch dependencies when discovering components.
+  Fetching dependency metadata may optionally be toggled back on, making this a **breaking change** for bindings
+  generators.
+  No consumers of any languages are impacted, only the maintainers of these language bindings.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.0...HEAD).
 
 ## v0.28.0 (backend crates: v0.28.0) - (_2024-06-11_)

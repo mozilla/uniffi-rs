@@ -57,6 +57,7 @@ mod tests {
             None,
             &out_dir,
             false,
+            true,
         )
         .unwrap();
 
