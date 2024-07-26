@@ -1,9 +1,10 @@
-// Use this to test that types defined in the UDL can be used in the proc-macros
+// Like our proc-macro fixture, but tests everything works without Rust `std::` type preludes.
 dictionary Zero {
     string inner;
 };
 
-// And all of these for the opposite - proc-macro types used in UDL.
+// NOTE: `[Rust=..]` is deprecated and this test hasn't migrated.
+// This helps testing the attribute, so don't remove them unless you are removing support entirely!
 [Rust="record"]
 typedef extern One;
 
