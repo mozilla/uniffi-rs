@@ -138,8 +138,9 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
 
 fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
     let name = record.name();
-    let docstring = record.docstring();
+    // let docstring = record.docstring();
     let module_path = mod_path()?;
+    let docstring = "test".to_string();
     let fields_len = try_metadata_value_from_usize(
         record.struct_().fields.len(),
         "UniFFI limits structs to 256 fields",

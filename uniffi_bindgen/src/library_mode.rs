@@ -19,6 +19,7 @@ use crate::{
     load_initial_config, macro_metadata, BindingGenerator, Component, ComponentInterface,
     GenerationSettings, Result,
 };
+use crate::interface::LanguageComponentInterface;
 use anyhow::{bail, Context};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::{collections::HashMap, fs};

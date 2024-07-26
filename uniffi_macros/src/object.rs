@@ -54,7 +54,8 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             object.ident(),
             ObjectImpl::Struct,
             &module_path,
-            object.docstring(),
+            // object.docstring(),
+            "HELLO",
         )
         .unwrap_or_else(syn::Error::into_compile_error)
     });

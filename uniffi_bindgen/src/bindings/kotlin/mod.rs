@@ -8,6 +8,7 @@ use camino::{Utf8Path, Utf8PathBuf};
 use fs_err as fs;
 use std::collections::HashMap;
 use std::process::Command;
+use crate::interface::LanguageComponentInterface;
 
 mod gen_kotlin;
 use gen_kotlin::{generate_bindings, Config};

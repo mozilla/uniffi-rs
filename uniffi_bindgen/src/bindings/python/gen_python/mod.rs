@@ -10,12 +10,15 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
-
+use uniffi_meta::NamespaceMetadata;
+use crate::bindings::python::gen_python::filters::UniFFIError;
 use crate::backend::TemplateExpression;
+use crate::{impl_language_component_interface, lookup_error};
 
 use crate::interface::*;
+use crate::interface::universe::TypeUniverse;
 
 mod callback_interface;
 mod compounds;
@@ -108,6 +111,56 @@ static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
     HashSet::from_iter(kwlist.into_iter().map(|s| s.to_string()))
 });
 
+/// The main public interface for this module, representing the complete details of an interface exposed
+/// by a rust component and the details of consuming it via an extern-C FFI layer.
+#[derive(Debug, Default)]
+pub struct PythonComponentInterface {
+    /// All of the types used in the interface.
+    // We can't checksum `self.types`, but its contents are implied by the other fields
+    // anyway, so it's safe to ignore it.
+    pub(super) types: TypeUniverse,
+    /// The high-level API provided by the component.
+    enums: BTreeMap<String, Enum>,
+    records: BTreeMap<String, Record>,
+    functions: Vec<Function>,
+    objects: Vec<Object>,
+    callback_interfaces: Vec<CallbackInterface>,
+    // Type names which were seen used as an error.
+    errors: HashSet<String>,
+    // Types which were seen used as callback interface error.
+    callback_interface_throws_types: BTreeSet<Type>,
+}
+
+impl_language_component_interface!(PythonComponentInterface);
+
+impl PythonComponentInterface {
+    /// Get a Record definition by name
+    pub fn get_record_definition_filter<'a>(&self, name: &str) -> askama::Result<&'a Record> {
+        self.get_record_definition(name)
+            .ok_or_else(|| lookup_error!("record {name} not found"))
+    }
+
+    /// Get an Object definition by name
+    pub fn get_object_definition_filter<'a>(&self, name: &str) -> askama::Result<&'a Object> {
+        self.get_object_definition(name)
+            .ok_or_else(|| lookup_error!("object {name} not found"))
+    }
+}
+impl From<ComponentInterface> for PythonComponentInterface {
+    fn from(ci: ComponentInterface) -> Self {
+        Self {
+            types: ci.types,
+            enums: ci.enums,
+            records: ci.records,
+            functions: ci.functions,
+            objects: ci.objects,
+            callback_interfaces: ci.callback_interfaces,
+            errors: ci.errors,
+            callback_interface_throws_types: ci.callback_interface_throws_types,
+        }
+    }
+}
+
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
@@ -148,8 +201,10 @@ impl Config {
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.
-pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    PythonWrapper::new(config.clone(), ci)
+pub fn generate_python_bindings(config: &Config, ci: ComponentInterface) -> Result<String> {
+    let pci = PythonComponentInterface::from(ci);
+
+    PythonWrapper::new(config.clone(), &pci)
         .render()
         .context("failed to render python bindings")
 }
@@ -198,7 +253,7 @@ impl ImportRequirement {
 #[template(syntax = "py", escape = "none", path = "Types.py")]
 pub struct TypeRenderer<'a> {
     python_config: &'a Config,
-    ci: &'a ComponentInterface,
+    pci: &'a PythonComponentInterface,
     // Track included modules for the `include_once()` macro
     include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
@@ -206,10 +261,10 @@ pub struct TypeRenderer<'a> {
 }
 
 impl<'a> TypeRenderer<'a> {
-    fn new(python_config: &'a Config, ci: &'a ComponentInterface) -> Self {
+    fn new(python_config: &'a Config, pci: &'a PythonComponentInterface) -> Self {
         Self {
             python_config,
-            ci,
+            pci,
             include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
         }
@@ -292,19 +347,19 @@ impl<'a> TypeRenderer<'a> {
 #[derive(Template)]
 #[template(syntax = "py", escape = "none", path = "wrapper.py")]
 pub struct PythonWrapper<'a> {
-    ci: &'a ComponentInterface,
+    pci: &'a PythonComponentInterface,
     config: Config,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
 }
 impl<'a> PythonWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
-        let type_renderer = TypeRenderer::new(&config, ci);
+    pub fn new(config: Config, pci: &'a PythonComponentInterface) -> Self {
+        let type_renderer = TypeRenderer::new(&config, pci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
         Self {
             config,
-            ci,
+            pci,
             type_helper_code,
             type_imports,
         }

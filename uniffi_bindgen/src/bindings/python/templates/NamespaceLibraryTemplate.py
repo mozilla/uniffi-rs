@@ -38,14 +38,14 @@ def _uniffi_load_indirect():
 
 def _uniffi_check_contract_api_version(lib):
     # Get the bindings contract version from our ComponentInterface
-    bindings_contract_version = {{ ci.uniffi_contract_version() }}
+    bindings_contract_version = {{ pci.uniffi_contract_version() }}
     # Get the scaffolding contract version by calling the into the dylib
-    scaffolding_contract_version = lib.{{ ci.ffi_uniffi_contract_version().name() }}()
+    scaffolding_contract_version = lib.{{ pci.ffi_uniffi_contract_version().name() }}()
     if bindings_contract_version != scaffolding_contract_version:
         raise InternalError("UniFFI contract version mismatch: try cleaning and rebuilding your project")
 
 def _uniffi_check_api_checksums(lib):
-    {%- for (name, expected_checksum) in ci.iter_checksums() %}
+    {%- for (name, expected_checksum) in pci.iter_checksums() %}
     if lib.{{ name }}() != {{ expected_checksum }}:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     {%- else %}
@@ -57,7 +57,7 @@ def _uniffi_check_api_checksums(lib):
 
 _UniffiLib = _uniffi_load_indirect()
 
-{%- for def in ci.ffi_definitions() %}
+{%- for def in pci.ffi_definitions() %}
 {%- match def %}
 {%- when FfiDefinition::CallbackFunction(callback) %}
 {{ callback.name()|ffi_callback_name }} = ctypes.CFUNCTYPE(

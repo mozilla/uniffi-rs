@@ -12,7 +12,7 @@ mod test;
 use crate::{Component, GenerationSettings};
 use gen_python::{generate_python_bindings, Config};
 pub use test::{run_script, run_test};
-
+use crate::interface::LanguageComponentInterface;
 pub struct PythonBindingGenerator;
 
 impl crate::BindingGenerator for PythonBindingGenerator {

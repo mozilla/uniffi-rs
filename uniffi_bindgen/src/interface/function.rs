@@ -37,6 +37,7 @@ use anyhow::Result;
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
 use uniffi_meta::Checksum;
+use crate::interface::LanguageComponentInterface;
 
 /// Represents a standalone function.
 ///
@@ -331,6 +332,7 @@ impl<T: Callable> Callable for &T {
 mod test {
     use super::super::ComponentInterface;
     use super::*;
+    use crate::interface::LanguageComponentInterface;
 
     #[test]
     fn test_minimal_and_rich_function() -> Result<()> {

@@ -730,6 +730,7 @@ impl Callable for Method {
 
 #[cfg(test)]
 mod test {
+    use crate::interface::LanguageComponentInterface;
     use super::super::ComponentInterface;
     use super::*;
 

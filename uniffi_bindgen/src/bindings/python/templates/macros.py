@@ -48,9 +48,9 @@ _uniffi_rust_call(
 {%- endmatch %}
 {%- endmacro %}
 
-{%- macro docstring(defn, indent_spaces) %}
-{%- call docstring_value(defn.docstring(), indent_spaces) %}
-{%- endmacro %}
+# {%- macro docstring(defn, indent_spaces) %}
+# {%- call docstring_value(defn.docstring(), indent_spaces) %}
+# {%- endmacro %}
 
 {#-
 // Arglist as used in Python declarations of methods, functions and constructors.

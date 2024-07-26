@@ -62,7 +62,7 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
     finally:
         ffi_free(rust_future)
 
-{%- if ci.has_async_callback_interface_definition() %}
+{%- if pci.has_async_callback_interface_definition() %}
 def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
     async def make_call_and_call_callback():
         try:

@@ -75,10 +75,9 @@ use uniffi_meta::{
     ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
     UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
+
 pub type Literal = LiteralMetadata;
 
-/// The main public interface for this module, representing the complete details of an interface exposed
-/// by a rust component and the details of consuming it via an extern-C FFI layer.
 #[derive(Debug, Default)]
 pub struct ComponentInterface {
     /// All of the types used in the interface.
@@ -86,19 +85,22 @@ pub struct ComponentInterface {
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
     /// The high-level API provided by the component.
-    enums: BTreeMap<String, Enum>,
-    records: BTreeMap<String, Record>,
-    functions: Vec<Function>,
-    objects: Vec<Object>,
-    callback_interfaces: Vec<CallbackInterface>,
+    pub(crate) enums: BTreeMap<String, Enum>,
+    pub(crate) records: BTreeMap<String, Record>,
+    pub(crate) functions: Vec<Function>,
+    pub(crate) objects: Vec<Object>,
+    pub(crate) callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
-    errors: HashSet<String>,
+    pub(crate) errors: HashSet<String>,
     // Types which were seen used as callback interface error.
-    callback_interface_throws_types: BTreeSet<Type>,
+    pub(crate) callback_interface_throws_types: BTreeSet<Type>,
 }
 
-impl ComponentInterface {
-    pub fn new(crate_name: &str) -> Self {
+pub trait LanguageComponentInterface {
+    fn new(crate_name: &str) -> Self
+        where
+            Self: Sized,
+    {
         assert!(!crate_name.is_empty());
         Self {
             types: TypeUniverse::new(NamespaceMetadata {
@@ -110,7 +112,10 @@ impl ComponentInterface {
     }
 
     /// Parse a `ComponentInterface` from a string containing a WebIDL definition.
-    pub fn from_webidl(idl: &str, module_path: &str) -> Result<Self> {
+    fn from_webidl(idl: &str, module_path: &str) -> Result<Self>
+        where
+            Self: Sized,
+    {
         ensure!(
             !module_path.is_empty(),
             "you must specify a valid crate name"
@@ -121,7 +126,10 @@ impl ComponentInterface {
 
     /// Create a `ComponentInterface` from a `MetadataGroup`
     /// Public so that external binding generators can use it.
-    pub fn from_metadata(group: uniffi_meta::MetadataGroup) -> Result<Self> {
+    fn from_metadata(group: uniffi_meta::MetadataGroup) -> Result<Self>
+        where
+            Self: Sized,
+    {
         let mut ci = Self {
             types: TypeUniverse::new(group.namespace.clone()),
             ..Default::default()
@@ -131,23 +139,26 @@ impl ComponentInterface {
     }
 
     /// Add a metadata group to a `ComponentInterface`.
-    pub fn add_metadata(&mut self, group: uniffi_meta::MetadataGroup) -> Result<()> {
-        if self.types.namespace.name.is_empty() {
-            self.types.namespace = group.namespace.clone();
-        } else if self.types.namespace != group.namespace {
+    fn add_metadata(&mut self, group: uniffi_meta::MetadataGroup) -> Result<()>
+        where
+            Self: Sized,
+    {
+        if self.types().namespace.name.is_empty() {
+            self.types_mut().namespace = group.namespace.clone();
+        } else if self.types().namespace != group.namespace {
             bail!(
                 "Namespace mismatch: {:?} - {:?}",
                 group.namespace,
-                self.types.namespace
+                self.types().namespace
             );
         }
 
         if group.namespace_docstring.is_some() {
-            self.types.namespace_docstring = group.namespace_docstring.clone();
+            self.types_mut().namespace_docstring = group.namespace_docstring.clone();
         }
 
         // Unconditionally add the String type, which is used by the panic handling
-        self.types.add_known_type(&uniffi_meta::Type::String)?;
+        self.types().add_known_type(&uniffi_meta::Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
         Ok(())
     }
@@ -156,20 +167,20 @@ impl ComponentInterface {
     ///
     /// This string would typically be used to prefix function names in the FFI, to build
     /// a package or module name for the foreign language, etc.
-    pub fn namespace(&self) -> &str {
-        &self.types.namespace.name
+    fn namespace(&self) -> &str {
+        &self.types().namespace.name
     }
 
-    pub fn namespace_docstring(&self) -> Option<&str> {
-        self.types.namespace_docstring.as_deref()
+    fn namespace_docstring(&self) -> Option<&str> {
+        self.types().namespace_docstring.as_deref()
     }
 
     /// The crate this interfaces lives in.
-    pub fn crate_name(&self) -> &str {
-        &self.types.namespace.crate_name
+    fn crate_name(&self) -> &str {
+        &self.types().namespace.crate_name
     }
 
-    pub fn uniffi_contract_version(&self) -> u32 {
+    fn uniffi_contract_version(&self) -> u32 {
         // This is set by the scripts in the version-mismatch fixture
         let force_version = std::env::var("UNIFFI_FORCE_CONTRACT_VERSION");
         match force_version {
@@ -179,54 +190,54 @@ impl ComponentInterface {
     }
 
     /// Get the definitions for every Enum type in the interface.
-    pub fn enum_definitions(&self) -> impl Iterator<Item = &Enum> {
-        self.enums.values()
+    fn enum_definitions(&self) -> impl Iterator<Item = &Enum> {
+        self.enums().values()
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
-    pub fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
-        self.enums.get(name)
+    fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
+        self.enums().get(name)
     }
 
     /// Get the definitions for every Record type in the interface.
-    pub fn record_definitions(&self) -> impl Iterator<Item = &Record> {
-        self.records.values()
+    fn record_definitions(&self) -> impl Iterator<Item = &Record> {
+        self.records().values()
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
-    pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
-        self.records.get(name)
+    fn get_record_definition(&self, name: &str) -> Option<&Record> {
+        self.records().get(name)
     }
 
     /// Get the definitions for every Function in the interface.
-    pub fn function_definitions(&self) -> &[Function] {
-        &self.functions
+    fn function_definitions(&self) -> &[Function] {
+        &self.functions()
     }
 
     /// Get a Function definition by name, or None if no such Function is defined.
-    pub fn get_function_definition(&self, name: &str) -> Option<&Function> {
+    fn get_function_definition(&self, name: &str) -> Option<&Function> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.functions.iter().find(|f| f.name == name)
+        self.functions().iter().find(|f| f.name == name)
     }
 
     /// Get the definitions for every Object type in the interface.
-    pub fn object_definitions(&self) -> &[Object] {
-        &self.objects
+    fn object_definitions(&self) -> &[Object] {
+        &self.objects()
     }
 
     /// Get an Object definition by name, or None if no such Object is defined.
-    pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
+    fn get_object_definition(&self, name: &str) -> Option<&Object> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.objects.iter().find(|o| o.name == name)
+        self.objects().iter().find(|o| o.name == name)
     }
 
     fn callback_interface_callback_definitions(
         &self,
     ) -> impl IntoIterator<Item = FfiCallbackFunction> + '_ {
-        self.callback_interfaces
+        self.callback_interfaces()
             .iter()
             .flat_map(|cbi| cbi.ffi_callbacks())
-            .chain(self.objects.iter().flat_map(|o| o.ffi_callbacks()))
+            .chain(self.objects().into_iter().flat_map(|o| o.ffi_callbacks()))
     }
 
     /// Get the definitions for callback FFI functions
@@ -244,36 +255,36 @@ impl ComponentInterface {
     }
 
     /// Get the definitions for every Callback Interface type in the interface.
-    pub fn callback_interface_definitions(&self) -> &[CallbackInterface] {
-        &self.callback_interfaces
+    fn callback_interface_definitions(&self) -> &[CallbackInterface] {
+        &self.callback_interfaces()
     }
 
     /// Get a Callback interface definition by name, or None if no such interface is defined.
-    pub fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
+    fn get_callback_interface_definition(&self, name: &str) -> Option<&CallbackInterface> {
         // TODO: probably we could store these internally in a HashMap to make this easier?
-        self.callback_interfaces.iter().find(|o| o.name == name)
+        self.callback_interfaces().iter().find(|o| o.name == name)
     }
 
     /// Get the definitions for every Callback Interface type in the interface.
-    pub fn has_async_callback_interface_definition(&self) -> bool {
-        self.callback_interfaces
+    fn has_async_callback_interface_definition(&self) -> bool {
+        self.callback_interfaces()
             .iter()
             .any(|cbi| cbi.has_async_method())
             || self
-                .objects
+                .objects()
                 .iter()
                 .any(|o| o.has_callback_interface() && o.has_async_method())
     }
 
     /// Get the definitions for every Method type in the interface.
-    pub fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
+    fn iter_callables(&self) -> impl Iterator<Item = &dyn Callable> {
         // Each of the `as &dyn Callable` casts is a trivial cast, but it seems like the clearest
         // way to express the logic in the current Rust
         #[allow(trivial_casts)]
         self.function_definitions()
             .iter()
             .map(|f| f as &dyn Callable)
-            .chain(self.objects.iter().flat_map(|o| {
+            .chain(self.objects().iter().flat_map(|o| {
                 o.constructors()
                     .into_iter()
                     .map(|c| c as &dyn Callable)
@@ -286,7 +297,7 @@ impl ComponentInterface {
     /// This is a workaround for the fact that lower/write can't be generated for some errors,
     /// specifically errors that are defined as flat in the UDL, but actually have fields in the
     /// Rust source.
-    pub fn should_generate_error_read(&self, e: &Enum) -> bool {
+    fn should_generate_error_read(&self, e: &Enum) -> bool {
         // We can and should always generate read() methods for fielded errors
         let fielded = !e.is_flat();
         // For flat errors, we should only generate read() methods if we need them to support
@@ -308,10 +319,10 @@ impl ComponentInterface {
 
     /// Get details about all `Type::External` types.
     /// Returns an iterator of (name, crate_name, kind)
-    pub fn iter_external_types(
+    fn iter_external_types(
         &self,
     ) -> impl Iterator<Item = (&String, String, ExternalKind, bool)> {
-        self.types.iter_known_types().filter_map(|t| match t {
+        self.types().iter_known_types().filter_map(|t| match t {
             Type::External {
                 name,
                 module_path,
@@ -329,21 +340,21 @@ impl ComponentInterface {
     }
 
     /// Get details about all `Type::Custom` types
-    pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
-        self.types.iter_known_types().filter_map(|t| match t {
+    fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
+        self.types().iter_known_types().filter_map(|t| match t {
             Type::Custom { name, builtin, .. } => Some((name, &**builtin)),
             _ => None,
         })
     }
 
     /// Iterate over all known types in the interface.
-    pub fn iter_types(&self) -> impl Iterator<Item = &Type> {
-        self.types.iter_known_types()
+    fn iter_types(&self) -> impl Iterator<Item = &Type> {
+        self.types().iter_known_types()
     }
 
     /// Get a specific type
-    pub fn get_type(&self, name: &str) -> Option<Type> {
-        self.types.get_type_definition(name)
+    fn get_type(&self, name: &str) -> Option<Type> {
+        self.types().get_type_definition(name)
     }
 
     /// Iterate over all types contained in the given item.
@@ -351,17 +362,17 @@ impl ComponentInterface {
     /// This method uses `iter_types` to iterate over the types contained within the given type,
     /// but additionally recurses into the definition of user-defined types like records and enums
     /// to yield the types that *they* contain.
-    fn iter_types_in_item<'a>(&'a self, item: &'a Type) -> impl Iterator<Item = &'a Type> + 'a {
-        RecursiveTypeIterator::new(self, item)
+    fn iter_types_in_item<'a>(ci: &'a ComponentInterface, item: &'a Type) -> impl Iterator<Item = &'a Type> + 'a {
+        RecursiveTypeIterator::new(ci, item)
     }
 
     /// Check whether the given item contains any (possibly nested) Type::Object references.
     ///
     /// This is important to know in language bindings that cannot integrate object types
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
-    pub fn item_contains_object_references(&self, item: &Type) -> bool {
+    fn item_contains_object_references(&self, item: &Type) -> bool {
         // this is surely broken for external records with object refs?
-        self.iter_types_in_item(item).any(|t| {
+        Self::iter_types_in_item(self, item).any(|t| {
             matches!(
                 t,
                 Type::Object { .. }
@@ -374,35 +385,35 @@ impl ComponentInterface {
     }
 
     /// Check whether the given item contains any (possibly nested) unsigned types
-    pub fn item_contains_unsigned_types(&self, item: &Type) -> bool {
+    fn item_contains_unsigned_types(&self, item: &Type) -> bool {
         self.iter_types_in_item(item)
             .any(|t| matches!(t, Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64))
     }
 
     /// Check whether the interface contains any optional types
-    pub fn contains_optional_types(&self) -> bool {
-        self.types
+    fn contains_optional_types(&self) -> bool {
+        self.types()
             .iter_known_types()
             .any(|t| matches!(t, Type::Optional { .. }))
     }
 
     /// Check whether the interface contains any sequence types
-    pub fn contains_sequence_types(&self) -> bool {
-        self.types
+    fn contains_sequence_types(&self) -> bool {
+        self.types()
             .iter_known_types()
             .any(|t| matches!(t, Type::Sequence { .. }))
     }
 
     /// Check whether the interface contains any map types
-    pub fn contains_map_types(&self) -> bool {
-        self.types
+    fn contains_map_types(&self) -> bool {
+        self.types()
             .iter_known_types()
             .any(|t| matches!(t, Type::Map { .. }))
     }
 
     /// Check whether the interface contains any object types
-    pub fn contains_object_types(&self) -> bool {
-        self.types
+    fn contains_object_types(&self) -> bool {
+        self.types()
             .iter_known_types()
             .any(|t| matches!(t, Type::Object { .. }))
     }
@@ -410,13 +421,13 @@ impl ComponentInterface {
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
     // namespace for types - each type has its own `module_path` which is used for them.
     fn ffi_namespace(&self) -> &str {
-        &self.types.namespace.crate_name
+        &self.types().namespace.crate_name
     }
 
     /// Builtin FFI function to get the current contract version
     /// This is needed so that the foreign language bindings can check that they are using the same
     /// ABI as the scaffolding
-    pub fn ffi_uniffi_contract_version(&self) -> FfiFunction {
+    fn ffi_uniffi_contract_version(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_uniffi_contract_version", self.ffi_namespace()),
             is_async: false,
@@ -430,7 +441,7 @@ impl ComponentInterface {
     /// Builtin FFI function for allocating a new `RustBuffer`.
     /// This is needed so that the foreign language bindings can create buffers in which to pass
     /// complex data types across the FFI.
-    pub fn ffi_rustbuffer_alloc(&self) -> FfiFunction {
+    fn ffi_rustbuffer_alloc(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_alloc", self.ffi_namespace()),
             is_async: false,
@@ -447,7 +458,7 @@ impl ComponentInterface {
     /// Builtin FFI function for copying foreign-owned bytes
     /// This is needed so that the foreign language bindings can create buffers in which to pass
     /// complex data types across the FFI.
-    pub fn ffi_rustbuffer_from_bytes(&self) -> FfiFunction {
+    fn ffi_rustbuffer_from_bytes(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_from_bytes", self.ffi_namespace()),
             is_async: false,
@@ -464,7 +475,7 @@ impl ComponentInterface {
     /// Builtin FFI function for freeing a `RustBuffer`.
     /// This is needed so that the foreign language bindings can free buffers in which they received
     /// complex data types returned across the FFI.
-    pub fn ffi_rustbuffer_free(&self) -> FfiFunction {
+    fn ffi_rustbuffer_free(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_free", self.ffi_namespace()),
             is_async: false,
@@ -481,7 +492,7 @@ impl ComponentInterface {
     /// Builtin FFI function for reserving extra space in a `RustBuffer`.
     /// This is needed so that the foreign language bindings can grow buffers used for passing
     /// complex data types across the FFI.
-    pub fn ffi_rustbuffer_reserve(&self) -> FfiFunction {
+    fn ffi_rustbuffer_reserve(&self) -> FfiFunction {
         FfiFunction {
             name: format!("ffi_{}_rustbuffer_reserve", self.ffi_namespace()),
             is_async: false,
@@ -502,7 +513,7 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function to poll a Rust future.
-    pub fn ffi_rust_future_poll(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+    fn ffi_rust_future_poll(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
             name: self.rust_future_ffi_fn_name("rust_future_poll", return_ffi_type),
             is_async: false,
@@ -529,7 +540,7 @@ impl ComponentInterface {
     /// Builtin FFI function to complete a Rust future and get it's result.
     ///
     /// We generate one of these for each FFI return type.
-    pub fn ffi_rust_future_complete(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+    fn ffi_rust_future_complete(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
             name: self.rust_future_ffi_fn_name("rust_future_complete", return_ffi_type.clone()),
             is_async: false,
@@ -544,7 +555,7 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function for cancelling a Rust Future
-    pub fn ffi_rust_future_cancel(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+    fn ffi_rust_future_cancel(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
             name: self.rust_future_ffi_fn_name("rust_future_cancel", return_ffi_type),
             is_async: false,
@@ -559,7 +570,7 @@ impl ComponentInterface {
     }
 
     /// Builtin FFI function for freeing a Rust Future
-    pub fn ffi_rust_future_free(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
+    fn ffi_rust_future_free(&self, return_ffi_type: Option<FfiType>) -> FfiFunction {
         FfiFunction {
             name: self.rust_future_ffi_fn_name("rust_future_free", return_ffi_type),
             is_async: false,
@@ -580,16 +591,16 @@ impl ComponentInterface {
     }
 
     /// Does this interface contain async functions?
-    pub fn has_async_fns(&self) -> bool {
+    fn has_async_fns(&self) -> bool {
         self.iter_ffi_function_definitions().any(|f| f.is_async())
             || self
-                .callback_interfaces
+                .callback_interfaces()
                 .iter()
                 .any(CallbackInterface::has_async_method)
     }
 
     /// Iterate over `T` parameters of the `FutureCallback<T>` callbacks in this interface
-    pub fn iter_future_callback_params(&self) -> impl Iterator<Item = FfiType> {
+    fn iter_future_callback_params(&self) -> impl Iterator<Item = FfiType> {
         let unique_results = self
             .iter_callables()
             .map(|c| c.result_type().future_callback_param())
@@ -598,7 +609,7 @@ impl ComponentInterface {
     }
 
     /// Iterate over return/throws types for async functions
-    pub fn iter_async_result_types(&self) -> impl Iterator<Item = ResultType> {
+    fn iter_async_result_types(&self) -> impl Iterator<Item = ResultType> {
         let unique_results = self
             .iter_callables()
             .map(|c| c.result_type())
@@ -607,7 +618,7 @@ impl ComponentInterface {
     }
 
     /// Iterate over all Ffi definitions
-    pub fn ffi_definitions(&self) -> impl Iterator<Item = FfiDefinition> + '_ {
+    fn ffi_definitions(&self) -> impl Iterator<Item = FfiDefinition> + '_ {
         // Note: for languages like Python it's important to keep things in dependency order.
         // For example some FFI function definitions depend on FFI struct definitions, so the
         // function definitions come last.
@@ -677,7 +688,7 @@ impl ComponentInterface {
     ///
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
-    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+    fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
@@ -687,7 +698,7 @@ impl ComponentInterface {
     }
 
     /// Alternate version of iter_ffi_function_definitions for languages that don't support async
-    pub fn iter_ffi_function_definitions_non_async(
+    fn iter_ffi_function_definitions_non_async(
         &self,
     ) -> impl Iterator<Item = FfiFunction> + '_ {
         self.iter_user_ffi_function_definitions()
@@ -703,23 +714,23 @@ impl ComponentInterface {
     ///   - Top-level functions
     ///   - Object methods
     ///   - Callback interfaces
-    pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> + '_ {
+    fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> + '_ {
         iter::empty()
             .chain(
-                self.objects
+                self.objects()
                     .iter()
                     .flat_map(|obj| obj.iter_ffi_function_definitions()),
             )
             .chain(
-                self.callback_interfaces
+                self.callback_interfaces()
                     .iter()
                     .map(|cb| cb.ffi_init_callback()),
             )
-            .chain(self.functions.iter().map(|f| &f.ffi_func))
+            .chain(self.functions().iter().map(|f| &f.ffi_func))
     }
 
     /// List all FFI functions definitions for RustBuffer functionality.
-    pub fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> {
+    fn iter_rust_buffer_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> {
         [
             self.ffi_rustbuffer_alloc(),
             self.ffi_rustbuffer_from_bytes(),
@@ -751,7 +762,7 @@ impl ComponentInterface {
     }
 
     /// List all FFI functions definitions for async functionality.
-    pub fn iter_futures_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+    fn iter_futures_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
         self.all_possible_return_ffi_types()
             .flat_map(|return_type| {
                 [
@@ -766,22 +777,22 @@ impl ComponentInterface {
     /// List all API checksums to check
     ///
     /// Returns a list of (export_symbol_name, checksum) items
-    pub fn iter_checksums(&self) -> impl Iterator<Item = (String, u16)> + '_ {
+    fn iter_checksums(&self) -> impl Iterator<Item = (String, u16)> + '_ {
         let func_checksums = self
-            .functions
+            .functions()
             .iter()
             .map(|f| (f.checksum_fn_name(), f.checksum()));
-        let method_checksums = self.objects.iter().flat_map(|o| {
+        let method_checksums = self.objects().iter().flat_map(|o| {
             o.methods()
                 .into_iter()
                 .map(|m| (m.checksum_fn_name(), m.checksum()))
         });
-        let constructor_checksums = self.objects.iter().flat_map(|o| {
+        let constructor_checksums = self.objects().iter().flat_map(|o| {
             o.constructors()
                 .into_iter()
                 .map(|c| (c.checksum_fn_name(), c.checksum()))
         });
-        let callback_method_checksums = self.callback_interfaces.iter().flat_map(|cbi| {
+        let callback_method_checksums = self.callback_interfaces().iter().flat_map(|cbi| {
             cbi.methods().into_iter().filter_map(|m| {
                 if m.checksum_fn_name().is_empty() {
                     // UDL-based callbacks don't have checksum functions, skip these
@@ -798,7 +809,7 @@ impl ComponentInterface {
             .map(|(fn_name, checksum)| (fn_name.to_string(), checksum))
     }
 
-    pub fn iter_checksum_ffi_functions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+    fn iter_checksum_ffi_functions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
         self.iter_checksums().map(|(name, _)| FfiFunction {
             name,
             is_async: false,
@@ -812,13 +823,13 @@ impl ComponentInterface {
     // Private methods for building a ComponentInterface.
     //
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
-    pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
-        match self.enums.entry(defn.name().to_owned()) {
+    fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
+        match self.enums().entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
                 if matches!(defn.shape, EnumShape::Error { .. }) {
-                    self.errors.insert(defn.name.clone());
+                    self.errors().insert(defn.name.clone());
                 }
-                self.types.add_known_types(defn.iter_types())?;
+                self.types().add_known_types(defn.iter_types())?;
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -838,10 +849,10 @@ impl ComponentInterface {
     }
 
     /// Adds a newly-parsed record definition to the `ComponentInterface`.
-    pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
-        match self.records.entry(defn.name().to_owned()) {
+    fn add_record_definition(&mut self, defn: Record) -> Result<()> {
+        match self.records().entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
-                self.types.add_known_types(defn.iter_types())?;
+                self.types().add_known_types(defn.iter_types())?;
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -861,81 +872,81 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed function definition to the `ComponentInterface`.
-    pub(super) fn add_function_definition(&mut self, defn: Function) -> Result<()> {
+    fn add_function_definition(&mut self, defn: Function) -> Result<()> {
         // Since functions are not a first-class type, we have to check for duplicates here
         // rather than relying on the type-finding pass to catch them.
-        if self.functions.iter().any(|f| f.name == defn.name) {
+        if self.functions().iter().any(|f| f.name == defn.name) {
             bail!("duplicate function definition: \"{}\"", defn.name);
         }
-        if self.types.get_type_definition(defn.name()).is_some() {
+        if self.types().get_type_definition(defn.name()).is_some() {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
-        self.types.add_known_types(defn.iter_types())?;
+        self.types().add_known_types(defn.iter_types())?;
         defn.throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
-        self.functions.push(defn);
+            .map(|n| self.errors().insert(n.to_string()));
+        self.functions().push(defn);
 
         Ok(())
     }
 
-    pub(super) fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, &meta.self_name)
+    fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
+        let object = get_object(&mut self.objects(), &meta.self_name)
             .ok_or_else(|| anyhow!("add_constructor_meta: object {} not found", &meta.self_name))?;
         let defn: Constructor = meta.into();
 
-        self.types.add_known_types(defn.iter_types())?;
+        self.types().add_known_types(defn.iter_types())?;
         defn.throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
+            .map(|n| self.errors().insert(n.to_string()));
         object.constructors.push(defn);
 
         Ok(())
     }
 
-    pub(super) fn add_method_meta(&mut self, meta: impl Into<Method>) -> Result<()> {
+    fn add_method_meta(&mut self, meta: impl Into<Method>) -> Result<()> {
         let mut method: Method = meta.into();
-        let object = get_object(&mut self.objects, &method.object_name)
+        let object = get_object(&mut self.objects(), &method.object_name)
             .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &method.object_name))?;
 
-        self.types.add_known_types(method.iter_types())?;
+        self.types().add_known_types(method.iter_types())?;
         method
             .throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
+            .map(|n| self.errors().insert(n.to_string()));
         method.object_impl = object.imp;
         object.methods.push(method);
         Ok(())
     }
 
-    pub(super) fn add_uniffitrait_meta(&mut self, meta: UniffiTraitMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, meta.self_name())
+    fn add_uniffitrait_meta(&mut self, meta: UniffiTraitMetadata) -> Result<()> {
+        let object = get_object(&mut self.objects(), meta.self_name())
             .ok_or_else(|| anyhow!("add_uniffitrait_meta: object not found"))?;
         let ut: UniffiTrait = meta.into();
-        self.types.add_known_types(ut.iter_types())?;
+        self.types().add_known_types(ut.iter_types())?;
         object.uniffi_traits.push(ut);
         Ok(())
     }
 
-    pub(super) fn add_object_meta(&mut self, meta: ObjectMetadata) -> Result<()> {
+    fn add_object_meta(&mut self, meta: ObjectMetadata) -> Result<()> {
         self.add_object_definition(meta.into())
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
     fn add_object_definition(&mut self, defn: Object) -> Result<()> {
-        self.types.add_known_types(defn.iter_types())?;
-        self.objects.push(defn);
+        self.types().add_known_types(defn.iter_types())?;
+        self.objects().push(defn);
         Ok(())
     }
 
-    pub fn is_name_used_as_error(&self, name: &str) -> bool {
-        self.errors.contains(name)
+    fn is_name_used_as_error(&self, name: &str) -> bool {
+        self.errors().contains(name)
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
-    pub(super) fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
-        self.callback_interfaces.push(defn);
+    fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
+        self.callback_interfaces().push(defn);
     }
 
-    pub(super) fn add_trait_method_meta(&mut self, meta: TraitMethodMetadata) -> Result<()> {
-        if let Some(cbi) = get_callback_interface(&mut self.callback_interfaces, &meta.trait_name) {
+    fn add_trait_method_meta(&mut self, meta: TraitMethodMetadata) -> Result<()> {
+        if let Some(cbi) = get_callback_interface(&mut self.callback_interfaces(), &meta.trait_name) {
             // uniffi_meta should ensure that we process callback interface methods in order, double
             // check that here
             if cbi.methods.len() != meta.index as usize {
@@ -949,12 +960,12 @@ impl ComponentInterface {
             }
             let method: Method = meta.into();
             if let Some(error) = method.throws_type() {
-                self.callback_interface_throws_types.insert(error.clone());
+                self.callback_interface_throws_types().insert(error.clone());
             }
-            self.types.add_known_types(method.iter_types())?;
+            self.types().add_known_types(method.iter_types())?;
             method
                 .throws_name()
-                .map(|n| self.errors.insert(n.to_string()));
+                .map(|n| self.errors().insert(n.to_string()));
             cbi.methods.push(method);
         } else {
             self.add_method_meta(meta)?;
@@ -967,15 +978,15 @@ impl ComponentInterface {
     /// This method checks for consistency problems in the declared interface
     /// as a whole, and which can only be detected after we've finished defining
     /// the entire interface.
-    pub fn check_consistency(&self) -> Result<()> {
+    fn check_consistency(&self) -> Result<()> {
         if self.namespace().is_empty() {
             bail!("missing namespace definition");
         }
 
         // Because functions aren't first class types, we need to check here that
         // a function name hasn't already been used as a type name.
-        for f in self.functions.iter() {
-            if self.types.get_type_definition(f.name()).is_some() {
+        for f in self.functions().iter() {
+            if self.types().get_type_definition(f.name()).is_some() {
                 bail!("Conflicting type definition for \"{}\"", f.name());
             }
         }
@@ -986,19 +997,99 @@ impl ComponentInterface {
     ///
     /// This should only be called after the high-level types have been completed defined, otherwise
     /// the resulting set will be missing some entries.
-    pub fn derive_ffi_funcs(&mut self) -> Result<()> {
-        for func in self.functions.iter_mut() {
+    fn derive_ffi_funcs(&mut self) -> Result<()> {
+        for func in self.functions().iter_mut() {
             func.derive_ffi_func()?;
         }
-        for obj in self.objects.iter_mut() {
+        for obj in self.objects().iter_mut() {
             obj.derive_ffi_funcs()?;
         }
-        for callback in self.callback_interfaces.iter_mut() {
+        for callback in self.callback_interfaces().iter_mut() {
             callback.derive_ffi_funcs();
         }
         Ok(())
     }
+
+    fn types(&self) -> &TypeUniverse;
+
+    fn types_mut(&mut self) -> TypeUniverse;
+
+    fn enums(&self) -> &BTreeMap<String, Enum>;
+
+    fn records(&self) -> &BTreeMap<String, Record>;
+
+    fn functions(&self) -> &Vec<Function>;
+
+    fn objects(&self) -> &Vec<Object>;
+
+    fn callback_interfaces(&self) -> &Vec<CallbackInterface>;
+
+    fn errors(&self) -> HashSet<String>;
+
+    fn callback_interface_throws_types(&self) -> BTreeSet<Type> ;
 }
+
+#[macro_export]
+macro_rules! impl_language_component_interface {
+    ($struct_name:ident) => {
+        impl LanguageComponentInterface for $struct_name {
+            fn new(crate_name: &str) -> Self {
+                assert!(!crate_name.is_empty());
+                Self {
+                    types: TypeUniverse::new(NamespaceMetadata {
+                        crate_name: crate_name.to_string(),
+                        ..Default::default()
+                    }),
+                    enums: BTreeMap::new(),
+                    records: BTreeMap::new(),
+                    functions: Vec::new(),
+                    objects: Vec::new(),
+                    callback_interfaces: Vec::new(),
+                    errors: HashSet::new(),
+                    callback_interface_throws_types: BTreeSet::new(),
+                }
+            }
+
+            fn types(&self) -> &TypeUniverse {
+                &self.types
+            }
+
+            fn types_mut(&mut self) -> TypeUniverse {
+                self.types
+            }
+
+            fn enums(&self) -> &BTreeMap<String, Enum> {
+                &self.enums
+            }
+
+            fn records(&self) -> &BTreeMap<String, Record> {
+                &self.records
+            }
+
+            fn functions(&self) -> &Vec<Function> {
+                &self.functions
+            }
+
+            fn objects(&self) -> &Vec<Object> {
+                &self.objects
+            }
+
+            fn callback_interfaces(&self) -> &Vec<CallbackInterface> {
+                &self.callback_interfaces
+            }
+
+            fn errors(&self) -> HashSet<String> {
+                self.errors
+            }
+
+            fn callback_interface_throws_types(&self) -> BTreeSet<Type> {
+                self.callback_interface_throws_types
+            }
+        }
+    };
+}
+
+impl_language_component_interface!(ComponentInterface);
 
 fn get_object<'a>(objects: &'a mut [Object], name: &str) -> Option<&'a mut Object> {
     objects.iter_mut().find(|o| o.name == name)

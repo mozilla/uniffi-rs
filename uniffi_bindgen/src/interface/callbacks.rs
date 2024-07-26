@@ -258,6 +258,7 @@ pub fn vtable_name(trait_name: &str) -> String {
 
 #[cfg(test)]
 mod test {
+    use crate::interface::LanguageComponentInterface;
     use super::super::ComponentInterface;
 
     #[test]

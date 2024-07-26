@@ -13,6 +13,7 @@ use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
+use crate::interface::LanguageComponentInterface;
 
 /// Run Swift tests for a UniFFI test fixture
 pub fn run_test(tmp_dir: &str, package_name: &str, script_file: &str) -> Result<()> {

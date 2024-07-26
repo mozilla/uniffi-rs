@@ -107,6 +107,7 @@ pub mod library_mode;
 pub mod macro_metadata;
 pub mod scaffolding;
 
+use crate::interface::LanguageComponentInterface;
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 

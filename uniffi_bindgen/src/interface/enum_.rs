@@ -336,6 +336,7 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
 
 #[cfg(test)]
 mod test {
+    use crate::interface::LanguageComponentInterface;
     use super::super::{ComponentInterface, FfiType};
     use super::*;
 

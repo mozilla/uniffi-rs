@@ -12,6 +12,7 @@ mod gen_ruby;
 mod test;
 use gen_ruby::{Config, RubyWrapper};
 pub use test::run_test;
+use crate::interface::LanguageComponentInterface;
 
 pub struct RubyBindingGenerator;
 impl BindingGenerator for RubyBindingGenerator {

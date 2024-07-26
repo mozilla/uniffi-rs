@@ -33,6 +33,7 @@ use crate::{BindingGenerator, Component, GenerationSettings};
 use anyhow::Result;
 use fs_err as fs;
 use std::process::Command;
+use crate::interface::LanguageComponentInterface;
 
 mod gen_swift;
 use gen_swift::{generate_bindings, Config};

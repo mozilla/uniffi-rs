@@ -1,6 +1,6 @@
 {%- import "macros.py" as py %}
 
-{%- for type_ in ci.iter_types() %}
+{%- for type_ in pci.iter_types() %}
 {%- let type_name = type_|type_name %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
@@ -56,9 +56,9 @@
 {%- include "BytesHelper.py" %}
 
 {%- when Type::Enum { name, module_path } %}
-{%- let e = ci.get_enum_definition(name).unwrap() %}
+{%- let e = pci.get_enum_definition(name).unwrap() %}
 {# For enums, there are either an error *or* an enum, they can't be both. #}
-{%- if ci.is_name_used_as_error(name) %}
+{%- if pci.is_name_used_as_error(name) %}
 {%- include "ErrorTemplate.py" %}
 {%- else %}
 {%- include "EnumTemplate.py" %}

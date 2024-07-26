@@ -5,7 +5,7 @@
 //! Backend-agnostic askama filters
 
 use crate::interface::{
-    AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Function, Object, Record,
+    AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Function, LanguageComponentInterface, Object, Record,
 };
 use askama::Result;
 use std::fmt;
@@ -31,6 +31,7 @@ impl fmt::Display for UniFFIError {
 
 impl std::error::Error for UniFFIError {}
 
+#[macro_export]
 macro_rules! lookup_error {
     ($($args:tt)*) => {
         askama::Error::Custom(Box::new(UniFFIError::new(format!($($args)*))))

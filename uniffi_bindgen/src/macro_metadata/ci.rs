@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::interface::{CallbackInterface, ComponentInterface, Record, Type};
+use crate::interface::{CallbackInterface, ComponentInterface, LanguageComponentInterface, Record, Type};
 use anyhow::{bail, Context};
 use uniffi_meta::{create_metadata_groups, group_metadata, EnumMetadata, Metadata, MetadataGroup};
 

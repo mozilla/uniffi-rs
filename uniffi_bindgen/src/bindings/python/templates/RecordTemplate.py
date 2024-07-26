@@ -1,4 +1,4 @@
-{%- let rec = ci|get_record_definition(name) %}
+{%- let rec = pci.get_record_definition(name) %}
 class {{ type_name }}:
     {%- call py::docstring(rec, 4) %}
     {%- for field in rec.fields() %}

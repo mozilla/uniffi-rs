@@ -167,6 +167,7 @@ mod test {
     use super::super::ComponentInterface;
     use super::*;
     use uniffi_meta::Radix;
+    use crate::interface::LanguageComponentInterface;
 
     #[test]
     fn test_multiple_record_types() {

@@ -181,7 +181,8 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
     let name = item.name();
     let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
-    let docstring = item.docstring();
+    // let docstring = item.docstring();
+    let docstring = "TEST";
     let flat = item.is_flat_error();
     let shape = EnumShape::Error { flat }.as_u8();
     let mut metadata_expr = quote! {

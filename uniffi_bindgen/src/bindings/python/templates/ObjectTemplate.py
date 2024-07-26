@@ -1,11 +1,11 @@
-{%- let obj = ci|get_object_definition(name) %}
+{%- let obj = pci.get_object_definition_filter(name) %}
 {%- let (protocol_name, impl_name) = obj|object_names %}
 {%- let methods = obj.methods() %}
-{%- let protocol_docstring = obj.docstring() %}
+# {%- let protocol_docstring = obj.docstring() %}
 
 {% include "Protocol.py" %}
 
-{% if ci.is_name_used_as_error(name) %}
+{% if pci.is_name_used_as_error(name) %}
 class {{ impl_name }}(Exception):
 {%- else %}
 class {{ impl_name }}:
@@ -108,7 +108,7 @@ class {{ impl_name }}:
 {%- endif %}
 
 {# Objects as error #}
-{%- if ci.is_name_used_as_error(name) %}
+{%- if pci.is_name_used_as_error(name) %}
 {# Due to some mismatches in the ffi converter mechanisms, errors are forced to be a RustBuffer #}
 class {{ ffi_converter_name }}__as_error(_UniffiConverterRustBuffer):
     @classmethod
