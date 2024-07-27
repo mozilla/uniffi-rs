@@ -107,6 +107,9 @@ pub mod library_mode;
 pub mod macro_metadata;
 pub mod scaffolding;
 
+#[cfg(feature = "cargo-metadata")]
+pub mod cargo_metadata;
+
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
@@ -164,6 +167,26 @@ pub struct Component<Config> {
     pub config: Config,
 }
 
+/// A trait used by the bindgen to obtain config information about a source crate
+/// which was found in the metadata for the library.
+///
+/// This is an abstraction around needing the source directory for a crate.
+/// In most cases `cargo_metadata` can be used, but this should be able to work in
+/// more environments.
+pub trait BindgenCrateConfigSupplier {
+    /// Get the toml for the crate. Probably came from uniffi.toml in the root of the crate source.
+    fn get_toml(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
+        Ok(None)
+    }
+    /// Obtains the contents of the named UDL file which was referenced by the type metadata.
+    fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
+        bail!("Crate {crate_name} has no UDL {udl_name}")
+    }
+}
+
+pub struct EmptyCrateConfigSupplier;
+impl BindgenCrateConfigSupplier for EmptyCrateConfigSupplier {}
+
 /// A convenience function for the CLI to help avoid using static libs
 /// in places cdylibs are required.
 pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
@@ -206,8 +229,10 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     let config = {
-        let toml = load_initial_config(Some(crate_root), config_file_override)?;
-        binding_generator.new_config(&toml)?
+        let crate_config = load_toml_file(Some(&crate_root.join("uniffi.toml")))
+            .context("failed to load {crate_root}/uniffi.toml")?;
+        let toml_value = overridden_config_value(crate_config, config_file_override)?;
+        binding_generator.new_config(&toml_value)?
     };
 
     let settings = GenerationSettings {
@@ -405,19 +430,15 @@ fn load_toml_file(source: Option<&Utf8Path>) -> Result<Option<toml::value::Table
 }
 
 /// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
-fn load_initial_config(
-    crate_root: Option<&Utf8Path>,
+fn overridden_config_value(
+    config: Option<toml::value::Table>,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<toml::Value> {
-    let mut config = load_toml_file(crate_root.map(|p| p.join("uniffi.toml")).as_deref())
-        .context("default config")?
-        .unwrap_or(toml::value::Table::default());
-
+    let mut config = config.unwrap_or_default();
     let override_config = load_toml_file(config_file_override).context("override config")?;
     if let Some(override_config) = override_config {
         merge_toml(&mut config, override_config);
     }
-
     Ok(toml::Value::from(config))
 }
 

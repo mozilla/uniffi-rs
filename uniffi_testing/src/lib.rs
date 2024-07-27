@@ -149,6 +149,10 @@ impl UniFFITestHelper {
     pub fn crate_name(&self) -> &str {
         &self.crate_name
     }
+
+    pub fn cargo_metadata(&self) -> Metadata {
+        CARGO_METADATA.clone()
+    }
 }
 
 fn get_cargo_metadata() -> Metadata {
