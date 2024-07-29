@@ -167,28 +167,28 @@ pub trait BindingGenerator: Sized {
 /// ['ComponentInterface'] and uses its own specific language adjustment
 /// functions to be able to generate language specific templates.
 pub trait VisitMut {
-    /// Go through each [`Record`] of a [`ComponentInterface`] and
+    /// Go through each `Record` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
     fn visit_record(&self, ci: &mut ComponentInterface);
 
-    /// Go through each [`Enum`] of a [`ComponentInterface`] and
+    /// Go through each `Enum` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
     fn visit_enum(&self, ci: &mut ComponentInterface);
 
-    /// Go through each [`Type`] in the [`TypeUniverse`] of
+    /// Go through each `Type` in the `TypeUniverse` of
     /// a [`ComponentInterface`] and adjust it to language specific
     /// naming conventions.
     fn visit_type(&self, ci: &mut ComponentInterface);
 
-    /// Go through each [`Object`] of a [`ComponentInterface`] and
+    /// Go through each 'Object` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
     fn visit_object(&self, ci: &mut ComponentInterface);
 
-    /// Go through each [`Function`] of a [`ComponentInterface`] and
+    /// Go through each `Function`] of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
     fn visit_function(&self, ci: &mut ComponentInterface);
 
-    /// Go through each [`CallbackInterface`] of a [`ComponentInterface`] and
+    /// Go through each `CallbackInterface` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
     fn visit_callback_interface(&self, ci: &mut ComponentInterface);
 
