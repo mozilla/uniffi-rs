@@ -47,7 +47,7 @@ class {{ type_name }}:  # type: ignore
                 {%- endfor %}
             ]))
             {%- for field in variant.fields() %}
-            self.{{ field.name()  }} = {{ field.name()  }}
+            self.{{ field.name() }} = {{ field.name() }}
             {%- endfor %}
             {%- else %}
             pass
