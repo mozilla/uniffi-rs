@@ -456,7 +456,6 @@ impl VisitMut for PythonCodeOracle {
                 field.rename(self.var_name(field.name()));
             }
 
-            // new_records.insert(oracle.class_name(key), record);
             new_records.insert(key.to_string(), record);
         }
 
@@ -524,7 +523,6 @@ impl VisitMut for PythonCodeOracle {
     fn visit_object(&self, ci: &mut ComponentInterface) {
         // Conversions for ObjectTemplate.py
         for object_item in ci.objects.iter_mut() {
-            // object_item.rename(oracle.class_name(object_item.name()));
             for meth in &mut object_item.methods {
                 meth.rename(self.fn_name(meth.name()));
 
@@ -549,7 +547,6 @@ impl VisitMut for PythonCodeOracle {
     fn visit_function(&self, ci: &mut ComponentInterface) {
         // Conversions for wrapper.py
         //TODO: Renaming the function name in wrapper.py is not currently tested
-        //TODO: Renaming the callback_interface name in wrapper.py is currently not tested
         for func in ci.functions.iter_mut() {
             func.rename(self.fn_name(func.name()));
 

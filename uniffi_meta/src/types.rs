@@ -171,6 +171,9 @@ impl Type {
         }
     }
 
+    // Currently we just change the `import_name`. Different languages have slightly different
+    // naming patterns. We don't change the name of the external type, because the original
+    // names are used to find them in the `ComponentInterface`.
     pub fn rename(&mut self, new_name: String) {
         if let Type::External { import_name, .. } = self {
             *import_name = new_name
