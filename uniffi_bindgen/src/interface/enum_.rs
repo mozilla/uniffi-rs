@@ -330,7 +330,7 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
 
     fn try_from(meta: uniffi_meta::VariantMetadata) -> Result<Self> {
         Ok(Self {
-            name: meta.name.clone(),
+            name: meta.name,
             discr: meta.discr,
             fields: meta
                 .fields
