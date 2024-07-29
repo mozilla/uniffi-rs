@@ -192,7 +192,7 @@ pub trait VisitMut {
     /// adjust it to language specific naming conventions.
     fn visit_callback_interface(&self, ci: &mut ComponentInterface);
 
-    /// Go through each [`FfiDefinition`] of a [`ComponentInterface`] and
+    /// Go through each FfiDefinition of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
     fn visit_ffi_defitinion(&self, ci: &mut ComponentInterface);
 }
