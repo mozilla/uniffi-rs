@@ -59,7 +59,7 @@ use super::{AsType, Type, TypeIterator};
 pub struct Record {
     pub(super) name: String,
     pub(super) module_path: String,
-    pub(super) fields: Vec<Field>,
+    pub(crate) fields: Vec<Field>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }

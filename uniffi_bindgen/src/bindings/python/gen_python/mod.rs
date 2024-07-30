@@ -10,13 +10,13 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use crate::backend::TemplateExpression;
-use crate::CodeOracle;
 
 use crate::interface::*;
+use crate::VisitMut;
 
 mod callback_interface;
 mod compounds;
@@ -300,9 +300,8 @@ pub struct PythonWrapper<'a> {
 }
 impl<'a> PythonWrapper<'a> {
     pub fn new(config: Config, ci: &'a mut ComponentInterface) -> Self {
-        dbg!("{:#?}", ci.clone());
-        ci.apply_naming_conventions(PythonCodeOracle);
-        dbg!("{:#?}", ci.clone());
+        ci.visit_mut(&PythonCodeOracle);
+
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
@@ -335,16 +334,10 @@ impl PythonCodeOracle {
     fn find(&self, type_: &Type) -> Box<dyn CodeType> {
         type_.clone().as_type().as_codetype()
     }
-}
 
-impl CodeOracle for PythonCodeOracle {
     /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
     fn class_name(&self, nm: &str) -> String {
         fixup_keyword(nm.to_string().to_upper_camel_case())
-    }
-
-    fn external_types_name(&self, nm: &str) -> String {
-        fixup_keyword(nm.to_string())
     }
 
     /// Get the idiomatic Python rendering of a function name.
@@ -448,6 +441,159 @@ impl CodeOracle for PythonCodeOracle {
     }
 }
 
+impl VisitMut for PythonCodeOracle {
+    fn visit_record(&self, ci: &mut ComponentInterface) {
+        // Conversions for RecordTemplate.py
+        let mut new_records: BTreeMap<String, Record> = BTreeMap::new();
+
+        for (key, record_item) in ci.records.iter_mut() {
+            let mut record = record_item.clone();
+
+            // We just want to prefix reserved keywords for the name, without modifying it
+            record.rename(self.class_name(record_item.name()));
+
+            for field in &mut record.fields {
+                field.rename(self.var_name(field.name()));
+            }
+
+            // new_records.insert(oracle.class_name(key), record);
+            new_records.insert(key.to_string(), record);
+        }
+
+        // One cannot alter a BTreeMap in place (with a few hacks maybe...), so we create a new one
+        // with the adjusted names, and replace it.
+        ci.records = new_records;
+    }
+
+    fn visit_enum(&self, ci: &mut ComponentInterface) {
+        // Conversions for EnumTemplate.py and ErrorTemplate.py
+        let errors = ci.errors.clone();
+
+        for enum_item in ci.enums.values_mut() {
+            if errors.contains(enum_item.name()) {
+                enum_item.rename(self.class_name(enum_item.name()));
+
+                for variant in &mut enum_item.variants {
+                    variant.rename(self.class_name(variant.name()));
+
+                    for field in &mut variant.fields {
+                        field.rename(self.var_name(field.name()));
+                    }
+                }
+            } else {
+                enum_item.rename(self.enum_variant_name(enum_item.name()));
+
+                for variant in &mut enum_item.variants {
+                    variant.rename(self.enum_variant_name(variant.name()));
+
+                    //TODO: If we want to remove the last var_name filter
+                    // in the template, this is it. We need an additional
+                    // attribute for the `Variant` so we can
+                    // display Python is_NAME functions
+                    // variant.set_is_name(self.var_name(variant.name()));
+
+                    for field in &mut variant.fields {
+                        field.rename(self.var_name(field.name()));
+                    }
+                }
+            }
+        }
+    }
+
+    fn visit_type(&self, ci: &mut ComponentInterface) {
+        // Applying changes to the TypeUniverse
+        for t in &mut ci.types.type_definitions.values_mut() {
+            if t.name().is_some() {
+                t.rename(self.class_name(&t.name().unwrap()));
+            }
+        }
+
+        let mut known: BTreeSet<Type> = BTreeSet::new();
+
+        for t in &mut ci.types.all_known_types.iter() {
+            let mut ty = t.clone();
+            if t.name().is_some() {
+                ty.rename(self.class_name(&t.name().unwrap()));
+            }
+            known.insert(ty.clone());
+        }
+
+        ci.types.all_known_types = known;
+    }
+
+    fn visit_object(&self, ci: &mut ComponentInterface) {
+        // Conversions for ObjectTemplate.py
+        for object_item in ci.objects.iter_mut() {
+            // object_item.rename(oracle.class_name(object_item.name()));
+            for meth in &mut object_item.methods {
+                meth.rename(self.fn_name(meth.name()));
+
+                for arg in meth.arguments.iter_mut() {
+                    arg.rename(self.var_name(arg.name()));
+                }
+            }
+
+            for cons in &mut object_item.constructors {
+                if !cons.is_primary_constructor() {
+                    cons.rename(self.fn_name(cons.name()));
+                }
+
+                // For macros.py
+                for arg in cons.arguments.iter_mut() {
+                    arg.rename(self.var_name(arg.name()));
+                }
+            }
+        }
+    }
+
+    fn visit_function(&self, ci: &mut ComponentInterface) {
+        // Conversions for wrapper.py
+        //TODO: Renaming the function name in wrapper.py is not currently tested
+        //TODO: Renaming the callback_interface name in wrapper.py is currently not tested
+        for func in ci.functions.iter_mut() {
+            func.rename(self.fn_name(func.name()));
+
+            for arg in func.arguments.iter_mut() {
+                arg.rename(self.var_name(arg.name()));
+            }
+        }
+    }
+
+    fn visit_callback_interface(&self, ci: &mut ComponentInterface) {
+        // Conversions for CallbackInterfaceImpl.py
+        for callback_interface in ci.callback_interfaces.iter_mut() {
+            //TODO: To remove the last fn_name filter, we need to add an attribute for
+            // the `CallbackInterface` so we can alter one specific point in the template
+            // without altering the name everywhere else.
+            // callback_interface.rename_display(oracle.fn_name(callback_interface.name()));
+
+            for method in callback_interface.methods.iter_mut() {
+                method.rename(self.fn_name(method.name()));
+
+                for arg in method.arguments.iter_mut() {
+                    arg.rename(self.var_name(arg.name()));
+                }
+            }
+        }
+    }
+
+    fn visit_ffi_defitinion(&self, ci: &mut ComponentInterface) {
+        //TODO: Renaming the fields for a FfiStruct is currently not being tested
+        // Replace var_name filter for NamespaceLibraryTemplate.py
+        for def in ci.ffi_definitions() {
+            match def {
+                FfiDefinition::Function(_) => {}
+                FfiDefinition::CallbackFunction(_) => {}
+                FfiDefinition::Struct(mut ffi_struct) => {
+                    for field in ffi_struct.fields.iter_mut() {
+                        field.rename(self.var_name(field.name()));
+                    }
+                }
+            }
+        }
+    }
+}
+
 trait AsCodeType {
     fn as_codetype(&self) -> Box<dyn CodeType>;
 }
@@ -507,6 +653,20 @@ pub mod filters {
 
     pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().type_label())
+    }
+
+    //TODO: Remove. Currently just being used by EnumTemplate.py to
+    // display is_NAME_OF_ENUM.
+    /// Get the idiomatic Python rendering of a variable name.
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.var_name(nm))
+    }
+
+    //TODO: Remove. Currently just being used by wrapper.py to display the
+    // callback_interface function names.
+    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
+    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.class_name(nm))
     }
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {

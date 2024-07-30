@@ -110,7 +110,7 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
-use crate::interface::{FfiType, Object};
+use crate::interface::Object;
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
 
@@ -161,49 +161,40 @@ pub trait BindingGenerator: Sized {
     ) -> Result<()>;
 }
 
-pub trait CodeOracle {
-    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    fn class_name(&self, nm: &str) -> String;
+/// A trait to alter language specific type representations.
+///
+/// It is meant to be implemented by each language oracle. It takes a
+/// ['ComponentInterface'] and uses its own specific language adjustment
+/// functions to be able to generate language specific templates.
+pub trait VisitMut {
+    /// Go through each [`Record`] of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_record(&self, ci: &mut ComponentInterface);
 
-    fn external_types_name(&self, nm: &str) -> String;
+    /// Go through each [`Enum`] of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_enum(&self, ci: &mut ComponentInterface);
 
-    /// Get the idiomatic Python rendering of a function name.
-    fn fn_name(&self, nm: &str) -> String;
+    /// Go through each [`Type`] in the [`TypeUniverse`] of
+    /// a [`ComponentInterface`] and adjust it to language specific
+    /// naming conventions.
+    fn visit_type(&self, ci: &mut ComponentInterface);
 
-    /// Get the idiomatic Python rendering of a variable name.
-    fn var_name(&self, nm: &str) -> String;
+    /// Go through each [`Object`] of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_object(&self, ci: &mut ComponentInterface);
 
-    /// Get the idiomatic Python rendering of an individual enum variant.
-    fn enum_variant_name(&self, nm: &str) -> String;
+    /// Go through each [`Function`] of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_function(&self, ci: &mut ComponentInterface);
 
-    /// Get the idiomatic Python rendering of an FFI callback function name
-    fn ffi_callback_name(&self, nm: &str) -> String;
+    /// Go through each [`CallbackInterface`] of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_callback_interface(&self, ci: &mut ComponentInterface);
 
-    /// Get the idiomatic Python rendering of an FFI struct name
-    fn ffi_struct_name(&self, nm: &str) -> String;
-
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String;
-
-    /// Default values for FFI types
-    ///
-    /// Used to set a default return value when returning an error
-    fn ffi_default_value(&self, return_type: Option<&FfiType>) -> String;
-
-    /// Get the name of the protocol and class name for an object.
-    ///
-    /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
-    /// Otherwise, the class name is the object name and the protocol name is derived from that.
-    ///
-    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
-    /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
-    /// only lowers the concrete class.
-    fn object_names(&self, obj: &Object) -> (String, String);
-}
-
-pub trait Renameable {
-    fn name(&self) -> &str;
-
-    fn rename(&mut self, new_name: String);
+    /// Go through each [`FfiDefinition`] of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_ffi_defitinion(&self, ci: &mut ComponentInterface);
 }
 
 /// Everything needed to generate a ComponentInterface.

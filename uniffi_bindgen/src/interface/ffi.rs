@@ -344,7 +344,7 @@ impl FfiCallbackFunction {
 #[derive(Debug, Default, Clone)]
 pub struct FfiStruct {
     pub(super) name: String,
-    pub(super) fields: Vec<FfiField>,
+    pub(crate) fields: Vec<FfiField>,
 }
 
 impl FfiStruct {

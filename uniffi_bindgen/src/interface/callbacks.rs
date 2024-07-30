@@ -45,9 +45,8 @@ use super::{AsType, Type, TypeIterator};
 #[derive(Debug, Clone, Checksum)]
 pub struct CallbackInterface {
     pub(super) name: String,
-    pub(super) display: String,
     pub(super) module_path: String,
-    pub(super) methods: Vec<Method>,
+    pub(crate) methods: Vec<Method>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -63,14 +62,6 @@ pub struct CallbackInterface {
 impl CallbackInterface {
     pub fn name(&self) -> &str {
         &self.name
-    }
-
-    pub fn display(&self) -> &str {
-        &self.display
-    }
-
-    pub fn rename_display(&mut self, new_name: String) {
-        self.display = new_name;
     }
 
     pub fn methods(&self) -> Vec<&Method> {
@@ -137,8 +128,7 @@ impl TryFrom<uniffi_meta::CallbackInterfaceMetadata> for CallbackInterface {
 
     fn try_from(meta: uniffi_meta::CallbackInterfaceMetadata) -> anyhow::Result<Self> {
         Ok(Self {
-            name: meta.name.clone(),
-            display: meta.name,
+            name: meta.name,
             module_path: meta.module_path,
             methods: Default::default(),
             ffi_init_callback: Default::default(),

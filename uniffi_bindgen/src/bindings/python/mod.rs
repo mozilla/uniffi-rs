@@ -10,12 +10,13 @@ use fs_err as fs;
 mod gen_python;
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
-use crate::{Component, GenerationSettings};
+use crate::{BindingGenerator, Component, GenerationSettings};
+
 use gen_python::{generate_python_bindings, Config};
 
 pub struct PythonBindingGenerator;
 
-impl crate::BindingGenerator for PythonBindingGenerator {
+impl BindingGenerator for PythonBindingGenerator {
     type Config = Config;
 
     fn new_config(&self, root_toml: &toml::Value) -> Result<Self::Config> {

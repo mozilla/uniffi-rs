@@ -4,7 +4,6 @@
 
 use super::CodeType;
 use crate::backend::Literal;
-use crate::CodeOracle;
 
 #[derive(Debug)]
 pub struct EnumCodeType {

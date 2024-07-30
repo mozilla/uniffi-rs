@@ -73,7 +73,7 @@ __all__ = [
     "{{ obj|type_name }}",
     {%- endfor %}
     {%- for c in ci.callback_interface_definitions() %}
-    "{{ c.display() }}",
+    "{{ c.name()|class_name  }}",
     {%- endfor %}
 ]
 

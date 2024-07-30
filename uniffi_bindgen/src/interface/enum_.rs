@@ -175,7 +175,7 @@ pub struct Enum {
     pub(super) name: String,
     pub(super) module_path: String,
     pub(super) discr_type: Option<Type>,
-    pub(super) variants: Vec<Variant>,
+    pub(crate) variants: Vec<Variant>,
     pub(super) shape: EnumShape,
     pub(super) non_exhaustive: bool,
     #[checksum_ignore]
@@ -289,9 +289,8 @@ impl AsType for Enum {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Checksum)]
 pub struct Variant {
     pub(super) name: String,
-    pub(super) is_name: String,
     pub(super) discr: Option<Literal>,
-    pub(super) fields: Vec<Field>,
+    pub(crate) fields: Vec<Field>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
@@ -303,14 +302,6 @@ impl Variant {
 
     pub fn rename(&mut self, new_name: String) {
         self.name = new_name;
-    }
-
-    pub fn is_name(&self) -> &str {
-        &self.is_name
-    }
-
-    pub fn set_is_name(&mut self, name: String) {
-        self.is_name = name;
     }
 
     pub fn fields(&self) -> &[Field] {
@@ -340,7 +331,6 @@ impl TryFrom<uniffi_meta::VariantMetadata> for Variant {
     fn try_from(meta: uniffi_meta::VariantMetadata) -> Result<Self> {
         Ok(Self {
             name: meta.name.clone(),
-            is_name: meta.name,
             discr: meta.discr,
             fields: meta
                 .fields
@@ -650,7 +640,6 @@ mod test {
     fn variant(val: Option<u64>) -> Variant {
         Variant {
             name: "v".to_string(),
-            is_name: "v".to_string(),
             discr: val.map(Literal::new_uint),
             fields: vec![],
             docstring: None,

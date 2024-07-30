@@ -49,7 +49,7 @@ pub struct Function {
     pub(super) name: String,
     pub(super) module_path: String,
     pub(super) is_async: bool,
-    pub(super) arguments: Vec<Argument>,
+    pub(crate) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,

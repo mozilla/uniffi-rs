@@ -57,7 +57,6 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
-use crate::Renameable;
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
@@ -86,8 +85,8 @@ pub struct Object {
     /// How this object is implemented in Rust
     pub(super) imp: ObjectImpl,
     pub(super) module_path: String,
-    pub(super) constructors: Vec<Constructor>,
-    pub(super) methods: Vec<Method>,
+    pub(crate) constructors: Vec<Constructor>,
+    pub(crate) methods: Vec<Method>,
     // The "trait" methods - they have a (presumably "well known") name, and
     // a regular method (albeit with a generated name)
     // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
@@ -115,6 +114,10 @@ pub struct Object {
 impl Object {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     /// Returns the fully qualified name that should be used by Rust code for this object.
@@ -292,16 +295,6 @@ impl Object {
     }
 }
 
-impl Renameable for Object {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, new_name: String) {
-        self.name = new_name;
-    }
-}
-
 impl AsType for Object {
     fn as_type(&self) -> Type {
         Type::Object {
@@ -367,7 +360,7 @@ pub struct Constructor {
     pub(super) object_name: String,
     pub(super) object_module_path: String,
     pub(super) is_async: bool,
-    pub(super) arguments: Vec<Argument>,
+    pub(crate) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -388,6 +381,10 @@ pub struct Constructor {
 impl Constructor {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -443,16 +440,6 @@ impl Constructor {
     }
 }
 
-impl Renameable for Constructor {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, new_name: String) {
-        self.name = new_name;
-    }
-}
-
 impl From<uniffi_meta::ConstructorMetadata> for Constructor {
     fn from(meta: uniffi_meta::ConstructorMetadata) -> Self {
         let ffi_name = meta.ffi_symbol_name();
@@ -490,7 +477,7 @@ pub struct Method {
     pub(super) object_module_path: String,
     pub(super) is_async: bool,
     pub(super) object_impl: ObjectImpl,
-    pub(super) arguments: Vec<Argument>,
+    pub(crate) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -513,6 +500,10 @@ pub struct Method {
 impl Method {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn is_async(&self) -> bool {
@@ -601,16 +592,6 @@ impl Method {
     /// For async callback interface methods, the FFI struct to pass to the completion function.
     pub fn foreign_future_ffi_result_struct(&self) -> FfiStruct {
         callbacks::foreign_future_ffi_result_struct(self.return_type.as_ref().map(FfiType::from))
-    }
-}
-
-impl Renameable for Method {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn rename(&mut self, new_name: String) {
-        self.name = new_name;
     }
 }
 

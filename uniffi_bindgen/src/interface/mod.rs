@@ -87,13 +87,13 @@ pub struct ComponentInterface {
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
     /// The high-level API provided by the component.
-    enums: BTreeMap<String, Enum>,
-    records: BTreeMap<String, Record>,
-    functions: Vec<Function>,
-    objects: Vec<Object>,
-    callback_interfaces: Vec<CallbackInterface>,
+    pub(crate) enums: BTreeMap<String, Enum>,
+    pub(crate) records: BTreeMap<String, Record>,
+    pub(crate) functions: Vec<Function>,
+    pub(crate) objects: Vec<Object>,
+    pub(crate) callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
-    errors: HashSet<String>,
+    pub(crate) errors: HashSet<String>,
     // Types which were seen used as callback interface error.
     callback_interface_throws_types: BTreeSet<Type>,
 }
@@ -1172,14 +1172,12 @@ existing definition: Enum {
     variants: [
         Variant {
             name: \"one\",
-            is_name: \"one\",
             discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \"two\",
-            is_name: \"two\",
             discr: None,
             fields: [],
             docstring: None,
@@ -1196,14 +1194,12 @@ new definition: Enum {
     variants: [
         Variant {
             name: \"three\",
-            is_name: \"three\",
             discr: None,
             fields: [],
             docstring: None,
         },
         Variant {
             name: \"four\",
-            is_name: \"four\",
             discr: None,
             fields: [],
             docstring: None,
