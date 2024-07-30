@@ -12,8 +12,9 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [features]
-default = ["cargo_metadata"]
-cargo_metadata = ["dep:cargo_metadata"]
+default = ["cargo-metadata"]
+cargo-metadata = ["dep:cargo_metadata"]
+bindgen-tests = ["cargo-metadata", "dep:uniffi_testing"]
 
 [dependencies]
 anyhow = "1"
@@ -29,7 +30,7 @@ paste = "1.0"
 serde = { version = "1", features = ["derive"] }
 toml = "0.5"
 uniffi_meta = { path = "../uniffi_meta", version = "=0.28.0" }
-uniffi_testing = { path = "../uniffi_testing", version = "=0.28.0" }
+uniffi_testing = { path = "../uniffi_testing", version = "=0.28.0", optional = true }
 uniffi_udl = { path = "../uniffi_udl", version = "=0.28.0" }
 # Don't include the `unicode-linebreak` or `unicode-width` since that functionality isn't needed for
 # docstrings.
