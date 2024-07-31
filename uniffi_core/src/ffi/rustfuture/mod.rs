@@ -12,7 +12,7 @@ use scheduler::*;
 #[cfg(test)]
 mod tests;
 
-use crate::{derive_ffi_traits, Handle, HandleAlloc, LowerReturn, RustCallStatus};
+use crate::{derive_ffi_traits, Handle, HandleAlloc, LiftArgsError, LowerReturn, RustCallStatus};
 
 /// Result code for [rust_future_poll].  This is passed to the continuation function.
 #[repr(i8)]
@@ -42,7 +42,7 @@ where
     // since it will move between threads for an indeterminate amount of time as the foreign
     // executor calls polls it and the Rust executor wakes it.  It does not need to by `Sync`,
     // since we synchronize all access to the values.
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
     // 'static for the same reason as F.
     T: LowerReturn<UT> + Send + 'static,

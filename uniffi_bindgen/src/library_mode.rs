@@ -146,7 +146,7 @@ impl CratePathMap {
     // TODO: we probably need external overrides passed in (maybe via
     // `config_file_override` - what are the semantics of that?)
     // Anyway: for now we just do this.
-    #[cfg(feature = "cargo_metadata")]
+    #[cfg(feature = "cargo-metadata")]
     fn new(no_dep_metadata: bool) -> Result<Self> {
         let mut command = cargo_metadata::MetadataCommand::new();
         if no_dep_metadata {
@@ -157,7 +157,7 @@ impl CratePathMap {
         ))
     }
 
-    #[cfg(not(feature = "cargo_metadata"))]
+    #[cfg(not(feature = "cargo-metadata"))]
     fn new(_no_dep_metadata: bool) -> Result<Self> {
         Ok(Self::default())
     }
@@ -168,7 +168,7 @@ impl CratePathMap {
 }
 
 // all this to get a few paths!?
-#[cfg(feature = "cargo_metadata")]
+#[cfg(feature = "cargo-metadata")]
 impl From<cargo_metadata::Metadata> for CratePathMap {
     fn from(metadata: cargo_metadata::Metadata) -> Self {
         let paths: HashMap<String, Utf8PathBuf> = metadata

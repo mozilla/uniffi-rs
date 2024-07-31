@@ -6,7 +6,8 @@ use clap::Parser;
 use std::env;
 use uniffi_benchmarks::Args;
 use uniffi_bindgen::bindings::{
-    kotlin_run_script, python_run_script, swift_run_script, RunScriptOptions,
+    kotlin_test::run_script as kotlin_run_script, python_test::run_script as python_run_script,
+    swift_test::run_script as swift_run_script, RunScriptOptions,
 };
 
 fn main() {

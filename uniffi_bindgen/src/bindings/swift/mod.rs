@@ -36,8 +36,9 @@ use std::process::Command;
 
 mod gen_swift;
 use gen_swift::{generate_bindings, Config};
-mod test;
-pub use test::{run_script, run_test};
+
+#[cfg(feature = "bindgen-tests")]
+pub mod test;
 
 /// The Swift bindings generated from a [`crate::ComponentInterface`].
 ///

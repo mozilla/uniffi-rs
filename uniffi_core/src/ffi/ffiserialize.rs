@@ -275,7 +275,7 @@ mod test {
             rust_buffer.len(),
             rust_buffer.capacity(),
         );
-        let handle = Handle::from_raw(101).unwrap();
+        let handle = unsafe { Handle::from_raw(101).unwrap() };
         let rust_call_status = RustCallStatus::default();
         let rust_call_status_error_buf = &rust_call_status.error_buf;
         let orig_rust_call_status_buffer_data = (

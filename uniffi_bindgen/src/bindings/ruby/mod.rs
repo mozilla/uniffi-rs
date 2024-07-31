@@ -9,9 +9,9 @@ use anyhow::{Context, Result};
 use fs_err as fs;
 
 mod gen_ruby;
-mod test;
+#[cfg(feature = "bindgen-tests")]
+pub mod test;
 use gen_ruby::{Config, RubyWrapper};
-pub use test::run_test;
 
 pub struct RubyBindingGenerator;
 impl BindingGenerator for RubyBindingGenerator {

@@ -265,15 +265,15 @@ pub(super) fn gen_ffi_function(
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
-                    #lower_return(match uniffi_lift_args() {
+                    match uniffi_lift_args() {
                         ::std::result::Result::Ok(uniffi_args) => {
                             let uniffi_result = #rust_fn_call;
-                            #convert_result
+                            #lower_return(#convert_result)
                         }
-                        ::std::result::Result::Err((arg_name, anyhow_error)) => {
-                            #handle_failed_lift(arg_name, anyhow_error)
+                        ::std::result::Result::Err((arg_name, error)) => {
+                            #handle_failed_lift(::uniffi::LiftArgsError { arg_name, error} )
                         },
-                    })
+                    }
                 })
             }
 
@@ -292,24 +292,21 @@ pub(super) fn gen_ffi_function(
             #[no_mangle]
             pub extern "C" fn #ffi_ident(#(#param_names: #param_types,)*) -> ::uniffi::Handle {
                 ::uniffi::deps::log::debug!(#name);
-                let uniffi_lift_args = #lift_closure;
-                match uniffi_lift_args() {
-                    ::std::result::Result::Ok(uniffi_args) => {
-                        ::uniffi::rust_future_new::<_, #return_ty, _>(
-                            async move {
+                let uniffi_lifted_args = (#lift_closure)();
+                ::uniffi::rust_future_new::<_, #return_ty, _>(
+                    async move {
+                        match uniffi_lifted_args {
+                            ::std::result::Result::Ok(uniffi_args) => {
                                 let uniffi_result = #future_expr.await;
-                                #convert_result
+                                Ok(#convert_result)
+                            }
+                            ::std::result::Result::Err((arg_name, error)) => {
+                                Err(::uniffi::LiftArgsError { arg_name, error })
                             },
-                            crate::UniFfiTag
-                        )
+                        }
                     },
-                    ::std::result::Result::Err((arg_name, anyhow_error)) => {
-                        ::uniffi::rust_future_new::<_, #return_ty, _>(
-                            async move { #handle_failed_lift(arg_name, anyhow_error) },
-                            crate::UniFfiTag,
-                        )
-                    },
-                }
+                    crate::UniFfiTag
+                )
             }
 
             #scaffolding_fn_ffi_buffer_version

@@ -8,10 +8,10 @@ use anyhow::Result;
 use fs_err as fs;
 
 mod gen_python;
-mod test;
+#[cfg(feature = "bindgen-tests")]
+pub mod test;
 use crate::{Component, GenerationSettings};
 use gen_python::{generate_python_bindings, Config};
-pub use test::{run_script, run_test};
 
 pub struct PythonBindingGenerator;
 

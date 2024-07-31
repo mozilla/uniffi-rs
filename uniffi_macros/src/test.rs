@@ -30,16 +30,16 @@ pub(crate) fn build_foreign_language_testcases(tokens: TokenStream) -> TokenStre
             );
             let run_test = match test_file_pathbuf.extension() {
                 Some("kts") => quote! {
-                    ::uniffi::kotlin_run_test
+                    ::uniffi::kotlin_test::run_test
                 },
                 Some("swift") => quote! {
-                    ::uniffi::swift_run_test
+                    ::uniffi::swift_test::run_test
                 },
                 Some("py") => quote! {
-                    ::uniffi::python_run_test
+                    ::uniffi::python_test::run_test
                 },
                 Some("rb") => quote! {
-                    ::uniffi::ruby_run_test
+                    ::uniffi::ruby_test::run_test
                 },
                 _ => panic!("Unexpected extension for test script: {test_file_name}"),
             };
