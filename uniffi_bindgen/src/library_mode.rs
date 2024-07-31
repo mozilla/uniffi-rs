@@ -41,7 +41,6 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
     try_format_code: bool,
-    no_dep_metadata: bool,
 ) -> Result<Vec<Component<T::Config>>> {
     let mut components = find_components(config_supplier, library_path)?
         .into_iter()

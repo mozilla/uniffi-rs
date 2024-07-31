@@ -182,7 +182,6 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
-                no_deps,
             )?
             .len(),
             TargetLanguage::Python => generate_bindings(
@@ -193,7 +192,6 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
-                no_deps,
             )?
             .len(),
             TargetLanguage::Ruby => generate_bindings(
@@ -204,7 +202,6 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
-                no_deps,
             )?
             .len(),
             TargetLanguage::Swift => generate_bindings(
@@ -215,7 +212,6 @@ fn gen_library_mode(
                 cfo,
                 out_dir,
                 fmt,
-                no_deps,
             )?
             .len(),
         };
