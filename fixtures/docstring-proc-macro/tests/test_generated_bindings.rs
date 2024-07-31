@@ -50,10 +50,19 @@ mod tests {
 
         let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir).unwrap();
 
+        let config_supplier = {
+            use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
+            let metadata = cargo_metadata::MetadataCommand::new()
+                .exec()
+                .expect("error running cargo metadata");
+            CrateConfigSupplier::from(metadata)
+        };
+
         uniffi_bindgen::library_mode::generate_bindings(
             &cdylib_path,
             None,
             &gen,
+            &config_supplier,
             None,
             &out_dir,
             false,

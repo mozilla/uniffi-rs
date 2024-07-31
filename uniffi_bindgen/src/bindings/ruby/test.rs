@@ -2,6 +2,7 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::cargo_metadata::CrateConfigSupplier;
 use crate::library_mode::generate_bindings;
 use anyhow::{bail, Context, Result};
 use camino::Utf8Path;
@@ -37,6 +38,7 @@ pub fn test_script_command(
         &cdylib_path,
         None,
         &super::RubyBindingGenerator,
+        &CrateConfigSupplier::from(test_helper.cargo_metadata()),
         None,
         &out_dir,
         false,

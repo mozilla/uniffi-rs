@@ -16,11 +16,11 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 use crate::{
-    load_initial_config, macro_metadata, BindingGenerator, Component, ComponentInterface,
-    GenerationSettings, Result,
+    macro_metadata, overridden_config_value, BindgenCrateConfigSupplier, BindingGenerator,
+    Component, ComponentInterface, GenerationSettings, Result,
 };
-use anyhow::{bail, Context};
-use camino::{Utf8Path, Utf8PathBuf};
+use anyhow::bail;
+use camino::Utf8Path;
 use std::{collections::HashMap, fs};
 use uniffi_meta::{
     create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
@@ -37,18 +37,18 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     library_path: &Utf8Path,
     crate_name: Option<String>,
     binding_generator: &T,
+    config_supplier: &dyn BindgenCrateConfigSupplier,
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
     try_format_code: bool,
     no_dep_metadata: bool,
 ) -> Result<Vec<Component<T::Config>>> {
-    let path_map = CratePathMap::new(no_dep_metadata)?;
-    let mut components = find_components(&path_map, library_path)?
+    let mut components = find_components(config_supplier, library_path)?
         .into_iter()
         .map(|ci| {
-            let crate_root = path_map.get_path(ci.crate_name());
-            let config = binding_generator
-                .new_config(&load_initial_config(crate_root, config_file_override)?)?;
+            let crate_toml = config_supplier.get_toml(ci.crate_name())?;
+            let toml_value = overridden_config_value(crate_toml, config_file_override)?;
+            let config = binding_generator.new_config(&toml_value)?;
             Ok(Component { ci, config })
         })
         .collect::<Result<Vec<_>>>()?;
@@ -92,7 +92,7 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
 }
 
 fn find_components(
-    crates: &CratePathMap,
+    config_supplier: &dyn BindgenCrateConfigSupplier,
     library_path: &Utf8Path,
 ) -> Result<Vec<ComponentInterface>> {
     let items = macro_metadata::extract_from_library(library_path)?;
@@ -105,9 +105,7 @@ fn find_components(
 
     for group in metadata_groups.values() {
         let crate_name = group.namespace.crate_name.clone();
-        let path = crates.get_path(&crate_name);
-
-        if let Some(mut metadata_group) = load_udl_metadata(group, path, &crate_name)? {
+        if let Some(mut metadata_group) = load_udl_metadata(group, &crate_name, config_supplier)? {
             // fixup the items.
             metadata_group.items = metadata_group
                 .items
@@ -136,60 +134,10 @@ fn find_components(
         .collect()
 }
 
-#[derive(Debug, Clone, Default)]
-struct CratePathMap {
-    // path on disk where we will find the crate's source.
-    paths: HashMap<String, Utf8PathBuf>,
-}
-
-impl CratePathMap {
-    // TODO: we probably need external overrides passed in (maybe via
-    // `config_file_override` - what are the semantics of that?)
-    // Anyway: for now we just do this.
-    #[cfg(feature = "cargo-metadata")]
-    fn new(no_dep_metadata: bool) -> Result<Self> {
-        let mut command = cargo_metadata::MetadataCommand::new();
-        if no_dep_metadata {
-            command.no_deps();
-        }
-        Ok(Self::from(
-            command.exec().context("error running cargo metadata")?,
-        ))
-    }
-
-    #[cfg(not(feature = "cargo-metadata"))]
-    fn new(_no_dep_metadata: bool) -> Result<Self> {
-        Ok(Self::default())
-    }
-
-    fn get_path(&self, crate_name: &str) -> Option<&Utf8Path> {
-        self.paths.get(crate_name).map(|p| p.as_path())
-    }
-}
-
-// all this to get a few paths!?
-#[cfg(feature = "cargo-metadata")]
-impl From<cargo_metadata::Metadata> for CratePathMap {
-    fn from(metadata: cargo_metadata::Metadata) -> Self {
-        let paths: HashMap<String, Utf8PathBuf> = metadata
-            .packages
-            .iter()
-            .flat_map(|p| {
-                p.targets.iter().filter(|t| t.is_lib()).filter_map(|t| {
-                    p.manifest_path
-                        .parent()
-                        .map(|p| (t.name.replace('-', "_"), p.to_owned()))
-                })
-            })
-            .collect();
-        Self { paths }
-    }
-}
-
 fn load_udl_metadata(
     group: &MetadataGroup,
-    crate_root: Option<&Utf8Path>,
     crate_name: &str,
+    config_supplier: &dyn BindgenCrateConfigSupplier,
 ) -> Result<Option<MetadataGroup>> {
     let udl_items = group
         .items
@@ -199,10 +147,9 @@ fn load_udl_metadata(
             _ => None,
         })
         .collect::<Vec<_>>();
+    // We only support 1 UDL file per crate, for no good reason!
     match udl_items.len() {
-        // No UDL files, load directly from the group
         0 => Ok(None),
-        // Found a UDL file, use it to load the CI, then add the MetadataGroup
         1 => {
             if udl_items[0].module_path != crate_name {
                 bail!(
@@ -211,18 +158,9 @@ fn load_udl_metadata(
                     crate_name
                 );
             }
-            let ci_name = &udl_items[0].file_stub;
-            let ci_path = crate_root
-                .context(format!("No path known to '{ci_name}.udl'"))?
-                .join("src")
-                .join(format!("{ci_name}.udl"));
-            if ci_path.exists() {
-                let udl = fs::read_to_string(ci_path)?;
-                let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
-                Ok(Some(udl_group))
-            } else {
-                bail!("{ci_path} not found");
-            }
+            let udl = config_supplier.get_udl(crate_name, &udl_items[0].file_stub)?;
+            let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
+            Ok(Some(udl_group))
         }
         n => bail!("{n} UDL files found for {crate_name}"),
     }

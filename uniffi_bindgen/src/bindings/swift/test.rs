@@ -3,10 +3,12 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::bindings::RunScriptOptions;
+use crate::cargo_metadata::CrateConfigSupplier;
 use crate::library_mode::generate_bindings;
 
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
+use cargo_metadata::Metadata;
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::OsStr;
 use std::fs::{read_to_string, File};
@@ -39,8 +41,12 @@ pub fn run_script(
     let test_helper = UniFFITestHelper::new(package_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
-    let generated_sources =
-        GeneratedSources::new(test_helper.crate_name(), &cdylib_path, &out_dir)?;
+    let generated_sources = GeneratedSources::new(
+        test_helper.crate_name(),
+        &cdylib_path,
+        test_helper.cargo_metadata(),
+        &out_dir,
+    )?;
 
     // Compile the generated sources together to create a single swift module
     compile_swift_module(
@@ -125,11 +131,17 @@ struct GeneratedSources {
 }
 
 impl GeneratedSources {
-    fn new(crate_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
+    fn new(
+        crate_name: &str,
+        cdylib_path: &Utf8Path,
+        cargo_metadata: Metadata,
+        out_dir: &Utf8Path,
+    ) -> Result<Self> {
         let sources = generate_bindings(
             cdylib_path,
             None,
             &super::SwiftBindingGenerator,
+            &CrateConfigSupplier::from(cargo_metadata),
             None,
             out_dir,
             false,

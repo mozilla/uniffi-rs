@@ -19,6 +19,9 @@
 
 ### What's new?
 
+- A new bindgen command line option `--metadata-no-deps` is available to avoid processing
+  cargo_metadata for all dependencies.
+
 - Objects error types can now be as `Result<>` error type without wrapping them in `Arc<>`.
 
 - Swift errors now provide `localizedDescription` ([#2116](https://github.com/mozilla/uniffi-rs/pull/2116))
