@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
 use std::fmt;
@@ -108,6 +108,14 @@ enum Commands {
 
         /// Path to the UDL file, or cdylib if `library-mode` is specified
         source: Utf8PathBuf,
+
+        /// Whether we should exclude dependencies when running "cargo metadata".
+        /// This will mean external types may not be resolved if they are implemented in crates
+        /// outside of this workspace.
+        /// This can be used in environments when all types are in the namespace and fetching
+        /// all sub-dependencies causes obscure platform specific problems.
+        #[clap(long)]
+        metadata_no_deps: bool,
     },
 
     /// Generate Rust scaffolding code
@@ -138,8 +146,23 @@ fn gen_library_mode(
     cfo: Option<&camino::Utf8Path>,
     out_dir: &camino::Utf8Path,
     fmt: bool,
+    metadata_no_deps: bool,
 ) -> anyhow::Result<()> {
     use uniffi_bindgen::library_mode::generate_bindings;
+
+    #[cfg(feature = "cargo-metadata")]
+    let config_supplier = {
+        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        if metadata_no_deps {
+            cmd.no_deps();
+        }
+        let metadata = cmd.exec().context("error running cargo metadata")?;
+        CrateConfigSupplier::from(metadata)
+    };
+    #[cfg(not(feature = "cargo-metadata"))]
+    let config_supplier = uniffi_bindgen::EmptyCrateConfigSupplier;
+
     for language in languages {
         // to help avoid mistakes we check the library is actually a cdylib, except
         // for swift where static libs are often used to extract the metadata.
@@ -155,6 +178,7 @@ fn gen_library_mode(
                 library_path,
                 crate_name.clone(),
                 &KotlinBindingGenerator,
+                &config_supplier,
                 cfo,
                 out_dir,
                 fmt,
@@ -164,6 +188,7 @@ fn gen_library_mode(
                 library_path,
                 crate_name.clone(),
                 &PythonBindingGenerator,
+                &config_supplier,
                 cfo,
                 out_dir,
                 fmt,
@@ -173,6 +198,7 @@ fn gen_library_mode(
                 library_path,
                 crate_name.clone(),
                 &RubyBindingGenerator,
+                &config_supplier,
                 cfo,
                 out_dir,
                 fmt,
@@ -182,6 +208,7 @@ fn gen_library_mode(
                 library_path,
                 crate_name.clone(),
                 &SwiftBindingGenerator,
+                &config_supplier,
                 cfo,
                 out_dir,
                 fmt,
@@ -257,6 +284,7 @@ pub fn run_main() -> anyhow::Result<()> {
             source,
             crate_name,
             library_mode,
+            metadata_no_deps,
         } => {
             if library_mode {
                 if lib_file.is_some() {
@@ -273,8 +301,12 @@ pub fn run_main() -> anyhow::Result<()> {
                     config.as_deref(),
                     &out_dir,
                     !no_format,
+                    metadata_no_deps,
                 )?;
             } else {
+                if metadata_no_deps {
+                    panic!("--metadata-no-deps makes no sense when not in library mode")
+                }
                 gen_bindings(
                     &source,
                     config.as_deref(),

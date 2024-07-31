@@ -21,19 +21,22 @@ uniffi_core = { path = "../uniffi_core", version = "=0.28.0" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.28.0" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
+cargo_metadata = { version = "0.15", optional = true }
 clap = { version = "4", features = ["cargo", "std", "derive"], optional = true }
 
 [dev-dependencies]
 trybuild = "1"
 
 [features]
-default = []
+default = ["cargo-metadata"]
 # Support for features needed by the `build.rs` script. Enable this in your
 # `build-dependencies`.
 build = [ "dep:uniffi_build" ]
 # Support for `uniffi_bindgen::{generate_bindings, generate_component_scaffolding}`.
 # Enable this feature for your `uniffi-bindgen` binaries if you don't need the full CLI.
 bindgen = ["dep:uniffi_bindgen"]
+cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata"]
+
 # Support for `uniffi_bindgen_main()`. Enable this feature for your
 # `uniffi-bindgen` binaries.
 cli = [ "bindgen", "dep:clap", "dep:camino" ]
