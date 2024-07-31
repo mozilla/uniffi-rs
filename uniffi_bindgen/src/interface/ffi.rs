@@ -43,7 +43,7 @@ pub enum FfiType {
     /// or pass it to someone that will.
     /// If the inner option is Some, it is the name of the external type. The bindings may need
     /// to use this name to import the correct RustBuffer for that type.
-    RustBuffer(Option<ExternalMetadata>),
+    RustBuffer(Option<ExternalFfiMetadata>),
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
@@ -147,7 +147,7 @@ impl From<&Type> for FfiType {
                 module_path,
                 namespace,
                 ..
-            } => FfiType::RustBuffer(Some(ExternalMetadata {
+            } => FfiType::RustBuffer(Some(ExternalFfiMetadata {
                 name: name.clone(),
                 module_path: module_path.clone(),
                 namespace: namespace.clone(),
@@ -158,7 +158,7 @@ impl From<&Type> for FfiType {
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ExternalMetadata {
+pub struct ExternalFfiMetadata {
     pub name: String,
     pub module_path: String,
     pub namespace: String,
