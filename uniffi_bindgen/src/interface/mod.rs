@@ -66,8 +66,8 @@ pub use object::{Constructor, Method, Object, UniffiTrait};
 mod record;
 pub use record::{Field, Record};
 
-mod visit_mut;
 pub mod ffi;
+mod visit_mut;
 pub use ffi::{
     FfiArgument, FfiCallbackFunction, FfiDefinition, FfiField, FfiFunction, FfiStruct, FfiType,
 };

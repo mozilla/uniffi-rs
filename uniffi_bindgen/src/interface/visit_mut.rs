@@ -26,7 +26,6 @@ impl ComponentInterface {
 
         self.types.all_known_types = all_known_types_altered;
 
-
         let mut updated_enums: BTreeMap<String, Enum> = BTreeMap::new();
         let errors_clone = self.errors.clone();
         for (enum_name, enum_item) in self.enums.iter_mut() {
