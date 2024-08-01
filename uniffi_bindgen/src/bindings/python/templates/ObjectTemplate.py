@@ -49,7 +49,6 @@ class {{ impl_name }}:
         return inst
 
 {%- for cons in obj.alternate_constructors() %}
-
     @classmethod
 {%-  if cons.is_async() %}
     async def {{ cons.name() }}(cls, {% call py::arg_list_decl(cons) %}):

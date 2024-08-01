@@ -450,7 +450,7 @@ impl VisitMut for PythonCodeOracle {
         object.rename(self.class_name(object.name()));
     }
 
-    fn visit_record_key(&self, key: &str) -> String {
+    fn visit_record_key(&self, key: &mut String) -> String {
         self.class_name(key)
     }
 
@@ -474,7 +474,7 @@ impl VisitMut for PythonCodeOracle {
         }
     }
 
-    fn visit_enum_key(&self, key: &str) -> String {
+    fn visit_enum_key(&self, key: &mut String) -> String {
         self.class_name(key)
     }
 
@@ -493,10 +493,13 @@ impl VisitMut for PythonCodeOracle {
     }
 
     fn visit_type(&self, type_: &mut Type) {
-        // Applying changes to the TypeUniverse
-        if type_.name().is_some() {
-            type_.rename(self.class_name(&type_.name().unwrap()));
-        }
+        // Renaming Types is a special case. We have simple types with names like
+        // an Object, but we also have types which have inner_types and builtin types.
+        // Which in turn have a different name. Therefore we pass the patterns as a
+        // function down to the renaming operation of the type itself, which can apply it
+        // to all its nested names if needed.
+        let name_transformer = |name: &str| self.class_name(name);
+        type_.rename_recursive(&name_transformer);
     }
 
     fn visit_method(&self, method: &mut Method) {

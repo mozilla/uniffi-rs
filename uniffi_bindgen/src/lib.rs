@@ -182,7 +182,7 @@ pub trait VisitMut {
     /// Change the index key of a `Record` entry in the [`ComponentInterface`]
     /// so it adheres to the name the associated `Record`
     /// based on language specific naming conventions.
-    fn visit_record_key(&self, key: &str) -> String;
+    fn visit_record_key(&self, key: &mut String) -> String;
 
     /// Change the name of a `Field` of an `Enum` `Variant`
     /// to language specific naming conventions.
@@ -203,7 +203,7 @@ pub trait VisitMut {
     /// Change the naming of the key in the [`ComponentInterface`]
     /// `BTreeMap` where all `Enum`s are stored to reflect the changed
     /// name of an `Enum`.
-    fn visit_enum_key(&self, key: &str) -> String;
+    fn visit_enum_key(&self, key: &mut String) -> String;
 
     /// Go through each `Variant` of an `Enum` and
     /// adjust it to language specific naming conventions.

@@ -149,48 +149,48 @@ impl Type {
             Type::Object { name, .. } => Some(name.to_string()),
             Type::Record { name, .. } => Some(name.to_string()),
             Type::Enum { name, .. } => Some(name.to_string()),
-            Type::Custom { name, .. } => Some(name.to_string()),
             Type::External { name, .. } => Some(name.to_string()),
-            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-                if inner_type.name().is_some() {
-                    Some(inner_type.name().unwrap())
-                } else {
-                    None
-                }
-            }
-            Type::Map {
-                value_type,
-                key_type,
-            } => key_type.name().or_else(|| value_type.name()),
+            Type::Custom { name, .. } => Some(name.to_string()),
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => inner_type.name(),
             _ => None,
         }
     }
 
-    pub fn rename(&mut self, new_name: String) {
+    fn rename(&mut self, new_name: String) {
         match self {
             Type::Object { name, .. } => *name = new_name,
             Type::Record { name, .. } => *name = new_name,
             Type::Enum { name, .. } => *name = new_name,
+            Type::External { name, .. } => *name = new_name,
             Type::Custom { name, .. } => *name = new_name,
-            Type::External { name, .. } => {
-                *name = new_name;
-            }
             Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-                if inner_type.name().is_some() {
-                    inner_type.rename(new_name);
-                }
+                inner_type.rename(new_name);
+            }
+            _ => {}
+        }
+    }
+
+    pub fn rename_recursive(&mut self, name_transformer: &impl Fn(&str) -> String) {
+        // Rename the current type if it has a name
+        if let Some(name) = self.name() {
+            self.rename(name_transformer(&name));
+        }
+
+        // Recursively rename nested types
+        match self {
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+                inner_type.rename_recursive(name_transformer);
             }
             Type::Map {
-                value_type,
                 key_type,
+                value_type,
+                ..
             } => {
-                if value_type.name().is_some() {
-                    value_type.rename(new_name.clone());
-                }
-
-                if key_type.name().is_some() {
-                    key_type.rename(new_name);
-                }
+                key_type.rename_recursive(name_transformer);
+                value_type.rename_recursive(name_transformer);
+            }
+            Type::Custom { builtin, .. } => {
+                builtin.rename_recursive(name_transformer);
             }
             _ => {}
         }

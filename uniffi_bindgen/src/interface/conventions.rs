@@ -29,7 +29,7 @@ impl ComponentInterface {
         let mut updated_enums: BTreeMap<String, Enum> = BTreeMap::new();
         let errors_clone = self.errors.clone();
         for (enum_name, enum_item) in self.enums.iter_mut() {
-            let updated_key = visitor.visit_enum_key(enum_name);
+            let updated_key = visitor.visit_enum_key(&mut enum_name.clone());
             let is_error = errors_clone.contains(enum_item.name());
 
             visitor.visit_enum(is_error, enum_item);
@@ -58,6 +58,12 @@ impl ComponentInterface {
         for function in self.functions.iter_mut() {
             visitor.visit_function(function);
 
+            if function.clone().return_type.is_some() {
+                let mut return_type = function.clone().return_type.unwrap();
+                visitor.visit_type(&mut return_type);
+                function.return_type = Some(return_type);
+            }
+
             for argument in function.arguments.iter_mut() {
                 visitor.visit_argument(argument);
                 visitor.visit_type(&mut argument.type_);
@@ -73,6 +79,12 @@ impl ComponentInterface {
                 for argument in method.arguments.iter_mut() {
                     visitor.visit_argument(argument);
                     visitor.visit_type(&mut argument.type_);
+                }
+
+                if method.clone().return_type.is_some() {
+                    let mut return_type = method.clone().return_type.unwrap();
+                    visitor.visit_type(&mut return_type);
+                    method.return_type = Some(return_type);
                 }
             }
 
@@ -124,7 +136,7 @@ impl ComponentInterface {
         let mut new_records: BTreeMap<String, Record> = BTreeMap::new();
 
         for (key, record) in self.records.iter() {
-            new_records.insert(visitor.visit_record_key(key), record.clone());
+            new_records.insert(visitor.visit_record_key(&mut key.clone()), record.clone());
         }
 
         self.records = new_records;
