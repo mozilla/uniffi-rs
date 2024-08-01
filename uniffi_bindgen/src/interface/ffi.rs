@@ -297,12 +297,12 @@ impl FfiArgument {
         &self.name
     }
 
-    pub fn type_(&self) -> FfiType {
-        self.type_.clone()
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
-    pub fn rename(&mut self, name: String) {
-        self.name = name;
+    pub fn type_(&self) -> FfiType {
+        self.type_.clone()
     }
 }
 
@@ -344,7 +344,7 @@ impl FfiCallbackFunction {
 #[derive(Debug, Default, Clone)]
 pub struct FfiStruct {
     pub(super) name: String,
-    pub(crate) fields: Vec<FfiField>,
+    pub(super) fields: Vec<FfiField>,
 }
 
 impl FfiStruct {

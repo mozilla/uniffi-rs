@@ -85,8 +85,8 @@ pub struct Object {
     /// How this object is implemented in Rust
     pub(super) imp: ObjectImpl,
     pub(super) module_path: String,
-    pub(crate) constructors: Vec<Constructor>,
-    pub(crate) methods: Vec<Method>,
+    pub(super) constructors: Vec<Constructor>,
+    pub(super) methods: Vec<Method>,
     // The "trait" methods - they have a (presumably "well known") name, and
     // a regular method (albeit with a generated name)
     // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
@@ -360,7 +360,7 @@ pub struct Constructor {
     pub(super) object_name: String,
     pub(super) object_module_path: String,
     pub(super) is_async: bool,
-    pub(crate) arguments: Vec<Argument>,
+    pub(super) arguments: Vec<Argument>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -477,7 +477,7 @@ pub struct Method {
     pub(super) object_module_path: String,
     pub(super) is_async: bool,
     pub(super) object_impl: ObjectImpl,
-    pub(crate) arguments: Vec<Argument>,
+    pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,

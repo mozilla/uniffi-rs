@@ -46,7 +46,7 @@ use super::{AsType, Type, TypeIterator};
 pub struct CallbackInterface {
     pub(super) name: String,
     pub(super) module_path: String,
-    pub(crate) methods: Vec<Method>,
+    pub(super) methods: Vec<Method>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -62,6 +62,10 @@ pub struct CallbackInterface {
 impl CallbackInterface {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn methods(&self) -> Vec<&Method> {

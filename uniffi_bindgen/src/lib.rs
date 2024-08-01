@@ -110,9 +110,13 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
-use crate::interface::Object;
+use crate::interface::{
+    Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
+    Variant,
+};
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
+use uniffi_meta::Type;
 
 /// The options used when creating bindings. Named such
 /// it doesn't cause confusion that it's settings specific to
@@ -169,32 +173,40 @@ pub trait BindingGenerator: Sized {
 pub trait VisitMut {
     /// Go through each `Record` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
-    fn visit_record(&self, ci: &mut ComponentInterface);
+    fn visit_record(&self, record: &mut Record);
+
+    fn visit_object(&self, object: &mut Object);
+
+    fn visit_record_key(&self, key: &str) -> String;
+
+    fn visit_field(&self, field: &mut Field);
+
+    fn visit_ffi_field(&self, ffi_field: &mut FfiField);
+
+    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument);
 
     /// Go through each `Enum` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
-    fn visit_enum(&self, ci: &mut ComponentInterface);
+    fn visit_enum(&self, is_error: bool, enum_: &mut Enum);
+
+    fn visit_enum_key(&self, key: &str) -> String;
+
+    fn visit_variant(&self, is_error: bool, variant: &mut Variant);
 
     /// Go through each `Type` in the `TypeUniverse` of
     /// a [`ComponentInterface`] and adjust it to language specific
     /// naming conventions.
-    fn visit_type(&self, ci: &mut ComponentInterface);
+    fn visit_type(&self, type_: &mut Type);
 
-    /// Go through each 'Object` of a [`ComponentInterface`] and
-    /// adjust it to language specific naming conventions.
-    fn visit_object(&self, ci: &mut ComponentInterface);
+    fn visit_method(&self, method: &mut Method);
+
+    fn visit_argument(&self, argument: &mut Argument);
+
+    fn visit_constructor(&self, constructor: &mut Constructor);
 
     /// Go through each `Function`] of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
-    fn visit_function(&self, ci: &mut ComponentInterface);
-
-    /// Go through each `CallbackInterface` of a [`ComponentInterface`] and
-    /// adjust it to language specific naming conventions.
-    fn visit_callback_interface(&self, ci: &mut ComponentInterface);
-
-    /// Go through each FfiDefinition of a [`ComponentInterface`] and
-    /// adjust it to language specific naming conventions.
-    fn visit_ffi_defitinion(&self, ci: &mut ComponentInterface);
+    fn visit_function(&self, function: &mut Function);
 }
 
 /// Everything needed to generate a ComponentInterface.

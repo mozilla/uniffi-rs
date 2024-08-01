@@ -10,7 +10,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use crate::backend::TemplateExpression;
@@ -303,7 +303,7 @@ impl<'a> PythonWrapper<'a> {
         ci.visit_mut(&PythonCodeOracle);
 
         let type_renderer = TypeRenderer::new(&config, ci);
-        let type_helper_code = type_renderer.render().unwrap();
+        let type_helper_code = type_renderer.render().map_err(|e| println!("{e}")).unwrap();
         let type_imports = type_renderer.imports.into_inner();
 
         Self {
@@ -442,152 +442,81 @@ impl PythonCodeOracle {
 }
 
 impl VisitMut for PythonCodeOracle {
-    fn visit_record(&self, ci: &mut ComponentInterface) {
-        // Conversions for RecordTemplate.py
-        let mut new_records: BTreeMap<String, Record> = BTreeMap::new();
-
-        for (key, record_item) in ci.records.iter_mut() {
-            let mut record = record_item.clone();
-
-            // We just want to prefix reserved keywords for the name, without modifying it
-            record.rename(self.class_name(record_item.name()));
-
-            for field in &mut record.fields {
-                field.rename(self.var_name(field.name()));
-            }
-
-            new_records.insert(key.to_string(), record);
-        }
-
-        // One cannot alter a BTreeMap in place (with a few hacks maybe...), so we create a new one
-        // with the adjusted names, and replace it.
-        ci.records = new_records;
+    fn visit_record(&self, record: &mut Record) {
+        record.rename(self.class_name(record.name()));
     }
 
-    fn visit_enum(&self, ci: &mut ComponentInterface) {
-        // Conversions for EnumTemplate.py and ErrorTemplate.py
-        let errors = ci.errors.clone();
+    fn visit_object(&self, object: &mut Object) {
+        object.rename(self.class_name(object.name()));
+    }
 
-        for enum_item in ci.enums.values_mut() {
-            if errors.contains(enum_item.name()) {
-                enum_item.rename(self.class_name(enum_item.name()));
+    fn visit_record_key(&self, key: &str) -> String {
+        self.class_name(key)
+    }
 
-                for variant in &mut enum_item.variants {
-                    variant.rename(self.class_name(variant.name()));
+    fn visit_field(&self, field: &mut Field) {
+        field.rename(self.var_name(field.name()));
+    }
 
-                    for field in &mut variant.fields {
-                        field.rename(self.var_name(field.name()));
-                    }
-                }
-            } else {
-                enum_item.rename(self.enum_variant_name(enum_item.name()));
+    fn visit_ffi_field(&self, ffi_field: &mut FfiField) {
+        ffi_field.rename(self.var_name(ffi_field.name()));
+    }
 
-                for variant in &mut enum_item.variants {
-                    variant.rename(self.enum_variant_name(variant.name()));
+    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument) {
+        ffi_argument.rename(self.class_name(ffi_argument.name()));
+    }
 
-                    //TODO: If we want to remove the last var_name filter
-                    // in the template, this is it. We need an additional
-                    // attribute for the `Variant` so we can
-                    // display Python is_NAME functions
-                    // variant.set_is_name(self.var_name(variant.name()));
-
-                    for field in &mut variant.fields {
-                        field.rename(self.var_name(field.name()));
-                    }
-                }
-            }
+    fn visit_enum(&self, is_error: bool, enum_: &mut Enum) {
+        if is_error {
+            enum_.rename(self.class_name(enum_.name()));
+        } else {
+            enum_.rename(self.enum_variant_name(enum_.name()));
         }
     }
 
-    fn visit_type(&self, ci: &mut ComponentInterface) {
+    fn visit_enum_key(&self, key: &str) -> String {
+        self.class_name(key)
+    }
+
+    fn visit_variant(&self, is_error: bool, variant: &mut Variant) {
+        //TODO: If we want to remove the last var_name filter
+        // in the template, this is it. We need an additional
+        // attribute for the `Variant` so we can
+        // display Python is_NAME functions
+        // variant.set_is_name(self.var_name(variant.name()));
+
+        if is_error {
+            variant.rename(self.class_name(variant.name()));
+        } else {
+            variant.rename(self.enum_variant_name(variant.name()));
+        }
+    }
+
+    fn visit_type(&self, type_: &mut Type) {
         // Applying changes to the TypeUniverse
-        for t in &mut ci.types.type_definitions.values_mut() {
-            if t.name().is_some() {
-                t.rename(self.class_name(&t.name().unwrap()));
-            }
-        }
-
-        let mut known: BTreeSet<Type> = BTreeSet::new();
-
-        for t in &mut ci.types.all_known_types.iter() {
-            let mut ty = t.clone();
-            if t.name().is_some() {
-                ty.rename(self.class_name(&t.name().unwrap()));
-            }
-            known.insert(ty.clone());
-        }
-
-        ci.types.all_known_types = known;
-    }
-
-    fn visit_object(&self, ci: &mut ComponentInterface) {
-        // Conversions for ObjectTemplate.py
-        for object_item in ci.objects.iter_mut() {
-            for meth in &mut object_item.methods {
-                meth.rename(self.fn_name(meth.name()));
-
-                for arg in meth.arguments.iter_mut() {
-                    arg.rename(self.var_name(arg.name()));
-                }
-            }
-
-            for cons in &mut object_item.constructors {
-                if !cons.is_primary_constructor() {
-                    cons.rename(self.fn_name(cons.name()));
-                }
-
-                // For macros.py
-                for arg in cons.arguments.iter_mut() {
-                    arg.rename(self.var_name(arg.name()));
-                }
-            }
+        if type_.name().is_some() {
+            type_.rename(self.class_name(&type_.name().unwrap()));
         }
     }
 
-    fn visit_function(&self, ci: &mut ComponentInterface) {
+    fn visit_method(&self, method: &mut Method) {
+        method.rename(self.fn_name(method.name()));
+    }
+
+    fn visit_argument(&self, argument: &mut Argument) {
+        argument.rename(self.var_name(argument.name()));
+    }
+
+    fn visit_constructor(&self, constructor: &mut Constructor) {
+        if !constructor.is_primary_constructor() {
+            constructor.rename(self.fn_name(constructor.name()));
+        }
+    }
+
+    fn visit_function(&self, function: &mut Function) {
         // Conversions for wrapper.py
         //TODO: Renaming the function name in wrapper.py is not currently tested
-        for func in ci.functions.iter_mut() {
-            func.rename(self.fn_name(func.name()));
-
-            for arg in func.arguments.iter_mut() {
-                arg.rename(self.var_name(arg.name()));
-            }
-        }
-    }
-
-    fn visit_callback_interface(&self, ci: &mut ComponentInterface) {
-        // Conversions for CallbackInterfaceImpl.py
-        for callback_interface in ci.callback_interfaces.iter_mut() {
-            //TODO: To remove the last fn_name filter, we need to add an attribute for
-            // the `CallbackInterface` so we can alter one specific point in the template
-            // without altering the name everywhere else.
-            // callback_interface.rename_display(oracle.fn_name(callback_interface.name()));
-
-            for method in callback_interface.methods.iter_mut() {
-                method.rename(self.fn_name(method.name()));
-
-                for arg in method.arguments.iter_mut() {
-                    arg.rename(self.var_name(arg.name()));
-                }
-            }
-        }
-    }
-
-    fn visit_ffi_defitinion(&self, ci: &mut ComponentInterface) {
-        //TODO: Renaming the fields for a FfiStruct is currently not being tested
-        // Replace var_name filter for NamespaceLibraryTemplate.py
-        for def in ci.ffi_definitions() {
-            match def {
-                FfiDefinition::Function(_) => {}
-                FfiDefinition::CallbackFunction(_) => {}
-                FfiDefinition::Struct(mut ffi_struct) => {
-                    for field in ffi_struct.fields.iter_mut() {
-                        field.rename(self.var_name(field.name()));
-                    }
-                }
-            }
-        }
+        function.rename(self.fn_name(function.name()));
     }
 }
 

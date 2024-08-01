@@ -150,7 +150,7 @@ impl Type {
             Type::Object { name, .. } => Some(name.to_string()),
             Type::Record { name, .. } => Some(name.to_string()),
             Type::Enum { name, .. } => Some(name.to_string()),
-            Type::CallbackInterface { name, .. } => Some(name.to_string()),
+            // Type::CallbackInterface { name, .. } => Some(name.to_string()),
             Type::Custom { name, .. } => Some(name.to_string()),
             Type::External { name, .. } => Some(name.to_string()),
             Type::Optional { inner_type } | Type::Sequence { inner_type } => {
@@ -160,23 +160,45 @@ impl Type {
                     None
                 }
             }
-            Type::Map { value_type, .. } => {
-                if value_type.name().is_some() {
-                    Some(value_type.name().unwrap())
-                } else {
-                    None
-                }
-            }
+            Type::Map {
+                value_type,
+                key_type,
+            } => key_type.name().or_else(|| value_type.name()),
             _ => None,
         }
     }
 
-    // Currently we just change the `import_name`. Different languages have slightly different
-    // naming patterns. We don't change the name of the external type, because the original
-    // names are used to find them in the `ComponentInterface`.
     pub fn rename(&mut self, new_name: String) {
-        if let Type::External { import_name, .. } = self {
-            *import_name = new_name
+        match self {
+            Type::Object { name, .. } => *name = new_name,
+            Type::Record { name, .. } => *name = new_name,
+            Type::Enum { name, .. } => *name = new_name,
+            // Type::CallbackInterface { name, .. } => *name = new_name,
+            Type::Custom { name, .. } => *name = new_name,
+            Type::External {
+                import_name, name, ..
+            } => {
+                *import_name = new_name.clone();
+                *name = new_name;
+            }
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+                if inner_type.name().is_some() {
+                    inner_type.rename(new_name);
+                }
+            }
+            Type::Map {
+                value_type,
+                key_type,
+            } => {
+                if value_type.name().is_some() {
+                    value_type.rename(new_name.clone());
+                }
+
+                if key_type.name().is_some() {
+                    key_type.rename(new_name);
+                }
+            }
+            _ => {}
         }
     }
 }

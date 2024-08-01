@@ -175,7 +175,7 @@ pub struct Enum {
     pub(super) name: String,
     pub(super) module_path: String,
     pub(super) discr_type: Option<Type>,
-    pub(crate) variants: Vec<Variant>,
+    pub(super) variants: Vec<Variant>,
     pub(super) shape: EnumShape,
     pub(super) non_exhaustive: bool,
     #[checksum_ignore]
@@ -290,7 +290,7 @@ impl AsType for Enum {
 pub struct Variant {
     pub(super) name: String,
     pub(super) discr: Option<Literal>,
-    pub(crate) fields: Vec<Field>,
+    pub(super) fields: Vec<Field>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }

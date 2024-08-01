@@ -49,7 +49,7 @@ pub struct Function {
     pub(super) name: String,
     pub(super) module_path: String,
     pub(super) is_async: bool,
-    pub(crate) arguments: Vec<Argument>,
+    pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
     //  - it is entirely determined by the other fields,
@@ -73,6 +73,8 @@ impl Function {
         &self.name
     }
 
+    // Note: Don't recalculate the checksum. In order to have consistent checksums,
+    // we use the Rust names as input.
     pub fn rename(&mut self, new_name: String) {
         self.name = new_name;
     }

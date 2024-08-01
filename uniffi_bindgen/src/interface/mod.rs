@@ -87,13 +87,13 @@ pub struct ComponentInterface {
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
     /// The high-level API provided by the component.
-    pub(crate) enums: BTreeMap<String, Enum>,
-    pub(crate) records: BTreeMap<String, Record>,
-    pub(crate) functions: Vec<Function>,
-    pub(crate) objects: Vec<Object>,
-    pub(crate) callback_interfaces: Vec<CallbackInterface>,
+    enums: BTreeMap<String, Enum>,
+    records: BTreeMap<String, Record>,
+    functions: Vec<Function>,
+    objects: Vec<Object>,
+    callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
-    pub(crate) errors: HashSet<String>,
+    errors: HashSet<String>,
     // Types which were seen used as callback interface error.
     callback_interface_throws_types: BTreeSet<Type>,
 }
