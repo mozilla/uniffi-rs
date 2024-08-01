@@ -1,2 +1,5 @@
 [bindings.kotlin]
 package_name = "uniffi.enum_types"
+
+[bindings.python]
+module_name = "uniffi_enum_types"
