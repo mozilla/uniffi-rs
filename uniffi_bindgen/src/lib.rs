@@ -179,11 +179,6 @@ pub trait VisitMut {
     /// to language specific naming conventions.
     fn visit_object(&self, object: &mut Object);
 
-    /// Change the index key of a `Record` entry in the [`ComponentInterface`]
-    /// so it adheres to the name the associated `Record`
-    /// based on language specific naming conventions.
-    fn visit_record_key(&self, key: &mut String) -> String;
-
     /// Change the name of a `Field` of an `Enum` `Variant`
     /// to language specific naming conventions.
     fn visit_field(&self, field: &mut Field);

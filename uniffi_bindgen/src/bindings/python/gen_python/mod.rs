@@ -450,10 +450,6 @@ impl VisitMut for PythonCodeOracle {
         object.rename(self.class_name(object.name()));
     }
 
-    fn visit_record_key(&self, key: &mut String) -> String {
-        self.class_name(key)
-    }
-
     fn visit_field(&self, field: &mut Field) {
         field.rename(self.var_name(field.name()));
     }

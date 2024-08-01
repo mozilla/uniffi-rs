@@ -4,6 +4,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use uniffi_meta::Type;
 
 impl ComponentInterface {
+    /// A generic interface for mutating items in the [`ComponentInterface`].
+    ///
     /// Walk down the [`ComponentInterface`] and adjust the names of each type
     /// based on the naming conventions of the supported languages.
     ///
@@ -24,7 +26,6 @@ impl ComponentInterface {
 
         self.types.all_known_types = all_known_types_altered;
 
-        self.fix_keys_after_rename(visitor);
 
         let mut updated_enums: BTreeMap<String, Enum> = BTreeMap::new();
         let errors_clone = self.errors.clone();
@@ -54,6 +55,7 @@ impl ComponentInterface {
                 visitor.visit_type(&mut field.type_);
             }
         }
+        self.fix_record_keys_after_rename();
 
         for function in self.functions.iter_mut() {
             visitor.visit_function(function);
@@ -132,11 +134,11 @@ impl ComponentInterface {
         }
     }
 
-    fn fix_keys_after_rename<V: VisitMut>(&mut self, visitor: &V) {
+    fn fix_record_keys_after_rename(&mut self) {
         let mut new_records: BTreeMap<String, Record> = BTreeMap::new();
 
-        for (key, record) in self.records.iter() {
-            new_records.insert(visitor.visit_record_key(&mut key.clone()), record.clone());
+        for record in self.records.values() {
+            new_records.insert(record.name().to_string(), record.clone());
         }
 
         self.records = new_records;

@@ -163,9 +163,6 @@ impl Type {
             Type::Enum { name, .. } => *name = new_name,
             Type::External { name, .. } => *name = new_name,
             Type::Custom { name, .. } => *name = new_name,
-            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
-                inner_type.rename(new_name);
-            }
             _ => {}
         }
     }
