@@ -33,10 +33,11 @@
 //! ```
 
 use anyhow::Result;
+use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
-use uniffi_meta::Checksum;
+
 use crate::Renameable;
 
 /// Represents a standalone function.

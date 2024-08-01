@@ -44,9 +44,9 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
+use crate::Renameable;
 use anyhow::Result;
 use uniffi_meta::Checksum;
-use crate::Renameable;
 
 use super::Literal;
 use super::{AsType, Type, TypeIterator};

@@ -110,9 +110,9 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
+use crate::interface::{FfiType, Object};
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
-use crate::interface::{FfiType, Object};
 
 /// The options used when creating bindings. Named such
 /// it doesn't cause confusion that it's settings specific to

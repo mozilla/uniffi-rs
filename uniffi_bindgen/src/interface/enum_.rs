@@ -159,9 +159,9 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
+use crate::Renameable;
 use anyhow::Result;
 use uniffi_meta::{Checksum, EnumShape};
-use crate::Renameable;
 
 use super::record::Field;
 use super::{AsType, Literal, Type, TypeIterator};
@@ -257,9 +257,7 @@ impl Renameable for Enum {
     }
 
     fn rename(&mut self, name: String) {
-        println!("FOUND NAME");
         self.name = name;
-        println!("ENUM {self:?}");
     }
 
     fn rename_nested(&mut self, new_name: String) {

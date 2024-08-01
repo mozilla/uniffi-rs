@@ -57,9 +57,9 @@
 //! # Ok::<(), anyhow::Error>(())
 //! ```
 
+use crate::Renameable;
 use anyhow::Result;
 use uniffi_meta::Checksum;
-use crate::Renameable;
 
 use super::callbacks;
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
