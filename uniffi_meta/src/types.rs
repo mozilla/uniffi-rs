@@ -116,7 +116,6 @@ pub enum Type {
     External {
         module_path: String,
         name: String,
-        import_name: String,
         #[checksum_ignore] // The namespace is not known generating scaffolding.
         namespace: String,
         kind: ExternalKind,
@@ -150,7 +149,6 @@ impl Type {
             Type::Object { name, .. } => Some(name.to_string()),
             Type::Record { name, .. } => Some(name.to_string()),
             Type::Enum { name, .. } => Some(name.to_string()),
-            // Type::CallbackInterface { name, .. } => Some(name.to_string()),
             Type::Custom { name, .. } => Some(name.to_string()),
             Type::External { name, .. } => Some(name.to_string()),
             Type::Optional { inner_type } | Type::Sequence { inner_type } => {
@@ -175,10 +173,7 @@ impl Type {
             Type::Enum { name, .. } => *name = new_name,
             // Type::CallbackInterface { name, .. } => *name = new_name,
             Type::Custom { name, .. } => *name = new_name,
-            Type::External {
-                import_name, name, ..
-            } => {
-                *import_name = new_name.clone();
+            Type::External { name, .. } => {
                 *name = new_name;
             }
             Type::Optional { inner_type } | Type::Sequence { inner_type } => {

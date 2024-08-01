@@ -181,8 +181,7 @@ impl<'a> ExternalTypeConverter<'a> {
                 Type::External {
                     namespace: self.crate_to_namespace(&module_path),
                     module_path,
-                    name: name.clone(),
-                    import_name: name,
+                    name,
                     kind: ExternalKind::DataClass,
                     tagged: false,
                 }
@@ -195,8 +194,7 @@ impl<'a> ExternalTypeConverter<'a> {
                 Type::External {
                     namespace: self.crate_to_namespace(&module_path),
                     module_path,
-                    name: name.clone(),
-                    import_name: name,
+                    name,
                     kind: ExternalKind::DataClass,
                     tagged: false,
                 }
@@ -206,8 +204,7 @@ impl<'a> ExternalTypeConverter<'a> {
             } if self.is_module_path_external(&module_path) => Type::External {
                 namespace: self.crate_to_namespace(&module_path),
                 module_path,
-                name: name.clone(),
-                import_name: name,
+                name,
                 kind: ExternalKind::Interface,
                 tagged: false,
             },
@@ -245,7 +242,6 @@ impl<'a> ExternalTypeConverter<'a> {
                 namespace,
                 module_path,
                 name,
-                import_name,
                 kind,
                 tagged,
             } => {
@@ -253,8 +249,7 @@ impl<'a> ExternalTypeConverter<'a> {
                 Type::External {
                     namespace: self.crate_to_namespace(&module_path),
                     module_path,
-                    name: name.clone(),
-                    import_name,
+                    name,
                     kind,
                     tagged,
                 }

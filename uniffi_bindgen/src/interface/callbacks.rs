@@ -64,10 +64,6 @@ impl CallbackInterface {
         &self.name
     }
 
-    pub fn rename(&mut self, new_name: String) {
-        self.name = new_name;
-    }
-
     pub fn methods(&self) -> Vec<&Method> {
         self.methods.iter().collect()
     }
