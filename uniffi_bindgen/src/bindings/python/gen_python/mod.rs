@@ -377,8 +377,8 @@ impl PythonCodeOracle {
             FfiType::Float64 => "ctypes.c_double".to_string(),
             FfiType::Handle => "ctypes.c_uint64".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
-            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
+            FfiType::RustBuffer(maybe_external) => match maybe_external {
+                Some(external_meta) => format!("_UniffiRustBuffer{}", external_meta.name),
                 None => "_UniffiRustBuffer".to_string(),
             },
             FfiType::RustCallStatus => "_UniffiRustCallStatus".to_string(),
@@ -407,8 +407,10 @@ impl PythonCodeOracle {
                 | FfiType::Int64 => "0".to_owned(),
                 FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
                 FfiType::RustArcPtr(_) => "ctypes.c_void_p()".to_owned(),
-                FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                    Some(suffix) => format!("_UniffiRustBuffer{suffix}.default()"),
+                FfiType::RustBuffer(maybe_external) => match maybe_external {
+                    Some(external_meta) => {
+                        format!("_UniffiRustBuffer{}.default()", external_meta.name)
+                    }
                     None => "_UniffiRustBuffer.default()".to_owned(),
                 },
                 _ => unimplemented!("FFI return type: {t:?}"),

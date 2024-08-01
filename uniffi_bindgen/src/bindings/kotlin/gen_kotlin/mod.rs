@@ -431,9 +431,10 @@ impl KotlinCodeOracle {
             FfiType::Float64 => "Double".to_string(),
             FfiType::Handle => "Long".to_string(),
             FfiType::RustArcPtr(_) => "Pointer".to_string(),
-            FfiType::RustBuffer(maybe_suffix) => {
-                format!("RustBuffer{}", maybe_suffix.as_deref().unwrap_or_default())
-            }
+            FfiType::RustBuffer(maybe_external) => match maybe_external {
+                Some(external_meta) => format!("RustBuffer{}", external_meta.name),
+                None => "RustBuffer".to_string(),
+            },
             FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue".to_string(),
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
