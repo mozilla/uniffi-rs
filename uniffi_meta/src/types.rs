@@ -143,6 +143,55 @@ impl Type {
         };
         Box::new(std::iter::once(self).chain(nested_types))
     }
+
+    pub fn name(&self) -> Option<String> {
+        match self {
+            Type::Object { name, .. } => Some(name.to_string()),
+            Type::Record { name, .. } => Some(name.to_string()),
+            Type::Enum { name, .. } => Some(name.to_string()),
+            Type::External { name, .. } => Some(name.to_string()),
+            Type::Custom { name, .. } => Some(name.to_string()),
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => inner_type.name(),
+            _ => None,
+        }
+    }
+
+    fn rename(&mut self, new_name: String) {
+        match self {
+            Type::Object { name, .. } => *name = new_name,
+            Type::Record { name, .. } => *name = new_name,
+            Type::Enum { name, .. } => *name = new_name,
+            Type::External { name, .. } => *name = new_name,
+            Type::Custom { name, .. } => *name = new_name,
+            _ => {}
+        }
+    }
+
+    pub fn rename_recursive(&mut self, name_transformer: &impl Fn(&str) -> String) {
+        // Rename the current type if it has a name
+        if let Some(name) = self.name() {
+            self.rename(name_transformer(&name));
+        }
+
+        // Recursively rename nested types
+        match self {
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+                inner_type.rename_recursive(name_transformer);
+            }
+            Type::Map {
+                key_type,
+                value_type,
+                ..
+            } => {
+                key_type.rename_recursive(name_transformer);
+                value_type.rename_recursive(name_transformer);
+            }
+            Type::Custom { builtin, .. } => {
+                builtin.rename_recursive(name_transformer);
+            }
+            _ => {}
+        }
+    }
 }
 
 // A trait so various things can turn into a type.

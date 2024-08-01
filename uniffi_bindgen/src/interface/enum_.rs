@@ -187,6 +187,10 @@ impl Enum {
         &self.name
     }
 
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
+    }
+
     pub fn variants(&self) -> &[Variant] {
         &self.variants
     }
@@ -294,6 +298,10 @@ pub struct Variant {
 impl Variant {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn fields(&self) -> &[Field] {

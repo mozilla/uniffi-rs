@@ -231,6 +231,10 @@ impl FfiFunction {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     /// Name of the FFI buffer version of this function that's generated when the
     /// `scaffolding-ffi-buffer-fns` feature is enabled.
     pub fn ffi_buffer_fn_name(&self) -> String {
@@ -306,6 +310,10 @@ impl FfiArgument {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
     }
@@ -326,6 +334,10 @@ pub struct FfiCallbackFunction {
 impl FfiCallbackFunction {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn arguments(&self) -> Vec<&FfiArgument> {
@@ -352,6 +364,10 @@ impl FfiStruct {
     /// Get the name of this struct
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     /// Get the fields for this struct
@@ -381,6 +397,10 @@ impl FfiField {
 
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
+    }
+
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 

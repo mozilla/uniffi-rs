@@ -110,8 +110,13 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
+use crate::interface::{
+    Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
+    Variant,
+};
 pub use interface::ComponentInterface;
 use scaffolding::RustScaffolding;
+use uniffi_meta::Type;
 
 /// The options used when creating bindings. Named such
 /// it doesn't cause confusion that it's settings specific to
@@ -158,6 +163,67 @@ pub trait BindingGenerator: Sized {
         settings: &GenerationSettings,
         components: &[Component<Self::Config>],
     ) -> Result<()>;
+}
+
+/// A trait to alter language specific type representations.
+///
+/// It is meant to be implemented by each language oracle. It takes a
+/// ['ComponentInterface'] and uses its own specific language adjustment
+/// functions to be able to generate language specific templates.
+pub trait VisitMut {
+    /// Go through each `Record` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_record(&self, record: &mut Record);
+
+    /// Change the name of an `Object` of a [`ComponentInterface`
+    /// to language specific naming conventions.
+    fn visit_object(&self, object: &mut Object);
+
+    /// Change the name of a `Field` of an `Enum` `Variant`
+    /// to language specific naming conventions.
+    fn visit_field(&self, field: &mut Field);
+
+    /// Change the name of a `FfiField` inside a `FfiStruct`
+    /// to language specific naming conventions.
+    fn visit_ffi_field(&self, ffi_field: &mut FfiField);
+
+    /// Change the `Arugment` of a `FfiFunction` in the [`ComponentInterface`]
+    /// to language specific naming conventions.
+    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument);
+
+    /// Go through each `Enum` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_enum(&self, is_error: bool, enum_: &mut Enum);
+
+    /// Change the naming of the key in the [`ComponentInterface`]
+    /// `BTreeMap` where all `Enum`s are stored to reflect the changed
+    /// name of an `Enum`.
+    fn visit_enum_key(&self, key: &mut String) -> String;
+
+    /// Go through each `Variant` of an `Enum` and
+    /// adjust it to language specific naming conventions.
+    fn visit_variant(&self, is_error: bool, variant: &mut Variant);
+
+    /// Go through each `Type` in the `TypeUniverse` of
+    /// a [`ComponentInterface`] and adjust it to language specific
+    /// naming conventions.
+    fn visit_type(&self, type_: &mut Type);
+
+    /// Go through each `Method` of an `Object` and
+    /// adjust it to language specific naming conventions.
+    fn visit_method(&self, method: &mut Method);
+
+    /// Go through each `Argument` of a `Function` and
+    /// adjust it to language specific naming conventions.
+    fn visit_argument(&self, argument: &mut Argument);
+
+    /// Go through each `Constructor` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_constructor(&self, constructor: &mut Constructor);
+
+    /// Go through each `Function` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_function(&self, function: &mut Function);
 }
 
 /// Everything needed to generate a ComponentInterface.

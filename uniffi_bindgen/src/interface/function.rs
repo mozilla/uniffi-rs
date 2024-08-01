@@ -33,10 +33,10 @@
 //! ```
 
 use anyhow::Result;
+use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
 use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
-use uniffi_meta::Checksum;
 
 /// Represents a standalone function.
 ///
@@ -71,6 +71,12 @@ pub struct Function {
 impl Function {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    // Note: Don't recalculate the checksum. In order to have consistent checksums,
+    // we use the Rust names as input.
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn is_async(&self) -> bool {
@@ -192,6 +198,10 @@ pub struct Argument {
 impl Argument {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn by_ref(&self) -> bool {

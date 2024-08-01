@@ -116,6 +116,10 @@ impl Object {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     /// Returns the fully qualified name that should be used by Rust code for this object.
     /// Includes `r#`, traits get a leading `dyn`. If we ever supported associated types, then
     /// this would also include them.
@@ -266,14 +270,14 @@ impl Object {
     }
 
     /// Vec of (ffi_callback_name, method) pairs
-    pub fn vtable_methods(&self) -> Vec<(FfiCallbackFunction, &Method)> {
+    pub fn vtable_methods(&self) -> Vec<(FfiCallbackFunction, Method)> {
         self.methods
             .iter()
             .enumerate()
             .map(|(i, method)| {
                 (
                     callbacks::method_ffi_callback(&self.name, method, i),
-                    method,
+                    method.clone(),
                 )
             })
             .collect()
@@ -377,6 +381,10 @@ pub struct Constructor {
 impl Constructor {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -492,6 +500,10 @@ pub struct Method {
 impl Method {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn is_async(&self) -> bool {

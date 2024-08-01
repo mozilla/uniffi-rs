@@ -69,6 +69,10 @@ impl Record {
         &self.name
     }
 
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
+    }
+
     pub fn fields(&self) -> &[Field] {
         &self.fields
     }
@@ -125,6 +129,10 @@ pub struct Field {
 impl Field {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
     }
 
     pub fn default_value(&self) -> Option<&Literal> {

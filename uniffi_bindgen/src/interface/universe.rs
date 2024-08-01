@@ -21,16 +21,16 @@ pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type,
 /// You could imagine this struct doing some clever interning of names and so-on in future,
 /// to reduce the overhead of passing around [Type] instances. For now we just do a whole
 /// lot of cloning.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct TypeUniverse {
     /// The unique prefixes that we'll use for namespacing when exposing this component's API.
     pub namespace: NamespaceMetadata,
     pub namespace_docstring: Option<String>,
 
     // Named type definitions (including aliases).
-    type_definitions: HashMap<String, Type>,
+    pub(super) type_definitions: HashMap<String, Type>,
     // All the types in the universe, by canonical type name, in a well-defined order.
-    all_known_types: BTreeSet<Type>,
+    pub(super) all_known_types: BTreeSet<Type>,
 }
 
 impl TypeUniverse {
