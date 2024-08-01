@@ -171,7 +171,6 @@ impl Type {
             Type::Object { name, .. } => *name = new_name,
             Type::Record { name, .. } => *name = new_name,
             Type::Enum { name, .. } => *name = new_name,
-            // Type::CallbackInterface { name, .. } => *name = new_name,
             Type::Custom { name, .. } => *name = new_name,
             Type::External { name, .. } => {
                 *name = new_name;

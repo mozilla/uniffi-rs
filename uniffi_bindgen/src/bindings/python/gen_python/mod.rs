@@ -303,7 +303,7 @@ impl<'a> PythonWrapper<'a> {
         ci.visit_mut(&PythonCodeOracle);
 
         let type_renderer = TypeRenderer::new(&config, ci);
-        let type_helper_code = type_renderer.render().map_err(|e| println!("{e}")).unwrap();
+        let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
 
         Self {
