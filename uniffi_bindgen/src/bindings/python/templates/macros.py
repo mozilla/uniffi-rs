@@ -61,8 +61,8 @@ _uniffi_rust_call(
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name -}}]" = _DEFAULT
-        {%- else %}: "{{ arg|type_name -}}"
+        {%- when Some with(literal) %}: "typing.Union[object, {{ arg|type_name(config) -}}]" = _DEFAULT
+        {%- else %}: "{{ arg|type_name(config) -}}"
         {%- endmatch %}
         {%- if !loop.last %},{% endif -%}
     {%- endfor %}
@@ -119,7 +119,7 @@ _uniffi_rust_call(
 
 {%-     match meth.return_type() %}
 {%-         when Some with (return_type) %}
-    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
+    async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name(config) }}":
 {%-         when None %}
     async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> None:
 {%      endmatch %}
@@ -148,7 +148,7 @@ _uniffi_rust_call(
 
 {%-         when Some with (return_type) %}
 
-    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
+    def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name(config) }}":
         {%- call docstring(meth, 8) %}
         {%- call setup_args_extra_indent(meth) %}
         return {{ return_type|lift_fn }}(

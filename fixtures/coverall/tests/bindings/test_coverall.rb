@@ -153,8 +153,10 @@ class TestCoverall < Test::Unit::TestCase
 
     begin
       coveralls.maybe_throw_complex(3)
-    rescue Coverall::ComplexError::UnknownError => err
-      assert_equal err.to_s, 'Coverall::ComplexError::UnknownError()'
+      # Renamed `UnknownError` to `UnspecificError` to test the
+      # renaming functionality via the `uniffi.toml` file
+    rescue Coverall::ComplexError::UnspecificError => err
+      assert_equal err.to_s, 'Coverall::ComplexError::UnspecificError()'
     else
       raise 'should have thrown'
     end
@@ -163,6 +165,7 @@ class TestCoverall < Test::Unit::TestCase
       coveralls.maybe_throw_complex(4)
     end
   end
+
 
   def test_self_by_arc
     coveralls = Coverall::Coveralls.new 'test_self_by_arc'

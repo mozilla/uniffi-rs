@@ -2,9 +2,9 @@
 
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
-async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
+async def {{ func.name()|fn_name(config) }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name(config) }}":
 {% when None %}
-async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:
+async def {{ func.name()|fn_name(config) }}({%- call py::arg_list_decl(func) -%}) -> None:
 {% endmatch %}
 
     {%- call py::docstring(func, 4) %}
@@ -28,13 +28,13 @@ async def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> Non
 {%- match func.return_type() -%}
 {%- when Some with (return_type) %}
 
-def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
+def {{ func.name()|fn_name(config) }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name(config) }}":
     {%- call py::docstring(func, 4) %}
     {%- call py::setup_args(func) %}
     return {{ return_type|lift_fn }}({% call py::to_ffi_call(func) %})
 {% when None %}
 
-def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:
+def {{ func.name()|fn_name(config) }}({%- call py::arg_list_decl(func) -%}) -> None:
     {%- call py::docstring(func, 4) %}
     {%- call py::setup_args(func) %}
     {% call py::to_ffi_call(func) %}

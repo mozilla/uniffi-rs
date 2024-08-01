@@ -1,21 +1,21 @@
 {% if e.is_flat() %}
 
-class {{ e.name()|class_name_rb }}
+class {{ e.name()|class_name_rb(config) }}
   {% for variant in e.variants() -%}
-  {{ variant.name()|enum_name_rb }} = {{ loop.index }}
+  {{ variant.name()|enum_name_rb(config) }} = {{ loop.index }}
   {% endfor %}
 end
 
 {% else %}
 
-class {{ e.name()|class_name_rb }}
+class {{ e.name()|class_name_rb(config) }}
   def initialize
-    raise RuntimeError, '{{ e.name()|class_name_rb }} cannot be instantiated directly'
+    raise RuntimeError, '{{ e.name()|class_name_rb(config) }} cannot be instantiated directly'
   end
 
   # Each enum variant is a nested class of the enum itself.
   {% for variant in e.variants() -%}
-  class {{ variant.name()|enum_name_rb }}
+  class {{ variant.name()|enum_name_rb(config) }}
     {% if variant.has_fields() %}
     attr_reader {% for field in variant.fields() %}:{{ field.name()|var_name_rb }}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
     {% endif %}
@@ -29,7 +29,7 @@ class {{ e.name()|class_name_rb }}
     end
 
     def to_s
-      "{{ e.name()|class_name_rb }}::{{ variant.name()|enum_name_rb }}({% for field in variant.fields() %}{{ field.name() }}=#{@{{ field.name() }}}{% if loop.last %}{% else %}, {% endif %}{% endfor %})"
+      "{{ e.name()|class_name_rb(config) }}::{{ variant.name()|enum_name_rb(config) }}({% for field in variant.fields() %}{{ field.name() }}=#{@{{ field.name() }}}{% if loop.last %}{% else %}, {% endif %}{% endfor %})"
     end
 
     def ==(other)
@@ -49,7 +49,7 @@ class {{ e.name()|class_name_rb }}
     # whether an instance is that variant.
     {% for variant in e.variants() %}
     def {{ variant.name()|var_name_rb }}?
-      instance_of? {{ e.name()|class_name_rb }}::{{ variant.name()|enum_name_rb }}
+      instance_of? {{ e.name()|class_name_rb(config) }}::{{ variant.name()|enum_name_rb(config) }}
     end
     {% endfor %}
   end

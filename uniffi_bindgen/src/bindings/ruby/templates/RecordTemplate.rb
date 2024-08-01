@@ -1,10 +1,10 @@
 # Record type {{ rec.name() }}
-class {{ rec.name()|class_name_rb }}
+class {{ rec.name()|class_name_rb(config) }}
   attr_reader {% for field in rec.fields() %}:{{ field.name()|var_name_rb }}{% if loop.last %}{% else %}, {% endif %}{%- endfor %}
 
   def initialize({% for field in rec.fields() %}{{ field.name()|var_name_rb -}}:
         {%- match field.default_value() %}
-        {%- when Some with(literal) %} {{ literal|literal_rb }}
+        {%- when Some with(literal) %} {{ literal|literal_rb(config) }}
         {%- else %}
         {%- endmatch %}
   {%- if loop.last %}{% else %}, {% endif -%}{% endfor %})

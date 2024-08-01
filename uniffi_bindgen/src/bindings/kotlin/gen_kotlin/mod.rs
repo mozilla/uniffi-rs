@@ -81,8 +81,9 @@ pub struct Config {
     android: bool,
     #[serde(default)]
     android_cleaner: Option<bool>,
-    #[serde(default)]
     kotlin_target_version: Option<String>,
+    #[serde(default)]
+    rename: HashMap<String, String>,
 }
 
 impl Config {
@@ -451,8 +452,17 @@ impl KotlinCodeOracle {
     /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
     /// interfaces, `lower` must lower anything that implements the interface.  If not, then lower
     /// only lowers the concrete class.
-    fn object_names(&self, ci: &ComponentInterface, obj: &Object) -> (String, String) {
-        let class_name = self.class_name(ci, obj.name());
+    fn object_names(
+        &self,
+        ci: &ComponentInterface,
+        obj: &Object,
+        config: &Config,
+    ) -> (String, String) {
+        let mut class_name = self.class_name(ci, obj.name());
+        if let Some(overwrite_class_name) = config.rename.get(&class_name) {
+            class_name = overwrite_class_name.to_owned();
+        }
+
         if obj.has_callback_interface() {
             let impl_name = format!("{class_name}Impl");
             (class_name, impl_name)
@@ -523,7 +533,12 @@ mod filters {
     pub(super) fn type_name(
         as_ct: &impl AsCodeType,
         ci: &ComponentInterface,
+        config: &Config,
     ) -> Result<String, askama::Error> {
+        if let Some(overwrite_type_name) = config.rename.get(&as_ct.as_codetype().type_label(ci)) {
+            return Ok(overwrite_type_name.to_owned());
+        }
+
         Ok(as_ct.as_codetype().type_label(ci))
     }
 
@@ -615,13 +630,24 @@ mod filters {
         Ok(KotlinCodeOracle.ffi_default_value(&type_))
     }
 
-    /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn class_name(nm: &str, ci: &ComponentInterface) -> Result<String, askama::Error> {
+    /// Get the idiomatic Kotlin rendering of a class name.
+    pub fn class_name(
+        nm: &str,
+        ci: &ComponentInterface,
+        config: &Config,
+    ) -> Result<String, askama::Error> {
+        if let Some(overwrite_class_name) = config.rename.get(nm) {
+            return Ok(KotlinCodeOracle.class_name(ci, overwrite_class_name));
+        }
+
         Ok(KotlinCodeOracle.class_name(ci, nm))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn fn_name(nm: &str, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_fn_name) = config.rename.get(nm) {
+            return Ok(KotlinCodeOracle.fn_name(overwrite_fn_name));
+        }
         Ok(KotlinCodeOracle.fn_name(nm))
     }
 
@@ -640,7 +666,11 @@ mod filters {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
     }
 
-    pub fn error_variant_name(v: &Variant) -> Result<String, askama::Error> {
+    pub fn error_variant_name(v: &Variant, config: &Config) -> Result<String, askama::Error> {
+        if let Some(overwrite_error_variant_name) = config.rename.get(v.name()) {
+            return Ok(KotlinCodeOracle
+                .convert_error_suffix(&overwrite_error_variant_name.to_upper_camel_case()));
+        }
         let name = v.name().to_string().to_upper_camel_case();
         Ok(KotlinCodeOracle.convert_error_suffix(&name))
     }
@@ -658,8 +688,9 @@ mod filters {
     pub fn object_names(
         obj: &Object,
         ci: &ComponentInterface,
+        config: &Config,
     ) -> Result<(String, String), askama::Error> {
-        Ok(KotlinCodeOracle.object_names(ci, obj))
+        Ok(KotlinCodeOracle.object_names(ci, obj, config))
     }
 
     pub fn async_poll(

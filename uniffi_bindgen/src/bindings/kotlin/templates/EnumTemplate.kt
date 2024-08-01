@@ -18,7 +18,7 @@ enum class {{ type_name }} {
     companion object
 }
 {% when Some with (variant_discr_type) %}
-enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
+enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci, config) }}) {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
     {{ variant|variant_name }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
@@ -52,12 +52,12 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
     {% if !variant.has_fields() -%}
-    object {{ variant|type_name(ci) }} : {{ type_name }}()
+    object {{ variant|type_name(ci, config) }} : {{ type_name }}()
     {% else -%}
-    data class {{ variant|type_name(ci) }}(
+    data class {{ variant|type_name(ci, config) }}(
         {%- for field in variant.fields() -%}
         {%- call kt::docstring(field, 8) %}
-        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
+        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci, config) }}{% if loop.last %}{% else %}, {% endif %}
         {%- endfor -%}
     ) : {{ type_name }}() {
         companion object
@@ -70,7 +70,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|type_name(ci) }} -> {
+            is {{ type_name }}.{{ variant|type_name(ci, config) }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}
@@ -88,7 +88,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant|type_name(ci) }}{% if variant.has_fields() %}(
+            {{ loop.index }} -> {{ type_name }}.{{ variant|type_name(ci, config) }}{% if variant.has_fields() %}(
                 {% for field in variant.fields() -%}
                 {{ field|read_fn }}(buf),
                 {% endfor -%}
@@ -100,7 +100,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
 
     override fun allocationSize(value: {{ type_name }}) = when(value) {
         {%- for variant in e.variants() %}
-        is {{ type_name }}.{{ variant|type_name(ci) }} -> {
+        is {{ type_name }}.{{ variant|type_name(ci, config) }} -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4UL
@@ -115,7 +115,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         when(value) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|type_name(ci) }} -> {
+            is {{ type_name }}.{{ variant|type_name(ci, config) }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
                 {{ field|write_fn }}(value.{%- call kt::field_name(field, loop.index) -%}, buf)

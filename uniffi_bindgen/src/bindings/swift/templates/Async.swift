@@ -109,7 +109,7 @@ private func uniffiForeignFutureFree(handle: UInt64) {
 }
 
 // For testing
-public func uniffiForeignFutureHandleCount{{ ci.namespace()|class_name }}() -> Int {
+public func uniffiForeignFutureHandleCount{{ ci.namespace()|class_name(config) }}() -> Int {
     UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.count
 }
 

@@ -8,7 +8,7 @@ fileprivate struct {{ trait_impl }} {
     // Swift automatically converts these into C callback functions.
     static var vtable: {{ vtable|ffi_type_name }} = {{ vtable|ffi_type_name }}(
         {%- for (ffi_callback, meth) in vtable_methods %}
-        {{ meth.name()|fn_name }}: { (
+        {{ meth.name()|fn_name(config) }}: { (
             {%- for arg in ffi_callback.arguments() %}
             {{ arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name }}{% if !loop.last || ffi_callback.has_rust_call_status_arg() %},{% endif %}
             {%- endfor -%}
@@ -17,11 +17,11 @@ fileprivate struct {{ trait_impl }} {
             {%- endif %}
         ) in
             let makeCall = {
-                () {% if meth.is_async() %}async {% endif %}throws -> {% match meth.return_type() %}{% when Some(t) %}{{ t|type_name }}{% when None %}(){% endmatch %} in
+                () {% if meth.is_async() %}async {% endif %}throws -> {% match meth.return_type() %}{% when Some(t) %}{{ t|type_name(config) }}{% when None %}(){% endmatch %} in
                 guard let uniffiObj = try? {{ ffi_converter_name }}.handleMap.get(handle: uniffiHandle) else {
                     throw UniffiInternalError.unexpectedStaleHandle
                 }
-                return {% if meth.throws() %}try {% endif %}{% if meth.is_async() %}await {% endif %}uniffiObj.{{ meth.name()|fn_name }}(
+                return {% if meth.throws() %}try {% endif %}{% if meth.is_async() %}await {% endif %}uniffiObj.{{ meth.name()|fn_name(config) }}(
                     {%- for arg in meth.arguments() %}
                     {% if !config.omit_argument_labels() %} {{ arg.name()|arg_name }}: {% endif %}try {{ arg|lift_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}
                     {%- endfor %}

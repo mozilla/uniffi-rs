@@ -1,0 +1,11 @@
+[bindings.kotlin.rename]
+OtherError = "AnotherError"
+
+[bindings.python.rename]
+OtherError = "AnotherError"
+
+[bindings.ruby.rename]
+UnknownError = "UnspecificError"
+
+[bindings.swift.rename]
+OtherError = "AnotherError"

@@ -1,4 +1,4 @@
-{%- let type_name = type_|type_name(ci) %}
+{%- let type_name = type_|type_name(ci, config) %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
 
@@ -7,7 +7,7 @@
 sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if contains_object_references %}, Disposable {% endif %} {
         {% for variant in e.variants() -%}
         {%- call kt::docstring(variant, 4) %}
-        class {{ variant|error_variant_name }}(message: String) : {{ type_name }}(message)
+        class {{ variant|error_variant_name(config) }}(message: String) : {{ type_name }}(message)
         {% endfor %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
@@ -19,11 +19,11 @@ sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if co
 sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references %}, Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
-    {%- let variant_name = variant|error_variant_name %}
+    {%- let variant_name = variant|error_variant_name(config) %}
     class {{ variant_name }}(
         {% for field in variant.fields() -%}
         {%- call kt::docstring(field, 8) %}
-        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
+        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci, config) }}{% if loop.last %}{% else %}, {% endif %}
         {% endfor -%}
     ) : {{ type_name }}() {
         override val message
@@ -40,7 +40,7 @@ sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|error_variant_name }} -> {
+            is {{ type_name }}.{{ variant|error_variant_name(config) }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}
@@ -59,7 +59,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         {% if e.is_flat() %}
             return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant|error_variant_name }}({{ Type::String.borrow()|read_fn }}(buf))
+            {{ loop.index }} -> {{ type_name }}.{{ variant|error_variant_name(config) }}({{ Type::String.borrow()|read_fn }}(buf))
             {%- endfor %}
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
@@ -67,7 +67,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
 
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant|error_variant_name }}({% if variant.has_fields() %}
+            {{ loop.index }} -> {{ type_name }}.{{ variant|error_variant_name(config) }}({% if variant.has_fields() %}
                 {% for field in variant.fields() -%}
                 {{ field|read_fn }}(buf),
                 {% endfor -%}
@@ -84,7 +84,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
         {%- else %}
         return when(value) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|error_variant_name }} -> (
+            is {{ type_name }}.{{ variant|error_variant_name(config) }} -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
                 {%- for field in variant.fields() %}
@@ -99,7 +99,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         when(value) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|error_variant_name }} -> {
+            is {{ type_name }}.{{ variant|error_variant_name(config) }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
                 {{ field|write_fn }}(value.{% call kt::field_name(field, loop.index) %}, buf)

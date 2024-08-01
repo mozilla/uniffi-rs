@@ -16,7 +16,7 @@
 require 'ffi'
 
 
-module {{ ci.namespace()|class_name_rb }}
+module {{ ci.namespace()|class_name_rb(config) }}
   {% include "Helpers.rb" %}
 
   {% include "RustBufferTemplate.rb" %}

@@ -1,7 +1,7 @@
 {%- import "macros.py" as py %}
 
 {%- for type_ in ci.iter_types() %}
-{%- let type_name = type_|type_name %}
+{%- let type_name = type_|type_name(config) %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
 
@@ -18,7 +18,6 @@
 
 {%- when Type::Boolean %}
 {%- include "BooleanHelper.py" %}
-
 {%- when Type::Int8 %}
 {%- include "Int8Helper.py" %}
 
@@ -103,5 +102,5 @@ Setup type aliases for our custom types, has complications due to
 forward type references, #2067
 -#}
 {%- for (name, ty) in self.get_custom_type_aliases() %}
-{{ name }} = {{ ty|type_name }}
+{{ name }} = {{ ty|type_name(config)}}
 {%- endfor %}

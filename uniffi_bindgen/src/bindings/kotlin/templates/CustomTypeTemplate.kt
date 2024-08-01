@@ -6,7 +6,7 @@
  * is needed because the UDL type name is used in function/method signatures.
  * It's also what we have an external type that references a custom type.
  */
-public typealias {{ type_name }} = {{ builtin|type_name(ci) }}
+public typealias {{ type_name }} = {{ builtin|type_name(ci, config) }}
 public typealias {{ ffi_converter_name }} = {{ builtin|ffi_converter_name }}
 
 {%- when Some with (config) %}

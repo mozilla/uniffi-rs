@@ -186,7 +186,8 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual(cm.exception.error.code, 1)
 
         e = get_root_error()
-        self.assertEqual(e.error, OtherError.UNEXPECTED)
+        # Renamed `OtherError` to `AnotherError` via `uniffi.toml`
+        self.assertEqual(e.error, AnotherError.UNEXPECTED)
 
         self.assertTrue(isinstance(get_complex_error(None), ComplexError.PermissionDenied))
         self.assertIsNone(get_error_dict(None).complex_error)

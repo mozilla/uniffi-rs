@@ -1,5 +1,5 @@
 {%- let obj = ci|get_object_definition(name) %}
-{%- let (protocol_name, impl_name) = obj|object_names %}
+{%- let (protocol_name, impl_name) = obj|object_names(config) %}
 {%- let methods = obj.methods() %}
 {%- let protocol_docstring = obj.docstring() %}
 
@@ -52,7 +52,7 @@ class {{ impl_name }}:
 
     @classmethod
 {%-  if cons.is_async() %}
-    async def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+    async def {{ cons.name()|fn_name(config) }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
 
@@ -65,7 +65,7 @@ class {{ impl_name }}:
             {% call py::error_ffi_converter(cons) %}
         )
 {%-  else %}
-    def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+    def {{ cons.name()|fn_name(config) }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
@@ -75,7 +75,7 @@ class {{ impl_name }}:
 {% endfor %}
 
 {%- for meth in obj.methods() -%}
-    {%- call py::method_decl(meth.name()|fn_name, meth) %}
+    {%- call py::method_decl(meth.name()|fn_name(config), meth) %}
 {%- endfor %}
 {%- for tm in obj.uniffi_traits() -%}
 {%-     match tm %}
@@ -84,13 +84,13 @@ class {{ impl_name }}:
 {%-         when UniffiTrait::Display { fmt } %}
             {%- call py::method_decl("__str__", fmt) %}
 {%-         when UniffiTrait::Eq { eq, ne } %}
-    def __eq__(self, other: object) -> {{ eq.return_type().unwrap()|type_name }}:
+    def __eq__(self, other: object) -> {{ eq.return_type().unwrap()|type_name(config) }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
         return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_clone_pointer()", eq) %})
 
-    def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
+    def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name(config) }}:
         if not isinstance(other, {{ type_name }}):
             return NotImplemented
 
