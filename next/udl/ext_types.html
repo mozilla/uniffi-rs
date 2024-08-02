@@ -1444,16 +1444,14 @@ giving more detail.</p>
 <p><a href="ext_types_external.html">There's a whole page about that!</a></p>
 <h2 id="types-from-procmacros-in-this-crate">Types from procmacros in this crate.</h2>
 <p>If your crate has types defined via <code>#[uniffi::export]</code> etc you can make them available
-to the UDL file in your own crate via a <code>typedef</code> with a <code>[Rust=]</code> attribute. Eg, your Rust
-might have:</p>
+to the UDL file in your own crate via a <code>typedef</code> describing the concrete type.</p>
 <p><div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">One</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">inner</span><span class="p">:</span><span class="w"> </span><span class="kt">i32</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 you can use it in your UDL:</p>
-<div class="highlight"><pre><span></span><code>[Rust<span class="o">=</span><span class="s2">&quot;record&quot;</span>]
-typedef<span class="w"> </span>extern<span class="w"> </span>One;
+<div class="highlight"><pre><span></span><code>typedef<span class="w"> </span>record<span class="w"> </span>One;
 
 namespace<span class="w"> </span>app<span class="w"> </span>{
 <span class="w">    </span><span class="o">//</span><span class="w"> </span>use<span class="w"> </span>the<span class="w"> </span>procmacro<span class="w"> </span>type.
@@ -1461,9 +1459,16 @@ namespace<span class="w"> </span>app<span class="w"> </span>{
 }
 </code></pre></div>
 <p>Supported values:
-*  "enum", "trait", "callback", "trait_with_foreign"
-* For records, either "record" or "dictionary"
-* For objects, either "object" or "interface"</p>
+* "enum", "trait", "callback", "trait_with_foreign"
+* For records, either "record", "dictionary" or "struct"
+* For objects, either "object", "impl" or "interface"</p>
+<p>eg:
+<div class="highlight"><pre><span></span><code>typedef enum MyEnum;
+typedef interface MyObject;
+</code></pre></div>
+etc.</p>
+<p>Note that in 0.28 and prior, we also supported this capability with a <code>[Rust=]</code> attribute.
+This attribute is deprecated and may be removed in a later version.</p>
 
 
 
