@@ -11,6 +11,10 @@
 - Lift errors will not cause an abort when `panic=abort` is set.
 - Added the `cargo_metadata` feature, which is on by default.  In some cases, this can be disabled
   for better compatibility with projects that don't use cargo.
+- A new bindgen command line option `--metadata-no-deps` is available to avoid processing
+  cargo_metadata for all dependencies.
+- In UDL it's now possible (and preferred) to remove the `[Rust=]` attribute and use a plain-old typedef.
+  See [the manual page for this](https://mozilla.github.io/uniffi-rs/next/udl/ext_types.html#types-from-procmacros-in-this-crate).
 
 ### What's changed?
 - Kotlin will use the more efficient Enum.entries property instead of Enum.values() when possible
@@ -20,10 +24,6 @@
 ## v0.28.0 (backend crates: v0.28.0) - (_2024-06-11_)
 
 ### What's new?
-
-- A new bindgen command line option `--metadata-no-deps` is available to avoid processing
-  cargo_metadata for all dependencies.
-
 - Objects error types can now be as `Result<>` error type without wrapping them in `Arc<>`.
 
 - Swift errors now provide `localizedDescription` ([#2116](https://github.com/mozilla/uniffi-rs/pull/2116))

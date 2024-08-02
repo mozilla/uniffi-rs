@@ -14,8 +14,7 @@ giving more detail.
 ## Types from procmacros in this crate.
 
 If your crate has types defined via `#[uniffi::export]` etc you can make them available
-to the UDL file in your own crate via a `typedef` with a `[Rust=]` attribute. Eg, your Rust
-might have:
+to the UDL file in your own crate via a `typedef` describing the concrete type.
 
 ```rust
 #[derive(uniffi::Record)]
@@ -26,8 +25,7 @@ pub struct One {
 you can use it in your UDL:
 
 ```idl
-[Rust="record"]
-typedef extern One;
+typedef record One;
 
 namespace app {
     // use the procmacro type.
@@ -37,6 +35,16 @@ namespace app {
 ```
 
 Supported values:
-*  "enum", "trait", "callback", "trait_with_foreign"
-* For records, either "record" or "dictionary"
-* For objects, either "object" or "interface"
+* "enum", "trait", "callback", "trait_with_foreign"
+* For records, either "record", "dictionary" or "struct"
+* For objects, either "object", "impl" or "interface"
+
+eg:
+```
+typedef enum MyEnum;
+typedef interface MyObject;
+```
+etc.
+
+Note that in 0.28 and prior, we also supported this capability with a `[Rust=]` attribute.
+This attribute is deprecated and may be removed in a later version.
