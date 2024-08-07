@@ -98,7 +98,7 @@ Note that `uniffi_set_event_loop` cannot be glob-imported because it's not part 
 ## Cancelling async code.
 
 We don't directly support cancellation in UniFFI even when the underlying platforms do.
-You should build your cancellation in a separate, library specific channel; for example, exposing a cancel() method that sets a flag that the library checks periodically.
+You should build your cancellation in a separate, library specific channel; for example, exposing a `cancel()` method that sets a flag that the library checks periodically.
 
 Cancellation can then be exposed in the API and be mapped to one of the error variants, or None/empty-vec/whatever makes sense.
 There's no builtin way to cancel a future, nor to cause/raise a platform native async cancellation error (eg, a swift `CancellationError`).
