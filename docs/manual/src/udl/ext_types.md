@@ -35,16 +35,16 @@ namespace app {
 ```
 
 Supported values:
-* "enum", "trait", "callback", "trait_with_foreign"
-* For records, either "record", "dictionary" or "struct"
-* For objects, either "object", "impl" or "interface"
+* Enums: `enum`
+* Records: `record`, `dictionary` or `struct`
+* Objects: `object`, `impl` or `interface`
+* Traits: `trait`, `callback` or `trait_with_foreign`
 
 eg:
 ```
 typedef enum MyEnum;
 typedef interface MyObject;
 ```
-etc.
 
 Note that in 0.28 and prior, we also supported this capability with a `[Rust=]` attribute.
 This attribute is deprecated and may be removed in a later version.
