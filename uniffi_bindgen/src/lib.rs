@@ -115,6 +115,7 @@ use crate::interface::{
     Variant,
 };
 pub use interface::ComponentInterface;
+pub use library_mode::find_components;
 use scaffolding::RustScaffolding;
 use uniffi_meta::Type;
 
@@ -297,7 +298,8 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let config = {
         let crate_config = load_toml_file(Some(&crate_root.join("uniffi.toml")))
             .context("failed to load {crate_root}/uniffi.toml")?;
-        let toml_value = overridden_config_value(crate_config, config_file_override)?;
+        let toml_value =
+            overridden_config_value(crate_config.unwrap_or_default(), config_file_override)?;
         binding_generator.new_config(&toml_value)?
     };
 
@@ -497,10 +499,9 @@ fn load_toml_file(source: Option<&Utf8Path>) -> Result<Option<toml::value::Table
 
 /// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
 fn overridden_config_value(
-    config: Option<toml::value::Table>,
+    mut config: toml::value::Table,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<toml::Value> {
-    let mut config = config.unwrap_or_default();
     let override_config = load_toml_file(config_file_override).context("override config")?;
     if let Some(override_config) = override_config {
         merge_toml(&mut config, override_config);

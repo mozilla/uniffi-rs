@@ -22,17 +22,18 @@ use crate::{
 use anyhow::bail;
 use camino::Utf8Path;
 use std::{collections::HashMap, fs};
+use toml::value::Table as TomlTable;
 use uniffi_meta::{
     create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
 };
 
 /// Generate foreign bindings
 ///
+/// This replicates the current process used for generating the builtin bindings.
+/// External bindings authors should consider using [find_components], which provides a simpler
+/// interface and allows for more flexibility in how the external bindings are generated.
+///
 /// Returns the list of sources used to generate the bindings, in no particular order.
-// XXX - we should consider killing this function and replace it with a function
-// which just locates the `Components` and returns them, leaving the filtering
-// and actual generation to the callers, which also would allow removing the potentially
-// confusing crate_name param.
 pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     library_path: &Utf8Path,
     crate_name: Option<String>,
@@ -42,11 +43,10 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<Vec<Component<T::Config>>> {
-    let mut components = find_components(config_supplier, library_path)?
+    let mut components = find_components(library_path, config_supplier)?
         .into_iter()
-        .map(|ci| {
-            let crate_toml = config_supplier.get_toml(ci.crate_name())?;
-            let toml_value = overridden_config_value(crate_toml, config_file_override)?;
+        .map(|Component { ci, config }| {
+            let toml_value = overridden_config_value(config, config_file_override)?;
             let config = binding_generator.new_config(&toml_value)?;
             Ok(Component { ci, config })
         })
@@ -90,10 +90,17 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     None
 }
 
-fn find_components(
-    config_supplier: &dyn BindgenCrateConfigSupplier,
+/// Find UniFFI components from a shared library file
+///
+/// This method inspects the library file and creates [ComponentInterface] instances for each
+/// component used to build it.  It parses the UDL files from `uniffi::include_scaffolding!` macro
+/// calls.
+///
+/// `config_supplier` is used to find UDL files on disk and load config data.
+pub fn find_components(
     library_path: &Utf8Path,
-) -> Result<Vec<ComponentInterface>> {
+    config_supplier: &dyn BindgenCrateConfigSupplier,
+) -> Result<Vec<Component<TomlTable>>> {
     let items = macro_metadata::extract_from_library(library_path)?;
     let mut metadata_groups = create_metadata_groups(&items);
     group_metadata(&mut metadata_groups, items)?;
@@ -128,7 +135,10 @@ fn find_components(
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;
-            Ok(ci)
+            let config = config_supplier
+                .get_toml(ci.crate_name())?
+                .unwrap_or_default();
+            Ok(Component { ci, config })
         })
         .collect()
 }
