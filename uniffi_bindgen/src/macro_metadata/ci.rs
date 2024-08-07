@@ -103,6 +103,9 @@ fn add_item_to_ci(iface: &mut ComponentInterface, item: Metadata) -> anyhow::Res
         Metadata::UniffiTrait(meta) => {
             iface.add_uniffitrait_meta(meta)?;
         }
+        Metadata::AsTrait(meta) => {
+            iface.add_as_trait_impl(meta)?;
+        }
         Metadata::CallbackInterface(meta) => {
             iface.types.add_known_type(&Type::CallbackInterface {
                 module_path: meta.module_path.clone(),
