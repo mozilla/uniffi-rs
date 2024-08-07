@@ -1459,14 +1459,14 @@ namespace<span class="w"> </span>app<span class="w"> </span>{
 }
 </code></pre></div>
 <p>Supported values:
-* "enum", "trait", "callback", "trait_with_foreign"
-* For records, either "record", "dictionary" or "struct"
-* For objects, either "object", "impl" or "interface"</p>
+* Enums: <code>enum</code>
+* Records: <code>record</code>, <code>dictionary</code> or <code>struct</code>
+* Objects: <code>object</code>, <code>impl</code> or <code>interface</code>
+* Traits: <code>trait</code>, <code>callback</code> or <code>trait_with_foreign</code></p>
 <p>eg:
 <div class="highlight"><pre><span></span><code>typedef enum MyEnum;
 typedef interface MyObject;
-</code></pre></div>
-etc.</p>
+</code></pre></div></p>
 <p>Note that in 0.28 and prior, we also supported this capability with a <code>[Rust=]</code> attribute.
 This attribute is deprecated and may be removed in a later version.</p>
 
