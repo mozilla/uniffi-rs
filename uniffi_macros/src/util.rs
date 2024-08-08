@@ -215,14 +215,6 @@ pub(crate) fn tagged_impl_header(
     }
 }
 
-pub(crate) fn derive_all_ffi_traits(ty: &Ident, udl_mode: bool) -> TokenStream {
-    if udl_mode {
-        quote! { ::uniffi::derive_ffi_traits!(local #ty); }
-    } else {
-        quote! { ::uniffi::derive_ffi_traits!(blanket #ty); }
-    }
-}
-
 pub(crate) fn derive_ffi_traits(
     ty: impl ToTokens,
     udl_mode: bool,
@@ -258,6 +250,12 @@ pub mod kw {
     syn::custom_keyword!(with_try_read);
     syn::custom_keyword!(name);
     syn::custom_keyword!(non_exhaustive);
+    syn::custom_keyword!(into_existing);
+    syn::custom_keyword!(try_from_existing);
+    // This isn't currently used, but will be once we land #2807 which should happen before the
+    // next UniFFI release.  It's defined here to avoid needing to make too many changes in
+    // `custom_types.rs` once we do land that PR.
+    syn::custom_keyword!(remote);
     syn::custom_keyword!(Record);
     syn::custom_keyword!(Enum);
     syn::custom_keyword!(Error);
