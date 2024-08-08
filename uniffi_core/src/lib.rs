@@ -64,8 +64,6 @@ pub mod deps {
     pub use static_assertions;
 }
 
-mod panichook;
-
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // For the significance of this magic number 10 here, and the reason that
