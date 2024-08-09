@@ -16,3 +16,6 @@ thiserror = "1.0"
 
 [dev-dependencies]
 trybuild = "1.0.76"
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

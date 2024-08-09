@@ -20,3 +20,6 @@ uniffi = { workspace = true, features = ["build"] }
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
 
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

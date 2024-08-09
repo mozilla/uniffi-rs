@@ -32,6 +32,19 @@
 
 #![warn(rust_2018_idioms, unused_qualifications)]
 
+/// Print out tracing information for FFI calls if the `ffi-trace` feature is enabled
+#[cfg(feature = "ffi-trace")]
+macro_rules! trace {
+    ($($tt:tt)*) => {
+        println!($($tt)*);
+    }
+}
+
+#[cfg(not(feature = "ffi-trace"))]
+macro_rules! trace {
+    ($($tt:tt)*) => {};
+}
+
 use anyhow::bail;
 use bytes::buf::Buf;
 
