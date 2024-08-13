@@ -1482,6 +1482,11 @@
 <td><code>android</code></td>
 <td>Use the <a href="https://developer.android.com/reference/android/system/SystemCleaner"><code>android.system.SystemCleaner</code></a> instead of <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html"><code>java.lang.ref.Cleaner</code></a>. Fallback in both instances is the one shipped with JNA.</td>
 </tr>
+<tr>
+<td><code>kotlin_target_version</code></td>
+<td><code>"x.y.z"</code></td>
+<td>When provided, it will enable features in the bindings supported for this version. The build process will fail if an invalid format is used.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="example">Example</h2>

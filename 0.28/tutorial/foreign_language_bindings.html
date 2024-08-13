@@ -1534,9 +1534,9 @@
 <p>The next step is to have UniFFI generate source code for your foreign language. It doesn't help you build this code, it just generates it for you.</p>
 <h2 id="creating-the-bindgen-binary">Creating the bindgen binary</h2>
 <p>First, make sure you have installed all the <a href="Prerequisites.html">prerequisites</a>.</p>
-<p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings.  However, this
-is only available with <a href="https://doc.rust-lang.org/cargo/reference/unstable.html#artifact-dependencies">Cargo nightly</a>.
-To work around this, you need to create a binary in your project that does the same thing.</p>
+<p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings,
+but if not on <a href="https://doc.rust-lang.org/cargo/reference/unstable.html#artifact-dependencies">Cargo nightly</a>,
+you need to create a binary in your project that does the same thing.</p>
 <p>Add the following to your <code>Cargo.toml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="k">[[bin]]</span>
 <span class="c1"># This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.</span>
@@ -1550,11 +1550,10 @@ To work around this, you need to create a binary in your project that does the s
 </code></pre></div></p>
 <p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --features=uniffi/cli --bin uniffi-bindgen [args]</code></p>
 <h3 id="multi-crate-workspaces">Multi-crate workspaces</h3>
-<p>If your project consists of multiple crates in a Cargo workspace, then the process outlined above would require you
-creating a binary for each crate that uses UniFFI.  You can avoid this by creating a separate crate for running <code>uniffi-bindgen</code>:
-  - Name the crate <code>uniffi-bindgen</code>
+<p>In a multiple crates workspace, you can create a separate crate for running <code>uniffi-bindgen</code>:
+  - Name the crate <code>uniffi-bindgen</code>, add it to your workspace.
   - Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = "0.XX.0", features = ["cli"] }</code>
-  - Follow the steps from the previous section to add the <code>uniffi-bindgen</code> binary target</p>
+  - As above, add the <code>uniffi-bindgen</code> binary target</p>
 <p>Then your can run <code>uniffi-bindgen</code> from any crate in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
 <h2 id="running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.

@@ -1382,10 +1382,12 @@
 <p>UniFFI is a tool that automatically generates foreign-language bindings targeting Rust libraries.
 The repository can be found on <a href="https://github.com/mozilla/uniffi-rs/">github</a>.
 It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.
-Note that this tool will not help you ship a Rust library to these platforms, but simply not have to write bindings code by hand. <a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">Related</a>.</p>
+Note that this tool will not help you ship a Rust library to these platforms, but it will help you avoid writing bindings code by hand.
+<a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">Related</a>.</p>
 <h2 id="design">Design</h2>
-<p>UniFFI requires to write an Interface Definition Language (based on <a href="https://heycam.github.io/webidl/">WebIDL</a>) file describing the methods and data structures available to the targeted languages.
-This .udl (UniFFI Definition Language) file, whose definitions must match with the exposed Rust code, is then used to generate Rust <em>scaffolding</em> code and foreign-languages <em>bindings</em>. This process can take place either during the build process or be manually initiated by the developer.</p>
+<p>UniFFI requires you to describe your interface via either proc-macros or in an Interface Definition Language (based on <a href="https://webidl.spec.whatwg.org/">WebIDL</a>) file.
+These definitions describe the methods and data structures available to the targeted languages, and are used to generate Rust <em>scaffolding</em> code and foreign-language <em>bindings</em>.
+This process can take place either during the build process or be manually initiated by the developer.</p>
 <p><img alt="uniffi diagram" src="uniffi_diagram.png" /></p>
 <h2 id="supported-languages">Supported languages</h2>
 <ul>
