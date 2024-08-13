@@ -78,13 +78,10 @@ impl RustBuffer {
 
     /// Creates a `RustBuffer` from its constituent fields.
     ///
-    /// This is intended mainly as an internal convenience function and should not
-    /// be used outside of this module.
-    ///
     /// # Safety
     ///
     /// You must ensure that the raw parts uphold the documented invariants of this class.
-    pub unsafe fn from_raw_parts(data: *mut u8, len: u64, capacity: u64) -> Self {
+    pub(crate) unsafe fn from_raw_parts(data: *mut u8, len: u64, capacity: u64) -> Self {
         Self {
             capacity,
             len,

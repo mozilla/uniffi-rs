@@ -43,7 +43,7 @@ pub enum FfiType {
     /// or pass it to someone that will.
     /// If the inner option is Some, it is the name of the external type. The bindings may need
     /// to use this name to import the correct RustBuffer for that type.
-    RustBuffer(Option<String>),
+    RustBuffer(Option<ExternalFfiMetadata>),
     /// A borrowed reference to some raw bytes owned by foreign language code.
     /// The provider of this reference must keep it alive for the duration of the receiving call.
     ForeignBytes,
@@ -144,11 +144,24 @@ impl From<&Type> for FfiType {
             Type::External {
                 name,
                 kind: ExternalKind::DataClass,
+                module_path,
+                namespace,
                 ..
-            } => FfiType::RustBuffer(Some(name.clone())),
+            } => FfiType::RustBuffer(Some(ExternalFfiMetadata {
+                name: name.clone(),
+                module_path: module_path.clone(),
+                namespace: namespace.clone(),
+            })),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
         }
     }
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ExternalFfiMetadata {
+    pub name: String,
+    pub module_path: String,
+    pub namespace: String,
 }
 
 // Needed for rust scaffolding askama template
@@ -216,6 +229,10 @@ impl FfiFunction {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     /// Name of the FFI buffer version of this function that's generated when the
@@ -293,6 +310,10 @@ impl FfiArgument {
         &self.name
     }
 
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
     }
@@ -313,6 +334,10 @@ pub struct FfiCallbackFunction {
 impl FfiCallbackFunction {
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     pub fn arguments(&self) -> Vec<&FfiArgument> {
@@ -339,6 +364,10 @@ impl FfiStruct {
     /// Get the name of this struct
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn rename(&mut self, new_name: String) {
+        self.name = new_name;
     }
 
     /// Get the fields for this struct
@@ -368,6 +397,10 @@ impl FfiField {
 
     pub fn type_(&self) -> FfiType {
         self.type_.clone()
+    }
+
+    pub fn rename(&mut self, name: String) {
+        self.name = name;
     }
 }
 

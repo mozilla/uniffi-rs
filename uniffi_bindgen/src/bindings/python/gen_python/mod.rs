@@ -16,6 +16,7 @@ use std::fmt::Debug;
 use crate::backend::TemplateExpression;
 
 use crate::interface::*;
+use crate::VisitMut;
 
 mod callback_interface;
 mod compounds;
@@ -148,7 +149,7 @@ impl Config {
 }
 
 // Generate python bindings for the given ComponentInterface, as a string.
-pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
+pub fn generate_python_bindings(config: &Config, ci: &mut ComponentInterface) -> Result<String> {
     PythonWrapper::new(config.clone(), ci)
         .render()
         .context("failed to render python bindings")
@@ -298,10 +299,13 @@ pub struct PythonWrapper<'a> {
     type_imports: BTreeSet<ImportRequirement>,
 }
 impl<'a> PythonWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+    pub fn new(config: Config, ci: &'a mut ComponentInterface) -> Self {
+        ci.visit_mut(&PythonCodeOracle);
+
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render().unwrap();
         let type_imports = type_renderer.imports.into_inner();
+
         Self {
             config,
             ci,
@@ -377,8 +381,8 @@ impl PythonCodeOracle {
             FfiType::Float64 => "ctypes.c_double".to_string(),
             FfiType::Handle => "ctypes.c_uint64".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
-            FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                Some(suffix) => format!("_UniffiRustBuffer{suffix}"),
+            FfiType::RustBuffer(maybe_external) => match maybe_external {
+                Some(external_meta) => format!("_UniffiRustBuffer{}", external_meta.name),
                 None => "_UniffiRustBuffer".to_string(),
             },
             FfiType::RustCallStatus => "_UniffiRustCallStatus".to_string(),
@@ -407,8 +411,10 @@ impl PythonCodeOracle {
                 | FfiType::Int64 => "0".to_owned(),
                 FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
                 FfiType::RustArcPtr(_) => "ctypes.c_void_p()".to_owned(),
-                FfiType::RustBuffer(maybe_suffix) => match maybe_suffix {
-                    Some(suffix) => format!("_UniffiRustBuffer{suffix}.default()"),
+                FfiType::RustBuffer(maybe_external) => match maybe_external {
+                    Some(external_meta) => {
+                        format!("_UniffiRustBuffer{}.default()", external_meta.name)
+                    }
                     None => "_UniffiRustBuffer.default()".to_owned(),
                 },
                 _ => unimplemented!("FFI return type: {t:?}"),
@@ -434,6 +440,84 @@ impl PythonCodeOracle {
         } else {
             (format!("{class_name}Protocol"), class_name)
         }
+    }
+}
+
+impl VisitMut for PythonCodeOracle {
+    fn visit_record(&self, record: &mut Record) {
+        record.rename(self.class_name(record.name()));
+    }
+
+    fn visit_object(&self, object: &mut Object) {
+        object.rename(self.class_name(object.name()));
+    }
+
+    fn visit_field(&self, field: &mut Field) {
+        field.rename(self.var_name(field.name()));
+    }
+
+    fn visit_ffi_field(&self, ffi_field: &mut FfiField) {
+        ffi_field.rename(self.var_name(ffi_field.name()));
+    }
+
+    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument) {
+        ffi_argument.rename(self.class_name(ffi_argument.name()));
+    }
+
+    fn visit_enum(&self, is_error: bool, enum_: &mut Enum) {
+        if is_error {
+            enum_.rename(self.class_name(enum_.name()));
+        } else {
+            enum_.rename(self.enum_variant_name(enum_.name()));
+        }
+    }
+
+    fn visit_enum_key(&self, key: &mut String) -> String {
+        self.class_name(key)
+    }
+
+    fn visit_variant(&self, is_error: bool, variant: &mut Variant) {
+        //TODO: If we want to remove the last var_name filter
+        // in the template, this is it. We need an additional
+        // attribute for the `Variant` so we can
+        // display Python is_NAME functions
+        // variant.set_is_name(self.var_name(variant.name()));
+
+        if is_error {
+            variant.rename(self.class_name(variant.name()));
+        } else {
+            variant.rename(self.enum_variant_name(variant.name()));
+        }
+    }
+
+    fn visit_type(&self, type_: &mut Type) {
+        // Renaming Types is a special case. We have simple types with names like
+        // an Object, but we also have types which have inner_types and builtin types.
+        // Which in turn have a different name. Therefore we pass the patterns as a
+        // function down to the renaming operation of the type itself, which can apply it
+        // to all its nested names if needed.
+        let name_transformer = |name: &str| self.class_name(name);
+        type_.rename_recursive(&name_transformer);
+    }
+
+    fn visit_method(&self, method: &mut Method) {
+        method.rename(self.fn_name(method.name()));
+    }
+
+    fn visit_argument(&self, argument: &mut Argument) {
+        argument.rename(self.var_name(argument.name()));
+    }
+
+    fn visit_constructor(&self, constructor: &mut Constructor) {
+        if !constructor.is_primary_constructor() {
+            constructor.rename(self.fn_name(constructor.name()));
+        }
+    }
+
+    fn visit_function(&self, function: &mut Function) {
+        // Conversions for wrapper.py
+        //TODO: Renaming the function name in wrapper.py is not currently tested
+        function.rename(self.fn_name(function.name()));
     }
 }
 
@@ -498,6 +582,20 @@ pub mod filters {
         Ok(as_ct.as_codetype().type_label())
     }
 
+    //TODO: Remove. Currently just being used by EnumTemplate.py to
+    // display is_NAME_OF_ENUM.
+    /// Get the idiomatic Python rendering of a variable name.
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.var_name(nm))
+    }
+
+    //TODO: Remove. Currently just being used by wrapper.py to display the
+    // callback_interface function names.
+    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
+    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.class_name(nm))
+    }
+
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }
@@ -545,26 +643,6 @@ pub mod filters {
 
     pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.ffi_default_value(return_type.as_ref()))
-    }
-
-    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.class_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of a function name.
-    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.fn_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.var_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of an individual enum variant.
-    pub fn enum_variant_py(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.enum_variant_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an FFI callback function name

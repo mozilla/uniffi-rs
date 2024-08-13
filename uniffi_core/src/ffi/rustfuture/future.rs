@@ -86,13 +86,13 @@ use std::{
 };
 
 use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler};
-use crate::{rust_call_with_out_status, FfiDefault, LowerReturn, RustCallStatus};
+use crate::{rust_call_with_out_status, FfiDefault, LiftArgsError, LowerReturn, RustCallStatus};
 
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -106,7 +106,7 @@ where
 impl<F, T, UT> WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -139,7 +139,8 @@ where
                 // case below and we will never poll the future again.
                 panic::AssertUnwindSafe(|| match pinned.poll(context) {
                     Poll::Pending => Ok(Poll::Pending),
-                    Poll::Ready(v) => T::lower_return(v).map(Poll::Ready),
+                    Poll::Ready(Ok(v)) => T::lower_return(v).map(Poll::Ready),
+                    Poll::Ready(Err(e)) => T::handle_failed_lift(e).map(Poll::Ready),
                 }),
             );
             match result {
@@ -185,7 +186,7 @@ where
 unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -195,7 +196,7 @@ where
 pub(super) struct RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -211,7 +212,7 @@ where
 impl<F, T, UT> RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -263,7 +264,7 @@ where
 impl<F, T, UT> Wake for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -298,7 +299,7 @@ pub trait RustFutureFfi<ReturnType>: Send + Sync {
 impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = T> + Send + 'static,
+    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {

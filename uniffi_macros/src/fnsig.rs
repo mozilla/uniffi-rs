@@ -159,14 +159,16 @@ impl FnSignature {
             let name = &arg.name;
             quote! {
                 match #try_lift(#ident) {
-                    Ok(v) => v,
-                    Err(e) => return Err((#name, e)),
+                    ::std::result::Result::Ok(v) => v,
+                    ::std::result::Result::Err(e) => {
+                        return ::std::result::Result::Err((#name, e))
+                    }
                 }
             }
         });
         let all_lifts = self_lift.into_iter().chain(arg_lifts);
         quote! {
-            move || Ok((
+            move || ::std::result::Result::Ok((
                 #(#all_lifts,)*
             ))
         }

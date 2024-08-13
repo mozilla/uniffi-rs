@@ -16,50 +16,39 @@
 ///   - UniFFI can figure out the package/module names for each crate, eliminating the external
 ///     package maps.
 use crate::{
-    load_initial_config, macro_metadata, BindingGenerator, Component, ComponentInterface,
-    GenerationSettings, Result,
+    macro_metadata, overridden_config_value, BindgenCrateConfigSupplier, BindingGenerator,
+    Component, ComponentInterface, GenerationSettings, Result,
 };
-use anyhow::{bail, Context};
+use anyhow::bail;
 use camino::Utf8Path;
-use cargo_metadata::{MetadataCommand, Package};
 use std::{collections::HashMap, fs};
+use toml::value::Table as TomlTable;
 use uniffi_meta::{
     create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
 };
 
 /// Generate foreign bindings
 ///
+/// This replicates the current process used for generating the builtin bindings.
+/// External bindings authors should consider using [find_components], which provides a simpler
+/// interface and allows for more flexibility in how the external bindings are generated.
+///
 /// Returns the list of sources used to generate the bindings, in no particular order.
-// XXX - we should consider killing this function and replace it with a function
-// which just locates the `Components` and returns them, leaving the filtering
-// and actual generation to the callers, which also would allow removing the potentially
-// confusing crate_name param.
 pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     library_path: &Utf8Path,
     crate_name: Option<String>,
     binding_generator: &T,
+    config_supplier: &dyn BindgenCrateConfigSupplier,
     config_file_override: Option<&Utf8Path>,
     out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<Vec<Component<T::Config>>> {
-    let cargo_metadata = MetadataCommand::new()
-        .exec()
-        .context("error running cargo metadata")?;
-
-    let mut components = find_components(&cargo_metadata, library_path)?
+    let mut components = find_components(library_path, config_supplier)?
         .into_iter()
-        .map(|(ci, package)| {
-            let crate_root = package
-                .manifest_path
-                .parent()
-                .context("manifest path has no parent")?;
-            let config = binding_generator
-                .new_config(&load_initial_config(crate_root, config_file_override)?)?;
-            Ok(Component {
-                ci,
-                config,
-                package_name: Some(package.name),
-            })
+        .map(|Component { ci, config }| {
+            let toml_value = overridden_config_value(config, config_file_override)?;
+            let config = binding_generator.new_config(&toml_value)?;
+            Ok(Component { ci, config })
         })
         .collect::<Result<Vec<_>>>()?;
 
@@ -101,10 +90,17 @@ pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
     None
 }
 
-fn find_components(
-    cargo_metadata: &cargo_metadata::Metadata,
+/// Find UniFFI components from a shared library file
+///
+/// This method inspects the library file and creates [ComponentInterface] instances for each
+/// component used to build it.  It parses the UDL files from `uniffi::include_scaffolding!` macro
+/// calls.
+///
+/// `config_supplier` is used to find UDL files on disk and load config data.
+pub fn find_components(
     library_path: &Utf8Path,
-) -> Result<Vec<(ComponentInterface, Package)>> {
+    config_supplier: &dyn BindgenCrateConfigSupplier,
+) -> Result<Vec<Component<TomlTable>>> {
     let items = macro_metadata::extract_from_library(library_path)?;
     let mut metadata_groups = create_metadata_groups(&items);
     group_metadata(&mut metadata_groups, items)?;
@@ -114,13 +110,8 @@ fn find_components(
     let mut udl_items: HashMap<String, MetadataGroup> = HashMap::new();
 
     for group in metadata_groups.values() {
-        let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
-        let crate_root = package
-            .manifest_path
-            .parent()
-            .context("manifest path has no parent")?;
         let crate_name = group.namespace.crate_name.clone();
-        if let Some(mut metadata_group) = load_udl_metadata(group, crate_root, &crate_name)? {
+        if let Some(mut metadata_group) = load_udl_metadata(group, &crate_name, config_supplier)? {
             // fixup the items.
             metadata_group.items = metadata_group
                 .items
@@ -138,40 +129,24 @@ fn find_components(
     metadata_groups
         .into_values()
         .map(|group| {
-            let package = find_package_by_crate_name(cargo_metadata, &group.namespace.crate_name)?;
-            let mut ci = ComponentInterface::new(&group.namespace.crate_name);
-            if let Some(metadata) = udl_items.remove(&group.namespace.crate_name) {
+            let crate_name = &group.namespace.crate_name;
+            let mut ci = ComponentInterface::new(crate_name);
+            if let Some(metadata) = udl_items.remove(crate_name) {
                 ci.add_metadata(metadata)?;
             };
             ci.add_metadata(group)?;
-            Ok((ci, package))
+            let config = config_supplier
+                .get_toml(ci.crate_name())?
+                .unwrap_or_default();
+            Ok(Component { ci, config })
         })
         .collect()
 }
 
-fn find_package_by_crate_name(
-    metadata: &cargo_metadata::Metadata,
-    crate_name: &str,
-) -> Result<Package> {
-    let matching: Vec<&Package> = metadata
-        .packages
-        .iter()
-        .filter(|p| {
-            p.targets
-                .iter()
-                .any(|t| t.name.replace('-', "_") == crate_name)
-        })
-        .collect();
-    match matching.len() {
-        1 => Ok(matching[0].clone()),
-        n => bail!("cargo metadata returned {n} packages for crate name {crate_name}"),
-    }
-}
-
 fn load_udl_metadata(
     group: &MetadataGroup,
-    crate_root: &Utf8Path,
     crate_name: &str,
+    config_supplier: &dyn BindgenCrateConfigSupplier,
 ) -> Result<Option<MetadataGroup>> {
     let udl_items = group
         .items
@@ -181,10 +156,9 @@ fn load_udl_metadata(
             _ => None,
         })
         .collect::<Vec<_>>();
+    // We only support 1 UDL file per crate, for no good reason!
     match udl_items.len() {
-        // No UDL files, load directly from the group
         0 => Ok(None),
-        // Found a UDL file, use it to load the CI, then add the MetadataGroup
         1 => {
             if udl_items[0].module_path != crate_name {
                 bail!(
@@ -193,17 +167,11 @@ fn load_udl_metadata(
                     crate_name
                 );
             }
-            let ci_name = &udl_items[0].file_stub;
-            let ci_path = crate_root.join("src").join(format!("{ci_name}.udl"));
-            if ci_path.exists() {
-                let udl = fs::read_to_string(ci_path)?;
-                let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
-                Ok(Some(udl_group))
-            } else {
-                bail!("{ci_path} not found");
-            }
+            let udl = config_supplier.get_udl(crate_name, &udl_items[0].file_stub)?;
+            let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
+            Ok(Some(udl_group))
         }
-        n => bail!("{n} UDL files found for {crate_root}"),
+        n => bail!("{n} UDL files found for {crate_name}"),
     }
 }
 

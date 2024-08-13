@@ -3,10 +3,12 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::bindings::RunScriptOptions;
+use crate::cargo_metadata::CrateConfigSupplier;
 use crate::library_mode::generate_bindings;
 
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
+use cargo_metadata::Metadata;
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::OsStr;
 use std::fs::{read_to_string, File};
@@ -15,10 +17,10 @@ use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
 
 /// Run Swift tests for a UniFFI test fixture
-pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<()> {
+pub fn run_test(tmp_dir: &str, package_name: &str, script_file: &str) -> Result<()> {
     run_script(
         tmp_dir,
-        fixture_name,
+        package_name,
         script_file,
         vec![],
         &RunScriptOptions::default(),
@@ -30,16 +32,21 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
 /// This function will set things up so that the script can import the UniFFI bindings for a crate
 pub fn run_script(
     tmp_dir: &str,
-    crate_name: &str,
+    package_name: &str,
     script_file: &str,
     args: Vec<String>,
     options: &RunScriptOptions,
 ) -> Result<()> {
     let script_path = Utf8Path::new(script_file).canonicalize_utf8()?;
-    let test_helper = UniFFITestHelper::new(crate_name)?;
+    let test_helper = UniFFITestHelper::new(package_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
-    let generated_sources = GeneratedSources::new(crate_name, &cdylib_path, &out_dir)?;
+    let generated_sources = GeneratedSources::new(
+        test_helper.crate_name(),
+        &cdylib_path,
+        test_helper.cargo_metadata(),
+        &out_dir,
+    )?;
 
     // Compile the generated sources together to create a single swift module
     compile_swift_module(
@@ -124,18 +131,24 @@ struct GeneratedSources {
 }
 
 impl GeneratedSources {
-    fn new(package_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
+    fn new(
+        crate_name: &str,
+        cdylib_path: &Utf8Path,
+        cargo_metadata: Metadata,
+        out_dir: &Utf8Path,
+    ) -> Result<Self> {
         let sources = generate_bindings(
             cdylib_path,
             None,
             &super::SwiftBindingGenerator,
+            &CrateConfigSupplier::from(cargo_metadata),
             None,
             out_dir,
             false,
         )?;
         let main_source = sources
             .iter()
-            .find(|s| s.package_name.as_deref() == Some(package_name))
+            .find(|s| s.ci.crate_name() == crate_name)
             .unwrap();
         let main_module = main_source.config.module_name();
         let modulemap_glob = glob(&out_dir.join("*.modulemap"))?;

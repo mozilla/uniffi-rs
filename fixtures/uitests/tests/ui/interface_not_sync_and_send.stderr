@@ -16,7 +16,7 @@ note: required by a bound in `_::{closure#0}::assert_impl_all`
   |
   | #[::uniffi::udl_derive(Object)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-  = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
  --> $OUT_DIR[uniffi_uitests]/counter.uniffi.rs
@@ -55,7 +55,7 @@ note: required by a bound in `_::{closure#0}::assert_impl_all`
    |
 26 | #[derive(uniffi::Object)]
    |          ^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
-   = note: this error originates in the macro `uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the derive macro `uniffi::Object` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `::uniffi::deps::static_assertions::assert_impl_all` which comes from the expansion of the derive macro `uniffi::Object` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `Cell<u32>` cannot be shared between threads safely
   --> tests/ui/interface_not_sync_and_send.rs:27:12

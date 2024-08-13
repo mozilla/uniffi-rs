@@ -150,11 +150,11 @@ pub fn ffi_converter_callback_interface_impl(
             type FfiType = u64;
 
             fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<Self> {
-                Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(v)))
+                ::std::result::Result::Ok(::std::boxed::Box::new(<#trait_impl_ident>::new(v)))
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::deps::anyhow::Result<Self> {
-                use uniffi::deps::bytes::Buf;
+                use ::uniffi::deps::bytes::Buf;
                 ::uniffi::check_remaining(buf, 8)?;
                 #try_lift_self(buf.get_u64())
             }
@@ -222,7 +222,7 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
         Ok(quote! {
             fn #ident(#self_param, #(#params),*) -> #return_ty {
                 let vtable = #vtable_cell.get();
-                let mut uniffi_call_status = ::uniffi::RustCallStatus::new();
+                let mut uniffi_call_status: ::uniffi::RustCallStatus = ::std::default::Default::default();
                 let mut uniffi_return_value: #lift_return_type = ::uniffi::FfiDefault::ffi_default();
                 (vtable.#ident)(self.handle, #(#lower_exprs,)* &mut uniffi_return_value, &mut uniffi_call_status);
                 #lift_foreign_return(uniffi_return_value, uniffi_call_status)

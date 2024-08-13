@@ -54,10 +54,14 @@ pub(super) fn gen_trait_scaffolding(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) -> *const ::std::ffi::c_void {
-            uniffi::rust_call(call_status, || {
-                let ptr = ptr as *mut std::sync::Arc<dyn #self_ident>;
-                let arc = unsafe { ::std::sync::Arc::clone(&*ptr) };
-                Ok(::std::boxed::Box::into_raw(::std::boxed::Box::new(arc)) as  *const ::std::ffi::c_void)
+            ::uniffi::rust_call(call_status, || {
+                let ptr = ptr as *mut ::std::sync::Arc<dyn #self_ident>;
+                let arc: ::std::sync::Arc<_> = unsafe { ::std::clone::Clone::clone(&*ptr) };
+                ::std::result::Result::Ok(
+                    ::std::boxed::Box::into_raw(
+                        ::std::boxed::Box::new(arc),
+                    ) as *const ::std::ffi::c_void
+                )
             })
         }
 
@@ -74,10 +78,14 @@ pub(super) fn gen_trait_scaffolding(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            uniffi::rust_call(call_status, || {
-                assert!(!ptr.is_null());
-                drop(unsafe { ::std::boxed::Box::from_raw(ptr as *mut std::sync::Arc<dyn #self_ident>) });
-                Ok(())
+            ::uniffi::rust_call(call_status, || {
+                ::std::assert!(!ptr.is_null());
+                ::std::mem::drop(unsafe {
+                    ::std::boxed::Box::from_raw(
+                        ptr as *mut ::std::sync::Arc<dyn #self_ident>,
+                    )
+                });
+                ::std::result::Result::Ok(())
             });
         }
     };
@@ -123,14 +131,16 @@ pub(crate) fn ffi_converter(
         let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
         quote! {
             fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
-                Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v as u64)))
+                ::std::result::Result::Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v as u64)))
             }
         }
     } else {
         quote! {
             fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
                 unsafe {
-                    Ok(*::std::boxed::Box::from_raw(v as *mut ::std::sync::Arc<Self>))
+                    ::std::result::Result::Ok(
+                        *::std::boxed::Box::from_raw(v as *mut ::std::sync::Arc<Self>),
+                    )
                 }
             }
         }
@@ -148,7 +158,9 @@ pub(crate) fn ffi_converter(
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn't being met.
-        uniffi::deps::static_assertions::assert_impl_all!(dyn #trait_ident: ::core::marker::Sync, ::core::marker::Send);
+        ::uniffi::deps::static_assertions::assert_impl_all!(
+            dyn #trait_ident: ::core::marker::Sync, ::core::marker::Send
+        );
 
         unsafe #impl_spec {
             type FfiType = *const ::std::os::raw::c_void;
@@ -159,11 +171,11 @@ pub(crate) fn ffi_converter(
 
             #try_lift
 
-            fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
+            fn write(obj: ::std::sync::Arc<Self>, buf: &mut ::std::vec::Vec<u8>) {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::deps::bytes::BufMut::put_u64(
                     buf,
-                    #lower_self(obj) as u64,
+                    #lower_self(obj) as ::std::primitive::u64,
                 );
             }
 

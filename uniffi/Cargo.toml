@@ -7,7 +7,7 @@ repository = "https://github.com/mozilla/uniffi-rs"
 # Incrementing the minor version here means a breaking change to consumers.
 #   * See `docs/uniffi-versioning.md` for guidance on when to increment this
 #   * Make sure to also update `uniffi_bindgen::UNIFFI_CONTRACT_VERSION"
-version = "0.28.0"
+version = "0.28.1"
 authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2021"
@@ -15,31 +15,34 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [dependencies]
-uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.28.0", optional = true }
-uniffi_build = { path = "../uniffi_build", version = "=0.28.0", optional = true }
-uniffi_core = { path = "../uniffi_core", version = "=0.28.0" }
-uniffi_macros = { path = "../uniffi_macros", version = "=0.28.0" }
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.28.1", optional = true }
+uniffi_build = { path = "../uniffi_build", version = "=0.28.1", optional = true }
+uniffi_core = { path = "../uniffi_core", version = "=0.28.1" }
+uniffi_macros = { path = "../uniffi_macros", version = "=0.28.1" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
+cargo_metadata = { version = "0.15", optional = true }
 clap = { version = "4", features = ["cargo", "std", "derive"], optional = true }
 
 [dev-dependencies]
 trybuild = "1"
 
 [features]
-default = []
+default = ["cargo-metadata"]
 # Support for features needed by the `build.rs` script. Enable this in your
 # `build-dependencies`.
 build = [ "dep:uniffi_build" ]
 # Support for `uniffi_bindgen::{generate_bindings, generate_component_scaffolding}`.
 # Enable this feature for your `uniffi-bindgen` binaries if you don't need the full CLI.
 bindgen = ["dep:uniffi_bindgen"]
+cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata"]
+
 # Support for `uniffi_bindgen_main()`. Enable this feature for your
 # `uniffi-bindgen` binaries.
 cli = [ "bindgen", "dep:clap", "dep:camino" ]
 # Support for running example/fixture tests for `uniffi-bindgen`.  You probably
 # don't need to enable this.
-bindgen-tests = [ "dep:uniffi_bindgen" ]
+bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen/bindgen-tests" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]

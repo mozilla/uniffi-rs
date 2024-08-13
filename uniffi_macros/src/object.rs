@@ -67,9 +67,9 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) -> *const ::std::ffi::c_void {
-            uniffi::rust_call(call_status, || {
+            ::uniffi::rust_call(call_status, || {
                 unsafe { ::std::sync::Arc::increment_strong_count(ptr) };
-                Ok(ptr)
+                ::std::result::Result::Ok(ptr)
             })
         }
 
@@ -79,13 +79,13 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            uniffi::rust_call(call_status, || {
+            ::uniffi::rust_call(call_status, || {
                 assert!(!ptr.is_null());
                 let ptr = ptr.cast::<#ident>();
                 unsafe {
                     ::std::sync::Arc::decrement_strong_count(ptr);
                 }
-                Ok(())
+                ::std::result::Result::Ok(())
             });
         }
 
@@ -119,7 +119,9 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn't being met.
-        uniffi::deps::static_assertions::assert_impl_all!(#ident: ::core::marker::Sync, ::core::marker::Send);
+        ::uniffi::deps::static_assertions::assert_impl_all!(
+            #ident: ::core::marker::Sync, ::core::marker::Send
+        );
 
         #[doc(hidden)]
         #[automatically_derived]
@@ -148,7 +150,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// When lifting, we receive an owned `Arc` that the foreign language code cloned.
             fn try_lift(v: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
                 let v = v as *const #ident;
-                Ok(unsafe { ::std::sync::Arc::<Self>::from_raw(v) })
+                ::std::result::Result::Ok(unsafe { ::std::sync::Arc::<Self>::from_raw(v) })
             }
 
             /// When writing as a field of a complex structure, make a clone and transfer ownership
@@ -159,9 +161,9 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// Safety: when freeing the resulting pointer, the foreign-language code must
             /// call the destructor function specific to the type `T`. Calling the destructor
             /// function for other types may lead to undefined behaviour.
-            fn write(obj: ::std::sync::Arc<Self>, buf: &mut Vec<u8>) {
+            fn write(obj: ::std::sync::Arc<Self>, buf: &mut ::std::vec::Vec<u8>) {
                 ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower_arc(obj) as u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower_arc(obj) as ::std::primitive::u64);
             }
 
             /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
@@ -183,7 +185,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         unsafe #lower_return_impl_spec {
             type ReturnType = #lower_return_type_arc;
 
-            fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustBuffer> {
+            fn lower_return(obj: Self) -> ::std::result::Result<Self::ReturnType, ::uniffi::RustCallError> {
                 #lower_return_arc(::std::sync::Arc::new(obj))
             }
         }

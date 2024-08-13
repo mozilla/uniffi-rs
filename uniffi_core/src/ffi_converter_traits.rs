@@ -50,14 +50,14 @@
 //! These traits should not be used directly, only in generated code, and the generated code should
 //! have fixture tests to test that everything works correctly together.
 
-use std::{borrow::Borrow, sync::Arc};
+use std::{borrow::Borrow, mem::ManuallyDrop, sync::Arc};
 
 use anyhow::bail;
 use bytes::Buf;
 
 use crate::{
-    FfiDefault, Handle, MetadataBuffer, Result, RustBuffer, RustCallStatus, RustCallStatusCode,
-    UnexpectedUniFFICallbackError,
+    FfiDefault, Handle, LiftArgsError, MetadataBuffer, Result, RustBuffer, RustCallError,
+    RustCallStatus, RustCallStatusCode, UnexpectedUniFFICallbackError,
 };
 
 /// Generalized FFI conversions
@@ -269,22 +269,29 @@ pub unsafe trait LowerReturn<UT>: Sized {
     /// When derived, it's the same as `FfiType`.
     type ReturnType: FfiDefault;
 
-    /// Lower this value for scaffolding function return
+    /// Lower the return value from an scaffolding call
     ///
-    /// This method converts values into the `Result<>` type that [rust_call] expects. For
-    /// successful calls, return `Ok(lower_return)`.  For errors that should be translated into
-    /// thrown exceptions on the foreign code, serialize the error into a RustBuffer and return
-    /// `Err(buf)`
-    fn lower_return(obj: Self) -> Result<Self::ReturnType, RustBuffer>;
+    /// Returns values that [rust_call] expects:
+    ///
+    /// - Ok(v) for `Ok` returns and non-result returns, where v is the lowered return value
+    /// - `Err(RustCallError::Error(buf))` for `Err` returns where `buf` is serialized error value.
+    fn lower_return(v: Self) -> Result<Self::ReturnType, RustCallError>;
 
-    /// If possible, get a serialized error for failed argument lifts
+    /// Lower the return value for failed argument lifts
     ///
-    /// By default, we just panic and let `rust_call` handle things.  However, for `Result<_, E>`
-    /// returns, if the anyhow error can be downcast to `E`, then serialize that and return it.
-    /// This results in the foreign code throwing a "normal" exception, rather than an unexpected
-    /// exception.
-    fn handle_failed_lift(arg_name: &str, e: anyhow::Error) -> Self {
-        panic!("Failed to convert arg '{arg_name}': {e}")
+    /// This is called when we fail to make a scaffolding call, because of an error lifting an
+    /// argument.  It should return a value that [rust_call] expects:
+    ///
+    /// - By default, this is `Err(RustCallError::InternalError(msg))` where `msg` is message
+    ///   describing the failed lift.
+    /// - For Result types, if we can downcast the error to the `Err` value, then return
+    ///   `Err(RustCallError::Error(buf))`. This results in better exception throws on the foreign
+    ///   side.
+    fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
+        let LiftArgsError { arg_name, error } = error;
+        Err(RustCallError::InternalError(format!(
+            "Failed to convert arg '{arg_name}': {error}"
+        )))
     }
 }
 
@@ -339,12 +346,12 @@ pub unsafe trait LiftReturn<UT>: Sized {
                     Self::handle_callback_unexpected_error(UnexpectedUniFFICallbackError::new(e))
                 }),
             RustCallStatusCode::Error => {
-                Self::lift_error(unsafe { call_status.error_buf.assume_init() })
+                Self::lift_error(ManuallyDrop::into_inner(call_status.error_buf))
             }
             _ => {
-                let e = <String as FfiConverter<crate::UniFfiTag>>::try_lift(unsafe {
-                    call_status.error_buf.assume_init()
-                })
+                let e = <String as FfiConverter<crate::UniFfiTag>>::try_lift(
+                    ManuallyDrop::into_inner(call_status.error_buf),
+                )
                 .unwrap_or_else(|e| format!("(Error lifting message: {e}"));
                 Self::handle_callback_unexpected_error(UnexpectedUniFFICallbackError::new(e))
             }
@@ -449,18 +456,24 @@ pub unsafe trait HandleAlloc<UT>: Send + Sync {
     /// This creates a new handle from an existing one.
     /// It's used when the foreign code wants to pass back an owned handle and still keep a copy
     /// for themselves.
-    fn clone_handle(handle: Handle) -> Handle;
+    /// # Safety
+    /// The handle must be valid.
+    unsafe fn clone_handle(handle: Handle) -> Handle;
 
     /// Get a clone of the `Arc<>` using a "borrowed" handle.
     ///
-    /// Take care that the handle can not be destroyed between when it's passed and when
+    /// # Safety
+    /// The handle must be valid. Take care that the handle can
+    /// not be destroyed between when it's passed and when
     /// `get_arc()` is called.  #1797 is a cautionary tale.
-    fn get_arc(handle: Handle) -> Arc<Self> {
+    unsafe fn get_arc(handle: Handle) -> Arc<Self> {
         Self::consume_handle(Self::clone_handle(handle))
     }
 
     /// Consume a handle, getting back the initial `Arc<>`
-    fn consume_handle(handle: Handle) -> Arc<Self>;
+    /// # Safety
+    /// The handle must be valid.
+    unsafe fn consume_handle(handle: Handle) -> Arc<Self>;
 }
 
 /// Derive FFI traits
@@ -540,8 +553,8 @@ macro_rules! derive_ffi_traits {
         {
             type ReturnType = <Self as $crate::Lower<$ut>>::FfiType;
 
-            fn lower_return(obj: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustBuffer> {
-                Ok(<Self as $crate::Lower<$ut>>::lower(obj))
+            fn lower_return(v: Self) -> $crate::deps::anyhow::Result<Self::ReturnType, $crate::RustCallError> {
+                ::std::result::Result::Ok(<Self as $crate::Lower<$ut>>::lower(v))
             }
         }
     };
@@ -596,19 +609,15 @@ macro_rules! derive_ffi_traits {
                 $crate::Handle::from_pointer(::std::sync::Arc::into_raw(::std::sync::Arc::new(value)))
             }
 
-            fn clone_handle(handle: $crate::Handle) -> $crate::Handle {
-                unsafe {
-                    ::std::sync::Arc::<::std::sync::Arc<Self>>::increment_strong_count(handle.as_pointer::<::std::sync::Arc<Self>>());
-                }
+            unsafe fn clone_handle(handle: $crate::Handle) -> $crate::Handle {
+                ::std::sync::Arc::<::std::sync::Arc<Self>>::increment_strong_count(handle.as_pointer::<::std::sync::Arc<Self>>());
                 handle
             }
 
-            fn consume_handle(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
-                unsafe {
-                    ::std::sync::Arc::<Self>::clone(
-                        &std::sync::Arc::<::std::sync::Arc::<Self>>::from_raw(handle.as_pointer::<::std::sync::Arc<Self>>())
-                    )
-                }
+            unsafe fn consume_handle(handle: $crate::Handle) -> ::std::sync::Arc<Self> {
+                ::std::sync::Arc::<Self>::clone(
+                    &std::sync::Arc::<::std::sync::Arc::<Self>>::from_raw(handle.as_pointer::<::std::sync::Arc<Self>>())
+                )
             }
         }
     };
@@ -626,12 +635,12 @@ unsafe impl<T: Send + Sync, UT> HandleAlloc<UT> for T {
         Handle::from_pointer(Arc::into_raw(value))
     }
 
-    fn clone_handle(handle: Handle) -> Handle {
-        unsafe { Arc::increment_strong_count(handle.as_pointer::<T>()) };
+    unsafe fn clone_handle(handle: Handle) -> Handle {
+        Arc::increment_strong_count(handle.as_pointer::<T>());
         handle
     }
 
-    fn consume_handle(handle: Handle) -> Arc<Self> {
-        unsafe { Arc::from_raw(handle.as_pointer()) }
+    unsafe fn consume_handle(handle: Handle) -> Arc<Self> {
+        Arc::from_raw(handle.as_pointer())
     }
 }

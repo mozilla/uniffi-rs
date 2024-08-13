@@ -49,10 +49,9 @@ class {{ impl_name }}:
         return inst
 
 {%- for cons in obj.alternate_constructors() %}
-
     @classmethod
 {%-  if cons.is_async() %}
-    async def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+    async def {{ cons.name() }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
 
@@ -65,7 +64,7 @@ class {{ impl_name }}:
             {% call py::error_ffi_converter(cons) %}
         )
 {%-  else %}
-    def {{ cons.name()|fn_name }}(cls, {% call py::arg_list_decl(cons) %}):
+    def {{ cons.name() }}(cls, {% call py::arg_list_decl(cons) %}):
         {%- call py::docstring(cons, 8) %}
         {%- call py::setup_args_extra_indent(cons) %}
         # Call the (fallible) function before creating any half-baked object instances.
@@ -75,7 +74,7 @@ class {{ impl_name }}:
 {% endfor %}
 
 {%- for meth in obj.methods() -%}
-    {%- call py::method_decl(meth.name()|fn_name, meth) %}
+    {%- call py::method_decl(meth.name(), meth) %}
 {%- endfor %}
 {%- for tm in obj.uniffi_traits() -%}
 {%-     match tm %}

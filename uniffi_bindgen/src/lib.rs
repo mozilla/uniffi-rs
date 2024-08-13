@@ -107,8 +107,17 @@ pub mod library_mode;
 pub mod macro_metadata;
 pub mod scaffolding;
 
+#[cfg(feature = "cargo-metadata")]
+pub mod cargo_metadata;
+
+use crate::interface::{
+    Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
+    Variant,
+};
 pub use interface::ComponentInterface;
+pub use library_mode::find_components;
 use scaffolding::RustScaffolding;
+use uniffi_meta::Type;
 
 /// The options used when creating bindings. Named such
 /// it doesn't cause confusion that it's settings specific to
@@ -157,13 +166,93 @@ pub trait BindingGenerator: Sized {
     ) -> Result<()>;
 }
 
+/// A trait to alter language specific type representations.
+///
+/// It is meant to be implemented by each language oracle. It takes a
+/// ['ComponentInterface'] and uses its own specific language adjustment
+/// functions to be able to generate language specific templates.
+pub trait VisitMut {
+    /// Go through each `Record` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_record(&self, record: &mut Record);
+
+    /// Change the name of an `Object` of a [`ComponentInterface`
+    /// to language specific naming conventions.
+    fn visit_object(&self, object: &mut Object);
+
+    /// Change the name of a `Field` of an `Enum` `Variant`
+    /// to language specific naming conventions.
+    fn visit_field(&self, field: &mut Field);
+
+    /// Change the name of a `FfiField` inside a `FfiStruct`
+    /// to language specific naming conventions.
+    fn visit_ffi_field(&self, ffi_field: &mut FfiField);
+
+    /// Change the `Arugment` of a `FfiFunction` in the [`ComponentInterface`]
+    /// to language specific naming conventions.
+    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument);
+
+    /// Go through each `Enum` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_enum(&self, is_error: bool, enum_: &mut Enum);
+
+    /// Change the naming of the key in the [`ComponentInterface`]
+    /// `BTreeMap` where all `Enum`s are stored to reflect the changed
+    /// name of an `Enum`.
+    fn visit_enum_key(&self, key: &mut String) -> String;
+
+    /// Go through each `Variant` of an `Enum` and
+    /// adjust it to language specific naming conventions.
+    fn visit_variant(&self, is_error: bool, variant: &mut Variant);
+
+    /// Go through each `Type` in the `TypeUniverse` of
+    /// a [`ComponentInterface`] and adjust it to language specific
+    /// naming conventions.
+    fn visit_type(&self, type_: &mut Type);
+
+    /// Go through each `Method` of an `Object` and
+    /// adjust it to language specific naming conventions.
+    fn visit_method(&self, method: &mut Method);
+
+    /// Go through each `Argument` of a `Function` and
+    /// adjust it to language specific naming conventions.
+    fn visit_argument(&self, argument: &mut Argument);
+
+    /// Go through each `Constructor` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_constructor(&self, constructor: &mut Constructor);
+
+    /// Go through each `Function` of a [`ComponentInterface`] and
+    /// adjust it to language specific naming conventions.
+    fn visit_function(&self, function: &mut Function);
+}
+
 /// Everything needed to generate a ComponentInterface.
 #[derive(Debug)]
 pub struct Component<Config> {
     pub ci: ComponentInterface,
     pub config: Config,
-    pub package_name: Option<String>,
 }
+
+/// A trait used by the bindgen to obtain config information about a source crate
+/// which was found in the metadata for the library.
+///
+/// This is an abstraction around needing the source directory for a crate.
+/// In most cases `cargo_metadata` can be used, but this should be able to work in
+/// more environments.
+pub trait BindgenCrateConfigSupplier {
+    /// Get the toml for the crate. Probably came from uniffi.toml in the root of the crate source.
+    fn get_toml(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
+        Ok(None)
+    }
+    /// Obtains the contents of the named UDL file which was referenced by the type metadata.
+    fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
+        bail!("Crate {crate_name} has no UDL {udl_name}")
+    }
+}
+
+pub struct EmptyCrateConfigSupplier;
+impl BindgenCrateConfigSupplier for EmptyCrateConfigSupplier {}
 
 /// A convenience function for the CLI to help avoid using static libs
 /// in places cdylibs are required.
@@ -207,8 +296,11 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let config_file_override = config_file_override.as_ref().map(|p| p.as_ref());
 
     let config = {
-        let toml = load_initial_config(crate_root, config_file_override)?;
-        binding_generator.new_config(&toml)?
+        let crate_config = load_toml_file(Some(&crate_root.join("uniffi.toml")))
+            .context("failed to load {crate_root}/uniffi.toml")?;
+        let toml_value =
+            overridden_config_value(crate_config.unwrap_or_default(), config_file_override)?;
+        binding_generator.new_config(&toml_value)?
     };
 
     let settings = GenerationSettings {
@@ -225,11 +317,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
         try_format_code,
     };
 
-    let mut components = vec![Component {
-        ci,
-        config,
-        package_name: None,
-    }];
+    let mut components = vec![Component { ci, config }];
     binding_generator.update_component_configs(&settings, &mut components)?;
     binding_generator.write_bindings(&settings, &components)
 }
@@ -410,19 +498,14 @@ fn load_toml_file(source: Option<&Utf8Path>) -> Result<Option<toml::value::Table
 }
 
 /// Load the default `uniffi.toml` config, merge TOML trees with `config_file_override` if specified.
-fn load_initial_config(
-    crate_root: &Utf8Path,
+fn overridden_config_value(
+    mut config: toml::value::Table,
     config_file_override: Option<&Utf8Path>,
 ) -> Result<toml::Value> {
-    let mut config = load_toml_file(Some(crate_root.join("uniffi.toml").as_path()))
-        .context("default config")?
-        .unwrap_or(toml::value::Table::default());
-
     let override_config = load_toml_file(config_file_override).context("override config")?;
     if let Some(override_config) = override_config {
         merge_toml(&mut config, override_config);
     }
-
     Ok(toml::Value::from(config))
 }
 

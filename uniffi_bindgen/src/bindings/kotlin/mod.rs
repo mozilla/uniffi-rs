@@ -11,8 +11,8 @@ use std::process::Command;
 
 mod gen_kotlin;
 use gen_kotlin::{generate_bindings, Config};
-mod test;
-pub use test::{run_script, run_test};
+#[cfg(feature = "bindgen-tests")]
+pub mod test;
 
 pub struct KotlinBindingGenerator;
 impl BindingGenerator for KotlinBindingGenerator {

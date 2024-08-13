@@ -94,3 +94,13 @@ Use `uniffi_set_event_loop()` to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.
 
 Note that `uniffi_set_event_loop` cannot be glob-imported because it's not part of the library's `__all__`.
+
+## Cancelling async code.
+
+We don't directly support cancellation in UniFFI even when the underlying platforms do.
+You should build your cancellation in a separate, library specific channel; for example, exposing a `cancel()` method that sets a flag that the library checks periodically.
+
+Cancellation can then be exposed in the API and be mapped to one of the error variants, or None/empty-vec/whatever makes sense.
+There's no builtin way to cancel a future, nor to cause/raise a platform native async cancellation error (eg, a swift `CancellationError`).
+
+See also https://github.com/mozilla/uniffi-rs/pull/1768.
