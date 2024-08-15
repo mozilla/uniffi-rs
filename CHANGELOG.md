@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...HEAD).
+
+## v0.28.1 (backend crates: v0.28.1) - (_2024-08-09_)
+
 ### What's new?
 
 - Lift errors will not cause an abort when `panic=abort` is set.
@@ -19,7 +23,7 @@
 ### What's changed?
 - Kotlin will use the more efficient Enum.entries property instead of Enum.values() when possible
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.0...HEAD).
+[All changes in v0.28.1](https://github.com/mozilla/uniffi-rs/compare/v0.28.0...v0.28.1).
 
 ## v0.28.0 (backend crates: v0.28.0) - (_2024-06-11_)
 
