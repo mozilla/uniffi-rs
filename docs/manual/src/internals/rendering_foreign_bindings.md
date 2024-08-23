@@ -9,7 +9,7 @@ A language binding has to generate code for two separate but entangled requireme
 
 ## API generation
 
-Our foreign bindings generation uses the [Askama](https://djc.github.io/askama/) template rendering engine. Askama uses
+Our foreign bindings generation uses the [Rinja](https://rinja.readthedocs.io/en/stable/) template rendering engine. Rinja uses
 a compile-time macro system that allows the template code to use Rust types directly, calling their methods passing them
 to normal Rust functions.
 
@@ -39,13 +39,13 @@ Let's break the template down:
 def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -> None:
 ```
 
-The Askama language uses double-curly braces (`{ }`) to interpolate blocks of code into the string output.
+The Rinja language uses double-curly braces (`{ }`) to interpolate blocks of code into the string output.
 
 `{{ func.name()|fn_name }}` becomes `this_func`: [It calls the `name` method on a `Function` object](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/interface/function.rs#L72) (you can see all the other metadata about functions there too).
-Askama uses a "filter" concept: Functions that take the value left of the pipe operator (`|`) to produce a new value.
+Rinja uses a "filter" concept: Functions that take the value left of the pipe operator (`|`) to produce a new value.
 The "filter" used in the above template is called`fn_name` and is [defined in the Python bindings generator](https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/gen_python/mod.rs#L567) - which ends up just handing the fact it might be a Python keyword but otherwise returns the same value.
 
-`{%- call py::arg_list_decl(func) -%}`: Calling an Askama macro, passing the `func` object linked above. It knows how to turn the function arguments into valid Python code.
+`{%- call py::arg_list_decl(func) -%}`: Calling an Rinja macro, passing the `func` object linked above. It knows how to turn the function arguments into valid Python code.
 
 Skipping a few lines ahead in that template, we call the FFI function `{% call py::to_ffi_call(func) %}` - which ultimately
 end up a call to an `extern "C"` FFI function you generated named something like `uniffi_some_name_fn_func_this_func(...)`
