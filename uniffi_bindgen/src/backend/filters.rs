@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! Backend-agnostic askama filters
+//! Backend-agnostic rinja filters
 
 use crate::interface::{
     AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Function, Object, Record,
 };
-use askama::Result;
+use rinja::Result;
 use std::fmt;
 
 // Need to define an error that implements std::error::Error, which neither String nor
@@ -33,7 +33,7 @@ impl std::error::Error for UniFFIError {}
 
 macro_rules! lookup_error {
     ($($args:tt)*) => {
-        askama::Error::Custom(Box::new(UniFFIError::new(format!($($args)*))))
+        rinja::Error::Custom(Box::new(UniFFIError::new(format!($($args)*))))
     }
 }
 
@@ -71,6 +71,6 @@ pub fn get_callback_interface_definition<'a>(
 }
 
 /// Get the FfiType for a Type
-pub fn ffi_type(type_: &impl AsType) -> Result<FfiType, askama::Error> {
+pub fn ffi_type(type_: &impl AsType) -> Result<FfiType, rinja::Error> {
     Ok(type_.as_type().into())
 }

@@ -22,7 +22,7 @@ class RustBufferStream
   end
 
   {% for typ in ci.iter_types() -%}
-  {%- let canonical_type_name = canonical_name(typ).borrow()|class_name_rb -%}
+  {%- let canonical_type_name = self::canonical_name(typ).borrow()|class_name_rb -%}
   {%- match typ -%}
 
   {% when Type::Int8 -%}
@@ -180,7 +180,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ enum_name|class_name_rb }}::{{ variant.name()|enum_name_rb }}.new(
             {%- for field in variant.fields() %}
-            self.read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            self.read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -216,7 +216,7 @@ class RustBufferStream
         {%- if variant.has_fields() %}
         return {{ error_name|class_name_rb }}::{{ variant.name()|class_name_rb }}.new(
             {%- for field in variant.fields() %}
-            read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
+            read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}(){% if loop.last %}{% else %},{% endif %}
             {%- endfor %}
         )
         {%- else %}
@@ -237,13 +237,13 @@ class RustBufferStream
   def read{{ canonical_type_name }}
     {{ rec.name()|class_name_rb }}.new(
       {%- for field in rec.fields() %}
-      {{ field.name()|var_name_rb }}: read{{ canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
+      {{ field.name()|var_name_rb }}: read{{ self::canonical_name(field.as_type().borrow()).borrow()|class_name_rb }}{% if loop.last %}{% else %},{% endif %}
       {%- endfor %}
     )
   end
 
   {% when Type::Optional { inner_type } -%}
-  # The Optional<T> type for {{ canonical_name(inner_type) }}.
+  # The Optional<T> type for {{ self::canonical_name(inner_type) }}.
 
   def read{{ canonical_type_name }}
     flag = unpack_from 1, 'c'
@@ -251,14 +251,14 @@ class RustBufferStream
     if flag == 0
       return nil
     elsif flag == 1
-      return read{{ canonical_name(inner_type).borrow()|class_name_rb }}
+      return read{{ self::canonical_name(inner_type).borrow()|class_name_rb }}
     else
       raise InternalError, 'Unexpected flag byte for {{ canonical_type_name }}'
     end
   end
 
   {% when Type::Sequence { inner_type } -%}
-  # The Sequence<T> type for {{ canonical_name(inner_type) }}.
+  # The Sequence<T> type for {{ self::canonical_name(inner_type) }}.
 
   def read{{ canonical_type_name }}
     count = unpack_from 4, 'l>'
@@ -268,14 +268,14 @@ class RustBufferStream
     items = []
 
     count.times do
-      items.append read{{ canonical_name(inner_type).borrow()|class_name_rb }}
+      items.append read{{ self::canonical_name(inner_type).borrow()|class_name_rb }}
     end
 
     items
   end
 
   {% when Type::Map { key_type: k, value_type: inner_type } -%}
-  # The Map<T> type for {{ canonical_name(inner_type) }}.
+  # The Map<T> type for {{ self::canonical_name(inner_type) }}.
 
   def read{{ canonical_type_name }}
     count = unpack_from 4, 'l>'
@@ -284,7 +284,7 @@ class RustBufferStream
     items = {}
     count.times do
       key = readString
-      items[key] = read{{ canonical_name(inner_type).borrow()|class_name_rb }}
+      items[key] = read{{ self::canonical_name(inner_type).borrow()|class_name_rb }}
     end
 
     items
