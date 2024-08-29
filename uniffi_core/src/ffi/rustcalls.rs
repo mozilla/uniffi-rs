@@ -204,6 +204,7 @@ where
                 } else {
                     "Unknown panic!".to_string()
                 };
+                #[cfg(feature = "log")]
                 log::error!("Caught a panic calling rust code: {:?}", message);
                 <String as Lower<UniFfiTag>>::lower(message)
             }));

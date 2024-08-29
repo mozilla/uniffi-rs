@@ -262,6 +262,7 @@ pub(super) fn gen_ffi_function(
                 #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> #ffi_return_ty {
+                #[cfg(feature = "log")]
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
@@ -291,6 +292,7 @@ pub(super) fn gen_ffi_function(
             #[doc(hidden)]
             #[no_mangle]
             pub extern "C" fn #ffi_ident(#(#param_names: #param_types,)*) -> ::uniffi::Handle {
+                #[cfg(feature = "log")]
                 ::uniffi::deps::log::debug!(#name);
                 let uniffi_lifted_args = (#lift_closure)();
                 ::uniffi::rust_future_new::<_, #return_ty, _>(

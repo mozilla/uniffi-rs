@@ -157,6 +157,7 @@ where
                 }
             }
         } else {
+            #[cfg(feature = "log")]
             log::error!("poll with neither future nor result set");
             true
         }

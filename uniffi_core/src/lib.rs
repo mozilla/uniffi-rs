@@ -60,6 +60,7 @@ pub mod deps {
     #[cfg(feature = "tokio")]
     pub use async_compat;
     pub use bytes;
+    #[cfg(feature = "log")]
     pub use log;
     pub use static_assertions;
 }

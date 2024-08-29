@@ -29,6 +29,7 @@ uniffi_meta = { path = "../uniffi_meta", version = "=0.28.1" }
 
 [features]
 default = []
+log = []
 # Enable the generate_and_include_scaffolding! macro
 trybuild = [ "dep:uniffi_build" ]
 # Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
