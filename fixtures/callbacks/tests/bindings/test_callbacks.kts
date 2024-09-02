@@ -141,3 +141,11 @@ listOf(1, 2).forEach { v ->
     assert(expected == observed) { "callback is sent on construction: $expected != $observed" }
 }
 rustStringifier.destroy()
+
+// `stringifier` must remain valid after `rustStringifier2` drops the reference
+val stringifier = StoredKotlinStringifier()
+val rustStringifier1 = RustStringifier(stringifier)
+val rustStringifier2 = RustStringifier(stringifier)
+assert("kotlin: 123" == rustStringifier2.fromSimpleType(123))
+rustStringifier2.destroy()
+assert("kotlin: 123" == rustStringifier1.fromSimpleType(123))

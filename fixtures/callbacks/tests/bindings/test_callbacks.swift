@@ -103,6 +103,16 @@ do {
         assert(expected == observed, "callback is sent on construction: \(expected) != \(observed)")
     }
 
+    do {
+        // `stringifier` must remain valid after `rustStringifier2` drops the reference
+        let stringifier = StoredSwiftStringifier()
+        let rustStringifier1 = RustStringifier(callback: stringifier)
+        do {
+            let rustStringifier2 = RustStringifier(callback: stringifier)
+            assert("swift: 123" == rustStringifier2.fromSimpleType(value: 123))
+        }
+        assert("swift: 123" == rustStringifier1.fromSimpleType(value: 123))
+    }
 
     // 3. Error handling
     do {
