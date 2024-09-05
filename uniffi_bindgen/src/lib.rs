@@ -124,11 +124,26 @@ use uniffi_meta::Type;
 /// the generator itself.
 // TODO: We should try and move the public interface of the module to
 // this struct. For now, only the BindingGenerator uses it.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct GenerationSettings {
     pub out_dir: Utf8PathBuf,
     pub try_format_code: bool,
     pub cdylib: Option<String>,
+    pub mode: GenerationMode,
+}
+
+#[derive(Debug)]
+pub enum GenerationMode {
+    /// Generating code for a single component
+    SingleComponent,
+    /// Generating code for all components in a library (i.e. --library was present on the CLI).
+    /// This affects generation for some languages, for example Swift will generate a single
+    /// modulemap instead of one module map per-component.
+    ///
+    /// Note: it's possible that this is still only generating code for a single component, but we
+    /// should still use "library mode behavior", so that the user can seamlessly add more
+    /// components to the library.
+    Library { library_path: Utf8PathBuf },
 }
 
 /// A trait representing a UniFFI Binding Generator
@@ -315,6 +330,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
             out_dir_override.as_ref().map(|p| p.as_ref()),
         )?,
         try_format_code,
+        mode: GenerationMode::SingleComponent,
     };
 
     let mut components = vec![Component { ci, config }];

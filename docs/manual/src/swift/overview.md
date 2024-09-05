@@ -25,20 +25,35 @@ Concepts from the UDL file map into Swift as follows:
     * If this happens inside a non-throwing Swift function, it will be converted
       into a fatal Swift error that cannot be caught.
 
-Conceptually, the generated bindings are split into two Swift modules, one for the low-level
-C FFI layer and one for the higher-level Swift bindings. For a UniFFI component named "example"
-we generate:
+## Generated files
 
-* A C header file `exampleFFI.h` declaring the low-level structs and functions for calling
-  into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.
-* A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
-  to provide the higher-level Swift API.
+UniFFI generates several kinds of files for Swift bindings:
 
-Splitting up the bindings in this way gives you flexibility over how both the Rust code
-and the Swift code are distributed to consumers. For example, you may choose to compile
-and distribute the Rust code for several UniFFI components as a single shared library
-in order to reduce the compiled code size, while distributing their Swift wrappers as
-individual modules.
+* C header files declaring the FFI structs/functions used by the Rust scaffolding code
+* A modulemap, which defines a Swift module for the C FFI definitions in the header file.
+* A Swift source file that defines the Swift API used by consumers.  This imports the FFI module.
+
+The file layout depends on which mode is used to generate the bindings:
+
+### Library mode
+
+`uniffi-bindgen` in [library mode](../tutorial/foreign_language_bindings.html#running-uniffi-bindgen-using-a-library-file) generates:
+
+* A Swift file for each crate (`[crate_name].swift`)
+* A header file for each crate (`[crate_name]FFI.h`)
+* A single modulemap file for the entire module (`[library_name].modulemap`)
+
+The expectation is that each `.swift` file will be compiled together into a single Swift module that represents the library as a whole.
+
+### Single UDL file
+
+`uniffi-bindgen` in [Single UDL file mode](../tutorial/foreign_language_bindings.html#running-uniffi-bindgen-with-a-single-udl-file) generates:
+
+* A Swift file for the crate (`[crate_name].swift`)
+* A header file for the crate (`[crate_name]FFI.h`)
+* A modulemap file for the crate (`[crate_name].modulemap`)
+
+The expectation is that the `.swift` will be compiled into a module and this is the only module to generate for the Rust library.
 
 For more technical details on how the bindings work internally, please see the
 [module documentation](https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/bindings/swift/index.html)
