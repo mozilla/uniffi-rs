@@ -1,7 +1,6 @@
 internal typealias Handle = Long
 internal class ConcurrentHandleMap<T>(
-    private val leftMap: MutableMap<Handle, T> = mutableMapOf(),
-    private val rightMap: MutableMap<T, Handle> = mutableMapOf()
+    private val handles: MutableMap<Handle, T> = mutableMapOf(),
 ) {
     private val lock = java.util.concurrent.locks.ReentrantLock()
     private val currentHandle = AtomicLong(0L)
@@ -9,16 +8,14 @@ internal class ConcurrentHandleMap<T>(
 
     fun insert(obj: T): Handle =
         lock.withLock {
-            rightMap[obj] ?:
-                currentHandle.getAndAdd(stride)
-                    .also { handle ->
-                        leftMap[handle] = obj
-                        rightMap[obj] = handle
-                    }
-            }
+            currentHandle.getAndAdd(stride)
+                .also { handle ->
+                    handles[handle] = obj
+                }
+        }
 
     fun get(handle: Handle) = lock.withLock {
-        leftMap[handle]
+        handles[handle]
     }
 
     fun delete(handle: Handle) {
@@ -27,10 +24,7 @@ internal class ConcurrentHandleMap<T>(
 
     fun remove(handle: Handle): T? =
         lock.withLock {
-            leftMap.remove(handle)?.let { obj ->
-                rightMap.remove(obj)
-                obj
-            }
+            handles.remove(handle)
         }
 }
 
