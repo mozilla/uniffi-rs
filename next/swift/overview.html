@@ -1064,6 +1064,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Swift Bindings
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="overview.html" class="md-nav__link md-nav__link--active">
         
   
@@ -1073,6 +1084,58 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#generated-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generated files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Generated files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#library-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Library mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-udl-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single UDL file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1345,6 +1408,47 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#generated-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generated files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Generated files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#library-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Library mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-udl-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single UDL file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1389,20 +1493,30 @@ Concepts from the UDL file map into Swift as follows:</p>
 </ul>
 </li>
 </ul>
-<p>Conceptually, the generated bindings are split into two Swift modules, one for the low-level
-C FFI layer and one for the higher-level Swift bindings. For a UniFFI component named "example"
-we generate:</p>
+<h2 id="generated-files">Generated files</h2>
+<p>UniFFI generates several kinds of files for Swift bindings:</p>
 <ul>
-<li>A C header file <code>exampleFFI.h</code> declaring the low-level structs and functions for calling
-  into Rust, along with a corresponding <code>exampleFFI.modulemap</code> to expose them to Swift.</li>
-<li>A Swift source file <code>example.swift</code> that imports the <code>exampleFFI</code> module and wraps it
-  to provide the higher-level Swift API.</li>
+<li>C header files declaring the FFI structs/functions used by the Rust scaffolding code</li>
+<li>A modulemap, which defines a Swift module for the C FFI definitions in the header file.</li>
+<li>A Swift source file that defines the Swift API used by consumers.  This imports the FFI module.</li>
 </ul>
-<p>Splitting up the bindings in this way gives you flexibility over how both the Rust code
-and the Swift code are distributed to consumers. For example, you may choose to compile
-and distribute the Rust code for several UniFFI components as a single shared library
-in order to reduce the compiled code size, while distributing their Swift wrappers as
-individual modules.</p>
+<p>The file layout depends on which mode is used to generate the bindings:</p>
+<h3 id="library-mode">Library mode</h3>
+<p><code>uniffi-bindgen</code> in <a href="../tutorial/foreign_language_bindings.html#running-uniffi-bindgen-using-a-library-file">library mode</a> generates:</p>
+<ul>
+<li>A Swift file for each crate (<code>[crate_name].swift</code>)</li>
+<li>A header file for each crate (<code>[crate_name]FFI.h</code>)</li>
+<li>A single modulemap file for the entire module (<code>[library_name].modulemap</code>)</li>
+</ul>
+<p>The expectation is that each <code>.swift</code> file will be compiled together into a single Swift module that represents the library as a whole.</p>
+<h3 id="single-udl-file">Single UDL file</h3>
+<p><code>uniffi-bindgen</code> in <a href="../tutorial/foreign_language_bindings.html#running-uniffi-bindgen-with-a-single-udl-file">Single UDL file mode</a> generates:</p>
+<ul>
+<li>A Swift file for the crate (<code>[crate_name].swift</code>)</li>
+<li>A header file for the crate (<code>[crate_name]FFI.h</code>)</li>
+<li>A modulemap file for the crate (<code>[crate_name].modulemap</code>)</li>
+</ul>
+<p>The expectation is that the <code>.swift</code> will be compiled into a module and this is the only module to generate for the Rust library.</p>
 <p>For more technical details on how the bindings work internally, please see the
 <a href="https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/bindings/swift/index.html">module documentation</a></p>
 

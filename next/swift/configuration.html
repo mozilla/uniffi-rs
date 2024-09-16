@@ -1452,7 +1452,7 @@ more likely to change than other configurations.</p>
 <tr>
 <td><code>cdylib_name</code></td>
 <td><code>uniffi_{namespace}</code>[^1]</td>
-<td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td>
+<td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>--library</code>).</td>
 </tr>
 <tr>
 <td><code>module_name</code></td>
@@ -1472,7 +1472,7 @@ more likely to change than other configurations.</p>
 <tr>
 <td><code>generate_module_map</code></td>
 <td><code>true</code></td>
-<td>Whether to generate a <code>.modulemap</code> file for the lower-level C module with FFI declarations.</td>
+<td>Whether to generate a <code>.modulemap</code> file for the lower-level C module with FFI declarations.  Not valid when using <code>--library</code>, in library-mode the modulemap is always generated.</td>
 </tr>
 <tr>
 <td><code>omit_argument_labels</code></td>
