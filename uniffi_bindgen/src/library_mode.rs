@@ -17,7 +17,7 @@
 ///     package maps.
 use crate::{
     macro_metadata, overridden_config_value, BindgenCrateConfigSupplier, BindingGenerator,
-    Component, ComponentInterface, GenerationSettings, Result,
+    Component, ComponentInterface, GenerationMode, GenerationSettings, Result,
 };
 use anyhow::bail;
 use camino::Utf8Path;
@@ -56,6 +56,9 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
         out_dir: out_dir.to_owned(),
         try_format_code,
         cdylib: calc_cdylib_name(library_path).map(ToOwned::to_owned),
+        mode: GenerationMode::Library {
+            library_path: library_path.to_owned(),
+        },
     };
     binding_generator.update_component_configs(&settings, &mut components)?;
 
