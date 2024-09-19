@@ -22,7 +22,7 @@ impl CodeType for ObjectCodeType {
     }
 
     fn canonical_name(&self) -> String {
-        format!("Type{}", self.id)
+        format!("Type{}", self.type_label())
     }
 
     fn literal(&self, _literal: &Literal) -> String {

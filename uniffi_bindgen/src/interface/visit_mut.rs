@@ -131,6 +131,15 @@ impl ComponentInterface {
                 }
             }
         }
+
+        self.errors = self
+            .errors
+            .drain()
+            .map(|mut name| {
+                visitor.visit_error_name(&mut name);
+                name
+            })
+            .collect()
     }
 
     fn fix_record_keys_after_rename(&mut self) {

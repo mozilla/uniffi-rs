@@ -225,6 +225,11 @@ pub trait VisitMut {
     /// naming conventions.
     fn visit_type(&self, type_: &mut Type);
 
+    /// Go through each error name in the interface and adjust it to language specific naming
+    /// conventions.  The new name must match the name of the Enum/Object definition after it's
+    /// visited.
+    fn visit_error_name(&self, name: &mut String);
+
     /// Go through each `Method` of an `Object` and
     /// adjust it to language specific naming conventions.
     fn visit_method(&self, method: &mut Method);
