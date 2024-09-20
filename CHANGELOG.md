@@ -13,6 +13,7 @@
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
+- Python: Fixed a bug when enum/error names were not proper camel case (HTMLError instead of HtmlError).
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...HEAD).
 
