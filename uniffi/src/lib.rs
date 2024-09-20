@@ -10,6 +10,10 @@ mod cli;
 #[cfg(feature = "bindgen-tests")]
 pub use uniffi_bindgen::bindings::{kotlin_test, python_test, ruby_test, swift_test};
 
+#[cfg(all(feature = "cargo-metadata", feature = "bindgen"))]
+pub use uniffi_bindgen::cargo_metadata::CrateConfigSupplier as CargoMetadataConfigSupplier;
+#[cfg(feature = "bindgen")]
+pub use uniffi_bindgen::library_mode::generate_bindings as generate_bindings_library_mode;
 #[cfg(feature = "bindgen")]
 pub use uniffi_bindgen::{
     bindings::{
