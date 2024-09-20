@@ -10,6 +10,10 @@
 
 - Added the `GenerationSettings::mode` field.  This can be ignored in most cases, it's currently only used by Swift.
 
+### What's fixed?
+
+- `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...HEAD).
 
 ## v0.28.1 (backend crates: v0.28.1) - (_2024-08-09_)
