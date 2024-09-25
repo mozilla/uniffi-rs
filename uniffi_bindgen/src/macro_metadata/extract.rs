@@ -99,8 +99,13 @@ pub fn extract_from_macho(macho: MachO<'_>, file_data: &[u8]) -> anyhow::Result<
         //   - Has type=N_SECT (it's regular data as opposed to something like
         //     "undefined" or "indirect")
         //   - Has a metadata symbol name
-        if nlist.is_global() && nlist.get_type() == symbols::N_SECT && is_metadata_symbol(name) {
-            let section = &sections[nlist.n_sect];
+        if nlist.is_global()
+            && nlist.get_type() == symbols::N_SECT
+            && is_metadata_symbol(name)
+            && nlist.n_sect != goblin::mach::symbols::NO_SECT as usize
+        {
+            let section = &sections[nlist.n_sect - 1];
+
             // `nlist.n_value` is an address, so we can calculating the offset inside the section
             // using the difference between that and `section.addr`
             let offset = section.offset as usize + nlist.n_value as usize - section.addr as usize;
