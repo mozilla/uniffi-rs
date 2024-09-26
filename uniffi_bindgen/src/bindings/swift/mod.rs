@@ -29,8 +29,8 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use crate::{BindingGenerator, Component, GenerationMode, GenerationSettings};
-use anyhow::{bail, Result};
+use crate::{BindingGenerator, Component, GenerationSettings};
+use anyhow::Result;
 use fs_err as fs;
 use std::process::Command;
 
@@ -66,15 +66,10 @@ impl BindingGenerator for SwiftBindingGenerator {
 
     fn update_component_configs(
         &self,
-        settings: &GenerationSettings,
+        _settings: &GenerationSettings,
         components: &mut Vec<Component<Self::Config>>,
     ) -> Result<()> {
         for c in &mut *components {
-            if matches!(settings.mode, GenerationMode::Library { .. })
-                && !c.config.generate_module_map()
-            {
-                bail!("generate_module_map=false is invalid for library mode, module maps will always be generated");
-            }
             c.config
                 .module_name
                 .get_or_insert_with(|| c.ci.namespace().into());
@@ -90,13 +85,6 @@ impl BindingGenerator for SwiftBindingGenerator {
         settings: &GenerationSettings,
         components: &[Component<Self::Config>],
     ) -> Result<()> {
-        if components.is_empty() {
-            bail!("write_bindings called with 0 components");
-        }
-
-        // Collects the module maps generated for all components
-        let mut module_maps = vec![];
-
         for Component { ci, config, .. } in components {
             let Bindings {
                 header,
@@ -113,7 +101,8 @@ impl BindingGenerator for SwiftBindingGenerator {
             fs::write(header_file, header)?;
 
             if let Some(modulemap) = modulemap {
-                module_maps.push((config.modulemap_filename(), modulemap));
+                let modulemap_file = settings.out_dir.join(config.modulemap_filename());
+                fs::write(modulemap_file, modulemap)?;
             }
 
             if settings.try_format_code {
@@ -126,41 +115,6 @@ impl BindingGenerator for SwiftBindingGenerator {
                         source_file.file_name().unwrap(),
                     );
                 }
-            }
-        }
-
-        match &settings.mode {
-            GenerationMode::SingleComponent => {
-                match module_maps.as_slice() {
-                    // No module maps since generate_module_map was false
-                    [] => (),
-                    // Normal case: 1 module map
-                    [(modulemap_filename, modulemap)] => {
-                        let modulemap_file = settings.out_dir.join(modulemap_filename);
-                        fs::write(modulemap_file, modulemap)?;
-                    }
-                    // Something weird happened if we have multiple module maps
-                    module_maps => {
-                        bail!("UniFFI internal error: {} module maps generated in GenerationMode::SingleComponent", module_maps.len());
-                    }
-                }
-            }
-            // In library mode, we expect there to be multiple module maps that we will combine
-            // into one.
-            GenerationMode::Library { library_path } => {
-                let library_filename = match library_path.file_name() {
-                    Some(f) => f,
-                    None => bail!("{library_path} has no filename"),
-                };
-                let modulemap_path = settings
-                    .out_dir
-                    .join(format!("{library_filename}.modulemap"));
-                let modulemap_sources = module_maps
-                    .into_iter()
-                    .map(|(_, source)| source)
-                    .collect::<Vec<_>>();
-
-                fs::write(modulemap_path, modulemap_sources.join("\n"))?;
             }
         }
 

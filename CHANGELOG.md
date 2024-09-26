@@ -6,10 +6,6 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-### ⚠️ Breaking Changes for external bindings authors ⚠️
-
-- Added the `GenerationSettings::mode` field.  This can be ignored in most cases, it's currently only used by Swift.
-
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
