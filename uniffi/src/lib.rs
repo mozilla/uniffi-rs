@@ -28,9 +28,7 @@ pub use uniffi_build::{generate_scaffolding, generate_scaffolding_for_crate};
 pub use uniffi_macros::build_foreign_language_testcases;
 
 #[cfg(feature = "cli")]
-pub fn uniffi_bindgen_main() {
-    cli::run_main().unwrap();
-}
+pub use cli::*;
 
 #[cfg(test)]
 mod test {

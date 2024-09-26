@@ -6,6 +6,12 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
+  Swift-specific features. See
+  https://mozilla.github.io/uniffi-rs/latest/swift/uniffi-bindgen-swift.html for details.
+
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
