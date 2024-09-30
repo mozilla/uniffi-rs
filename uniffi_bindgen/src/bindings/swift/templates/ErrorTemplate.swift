@@ -19,6 +19,9 @@ public enum {{ type_name }} {
 }
 
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ type_name }}
 

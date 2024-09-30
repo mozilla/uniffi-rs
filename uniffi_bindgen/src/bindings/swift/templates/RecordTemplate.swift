@@ -35,6 +35,9 @@ extension {{ type_name }}: Equatable, Hashable {
 }
 {% endif %}
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         return {%- if rec.has_fields() %}
@@ -60,10 +63,16 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 We always write these public functions just in case the struct is used as
 an external type by another crate.
 #}
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_name }} {
     return try {{ ffi_converter_name }}.lift(buf)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
     return {{ ffi_converter_name }}.lower(value)
 }

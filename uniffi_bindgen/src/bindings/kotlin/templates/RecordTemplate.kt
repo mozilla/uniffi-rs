@@ -36,6 +36,9 @@ class {{ type_name }} {
 }
 {%- endif %}
 
+/**
+ * @suppress
+ */
 public object {{ rec|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
         {%- if rec.has_fields() %}
