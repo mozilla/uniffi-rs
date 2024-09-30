@@ -1,3 +1,6 @@
+/**
+ * @suppress
+ */
 public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
     override fun read(buf: ByteBuffer): ByteArray {
         val len = buf.getInt()

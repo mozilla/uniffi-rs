@@ -18,6 +18,9 @@ interface Disposable {
     }
 }
 
+/**
+ * @suppress
+ */
 inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
     try {
         block(this)
@@ -30,7 +33,11 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
-/** Used to instantiate an interface without an actual pointer, for fakes in tests, mostly. */
+/** 
+ * Used to instantiate an interface without an actual pointer, for fakes in tests, mostly.
+ *
+ * @suppress
+ * */
 object NoPointer
 
 {%- for type_ in ci.iter_types() %}

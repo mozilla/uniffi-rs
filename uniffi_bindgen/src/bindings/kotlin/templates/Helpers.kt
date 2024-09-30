@@ -36,7 +36,11 @@ internal open class UniffiRustCallStatus : Structure() {
 
 class InternalException(message: String) : kotlin.Exception(message)
 
-// Each top-level error class has a companion object that can lift the error from the call status's rust buffer
+/**
+ * Each top-level error class has a companion object that can lift the error from the call status's rust buffer
+ *
+ * @suppress
+ */
 interface UniffiRustCallStatusErrorHandler<E> {
     fun lift(error_buf: RustBuffer.ByValue): E;
 }
@@ -73,7 +77,11 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
     }
 }
 
-// UniffiRustCallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
+/**
+ * UniffiRustCallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
+ *
+ * @suppress
+ */
 object UniffiNullRustCallStatusErrorHandler: UniffiRustCallStatusErrorHandler<InternalException> {
     override fun lift(error_buf: RustBuffer.ByValue): InternalException {
         RustBuffer.free(error_buf)

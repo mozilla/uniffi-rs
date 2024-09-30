@@ -155,10 +155,12 @@ fileprivate protocol FfiConverter {
 fileprivate protocol FfiConverterPrimitive: FfiConverter where FfiType == SwiftType { }
 
 extension FfiConverterPrimitive {
+    @_documentation(visibility: private)
     public static func lift(_ value: FfiType) throws -> SwiftType {
         return value
     }
 
+    @_documentation(visibility: private)
     public static func lower(_ value: SwiftType) -> FfiType {
         return value
     }
@@ -169,6 +171,7 @@ extension FfiConverterPrimitive {
 fileprivate protocol FfiConverterRustBuffer: FfiConverter where FfiType == RustBuffer {}
 
 extension FfiConverterRustBuffer {
+    @_documentation(visibility: private)
     public static func lift(_ buf: RustBuffer) throws -> SwiftType {
         var reader = createReader(data: Data(rustBuffer: buf))
         let value = try read(from: &reader)
@@ -179,6 +182,7 @@ extension FfiConverterRustBuffer {
         return value
     }
 
+    @_documentation(visibility: private)
     public static func lower(_ value: SwiftType) -> RustBuffer {
           var writer = createWriter()
           write(value, into: &writer)

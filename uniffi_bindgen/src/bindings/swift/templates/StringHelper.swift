@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer

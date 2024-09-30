@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct FfiConverterTimestamp: FfiConverterRustBuffer {
     typealias SwiftType = Date
 

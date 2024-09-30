@@ -19,6 +19,7 @@ public enum {{ type_name }} {
 }
 
 
+@_documentation(visibility: private)
 public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ type_name }}
 

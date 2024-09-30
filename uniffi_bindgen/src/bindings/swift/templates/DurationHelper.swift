@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct FfiConverterDuration: FfiConverterRustBuffer {
     typealias SwiftType = TimeInterval
 

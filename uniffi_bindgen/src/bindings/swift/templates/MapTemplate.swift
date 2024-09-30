@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
         let len = Int32(value.count)

@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ type_name }}
 

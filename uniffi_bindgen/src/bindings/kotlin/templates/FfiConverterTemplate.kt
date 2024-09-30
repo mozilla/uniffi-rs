@@ -1,7 +1,11 @@
-// The FfiConverter interface handles converter types to and from the FFI
-//
-// All implementing objects should be public to support external types.  When a
-// type is external we need to import it's FfiConverter.
+/**
+ * The FfiConverter interface handles converter types to and from the FFI
+ *
+ * All implementing objects should be public to support external types.  When a
+ * type is external we need to import it's FfiConverter.
+ *
+ * @suppress
+ */
 public interface FfiConverter<KotlinType, FfiType> {
     // Convert an FFI type to a Kotlin type
     fun lift(value: FfiType): KotlinType
@@ -64,7 +68,11 @@ public interface FfiConverter<KotlinType, FfiType> {
     }
 }
 
-// FfiConverter that uses `RustBuffer` as the FfiType
+/**
+ * FfiConverter that uses `RustBuffer` as the FfiType
+ *
+ * @suppress
+ */
 public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer.ByValue> {
     override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
     override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)

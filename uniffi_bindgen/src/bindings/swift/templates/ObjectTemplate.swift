@@ -29,6 +29,7 @@ open class {{ impl_class_name }}:
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
+    @_documentation(visibility: private)
     public struct NoPointer {
         public init() {}
     }
@@ -45,10 +46,12 @@ open class {{ impl_class_name }}:
     ///
     /// - Warning:
     ///     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing [Pointer] the FFI lower functions will crash.
+    @_documentation(visibility: private)
     public init(noPointer: NoPointer) {
         self.pointer = nil
     }
 
+    @_documentation(visibility: private)
     public func uniffiClonePointer() -> UnsafeMutableRawPointer {
         return try! rustCall { {{ obj.ffi_object_clone().name() }}(self.pointer, $0) }
     }
@@ -118,6 +121,7 @@ open class {{ impl_class_name }}:
 {% include "CallbackInterfaceImpl.swift" %}
 {%- endif %}
 
+@_documentation(visibility: private)
 public struct {{ ffi_converter_name }}: FfiConverter {
     {%- if obj.has_callback_interface() %}
     fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
@@ -169,6 +173,7 @@ extension {{ type_name }}: Foundation.LocalizedError {
 }
 
 {# Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer holding a pointer #}
+@_documentation(visibility: private)
 public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
     public static func lift(_ buf: RustBuffer) throws -> {{ type_name }} {
         var reader = createReader(data: Data(rustBuffer: buf))
@@ -193,10 +198,12 @@ public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
 We always write these public functions just in case the enum is used as
 an external type by another crate.
 #}
+@_documentation(visibility: private)
 public func {{ ffi_converter_name }}_lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
     return try {{ ffi_converter_name }}.lift(pointer)
 }
 
+@_documentation(visibility: private)
 public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
     return {{ ffi_converter_name }}.lower(value)
 }

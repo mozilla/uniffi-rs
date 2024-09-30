@@ -7,6 +7,7 @@
  * is needed because the UDL type name is used in function/method signatures.
  */
 public typealias {{ type_name }} = {{ builtin|type_name }}
+@_documentation(visibility: private)
 public struct FfiConverterType{{ name }}: FfiConverter {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         return try {{ builtin|read_fn }}(from: &buf)
@@ -46,6 +47,7 @@ public typealias {{ type_name }} = {{ concrete_type_name }}
 {%- else %}
 {%- endmatch %}
 
+@_documentation(visibility: private)
 public struct FfiConverterType{{ name }}: FfiConverter {
     {#- Custom type config supplied, use it to convert the builtin type #}
 
@@ -76,10 +78,12 @@ public struct FfiConverterType{{ name }}: FfiConverter {
 We always write these public functions just incase the type is used as
 an external type by another crate.
 #}
+@_documentation(visibility: private)
 public func FfiConverterType{{ name }}_lift(_ value: {{ ffi_type_name }}) throws -> {{ type_name }} {
     return try FfiConverterType{{ name }}.lift(value)
 }
 
+@_documentation(visibility: private)
 public func FfiConverterType{{ name }}_lower(_ value: {{ type_name }}) -> {{ ffi_type_name }} {
     return FfiConverterType{{ name }}.lower(value)
 }

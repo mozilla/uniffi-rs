@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct FfiConverterUInt8: FfiConverterPrimitive {
     typealias FfiType = UInt8
     typealias SwiftType = UInt8

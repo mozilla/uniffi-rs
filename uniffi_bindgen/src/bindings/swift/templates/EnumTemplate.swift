@@ -22,6 +22,7 @@ public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
 }
 {% endmatch %}
 
+@_documentation(visibility: private)
 public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
     typealias SwiftType = {{ type_name }}
 
@@ -66,10 +67,12 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 We always write these public functions just in case the enum is used as
 an external type by another crate.
 #}
+@_documentation(visibility: private)
 public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_name }} {
     return try {{ ffi_converter_name }}.lift(buf)
 }
 
+@_documentation(visibility: private)
 public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
     return {{ ffi_converter_name }}.lower(value)
 }

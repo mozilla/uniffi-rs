@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct FfiConverterData: FfiConverterRustBuffer {
     typealias SwiftType = Data
 

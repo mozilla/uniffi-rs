@@ -12,27 +12,33 @@
 {% include "CallbackInterfaceImpl.swift" %}
 
 // FfiConverter protocol for callback interfaces
+@_documentation(visibility: private)
 fileprivate struct {{ ffi_converter_name }} {
     fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
 }
 
+@_documentation(visibility: private)
 extension {{ ffi_converter_name }} : FfiConverter {
     typealias SwiftType = {{ type_name }}
     typealias FfiType = UInt64
 
+    @_documentation(visibility: private)
     public static func lift(_ handle: UInt64) throws -> SwiftType {
         try handleMap.get(handle: handle)
     }
 
+    @_documentation(visibility: private)
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
         let handle: UInt64 = try readInt(&buf)
         return try lift(handle)
     }
 
+    @_documentation(visibility: private)
     public static func lower(_ v: SwiftType) -> UInt64 {
         return handleMap.insert(obj: v)
     }
 
+    @_documentation(visibility: private)
     public static func write(_ v: SwiftType, into buf: inout [UInt8]) {
         writeInt(&buf, lower(v))
     }

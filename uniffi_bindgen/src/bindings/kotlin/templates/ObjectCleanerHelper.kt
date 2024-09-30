@@ -1,10 +1,14 @@
 
-// The cleaner interface for Object finalization code to run.
-// This is the entry point to any implementation that we're using.
-//
-// The cleaner registers objects and returns cleanables, so now we are
-// defining a `UniffiCleaner` with a `UniffiClenaer.Cleanable` to abstract the
-// different implmentations available at compile time.
+/**
+ * The cleaner interface for Object finalization code to run.
+ * This is the entry point to any implementation that we're using.
+ *
+ * The cleaner registers objects and returns cleanables, so now we are
+ * defining a `UniffiCleaner` with a `UniffiClenaer.Cleanable` to abstract the
+ * different implmentations available at compile time.
+ *
+ * @suppress
+ */
 interface UniffiCleaner {
     interface Cleanable {
         fun clean()

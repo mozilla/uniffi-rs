@@ -1,3 +1,4 @@
+@_documentation(visibility: private)
 fileprivate struct FfiConverterInt16: FfiConverterPrimitive {
     typealias FfiType = Int16
     typealias SwiftType = Int16
