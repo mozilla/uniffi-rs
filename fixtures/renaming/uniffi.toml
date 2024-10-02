@@ -1,0 +1,8 @@
+# This config should cause the structs from lib.rs to be renamed in the foreign bindings
+
+[bindings.python.names]
+SomeStruct = "RenamedStruct"
+SomeEnum = "RenamedEnum"
+SomeObj = "RenamedObj"
+"SomeObj.some_method" = "renamed_method"
+my_function = "renamed_function"
