@@ -2,6 +2,9 @@
 // A rust-owned buffer is represented by its capacity, its current length, and a
 // pointer to the underlying data.
 
+/**
+ * @suppress
+ */
 @Structure.FieldOrder("capacity", "len", "data")
 open class RustBuffer : Structure() {
     // Note: `capacity` and `len` are actually `ULong` values, but JVM only supports signed values.
@@ -54,6 +57,8 @@ open class RustBuffer : Structure() {
  * Required for callbacks taking in an out pointer.
  *
  * Size is the sum of all values in the struct.
+ *
+ * @suppress
  */
 class RustBufferByReference : ByReference(16) {
     /**
@@ -88,7 +93,7 @@ class RustBufferByReference : ByReference(16) {
 // completeness.
 
 @Structure.FieldOrder("len", "data")
-open class ForeignBytes : Structure() {
+internal open class ForeignBytes : Structure() {
     @JvmField var len: Int = 0
     @JvmField var data: Pointer? = null
 
