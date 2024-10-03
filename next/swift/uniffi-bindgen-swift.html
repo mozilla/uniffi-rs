@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../kotlin/lifetimes.html">
+        <link rel="prev" href="overview.html">
       
       
-        <link rel="next" href="uniffi-bindgen-swift.html">
+        <link rel="next" href="configuration.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Swift Bindings - The UniFFI user guide</title>
+        <title>uniffi-bindgen-swift - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#swift-bindings" class="md-skip">
+        <a href="#uniffi-bindgen-swift" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Swift Bindings
+              uniffi-bindgen-swift
             
           </span>
         </div>
@@ -1052,6 +1052,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="overview.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Swift Bindings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1068,18 +1089,18 @@
           
   
   <span class="md-ellipsis">
-    Swift Bindings
+    uniffi-bindgen-swift
   </span>
   
 
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="overview.html" class="md-nav__link md-nav__link--active">
+      <a href="uniffi-bindgen-swift.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Swift Bindings
+    uniffi-bindgen-swift
   </span>
   
 
@@ -1101,9 +1122,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#generated-files" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      Generated files
+      Examples:
     </span>
   </a>
   
@@ -1113,27 +1134,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="uniffi-bindgen-swift.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    uniffi-bindgen-swift
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -1412,9 +1412,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#generated-files" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      Generated files
+      Examples:
     </span>
   </a>
   
@@ -1438,41 +1438,39 @@
   
 
 
-<h1 id="swift-bindings">Swift Bindings</h1>
-<p>UniFFI ships with production-quality support for generating Swift bindings.
-Concepts from the UDL file map into Swift as follows:</p>
+<h1 id="uniffi-bindgen-swift">uniffi-bindgen-swift</h1>
+<p>Swift bindings can be generated like other languages using <code>uniffi-bindgen -l swift</code>.  However, you
+can also use the <code>uniffi-bindgen-swift</code> binary which gives greater control over Swift-specific
+features:</p>
 <ul>
-<li>Primitive datatypes map to their obvious Swift counterpart, e.g. <code>u32</code> becomes <code>UInt32</code>,
-  <code>string</code> becomes <code>String</code>, <code>bytes</code> becomes <code>Data</code>, etc.</li>
-<li>An object interface declared as <code>interface T</code> is represented as a Swift <code>protocol TProtocol</code>
-  and a concrete Swift <code>class T</code> that conforms to it. Having the protocol declared explicitly
-  can be useful for mocking instances of the class in unittests.</li>
-<li>A dictionary struct declared as <code>dictionary T</code> is represented as a Swift <code>struct T</code>
-  with public mutable fields.</li>
-<li>An enum declared <code>enum T</code> or <code>[Enum] interface T</code> is represented as a Swift
-  <code>enum T</code> with appropriate variants.</li>
-<li>Optional types are represented using Swift's builtin optional type syntax <code>T?</code>.</li>
-<li>Sequences are represented as Swift arrays, and Maps as Swift dictionaries.</li>
-<li>Errors are represented as Swift enums that conform to the <code>Error</code> protocol.</li>
-<li>Function calls that have an associated error type are marked with <code>throws</code>,
-  and hence must be called using one of Swift's <code>try</code> syntax variants.</li>
-<li>Failing assertions, Rust panics, and other unexpected errors in the generated code
-  are translated into a private enum conforming to the <code>Error</code> protocol.<ul>
-<li>If this happens inside a throwing Swift function, it can be caught and handled
-  by a catch-all <code>catch</code> statement (but do so at your own risk, because it indicates
-  that something has gone seriously wrong).</li>
-<li>If this happens inside a non-throwing Swift function, it will be converted
-  into a fatal Swift error that cannot be caught.</li>
+<li>Select which kind of files to generate: headers, modulemaps, and/or Swift sources.</li>
+<li>Generate a single modulemap for a library.</li>
+<li>Generate XCFramework-compatible modulemaps.</li>
+<li>Customize the modulemap module name.</li>
+<li>Customize the modulemap filename.</li>
 </ul>
-</li>
-</ul>
-<h2 id="generated-files">Generated files</h2>
-<p>UniFFI generates several kinds of files for Swift bindings:</p>
-<ul>
-<li>C header files declaring the FFI structs/functions used by the Rust scaffolding code</li>
-<li>A modulemap, which defines a Swift module for the C FFI definitions in the header file.</li>
-<li>A Swift source file that defines the Swift API used by consumers.  This imports the FFI module.</li>
-</ul>
+<p><code>uniffi-bindgen-swift</code> can be added to your project using the same general steps as <code>uniffi-bindgen</code>.
+See https://mozilla.github.io/uniffi-rs/latest/tutorial/foreign_language_bindings.html#creating-the-bindgen-binary.
+The Rust source for the binary should be:</p>
+<div class="highlight"><pre><span></span><code>fn main() {
+    uniffi::uniffi_bindgen_swift()
+}
+</code></pre></div>
+<p><code>uniffi-bindgen-swift</code> always inputs a library path and runs in "library mode".  This means
+proc-macro-based bindings generation is always supported.</p>
+<h2 id="examples">Examples:</h2>
+<p>Generate .swift source files for a library
+<div class="highlight"><pre><span></span><code>cargo run -p uniffi-bindgen-swift -- target/release/mylibrary.a build/swift --swift-sources
+</code></pre></div></p>
+<p>Generate .h files for a library
+<div class="highlight"><pre><span></span><code>cargo run -p uniffi-bindgen-swift -- target/release/mylibrary.a build/swift/Headers --headers
+</code></pre></div></p>
+<p>Generate a modulemap
+<div class="highlight"><pre><span></span><code>cargo run -p uniffi-bindgen-swift -- target/release/mylibrary.a build/swift/Modules --modulemap --modulemap-filename mymodule.modulemap
+</code></pre></div></p>
+<p>Generate a Xcframework-compatible modulemap
+<div class="highlight"><pre><span></span><code>cargo run -p uniffi-bindgen-swift -- target/release/mylibrary.a build/swift/Modules --xcframework --modulemap --modulemap-filename mymodule.modulemap
+</code></pre></div></p>
 
 
 

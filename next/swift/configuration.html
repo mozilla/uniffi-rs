@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="overview.html">
+        <link rel="prev" href="uniffi-bindgen-swift.html">
       
       
         <link rel="next" href="module.html">
@@ -1073,6 +1073,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="uniffi-bindgen-swift.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    uniffi-bindgen-swift
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1452,7 +1473,7 @@ more likely to change than other configurations.</p>
 <tr>
 <td><code>cdylib_name</code></td>
 <td><code>uniffi_{namespace}</code>[^1]</td>
-<td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>--library</code>).</td>
+<td>The name of the compiled Rust library containing the FFI implementation (not needed when using <code>generate --library</code>).</td>
 </tr>
 <tr>
 <td><code>module_name</code></td>
@@ -1472,7 +1493,7 @@ more likely to change than other configurations.</p>
 <tr>
 <td><code>generate_module_map</code></td>
 <td><code>true</code></td>
-<td>Whether to generate a <code>.modulemap</code> file for the lower-level C module with FFI declarations.  Not valid when using <code>--library</code>, in library-mode the modulemap is always generated.</td>
+<td>Whether to generate a <code>.modulemap</code> file for the lower-level C module with FFI declarations. (ignored by <code>uniffi-bindgen-swift</code>)</td>
 </tr>
 <tr>
 <td><code>omit_argument_labels</code></td>
