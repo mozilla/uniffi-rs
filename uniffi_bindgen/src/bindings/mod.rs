@@ -14,7 +14,7 @@ pub use python::PythonBindingGenerator;
 mod ruby;
 pub use ruby::RubyBindingGenerator;
 mod swift;
-pub use swift::SwiftBindingGenerator;
+pub use swift::{generate_swift_bindings, SwiftBindingGenerator, SwiftBindingsOptions};
 
 #[cfg(feature = "bindgen-tests")]
 pub use self::{

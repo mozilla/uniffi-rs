@@ -6,9 +6,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-### ⚠️ Breaking Changes for external bindings authors ⚠️
+### What's new?
 
-- Added the `GenerationSettings::mode` field.  This can be ignored in most cases, it's currently only used by Swift.
+- Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
+  Swift-specific features. See
+  https://mozilla.github.io/uniffi-rs/latest/swift/uniffi-bindgen-swift.html for details.
 
 ### What's fixed?
 

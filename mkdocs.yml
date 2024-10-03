@@ -69,6 +69,7 @@ nav:
 
   - 'Swift':
     - ./swift/overview.md
+    - ./swift/uniffi-bindgen-swift.md
     - ./swift/configuration.md
     - ./swift/module.md
     - ./swift/xcode.md

@@ -29,13 +29,14 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use crate::{BindingGenerator, Component, GenerationMode, GenerationSettings};
-use anyhow::{bail, Result};
+use crate::{BindingGenerator, Component, GenerationSettings};
+use anyhow::{Context, Result};
+use camino::Utf8PathBuf;
 use fs_err as fs;
 use std::process::Command;
 
 mod gen_swift;
-use gen_swift::{generate_bindings, Config};
+use gen_swift::{generate_bindings, generate_header, generate_modulemap, generate_swift, Config};
 
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
@@ -66,15 +67,10 @@ impl BindingGenerator for SwiftBindingGenerator {
 
     fn update_component_configs(
         &self,
-        settings: &GenerationSettings,
+        _settings: &GenerationSettings,
         components: &mut Vec<Component<Self::Config>>,
     ) -> Result<()> {
         for c in &mut *components {
-            if matches!(settings.mode, GenerationMode::Library { .. })
-                && !c.config.generate_module_map()
-            {
-                bail!("generate_module_map=false is invalid for library mode, module maps will always be generated");
-            }
             c.config
                 .module_name
                 .get_or_insert_with(|| c.ci.namespace().into());
@@ -90,13 +86,6 @@ impl BindingGenerator for SwiftBindingGenerator {
         settings: &GenerationSettings,
         components: &[Component<Self::Config>],
     ) -> Result<()> {
-        if components.is_empty() {
-            bail!("write_bindings called with 0 components");
-        }
-
-        // Collects the module maps generated for all components
-        let mut module_maps = vec![];
-
         for Component { ci, config, .. } in components {
             let Bindings {
                 header,
@@ -113,7 +102,8 @@ impl BindingGenerator for SwiftBindingGenerator {
             fs::write(header_file, header)?;
 
             if let Some(modulemap) = modulemap {
-                module_maps.push((config.modulemap_filename(), modulemap));
+                let modulemap_file = settings.out_dir.join(config.modulemap_filename());
+                fs::write(modulemap_file, modulemap)?;
             }
 
             if settings.try_format_code {
@@ -129,41 +119,101 @@ impl BindingGenerator for SwiftBindingGenerator {
             }
         }
 
-        match &settings.mode {
-            GenerationMode::SingleComponent => {
-                match module_maps.as_slice() {
-                    // No module maps since generate_module_map was false
-                    [] => (),
-                    // Normal case: 1 module map
-                    [(modulemap_filename, modulemap)] => {
-                        let modulemap_file = settings.out_dir.join(modulemap_filename);
-                        fs::write(modulemap_file, modulemap)?;
-                    }
-                    // Something weird happened if we have multiple module maps
-                    module_maps => {
-                        bail!("UniFFI internal error: {} module maps generated in GenerationMode::SingleComponent", module_maps.len());
-                    }
-                }
-            }
-            // In library mode, we expect there to be multiple module maps that we will combine
-            // into one.
-            GenerationMode::Library { library_path } => {
-                let library_filename = match library_path.file_name() {
-                    Some(f) => f,
-                    None => bail!("{library_path} has no filename"),
-                };
-                let modulemap_path = settings
-                    .out_dir
-                    .join(format!("{library_filename}.modulemap"));
-                let modulemap_sources = module_maps
-                    .into_iter()
-                    .map(|(_, source)| source)
-                    .collect::<Vec<_>>();
-
-                fs::write(modulemap_path, modulemap_sources.join("\n"))?;
-            }
-        }
-
         Ok(())
     }
+}
+
+/// Generate Swift bindings
+///
+/// This is used by the uniffi-bindgen-swift command, which supports Swift-specific options.
+///
+/// In the future, we may want to replace the generalized `uniffi-bindgen` with a set of
+/// specialized `uniffi-bindgen-[language]` commands.
+pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
+    #[cfg(feature = "cargo-metadata")]
+    let config_supplier = {
+        use crate::cargo_metadata::CrateConfigSupplier;
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        if options.metadata_no_deps {
+            cmd.no_deps();
+        }
+        let metadata = cmd.exec().context("error running cargo metadata")?;
+        CrateConfigSupplier::from(metadata)
+    };
+    #[cfg(not(feature = "cargo-metadata"))]
+    let config_supplier = crate::EmptyCrateConfigSupplier;
+
+    fs::create_dir_all(&options.out_dir)?;
+
+    let mut components =
+        crate::library_mode::find_components(&options.library_path, &config_supplier)?
+            // map the TOML configs into a our Config struct
+            .into_iter()
+            .map(|Component { ci, config }| {
+                let config = SwiftBindingGenerator.new_config(&config.into())?;
+                Ok(Component { ci, config })
+            })
+            .collect::<Result<Vec<_>>>()?;
+    SwiftBindingGenerator
+        .update_component_configs(&GenerationSettings::default(), &mut components)?;
+
+    for Component { ci, config } in &components {
+        if options.generate_swift_sources {
+            let source_file = options
+                .out_dir
+                .join(format!("{}.swift", config.module_name()));
+            fs::write(&source_file, generate_swift(config, ci)?)?;
+        }
+
+        if options.generate_headers {
+            let header_file = options.out_dir.join(config.header_filename());
+            fs::write(header_file, generate_header(config, ci)?)?;
+        }
+    }
+
+    // find the library name by stripping the extension and leading `lib` from the library path
+    let library_name = {
+        let stem = options
+            .library_path
+            .file_stem()
+            .with_context(|| format!("Invalid library path {}", options.library_path))?;
+        match stem.strip_prefix("lib") {
+            Some(name) => name,
+            None => stem,
+        }
+    };
+
+    let module_name = options
+        .module_name
+        .unwrap_or_else(|| library_name.to_string());
+    let modulemap_filename = options
+        .modulemap_filename
+        .unwrap_or_else(|| format!("{library_name}.modulemap"));
+
+    if options.generate_modulemap {
+        let mut header_filenames: Vec<_> = components
+            .iter()
+            .map(|Component { config, .. }| config.header_filename())
+            .collect();
+        header_filenames.sort();
+        let modulemap_source =
+            generate_modulemap(module_name, header_filenames, options.xcframework)?;
+        let modulemap_path = options.out_dir.join(modulemap_filename);
+        fs::write(modulemap_path, modulemap_source)?;
+    }
+
+    Ok(())
+}
+
+#[derive(Debug)]
+pub struct SwiftBindingsOptions {
+    pub generate_swift_sources: bool,
+    pub generate_headers: bool,
+    pub generate_modulemap: bool,
+    pub library_path: Utf8PathBuf,
+    pub out_dir: Utf8PathBuf,
+    pub xcframework: bool,
+    pub module_name: Option<String>,
+    pub modulemap_filename: Option<String>,
+    pub metadata_no_deps: bool,
 }

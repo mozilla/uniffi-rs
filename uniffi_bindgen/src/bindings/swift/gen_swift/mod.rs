@@ -267,7 +267,6 @@ impl Config {
 }
 
 /// Generate UniFFI component bindings for Swift, as strings in memory.
-///
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
     let header = BridgingHeader::new(config, ci)
         .render()
@@ -277,7 +276,7 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
         .context("failed to render Swift library")?;
     let modulemap = if config.generate_module_map() {
         Some(
-            ModuleMap::new(config, ci)
+            ModuleMap::new_for_single_component(config, ci)
                 .render()
                 .context("failed to render Swift modulemap")?,
         )
@@ -289,6 +288,35 @@ pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bin
         header,
         modulemap,
     })
+}
+
+/// Generate the bridging header for a component
+pub fn generate_header(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    BridgingHeader::new(config, ci)
+        .render()
+        .context("failed to render Swift bridging header")
+}
+
+/// Generate the swift source for a component
+pub fn generate_swift(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    SwiftWrapper::new(config.clone(), ci)
+        .render()
+        .context("failed to render Swift library")
+}
+
+/// Generate the modulemap for a set of components
+pub fn generate_modulemap(
+    module_name: String,
+    header_filenames: Vec<String>,
+    xcframework: bool,
+) -> Result<String> {
+    ModuleMap {
+        module_name,
+        header_filenames,
+        xcframework,
+    }
+    .render()
+    .context("failed to render Swift library")
 }
 
 /// Renders Swift helper code for all types
@@ -369,14 +397,19 @@ impl<'config, 'ci> BridgingHeader<'config, 'ci> {
 /// so that it can be imported by the higher-level code in from [`SwiftWrapper`].
 #[derive(Template)]
 #[template(syntax = "c", escape = "none", path = "ModuleMapTemplate.modulemap")]
-pub struct ModuleMap<'config, 'ci> {
-    config: &'config Config,
-    _ci: &'ci ComponentInterface,
+pub struct ModuleMap {
+    module_name: String,
+    header_filenames: Vec<String>,
+    xcframework: bool,
 }
 
-impl<'config, 'ci> ModuleMap<'config, 'ci> {
-    pub fn new(config: &'config Config, _ci: &'ci ComponentInterface) -> Self {
-        Self { config, _ci }
+impl ModuleMap {
+    pub fn new_for_single_component(config: &Config, _ci: &ComponentInterface) -> Self {
+        Self {
+            module_name: config.ffi_module_name(),
+            header_filenames: vec![config.header_filename()],
+            xcframework: false,
+        }
     }
 }
 

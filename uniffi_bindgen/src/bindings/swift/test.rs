@@ -11,6 +11,8 @@ use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::Metadata;
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::OsStr;
+use std::fs::{read_to_string, File};
+use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
 
@@ -151,9 +153,25 @@ impl GeneratedSources {
         let main_module = main_source.config.module_name();
         let modulemap_glob = glob(&out_dir.join("*.modulemap"))?;
         let module_map = match modulemap_glob.len() {
-            // write_bindings should have generated exactly 1 module map
+            0 => bail!("No modulemap files found in {out_dir}"),
+            // Normally we only generate 1 module map and can return it directly
             1 => modulemap_glob.into_iter().next().unwrap(),
-            n => bail!("{n} modulemap files found in {out_dir}"),
+            // When we use multiple UDL files in a test, for example the ext-types fixture,
+            // then we get multiple module maps and need to combine them
+            _ => {
+                let path = out_dir.join("combined.modulemap");
+                let mut f = File::create(&path)?;
+                write!(
+                    f,
+                    "{}",
+                    modulemap_glob
+                        .into_iter()
+                        .map(|path| Ok(read_to_string(path)?))
+                        .collect::<Result<Vec<String>>>()?
+                        .join("\n")
+                )?;
+                path
+            }
         };
 
         Ok(GeneratedSources {
