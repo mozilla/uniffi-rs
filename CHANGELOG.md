@@ -5,6 +5,10 @@ scheme, and will be removed in the future. The legacy tags have a corresponding 
 
 ----
 
+### v0.3.2+v0.25.0
+
+- Fix callbacks lifetimes [#17](https://github.com/NordSecurity/uniffi-rs/pull/17)
+
 ### v0.3.1+v0.25.0
 
 - **IMPORTANT**: Fix memory leak in uniffi scaffolding when invoking callback.
