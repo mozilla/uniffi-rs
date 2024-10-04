@@ -11,10 +11,10 @@ name = "uniffi_keywords_swift"
 
 [dependencies]
 thiserror = "1.0"
-uniffi = {path = "../../../uniffi", version = "0.3.1" }
+uniffi = {path = "../../../uniffi", version = "0.3.2" }
 
 [build-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.3.1", features = ["build"] }
+uniffi = {path = "../../../uniffi", version = "0.3.2", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../../uniffi", version = "0.3.1", features = ["bindgen-tests"] }
+uniffi = {path = "../../../uniffi", version = "0.3.2", features = ["bindgen-tests"] }
