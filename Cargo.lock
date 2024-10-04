@@ -1349,7 +1349,7 @@ dependencies = [
  "anyhow",
  "camino",
  "uniffi 0.3.1+v0.25.0",
- "uniffi_testing 0.3.1+v0.25.0",
+ "uniffi_testing 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -1592,10 +1592,10 @@ dependencies = [
  "camino",
  "clap",
  "trybuild",
- "uniffi_bindgen 0.3.1+v0.25.0",
- "uniffi_build 0.3.1+v0.25.0",
+ "uniffi_bindgen 0.3.2+v0.25.0",
+ "uniffi_build 0.3.2+v0.25.0",
  "uniffi_core 0.25.0",
- "uniffi_macros 0.3.1+v0.25.0",
+ "uniffi_macros 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -1696,7 +1696,7 @@ dependencies = [
  "clap",
  "criterion",
  "uniffi 0.3.1+v0.25.0",
- "uniffi_bindgen 0.3.1+v0.25.0",
+ "uniffi_bindgen 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -1734,8 +1734,8 @@ dependencies = [
  "glob",
  "thiserror",
  "uniffi 0.3.1+v0.25.0",
- "uniffi_bindgen 0.3.1+v0.25.0",
- "uniffi_testing 0.3.1+v0.25.0",
+ "uniffi_bindgen 0.3.2+v0.25.0",
+ "uniffi_testing 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -1855,7 +1855,7 @@ dependencies = [
  "thiserror",
  "uniffi 0.3.1+v0.25.0",
  "uniffi_core 0.25.0",
- "uniffi_meta 0.3.1+v0.25.0",
+ "uniffi_meta 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -1876,7 +1876,7 @@ dependencies = [
  "uniffi 0.3.1+v0.25.0",
  "uniffi-fixture-callbacks",
  "uniffi-fixture-coverall",
- "uniffi_bindgen 0.3.1+v0.25.0",
+ "uniffi_bindgen 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -1997,7 +1997,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "anyhow",
  "askama",
@@ -2013,9 +2013,9 @@ dependencies = [
  "serde",
  "textwrap",
  "toml",
- "uniffi_meta 0.3.1+v0.25.0",
- "uniffi_testing 0.3.1+v0.25.0",
- "uniffi_udl 0.3.1+v0.25.0",
+ "uniffi_meta 0.3.2+v0.25.0",
+ "uniffi_testing 0.3.2+v0.25.0",
+ "uniffi_udl 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -2042,11 +2042,11 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "anyhow",
  "camino",
- "uniffi_bindgen 0.3.1+v0.25.0",
+ "uniffi_bindgen 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -2061,7 +2061,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_checksum_derive"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "quote",
  "syn",
@@ -2108,7 +2108,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "bincode",
  "camino",
@@ -2119,8 +2119,8 @@ dependencies = [
  "serde",
  "syn",
  "toml",
- "uniffi_build 0.3.1+v0.25.0",
- "uniffi_meta 0.3.1+v0.25.0",
+ "uniffi_build 0.3.2+v0.25.0",
+ "uniffi_meta 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -2143,12 +2143,12 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "anyhow",
  "bytes",
  "siphasher",
- "uniffi_checksum_derive 0.3.1+v0.25.0",
+ "uniffi_checksum_derive 0.3.2+v0.25.0",
 ]
 
 [[package]]
@@ -2164,7 +2164,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "anyhow",
  "camino",
@@ -2187,11 +2187,11 @@ dependencies = [
 
 [[package]]
 name = "uniffi_udl"
-version = "0.3.1+v0.25.0"
+version = "0.3.2+v0.25.0"
 dependencies = [
  "anyhow",
- "uniffi_meta 0.3.1+v0.25.0",
- "uniffi_testing 0.3.1+v0.25.0",
+ "uniffi_meta 0.3.2+v0.25.0",
+ "uniffi_testing 0.3.2+v0.25.0",
  "weedle2 4.0.0",
 ]
 
@@ -2213,7 +2213,7 @@ dependencies = [
  "thiserror",
  "trybuild",
  "uniffi 0.3.1+v0.25.0",
- "uniffi_macros 0.3.1+v0.25.0",
+ "uniffi_macros 0.3.2+v0.25.0",
 ]
 
 [[package]]
