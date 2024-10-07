@@ -441,9 +441,28 @@ class TraitsTest(unittest.TestCase):
         py_node.set_parent(None)
         traits[0].set_parent(None)
 
+    def test_struct_traits(self):
+        # A struct, but also a trait.
+        node = Node("node")
+        # parent is a "raw" Rust object
+        self.assertEqual(node.describe(), "Node: name=Some(\"node\"), parent=true")
+        # Unfortunately, this trait object gets re-wrapped as it's passed back to Rust, because
+        # we can't easily know it's alreqdy the correct type.
+        # Nasty to rely on the repr of the inner mutex, but it neatly demonstrates the issue.
+        expected_desc = "Some(Node { name: Some(\"via node\"), parent: Mutex { data: None, poisoned: false, .. } })"
+        self.assertEqual(node.describe_parent(), expected_desc)
+
+        # Ideally it would pass the original `Arc<>` (ie, `expected_desc`), but we wrap it.
+        node.set_parent(node.get_parent())
+        # ie, this now acts like PyNode below rather than the "raw" parent.
+        # actual: Some(UniFFICallbackHandlerNodeTrait { handle: 18 })
+        #self.assertEqual(node.describe_parent(), expected_desc)
+
+        node.set_parent(PyNode())
+        self.assertTrue(node.describe_parent().startswith("Some(UniFFICallbackHandlerNodeTrait { handle: "))
+
     def test_round_tripping(self):
         rust_getters = make_rust_getters();
-        coveralls = Coveralls("test_round_tripping")
         # Check that these don't cause use-after-free bugs
         test_round_trip_through_rust(rust_getters)
 

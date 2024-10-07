@@ -73,8 +73,8 @@ pub use ffi::{
 };
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata, TraitMethodMetadata,
-    UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
+    AsTraitMetadata, ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata,
+    TraitMethodMetadata, UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
 
@@ -960,6 +960,21 @@ impl ComponentInterface {
         } else {
             self.add_method_meta(meta)?;
         }
+        Ok(())
+    }
+
+    pub(super) fn add_as_trait_impl(&mut self, trait_impl: AsTraitMetadata) -> Result<()> {
+        let object = trait_impl
+            .ty
+            .name()
+            .and_then(|n| get_object(&mut self.objects, n))
+            .ok_or_else(|| {
+                anyhow!(
+                    "add_object_trait_impl: object {:?} not found",
+                    &trait_impl.ty
+                )
+            })?;
+        object.as_trait_impls.push(trait_impl);
         Ok(())
     }
 

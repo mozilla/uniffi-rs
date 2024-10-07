@@ -22,6 +22,7 @@ pub(super) enum ExportItem {
         self_ident: Ident,
         items: Vec<ImplItem>,
         args: ExportImplArgs,
+        trait_: Option<syn::Path>,
     },
     Trait {
         self_ident: Ident,
@@ -126,6 +127,7 @@ impl ExportItem {
             items,
             self_ident: self_ident.to_owned(),
             args,
+            trait_: item.trait_.map(|t| t.1),
         })
     }
 

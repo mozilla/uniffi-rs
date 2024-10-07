@@ -312,7 +312,7 @@ fn create_some_dict() -> SimpleDict {
         float64: 0.0,
         maybe_float64: Some(1.0),
         coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
-        test_trait: Some(Arc::new(traits::Trait2::default())),
+        test_trait: Some(Arc::new(traits::Node::default())),
     }
 }
 

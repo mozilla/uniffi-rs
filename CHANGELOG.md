@@ -12,6 +12,10 @@
   Swift-specific features. See
   https://mozilla.github.io/uniffi-rs/latest/swift/uniffi-bindgen-swift.html for details.
 
+- Proc-macros recognise when you are exporting an `impl Trait for Struct` block.
+  Python supports this by generating an inheritance hierarcy to reflect that.
+  [#2204](https://github.com/mozilla/uniffi-rs/pull/2204)
+
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
