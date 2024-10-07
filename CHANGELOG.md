@@ -19,6 +19,11 @@
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
 - Python: Fixed a bug when enum/error names were not proper camel case (HTMLError instead of HtmlError).
 
+- The Rust side of the custom type system has changed and users will need to update their code.
+  The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
+  We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
+  See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...HEAD).
 
 ## v0.28.1 (backend crates: v0.28.1) - (_2024-08-09_)
