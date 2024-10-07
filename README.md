@@ -43,8 +43,7 @@ FFI - [Abbreviation, Foreign Function Interface]
 
 Other tools we know of which try and solve a similarly shaped problem are:
 
-* [Diplomat](https://github.com/rust-diplomat/diplomat/) - see our [writeup of
-  the different approach taken by that tool](docs/diplomat-and-macros.md)
+* [Diplomat](https://github.com/rust-diplomat/diplomat/), which is focused more on C/C++ interop.
 * [Interoptopus](https://github.com/ralfbiedert/interoptopus/)
 
 (Please open a PR if you think other tools should be listed!)
