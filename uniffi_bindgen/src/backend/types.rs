@@ -6,7 +6,7 @@
 //!
 //! A trait to help format items.
 //!
-//! Each backend will have its own `filter` module, which is used by the askama templates.
+//! Each backend will have its own `filter` module, which is used by the rinja templates.
 use super::Literal;
 use std::fmt::Debug;
 
