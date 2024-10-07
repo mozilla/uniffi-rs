@@ -12,6 +12,8 @@
   Swift-specific features. See
   https://mozilla.github.io/uniffi-rs/latest/swift/uniffi-bindgen-swift.html for details.
 
+- Removed the [old and outdated diplomat comparison](https://github.com/mozilla/uniffi-rs/blob/69ecfbd7fdf587a4ab24d1234e2d6afb8a496581/docs/diplomat-and-macros.md) doc
+
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
