@@ -37,6 +37,8 @@ build = [ "dep:uniffi_build" ]
 bindgen = ["dep:uniffi_bindgen"]
 cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata"]
 
+log = ["uniffi_macros/log", "uniffi_core/log"]
+
 # Support for `uniffi_bindgen_main()`. Enable this feature for your
 # `uniffi-bindgen` binaries.
 cli = [ "bindgen", "dep:clap", "dep:camino" ]

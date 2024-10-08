@@ -44,6 +44,7 @@ impl Scheduler {
         match self {
             Self::Empty => *self = Self::Set(callback, data),
             Self::Set(old_callback, old_data) => {
+                #[cfg(feature = "log")]
                 log::error!(
                     "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
                 );
