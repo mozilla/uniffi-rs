@@ -541,6 +541,17 @@ Coveralls("using_fakes_with_real_objects_crashes").use { coveralls ->
     assert(exception != null)
 }
 
+Coveralls("HtmlError").use { coveralls ->
+    var exception: Throwable? = null
+    try {
+        validateHtml("test")
+    } catch (e: HtmlException.InvalidHtml) {
+        exception = e
+    }
+    assert(exception != null)
+}
+
+
 // This is from an earlier GC test; ealier, we made 1000 new objects.
 // By now, the GC has had time to clean up, and now we should see 0 alive.
 // (hah! Wishful-thinking there ;)

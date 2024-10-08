@@ -29,6 +29,9 @@ open class {{ impl_class_name }}:
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public struct NoPointer {
         public init() {}
     }
@@ -40,15 +43,21 @@ open class {{ impl_class_name }}:
         self.pointer = pointer
     }
 
-    /// This constructor can be used to instantiate a fake object.
-    /// - Parameter noPointer: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
-    ///
-    /// - Warning:
-    ///     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing [Pointer] the FFI lower functions will crash.
+    // This constructor can be used to instantiate a fake object.
+    // - Parameter noPointer: Placeholder value so we can have a constructor separate from the default empty one that may be implemented for classes extending [FFIObject].
+    //
+    // - Warning:
+    //     Any object instantiated with this constructor cannot be passed to an actual Rust-backed object. Since there isn't a backing [Pointer] the FFI lower functions will crash.
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public init(noPointer: NoPointer) {
         self.pointer = nil
     }
 
+#if swift(>=5.8)
+    @_documentation(visibility: private)
+#endif
     public func uniffiClonePointer() -> UnsafeMutableRawPointer {
         return try! rustCall { {{ obj.ffi_object_clone().name() }}(self.pointer, $0) }
     }
@@ -118,6 +127,9 @@ open class {{ impl_class_name }}:
 {% include "CallbackInterfaceImpl.swift" %}
 {%- endif %}
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct {{ ffi_converter_name }}: FfiConverter {
     {%- if obj.has_callback_interface() %}
     fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
@@ -169,6 +181,9 @@ extension {{ type_name }}: Foundation.LocalizedError {
 }
 
 {# Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer holding a pointer #}
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
     public static func lift(_ buf: RustBuffer) throws -> {{ type_name }} {
         var reader = createReader(data: Data(rustBuffer: buf))
@@ -193,10 +208,16 @@ public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
 We always write these public functions just in case the enum is used as
 an external type by another crate.
 #}
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func {{ ffi_converter_name }}_lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
     return try {{ ffi_converter_name }}.lift(pointer)
 }
 
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
     return {{ ffi_converter_name }}.lower(value)
 }

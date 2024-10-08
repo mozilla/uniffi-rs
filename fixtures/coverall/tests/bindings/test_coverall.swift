@@ -479,3 +479,13 @@ do {
     assert(stringUtils[0].concat(a: "cow", b: "boy") == "cowboy")
     assert(stringUtils[1].concat(a: "cow", b: "boy") == "cowboy")
 }
+
+// Test HTMLError
+do {
+    try validateHtml(source: "test")
+    fatalError("should have thrown")
+} catch HtmlError.InvalidHtml {
+    // Expected
+} catch {
+    fatalError("Unexpected error: \(error)")
+}

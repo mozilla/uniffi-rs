@@ -259,4 +259,10 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal coveralls.reverse("123").encoding, Encoding::BINARY
   end
 
+  def test_html_error
+    assert_raise Coverall::HtmlError::InvalidHtml do
+      Coverall.validate_html("test")
+    end
+  end
+
 end

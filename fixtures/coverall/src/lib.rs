@@ -606,4 +606,14 @@ impl ISecond {
 
 pub struct EmptyStruct;
 
+#[derive(Clone, Debug, thiserror::Error, PartialEq, Eq)]
+pub enum HTMLError {
+    #[error("InvalidHTML")]
+    InvalidHTML,
+}
+
+pub fn validate_html(_source: String) -> Result<(), HTMLError> {
+    Err(HTMLError::InvalidHTML)
+}
+
 uniffi::include_scaffolding!("coverall");

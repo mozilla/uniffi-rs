@@ -174,10 +174,7 @@ pub(crate) fn rust_call_with_out_status<F, R>(
 where
     F: panic::UnwindSafe + FnOnce() -> Result<R, RustCallError>,
 {
-    let result = panic::catch_unwind(|| {
-        crate::panichook::ensure_setup();
-        callback()
-    });
+    let result = panic::catch_unwind(callback);
     match result {
         // Happy path.  Note: no need to update out_status in this case because the calling code
         // initializes it to [RustCallStatusCode::Success]

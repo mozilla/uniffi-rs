@@ -54,6 +54,9 @@ sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references
 }
 {%- endif %}
 
+/**
+ * @suppress
+ */
 public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer): {{ type_name }} {
         {% if e.is_flat() %}

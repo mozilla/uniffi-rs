@@ -44,11 +44,20 @@ impl From<Metadata> for CrateConfigSupplier {
             .packages
             .iter()
             .flat_map(|p| {
-                p.targets.iter().filter(|t| t.is_lib()).filter_map(|t| {
-                    p.manifest_path
-                        .parent()
-                        .map(|p| (t.name.replace('-', "_"), p.to_owned()))
-                })
+                p.targets
+                    .iter()
+                    .filter(|t| {
+                        !t.is_bin()
+                            && !t.is_example()
+                            && !t.is_test()
+                            && !t.is_bench()
+                            && !t.is_custom_build()
+                    })
+                    .filter_map(|t| {
+                        p.manifest_path
+                            .parent()
+                            .map(|p| (t.name.replace('-', "_"), p.to_owned()))
+                    })
             })
             .collect();
         Self { paths }

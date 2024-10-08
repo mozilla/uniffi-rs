@@ -1969,7 +1969,6 @@ dependencies = [
  "anyhow",
  "async-compat",
  "bytes",
- "camino",
  "log",
  "once_cell",
  "paste",

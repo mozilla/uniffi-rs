@@ -36,6 +36,9 @@ namespace coverall {
     Getters test_round_trip_through_rust(Getters getters);
     void test_round_trip_through_foreign(Getters getters);
 
+    // Always throws an InvalidHTML error
+    [Throws=HTMLError]
+    void validate_html(string source);
 };
 
 dictionary SimpleDict {
@@ -295,3 +298,10 @@ interface ISecond {
 };
 
 dictionary EmptyStruct {};
+
+// Error class with a controversial camel case.  This can cause errors if we don't consistently
+// convert the name.
+[Error]
+enum HTMLError {
+    "InvalidHTML"
+};

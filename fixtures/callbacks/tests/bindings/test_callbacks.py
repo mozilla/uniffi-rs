@@ -130,4 +130,14 @@ class TestCallbackErrors(unittest.TestCase):
             rust_getters.get_option(callback, "unexpected-error", True)
         self.assertEqual(cm.exception.reason, repr(ValueError("unexpected value")))
 
+class TestCallbackLifetime(unittest.TestCase):
+    def test_callback_reference_does_not_invalidate_other_references(self):
+        # `stringifier` must remain valid after `rust_stringifier_2` drops the reference
+        stringifier = StoredPythonStringifier()
+        rust_stringifier_1 = RustStringifier(stringifier)
+        rust_stringifier_2 = RustStringifier(stringifier)
+        assert("python: 123" == rust_stringifier_2.from_simple_type(123))
+        del rust_stringifier_2
+        assert("python: 123" == rust_stringifier_1.from_simple_type(123))
+
 unittest.main()

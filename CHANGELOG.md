@@ -6,6 +6,19 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
+  Swift-specific features. See
+  https://mozilla.github.io/uniffi-rs/latest/swift/uniffi-bindgen-swift.html for details.
+
+- Removed the [old and outdated diplomat comparison](https://github.com/mozilla/uniffi-rs/blob/69ecfbd7fdf587a4ab24d1234e2d6afb8a496581/docs/diplomat-and-macros.md) doc
+
+### What's fixed?
+
+- `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
+- Python: Fixed a bug when enum/error names were not proper camel case (HTMLError instead of HtmlError).
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...HEAD).
 
 ## v0.28.1 (backend crates: v0.28.1) - (_2024-08-09_)

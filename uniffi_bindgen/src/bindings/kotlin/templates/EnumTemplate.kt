@@ -27,6 +27,9 @@ enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
 }
 {% endmatch %}
 
+/**
+ * @suppress
+ */
 public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}> {
     override fun read(buf: ByteBuffer) = try {
         {% if config.use_enum_entries() %}
@@ -84,6 +87,9 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     companion object
 }
 
+/**
+ * @suppress
+ */
 public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }}>{
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {

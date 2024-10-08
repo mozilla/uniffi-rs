@@ -1,3 +1,6 @@
+/**
+ * @suppress
+ */
 public object FfiConverterUByte: FfiConverter<UByte, Byte> {
     override fun lift(value: Byte): UByte {
         return value.toUByte()
