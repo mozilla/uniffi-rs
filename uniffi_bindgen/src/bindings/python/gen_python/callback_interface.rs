@@ -22,7 +22,7 @@ impl CodeType for CallbackInterfaceCodeType {
     }
 
     fn canonical_name(&self) -> String {
-        format!("CallbackInterface{}", self.id)
+        format!("Type{}", self.type_label())
     }
 
     fn literal(&self, _literal: &Literal) -> String {

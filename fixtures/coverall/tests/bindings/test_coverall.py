@@ -454,5 +454,9 @@ class TraitsTest(unittest.TestCase):
         self.assertEqual(traits[0].concat("cow", "boy"), "cowboy")
         self.assertEqual(traits[1].concat("cow", "boy"), "cowboy")
 
+    def test_html_error(self):
+        with self.assertRaises(HtmlError):
+            validate_html("test")
+
 if __name__=='__main__':
     unittest.main()

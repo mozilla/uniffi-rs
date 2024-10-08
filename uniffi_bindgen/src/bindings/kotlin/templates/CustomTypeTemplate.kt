@@ -33,6 +33,9 @@ public typealias {{ type_name }} = {{ concrete_type_name }}
 {%- else %}
 {%- endmatch %}
 
+/**
+ * @suppress
+ */
 public object {{ ffi_converter_name }}: FfiConverter<{{ type_name }}, {{ ffi_type_name }}> {
     override fun lift(value: {{ ffi_type_name }}): {{ type_name }} {
         val builtinValue = {{ builtin|lift_fn }}(value)

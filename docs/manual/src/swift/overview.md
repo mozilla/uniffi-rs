@@ -25,20 +25,10 @@ Concepts from the UDL file map into Swift as follows:
     * If this happens inside a non-throwing Swift function, it will be converted
       into a fatal Swift error that cannot be caught.
 
-Conceptually, the generated bindings are split into two Swift modules, one for the low-level
-C FFI layer and one for the higher-level Swift bindings. For a UniFFI component named "example"
-we generate:
+## Generated files
 
-* A C header file `exampleFFI.h` declaring the low-level structs and functions for calling
-  into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.
-* A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
-  to provide the higher-level Swift API.
+UniFFI generates several kinds of files for Swift bindings:
 
-Splitting up the bindings in this way gives you flexibility over how both the Rust code
-and the Swift code are distributed to consumers. For example, you may choose to compile
-and distribute the Rust code for several UniFFI components as a single shared library
-in order to reduce the compiled code size, while distributing their Swift wrappers as
-individual modules.
-
-For more technical details on how the bindings work internally, please see the
-[module documentation](https://docs.rs/uniffi_bindgen/latest/uniffi_bindgen/bindings/swift/index.html)
+* C header files declaring the FFI structs/functions used by the Rust scaffolding code
+* A modulemap, which defines a Swift module for the C FFI definitions in the header file.
+* A Swift source file that defines the Swift API used by consumers.  This imports the FFI module.

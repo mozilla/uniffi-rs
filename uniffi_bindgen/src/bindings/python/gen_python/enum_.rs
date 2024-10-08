@@ -22,7 +22,7 @@ impl CodeType for EnumCodeType {
     }
 
     fn canonical_name(&self) -> String {
-        format!("Type{}", self.id)
+        format!("Type{}", self.type_label())
     }
 
     fn literal(&self, literal: &Literal) -> String {

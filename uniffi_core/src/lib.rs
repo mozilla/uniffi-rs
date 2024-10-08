@@ -64,13 +64,11 @@ pub mod deps {
     pub use static_assertions;
 }
 
-mod panichook;
-
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // For the significance of this magic number 10 here, and the reason that
 // it can't be a named constant, see the `check_compatible_version` function.
-static_assertions::const_assert!(PACKAGE_VERSION.as_bytes().len() < 10);
+static_assertions::const_assert!(PACKAGE_VERSION.len() < 10);
 
 /// Check whether the uniffi runtime version is compatible a given uniffi_bindgen version.
 ///
