@@ -21,7 +21,7 @@
     {%- else %}
     uniffiRustCall()
     {%- endmatch %} { _status ->
-    UniffiLib.INSTANCE.{{ func.ffi_func().name() }}(
+    UniffiLib.{{ func.ffi_func().name() }}(
         {% if func.takes_self() %}it, {% endif -%}
         {% call arg_list_lowered(func) -%}
         _status)
@@ -60,13 +60,13 @@
     uniffiRustCallAsync(
 {%- if callable.takes_self() %}
         callWithPointer { thisPtr ->
-            UniffiLib.INSTANCE.{{ callable.ffi_func().name() }}(
+            UniffiLib.{{ callable.ffi_func().name() }}(
                 thisPtr,
                 {% call arg_list_lowered(callable) %}
             )
         },
 {%- else %}
-        UniffiLib.INSTANCE.{{ callable.ffi_func().name() }}({% call arg_list_lowered(callable) %}),
+        UniffiLib.{{ callable.ffi_func().name() }}({% call arg_list_lowered(callable) %}),
 {%- endif %}
         {{ callable|async_poll(ci) }},
         {{ callable|async_complete(ci) }},

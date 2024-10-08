@@ -59,28 +59,25 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
-internal interface UniffiLib : Library {
-    companion object {
-        internal val INSTANCE: UniffiLib by lazy {
-            loadIndirect<UniffiLib>(componentName = "{{ ci.namespace() }}")
-            .also { lib: UniffiLib ->
-                uniffiCheckContractApiVersion(lib)
-                uniffiCheckApiChecksums(lib)
-                {% for fn in self.initialization_fns() -%}
-                {{ fn }}(lib)
-                {% endfor -%}
-            }
-        }
-        {% if ci.contains_object_types() %}
-        // The Cleaner for the whole library
-        internal val CLEANER: UniffiCleaner by lazy {
-            UniffiCleaner.create()
-        }
-        {%- endif %}
+internal object UniffiLib {
+    {% if ci.contains_object_types() %}
+    // The Cleaner for the whole library
+    internal val CLEANER: UniffiCleaner by lazy {
+        UniffiCleaner.create()
+    }
+    {% endif %}
+
+    init {
+        Native.register(findLibraryName(componentName = "{{ ci.namespace() }}"))
+        uniffiCheckContractApiVersion(this)
+        uniffiCheckApiChecksums(this)
+        {% for fn in self.initialization_fns() -%}
+        {{ fn }}(this)
+        {% endfor %}
     }
 
     {% for func in ci.iter_ffi_function_definitions() -%}
-    fun {{ func.name() }}(
+    @JvmStatic external fun {{ func.name() }}(
         {%- call kt::arg_list_ffi_decl(func) %}
     ): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value }}{% when None %}Unit{% endmatch %}
     {% endfor %}
