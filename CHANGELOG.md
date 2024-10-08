@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
+
+## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
+
 ### What's new?
 
 - Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
@@ -19,7 +23,7 @@
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
 - Python: Fixed a bug when enum/error names were not proper camel case (HTMLError instead of HtmlError).
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...HEAD).
+[All changes in v0.28.2](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...v0.28.2).
 
 ## v0.28.1 (backend crates: v0.28.1) - (_2024-08-09_)
 
