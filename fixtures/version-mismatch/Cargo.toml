@@ -15,6 +15,7 @@ path = "src/bindgen.rs"
 
 [features]
 default = []
+ffi-trace = ["uniffi/ffi-trace"]
 # Change the API that the proc-macros wrap in order to test mismatches between
 # the scaffolding and bindings code
 proc_macro_v2 = []

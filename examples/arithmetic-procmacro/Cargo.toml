@@ -16,3 +16,6 @@ thiserror = "1.0"
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

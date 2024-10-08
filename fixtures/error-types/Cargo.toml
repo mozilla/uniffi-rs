@@ -20,3 +20,5 @@ uniffi = {path = "../../uniffi", features = ["build"] }
 [dev-dependencies]
 uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
 
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

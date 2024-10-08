@@ -162,8 +162,15 @@ fn get_cargo_metadata() -> Metadata {
 }
 
 fn get_cargo_build_messages() -> Vec<Message> {
+    #[cfg(feature = "ffi-trace")]
+    let features_arg = "--features=ffi-trace";
+
+    #[cfg(not(feature = "ffi-trace"))]
+    let features_arg = "--features=";
+
     let mut child = Command::new(env!("CARGO"))
         .arg("test")
+        .arg(features_arg)
         .arg("--no-run")
         .arg("--message-format=json")
         .stdout(Stdio::piped())
