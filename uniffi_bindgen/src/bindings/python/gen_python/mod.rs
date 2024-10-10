@@ -423,24 +423,6 @@ impl PythonCodeOracle {
             None => "0".to_owned(),
         }
     }
-
-    /// Get the name of the protocol and class name for an object.
-    ///
-    /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
-    /// Otherwise, the class name is the object name and the protocol name is derived from that.
-    ///
-    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
-    /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
-    /// only lowers the concrete class.
-    fn object_names(&self, obj: &Object) -> (String, String) {
-        let class_name = self.class_name(obj.name());
-        if obj.has_callback_interface() {
-            let impl_name = format!("{class_name}Impl");
-            (class_name, impl_name)
-        } else {
-            (format!("{class_name}Protocol"), class_name)
-        }
-    }
 }
 
 impl VisitMut for PythonCodeOracle {
@@ -657,11 +639,6 @@ pub mod filters {
     /// Get the idiomatic Python rendering of an FFI struct name
     pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
         Ok(PythonCodeOracle.ffi_struct_name(nm))
-    }
-
-    /// Get the idiomatic Python rendering of an individual enum variant.
-    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
-        Ok(PythonCodeOracle.object_names(obj))
     }
 
     /// Get the idiomatic Python rendering of docstring
