@@ -95,3 +95,14 @@ extension {{ type_name }}: Foundation.LocalizedError {
         String(reflecting: self)
     }
 }
+
+{#
+We always write these public functions just in case the enum is used as
+an external type by another crate.
+#}
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_name }} {
+    return try {{ ffi_converter_name }}.lift(buf)
+}
