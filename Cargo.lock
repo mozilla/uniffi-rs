@@ -2020,7 +2020,6 @@ dependencies = [
  "anyhow",
  "textwrap",
  "uniffi_meta",
- "uniffi_testing",
  "weedle2",
 ]
 
