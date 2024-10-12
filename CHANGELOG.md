@@ -22,6 +22,7 @@
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
 - Python: Fixed a bug when enum/error names were not proper camel case (HTMLError instead of HtmlError).
+- Python: Fixed the class hierarcy generated for traits ((#2264)[https://github.com/mozilla/uniffi-rs/issues/2264])
 
 [All changes in v0.28.2](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...v0.28.2).
 
