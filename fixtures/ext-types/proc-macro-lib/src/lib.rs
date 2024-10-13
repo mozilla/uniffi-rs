@@ -2,7 +2,8 @@ use custom_types::Handle;
 use ext_types_custom::Guid;
 use std::sync::Arc;
 use uniffi_one::{
-    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
+    UniffiOneEnum, UniffiOneError, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait,
+    UniffiOneType,
 };
 use url::Url;
 
@@ -220,6 +221,11 @@ fn get_newtype_handle_value(u: NewtypeHandle) -> i64 {
 #[uniffi::export]
 fn get_guid_procmacro(g: Option<Guid>) -> Guid {
     ext_types_custom::get_guid(g)
+}
+
+#[uniffi::export]
+fn throw_external_error() -> Result<(), UniffiOneError> {
+    Err(UniffiOneError::AnError)
 }
 
 uniffi::setup_scaffolding!("imported_types_lib");

@@ -55,5 +55,14 @@ assert(getMaybeUniffiOneEnum(e: nil) == nil)
 assert(getUniffiOneEnums(es: [UniffiOneEnum.one]) == [UniffiOneEnum.one])
 assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.one, nil])
 
+do {
+    try throwExternalError()
+    assert(false, "No error thrown")
+} catch let _ as UniffiOneError {
+    // Ignore correct error
+} catch {
+    assert(false, "Wrong error returned")
+}
+
 let g = getGuidProcmacro(g: nil)
 assert(g == getGuidProcmacro(g: g))
