@@ -1,7 +1,6 @@
 [package]
 name = "uniffi_macros"
 version = "0.28.2"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (convenience macros)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"

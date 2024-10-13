@@ -1,7 +1,6 @@
 [package]
 name = "uniffi-fixture-regression-cdylib-dependency"
 version = "0.22.0"
-authors = ["king6cong <king6cong@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
 publish = false
