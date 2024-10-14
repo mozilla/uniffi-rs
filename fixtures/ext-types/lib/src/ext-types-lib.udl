@@ -20,6 +20,9 @@ namespace imported_types_lib {
     ExternalCrateInterface get_external_crate_interface(string val);
     UniffiOneProcMacroType get_uniffi_one_proc_macro_type(UniffiOneProcMacroType t);
     UniffiOneUDLTrait? get_uniffi_one_udl_trait(UniffiOneUDLTrait? t);
+
+    [Throws=GuidError]
+    void throw_guid_error();
 };
 
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in
@@ -47,6 +50,9 @@ typedef extern UniffiOneProcMacroType;
 // but because it's in a UDL it's still "external" from our POV, so same as the `.udl` type above.
 [External="ext_types_custom"]
 typedef extern Guid;
+
+[External="ext_types_custom"]
+typedef extern GuidError;
 
 // And re-use the `custom-types` example - this exposes `Url` and `Handle`
 [External="custom_types"]
