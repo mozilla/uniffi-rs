@@ -2,7 +2,6 @@
 name = "uniffi-fixture-regression-i1015-fully-qualified-types"
 edition = "2021"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
 
