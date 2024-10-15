@@ -288,6 +288,17 @@ impl<'a> TypeRenderer<'a> {
             .map(|(n, t)| (PythonCodeOracle.class_name(n), t))
             .collect()
     }
+
+    // Sort object types to avoid forward references; traits before everything else.
+    fn iter_sorted_object_types(&self) -> impl Iterator<Item = &Type> {
+        let mut obs: Vec<&Type> = self
+            .ci
+            .iter_types()
+            .filter(|t| matches!(t, Type::Object { .. }))
+            .collect();
+        obs.sort_by_key(|t| !matches!(t, Type::Object { imp, .. } if imp.is_trait_interface()));
+        obs.into_iter()
+    }
 }
 
 #[derive(Template)]
@@ -432,6 +443,10 @@ impl VisitMut for PythonCodeOracle {
 
     fn visit_object(&self, object: &mut Object) {
         object.rename(self.class_name(object.name()));
+        for i in object.trait_impls_mut() {
+            i.trait_name = self.class_name(&i.trait_name);
+            // should i.tr_module_path be fixed?
+        }
     }
 
     fn visit_field(&self, field: &mut Field) {

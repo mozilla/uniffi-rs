@@ -18,6 +18,10 @@
 
 - Removed the [old and outdated diplomat comparison](https://github.com/mozilla/uniffi-rs/blob/69ecfbd7fdf587a4ab24d1234e2d6afb8a496581/docs/diplomat-and-macros.md) doc
 
+- Proc-macros recognise when you are exporting an `impl Trait for Struct` block.
+  Python supports this by generating an inheritance hierarcy to reflect that.
+  [#2204](https://github.com/mozilla/uniffi-rs/pull/2204)
+
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1

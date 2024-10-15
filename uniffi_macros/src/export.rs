@@ -19,7 +19,7 @@ use self::{
         gen_constructor_scaffolding, gen_ffi_function, gen_fn_scaffolding, gen_method_scaffolding,
     },
 };
-use crate::util::{ident_to_string, mod_path};
+use crate::util::{create_metadata_items, ident_to_string, mod_path};
 pub use attributes::{AsyncRuntime, DefaultMap, ExportFnArgs};
 pub use callback_interface::ffi_converter_callback_interface_impl;
 
@@ -48,6 +48,7 @@ pub(crate) fn expand_export(
             items,
             self_ident,
             args,
+            trait_,
         } => {
             if let Some(rt) = &args.async_runtime {
                 if items
@@ -76,7 +77,27 @@ pub(crate) fn expand_export(
                     }
                 })
                 .collect::<syn::Result<_>>()?;
-            Ok(quote_spanned! { self_ident.span() => #item_tokens })
+            let trait_impl_tokens = trait_.map(|t| {
+                let object_name = ident_to_string(&self_ident);
+                // TODO: parse trait path?
+                let trait_name = ident_to_string(t.get_ident().expect("not a simple trait path"));
+                let trait_path = "";
+                let metadata_expr = quote! {
+                    ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::OBJECT_TRAIT_IMPL)
+                        .concat(::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE))
+                        .concat_str(#mod_path)
+                        .concat_str(#object_name)
+                        .concat_str(#trait_name)
+                        .concat_str(#trait_path)
+                };
+                create_metadata_items(
+                    "object_trait_impl",
+                    &format!("{object_name}_{trait_name}"),
+                    metadata_expr,
+                    None,
+                )
+            });
+            Ok(quote_spanned! { self_ident.span() => #item_tokens #trait_impl_tokens })
         }
         ExportItem::Trait {
             items,

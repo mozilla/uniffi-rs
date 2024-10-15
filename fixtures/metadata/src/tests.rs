@@ -92,6 +92,14 @@ pub trait Logger {
     fn log(&self, message: String);
 }
 
+#[derive(uniffi::Object)]
+pub struct RealLogger {}
+
+#[uniffi::export]
+impl Logger for RealLogger {
+    fn log(&self, _message: String) {}
+}
+
 pub use calc::Calculator;
 pub use error::FlatError;
 pub use person::Person;
@@ -858,6 +866,32 @@ mod test_function_metadata {
                     UNIFFI_META_CONST_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG.checksum(),
                 ),
                 docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_trait_object_impl() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_REALLOGGER,
+            ObjectMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "RealLogger".into(),
+                imp: ObjectImpl::Struct,
+                docstring: None,
+            },
+        );
+
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_OBJECT_TRAIT_IMPL_REALLOGGER_LOGGER,
+            ObjectTraitImplMetadata {
+                ty: Type::Object {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "RealLogger".into(),
+                    imp: ObjectImpl::Struct,
+                },
+                trait_name: "Logger".into(),
+                tr_module_path: None,
             },
         );
     }

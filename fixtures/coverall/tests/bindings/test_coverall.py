@@ -441,9 +441,33 @@ class TraitsTest(unittest.TestCase):
         py_node.set_parent(None)
         traits[0].set_parent(None)
 
+    def test_struct_traits(self):
+        # A struct, but also a trait.
+        self.assertTrue(issubclass(Node, NodeTrait))
+        node = Node("node")
+        # We start off using methods declared on the struct. `repr()` is our magic `Debug` support.
+        self.assertTrue(repr(node).startswith("Node { name: Some(\"node\"), parent: Mutex { "))
+        # We can also use methods declared on the trait.
+        self.assertTrue(node.get_parent() is not None)
+
+        # Unfortunately, this trait object gets re-wrapped as it's passed back to Rust, because
+        # we can't easily know it's already the correct type.
+        expected_desc = "Some(Node { name: Some(\"via node\"), parent: Mutex { ";
+        self.assertTrue(node.describe_parent().startswith(expected_desc))
+
+        # But if we round-trip the original rust-implemented parent, we get a wrapped object.
+        # Not clear this can be fixed: We'd need FFI to "cast" our struct into the trait - but how can this work?
+        # Can't magically turn an `Arc<T>` into an `Arc<dyn X>`?)
+        node.set_parent(node.get_parent())
+        # ie, this now acts like PyNode below rather than the "raw" parent.
+        # actual: Some(UniFFICallbackHandlerNodeTrait { handle: 18 })
+        #self.assertEqual(node.describe_parent(), expected_desc)
+
+        node.set_parent(PyNode())
+        self.assertTrue(node.describe_parent().startswith("Some(UniFFICallbackHandlerNodeTrait { handle: "))
+
     def test_round_tripping(self):
         rust_getters = make_rust_getters();
-        coveralls = Coveralls("test_round_tripping")
         # Check that these don't cause use-after-free bugs
         test_round_trip_through_rust(rust_getters)
 

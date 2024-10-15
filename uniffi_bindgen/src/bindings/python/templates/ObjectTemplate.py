@@ -25,7 +25,7 @@
 {%- if ci.is_name_used_as_error(name) %}
 class {{ impl_name }}(Exception):
 {%- else %}
-class {{ impl_name }}:
+class {{ impl_name }}({% for t in obj.trait_impls() %}{{ t.trait_name }},{% endfor %}):
 {%- endif %}
     {%- call py::docstring(obj, 4) %}
     _pointer: ctypes.c_void_p
