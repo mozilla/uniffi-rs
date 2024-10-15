@@ -858,6 +858,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#structs-implementing-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Structs implementing traits.
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#default-values" class="md-nav__link">
     <span class="md-ellipsis">
       Default values
@@ -1586,6 +1595,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#structs-implementing-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Structs implementing traits.
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#default-values" class="md-nav__link">
     <span class="md-ellipsis">
       Default values
@@ -1867,6 +1885,27 @@ work:</p>
 <span class="k">fn</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="n">foo</span><span class="p">:</span><span class="w"> </span><span class="nc">MyFooRef</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span>
 </code></pre></div>
+<h3 id="structs-implementing-traits">Structs implementing traits.</h3>
+<p>You can declare that an object implements a trait. For example:</p>
+<div class="highlight"><pre><span></span><code>#[uniffi::export]
+trait MyTrait { .. }
+
+#[derive(uniffi::Object)]
+struct MyObject {}
+
+#[uniffi::export]
+impl MyObject {
+    // ... some methods
+}
+
+#[uniffi::export]
+impl MyTrait for MyObject {
+    // ... the trait methods.
+}
+</code></pre></div>
+<p>This will mean the bindings are able to use both the methods declared directly on <code>MyObject</code>
+but also be able to be used when a <code>MyTrait</code> is required.</p>
+<p>Not all bindings support this.</p>
 <h3 id="default-values">Default values</h3>
 <p>Exported functions/methods can have default values using the <code>default</code> argument of the attribute macro that wraps them.
 <code>default</code> inputs a comma-separated list of <code>[name]=[value]</code> items.</p>
