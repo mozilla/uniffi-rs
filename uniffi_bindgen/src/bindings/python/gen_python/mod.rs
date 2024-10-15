@@ -461,12 +461,8 @@ impl VisitMut for PythonCodeOracle {
         ffi_argument.rename(self.class_name(ffi_argument.name()));
     }
 
-    fn visit_enum(&self, is_error: bool, enum_: &mut Enum) {
-        if is_error {
-            enum_.rename(self.class_name(enum_.name()));
-        } else {
-            enum_.rename(self.enum_variant_name(enum_.name()));
-        }
+    fn visit_enum(&self, _is_error: bool, enum_: &mut Enum) {
+        enum_.rename(self.class_name(enum_.name()));
     }
 
     fn visit_enum_key(&self, key: &mut String) -> String {
@@ -474,12 +470,6 @@ impl VisitMut for PythonCodeOracle {
     }
 
     fn visit_variant(&self, is_error: bool, variant: &mut Variant) {
-        //TODO: If we want to remove the last var_name filter
-        // in the template, this is it. We need an additional
-        // attribute for the `Variant` so we can
-        // display Python is_NAME functions
-        // variant.set_is_name(self.var_name(variant.name()));
-
         if is_error {
             variant.rename(self.class_name(variant.name()));
         } else {
@@ -581,20 +571,6 @@ pub mod filters {
 
     pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().type_label())
-    }
-
-    //TODO: Remove. Currently just being used by EnumTemplate.py to
-    // display is_NAME_OF_ENUM.
-    /// Get the idiomatic Python rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.var_name(nm))
-    }
-
-    //TODO: Remove. Currently just being used by wrapper.py to display the
-    // callback_interface function names.
-    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.class_name(nm))
     }
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {

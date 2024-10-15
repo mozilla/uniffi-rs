@@ -152,4 +152,7 @@ assert(MixedEnum.BOTH("hello", 1)[:] == ('hello', 1))
 assert(MixedEnum.BOTH("hello", 1)[-1] == 1)
 assert(str(MixedEnum.BOTH("hello", 2)) == "MixedEnum.BOTH('hello', 2)")
 
+# In #2270 we realized confusion about whether we generated our
+# variant checker as, eg, `is_ALL()` vs `is_all()` so decided to do both.
 assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_all())
+assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_ALL())
