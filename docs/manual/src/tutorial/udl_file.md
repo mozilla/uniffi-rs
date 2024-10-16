@@ -1,10 +1,19 @@
 # Describing the interface
 
 There are two ways of describing your interface:
-1 - with a UDL file (a type of IDL, Interface Definition Language);
-2 - with [Rust procmacros](../proc_macro/index.md), similarly to how `wasm-bindgen` work. This avoids repeating your interface definitions in a separate file. Unfortunately, our docs aren't quite as good for that yet though.
 
-## The UDL File
+## Proc macros
+
+[Rust proc macros](../proc_macro/index.md) can describe your interface - you'd define the function as:
+
+```
+#[uniffi::export]
+fn add(a: u32, b: u32) -> u32 { a + b }
+```
+
+You need to [set up the scaffolding](./Rust_scaffolding.md") with `uniffi::setup_scaffolding!()` - but that's it.
+
+## A UDL File
 
 We describe in a UDL (a type of IDL, Interface Definition Language) file _what_ is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (`u32`) and not custom data structures but we still want to expose the `add` method.  
 Let's create a `math.udl` file in the `math` crate's `src/` folder:
