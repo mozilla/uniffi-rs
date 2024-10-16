@@ -1381,15 +1381,16 @@
 
 
 <h1 id="namespace">Namespace</h1>
+<p>Every crate has a UniFFI "namespace". This is the name exposed to the foreign bindings, typically as a module.</p>
 <p>Every UDL file <em>must</em> have a <code>namespace</code> block:</p>
 <div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>math<span class="w"> </span>{
 <span class="w">  </span><span class="nb">double</span><span class="w"> </span><span class="nb">exp</span>(<span class="nb">double</span><span class="w"> </span>a);
 };
 </code></pre></div>
-<p>It serves multiple purposes:
-- It identifies the name of the generated Rust scaffolding file <code>&lt;namespace&gt;.uniffi.rs</code>.
-- It identifies the package name of the generated foreign-language bindings (e.g. <code>uniffi.&lt;namespace&gt;</code> in Kotlin)
-- It also contains all <a href="functions.html">top-level <em>functions</em></a> that get exposed to foreign-language bindings.</p>
+<p>which might be used as <code>from math import exp</code>/<code>import math</code>/<code>import omg.wtf.math.exp</code> etc.</p>
+<p>Proc macros use the crate name as the namespace by default, but it can be specified with</p>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">setup_scaffolding</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;namespace&quot;</span><span class="p">);</span>
+</code></pre></div>
 
 
 

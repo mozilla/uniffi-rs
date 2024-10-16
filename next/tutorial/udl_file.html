@@ -327,9 +327,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-udl-file" class="md-nav__link">
+  <a href="#proc-macros" class="md-nav__link">
     <span class="md-ellipsis">
-      The UDL File
+      Proc macros
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-udl-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      A UDL File
     </span>
   </a>
   
@@ -1410,9 +1419,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-udl-file" class="md-nav__link">
+  <a href="#proc-macros" class="md-nav__link">
     <span class="md-ellipsis">
-      The UDL File
+      Proc macros
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-udl-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      A UDL File
     </span>
   </a>
   
@@ -1437,10 +1455,14 @@
 
 
 <h1 id="describing-the-interface">Describing the interface</h1>
-<p>There are two ways of describing your interface:
-1 - with a UDL file (a type of IDL, Interface Definition Language);
-2 - with <a href="../proc_macro/index.html">Rust procmacros</a>, similarly to how <code>wasm-bindgen</code> work. This avoids repeating your interface definitions in a separate file. Unfortunately, our docs aren't quite as good for that yet though.</p>
-<h2 id="the-udl-file">The UDL File</h2>
+<p>There are two ways of describing your interface:</p>
+<h2 id="proc-macros">Proc macros</h2>
+<p><a href="../proc_macro/index.html">Rust proc macros</a> can describe your interface - you'd define the function as:</p>
+<div class="highlight"><pre><span></span><code>#[uniffi::export]
+fn add(a: u32, b: u32) -&gt; u32 { a + b }
+</code></pre></div>
+<p>You need to <a href="./Rust_scaffolding.md&quot;">set up the scaffolding</a> with <code>uniffi::setup_scaffolding!()</code> - but that's it.</p>
+<h2 id="a-udl-file">A UDL File</h2>
 <p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
 Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
 <div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>math<span class="w"> </span>{
