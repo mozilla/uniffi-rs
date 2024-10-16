@@ -14,6 +14,7 @@ readme = "../README.md"
 default = ["cargo-metadata"]
 cargo-metadata = ["dep:cargo_metadata"]
 bindgen-tests = ["cargo-metadata", "dep:uniffi_testing"]
+ffi-trace = ["uniffi_testing?/ffi-trace"]
 
 [dependencies]
 anyhow = "1"

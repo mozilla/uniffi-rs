@@ -24,3 +24,6 @@ uniffi_bindgen = {path = "../../uniffi_bindgen", features = ["bindgen-tests"]}
 [[bench]]
 name = "benchmarks"
 harness = false
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

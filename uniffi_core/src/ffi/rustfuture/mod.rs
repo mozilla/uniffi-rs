@@ -36,6 +36,8 @@ pub type RustFutureContinuationCallback = extern "C" fn(callback_data: u64, Rust
 ///
 /// For each exported async function, UniFFI will create a scaffolding function that uses this to
 /// create the [Handle] to pass to the foreign code.
+// Need to allow let_and_return, or clippy complains when the `ffi-trace` feature is disabled.
+#[allow(clippy::let_and_return)]
 pub fn rust_future_new<F, T, UT>(future: F, tag: UT) -> Handle
 where
     // F is the future type returned by the exported async function.  It needs to be Send + `static
@@ -51,9 +53,11 @@ where
     // Needed to allocate a handle
     dyn RustFutureFfi<T::ReturnType>: HandleAlloc<UT>,
 {
-    <dyn RustFutureFfi<T::ReturnType> as HandleAlloc<UT>>::new_handle(
-        RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>
-    )
+    let handle = <dyn RustFutureFfi<T::ReturnType> as HandleAlloc<UT>>::new_handle(
+        RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>,
+    );
+    trace!("rust_future_new: {handle:?}");
+    handle
 }
 
 /// Poll a Rust future
@@ -72,6 +76,7 @@ pub unsafe fn rust_future_poll<ReturnType, UT>(
 ) where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
+    trace!("rust_future_poll: {handle:?}");
     <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_poll(callback, data)
 }
 
@@ -89,6 +94,7 @@ pub unsafe fn rust_future_cancel<ReturnType, UT>(handle: Handle)
 where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
+    trace!("rust_future_cancel: {handle:?}");
     <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_cancel()
 }
 
@@ -109,6 +115,7 @@ pub unsafe fn rust_future_complete<ReturnType, UT>(
 where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
+    trace!("rust_future_complete: {handle:?}");
     <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::get_arc(handle).ffi_complete(out_status)
 }
 
@@ -122,6 +129,7 @@ pub unsafe fn rust_future_free<ReturnType, UT>(handle: Handle)
 where
     dyn RustFutureFfi<ReturnType>: HandleAlloc<UT>,
 {
+    trace!("rust_future_free: {handle:?}");
     <dyn RustFutureFfi<ReturnType> as HandleAlloc<UT>>::consume_handle(handle).ffi_free()
 }
 

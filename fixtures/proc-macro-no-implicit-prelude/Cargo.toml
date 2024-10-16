@@ -11,6 +11,7 @@ crate-type = ["lib", "cdylib"]
 
 [features]
 default = ["myfeature"]
+ffi-trace = ["uniffi/ffi-trace"]
 myfeature = []
 
 [dependencies]

@@ -20,3 +20,6 @@ uniffi = { workspace = true, features = ["build"] }
 uniffi = { workspace = true, features = ["bindgen-tests", "cli"] }
 uniffi_testing = { path = "../../uniffi_testing" }
 anyhow = "1"
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]
