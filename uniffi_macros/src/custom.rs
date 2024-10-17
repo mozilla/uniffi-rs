@@ -2,96 +2,260 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{
-    ffiops,
-    util::{derive_all_ffi_traits, ident_to_string, mod_path, tagged_impl_header},
+use crate::util::{
+    either_attribute_arg, ident_to_string, kw, mod_path, parse_comma_separated, UniffiAttributeArgs,
 };
 use proc_macro2::{Ident, TokenStream};
-use quote::quote;
-use syn::Path;
+use quote::{quote, ToTokens};
+use syn::{
+    braced,
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+    token::Brace,
+    Expr, ExprClosure, Pat, Token, Type,
+};
 
-// Generate an FfiConverter impl based on the UniffiCustomTypeConverter
-// implementation that the library supplies
-pub(crate) fn expand_ffi_converter_custom_type(
-    ident: &Ident,
-    builtin: &Path,
-    udl_mode: bool,
-) -> syn::Result<TokenStream> {
-    let impl_spec = tagged_impl_header("FfiConverter", ident, udl_mode);
-    let derive_ffi_traits = derive_all_ffi_traits(ident, udl_mode);
-    let name = ident_to_string(ident);
+pub struct CustomTypeArgs {
+    custom_type: Type,
+    uniffi_type: Type,
+    options: CustomTypeOptions,
+}
+
+impl Parse for CustomTypeArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        // Parse the custom / UniFFI type which are both required
+        let custom_type = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let uniffi_type = input.parse()?;
+        let options = if input.peek(Token![,]) {
+            input.parse::<Token![,]>()?;
+
+            if input.peek(Brace) {
+                let content;
+                braced!(content in input);
+                content.parse()?
+            } else {
+                CustomTypeOptions::default()
+            }
+        } else {
+            CustomTypeOptions::default()
+        };
+        Ok(Self {
+            custom_type,
+            uniffi_type,
+            options,
+        })
+    }
+}
+
+/// Handle extra options for the custom type macro
+#[derive(Default)]
+pub struct CustomTypeOptions {
+    lower: Option<ConvertClosure>,
+    try_lift: Option<ConvertClosure>,
+    remote: Option<kw::remote>,
+}
+
+impl CustomTypeOptions {
+    fn is_remote(&self) -> bool {
+        // FIXME(#2087): Force all custom types to act as if `remote` was present.  This causes the
+        // generate code to only implement FfiConverter for the local tag, which is the current way
+        // of doing things.
+        true
+    }
+}
+
+impl Parse for CustomTypeOptions {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        parse_comma_separated(input)
+    }
+}
+
+impl UniffiAttributeArgs for CustomTypeOptions {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::lower) {
+            input.parse::<kw::lower>()?;
+            input.parse::<Token![:]>()?;
+            Ok(Self {
+                lower: Some(input.parse()?),
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::try_lift) {
+            input.parse::<kw::try_lift>()?;
+            input.parse::<Token![:]>()?;
+            Ok(Self {
+                try_lift: Some(input.parse()?),
+                ..Self::default()
+            })
+        // Temporarily disabled until we land #2087 and get the new remote types system
+        // } else if lookahead.peek(kw::remote) {
+        //     Ok(Self {
+        //         remote: Some(input.parse()?),
+        //         ..Self::default()
+        //     })
+        } else {
+            Err(lookahead.error())
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            lower: either_attribute_arg(self.lower, other.lower)?,
+            try_lift: either_attribute_arg(self.try_lift, other.try_lift)?,
+            remote: either_attribute_arg(self.remote, other.remote)?,
+        })
+    }
+}
+
+struct ConvertClosure {
+    closure: ExprClosure,
+    param_ident: Ident,
+    body: Expr,
+}
+
+impl ConvertClosure {
+    fn token_tuple(&self) -> (TokenStream, TokenStream) {
+        let ConvertClosure {
+            param_ident, body, ..
+        } = self;
+        (quote! { #param_ident }, quote! { #body })
+    }
+}
+
+impl Parse for ConvertClosure {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let closure: ExprClosure = input.parse()?;
+        if closure.inputs.len() != 1 {
+            return Err(syn::Error::new(
+                closure.inputs.span(),
+                "Expected exactly 1 argument",
+            ));
+        }
+        let param_ident = match closure.inputs.last().unwrap().clone() {
+            Pat::Ident(i) => Ok(i.ident),
+            Pat::Type(p) => match *p.pat {
+                Pat::Ident(i) => Ok(i.ident),
+                _ => Err(p.pat.span()),
+            },
+            input => Err(input.span()),
+        }
+        .map_err(|span| syn::Error::new(span, "Unexpected argument type"))?;
+        Ok(Self {
+            body: *closure.body.clone(),
+            closure,
+            param_ident,
+        })
+    }
+}
+
+impl ToTokens for ConvertClosure {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.closure.to_tokens(tokens)
+    }
+}
+
+pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStream> {
+    let CustomTypeArgs {
+        custom_type,
+        uniffi_type,
+        options,
+    } = args;
+
+    let name = match &custom_type {
+        Type::Path(p) => match p.path.get_ident() {
+            Some(i) => Ok(ident_to_string(i)),
+            None => Err("Custom types must only have one component"),
+        },
+        _ => Err("Custom types must be specified as simple idents"),
+    }
+    .map_err(|msg| syn::Error::new(custom_type.span(), msg))?;
+
     let mod_path = mod_path()?;
-    let from_custom = quote! { <#ident as crate::UniffiCustomTypeConverter>::from_custom };
-    let into_custom = quote! { <#ident as crate::UniffiCustomTypeConverter>::into_custom };
-    let lower_type = ffiops::lower_type(builtin);
-    let lower = ffiops::lower(builtin);
-    let write = ffiops::write(builtin);
-    let try_lift = ffiops::try_lift(builtin);
-    let try_read = ffiops::try_read(builtin);
-    let type_id_meta = ffiops::type_id_meta(builtin);
+    let (impl_spec, derive_ffi_traits) = if options.is_remote() {
+        (
+            quote! { unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for #custom_type },
+            quote! { ::uniffi::derive_ffi_traits!(local #custom_type); },
+        )
+    } else {
+        (
+            quote! { unsafe impl<UT> ::uniffi::FfiConverter<UT> for #custom_type },
+            quote! { ::uniffi::derive_ffi_traits!(blanket #custom_type); },
+        )
+    };
+
+    let (lower_param, lower_expr) = match options.lower {
+        Some(convert_closure) => convert_closure.token_tuple(),
+        None => (
+            quote! { val },
+            quote! { <#custom_type as Into<#uniffi_type>>::into(val) },
+        ),
+    };
+    let (try_lift, try_lift_expr) = match options.try_lift {
+        Some(convert_closure) => convert_closure.token_tuple(),
+        None => (
+            quote! { val },
+            quote! { Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?) },
+        ),
+    };
 
     Ok(quote! {
-        #[automatically_derived]
-        unsafe #impl_spec {
-            // Note: the builtin type needs to implement both `Lower` and `Lift'.  We use the
+        #[allow(non_camel_case_types)]
+        #impl_spec {
+            // Note: the UniFFI type needs to implement both `Lower` and `Lift'.  We use the
             // `Lower` trait to get the associated type `FfiType` and const `TYPE_ID_META`.  These
             // can't differ between `Lower` and `Lift`.
-            type FfiType = #lower_type;
-            fn lower(obj: #ident ) -> Self::FfiType {
-                #lower(#from_custom(obj))
+            type FfiType = <#uniffi_type as ::uniffi::Lower<crate::UniFfiTag>>::FfiType;
+            fn lower(#lower_param: #custom_type ) -> Self::FfiType {
+                <#uniffi_type as ::uniffi::Lower<crate::UniFfiTag>>::lower(#lower_expr)
             }
 
-            fn try_lift(v: Self::FfiType) -> ::uniffi::Result<#ident> {
-                #into_custom(#try_lift(v)?)
+            fn try_lift(v: Self::FfiType) -> ::uniffi::Result<#custom_type> {
+                let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(v)?;
+                #try_lift_expr
             }
 
-            fn write(obj: #ident, buf: &mut Vec<u8>) {
-                #write(#from_custom(obj), buf);
+            fn write(#lower_param: #custom_type, buf: &mut Vec<u8>) {
+                <#uniffi_type as ::uniffi::Lower<crate::UniFfiTag>>::write(#lower_expr, buf);
             }
 
-            fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<#ident> {
-                #into_custom(#try_read(buf)?)
+            fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<#custom_type> {
+                let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?;
+                #try_lift_expr
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
                 .concat_str(#mod_path)
                 .concat_str(#name)
-                .concat(#type_id_meta);
+                .concat(<#uniffi_type as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META);
         }
 
         #derive_ffi_traits
     })
 }
 
-// Generate an FfiConverter impl *and* an UniffiCustomTypeConverter.
-pub(crate) fn expand_ffi_converter_custom_newtype(
-    ident: &Ident,
-    builtin: &Path,
-    udl_mode: bool,
-) -> syn::Result<TokenStream> {
-    let ffi_converter = expand_ffi_converter_custom_type(ident, builtin, udl_mode)?;
-    let type_converter = custom_ffi_type_converter(ident, builtin)?;
-
-    Ok(quote! {
-        #ffi_converter
-
-        #[allow(non_camel_case_types)]
-        #type_converter
-    })
+pub struct CustomNewtypeArgs {
+    ident: Type,
+    uniffi_type: Type,
 }
 
-fn custom_ffi_type_converter(ident: &Ident, builtin: &Path) -> syn::Result<TokenStream> {
+impl Parse for CustomNewtypeArgs {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let ident = input.parse()?;
+        input.parse::<Token![,]>()?;
+        let uniffi_type = input.parse()?;
+        Ok(Self { ident, uniffi_type })
+    }
+}
+
+// Generate TypeConverter implementation for a newtype
+pub(crate) fn expand_custom_newtype(args: CustomNewtypeArgs) -> syn::Result<TokenStream> {
+    let CustomNewtypeArgs { ident, uniffi_type } = args;
+
     Ok(quote! {
-        impl crate::UniffiCustomTypeConverter for #ident {
-            type Builtin = #builtin;
-
-            fn into_custom(val: Self::Builtin) -> ::uniffi::Result<Self> {
-                ::std::result::Result::Ok(#ident(val))
-            }
-
-            fn from_custom(obj: Self) -> Self::Builtin {
-                obj.0
-            }
-        }
+        uniffi::custom_type!(#ident, #uniffi_type, {
+            lower: |obj| obj.0,
+            try_lift: |val| Ok(#ident(val)),
+        });
     })
 }

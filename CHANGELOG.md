@@ -6,6 +6,13 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+
+- The Rust side of the custom type system has changed and users will need to update their code.
+  The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
+  We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
+  See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
 
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
