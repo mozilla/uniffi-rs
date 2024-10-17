@@ -1,5 +1,5 @@
 use custom_types::Handle;
-use ext_types_custom::{ANestedGuid, Guid, Ouid};
+use ext_types_custom::{ANestedGuid, Guid, GuidError, Ouid};
 use ext_types_external_crate::{
     ExternalCrateDictionary, ExternalCrateInterface, ExternalCrateNonExhaustiveEnum,
 };
@@ -201,6 +201,10 @@ fn get_uniffi_one_udl_trait(
     t: Option<Arc<dyn UniffiOneUDLTrait>>,
 ) -> Option<Arc<dyn UniffiOneUDLTrait>> {
     t
+}
+
+fn throw_guid_error() -> Result<(), GuidError> {
+    Err(GuidError::TooShort)
 }
 
 uniffi::include_scaffolding!("ext-types-lib");

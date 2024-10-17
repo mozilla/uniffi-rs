@@ -1,4 +1,7 @@
-use std::sync::atomic::{AtomicI32, Ordering};
+use std::{
+    fmt::Formatter,
+    sync::atomic::{AtomicI32, Ordering},
+};
 
 pub struct UniffiOneType {
     pub sval: String,
@@ -47,6 +50,17 @@ pub trait UniffiOneTrait: Send + Sync {
 // Note `UDL` vs `Udl` is important here to test foreign binding name fixups.
 pub trait UniffiOneUDLTrait: Send + Sync {
     fn hello(&self) -> String;
+}
+
+#[derive(uniffi::Error, Debug)]
+pub enum UniffiOneError {
+    AnError,
+}
+
+impl std::fmt::Display for UniffiOneError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "An error occurred")
+    }
 }
 
 uniffi::include_scaffolding!("uniffi-one");
