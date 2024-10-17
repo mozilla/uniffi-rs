@@ -15,7 +15,6 @@ readme = "../README.md"
 anyhow = "1"
 async-compat = { version = "0.2.1", optional = true }
 bytes = "1.3"
-log = "0.4"
 once_cell = "1.10.0"
 # Regular dependencies
 paste = "1.0"

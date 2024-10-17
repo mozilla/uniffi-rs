@@ -12,6 +12,10 @@
 
 ### What's new?
 
+- Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
+  to consumers and could have high overhead when lots of FFI calls are made. Instead, the
+  `ffi-trace` feature can be used to get tracing-style printouts about the FFI.
+
 - Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
   Swift-specific features. See
   https://mozilla.github.io/uniffi-rs/latest/swift/uniffi-bindgen-swift.html for details.

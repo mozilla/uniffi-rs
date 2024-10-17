@@ -44,7 +44,7 @@ impl Scheduler {
         match self {
             Self::Empty => *self = Self::Set(callback, data),
             Self::Set(old_callback, old_data) => {
-                log::error!(
+                trace!(
                     "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
                 );
                 old_callback(*old_data, RustFuturePoll::Ready);
