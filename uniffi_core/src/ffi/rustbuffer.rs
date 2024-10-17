@@ -97,7 +97,8 @@ impl RustBuffer {
     /// # Panics
     ///
     /// Panics if called on an invalid struct obtained from foreign-language code,
-    /// in which the `len` field is negative.
+    /// in which the `len` field is larger than what `u32` can represent and the
+    /// platform has `usize` being `u32` or smaller.
     pub fn len(&self) -> usize {
         self.len
             .try_into()
