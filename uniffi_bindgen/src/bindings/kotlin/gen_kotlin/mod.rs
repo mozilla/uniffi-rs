@@ -669,7 +669,7 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_poll(ci);
         Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}"
+            "{{ future, callback, continuation -> UniffiLib.{ffi_func}(future, callback, continuation) }}"
         ))
     }
 
@@ -678,7 +678,7 @@ mod filters {
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_complete(ci);
-        let call = format!("UniffiLib.INSTANCE.{ffi_func}(future, continuation)");
+        let call = format!("UniffiLib.{ffi_func}(future, continuation)");
         let call = match callable.return_type() {
             Some(Type::External {
                 kind: ExternalKind::DataClass,
@@ -699,9 +699,7 @@ mod filters {
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_free(ci);
-        Ok(format!(
-            "{{ future -> UniffiLib.INSTANCE.{ffi_func}(future) }}"
-        ))
+        Ok(format!("{{ future -> UniffiLib.{ffi_func}(future) }}"))
     }
 
     /// Remove the "`" chars we put around function/variable names
