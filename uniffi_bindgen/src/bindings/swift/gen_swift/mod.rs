@@ -9,7 +9,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use anyhow::{Context, Result};
-use askama::Template;
+use rinja::Template;
 
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
@@ -361,7 +361,7 @@ impl<'a> TypeRenderer<'a> {
     // Call this inside your template to cause an import statement to be added at the top of the
     // file.  Imports will be sorted and de-deuped.
     //
-    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
+    // Returns an empty string so that it can be used inside an rinja `{{ }}` block.
     fn add_import(&self, name: &str) -> &str {
         self.imports.borrow_mut().insert(name.to_owned());
         ""
@@ -503,38 +503,38 @@ impl SwiftCodeOracle {
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
-    fn class_name(&self, nm: &str) -> String {
-        nm.to_string().to_upper_camel_case()
+    fn class_name<S: AsRef<str>>(&self, nm: S) -> String {
+        nm.as_ref().to_string().to_upper_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of a function name.
-    fn fn_name(&self, nm: &str) -> String {
-        nm.to_string().to_lower_camel_case()
+    fn fn_name<S: AsRef<str>>(&self, nm: S) -> String {
+        nm.as_ref().to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    fn var_name(&self, nm: &str) -> String {
-        nm.to_string().to_lower_camel_case()
+    fn var_name<S: AsRef<str>>(&self, nm: S) -> String {
+        nm.as_ref().to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant.
-    fn enum_variant_name(&self, nm: &str) -> String {
-        nm.to_string().to_lower_camel_case()
+    fn enum_variant_name<S: AsRef<str>>(&self, nm: S) -> String {
+        nm.as_ref().to_string().to_lower_camel_case()
     }
 
     /// Get the idiomatic Swift rendering of an FFI callback function name
-    fn ffi_callback_name(&self, nm: &str) -> String {
-        format!("Uniffi{}", nm.to_upper_camel_case())
+    fn ffi_callback_name<S: AsRef<str>>(&self, nm: S) -> String {
+        format!("Uniffi{}", nm.as_ref().to_upper_camel_case())
     }
 
     /// Get the idiomatic Swift rendering of an FFI struct name
-    fn ffi_struct_name(&self, nm: &str) -> String {
-        format!("Uniffi{}", nm.to_upper_camel_case())
+    fn ffi_struct_name<S: AsRef<str>>(&self, nm: S) -> String {
+        format!("Uniffi{}", nm.as_ref().to_upper_camel_case())
     }
 
     /// Get the idiomatic Swift rendering of an if guard name
-    fn if_guard_name(&self, nm: &str) -> String {
-        format!("UNIFFI_FFIDEF_{}", nm.to_shouty_snake_case())
+    fn if_guard_name<S: AsRef<str>>(&self, nm: S) -> String {
+        format!("UNIFFI_FFIDEF_{}", nm.as_ref().to_shouty_snake_case())
     }
 
     fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
@@ -618,26 +618,26 @@ pub mod filters {
         &SwiftCodeOracle
     }
 
-    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn type_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).type_label())
     }
 
-    pub fn return_type_name(as_type: Option<&impl AsType>) -> Result<String, askama::Error> {
+    pub fn return_type_name(as_type: Option<&impl AsType>) -> Result<String, rinja::Error> {
         Ok(match as_type {
             Some(as_type) => oracle().find(&as_type.as_type()).type_label(),
             None => "()".to_owned(),
         })
     }
 
-    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn canonical_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).canonical_name())
     }
 
-    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
     }
 
-    pub fn ffi_error_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn ffi_error_converter_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
         // special handling for types used as errors.
         let mut name = oracle().find(&as_type.as_type()).ffi_converter_name();
         if matches!(&as_type.as_type(), Type::Object { .. }) {
@@ -646,31 +646,28 @@ pub mod filters {
         Ok(name)
     }
 
-    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn lower_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).lower())
     }
 
-    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn write_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).write())
     }
 
-    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn lift_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).lift())
     }
 
-    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
+    pub fn read_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).read())
     }
 
-    pub fn literal_swift(
-        literal: &Literal,
-        as_type: &impl AsType,
-    ) -> Result<String, askama::Error> {
+    pub fn literal_swift(literal: &Literal, as_type: &impl AsType) -> Result<String, rinja::Error> {
         Ok(oracle().find(&as_type.as_type()).literal(literal))
     }
 
     // Get the idiomatic Swift rendering of an individual enum variant's discriminant
-    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, rinja::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         match literal {
             LiteralMetadata::UInt(v, _, _) => Ok(v.to_string()),
@@ -680,17 +677,17 @@ pub mod filters {
     }
 
     /// Get the Swift type for an FFIType
-    pub fn ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
+    pub fn ffi_type_name(ffi_type: &FfiType) -> Result<String, rinja::Error> {
         Ok(oracle().ffi_type_label(ffi_type))
     }
 
-    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
+    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, rinja::Error> {
         Ok(oracle().ffi_default_value(return_type.as_ref()))
     }
 
     /// Like `ffi_type_name`, but used in `BridgingHeaderTemplate.h` which uses a slightly different
     /// names.
-    pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
+    pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, rinja::Error> {
         Ok(match ffi_type {
             FfiType::Int8 => "int8_t".into(),
             FfiType::UInt8 => "uint8_t".into(),
@@ -717,53 +714,53 @@ pub mod filters {
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn class_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(oracle().class_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of a function name.
-    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn fn_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(quote_general_keyword(oracle().fn_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn var_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(quote_general_keyword(oracle().var_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an arguments name.
     /// This is the same as the var name but quoting is not required.
-    pub fn arg_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn arg_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(quote_arg_keyword(oracle().var_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant, quoted if it is a keyword (for use in e.g. declarations)
-    pub fn enum_variant_swift_quoted(nm: &str) -> Result<String, askama::Error> {
+    pub fn enum_variant_swift_quoted(nm: &str) -> Result<String, rinja::Error> {
         Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
     /// Like enum_variant_swift_quoted, but a class name.
-    pub fn error_variant_swift_quoted(nm: &str) -> Result<String, askama::Error> {
+    pub fn error_variant_swift_quoted(nm: &str) -> Result<String, rinja::Error> {
         Ok(quote_general_keyword(oracle().class_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an FFI callback function name
-    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn ffi_callback_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(oracle().ffi_callback_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of an FFI struct name
-    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn ffi_struct_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(oracle().ffi_struct_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of an if guard name
-    pub fn if_guard_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn if_guard_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(oracle().if_guard_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of docstring
-    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, rinja::Error> {
         let middle = textwrap::indent(&textwrap::dedent(docstring), " * ");
         let wrapped = format!("/**\n{middle}\n */");
 
@@ -771,7 +768,7 @@ pub mod filters {
         Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
     }
 
-    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
+    pub fn object_names(obj: &Object) -> Result<(String, String), rinja::Error> {
         Ok(SwiftCodeOracle.object_names(obj))
     }
 }

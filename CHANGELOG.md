@@ -8,6 +8,10 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
 
+### What's changed?
+
+- Switching jinja template engine from askama to rinja.
+
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
 
 ### What's new?

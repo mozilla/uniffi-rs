@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::{Context, Result};
-use askama::Template;
+use rinja::Template;
 
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use once_cell::sync::Lazy;
@@ -233,7 +233,7 @@ impl<'a> TypeRenderer<'a> {
     // Call this inside your template to cause an import statement to be added at the top of the
     // file.  Imports will be sorted and de-deuped.
     //
-    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
+    // Returns an empty string so that it can be used inside an rinja `{{ }}` block.
     fn add_import(&self, name: &str) -> &str {
         self.imports.borrow_mut().insert(ImportRequirement::Module {
             mod_name: name.to_owned(),
@@ -569,71 +569,71 @@ pub mod filters {
     use super::*;
     pub use crate::backend::filters::*;
 
-    pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().type_label())
     }
 
-    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }
 
-    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
-    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.lift", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn check_lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn check_lower_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.check_lower", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.lower", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.read", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
     pub(super) fn literal_py(
         literal: &Literal,
         as_ct: &impl AsCodeType,
-    ) -> Result<String, askama::Error> {
+    ) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().literal(literal))
     }
 
     // Get the idiomatic Python rendering of an individual enum variant's discriminant
-    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, rinja::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         Ok(Type::UInt64.as_codetype().literal(&literal))
     }
 
-    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
+    pub fn ffi_type_name(type_: &FfiType) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_type_label(type_))
     }
 
-    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
+    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_default_value(return_type.as_ref()))
     }
 
     /// Get the idiomatic Python rendering of an FFI callback function name
-    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn ffi_callback_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_callback_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an FFI struct name
-    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn ffi_struct_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_struct_name(nm))
     }
 
     /// Get the idiomatic Python rendering of docstring
-    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, rinja::Error> {
         let docstring = textwrap::dedent(docstring);
         // Escape triple quotes to avoid syntax error
         let escaped = docstring.replace(r#"""""#, r#"\"\"\""#);
