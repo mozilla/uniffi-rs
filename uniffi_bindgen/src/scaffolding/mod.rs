@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::Result;
-use askama::Template;
+use rinja::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
@@ -23,7 +23,7 @@ impl<'a> RustScaffolding<'a> {
 mod filters {
     use super::*;
 
-    pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
+    pub fn type_rs(type_: &Type) -> Result<String, rinja::Error> {
         Ok(match type_ {
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),
@@ -73,7 +73,7 @@ mod filters {
     }
 
     // Turns a `crate-name` into the `crate_name` the .rs code needs to specify.
-    pub fn crate_name_rs(nm: &str) -> Result<String, askama::Error> {
+    pub fn crate_name_rs(nm: &str) -> Result<String, rinja::Error> {
         Ok(format!("r#{}", nm.to_string().to_snake_case()))
     }
 }
