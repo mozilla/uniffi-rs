@@ -1508,7 +1508,7 @@
 <li>Implement the FFI - every type needs an FfiConverter.</li>
 </ul>
 <h2 id="api-generation">API generation</h2>
-<p>Our foreign bindings generation uses the <a href="https://djc.github.io/askama/">Askama</a> template rendering engine. Askama uses
+<p>Our foreign bindings generation uses the <a href="https://rinja.readthedocs.io/en/stable/">Rinja</a> template rendering engine. Rinja uses
 a compile-time macro system that allows the template code to use Rust types directly, calling their methods passing them
 to normal Rust functions.</p>
 <p>The templates have access to <code>ci</code>, a <a href="https://github.com/mozilla/uniffi-rs/blob/main/uniffi_bindgen/src/interface/mod.rs"><code>ComponentInterface</code></a>, which is the Rust representation of all the UniFFI types in your crate.</p>
@@ -1524,11 +1524,11 @@ to normal Rust functions.</p>
 <p>Let's break the template down:</p>
 <div class="highlight"><pre><span></span><code>def {{ func.name()|fn_name }}({%- call py::arg_list_decl(func) -%}) -&gt; None:
 </code></pre></div>
-<p>The Askama language uses double-curly braces (<code>{ }</code>) to interpolate blocks of code into the string output.</p>
+<p>The Rinja language uses double-curly braces (<code>{ }</code>) to interpolate blocks of code into the string output.</p>
 <p><code>{{ func.name()|fn_name }}</code> becomes <code>this_func</code>: <a href="https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/interface/function.rs#L72">It calls the <code>name</code> method on a <code>Function</code> object</a> (you can see all the other metadata about functions there too).
-Askama uses a "filter" concept: Functions that take the value left of the pipe operator (<code>|</code>) to produce a new value.
+Rinja uses a "filter" concept: Functions that take the value left of the pipe operator (<code>|</code>) to produce a new value.
 The "filter" used in the above template is called<code>fn_name</code> and is <a href="https://github.com/mozilla/uniffi-rs/blob/884f7865f3367c494e9165e21c1255018577db01/uniffi_bindgen/src/bindings/python/gen_python/mod.rs#L567">defined in the Python bindings generator</a> - which ends up just handing the fact it might be a Python keyword but otherwise returns the same value.</p>
-<p><code>{%- call py::arg_list_decl(func) -%}</code>: Calling an Askama macro, passing the <code>func</code> object linked above. It knows how to turn the function arguments into valid Python code.</p>
+<p><code>{%- call py::arg_list_decl(func) -%}</code>: Calling an Rinja macro, passing the <code>func</code> object linked above. It knows how to turn the function arguments into valid Python code.</p>
 <p>Skipping a few lines ahead in that template, we call the FFI function <code>{% call py::to_ffi_call(func) %}</code> - which ultimately
 end up a call to an <code>extern "C"</code> FFI function you generated named something like <code>uniffi_some_name_fn_func_this_func(...)</code></p>
 <p>The bindings also need to do lots of administrivia - eg, calling initialization functions, importing dependencies, etc</p>
