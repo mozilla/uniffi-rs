@@ -31,7 +31,7 @@ class {{ impl_name }}({% for t in obj.trait_impls() %}{{ t.trait_name }},{% endf
     _pointer: ctypes.c_void_p
 
 {%- match obj.primary_constructor() %}
-{%-     when Some with (cons) %}
+{%-     when Some(cons) %}
 {%-         if cons.is_async() %}
     def __init__(self, *args, **kw):
         raise ValueError("async constructors not supported.")

@@ -150,7 +150,7 @@ class RustBufferStream
     Time.at(seconds, nanoseconds, :nanosecond, in: '+00:00').utc
   end
 
-  {% when Type::Object with { name: object_name, module_path, imp } -%}
+  {% when Type::Object with { name: object_name, .. } -%}
   # The Object type {{ object_name }}.
 
   def read{{ canonical_type_name }}
@@ -158,7 +158,7 @@ class RustBufferStream
     return {{ object_name|class_name_rb }}.uniffi_allocate(pointer)
   end
 
-  {% when Type::Enum { name, module_path } -%}
+  {% when Type::Enum { name, .. } -%}
   {%- let e = ci|get_enum_definition(name) -%}
   {% if !ci.is_name_used_as_error(name) %}
   {% let enum_name = name %}
@@ -230,7 +230,7 @@ class RustBufferStream
   end
   {% endif %}
 
-  {% when Type::Record { name: record_name, module_path } -%}
+  {% when Type::Record { name: record_name, .. } -%}
   {%- let rec = ci|get_record_definition(record_name) -%}
   # The Record type {{ record_name }}.
 

@@ -63,7 +63,7 @@ open class {{ impl_class_name }}:
     }
 
     {%- match obj.primary_constructor() %}
-    {%- when Some with (cons) %}
+    {%- when Some(cons) %}
     {%- call swift::ctor_decl(cons, 4) %}
     {%- when None %}
     // No primary constructor declared for this class.

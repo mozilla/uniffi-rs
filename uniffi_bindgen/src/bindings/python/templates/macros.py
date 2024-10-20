@@ -16,9 +16,9 @@
 {%- match func.throws_type() -%}
 {%-     when Some with (e) -%}
 {%-         match e -%}
-{%-             when Type::Enum { name, module_path } -%}
+{%-             when Type::Enum { .. } -%}
 _uniffi_rust_call_with_error({{ e|ffi_converter_name }},
-{%-             when Type::Object { name, module_path, imp } -%}
+{%-             when Type::Object { .. } -%}
 _uniffi_rust_call_with_error({{ e|ffi_converter_name }}__as_error,
 {%-             else %}
 # unsupported error type!
@@ -40,12 +40,10 @@ _uniffi_rust_call(
 {%- endmacro -%}
 
 {%- macro docstring_value(maybe_docstring, indent_spaces) %}
-{%- match maybe_docstring %}
-{%- when Some(docstring) %}
+{%- if let Some(docstring) = maybe_docstring %}
 {{ docstring|docstring(indent_spaces) }}
 {{ "" }}
-{%- else %}
-{%- endmatch %}
+{%- endif %}
 {%- endmacro %}
 
 {%- macro docstring(defn, indent_spaces) %}
@@ -85,12 +83,10 @@ _uniffi_rust_call(
  #}
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
-    {%- match arg.default_value() %}
-    {%- when None %}
-    {%- when Some with(literal) %}
+    {%- if let Some(literal) = arg.default_value() %}
     if {{ arg.name() }} is _DEFAULT:
         {{ arg.name() }} = {{ literal|literal_py(arg.as_type().borrow()) }}
-    {%- endmatch %}
+    {%- endif %}
     {{ arg|check_lower_fn }}({{ arg.name() }})
     {% endfor -%}
 {%- endmacro -%}
@@ -101,12 +97,10 @@ _uniffi_rust_call(
  #}
 {%- macro setup_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {%- match arg.default_value() %}
-        {%- when None %}
-        {%- when Some with(literal) %}
+        {%- if let Some(literal) = arg.default_value() %}
         if {{ arg.name() }} is _DEFAULT:
             {{ arg.name() }} = {{ literal|literal_py(arg.as_type().borrow()) }}
-        {%- endmatch %}
+        {%- endif %}
         {{ arg|check_lower_fn }}({{ arg.name() }})
         {% endfor -%}
 {%- endmacro -%}
@@ -118,7 +112,7 @@ _uniffi_rust_call(
 {%  if meth.is_async() %}
 
 {%-     match meth.return_type() %}
-{%-         when Some with (return_type) %}
+{%-         when Some(return_type) %}
     async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
 {%-         when None %}
     async def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> None:
@@ -146,7 +140,7 @@ _uniffi_rust_call(
 {%- else -%}
 {%-     match meth.return_type() %}
 
-{%-         when Some with (return_type) %}
+{%-         when Some(return_type) %}
 
     def {{ py_method_name }}(self, {% call arg_list_decl(meth) %}) -> "{{ return_type|type_name }}":
         {%- call docstring(meth, 8) %}
@@ -171,9 +165,9 @@ _uniffi_rust_call(
 {%  match func.throws_type() %}
 {%-     when Some(e) %}
 {%-         match e -%}
-{%-             when Type::Enum { name, module_path } -%}
+{%-             when Type::Enum { .. } -%}
     {{ e|ffi_converter_name }},
-{%-             when Type::Object { name, module_path, imp } -%}
+{%-             when Type::Object { .. } -%}
     {{ e|ffi_converter_name }}__as_error,
 {%-             else %}
     # unsupported error type!

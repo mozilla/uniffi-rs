@@ -88,7 +88,7 @@
 {%- when Type::Custom { name, module_path, builtin } %}
 {%- include "CustomType.py" %}
 
-{%- when Type::External { name, module_path, namespace, kind, tagged } %}
+{%- when Type::External { name, module_path, namespace, .. } %}
 {%- include "ExternalTemplate.py" %}
 
 {%- else %}
@@ -98,7 +98,7 @@
 # objects.
 {%- for type_ in self.iter_sorted_object_types() %}
 {%- match type_ %}
-{%- when Type::Object { name, module_path, imp } %}
+{%- when Type::Object { name, .. } %}
 {%-     let type_name = type_|type_name %}
 {%-     let ffi_converter_name = type_|ffi_converter_name %}
 {%-     let canonical_type_name = type_|canonical_name %}

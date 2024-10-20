@@ -6,12 +6,11 @@
 
 {%- macro to_ffi_call(func) -%}
     {%- call is_try(func) -%}
-    {%- match func.throws_type() -%}
-    {%- when Some with (e) -%}
+    {%- if let(Some(e)) = func.throws_type() -%}
         rustCallWithError({{ e|ffi_error_converter_name }}.lift) {
     {%- else -%}
         rustCall() {
-    {%- endmatch %}
+    {%- endif %}
     {{ func.ffi_func().name() }}(
         {%- if func.takes_self() %}self.uniffiClonePointer(),{% endif %}
         {%- call arg_list_lowered(func) -%} $0
@@ -26,10 +25,7 @@
     {%- call arg_list_decl(callable) -%})
     {%- call is_async(callable) %}
     {%- call throws(callable) %}
-    {%- match callable.return_type() %}
-    {%-  when Some with (return_type) %} -> {{ return_type|type_name }}
-    {%-  when None %}
-    {%- endmatch %} {
+    {%- if let Some(return_type) = callable.return_type() %} -> {{ return_type|type_name }} {%- endif %}  {
     {%- call call_body(callable) %}
 }
 {%- endmacro %}
@@ -60,7 +56,7 @@ public convenience init(
     return {%- call call_async(callable) %}
 {%- else %}
 {%-     match callable.return_type() -%}
-{%-         when Some with (return_type) %}
+{%-         when Some(return_type) %}
     return {% call is_try(callable) %} {{ return_type|lift_fn }}({% call to_ffi_call(callable) %})
 {%-         when None %}
 {%-             call to_ffi_call(callable) %}

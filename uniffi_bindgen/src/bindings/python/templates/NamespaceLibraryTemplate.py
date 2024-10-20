@@ -83,7 +83,7 @@ class {{ ffi_struct.name()|ffi_struct_name }}(ctypes.Structure):
 _UniffiLib.{{ func.name() }}.argtypes = (
     {%- call py::arg_list_ffi_decl(func) -%}
 )
-_UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some with (type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
+_UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some(type_) %}{{ type_|ffi_type_name }}{% when None %}None{% endmatch %}
 {%- endmatch %}
 {%- endfor %}
 

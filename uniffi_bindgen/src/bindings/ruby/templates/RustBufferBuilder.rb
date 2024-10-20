@@ -159,7 +159,7 @@ class RustBufferBuilder
     pack_into 4, 'L>', nanoseconds
   end
 
-  {% when Type::Object with { name: object_name, module_path, imp } -%}
+  {% when Type::Object with { name: object_name, .. } -%}
   # The Object type {{ object_name }}.
 
   def write_{{ canonical_type_name }}(obj)
@@ -167,7 +167,7 @@ class RustBufferBuilder
     pack_into(8, 'Q>', pointer.address)
   end
 
-  {% when Type::Enum { name: enum_name, module_path } -%}
+  {% when Type::Enum { name: enum_name, .. } -%}
   {% if !ci.is_name_used_as_error(enum_name) %}
   {%- let e = ci|get_enum_definition(enum_name) -%}
   # The Enum type {{ enum_name }}.
@@ -188,7 +188,7 @@ class RustBufferBuilder
  end
    {% endif %}
 
-  {% when Type::Record { name: record_name, module_path } -%}
+  {% when Type::Record { name: record_name, .. } -%}
   {%- let rec = ci|get_record_definition(record_name) -%}
   # The Record type {{ record_name }}.
 

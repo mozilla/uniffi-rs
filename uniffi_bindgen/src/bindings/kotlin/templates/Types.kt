@@ -104,7 +104,7 @@ object NoPointer
 {% include "ErrorTemplate.kt" %}
 {%- endif -%}
 
-{%- when Type::Object { module_path, name, imp } %}
+{%- when Type::Object { module_path, name, .. } %}
 {% include "ObjectTemplate.kt" %}
 
 {%- when Type::Record { name, module_path } %}
@@ -131,7 +131,7 @@ object NoPointer
 {%- when Type::Custom { module_path, name, builtin } %}
 {% include "CustomTypeTemplate.kt" %}
 
-{%- when Type::External { module_path, name, namespace, kind, tagged } %}
+{%- when Type::External { module_path, name, namespace, .. } %}
 {% include "ExternalTypeTemplate.kt" %}
 
 {%- else %}
