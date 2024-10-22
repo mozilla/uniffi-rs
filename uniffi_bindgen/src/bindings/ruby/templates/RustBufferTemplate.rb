@@ -124,7 +124,7 @@ class RustBuffer < FFI::Struct
     end
   end
 
-  {% when Type::Record { name: record_name, module_path } -%}
+  {% when Type::Record { name: record_name, .. } -%}
   {%- let rec = ci|get_record_definition(record_name) -%}
   # The Record type {{ record_name }}.
 
@@ -147,7 +147,7 @@ class RustBuffer < FFI::Struct
     end
   end
 
-  {% when Type::Enum { name: enum_name, module_path }  -%}
+  {% when Type::Enum { name: enum_name, .. }  -%}
   {% if !ci.is_name_used_as_error(enum_name) %}
   {%- let e = ci|get_enum_definition(enum_name) -%}
   # The Enum type {{ enum_name }}.

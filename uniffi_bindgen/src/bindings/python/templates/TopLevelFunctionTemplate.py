@@ -1,7 +1,7 @@
 {%- if func.is_async() %}
 
 {%- match func.return_type() -%}
-{%- when Some with (return_type) %}
+{%- when Some(return_type) %}
 async def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
 {% when None %}
 async def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> None:
@@ -26,7 +26,7 @@ async def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> None:
 
 {%- else %}
 {%- match func.return_type() -%}
-{%- when Some with (return_type) %}
+{%- when Some(return_type) %}
 
 def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
     {%- call py::docstring(func, 4) %}

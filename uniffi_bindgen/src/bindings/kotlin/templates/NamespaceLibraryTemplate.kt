@@ -26,10 +26,9 @@ internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callbac
         uniffiCallStatus: UniffiRustCallStatus,
         {%- endif -%}
     )
-    {%- match callback.return_type() %}
-    {%- when Some(return_type) %}: {{ return_type|ffi_type_name_by_value }}
-    {%- when None %}
-    {%- endmatch %}
+    {%- if let Some(return_type) = callback.return_type() %}
+    : {{ return_type|ffi_type_name_by_value }}
+    {%- endif %}
 }
 {%- when FfiDefinition::Struct(ffi_struct) %}
 @Structure.FieldOrder({% for field in ffi_struct.fields() %}"{{ field.name()|var_name_raw }}"{% if !loop.last %}, {% endif %}{% endfor %})

@@ -17,7 +17,7 @@ class {{ type_name }}:
         {%- match field.default_value() %}
         {%- when None %}
         self.{{ field_name }} = {{ field_name }}
-        {%- when Some with(literal) %}
+        {%- when Some(literal) %}
         if {{ field_name }} is _DEFAULT:
             self.{{ field_name }} = {{ literal|literal_py(field) }}
         else:

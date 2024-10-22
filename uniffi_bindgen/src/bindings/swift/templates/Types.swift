@@ -75,7 +75,7 @@
 {%- include "EnumTemplate.swift" %}
 {% endif %}
 
-{%- when Type::Object{ name, module_path, imp } %}
+{%- when Type::Object{ name, module_path, .. } %}
 {%- include "ObjectTemplate.swift" %}
 
 {%- when Type::Record { name, module_path } %}

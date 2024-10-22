@@ -29,26 +29,22 @@ public struct FfiConverterType{{ name }}: FfiConverter {
     }
 }
 
-{%- when Some with (config) %}
+{%- when Some(config) %}
 
 {# When the config specifies a different type name, create a typealias for it #}
-{%- match config.type_name %}
-{%- when Some with (concrete_type_name) %}
+{%- if let Some(concrete_type_name) = config.type_name %}
 /**
  * Typealias from the type name used in the UDL file to the custom type.  This
  * is needed because the UDL type name is used in function/method signatures.
  */
 public typealias {{ type_name }} = {{ concrete_type_name }}
-{%- else %}
-{%- endmatch %}
+{%- endif %}
 
-{%- match config.imports %}
-{%- when Some(imports) %}
+{%- if let Some(imports) = config.imports %}
 {%- for import_name in imports %}
 {{ self.add_import(import_name) }}
 {%- endfor %}
-{%- else %}
-{%- endmatch %}
+{%- endif %}
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
