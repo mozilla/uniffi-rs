@@ -158,16 +158,16 @@ pub enum LogLevel {
     Trace = 5,
 }
 
-/// Define a custom type conversion from `log::Level` to the above type.
+/// Define a type conversion from `log::Level` to the custom [`LogLevel`] enum.
 uniffi::custom_type!(log::Level, LogLevel, {
-  from_custom: |l| match l {
+  lower: |l| match l {
     log::Level::Error => LogLevel::Error,
     log::Level::Warn => LogLevel::Warn,
     log::Level::Info => LogLevel::Info,
     log::Level::Debug => LogLevel::Debug,
     log::Level::Trace => LogLevel::Trace,
   },
-  try_into_custom: |l| Ok(match l ({
+  try_lift: |l| Ok(match l ({
     LogLevel::Error => log::Level::Error,
     LogLevel::Warn => log::Level::Warn,
     LogLevel::Info => log::Level::Info,
