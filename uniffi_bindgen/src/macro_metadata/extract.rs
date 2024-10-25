@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{bail, Context};
+use anyhow::{anyhow, bail, Context};
 use camino::Utf8Path;
 use fs_err as fs;
 use goblin::{
@@ -36,22 +36,57 @@ fn extract_from_bytes(file_data: &[u8]) -> anyhow::Result<Vec<Metadata>> {
 
 pub fn extract_from_elf(elf: Elf<'_>, file_data: &[u8]) -> anyhow::Result<Vec<Metadata>> {
     let mut extracted = ExtractedItems::new();
-    let iter = elf
-        .syms
-        .iter()
-        .filter_map(|sym| elf.section_headers.get(sym.st_shndx).map(|sh| (sym, sh)));
 
-    for (sym, sh) in iter {
+    // Some ELF files have a SHT_SYMTAB_SHNDX section that we use below.  If present, find the
+    // offset for that section.
+    let symtab_shndx_section_offset = elf
+        .section_headers
+        .iter()
+        .find(|sh| sh.sh_type == goblin::elf::section_header::SHT_SYMTAB_SHNDX)
+        .map(|sh| sh.sh_offset as usize);
+
+    for (i, sym) in elf.syms.iter().enumerate() {
         let name = elf
             .strtab
             .get_at(sym.st_name)
             .context("Error getting symbol name")?;
-        if is_metadata_symbol(name) {
-            // Offset relative to the start of the section.
-            let section_offset = sym.st_value - sh.sh_addr;
-            // Offset relative to the start of the file contents
-            extracted.extract_item(name, file_data, (sh.sh_offset + section_offset) as usize)?;
+        if !is_metadata_symbol(name) {
+            continue;
         }
+
+        let header_index = match sym.st_shndx as u32 {
+            goblin::elf::section_header::SHN_XINDEX => {
+                // The section header index overflowed 16 bits and we have to look it up from
+                // the extended index table instead.  Each item in the SHT_SYMTAB_SHNDX section is
+                // a 32-bit value even for a 64-bit ELF objects.
+                let section_offset = symtab_shndx_section_offset
+                    .ok_or_else(|| anyhow!("Symbol {name} has st_shndx=SHN_XINDEX, but no SHT_SYMTAB_SHNDX section present"))?;
+
+                let offset = section_offset + (i * 4);
+                let slice = file_data.get(offset..offset + 4).ok_or_else(|| {
+                    anyhow!("Index error looking up {name} in the SHT_SYMTAB_SHNDX section")
+                })?;
+                // If the last statement succeeded, the slice is exactly 4 bytes, so this try_into
+                // will never fail
+                let byte_array = slice.try_into().unwrap();
+                if elf.little_endian {
+                    u32::from_le_bytes(byte_array) as usize
+                } else {
+                    u32::from_be_bytes(byte_array) as usize
+                }
+            }
+            // The normal case is that we can just use `st_shndx`
+            _ => sym.st_shndx,
+        };
+
+        let sh = elf
+            .section_headers
+            .get(header_index)
+            .ok_or_else(|| anyhow!("Index error looking up section header for {name}"))?;
+
+        // Offset relative to the start of the section.
+        let section_offset = sym.st_value - sh.sh_addr;
+        extracted.extract_item(name, file_data, (sh.sh_offset + section_offset) as usize)?;
     }
     Ok(extracted.into_metadata())
 }
