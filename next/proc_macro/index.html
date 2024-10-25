@@ -1549,6 +1549,26 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrading.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    v0.28.x -&gt; v0.29.x
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2079,38 +2099,8 @@ interface<span class="w"> </span>Foo<span class="w"> </span>{
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="the-unifficustom_type-and-unifficustom_newtype-macros">The <code>uniffi::custom_type</code> and <code>uniffi::custom_newtype</code> macros</h2>
-<p>There are 2 macros available which allow procmacros to support "custom types" as described in the
-<a href="../udl/custom_types.html">UDL documentation for Custom Types</a></p>
-<p>The <code>uniffi::custom_type!</code> macro requires you to specify the name of the custom type, and the name of the
-builtin which implements this type. Use of this macro requires you to manually implement the
-<code>UniffiCustomTypeConverter</code> trait for for your type, as shown below.
-<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Uuid</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="c1">// Use `Uuid` as a custom type, with `String` as the Builtin</span>
-<span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">Uuid</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span><span class="p">);</span>
-
-<span class="k">impl</span><span class="w"> </span><span class="n">UniffiCustomTypeConverter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Uuid</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="nc">Builtin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
-
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">into_custom</span><span class="p">(</span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">uniffi</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Uuid</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="p">})</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">from_custom</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">obj</span><span class="p">.</span><span class="n">val</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></p>
-<p>There's also a <code>uniffi::custom_newtype!</code> macro, designed for custom types which use the
-"new type" idiom. You still need to specify the type name and builtin type, but because UniFFI
-is able to make assumptions about how the type is laid out, <code>UniffiCustomTypeConverter</code>
-is implemented automatically.</p>
-<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_newtype</span><span class="o">!</span><span class="p">(</span><span class="n">NewTypeHandle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="p">);</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">NewtypeHandle</span><span class="p">(</span><span class="kt">i64</span><span class="p">);</span>
-</code></pre></div>
-<p>and that's it!</p>
+<p>See the <a href="../udl/custom_types.html">UDL documentation for Custom Types</a>.  It works exactly the same for
+proc-macros.</p>
 <h2 id="the-uniffierror-derive">The <code>uniffi::Error</code> derive</h2>
 <p>The <code>Error</code> derive registers a type as an error and can be used on any enum that the <code>Enum</code> derive also accepts.
 By default, it exposes any variant fields to the foreign code.

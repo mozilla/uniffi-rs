@@ -792,6 +792,72 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Custom types in the scaffolding code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_type!
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom_type-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_type! conversions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom_newtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_newtype!
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udl" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDL
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-custom-types-from-other-crates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using custom types from other crates
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-defined-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      User-defined types
+    </span>
+  </a>
+  
 </li>
       
         <li class="md-nav__item">
@@ -822,15 +888,6 @@
   <a href="#custom-types-in-the-bindings-code" class="md-nav__link">
     <span class="md-ellipsis">
       Custom types in the bindings code
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-custom-types-from-other-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using Custom Types from other crates
     </span>
   </a>
   
@@ -1427,6 +1484,26 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrading.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    v0.28.x -&gt; v0.29.x
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1457,6 +1534,72 @@
   <a href="#custom-types-in-the-scaffolding-code" class="md-nav__link">
     <span class="md-ellipsis">
       Custom types in the scaffolding code
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom types in the scaffolding code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_type!
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom_type-conversions" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_type! conversions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom_newtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      custom_newtype!
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udl" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDL
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-custom-types-from-other-crates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using custom types from other crates
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-defined-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      User-defined types
     </span>
   </a>
   
@@ -1495,15 +1638,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#using-custom-types-from-other-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using Custom Types from other crates
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1523,55 +1657,102 @@
 
 
 <h1 id="custom-types">Custom types</h1>
-<p>Custom types allow you to extend the UniFFI type system to support types from your Rust crate or 3rd
-party libraries. This works by converting to and from some other UniFFI type to move data across the
-FFI. You must provide a <code>UniffiCustomTypeConverter</code> implementation to convert the types.</p>
+<p>Custom types allow you to create a new UniFFI type which is passed over the FFI as another "bridge" type.
+For example, you might have a type named <code>Url</code> which has a bridge type <code>String</code>, or a <code>Handle</code> bridged by an <code>i64</code>.</p>
+<p>Any valid type can be a bridge type - not only builtins, but structs, records, enums etc.</p>
+<p>This not only allows using types which otherwise would be impossible over the FFI (eg, <code>url::Url</code>), but other interesting "newtype" options to extend the type system.</p>
+<p>The foreign bindings will treat these types as the bridge type - but they may optionally transform the type. For example, our <code>Url</code> has a bridged type of <code>string</code> - we could choose for Kotin to either get that as a <code>String</code>, or supply a conversion to/from a Kotlin <code>java.net.URL</code>.</p>
+<p>This would mean that <code>Url</code> would be:
+* Represented by the <code>url::Url</code> type in Rust
+* Passed across the FFI as a string
+* Represented by the <code>java.net.URL</code> type in Kotlin</p>
+<p>For terminology, we lean on our existing <a href="../internals/lifting_and_lowering.html">lifting and lowering</a>; in the same way an FFI type is "lifted" into the Rust type, and a Rust type is "lowered" into to FFI, here the bridge type is lifted into our custom type, and our custom type is lowered into the bridge type.</p>
+<p>This creates a 2-step lifting/lowering process: our custom type is lifted/lowered to/from the bridge type, then that bridge type lifted/lowered to/from the actual FFI type.</p>
+<p>By default, we assume some <code>Into/From</code> relationships between the types, but you can also supply conversion closures.</p>
 <h2 id="custom-types-in-the-scaffolding-code">Custom types in the scaffolding code</h2>
-<p>Consider the following trivial Rust abstraction for a "handle" which wraps an integer:</p>
-<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Handle</span><span class="p">(</span><span class="kt">i64</span><span class="p">);</span>
+<h3 id="custom_type"><code>custom_type!</code></h3>
+<p>Use the <code>custom_type!</code> macro to define a new custom type.</p>
+<p>The simplest case is for a type with <code>Into/From</code> already setup - eg, our <code>Handle</code></p>
+<p><div class="highlight"><pre><span></span><code><span class="sd">/// handle which wraps an integer</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Handle</span><span class="p">(</span><span class="kt">i64</span><span class="p">);</span>
+
+<span class="c1">// Defining `From&lt;Handle&gt; for i64` also gives us `Into&lt;i64&gt; for Handle`</span>
+<span class="k">impl</span><span class="w"> </span><span class="nb">From</span><span class="o">&lt;</span><span class="n">Handle</span><span class="o">&gt;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="kt">i64</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">from</span><span class="p">(</span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nc">Handle</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">val</span><span class="p">.</span><span class="mi">0</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">Handle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="p">);</span>
 </code></pre></div>
-<p>In this trivial example, the simplest way to expose this is with a macro.</p>
-<div class="highlight"><pre><span></span><code>uniffi::custom_newtype!(Handle, i64);
+and <code>Handle</code> can be used in Rust, while foreign bindings will use <code>i64</code> (or optionally converted, see below)</p>
+<h3 id="custom_type-conversions"><code>custom_type!</code> conversions</h3>
+<p>You can also manually specify the conversions by passing extra params to the macro.
+Use this when the trait implementations do not exist, or they aren't desirable for some reason.</p>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">SerializableStruct</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Lowering our Rust SerializableStruct into a String.</span>
+<span class="w">    </span><span class="n">lower</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">s</span><span class="o">|</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">serialize</span><span class="p">(),</span>
+<span class="w">    </span><span class="c1">// Lifting our foreign String into our Rust SerializableStruct</span>
+<span class="w">    </span><span class="n">try_lift</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">s</span><span class="o">|</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">deserialize</span><span class="p">(),</span>
+<span class="p">});</span>
 </code></pre></div>
-<p>Or you can define this in UDL via a <code>typedef</code> with a <code>Custom</code> attribute,
-defining the builtin type that it's based on.</p>
+<p>If you do not supply conversions to and from the bridge type, and assuming <code>SerializableStruct</code> and <code>String</code>, the following is used:</p>
+<ul>
+<li>Values lowered to the foreign code will be converted using <code>Into&lt;String&gt;</code> then lowered as a <code>String</code> value.</li>
+<li>Values lifted to the Rust code (eg, a <code>String</code>) is then converted using <code>&lt;String as TryInto&lt;SerializableStruct&gt;&gt;</code>;
+the <code>TryInto::Error</code> type can be anything that implements <code>Into&lt;anyhow::Error&gt;</code>.</li>
+<li><code>TryFrom&lt;String&gt;</code> and <code>From&lt;SerializableStruct&gt;</code> will also work, using the blanket impl from the core library.</li>
+</ul>
+<h3 id="custom_newtype"><code>custom_newtype!</code></h3>
+<p>The <code>custom_newtype!</code> macro is able to handle Rust newtype-style structs which wrap a UniFFI type.</p>
+<p>eg, our <code>Handle</code> object above could be declared as:
+<div class="highlight"><pre><span></span><code><span class="sd">/// Handle which wraps an integer</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Handle</span><span class="p">(</span><span class="kt">i64</span><span class="p">);</span>
+
+<span class="sd">/// `Handle` objects will be passed across the FFI the same way `i64` values are.</span>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">custom_newtype</span><span class="o">!</span><span class="p">(</span><span class="n">Handle</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="p">);</span>
+</code></pre></div></p>
+<h3 id="udl">UDL</h3>
+<p>Define custom types in UDL via a <code>typedef</code> with a <code>Custom</code> attribute, specifying the UniFFI type
+followed by the custom type.</p>
 <div class="highlight"><pre><span></span><code>[Custom]
 typedef<span class="w"> </span>i64<span class="w"> </span>Handle;
 </code></pre></div>
-<p>For this to work, your Rust code must also implement a special trait named
-<code>UniffiCustomTypeConverter</code>.</p>
-<p>An implementation is provided if you used the <code>uniffi::custom_newtype!()</code> macro.
-But if you use UDL or otherwise need to implement your own:</p>
-<p>This trait is generated by UniFFI and can be found in the generated
-Rust scaffolding - it is defined as:</p>
-<div class="highlight"><pre><span></span><code><span class="k">trait</span><span class="w"> </span><span class="n">UniffiCustomTypeConverter</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="nc">Builtin</span><span class="p">;</span>
+<p><strong>note</strong>: you must still call the <code>custom_type!</code> or <code>custom_newtype!</code> macros in your Rust code, as described above.</p>
+<h4 id="using-custom-types-from-other-crates">Using custom types from other crates</h4>
+<p>To use custom types from other crates from UDL, use a typedef wrapped with the <code>[External]</code> attribute.</p>
+<p>For example, if another crate wanted to use the examples here:</p>
+<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;crate_defining_handle_name&quot;</span>]
+typedef<span class="w"> </span>i64<span class="w"> </span>Handle;
 
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">into_custom</span><span class="p">(</span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">uniffi</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span>
-<span class="w">    </span><span class="k">where</span>
-<span class="w">        </span><span class="bp">Self</span><span class="p">:</span><span class="w"> </span><span class="nb">Sized</span><span class="p">;</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">from_custom</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="p">;</span>
-<span class="p">}</span>
+[External<span class="o">=</span><span class="s2">&quot;crate_defining_log_record_name&quot;</span>]
+typedef<span class="w"> </span>dictionary<span class="w"> </span>LogRecord;
 </code></pre></div>
-<p>where <code>Builtin</code> is the Rust type corresponding to the UniFFI builtin-type - <code>i64</code> in the example above. Thus, the trait
-implementation for <code>Handle</code> would look something like:</p>
-<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">UniffiCustomTypeConverter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">Handle</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="nc">Builtin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i64</span><span class="p">;</span>
+<h2 id="user-defined-types">User-defined types</h2>
+<p>All examples so far in this section convert the custom type to a builtin type.
+It's also possible to convert them to a user-defined type (Record, Enum, Interface, etc.).
+For example you might want to convert <code>log::Record</code> class into a UniFFI record:</p>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nc">LogRecord</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log</span><span class="p">::</span><span class="n">Record</span><span class="p">;</span>
 
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">into_custom</span><span class="p">(</span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">uniffi</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Handle</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">from_custom</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">obj</span><span class="p">.</span><span class="mi">0</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="cp">#[derive(uniffi::Record)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">type</span><span class="w"> </span><span class="nc">LogRecordData</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">level</span><span class="p">:</span><span class="w"> </span><span class="nc">LogLevel</span><span class="p">,</span>
+<span class="w">    </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="p">}</span>
+
+<span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">LogRecord</span><span class="p">,</span><span class="w"> </span><span class="n">LogRecordData</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">lower</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">r</span><span class="o">|</span><span class="w"> </span><span class="n">LogRecordData</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">level</span><span class="p">:</span><span class="w"> </span><span class="nc">r</span><span class="p">.</span><span class="n">level</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">message</span><span class="p">:</span><span class="w"> </span><span class="nc">r</span><span class="p">.</span><span class="n">to_string</span><span class="p">(),</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">try_lift</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">r</span><span class="o">|</span><span class="w"> </span><span class="nb">Ok</span><span class="p">(</span><span class="n">LogRecord</span><span class="p">::</span><span class="n">builder</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">level</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">level</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">args</span><span class="p">(</span><span class="fm">format_args!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">message</span><span class="p">))</span>
+<span class="w">        </span><span class="p">.</span><span class="n">build</span><span class="p">())</span>
+<span class="p">});</span>
 </code></pre></div>
-<p>Because <code>UniffiCustomTypeConverter</code> is defined in each crate, this means you can use custom types even
-if they are not defined in your crate - see the 'custom_types' example which demonstrates
-<code>url::Url</code> as a custom type.</p>
 <h2 id="error-handling-during-conversion">Error handling during conversion</h2>
-<p>You might have noticed that the <code>into_custom</code> function returns a <code>uniffi::Result&lt;Self&gt;</code> (which is an
+<p>You might have noticed that the <code>try_lift</code> function returns a <code>uniffi::Result&lt;Self&gt;</code> (which is an
 alias for <code>anyhow::Result</code>) and might be wondering what happens if you return an <code>Err</code>.</p>
 <p>It depends on the context. In short:</p>
 <ul>
@@ -1613,20 +1794,14 @@ namespace<span class="w"> </span>errors_example<span class="w"> </span>{
 <span class="w">    </span><span class="n">InvalidHandle</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="k">impl</span><span class="w"> </span><span class="n">UniffiCustomTypeConverter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">ExampleHandle</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="nc">Builtin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i64</span><span class="p">;</span>
-
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">into_custom</span><span class="p">(</span><span class="n">val</span><span class="p">:</span><span class="w"> </span><span class="nc">Self</span><span class="p">::</span><span class="n">Builtin</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">uniffi</span><span class="p">::</span><span class="nb">Result</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">ExampleErrors</span><span class="p">::</span><span class="n">InvalidHandle</span><span class="p">.</span><span class="n">into</span><span class="p">())</span>
-<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">SomeOtherError</span><span class="p">.</span><span class="n">into</span><span class="p">())</span><span class="w"> </span><span class="c1">// SomeOtherError decl. not shown.</span>
-<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Handle</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
-<span class="w">        </span><span class="p">}</span>
+<span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">ExampleHandle</span><span class="p">,</span><span class="w"> </span><span class="n">Builtin</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">lower</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">handle</span><span class="o">|</span><span class="w"> </span><span class="n">handle</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">try_lift</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">value</span><span class="o">|</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="mi">0</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">ExampleErrors</span><span class="p">::</span><span class="n">InvalidHandle</span><span class="p">.</span><span class="n">into</span><span class="p">()),</span>
+<span class="w">        </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">SomeOtherError</span><span class="p">.</span><span class="n">into</span><span class="p">()),</span><span class="w"> </span><span class="c1">// SomeOtherError decl. not shown.</span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">Ok</span><span class="p">(</span><span class="n">Handle</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="c1">// ...</span>
-<span class="p">}</span>
+<span class="p">})</span>
 </code></pre></div></p>
 <p>The behavior of the generated scaffolding will be:</p>
 <ul>
@@ -1647,9 +1822,9 @@ configured to use the <code>java.net.URL</code> class in Kotlin by adding code l
 <span class="c1"># Classes that need to be imported</span>
 <span class="n">imports</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;java.net.URL&quot;</span><span class="w"> </span><span class="p">]</span>
 <span class="c1"># Expression to convert the builtin type the custom type.  In this example, `{}` will be replaced with the int value.</span>
-<span class="n">into_custom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URL({})&quot;</span>
+<span class="n">lift</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;URL({})&quot;</span>
 <span class="c1"># Expression to convert the custom type to the builtin type.  In this example, `{}` will be replaced with the URL value.</span>
-<span class="n">from_custom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{}.toString()&quot;</span>
+<span class="n">lower</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;{}.toString()&quot;</span>
 </code></pre></div>
 <p>Here's how the configuration works in <code>uniffi.toml</code>.</p>
 <ul>
@@ -1658,16 +1833,10 @@ configured to use the <code>java.net.URL</code> class in Kotlin by adding code l
     custom type.  Defaults to the type name used in the UDL.  Note: The UDL
     type name will still be used in generated function signatures, however it
     will be defined as a typealias to this type.</li>
-<li><code>into_custom</code>: Expression to convert the UDL type to the custom type.  <code>{}</code> will be replaced with the value of the UDL type.</li>
-<li><code>from_custom</code>: Expression to convert the custom type to the UDL type.  <code>{}</code> will be replaced with the value of the custom type.</li>
-<li><code>imports</code> (Optional) list of modules to import for your <code>into_custom</code>/<code>from_custom</code> functions.</li>
+<li><code>lift</code>: Expression to convert the UDL type to the custom type.  <code>{}</code> will be replaced with the value of the UDL type.</li>
+<li><code>lower</code>: Expression to convert the custom type to the UDL type.  <code>{}</code> will be replaced with the value of the custom type.</li>
+<li><code>imports</code> (Optional) list of modules to import for your <code>lift</code>/<code>lower</code> functions.</li>
 </ul>
-<h2 id="using-custom-types-from-other-crates">Using Custom Types from other crates</h2>
-<p>To use the <code>Handle</code> example above from another crate, these other crates just refer to the type
-as a regular <code>External</code> type - for example, another crate might use <code>udl</code> such as:</p>
-<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;crate_defining_handle_name&quot;</span>]
-typedef<span class="w"> </span>extern<span class="w"> </span>Handle;
-</code></pre></div>
 
 
 
