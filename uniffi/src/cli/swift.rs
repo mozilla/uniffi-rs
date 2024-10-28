@@ -6,7 +6,7 @@ use anyhow::Result;
 use camino::Utf8PathBuf;
 use clap::{Args, Parser};
 
-use uniffi_bindgen::bindings::{generate_swift_bindings, SwiftBindingsOptions};
+use uniffi_bindings::{generate_swift_bindings, SwiftBindingsOptions};
 
 #[derive(Debug, Parser)]
 #[command(version, about, long_about = None)]

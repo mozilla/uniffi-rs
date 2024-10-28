@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::ComponentInterface;
+use uniffi_bindgen::ComponentInterface;
 
 #[derive(Debug)]
 pub struct CallbackInterfaceCodeType {

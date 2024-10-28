@@ -4,7 +4,7 @@
 
 use std::process::Command;
 
-use crate::{BindingGenerator, Component, ComponentInterface, GenerationSettings};
+use uniffi_bindgen::{BindingGenerator, Component, ComponentInterface, GenerationSettings};
 use anyhow::{Context, Result};
 use fs_err as fs;
 

@@ -4,7 +4,7 @@
 
 use super::{AsCodeType, CodeType};
 use crate::backend::{Literal, Type};
-use crate::ComponentInterface;
+use uniffi_bindgen::ComponentInterface;
 
 #[derive(Debug)]
 pub struct OptionalCodeType {

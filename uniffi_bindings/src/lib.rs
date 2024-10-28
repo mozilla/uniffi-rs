@@ -7,20 +7,39 @@
 //! This module contains all the code for generating foreign language bindings,
 //! along with some helpers for executing foreign language scripts or tests.
 
+#[cfg(feature = "kotlin")]
 mod kotlin;
+#[cfg(feature = "kotlin")]
 pub use kotlin::KotlinBindingGenerator;
+
+#[cfg(feature = "python")]
 mod python;
+#[cfg(feature = "python")]
 pub use python::PythonBindingGenerator;
+
+#[cfg(feature = "ruby")]
 mod ruby;
+#[cfg(feature = "ruby")]
 pub use ruby::RubyBindingGenerator;
+
+#[cfg(feature = "swift")]
 mod swift;
+#[cfg(feature = "swift")]
 pub use swift::{generate_swift_bindings, SwiftBindingGenerator, SwiftBindingsOptions};
 
-#[cfg(feature = "bindgen-tests")]
-pub use self::{
-    kotlin::test as kotlin_test, python::test as python_test, ruby::test as ruby_test,
-    swift::test as swift_test,
-};
+mod backend;
+
+#[cfg(all(feature = "bindgen-tests", feature = "kotlin"))]
+pub use self::kotlin::test as kotlin_test;
+
+#[cfg(all(feature = "bindgen-tests", feature = "python"))]
+pub use self::python::test as python_test;
+
+#[cfg(all(feature = "bindgen-tests", feature = "ruby"))]
+pub use self::ruby::test as ruby_test;
+
+#[cfg(all(feature = "bindgen-tests", feature = "swift"))]
+pub use self::swift::test as swift_test;
 
 #[cfg(feature = "bindgen-tests")]
 /// Mode for the `run_script` function defined for each language

@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use super::Bindings;
 use crate::backend::TemplateExpression;
 
-use crate::interface::*;
+use uniffi_bindgen::interface::*;
 
 mod callback_interface;
 mod compounds;

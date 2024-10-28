@@ -4,7 +4,7 @@
 
 //! Backend-agnostic rinja filters
 
-use crate::interface::{
+use uniffi_bindgen::interface::{
     AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Function, Object, Record,
 };
 use rinja::Result;

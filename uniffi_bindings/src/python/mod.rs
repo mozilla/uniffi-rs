@@ -10,7 +10,7 @@ use fs_err as fs;
 mod gen_python;
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
-use crate::{BindingGenerator, Component, GenerationSettings};
+use uniffi_bindgen::{BindingGenerator, Component, GenerationSettings};
 
 use gen_python::{generate_python_bindings, Config};
 

@@ -4,7 +4,7 @@
 
 use super::CodeType;
 use crate::backend::Literal;
-use crate::interface::Radix;
+use uniffi_bindgen::interface::Radix;
 use paste::paste;
 
 fn render_literal(literal: &Literal) -> String {

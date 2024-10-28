@@ -15,8 +15,8 @@ use std::fmt::Debug;
 
 use crate::backend::TemplateExpression;
 
-use crate::interface::*;
-use crate::VisitMut;
+use uniffi_bindgen::interface::*;
+use uniffi_bindgen::VisitMut;
 
 mod callback_interface;
 mod compounds;

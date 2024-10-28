@@ -5,5 +5,5 @@
 mod config;
 pub mod filters;
 
-pub use crate::interface::{Literal, Type};
+pub use uniffi_bindgen::interface::{Literal, Type};
 pub use config::TemplateExpression;

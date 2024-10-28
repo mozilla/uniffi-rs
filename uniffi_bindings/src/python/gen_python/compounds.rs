@@ -5,7 +5,7 @@
 use super::CodeType;
 use crate::{
     backend::{Literal, Type},
-    bindings::python::gen_python::AsCodeType,
+    python::gen_python::AsCodeType,
 };
 
 #[derive(Debug)]

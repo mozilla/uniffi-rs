@@ -6,7 +6,7 @@ use anyhow::{bail, Context, Result};
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
 use std::fmt;
-use uniffi_bindgen::bindings::*;
+use uniffi_bindings::*;
 
 /// Enumeration of all foreign language targets currently supported by our CLI.
 ///

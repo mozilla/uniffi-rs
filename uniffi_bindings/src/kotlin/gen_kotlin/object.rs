@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::{interface::ObjectImpl, ComponentInterface};
+use uniffi_bindgen::{interface::ObjectImpl, ComponentInterface};
 
 #[derive(Debug)]
 pub struct ObjectCodeType {

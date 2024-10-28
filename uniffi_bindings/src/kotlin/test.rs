@@ -2,9 +2,9 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::RunScriptOptions;
-use crate::cargo_metadata::CrateConfigSupplier;
-use crate::library_mode::generate_bindings;
+use crate::RunScriptOptions;
+use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
+use uniffi_bindgen::library_mode::generate_bindings;
 use anyhow::{bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env;

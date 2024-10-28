@@ -4,7 +4,7 @@
 
 //! # Swift bindings backend for UniFFI
 //!
-//! This module generates Swift bindings from a [`crate::ComponentInterface`] definition,
+//! This module generates Swift bindings from a [`uniffi_bindgen::ComponentInterface`] definition,
 //! using Swift's builtin support for loading C header files.
 //!
 //! Conceptually, the generated bindings are split into two Swift modules, one for the low-level
@@ -17,7 +17,7 @@
 //!   * A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
 //!    to provide the higher-level Swift API.
 //!
-//! Most of the concepts in a [`crate::ComponentInterface`] have an obvious counterpart in Swift,
+//! Most of the concepts in a [`uniffi_bindgen::ComponentInterface`] have an obvious counterpart in Swift,
 //! with the details documented in inline comments where appropriate.
 //!
 //! To handle lifting/lowering/serializing types across the FFI boundary, the Swift code
@@ -29,7 +29,7 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use crate::{BindingGenerator, Component, GenerationSettings};
+use uniffi_bindgen::{BindingGenerator, Component, GenerationSettings};
 use anyhow::{Context, Result};
 use camino::Utf8PathBuf;
 use fs_err as fs;
@@ -41,7 +41,7 @@ use gen_swift::{generate_bindings, generate_header, generate_modulemap, generate
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
 
-/// The Swift bindings generated from a [`crate::ComponentInterface`].
+/// The Swift bindings generated from a [`uniffi_bindgen::ComponentInterface`].
 ///
 struct Bindings {
     /// The contents of the generated `.swift` file, as a string.
@@ -132,7 +132,7 @@ impl BindingGenerator for SwiftBindingGenerator {
 pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     #[cfg(feature = "cargo-metadata")]
     let config_supplier = {
-        use crate::cargo_metadata::CrateConfigSupplier;
+        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
         let mut cmd = cargo_metadata::MetadataCommand::new();
         if options.metadata_no_deps {
             cmd.no_deps();
@@ -141,12 +141,12 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
         CrateConfigSupplier::from(metadata)
     };
     #[cfg(not(feature = "cargo-metadata"))]
-    let config_supplier = crate::EmptyCrateConfigSupplier;
+    let config_supplier = uniffi_bindgen::EmptyCrateConfigSupplier;
 
     fs::create_dir_all(&options.out_dir)?;
 
     let mut components =
-        crate::library_mode::find_components(&options.library_path, &config_supplier)?
+    uniffi_bindgen::library_mode::find_components(&options.library_path, &config_supplier)?
             // map the TOML configs into a our Config struct
             .into_iter()
             .map(|Component { ci, config }| {

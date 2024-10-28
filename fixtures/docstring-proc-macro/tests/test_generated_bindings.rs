@@ -6,7 +6,8 @@ uniffi::build_foreign_language_testcases!(
 
 #[cfg(test)]
 mod tests {
-    use uniffi_bindgen::{bindings::*, BindingGenerator};
+    use uniffi_bindgen::BindingGenerator;
+    use uniffi_bindings::*;
     use uniffi_testing::UniFFITestHelper;
 
     const DOCSTRINGS: &[&str] = &[

@@ -8,7 +8,7 @@ pub use uniffi_macros::*;
 #[cfg(feature = "cli")]
 mod cli;
 #[cfg(feature = "bindgen-tests")]
-pub use uniffi_bindgen::bindings::{kotlin_test, python_test, ruby_test, swift_test};
+pub use uniffi_bindings::{kotlin_test, python_test, ruby_test, swift_test};
 
 #[cfg(all(feature = "cargo-metadata", feature = "bindgen"))]
 pub use uniffi_bindgen::cargo_metadata::CrateConfigSupplier as CargoMetadataConfigSupplier;
@@ -16,11 +16,12 @@ pub use uniffi_bindgen::cargo_metadata::CrateConfigSupplier as CargoMetadataConf
 pub use uniffi_bindgen::library_mode::generate_bindings as generate_bindings_library_mode;
 #[cfg(feature = "bindgen")]
 pub use uniffi_bindgen::{
-    bindings::{
-        KotlinBindingGenerator, PythonBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator,
-    },
     generate_bindings, generate_component_scaffolding, generate_component_scaffolding_for_crate,
     print_repr,
+};
+#[cfg(feature = "bindgen")]
+pub use uniffi_bindings::{
+    KotlinBindingGenerator, PythonBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator,
 };
 #[cfg(feature = "build")]
 pub use uniffi_build::{generate_scaffolding, generate_scaffolding_for_crate};

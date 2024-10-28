@@ -4,7 +4,7 @@
 
 use super::CodeType;
 use crate::backend::Literal;
-use crate::ComponentInterface;
+use uniffi_bindgen::ComponentInterface;
 
 #[derive(Debug)]
 pub struct EnumCodeType {
