@@ -18,8 +18,8 @@ criterion = "0.5.1"
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }
 
-[dev-dependencies]
-uniffi_bindgen = {path = "../../uniffi_bindgen", features = ["bindgen-tests"]}
+#[dev-dependencies]
+#uniffi_bindings = {path = "../../uniffi_bindings", features = ["bindgen-tests"]}
 
 [[bench]]
 name = "benchmarks"

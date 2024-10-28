@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "uniffi_bindgen",
+  "uniffi_bindings",
   "uniffi_build",
   "uniffi_core",
   "uniffi_macros",
@@ -67,7 +68,7 @@ members = [
   "fixtures/type-limits",
   "fixtures/large-enum",
   "fixtures/large-error",
-  "fixtures/enum-types",
+  "fixtures/enum-types", "uniffi_bindings",
 ]
 
 resolver = "2"

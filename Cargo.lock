@@ -1589,6 +1589,7 @@ dependencies = [
  "clap",
  "trybuild",
  "uniffi_bindgen",
+ "uniffi_bindings",
  "uniffi_build",
  "uniffi_core",
  "uniffi_macros",
@@ -1700,7 +1701,6 @@ dependencies = [
  "clap",
  "criterion",
  "uniffi",
- "uniffi_bindgen",
 ]
 
 [[package]]
@@ -1730,6 +1730,7 @@ dependencies = [
  "thiserror",
  "uniffi",
  "uniffi_bindgen",
+ "uniffi_bindings",
  "uniffi_testing",
 ]
 
@@ -1742,6 +1743,7 @@ dependencies = [
  "thiserror",
  "uniffi",
  "uniffi_bindgen",
+ "uniffi_bindings",
  "uniffi_testing",
 ]
 
@@ -2044,8 +2046,29 @@ dependencies = [
  "textwrap",
  "toml",
  "uniffi_meta",
- "uniffi_testing",
  "uniffi_udl",
+]
+
+[[package]]
+name = "uniffi_bindings"
+version = "0.28.2"
+dependencies = [
+ "anyhow",
+ "camino",
+ "cargo_metadata",
+ "fs-err",
+ "glob",
+ "goblin",
+ "heck",
+ "once_cell",
+ "paste",
+ "rinja",
+ "serde",
+ "textwrap",
+ "toml",
+ "uniffi_bindgen",
+ "uniffi_meta",
+ "uniffi_testing",
 ]
 
 [[package]]

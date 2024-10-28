@@ -21,6 +21,7 @@ camino = "1.0.8"
 glob = "0.3"
 uniffi = { path = "../../uniffi", features = ["bindgen-tests"] }
 uniffi_bindgen = { path = "../../uniffi_bindgen" }
+uniffi_bindings = { path = "../../uniffi_bindings" }
 uniffi_testing = { path = "../../uniffi_testing" }
 
 [features]

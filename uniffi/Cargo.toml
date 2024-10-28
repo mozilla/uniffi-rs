@@ -15,6 +15,7 @@ readme = "../README.md"
 
 [dependencies]
 uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.28.2", optional = true }
+uniffi_bindings = { path = "../uniffi_bindings", version = "=0.28.2", optional = true }
 uniffi_build = { path = "../uniffi_build", version = "=0.28.2", optional = true }
 uniffi_core = { path = "../uniffi_core", version = "=0.28.2" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.28.2" }
@@ -29,21 +30,21 @@ trybuild = "1"
 [features]
 default = ["cargo-metadata"]
 # Printout tracing information on FFI calls.  Useful for debugging issues with the bindings code.
-ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindgen/ffi-trace"]
+ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindings/ffi-trace"]
 # Support for features needed by the `build.rs` script. Enable this in your
 # `build-dependencies`.
 build = [ "dep:uniffi_build" ]
 # Support for `uniffi_bindgen::{generate_bindings, generate_component_scaffolding}`.
 # Enable this feature for your `uniffi-bindgen` binaries if you don't need the full CLI.
-bindgen = ["dep:uniffi_bindgen"]
-cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata"]
+bindgen = ["dep:uniffi_bindgen", "dep:uniffi_bindings"]
+cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata", "uniffi_bindings?/cargo-metadata"]
 
 # Support for `uniffi_bindgen_main()`. Enable this feature for your
 # `uniffi-bindgen` binaries.
 cli = [ "bindgen", "dep:clap", "dep:camino" ]
 # Support for running example/fixture tests for `uniffi-bindgen`.  You probably
 # don't need to enable this.
-bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen/bindgen-tests" ]
+bindgen-tests = [ "dep:uniffi_bindings", "uniffi_bindings/bindgen-tests" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]

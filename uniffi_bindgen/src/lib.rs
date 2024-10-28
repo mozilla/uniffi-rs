@@ -100,8 +100,6 @@ use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::process::Command;
 
-pub mod backend;
-pub mod bindings;
 pub mod interface;
 pub mod library_mode;
 pub mod macro_metadata;
