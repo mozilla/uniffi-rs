@@ -54,10 +54,11 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
+    {%- let variant_name = self::KotlinCodeOracle.class_name(ci, variant.name()) %}
     {% if !variant.has_fields() -%}
-    object {{ variant|type_name(ci) }} : {{ type_name }}()
+    object {{ variant_name }} : {{ type_name }}()
     {% else -%}
-    data class {{ variant|type_name(ci) }}(
+    data class {{ variant_name }}(
         {%- for field in variant.fields() -%}
         {%- call kt::docstring(field, 8) %}
         val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}{% if loop.last %}{% else %}, {% endif %}
@@ -73,7 +74,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     override fun destroy() {
         when(this) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|type_name(ci) }} -> {
+            is {{ type_name }}.{{ self::KotlinCodeOracle.class_name(ci, variant.name()) }} -> {
                 {%- if variant.has_fields() %}
                 {% call kt::destroy_fields(variant) %}
                 {% else -%}
@@ -94,7 +95,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun read(buf: ByteBuffer): {{ type_name }} {
         return when(buf.getInt()) {
             {%- for variant in e.variants() %}
-            {{ loop.index }} -> {{ type_name }}.{{ variant|type_name(ci) }}{% if variant.has_fields() %}(
+            {{ loop.index }} -> {{ type_name }}.{{ self::KotlinCodeOracle.class_name(ci, variant.name()) }}{% if variant.has_fields() %}(
                 {% for field in variant.fields() -%}
                 {{ field|read_fn }}(buf),
                 {% endfor -%}
@@ -106,7 +107,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
 
     override fun allocationSize(value: {{ type_name }}) = when(value) {
         {%- for variant in e.variants() %}
-        is {{ type_name }}.{{ variant|type_name(ci) }} -> {
+        is {{ type_name }}.{{ self::KotlinCodeOracle.class_name(ci, variant.name()) }} -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4UL
@@ -121,7 +122,7 @@ public object {{ e|ffi_converter_name }} : FfiConverterRustBuffer<{{ type_name }
     override fun write(value: {{ type_name }}, buf: ByteBuffer) {
         when(value) {
             {%- for variant in e.variants() %}
-            is {{ type_name }}.{{ variant|type_name(ci) }} -> {
+            is {{ type_name }}.{{ self::KotlinCodeOracle.class_name(ci, variant.name()) }} -> {
                 buf.putInt({{ loop.index }})
                 {%- for field in variant.fields() %}
                 {{ field|write_fn }}(value.{%- call kt::field_name(field, loop.index) -%}, buf)

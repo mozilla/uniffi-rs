@@ -5,7 +5,7 @@
 //! Backend-agnostic rinja filters
 
 use uniffi_bindgen::interface::{
-    AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Function, Object, Record,
+    AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Object, Record,
 };
 use rinja::Result;
 use std::fmt;
@@ -47,12 +47,6 @@ pub fn get_enum_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result
 pub fn get_record_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result<&'a Record> {
     ci.get_record_definition(name)
         .ok_or_else(|| lookup_error!("record {name} not found"))
-}
-
-/// Get a Function definition by name
-pub fn get_function_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result<&'a Function> {
-    ci.get_function_definition(name)
-        .ok_or_else(|| lookup_error!("function {name} not found"))
 }
 
 /// Get an Object definition by name

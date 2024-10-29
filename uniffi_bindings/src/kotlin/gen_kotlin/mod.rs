@@ -25,7 +25,6 @@ mod miscellany;
 mod object;
 mod primitives;
 mod record;
-mod variant;
 
 trait CodeType: Debug {
     /// The language specific label used to reference this type. This will be used in
