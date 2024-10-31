@@ -729,6 +729,10 @@ impl Callable for Constructor {
     fn is_async(&self) -> bool {
         self.is_async
     }
+
+    fn ffi_func(&self) -> &FfiFunction {
+        &self.ffi_func
+    }
 }
 
 impl Callable for Method {
@@ -750,6 +754,10 @@ impl Callable for Method {
 
     fn takes_self(&self) -> bool {
         true
+    }
+
+    fn ffi_func(&self) -> &FfiFunction {
+        &self.ffi_func
     }
 }
 
