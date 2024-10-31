@@ -22,6 +22,10 @@
 ### What's changed?
 
 - Switching jinja template engine from askama to rinja.
+- 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+- Added the `FfiType::MutReference` variant.
 
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
 

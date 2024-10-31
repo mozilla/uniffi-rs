@@ -58,8 +58,10 @@ pub enum FfiType {
     /// These are used to pass objects across the FFI.
     Handle,
     RustCallStatus,
-    /// Pointer to an FfiType.
+    /// Const pointer to an FfiType.
     Reference(Box<FfiType>),
+    /// Mutable pointer to an FfiType.
+    MutReference(Box<FfiType>),
     /// Opaque pointer
     VoidPointer,
 }
@@ -67,6 +69,10 @@ pub enum FfiType {
 impl FfiType {
     pub fn reference(self) -> FfiType {
         FfiType::Reference(Box::new(self))
+    }
+
+    pub fn mut_reference(self) -> FfiType {
+        FfiType::MutReference(Box::new(self))
     }
 
     /// Unique name for an FFI return type

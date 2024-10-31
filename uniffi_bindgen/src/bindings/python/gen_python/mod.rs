@@ -401,7 +401,9 @@ impl PythonCodeOracle {
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             // Pointer to an `asyncio.EventLoop` instance
-            FfiType::Reference(inner) => format!("ctypes.POINTER({})", self.ffi_type_label(inner)),
+            FfiType::Reference(inner) | FfiType::MutReference(inner) => {
+                format!("ctypes.POINTER({})", self.ffi_type_label(inner))
+            }
             FfiType::VoidPointer => "ctypes.c_void_p".to_string(),
         }
     }

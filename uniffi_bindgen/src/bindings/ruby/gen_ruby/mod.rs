@@ -139,7 +139,7 @@ mod filters {
             // definitions use references.  Those FFI functions aren't actually used, so we just
             // pick something that runs and makes some sense.  Revisit this once the references
             // are actually implemented.
-            FfiType::Reference(_) => ":pointer".to_string(),
+            FfiType::Reference(_) | FfiType::MutReference(_) => ":pointer".to_string(),
             FfiType::VoidPointer => ":pointer".to_string(),
             FfiType::Struct(_) => {
                 unimplemented!("Structs are not implemented")

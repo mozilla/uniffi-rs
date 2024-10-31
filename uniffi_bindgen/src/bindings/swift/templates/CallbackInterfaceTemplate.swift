@@ -16,7 +16,7 @@
 @_documentation(visibility: private)
 #endif
 fileprivate struct {{ ffi_converter_name }} {
-    fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
+    fileprivate static let handleMap = UniffiHandleMap<{{ type_name }}>()
 }
 
 #if swift(>=5.8)
