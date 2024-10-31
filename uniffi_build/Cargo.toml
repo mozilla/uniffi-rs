@@ -11,9 +11,9 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [dependencies]
-anyhow = "1"
-camino = "1.0.8"
-uniffi_bindgen = { path = "../uniffi_bindgen", default-features = false, version = "=0.28.2" }
+anyhow = { workspace = true }
+camino = { workspace = true }
+uniffi_bindgen = { workspace = true }
 
 [features]
 default = []

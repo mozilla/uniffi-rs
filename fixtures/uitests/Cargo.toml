@@ -10,8 +10,8 @@ name = "uniffi_uitests"
 
 [dependencies]
 uniffi = { workspace = true }
-uniffi_macros = { path = "../../uniffi_macros", features = ["trybuild"] }
-thiserror = "1.0"
+uniffi_macros = { workspace = true, features = ["trybuild"] }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 trybuild = "1.0.76"

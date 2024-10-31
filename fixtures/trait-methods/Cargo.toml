@@ -11,8 +11,8 @@ name = "uniffi_trait_methods"
 
 [dependencies]
 uniffi = { workspace = true }
-once_cell = "1.12"
-thiserror = "1.0"
+once_cell = { workspace = true }
+thiserror = { workspace = true }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

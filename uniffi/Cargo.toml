@@ -14,14 +14,14 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [dependencies]
-uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.28.2", optional = true }
-uniffi_build = { path = "../uniffi_build", version = "=0.28.2", optional = true }
-uniffi_core = { path = "../uniffi_core", version = "=0.28.2" }
-uniffi_macros = { path = "../uniffi_macros", version = "=0.28.2" }
-anyhow = "1"
-camino = { version = "1.0.8", optional = true }
-cargo_metadata = { version = "0.15", optional = true }
-clap = { version = "4", features = ["cargo", "std", "derive"], optional = true }
+anyhow = {  workspace = true }
+camino = { workspace = true, optional = true }
+cargo_metadata = {  workspace = true, optional = true }
+clap = { workspace = true, features = ["cargo", "std", "derive"], optional = true }
+uniffi_bindgen = { workspace = true, optional = true }
+uniffi_build = { workspace = true, optional = true }
+uniffi_core = { workspace = true  }
+uniffi_macros = { workspace = true }
 
 [dev-dependencies]
 trybuild = "1"

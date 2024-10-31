@@ -10,11 +10,11 @@ license = "MPL-2.0"
 readme = "../README.md"
 
 [dependencies]
-anyhow = "1"
-camino = "1.0.8"
-cargo_metadata = "0.15"
-fs-err = "2.7.0"
-once_cell = "1.12"
+anyhow = { workspace = true }
+camino = { workspace = true }
+cargo_metadata = { workspace = true }
+fs-err = { workspace = true }
+once_cell = { workspace = true }
 
 [features]
 ffi-trace = []

@@ -11,9 +11,10 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [dependencies]
-anyhow = "1"
-weedle2 = { version = "5.0.0", path = "../weedle2" }
+uniffi_meta = { workspace = true }
+anyhow = { workspace = true }
+weedle2 = { workspace = true }
 # Don't include the `unicode-linebreak` or `unicode-width` since that functionality isn't needed for
 # docstrings.
-textwrap = { version = "0.16", features = ["smawk"], default-features = false }
-uniffi_meta = { path = "../uniffi_meta", version = "=0.28.2" }
+textwrap = { workspace = true, features = ["smawk"] }
+

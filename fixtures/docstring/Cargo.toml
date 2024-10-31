@@ -10,18 +10,18 @@ name = "uniffi_fixture_docstring"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-thiserror = "1.0"
-uniffi = { path = "../../uniffi" }
+thiserror = { workspace = true }
+uniffi = { workspace = true }
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-camino = "1.0.8"
-glob = "0.3"
-uniffi = { path = "../../uniffi", features = ["bindgen-tests"] }
-uniffi_bindgen = { path = "../../uniffi_bindgen" }
-uniffi_testing = { path = "../../uniffi_testing" }
+camino = { workspace = true }
+glob = { workspace = true }
+uniffi = { workspace = true, features = ["bindgen-tests"] }
+uniffi_bindgen = { workspace = true }
+uniffi_testing = { workspace = true }
 
 [features]
 ffi-trace = ["uniffi/ffi-trace"]

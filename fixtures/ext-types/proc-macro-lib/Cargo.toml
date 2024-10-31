@@ -17,8 +17,8 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_ext_types_proc_macro_lib"
 
 [dependencies]
-anyhow = "1"
-bytes = "1.3"
+anyhow = { workspace = true }
+bytes = { workspace = true }
 uniffi = { workspace = true }
 
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
@@ -27,7 +27,7 @@ uniffi-fixture-ext-types-custom-types = {path = "../custom-types"}
 # Reuse one of our examples.
 uniffi-example-custom-types = {path = "../../../examples/custom-types"}
 
-url = "2.2"
+url = { workspace = true }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

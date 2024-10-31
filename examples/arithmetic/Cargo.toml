@@ -11,7 +11,7 @@ name = "arithmetical"
 
 [dependencies]
 uniffi = { workspace = true, features=["scaffolding-ffi-buffer-fns"] }
-thiserror = "1.0"
+thiserror = { workspace = true }
 
 [build-dependencies]
 # Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly

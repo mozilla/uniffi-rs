@@ -16,7 +16,7 @@ exclude = ["tests"]
 name = "weedle"
 
 [dependencies]
-nom = "7.1.0"
+nom = { workspace = true }
 
 [dev-dependencies]
 fs-err = "2.7.0"

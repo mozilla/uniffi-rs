@@ -9,10 +9,10 @@ publish = false
 name = "uniffi_fixture_metadata"
 
 [dependencies]
-thiserror = "1.0"
+thiserror = { workspace = true }
 uniffi = { workspace = true }
-uniffi_meta = { path = "../../uniffi_meta" }
-uniffi_core = { path = "../../uniffi_core" }
+uniffi_meta = { workspace = true }
+uniffi_core = { workspace = true }
 
 [features]
 ffi-trace = ["uniffi/ffi-trace"]

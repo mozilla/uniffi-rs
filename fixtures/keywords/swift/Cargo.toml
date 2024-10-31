@@ -9,7 +9,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_keywords_swift"
 
 [dependencies]
-thiserror = "1.0"
+thiserror = { workspace = true }
 uniffi = { workspace = true }
 
 [build-dependencies]

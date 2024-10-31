@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 uniffi = { workspace = true }
-camino = "1.0.8"
+camino = { workspace = true }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

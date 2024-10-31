@@ -12,13 +12,13 @@ readme = "../README.md"
 
 [dependencies]
 # Re-exported dependencies used in generated Rust scaffolding files.
-anyhow = "1"
-async-compat = { version = "0.2.1", optional = true }
-bytes = "1.3"
-once_cell = "1.10.0"
+anyhow = { workspace = true }
+async-compat = { workspace = true, optional = true }
+bytes = { workspace = true }
+once_cell ={ workspace = true }
 # Regular dependencies
-paste = "1.0"
-static_assertions = "1.1.0"
+paste = { workspace = true }
+static_assertions = { workspace = true }
 
 [features]
 default = []

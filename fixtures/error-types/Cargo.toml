@@ -10,15 +10,15 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_error_types"
 
 [dependencies]
-uniffi = {path = "../../uniffi"}
-anyhow = "1"
-thiserror = "1.0"
+uniffi = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests"] }
 
 [features]
 ffi-trace = ["uniffi/ffi-trace"]

@@ -10,7 +10,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 async-std = "1.12.0"
-thiserror = "1.0"
+thiserror = { workspace = true }
 uniffi = { workspace = true }
 
 [build-dependencies]

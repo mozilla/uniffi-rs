@@ -11,8 +11,8 @@ name = "uniffi_chronological"
 
 [dependencies]
 uniffi = { workspace = true }
-thiserror = "1.0"
-chrono = { version = "0.4.23", default-features = false, features = ["alloc", "std"] }
+thiserror = { workspace = true }
+chrono = { workspace = true, features = ["alloc", "std"] }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }
