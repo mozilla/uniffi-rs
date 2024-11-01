@@ -14,10 +14,9 @@ internal object {{ trait_impl }} {
             uniffiCallStatus: UniffiRustCallStatus,
             {%- endif -%}
         )
-        {%- match ffi_callback.return_type() %}
-        {%- when Some(return_type) %}: {{ return_type|ffi_type_name_by_value }},
-        {%- when None %}
-        {%- endmatch %} {
+        {%- if let Some(return_type) = ffi_callback.return_type() %}
+            : {{ return_type|ffi_type_name_by_value }},
+        {%- endif %} {
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiHandle)
             val makeCall = {% if meth.is_async() %}suspend {% endif %}{ ->
                 uniffiObj.{{ meth.name()|fn_name() }}(
@@ -50,11 +49,9 @@ internal object {{ trait_impl }} {
             {%- else %}
             val uniffiHandleSuccess = { {% if meth.return_type().is_some() %}returnValue{% else %}_{% endif %}: {% match meth.return_type() %}{%- when Some(return_type) %}{{ return_type|type_name(ci) }}{%- when None %}Unit{% endmatch %} ->
                 val uniffiResult = {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
-                    {%- match meth.return_type() %}
-                    {%- when Some(return_type) %}
+                    {%- if let Some(return_type) = meth.return_type() %}
                     {{ return_type|lower_fn }}(returnValue),
-                    {%- when None %}
-                    {%- endmatch %}
+                    {%- endif %}
                     UniffiRustCallStatus.ByValue()
                 )
                 uniffiResult.write()
@@ -64,11 +61,9 @@ internal object {{ trait_impl }} {
                 uniffiFutureCallback.callback(
                     uniffiCallbackData,
                     {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
-                        {%- match meth.return_type() %}
-                        {%- when Some(return_type) %}
+                        {%- if let Some(return_type) = meth.return_type() %}
                         {{ return_type.into()|ffi_default_value }},
-                        {%- when None %}
-                        {%- endmatch %}
+                        {%- endif %}
                         callStatus,
                     ),
                 )

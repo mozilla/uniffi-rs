@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from proc_macro import *
+from proc_macro import TraitWithForeignImpl
 
 one = make_one(123)
 assert one.inner == 123
@@ -25,11 +26,16 @@ assert(robj.func())
 assert(rename_test())
 
 trait_impl = obj.get_trait(None)
+assert isinstance(trait_impl, Trait)
 assert trait_impl.concat_strings("foo", "bar") == "foobar"
 assert obj.get_trait(trait_impl).concat_strings("foo", "bar") == "foobar"
 assert concat_strings_by_ref(trait_impl, "foo", "bar") == "foobar"
+assert issubclass(StructWithTrait, Trait)
+assert StructWithTrait("me").concat_strings("foo", "bar") == "me: foobar"
 
 trait_impl2 = obj.get_trait_with_foreign(None)
+# This is an instance of `TraitWithForeignImpl` - `TraitWithForeign` is used primarily for subclassing.
+assert isinstance(trait_impl2, TraitWithForeignImpl)
 assert trait_impl2.name() == "RustTraitImpl"
 assert obj.get_trait_with_foreign(trait_impl2).name() == "RustTraitImpl"
 
@@ -146,4 +152,7 @@ assert(MixedEnum.BOTH("hello", 1)[:] == ('hello', 1))
 assert(MixedEnum.BOTH("hello", 1)[-1] == 1)
 assert(str(MixedEnum.BOTH("hello", 2)) == "MixedEnum.BOTH('hello', 2)")
 
+# In #2270 we realized confusion about whether we generated our
+# variant checker as, eg, `is_ALL()` vs `is_all()` so decided to do both.
 assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_all())
+assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_ALL())

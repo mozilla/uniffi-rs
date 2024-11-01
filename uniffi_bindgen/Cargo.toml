@@ -1,7 +1,6 @@
 [package]
 name = "uniffi_bindgen"
 version = "0.28.2"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 description = "a multi-language bindings generator for rust (codegen and cli tooling)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -15,10 +14,11 @@ readme = "../README.md"
 default = ["cargo-metadata"]
 cargo-metadata = ["dep:cargo_metadata"]
 bindgen-tests = ["cargo-metadata", "dep:uniffi_testing"]
+ffi-trace = ["uniffi_testing?/ffi-trace"]
 
 [dependencies]
 anyhow = "1"
-askama = { version = "0.12", default-features = false, features = ["config"] }
+rinja = { version = "0.3", default-features = false, features = ["config"] }
 camino = "1.0.8"
 cargo_metadata = { version = "0.15", optional = true }
 fs-err = "2.7.0"

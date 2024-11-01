@@ -24,7 +24,7 @@
 //! `uniffi_bindgen::macro_metadata` contains the code to read the metadata from a library file.
 //! `fixtures/metadata` has the tests.
 
-/// Metadata constants, make sure to keep this in sync with copy in `uniffi_meta::reader`
+/// Metadata constants, make sure to keep this in sync with copy in `uniffi_meta::metadata::codes`
 pub mod codes {
     // Top-level metadata item codes
     pub const FUNC: u8 = 0;
@@ -40,6 +40,7 @@ pub mod codes {
     pub const UNIFFI_TRAIT: u8 = 11;
     pub const TRAIT_INTERFACE: u8 = 12;
     pub const CALLBACK_TRAIT_INTERFACE: u8 = 13;
+    pub const OBJECT_TRAIT_IMPL: u8 = 14;
     pub const UNKNOWN: u8 = 255;
 
     // Type codes

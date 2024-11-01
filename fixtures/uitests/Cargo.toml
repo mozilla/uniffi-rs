@@ -1,7 +1,6 @@
 [package]
 name = "uniffi_uitests"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
 publish = false
@@ -16,3 +15,6 @@ thiserror = "1.0"
 
 [dev-dependencies]
 trybuild = "1.0.76"
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

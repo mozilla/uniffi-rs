@@ -51,11 +51,9 @@ class {{ trait_impl }}:
             uniffi_future_callback(
                 uniffi_callback_data,
                 {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
-                    {%- match meth.return_type() %}
-                    {%- when Some(return_type) %}
+                    {%- if let Some(return_type) = meth.return_type() %}
                     {{ return_type|lower_fn }}(return_value),
-                    {%- when None %}
-                    {%- endmatch %}
+                    {%- endif %}
                     _UniffiRustCallStatus.default()
                 )
             )

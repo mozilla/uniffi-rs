@@ -5,13 +5,12 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- call try(func) -%}
-    {%- match func.throws_type() -%}
-    {%- when Some with (e) -%}
+    {%- call is_try(func) -%}
+    {%- if let(Some(e)) = func.throws_type() -%}
         rustCallWithError({{ e|ffi_error_converter_name }}_lift) {
     {%- else -%}
         rustCall() {
-    {%- endmatch %}
+    {%- endif %}
     {{ func.ffi_func().name() }}(
         {%- if func.takes_self() %}self.uniffiClonePointer(),{% endif %}
         {%- call arg_list_lowered(func) -%} $0
@@ -24,12 +23,9 @@
 {%- call docstring(callable, indent) %}
 {{ func_decl }} {{ callable.name()|fn_name }}(
     {%- call arg_list_decl(callable) -%})
-    {%- call async(callable) %}
+    {%- call is_async(callable) %}
     {%- call throws(callable) %}
-    {%- match callable.return_type() %}
-    {%-  when Some with (return_type) %} -> {{ return_type|type_name }}
-    {%-  when None %}
-    {%- endmatch %} {
+    {%- if let Some(return_type) = callable.return_type() %} -> {{ return_type|type_name }} {%- endif %}  {
     {%- call call_body(callable) %}
 }
 {%- endmacro %}
@@ -38,7 +34,7 @@
 {%- macro ctor_decl(callable, indent) %}
 {%- call docstring(callable, indent) %}
 public convenience init(
-    {%- call arg_list_decl(callable) -%}) {%- call async(callable) %} {%- call throws(callable) %} {
+    {%- call arg_list_decl(callable) -%}) {%- call is_async(callable) %} {%- call throws(callable) %} {
     {%- if callable.is_async() %}
     let pointer =
         {%- call call_async(callable) %}
@@ -60,8 +56,8 @@ public convenience init(
     return {%- call call_async(callable) %}
 {%- else %}
 {%-     match callable.return_type() -%}
-{%-         when Some with (return_type) %}
-    return {% call try(callable) %} {{ return_type|lift_fn }}({% call to_ffi_call(callable) %})
+{%-         when Some(return_type) %}
+    return {% call is_try(callable) %} {{ return_type|lift_fn }}({% call to_ffi_call(callable) %})
 {%-         when None %}
 {%-             call to_ffi_call(callable) %}
 {%-     endmatch %}
@@ -70,7 +66,7 @@ public convenience init(
 {%- endmacro %}
 
 {%- macro call_async(callable) %}
-        {% call try(callable) %} await uniffiRustCallAsync(
+        {% call is_try(callable) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ callable.ffi_func().name() }}(
                     {%- if callable.takes_self() %}
@@ -157,7 +153,7 @@ v{{- field_num -}}
     {%- endfor %}
 {%- endmacro %}
 
-{%- macro async(func) %}
+{%- macro is_async(func) %}
 {%- if func.is_async() %}async {% endif %}
 {%- endmacro -%}
 
@@ -165,7 +161,7 @@ v{{- field_num -}}
 {%- if func.throws() %}throws {% endif %}
 {%- endmacro -%}
 
-{%- macro try(func) %}
+{%- macro is_try(func) %}
 {%- if func.throws() %}try {% else %}try! {% endif %}
 {%- endmacro -%}
 

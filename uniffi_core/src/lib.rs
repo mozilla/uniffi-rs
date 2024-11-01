@@ -32,6 +32,21 @@
 
 #![warn(rust_2018_idioms, unused_qualifications)]
 
+/// Print out tracing information for FFI calls if the `ffi-trace` feature is enabled
+#[cfg(feature = "ffi-trace")]
+#[macro_export]
+macro_rules! trace {
+    ($($tt:tt)*) => {
+        println!($($tt)*);
+    }
+}
+
+#[cfg(not(feature = "ffi-trace"))]
+#[macro_export]
+macro_rules! trace {
+    ($($tt:tt)*) => {};
+}
+
 use anyhow::bail;
 use bytes::buf::Buf;
 
@@ -56,11 +71,11 @@ pub use metadata::*;
 // Re-export the libs that we use in the generated code,
 // so the consumer doesn't have to depend on them directly.
 pub mod deps {
+    pub use crate::trace;
     pub use anyhow;
     #[cfg(feature = "tokio")]
     pub use async_compat;
     pub use bytes;
-    pub use log;
     pub use static_assertions;
 }
 

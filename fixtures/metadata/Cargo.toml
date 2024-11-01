@@ -13,3 +13,6 @@ thiserror = "1.0"
 uniffi = { workspace = true }
 uniffi_meta = { path = "../../uniffi_meta" }
 uniffi_core = { path = "../../uniffi_core" }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

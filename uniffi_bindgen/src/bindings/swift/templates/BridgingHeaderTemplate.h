@@ -68,7 +68,7 @@ typedef struct {{ struct.name()|ffi_struct_name }} {
     {%- endfor %}
 } {{ struct.name()|ffi_struct_name }};
 {% when FfiDefinition::Function(func) %}
-{% match func.return_type() -%}{%- when Some with (type_) %}{{ type_|header_ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
+{% match func.return_type() -%}{%- when Some(type_) %}{{ type_|header_ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
     {%- if func.arguments().len() > 0 %}
         {%- for arg in func.arguments() %}
             {{- arg.type_().borrow()|header_ffi_type_name }} {{ arg.name() -}}{% if !loop.last || func.has_rust_call_status_arg() %}, {% endif %}

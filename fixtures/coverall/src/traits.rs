@@ -7,7 +7,10 @@ use std::sync::{Arc, Mutex};
 
 // namespace functions.
 pub fn get_traits() -> Vec<Arc<dyn NodeTrait>> {
-    vec![Arc::new(Trait1::default()), Arc::new(Trait2::default())]
+    vec![
+        Arc::new(SimpleNodeImpl::default()),
+        Arc::new(Node::default()),
+    ]
 }
 
 pub trait NodeTrait: Send + Sync + std::fmt::Debug {
@@ -163,13 +166,14 @@ pub fn test_getters(getters: Arc<dyn Getters>) {
     assert!(result.is_err());
 }
 
+// An object only exposed as a `dyn T`
 #[derive(Debug, Default)]
-pub(crate) struct Trait1 {
+pub(crate) struct SimpleNodeImpl {
     // A reference to another trait.
     parent: Mutex<Option<Arc<dyn NodeTrait>>>,
 }
 
-impl NodeTrait for Trait1 {
+impl NodeTrait for SimpleNodeImpl {
     fn name(&self) -> String {
         "node-1".to_string()
     }
@@ -183,21 +187,52 @@ impl NodeTrait for Trait1 {
     }
 }
 
-#[derive(Debug, Default)]
-pub(crate) struct Trait2 {
+// An object exported and also able to be exposed as a `dyn T`
+#[derive(uniffi::Object, Debug, Default)]
+#[uniffi::export(Debug)]
+pub struct Node {
+    name: Option<String>,
     parent: Mutex<Option<Arc<dyn NodeTrait>>>,
 }
-impl NodeTrait for Trait2 {
+
+// The object methods.
+#[uniffi::export]
+impl Node {
+    #[uniffi::constructor]
+    fn new(name: String) -> Self {
+        Self {
+            parent: Mutex::new(Some(Arc::new(Node {
+                name: Some(format!("via {name}")),
+                parent: Mutex::new(None),
+            }))),
+            name: Some(name),
+        }
+    }
+
+    fn describe_parent(&self) -> String {
+        format!("{:?}", self.parent.lock().unwrap())
+    }
+}
+
+// The trait impl also exposed as methods
+#[uniffi::export]
+impl NodeTrait for Node {
     fn name(&self) -> String {
-        "node-2".to_string()
+        self.name.clone().unwrap_or_else(|| "node-2".to_string())
     }
 
     fn set_parent(&self, parent: Option<Arc<dyn NodeTrait>>) {
-        *self.parent.lock().unwrap() = parent.map(|arc| Arc::clone(&arc))
+        *(self.parent.lock().unwrap()) = parent;
     }
 
     fn get_parent(&self) -> Option<Arc<dyn NodeTrait>> {
-        (*self.parent.lock().unwrap()).clone()
+        self.parent.lock().unwrap().clone()
+    }
+
+    // Even though the trait supplies a default impl, we must have one
+    // or the foreign code doesn't know it exists.
+    fn strong_count(self: Arc<Self>) -> u64 {
+        Arc::strong_count(&self) as u64
     }
 }
 

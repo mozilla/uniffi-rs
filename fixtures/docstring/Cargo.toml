@@ -1,7 +1,6 @@
 [package]
 name = "uniffi-fixture-docstring"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
 publish = false
@@ -23,3 +22,6 @@ glob = "0.3"
 uniffi = { path = "../../uniffi", features = ["bindgen-tests"] }
 uniffi_bindgen = { path = "../../uniffi_bindgen" }
 uniffi_testing = { path = "../../uniffi_testing" }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

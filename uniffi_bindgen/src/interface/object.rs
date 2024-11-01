@@ -58,7 +58,7 @@
 //! ```
 
 use anyhow::Result;
-use uniffi_meta::Checksum;
+use uniffi_meta::{Checksum, ObjectTraitImplMetadata};
 
 use super::callbacks;
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
@@ -91,6 +91,9 @@ pub struct Object {
     // a regular method (albeit with a generated name)
     // XXX - this should really be a HashSet, but not enough transient types support hash to make it worthwhile now.
     pub(super) uniffi_traits: Vec<UniffiTrait>,
+    // These are traits described in our CI which this object has declared it implements.
+    // This allows foreign bindings to implement things like inheritance or whatever makes sense for them.
+    pub(super) trait_impls: Vec<ObjectTraitImplMetadata>,
     // We don't include the FfiFuncs in the hash calculation, because:
     //  - it is entirely determined by the other fields,
     //    so excluding it is safe.
@@ -174,6 +177,15 @@ impl Object {
 
     pub fn uniffi_traits(&self) -> Vec<&UniffiTrait> {
         self.uniffi_traits.iter().collect()
+    }
+
+    pub fn trait_impls(&self) -> Vec<&ObjectTraitImplMetadata> {
+        self.trait_impls.iter().collect()
+    }
+
+    // used by bindings for renaming.
+    pub fn trait_impls_mut(&mut self) -> &mut Vec<ObjectTraitImplMetadata> {
+        &mut self.trait_impls
     }
 
     pub fn ffi_object_clone(&self) -> &FfiFunction {
@@ -316,6 +328,7 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),
+            trait_impls: Default::default(),
             ffi_func_clone: FfiFunction {
                 name: ffi_clone_name,
                 ..Default::default()
@@ -716,6 +729,10 @@ impl Callable for Constructor {
     fn is_async(&self) -> bool {
         self.is_async
     }
+
+    fn ffi_func(&self) -> &FfiFunction {
+        &self.ffi_func
+    }
 }
 
 impl Callable for Method {
@@ -737,6 +754,10 @@ impl Callable for Method {
 
     fn takes_self(&self) -> bool {
         true
+    }
+
+    fn ffi_func(&self) -> &FfiFunction {
+        &self.ffi_func
     }
 }
 

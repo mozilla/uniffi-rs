@@ -1,7 +1,6 @@
 [package]
 name = "uniffi-fixture-futures"
 version = "0.21.0"
-authors = ["Ivan Enderlin <ivan@mnt.io>"]
 edition = "2021"
 license = "MPL-2.0"
 publish = false
@@ -28,3 +27,6 @@ uniffi = { workspace = true, features = ["build", "scaffolding-ffi-buffer-fns"] 
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

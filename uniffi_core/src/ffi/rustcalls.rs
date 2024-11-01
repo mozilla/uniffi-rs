@@ -204,7 +204,7 @@ where
                 } else {
                     "Unknown panic!".to_string()
                 };
-                log::error!("Caught a panic calling rust code: {:?}", message);
+                trace!("Caught a panic calling rust code: {:?}", message);
                 <String as Lower<UniFfiTag>>::lower(message)
             }));
             if let Ok(buf) = message_result {

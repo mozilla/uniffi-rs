@@ -2,7 +2,6 @@
 name = "uniffi-example-arithmetic-procmacro"
 edition = "2021"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
 
@@ -16,3 +15,6 @@ thiserror = "1.0"
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

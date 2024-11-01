@@ -169,22 +169,11 @@ pub struct Uuid {
     val: String,
 }
 
-// Tell UniFfi we want to use am UniffiCustomTypeConverter to go to and
-// from a String.
-//  Note this could be done even if the above `struct` defn was external.
-uniffi::custom_type!(Uuid, String);
-
-impl UniffiCustomTypeConverter for Uuid {
-    type Builtin = String;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Uuid { val })
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.val
-    }
-}
+// Define a custom type exactly like we would for UDL
+uniffi::custom_type!(Uuid, String, {
+    lower: |uuid| uuid.val,
+    try_lift: |s| Ok(Uuid { val: s}),
+});
 
 mod submodule {
     // A custom type using the "newtype" idiom.

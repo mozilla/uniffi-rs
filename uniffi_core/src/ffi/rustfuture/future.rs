@@ -157,7 +157,7 @@ where
                 }
             }
         } else {
-            log::error!("poll with neither future nor result set");
+            trace!("poll with neither future nor result set");
             true
         }
     }
@@ -225,12 +225,14 @@ where
     }
 
     pub(super) fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
-        let ready = self.is_cancelled() || {
+        let cancelled = self.is_cancelled();
+        let ready = cancelled || {
             let mut locked = self.future.lock().unwrap();
             let waker: std::task::Waker = Arc::clone(&self).into();
             locked.poll(&mut Context::from_waker(&waker))
         };
         if ready {
+            trace!("RustFuture::poll is ready (cancelled: {cancelled})");
             callback(data, RustFuturePoll::Ready)
         } else {
             self.scheduler.lock().unwrap().store(callback, data);
@@ -242,6 +244,7 @@ where
     }
 
     pub(super) fn wake(&self) {
+        trace!("RustFuture::wake called");
         self.scheduler.lock().unwrap().wake();
     }
 

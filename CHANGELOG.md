@@ -6,11 +6,30 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+
+- The Rust side of the custom type system has changed and users will need to update their code.
+  The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
+  We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
+  See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
+
+### What's fixed?
+
+- Fixed bug in metadata extraction with large ELF files.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
+
+### What's changed?
+
+- Switching jinja template engine from askama to rinja.
 
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
 
 ### What's new?
+
+- Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
+  to consumers and could have high overhead when lots of FFI calls are made. Instead, the
+  `ffi-trace` feature can be used to get tracing-style printouts about the FFI.
 
 - Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
   Swift-specific features. See
@@ -18,10 +37,15 @@
 
 - Removed the [old and outdated diplomat comparison](https://github.com/mozilla/uniffi-rs/blob/69ecfbd7fdf587a4ab24d1234e2d6afb8a496581/docs/diplomat-and-macros.md) doc
 
+- Proc-macros recognise when you are exporting an `impl Trait for Struct` block.
+  Python supports this by generating an inheritance hierarcy to reflect that.
+  [#2204](https://github.com/mozilla/uniffi-rs/pull/2204)
+
 ### What's fixed?
 
 - `uniffi.toml` of crates without a `lib` type where ignored in 0.28.1
 - Python: Fixed a bug when enum/error names were not proper camel case (HTMLError instead of HtmlError).
+- Python: Fixed the class hierarcy generated for traits ((#2264)[https://github.com/mozilla/uniffi-rs/issues/2264])
 
 [All changes in v0.28.2](https://github.com/mozilla/uniffi-rs/compare/v0.28.1...v0.28.2).
 

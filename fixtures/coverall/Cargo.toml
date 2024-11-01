@@ -1,7 +1,6 @@
 [package]
 name = "uniffi-fixture-coverall"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 edition = "2021"
 license = "MPL-2.0"
 publish = false
@@ -22,3 +21,6 @@ uniffi = { workspace = true, features = ["build"] }
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
 uniffi_meta = { path = "../../uniffi_meta/" }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

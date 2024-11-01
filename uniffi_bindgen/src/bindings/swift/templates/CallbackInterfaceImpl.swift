@@ -57,11 +57,9 @@ fileprivate struct {{ trait_impl }} {
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
-                        {%- match meth.return_type() %}
-                        {%- when Some(return_type) %}
+                        {%- if let Some(return_type) = meth.return_type() %}
                         returnValue: {{ return_type|lower_fn }}(returnValue),
-                        {%- when None %}
-                        {%- endmatch %}
+                        {%- endif %}
                         callStatus: RustCallStatus()
                     )
                 )
@@ -70,11 +68,9 @@ fileprivate struct {{ trait_impl }} {
                 uniffiFutureCallback(
                     uniffiCallbackData,
                     {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
-                        {%- match meth.return_type() %}
-                        {%- when Some(return_type) %}
+                        {%- if let Some(return_type) = meth.return_type() %}
                         returnValue: {{ meth.return_type().map(FfiType::from)|ffi_default_value }},
-                        {%- when None %}
-                        {%- endmatch %}
+                        {%- endif %}
                         callStatus: RustCallStatus(code: statusCode, errorBuf: errorBuf)
                     )
                 )

@@ -2,7 +2,6 @@
 name = "uniffi-fixture-regression-i356-enum-without-int-helpers"
 edition = "2021"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
 
@@ -18,3 +17,6 @@ uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

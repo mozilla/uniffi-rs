@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::{Context, Result};
-use askama::Template;
+use rinja::Template;
 
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use once_cell::sync::Lazy;
@@ -233,7 +233,7 @@ impl<'a> TypeRenderer<'a> {
     // Call this inside your template to cause an import statement to be added at the top of the
     // file.  Imports will be sorted and de-deuped.
     //
-    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
+    // Returns an empty string so that it can be used inside an rinja `{{ }}` block.
     fn add_import(&self, name: &str) -> &str {
         self.imports.borrow_mut().insert(ImportRequirement::Module {
             mod_name: name.to_owned(),
@@ -287,6 +287,17 @@ impl<'a> TypeRenderer<'a> {
             .into_iter()
             .map(|(n, t)| (PythonCodeOracle.class_name(n), t))
             .collect()
+    }
+
+    // Sort object types to avoid forward references; traits before everything else.
+    fn iter_sorted_object_types(&self) -> impl Iterator<Item = &Type> {
+        let mut obs: Vec<&Type> = self
+            .ci
+            .iter_types()
+            .filter(|t| matches!(t, Type::Object { .. }))
+            .collect();
+        obs.sort_by_key(|t| !matches!(t, Type::Object { imp, .. } if imp.is_trait_interface()));
+        obs.into_iter()
     }
 }
 
@@ -423,24 +434,6 @@ impl PythonCodeOracle {
             None => "0".to_owned(),
         }
     }
-
-    /// Get the name of the protocol and class name for an object.
-    ///
-    /// If we support callback interfaces, the protocol name is the object name, and the class name is derived from that.
-    /// Otherwise, the class name is the object name and the protocol name is derived from that.
-    ///
-    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
-    /// interfaces, `lower` must lower anything that implements the protocol.  If not, then lower
-    /// only lowers the concrete class.
-    fn object_names(&self, obj: &Object) -> (String, String) {
-        let class_name = self.class_name(obj.name());
-        if obj.has_callback_interface() {
-            let impl_name = format!("{class_name}Impl");
-            (class_name, impl_name)
-        } else {
-            (format!("{class_name}Protocol"), class_name)
-        }
-    }
 }
 
 impl VisitMut for PythonCodeOracle {
@@ -450,6 +443,10 @@ impl VisitMut for PythonCodeOracle {
 
     fn visit_object(&self, object: &mut Object) {
         object.rename(self.class_name(object.name()));
+        for i in object.trait_impls_mut() {
+            i.trait_name = self.class_name(&i.trait_name);
+            // should i.tr_module_path be fixed?
+        }
     }
 
     fn visit_field(&self, field: &mut Field) {
@@ -464,12 +461,8 @@ impl VisitMut for PythonCodeOracle {
         ffi_argument.rename(self.class_name(ffi_argument.name()));
     }
 
-    fn visit_enum(&self, is_error: bool, enum_: &mut Enum) {
-        if is_error {
-            enum_.rename(self.class_name(enum_.name()));
-        } else {
-            enum_.rename(self.enum_variant_name(enum_.name()));
-        }
+    fn visit_enum(&self, _is_error: bool, enum_: &mut Enum) {
+        enum_.rename(self.class_name(enum_.name()));
     }
 
     fn visit_enum_key(&self, key: &mut String) -> String {
@@ -477,12 +470,6 @@ impl VisitMut for PythonCodeOracle {
     }
 
     fn visit_variant(&self, is_error: bool, variant: &mut Variant) {
-        //TODO: If we want to remove the last var_name filter
-        // in the template, this is it. We need an additional
-        // attribute for the `Variant` so we can
-        // display Python is_NAME functions
-        // variant.set_is_name(self.var_name(variant.name()));
-
         if is_error {
             variant.rename(self.class_name(variant.name()));
         } else {
@@ -582,90 +569,71 @@ pub mod filters {
     use super::*;
     pub use crate::backend::filters::*;
 
-    pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().type_label())
     }
 
-    //TODO: Remove. Currently just being used by EnumTemplate.py to
-    // display is_NAME_OF_ENUM.
-    /// Get the idiomatic Python rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.var_name(nm))
-    }
-
-    //TODO: Remove. Currently just being used by wrapper.py to display the
-    // callback_interface function names.
-    /// Get the idiomatic Python rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.class_name(nm))
-    }
-
-    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(String::from("_Uniffi") + &as_ct.as_codetype().ffi_converter_name()[3..])
     }
 
-    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
-    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.lift", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn check_lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn check_lower_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.check_lower", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.lower", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.read", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
     pub(super) fn literal_py(
         literal: &Literal,
         as_ct: &impl AsCodeType,
-    ) -> Result<String, askama::Error> {
+    ) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().literal(literal))
     }
 
     // Get the idiomatic Python rendering of an individual enum variant's discriminant
-    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, rinja::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         Ok(Type::UInt64.as_codetype().literal(&literal))
     }
 
-    pub fn ffi_type_name(type_: &FfiType) -> Result<String, askama::Error> {
+    pub fn ffi_type_name(type_: &FfiType) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_type_label(type_))
     }
 
-    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
+    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_default_value(return_type.as_ref()))
     }
 
     /// Get the idiomatic Python rendering of an FFI callback function name
-    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn ffi_callback_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_callback_name(nm))
     }
 
     /// Get the idiomatic Python rendering of an FFI struct name
-    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
+    pub fn ffi_struct_name(nm: &str) -> Result<String, rinja::Error> {
         Ok(PythonCodeOracle.ffi_struct_name(nm))
     }
 
-    /// Get the idiomatic Python rendering of an individual enum variant.
-    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
-        Ok(PythonCodeOracle.object_names(obj))
-    }
-
     /// Get the idiomatic Python rendering of docstring
-    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, rinja::Error> {
         let docstring = textwrap::dedent(docstring);
         // Escape triple quotes to avoid syntax error
         let escaped = docstring.replace(r#"""""#, r#"\"\"\""#);

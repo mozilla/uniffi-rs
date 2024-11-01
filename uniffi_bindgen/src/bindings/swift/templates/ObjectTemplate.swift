@@ -63,7 +63,7 @@ open class {{ impl_class_name }}:
     }
 
     {%- match obj.primary_constructor() %}
-    {%- when Some with (cons) %}
+    {%- when Some(cons) %}
     {%- call swift::ctor_decl(cons, 4) %}
     {%- when None %}
     // No primary constructor declared for this class.
@@ -89,25 +89,25 @@ open class {{ impl_class_name }}:
     {%-     match tm %}
     {%-         when UniffiTrait::Display { fmt } %}
     open var description: String {
-        return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
+        return {% call swift::is_try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call(fmt) %}
         )
     }
     {%-         when UniffiTrait::Debug { fmt } %}
     open var debugDescription: String {
-        return {% call swift::try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
+        return {% call swift::is_try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call(fmt) %}
         )
     }
     {%-         when UniffiTrait::Eq { eq, ne } %}
     public static func == (self: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
-        return {% call swift::try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
+        return {% call swift::is_try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call(eq) %}
         )
     }
     {%-         when UniffiTrait::Hash { hash } %}
     open func hash(into hasher: inout Hasher) {
-        let val = {% call swift::try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
+        let val = {% call swift::is_try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
             {% call swift::to_ffi_call(hash) %}
         )
         hasher.combine(val)

@@ -61,7 +61,7 @@ class RustBuffer < FFI::Struct
   end
 
   {%- for typ in ci.iter_types() -%}
-  {%- let canonical_type_name = canonical_name(typ) -%}
+  {%- let canonical_type_name = self::canonical_name(typ) -%}
   {%- match typ -%}
 
   {% when Type::String -%}
@@ -124,7 +124,7 @@ class RustBuffer < FFI::Struct
     end
   end
 
-  {% when Type::Record { name: record_name, module_path } -%}
+  {% when Type::Record { name: record_name, .. } -%}
   {%- let rec = ci|get_record_definition(record_name) -%}
   # The Record type {{ record_name }}.
 
@@ -147,7 +147,7 @@ class RustBuffer < FFI::Struct
     end
   end
 
-  {% when Type::Enum { name: enum_name, module_path }  -%}
+  {% when Type::Enum { name: enum_name, .. }  -%}
   {% if !ci.is_name_used_as_error(enum_name) %}
   {%- let e = ci|get_enum_definition(enum_name) -%}
   # The Enum type {{ enum_name }}.
@@ -180,7 +180,7 @@ class RustBuffer < FFI::Struct
   {% endif %}
 
   {% when Type::Optional { inner_type } -%}
-  # The Optional<T> type for {{ canonical_name(inner_type) }}.
+  # The Optional<T> type for {{ self::canonical_name(inner_type) }}.
 
   def self.check_lower_{{ canonical_type_name }}(v)
     if not v.nil?
@@ -202,7 +202,7 @@ class RustBuffer < FFI::Struct
   end
 
   {% when Type::Sequence { inner_type } -%}
-  # The Sequence<T> type for {{ canonical_name(inner_type) }}.
+  # The Sequence<T> type for {{ self::canonical_name(inner_type) }}.
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |item|
@@ -224,7 +224,7 @@ class RustBuffer < FFI::Struct
   end
 
   {% when Type::Map { key_type: k, value_type: inner_type } -%}
-  # The Map<T> type for {{ canonical_name(inner_type) }}.
+  # The Map<T> type for {{ self::canonical_name(inner_type) }}.
 
   def self.check_lower_{{ canonical_type_name }}(v)
     v.each do |k, v|

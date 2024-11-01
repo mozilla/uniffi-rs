@@ -23,12 +23,29 @@ impl r#break {
 
 #[allow(non_camel_case_types)]
 pub trait r#continue {
-    fn r#return(&self, v: r#return) -> r#return;
-    fn r#continue(&self) -> Option<Box<dyn r#continue>>;
-    fn r#break(&self, _v: Option<Arc<r#break>>) -> HashMap<u8, Arc<r#break>>;
-    fn r#while(&self, _v: Vec<r#while>) -> r#while;
-    fn r#yield(&self, _v: HashMap<u8, Vec<r#yield>>) -> Option<HashMap<u8, Vec<r#yield>>>;
+    fn r#return(&self, _v: r#return) -> r#return {
+        unimplemented!()
+    }
+    fn r#continue(&self) -> Option<Box<dyn r#continue>> {
+        unimplemented!()
+    }
+    fn r#break(&self, _v: Option<Arc<r#break>>) -> HashMap<u8, Arc<r#break>> {
+        unimplemented!()
+    }
+    fn r#while(&self, _v: Vec<r#while>) -> r#while {
+        unimplemented!()
+    }
+    fn r#yield(&self, _v: HashMap<u8, Vec<r#yield>>) -> Option<HashMap<u8, Vec<r#yield>>> {
+        unimplemented!()
+    }
 }
+
+#[allow(non_camel_case_types)]
+#[derive(uniffi::Object)]
+pub struct r#in {}
+
+#[uniffi::export]
+impl r#continue for r#in {}
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]

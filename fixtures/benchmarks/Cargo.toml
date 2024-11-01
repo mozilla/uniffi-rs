@@ -2,7 +2,6 @@
 name = "uniffi-fixture-benchmarks"
 edition = "2021"
 version = "0.22.0"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 publish = false
 
@@ -25,3 +24,6 @@ uniffi_bindgen = {path = "../../uniffi_bindgen", features = ["bindgen-tests"]}
 [[bench]]
 name = "benchmarks"
 harness = false
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

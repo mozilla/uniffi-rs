@@ -175,7 +175,7 @@ pub struct ExternalFfiMetadata {
     pub namespace: String,
 }
 
-// Needed for rust scaffolding askama template
+// Needed for rust scaffolding rinja template
 impl From<Type> for FfiType {
     fn from(ty: Type) -> Self {
         (&ty).into()

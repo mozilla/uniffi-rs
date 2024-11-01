@@ -8,7 +8,6 @@ repository = "https://github.com/mozilla/uniffi-rs"
 #   * See `docs/uniffi-versioning.md` for guidance on when to increment this
 #   * Make sure to also update `uniffi_bindgen::UNIFFI_CONTRACT_VERSION"
 version = "0.28.2"
-authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
 license = "MPL-2.0"
 edition = "2021"
 keywords = ["ffi", "bindgen"]
@@ -29,6 +28,8 @@ trybuild = "1"
 
 [features]
 default = ["cargo-metadata"]
+# Printout tracing information on FFI calls.  Useful for debugging issues with the bindings code.
+ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindgen/ffi-trace"]
 # Support for features needed by the `build.rs` script. Enable this in your
 # `build-dependencies`.
 build = [ "dep:uniffi_build" ]

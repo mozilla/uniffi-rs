@@ -17,7 +17,7 @@ enum class {{ type_name }} {
     {%- endfor %}
     companion object
 }
-{% when Some with (variant_discr_type) %}
+{% when Some(variant_discr_type) %}
 enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}

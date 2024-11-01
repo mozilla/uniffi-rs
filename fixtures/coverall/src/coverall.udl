@@ -260,7 +260,7 @@ interface NodeTrait {
     string name(); // The name of the this node
 
     /// Takes an `Arc<Self>` and stores it our parent node, dropping any existing / reference. Note
-    //you can create circular references with this.
+    /// you can create circular references with this.
     void set_parent(NodeTrait? parent);
 
     /// Returns what was previously set via `set_parent()`, or null.
