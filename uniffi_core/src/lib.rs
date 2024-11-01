@@ -202,6 +202,21 @@ macro_rules! ffi_converter_forward {
     };
 }
 
+/// Macro to implement `LowerError<T>` for a UniFfiTag using a different UniFfiTag
+///
+/// This is used for external types
+#[macro_export]
+macro_rules! ffi_converter_error_forward {
+    // Forward a `LowerError` implementation
+    ($T:ty, $existing_impl_tag:ty, $new_impl_tag:ty) => {
+        unsafe impl $crate::LowerError<$new_impl_tag> for $T {
+            fn lower_error(obj: $T) -> $crate::RustBuffer {
+                <$T as $crate::LowerError<$existing_impl_tag>>::lower_error(obj)
+            }
+        }
+    };
+}
+
 /// Macro to implement `FfiConverterArc<T>` for a UniFfiTag using a different UniFfiTag
 ///
 /// This is used for external types

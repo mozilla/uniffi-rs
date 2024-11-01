@@ -8,6 +8,8 @@
 {%- match kind %}
 {%- when ExternalKind::DataClass %}
 ::uniffi::ffi_converter_forward!(r#{{ name }}, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
+{%- when ExternalKind::Error %}
+::uniffi::ffi_converter_error_forward!(r#{{ name }}, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
 {%- when ExternalKind::Interface %}
 ::uniffi::ffi_converter_arc_forward!(r#{{ name }}, ::{{ crate_name|crate_name_rs }}::UniFfiTag, crate::UniFfiTag);
 {%- when ExternalKind::Trait %}

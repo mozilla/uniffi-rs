@@ -57,6 +57,7 @@ pub enum ExternalKind {
     Trait,
     // Either a record or enum
     DataClass,
+    Error,
 }
 
 /// Represents all the different high-level types that can be used in a component interface.
