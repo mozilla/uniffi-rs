@@ -51,7 +51,7 @@ typedef extern UniffiOneProcMacroType;
 [External="ext_types_custom"]
 typedef extern Guid;
 
-[ExternalError="ext_types_custom"]
+[External="ext_types_custom"]
 typedef extern GuidError;
 
 // And re-use the `custom-types` example - this exposes `Url` and `Handle`

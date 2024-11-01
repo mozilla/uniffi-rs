@@ -102,11 +102,6 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                         kind: ExternalKind::DataClass,
                         export: false,
                     }),
-                    "ExternalError" => Ok(Attribute::External {
-                        crate_name: name_from_id_or_string(&identity.rhs),
-                        kind: ExternalKind::Error,
-                        export: false,
-                    }),
                     "ExternalExport" => Ok(Attribute::External {
                         crate_name: name_from_id_or_string(&identity.rhs),
                         kind: ExternalKind::DataClass,

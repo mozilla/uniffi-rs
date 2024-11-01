@@ -58,7 +58,7 @@ assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.on
 do {
     try throwExternalError()
     assert(false, "No error thrown")
-} catch let _ as UniffiOneError {
+} catch _ as UniffiOneError {
     // Ignore correct error
 } catch {
     assert(false, "Wrong error returned")

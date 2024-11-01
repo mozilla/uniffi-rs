@@ -152,17 +152,6 @@ impl From<&Type> for FfiType {
                 module_path: module_path.clone(),
                 namespace: namespace.clone(),
             })),
-            Type::External {
-                name,
-                kind: ExternalKind::Error,
-                module_path,
-                namespace,
-                ..
-            } => FfiType::RustBuffer(Some(ExternalFfiMetadata {
-                name: name.clone(),
-                module_path: module_path.clone(),
-                namespace: namespace.clone(),
-            })),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
         }
     }
