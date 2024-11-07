@@ -1,4 +1,4 @@
-{%- let rec = ci|get_record_definition(name) %}
+{%- let rec = ci.get_record_definition(name).unwrap() %}
 
 {%- if rec.has_fields() %}
 {%- call kt::docstring(rec, 0) %}

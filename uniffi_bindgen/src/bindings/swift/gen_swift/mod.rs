@@ -44,7 +44,7 @@ trait CodeType: Debug {
         self.type_label()
     }
 
-    fn literal(&self, _literal: &Literal) -> String {
+    fn literal(&self, _literal: &Literal) -> Result<String> {
         unimplemented!("Unimplemented for {}", self.type_label())
     }
 
@@ -663,7 +663,10 @@ pub mod filters {
     }
 
     pub fn literal_swift(literal: &Literal, as_type: &impl AsType) -> Result<String, rinja::Error> {
-        Ok(oracle().find(&as_type.as_type()).literal(literal))
+        oracle()
+            .find(&as_type.as_type())
+            .literal(literal)
+            .map_err(|e| to_rinja_error(&e))
     }
 
     // Get the idiomatic Swift rendering of an individual enum variant's discriminant

@@ -1,4 +1,4 @@
-{%- let cbi = ci|get_callback_interface_definition(name) %}
+{%- let cbi = ci.get_callback_interface_definition(name).unwrap() %}
 {%- let ffi_init_callback = cbi.ffi_init_callback() %}
 {%- let interface_name = cbi|type_name(ci) %}
 {%- let interface_docstring = cbi.docstring() %}

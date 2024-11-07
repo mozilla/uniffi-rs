@@ -100,7 +100,7 @@
     {%- include "ObjectCleanerHelper.kt" %}
 {%- endif %}
 
-{%- let obj = ci|get_object_definition(name) %}
+{%- let obj = ci.get_object_definition(name).unwrap() %}
 {%- let interface_name = self::object_interface_name(ci, obj) %}
 {%- let impl_class_name = self::object_impl_name(ci, obj) %}
 {%- let methods = obj.methods() %}
@@ -116,7 +116,7 @@ open class {{ impl_class_name }} : kotlin.Exception, Disposable, AutoCloseable, 
 {% else -%}
 open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }}
 {%- for t in obj.trait_impls() %}
-, {{ self::trait_interface_name(ci, t.trait_name) }}
+, {{ self::trait_interface_name(ci, t.trait_name)? }}
 {% endfor %}
 {
 {%- endif %}

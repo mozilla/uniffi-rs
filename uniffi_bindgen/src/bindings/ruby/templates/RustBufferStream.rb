@@ -159,7 +159,7 @@ class RustBufferStream
   end
 
   {% when Type::Enum { name, .. } -%}
-  {%- let e = ci|get_enum_definition(name) -%}
+  {%- let e = ci.get_enum_definition(name).unwrap() -%}
   {% if !ci.is_name_used_as_error(name) %}
   {% let enum_name = name %}
   # The Enum type {{ enum_name }}.
@@ -231,7 +231,7 @@ class RustBufferStream
   {% endif %}
 
   {% when Type::Record { name: record_name, .. } -%}
-  {%- let rec = ci|get_record_definition(record_name) -%}
+  {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
   # The Record type {{ record_name }}.
 
   def read{{ canonical_type_name }}

@@ -3,8 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::{AsCodeType, CodeType};
-use crate::backend::{Literal, Type};
-use crate::ComponentInterface;
+use crate::{
+    backend::{Literal, Type},
+    bail, ComponentInterface, Result,
+};
 
 #[derive(Debug)]
 pub struct OptionalCodeType {
@@ -35,11 +37,11 @@ impl CodeType for OptionalCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> String {
+    fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> Result<String> {
         match literal {
-            Literal::None => "null".into(),
+            Literal::None => Ok("null".into()),
             Literal::Some { inner } => super::KotlinCodeOracle.find(&self.inner).literal(inner, ci),
-            _ => panic!("Invalid literal for Optional type: {literal:?}"),
+            _ => bail!("Invalid literal for Optional type: {literal:?}"),
         }
     }
 }
@@ -73,10 +75,10 @@ impl CodeType for SequenceCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal, _ci: &ComponentInterface) -> String {
+    fn literal(&self, literal: &Literal, _ci: &ComponentInterface) -> Result<String> {
         match literal {
-            Literal::EmptySequence => "listOf()".into(),
-            _ => panic!("Invalid literal for List type: {literal:?}"),
+            Literal::EmptySequence => Ok("listOf()".into()),
+            _ => bail!("Invalid literal for List type: {literal:?}"),
         }
     }
 }
@@ -118,10 +120,10 @@ impl CodeType for MapCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal, _ci: &ComponentInterface) -> String {
+    fn literal(&self, literal: &Literal, _ci: &ComponentInterface) -> Result<String> {
         match literal {
-            Literal::EmptyMap => "mapOf()".into(),
-            _ => panic!("Invalid literal for Map type: {literal:?}"),
+            Literal::EmptyMap => Ok("mapOf()".into()),
+            _ => bail!("Invalid literal for Map type: {literal:?}"),
         }
     }
 }

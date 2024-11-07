@@ -115,7 +115,6 @@ impl<'a> RubyWrapper<'a> {
 
 mod filters {
     use super::*;
-    pub use crate::backend::filters::*;
 
     pub fn type_ffi(type_: &FfiType) -> Result<String, rinja::Error> {
         Ok(match type_ {

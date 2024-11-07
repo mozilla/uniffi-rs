@@ -1,4 +1,4 @@
-{%- let obj = ci|get_object_definition(name) %}
+{%- let obj = ci.get_object_definition(name).unwrap() %}
 {%- let (protocol_name, impl_class_name) = obj|object_names %}
 {%- let methods = obj.methods() %}
 {%- let protocol_docstring = obj.docstring() %}

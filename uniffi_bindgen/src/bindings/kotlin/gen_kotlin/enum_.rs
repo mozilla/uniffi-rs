@@ -3,8 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::backend::Literal;
-use crate::ComponentInterface;
+use crate::{backend::Literal, bail, ComponentInterface, Result};
 
 #[derive(Debug)]
 pub struct EnumCodeType {
@@ -26,15 +25,15 @@ impl CodeType for EnumCodeType {
         format!("Type{}", self.id)
     }
 
-    fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> String {
+    fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> Result<String> {
         if let Literal::Enum(v, _) = literal {
-            format!(
+            Ok(format!(
                 "{}.{}",
                 self.type_label(ci),
                 super::KotlinCodeOracle.enum_variant_name(v)
-            )
+            ))
         } else {
-            unreachable!();
+            bail!("Invalid literal for enum type: {literal:?}")
         }
     }
 }
