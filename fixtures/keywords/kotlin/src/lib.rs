@@ -33,8 +33,17 @@ trait r#continue {
     }
 }
 
+#[allow(non_camel_case_types)]
+trait r#true {
+    fn r#false(&self);
+}
+
 #[uniffi::export]
-impl r#continue for r#break {}
+impl r#true for r#break {
+    fn r#false(&self) {
+        unimplemented!()
+    }
+}
 
 #[allow(non_camel_case_types)]
 pub struct r#return {

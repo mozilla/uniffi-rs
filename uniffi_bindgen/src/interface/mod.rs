@@ -921,6 +921,7 @@ impl ComponentInterface {
 
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
     fn add_object_definition(&mut self, defn: Object) -> Result<()> {
+        self.types.add_known_type(&defn.as_type())?;
         self.types.add_known_types(defn.iter_types())?;
         self.objects.push(defn);
         Ok(())
@@ -931,8 +932,14 @@ impl ComponentInterface {
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
-    pub(super) fn add_callback_interface_definition(&mut self, defn: CallbackInterface) {
+    pub(super) fn add_callback_interface_definition(
+        &mut self,
+        defn: CallbackInterface,
+    ) -> Result<()> {
+        self.types.add_known_type(&defn.as_type())?;
+        self.types.add_known_types(defn.iter_types())?;
         self.callback_interfaces.push(defn);
+        Ok(())
     }
 
     pub(super) fn add_trait_method_meta(&mut self, meta: TraitMethodMetadata) -> Result<()> {
@@ -1245,9 +1252,7 @@ new definition: Enum {
 
     #[test]
     fn test_contains_optional_types() {
-        let mut ci = ComponentInterface {
-            ..Default::default()
-        };
+        let mut ci = ComponentInterface::default();
 
         // check that `contains_optional_types` returns false when there is no Optional type in the interface
         assert!(!ci.contains_optional_types());
@@ -1361,5 +1366,51 @@ new definition: Enum {
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
         assert_eq!(ci.namespace_docstring().unwrap(), "informative\ndocstring");
+    }
+
+    #[test]
+    fn test_names() {
+        let mut ci = ComponentInterface::default();
+
+        let ob = Object {
+            name: "ob".to_string(),
+            module_path: "mp".to_string(),
+            imp: ObjectImpl::Struct,
+            constructors: Default::default(),
+            methods: Default::default(),
+            uniffi_traits: Default::default(),
+            ffi_func_clone: Default::default(),
+            trait_impls: Default::default(),
+            ffi_func_free: Default::default(),
+            ffi_init_callback: Default::default(),
+            docstring: Default::default(),
+        };
+        ci.add_object_definition(ob).unwrap();
+        assert!(ci.get_object_definition("ob").is_some());
+        assert_eq!(
+            ci.types.get_type_definition("ob"),
+            Some(Type::Object {
+                module_path: "mp".to_string(),
+                name: "ob".to_string(),
+                imp: ObjectImpl::Struct
+            })
+        );
+
+        let cb = CallbackInterface {
+            name: "cb".to_string(),
+            module_path: "mp".to_string(),
+            methods: vec![],
+            ffi_init_callback: FfiFunction::default(),
+            docstring: None,
+        };
+        ci.add_callback_interface_definition(cb).unwrap();
+        assert_eq!(
+            ci.types.get_type_definition("cb"),
+            Some(Type::CallbackInterface {
+                module_path: "mp".to_string(),
+                name: "cb".to_string()
+            })
+        );
+        assert!(ci.get_callback_interface_definition("cb").is_some());
     }
 }

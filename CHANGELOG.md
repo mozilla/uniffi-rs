@@ -17,6 +17,11 @@
 
 - Fixed bug in metadata extraction with large ELF files.
 
+### What's new?
+
+- Kotlin: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
+  hierarcy to reflect that. [#2297](https://github.com/mozilla/uniffi-rs/pull/2297)
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
 
 ### What's changed?

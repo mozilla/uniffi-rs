@@ -303,6 +303,55 @@ impl<'a> KotlinWrapper<'a> {
     }
 }
 
+/// Get the name of the interface and class name for a trait.
+///
+/// For a regular `struct Foo` or `trait Foo`, there's `FooInterface` with `Foo` as
+/// the name of the (Rust implemented) object. But if it's a foreign trait:
+/// * The name `Foo` is the name of the interface used by a the Kotlin implementation of the trait.
+/// * The Rust implemented object is `FooImpl`.
+///
+/// This all impacts what types `FfiConverter.lower()` inputs.  If it's a "foreign trait"
+/// `lower` must lower anything that implements the interface (ie, a kotlin implementation).
+/// If not, then lower only lowers the concrete class (ie, our simple instance with the pointer).
+fn object_interface_name(ci: &ComponentInterface, obj: &Object) -> String {
+    let class_name = KotlinCodeOracle.class_name(ci, obj.name());
+    if obj.has_callback_interface() {
+        class_name
+    } else {
+        format!("{class_name}Interface")
+    }
+}
+
+// *sigh* - same thing for a trait, which might be either Object or CallbackInterface.
+// (we should either fold it into object or kill it!)
+fn trait_interface_name(ci: &ComponentInterface, name: &str) -> String {
+    let (obj_name, has_callback_interface) = match ci.get_object_definition(name) {
+        Some(obj) => (obj.name(), obj.has_callback_interface()),
+        None => (
+            ci.get_callback_interface_definition(name)
+                .unwrap_or_else(|| panic!("no interface {}", name))
+                .name(),
+            true,
+        ),
+    };
+    let class_name = KotlinCodeOracle.class_name(ci, obj_name);
+    if has_callback_interface {
+        class_name
+    } else {
+        format!("{class_name}Interface")
+    }
+}
+
+// The name of the object exposing a Rust implementation.
+fn object_impl_name(ci: &ComponentInterface, obj: &Object) -> String {
+    let class_name = KotlinCodeOracle.class_name(ci, obj.name());
+    if obj.has_callback_interface() {
+        format!("{class_name}Impl")
+    } else {
+        class_name
+    }
+}
+
 #[derive(Clone)]
 pub struct KotlinCodeOracle;
 
@@ -441,24 +490,6 @@ impl KotlinCodeOracle {
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) => self.ffi_type_label_by_reference(inner),
             FfiType::VoidPointer => "Pointer".to_string(),
-        }
-    }
-
-    /// Get the name of the interface and class name for an object.
-    ///
-    /// If we support callback interfaces, the interface name is the object name, and the class name is derived from that.
-    /// Otherwise, the class name is the object name and the interface name is derived from that.
-    ///
-    /// This split determines what types `FfiConverter.lower()` inputs.  If we support callback
-    /// interfaces, `lower` must lower anything that implements the interface.  If not, then lower
-    /// only lowers the concrete class.
-    fn object_names(&self, ci: &ComponentInterface, obj: &Object) -> (String, String) {
-        let class_name = self.class_name(ci, obj.name());
-        if obj.has_callback_interface() {
-            let impl_name = format!("{class_name}Impl");
-            (class_name, impl_name)
-        } else {
-            (format!("{class_name}Interface"), class_name)
         }
     }
 }
@@ -657,13 +688,6 @@ mod filters {
     /// Get the idiomatic Kotlin rendering of an FFI struct name
     pub fn ffi_struct_name<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
-    }
-
-    pub fn object_names(
-        obj: &Object,
-        ci: &ComponentInterface,
-    ) -> Result<(String, String), rinja::Error> {
-        Ok(KotlinCodeOracle.object_names(ci, obj))
     }
 
     pub fn async_poll(
