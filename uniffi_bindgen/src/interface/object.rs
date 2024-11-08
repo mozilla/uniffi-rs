@@ -400,6 +400,14 @@ impl Constructor {
         self.name = new_name;
     }
 
+    pub fn is_async(&self) -> bool {
+        self.is_async
+    }
+
+    pub fn object_name(&self) -> &str {
+        &self.object_name
+    }
+
     pub fn arguments(&self) -> Vec<&Argument> {
         self.arguments.iter().collect()
     }
@@ -521,6 +529,10 @@ impl Method {
 
     pub fn is_async(&self) -> bool {
         self.is_async
+    }
+
+    pub fn object_name(&self) -> &str {
+        &self.object_name
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -726,6 +738,10 @@ impl Callable for Constructor {
         self.throws_type().cloned()
     }
 
+    fn docstring(&self) -> Option<&str> {
+        self.docstring()
+    }
+
     fn is_async(&self) -> bool {
         self.is_async
     }
@@ -746,6 +762,10 @@ impl Callable for Method {
 
     fn throws_type(&self) -> Option<Type> {
         self.throws_type().cloned()
+    }
+
+    fn docstring(&self) -> Option<&str> {
+        self.docstring()
     }
 
     fn is_async(&self) -> bool {

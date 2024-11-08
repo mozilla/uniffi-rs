@@ -259,6 +259,7 @@ pub trait Callable {
     fn return_type(&self) -> Option<Type>;
     fn throws_type(&self) -> Option<Type>;
     fn is_async(&self) -> bool;
+    fn docstring(&self) -> Option<&str>;
     fn takes_self(&self) -> bool {
         false
     }
@@ -312,6 +313,10 @@ impl Callable for Function {
         self.throws_type().cloned()
     }
 
+    fn docstring(&self) -> Option<&str> {
+        self.docstring()
+    }
+
     fn is_async(&self) -> bool {
         self.is_async
     }
@@ -337,6 +342,10 @@ impl<T: Callable> Callable for &T {
 
     fn is_async(&self) -> bool {
         (*self).is_async()
+    }
+
+    fn docstring(&self) -> Option<&str> {
+        (*self).docstring()
     }
 
     fn ffi_func(&self) -> &FfiFunction {
