@@ -4,17 +4,17 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.28.3) - (_2024-11-08_)
+## v0.28.3 (backend crates: v0.28.3) - (_2024-11-08_)
 
 ### What's fixed?
 
 - Fixed bug in metadata extraction with large ELF files.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
+[All changes in v0.28.3](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...v0.28.3).
 
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
 
