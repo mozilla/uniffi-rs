@@ -22,6 +22,10 @@
 - Kotlin: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
   hierarcy to reflect that. [#2297](https://github.com/mozilla/uniffi-rs/pull/2297)
 
+- Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
+  to consumers and could have high overhead when lots of FFI calls are made. Instead, the
+  `ffi-trace` feature can be used to get tracing-style printouts about the FFI.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
 
 ### What's changed?
@@ -31,10 +35,6 @@
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
 
 ### What's new?
-
-- Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
-  to consumers and could have high overhead when lots of FFI calls are made. Instead, the
-  `ffi-trace` feature can be used to get tracing-style printouts about the FFI.
 
 - Added the `uniffi-bindgen-swift` binary.  It works like `uniffi-bindgen` but with additional
   Swift-specific features. See
