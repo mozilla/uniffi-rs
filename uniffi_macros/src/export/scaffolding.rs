@@ -246,6 +246,7 @@ pub(super) fn gen_ffi_function(
     };
 
     let ffi_ident = sig.scaffolding_fn_ident()?;
+    let ffi_fn_name = ffi_ident.to_string();
     let name = &sig.name;
     let return_ty = &sig.return_ty;
     let ffi_return_ty = ffiops::lower_return_type(return_ty);
@@ -262,18 +263,21 @@ pub(super) fn gen_ffi_function(
                 #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> #ffi_return_ty {
-                ::uniffi::deps::trace!(#name);
+                ::uniffi::deps::trace!("calling: {}", #ffi_fn_name);
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {
-                    match uniffi_lift_args() {
+                    let result = match uniffi_lift_args() {
                         ::std::result::Result::Ok(uniffi_args) => {
+                            ::uniffi::deps::trace!("success: {}", #ffi_fn_name);
                             let uniffi_result = #rust_fn_call;
                             #lower_return(#convert_result)
                         }
                         ::std::result::Result::Err((arg_name, error)) => {
+                            ::uniffi::deps::trace!("error: {}", #ffi_fn_name);
                             #handle_failed_lift(::uniffi::LiftArgsError { arg_name, error} )
                         },
-                    }
+                    };
+                    result
                 })
             }
 
@@ -291,7 +295,7 @@ pub(super) fn gen_ffi_function(
             #[doc(hidden)]
             #[no_mangle]
             pub extern "C" fn #ffi_ident(#(#param_names: #param_types,)*) -> ::uniffi::Handle {
-                ::uniffi::deps::trace!(#name);
+                ::uniffi::deps::trace!("calling: {}", #name);
                 let uniffi_lifted_args = (#lift_closure)();
                 ::uniffi::rust_future_new::<_, #return_ty, _>(
                     async move {
