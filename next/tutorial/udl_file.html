@@ -1481,10 +1481,10 @@
 <div class="highlight"><pre><span></span><code>#[uniffi::export]
 fn add(a: u32, b: u32) -&gt; u32 { a + b }
 </code></pre></div>
-<p>You need to <a href="./Rust_scaffolding.md&quot;">set up the scaffolding</a> with <code>uniffi::setup_scaffolding!()</code> - but that's it.</p>
+<p>You need to <a href="Rust_scaffolding.html">set up the scaffolding</a> with <code>uniffi::setup_scaffolding!()</code> - but that's it.</p>
 <h2 id="a-udl-file">A UDL File</h2>
-<p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.<br />
-Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
+<p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.</p>
+<p>Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
 <div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>math<span class="w"> </span>{
 <span class="w">  </span>u32<span class="w"> </span>add(u32<span class="w"> </span>a,<span class="w"> </span>u32<span class="w"> </span>b);
 };
