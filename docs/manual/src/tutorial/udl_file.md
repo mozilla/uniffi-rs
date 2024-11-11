@@ -11,11 +11,12 @@ There are two ways of describing your interface:
 fn add(a: u32, b: u32) -> u32 { a + b }
 ```
 
-You need to [set up the scaffolding](./Rust_scaffolding.md") with `uniffi::setup_scaffolding!()` - but that's it.
+You need to [set up the scaffolding](./Rust_scaffolding.md) with `uniffi::setup_scaffolding!()` - but that's it.
 
 ## A UDL File
 
-We describe in a UDL (a type of IDL, Interface Definition Language) file _what_ is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (`u32`) and not custom data structures but we still want to expose the `add` method.  
+We describe in a UDL (a type of IDL, Interface Definition Language) file _what_ is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (`u32`) and not custom data structures but we still want to expose the `add` method.
+
 Let's create a `math.udl` file in the `math` crate's `src/` folder:
 
 ```idl
