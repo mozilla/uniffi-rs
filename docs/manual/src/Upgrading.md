@@ -1,6 +1,8 @@
-# v0.28.x -> v0.29.x
+# Upgrade guide
 
-## Custom types
+## v0.28.x -> v0.29.x
+
+### Custom types
 
 Custom types are now implemented using a macro rather than implementing the `UniffiCustomTypeConverter` trait,
 addressing some edge-cases with custom types wrapping types from other crates (eg, Url).

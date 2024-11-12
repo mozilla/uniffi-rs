@@ -21,6 +21,7 @@
 
 - Kotlin: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
   hierarcy to reflect that. [#2297](https://github.com/mozilla/uniffi-rs/pull/2297)
+- Added `test-bindgen` tool to test changes to the foreign bindings code.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
 

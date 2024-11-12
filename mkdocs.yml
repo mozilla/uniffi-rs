@@ -84,3 +84,4 @@ nav:
   - ./internals/rendering_foreign_bindings.md
 
 - ./Upgrading.md
+- ./Hacking.md

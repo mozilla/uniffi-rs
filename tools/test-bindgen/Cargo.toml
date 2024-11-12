@@ -1,0 +1,12 @@
+[package]
+name = "test-bindgen"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+camino = "1.0.8"
+cargo_metadata = "0.15"
+clap = { version = "4", features = ["cargo", "std", "derive"] }

@@ -68,6 +68,7 @@ members = [
   "fixtures/large-enum",
   "fixtures/large-error",
   "fixtures/enum-types",
+  "tools/test-bindgen",
 ]
 
 resolver = "2"
