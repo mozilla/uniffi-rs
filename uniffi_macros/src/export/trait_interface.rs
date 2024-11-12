@@ -54,6 +54,7 @@ pub(super) fn gen_trait_scaffolding(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) -> *const ::std::ffi::c_void {
+            ::uniffi::deps::trace!("clonining trait: {} ({:?})", #trait_name, ptr);
             ::uniffi::rust_call(call_status, || {
                 let ptr = ptr as *mut ::std::sync::Arc<dyn #self_ident>;
                 let arc: ::std::sync::Arc<_> = unsafe { ::std::clone::Clone::clone(&*ptr) };
@@ -78,6 +79,7 @@ pub(super) fn gen_trait_scaffolding(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
+            ::uniffi::deps::trace!("freeing trait: {} ({:?})", #trait_name, ptr);
             ::uniffi::rust_call(call_status, || {
                 ::std::assert!(!ptr.is_null());
                 ::std::mem::drop(unsafe {
