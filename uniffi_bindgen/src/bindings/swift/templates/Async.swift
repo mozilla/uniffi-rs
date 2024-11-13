@@ -90,7 +90,7 @@ fileprivate var UNIFFI_FOREIGN_FUTURE_HANDLE_MAP = UniffiHandleMap<UniffiForeign
 //
 // Defining a protocol allows all tasks to be stored in the same handle map.  This can't be done
 // with the task object itself, since has generic parameters.
-protocol UniffiForeignFutureTask {
+fileprivate protocol UniffiForeignFutureTask {
     func cancel()
 }
 
