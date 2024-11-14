@@ -6,7 +6,10 @@ fileprivate struct {{ trait_impl }} {
 
     // Create the VTable using a series of closures.
     // Swift automatically converts these into C callback functions.
-    static var vtable: {{ vtable|ffi_type_name }} = {{ vtable|ffi_type_name }}(
+    //
+    // This creates 1-element array, since this seems to be the only way to construct a const
+    // pointer that we can pass to the Rust code.
+    static let vtable: [{{ vtable|ffi_type_name }}] = [{{ vtable|ffi_type_name }}(
         {%- for (ffi_callback, meth) in vtable_methods %}
         {{ meth.name()|fn_name }}: { (
             {%- for arg in ffi_callback.arguments() %}
@@ -101,9 +104,9 @@ fileprivate struct {{ trait_impl }} {
                 print("Uniffi callback interface {{ name }}: handle missing in uniffiFree")
             }
         }
-    )
+    )]
 }
 
 private func {{ callback_init }}() {
-    {{ ffi_init_callback.name() }}(&{{ trait_impl }}.vtable)
+    {{ ffi_init_callback.name() }}({{ trait_impl }}.vtable)
 }

@@ -560,6 +560,9 @@ impl SwiftCodeOracle {
             FfiType::Callback(name) => format!("@escaping {}", self.ffi_callback_name(name)),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) => {
+                format!("UnsafePointer<{}>", self.ffi_type_label(inner))
+            }
+            FfiType::MutReference(inner) => {
                 format!("UnsafeMutablePointer<{}>", self.ffi_type_label(inner))
             }
             FfiType::VoidPointer => "UnsafeMutableRawPointer".into(),
@@ -708,7 +711,10 @@ pub mod filters {
                 format!("{} _Nonnull", SwiftCodeOracle.ffi_callback_name(name))
             }
             FfiType::Struct(name) => SwiftCodeOracle.ffi_struct_name(name),
-            FfiType::Reference(inner) => format!("{}* _Nonnull", header_ffi_type_name(inner)?),
+            FfiType::Reference(inner) => {
+                format!("const {}* _Nonnull", header_ffi_type_name(inner)?)
+            }
+            FfiType::MutReference(inner) => format!("{}* _Nonnull", header_ffi_type_name(inner)?),
             FfiType::VoidPointer => "void* _Nonnull".into(),
         })
     }

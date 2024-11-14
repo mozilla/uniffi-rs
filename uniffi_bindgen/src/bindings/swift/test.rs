@@ -96,6 +96,8 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     command
         .current_dir(out_dir)
         .arg("-emit-module")
+        // TODO(2279): Fix concurrency issues and uncomment this
+        //.arg("-strict-concurrency=complete")
         .arg("-module-name")
         .arg(module_name)
         .arg("-o")

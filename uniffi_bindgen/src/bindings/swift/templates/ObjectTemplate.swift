@@ -132,7 +132,7 @@ open class {{ impl_class_name }}:
 #endif
 public struct {{ ffi_converter_name }}: FfiConverter {
     {%- if obj.has_callback_interface() %}
-    fileprivate static var handleMap = UniffiHandleMap<{{ type_name }}>()
+    fileprivate static let handleMap = UniffiHandleMap<{{ type_name }}>()
     {%- endif %}
 
     typealias FfiType = UnsafeMutableRawPointer
