@@ -52,7 +52,7 @@ pub(super) fn trait_impl(
         let lift_return_type = ffiops::lift_return_type(&sig.return_ty);
         if !sig.is_async {
             quote! {
-                #ident: extern "C" fn(
+                pub #ident: extern "C" fn(
                     uniffi_handle: u64,
                     #(#param_names: #param_types,)*
                     uniffi_out_return: &mut #lift_return_type,
@@ -61,7 +61,7 @@ pub(super) fn trait_impl(
             }
         } else {
             quote! {
-                #ident: extern "C" fn(
+                pub #ident: extern "C" fn(
                     uniffi_handle: u64,
                     #(#param_names: #param_types,)*
                     uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
@@ -80,15 +80,15 @@ pub(super) fn trait_impl(
     let impl_attributes = has_async_method.then(|| quote! { #[::async_trait::async_trait] });
 
     Ok(quote! {
-        struct #vtable_type {
+        pub struct #vtable_type {
             #(#vtable_fields)*
-            uniffi_free: extern "C" fn(handle: u64),
+            pub uniffi_free: extern "C" fn(handle: u64),
         }
 
         static #vtable_cell: ::uniffi::UniffiForeignPointerCell::<#vtable_type> = ::uniffi::UniffiForeignPointerCell::<#vtable_type>::new();
 
         #[no_mangle]
-        extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
+        pub extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
             #vtable_cell.set(vtable);
         }
 
