@@ -13,10 +13,6 @@
   We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
   See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
 
-### What's fixed?
-
-- Fixed bug in metadata extraction with large ELF files.
-
 ### What's new?
 
 - Kotlin: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
@@ -26,15 +22,23 @@
   to consumers and could have high overhead when lots of FFI calls are made. Instead, the
   `ffi-trace` feature can be used to get tracing-style printouts about the FFI.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...HEAD).
-
 ### What's changed?
 
 - Switching jinja template engine from askama to rinja.
-- 
+
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
 - Added the `FfiType::MutReference` variant.
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
+
+## v0.28.3 (backend crates: v0.28.3) - (_2024-11-08_)
+
+### What's fixed?
+
+- Fixed bug in metadata extraction with large ELF files.
+
+[All changes in v0.28.3](https://github.com/mozilla/uniffi-rs/compare/v0.28.2...v0.28.3).
 
 ## v0.28.2 (backend crates: v0.28.2) - (_2024-10-08_)
 
