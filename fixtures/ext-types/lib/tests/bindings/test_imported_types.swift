@@ -52,3 +52,12 @@ assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.on
 
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface(val: "foo").value() == "foo")
+
+do {
+    try throwGuidError()
+    assert(false, "No error thrown")
+} catch _ as GuidError {
+    // Ignore correct error
+} catch {
+    assert(false, "Wrong error returned")
+}

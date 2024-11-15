@@ -133,7 +133,8 @@ impl Function {
             self.arguments
                 .iter()
                 .flat_map(Argument::iter_types)
-                .chain(self.return_type.iter().flat_map(Type::iter_types)),
+                .chain(self.return_type.iter().flat_map(Type::iter_types))
+                .chain(self.throws.iter().flat_map(Type::iter_types)),
         )
     }
 

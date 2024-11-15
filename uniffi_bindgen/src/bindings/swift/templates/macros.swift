@@ -7,7 +7,7 @@
 {%- macro to_ffi_call(func) -%}
     {%- call is_try(func) -%}
     {%- if let(Some(e)) = func.throws_type() -%}
-        rustCallWithError({{ e|ffi_error_converter_name }}.lift) {
+        rustCallWithError({{ e|ffi_error_converter_name }}_lift) {
     {%- else -%}
         rustCall() {
     {%- endif %}
