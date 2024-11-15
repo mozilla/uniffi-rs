@@ -4,16 +4,20 @@
 
 use super::CodeType;
 use crate::backend::Literal;
-use crate::interface::{Radix, Type};
+use crate::{
+    bail,
+    interface::{Radix, Type},
+    Result,
+};
 use paste::paste;
 
-fn render_literal(literal: &Literal) -> String {
-    fn typed_number(type_: &Type, num_str: String) -> String {
+fn render_literal(literal: &Literal) -> Result<String> {
+    fn typed_number(type_: &Type, num_str: String) -> Result<String> {
         let unwrapped_type = match type_ {
             Type::Optional { inner_type } => inner_type,
             t => t,
         };
-        match unwrapped_type {
+        Ok(match unwrapped_type {
             // special case Int32.
             Type::Int32 => num_str,
             // otherwise use constructor e.g. UInt8(x)
@@ -33,11 +37,11 @@ fn render_literal(literal: &Literal) -> String {
                     super::SwiftCodeOracle.find(type_).type_label()
                 )
             }
-            _ => panic!("Unexpected literal: {num_str} for type: {type_:?}"),
-        }
+            _ => bail!("Unexpected literal: {num_str} for type: {type_:?}"),
+        })
     }
 
-    match literal {
+    Ok(match literal {
         Literal::Boolean(v) => format!("{v}"),
         Literal::String(s) => format!("\"{s}\""),
         Literal::Int(i, radix, type_) => typed_number(
@@ -47,7 +51,7 @@ fn render_literal(literal: &Literal) -> String {
                 Radix::Decimal => format!("{i}"),
                 Radix::Hexadecimal => format!("{i:#x}"),
             },
-        ),
+        )?,
         Literal::UInt(i, radix, type_) => typed_number(
             type_,
             match radix {
@@ -55,10 +59,10 @@ fn render_literal(literal: &Literal) -> String {
                 Radix::Decimal => format!("{i}"),
                 Radix::Hexadecimal => format!("{i:#x}"),
             },
-        ),
-        Literal::Float(string, type_) => typed_number(type_, string.clone()),
-        _ => unreachable!("Literal"),
-    }
+        )?,
+        Literal::Float(string, type_) => typed_number(type_, string.clone())?,
+        _ => bail!("Invalid literal: {literal:?}"),
+    })
 }
 
 macro_rules! impl_code_type_for_primitive {
@@ -72,7 +76,7 @@ macro_rules! impl_code_type_for_primitive {
                     $class_name.into()
                 }
 
-                fn literal(&self, literal: &Literal) -> String {
+                fn literal(&self, literal: &Literal) -> Result<String> {
                     render_literal(&literal)
                 }
             }

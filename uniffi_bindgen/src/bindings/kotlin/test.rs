@@ -2,10 +2,10 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::bindings::RunScriptOptions;
-use crate::cargo_metadata::CrateConfigSupplier;
-use crate::library_mode::generate_bindings;
-use anyhow::{bail, Context, Result};
+use crate::{
+    bail, bindings::RunScriptOptions, cargo_metadata::CrateConfigSupplier,
+    library_mode::generate_bindings, Context, Result,
+};
 use camino::{Utf8Path, Utf8PathBuf};
 use std::env;
 use std::process::Command;
@@ -70,7 +70,7 @@ pub fn run_script(
         .wait()
         .context("Failed to wait for `kotlinc` when running Kotlin script")?;
     if !status.success() {
-        anyhow::bail!("running `kotlinc` failed")
+        bail!("running `kotlinc` failed")
     }
     Ok(())
 }

@@ -125,7 +125,7 @@ class RustBuffer < FFI::Struct
   end
 
   {% when Type::Record { name: record_name, .. } -%}
-  {%- let rec = ci|get_record_definition(record_name) -%}
+  {%- let rec = ci.get_record_definition(record_name).unwrap() -%}
   # The Record type {{ record_name }}.
 
   def self.check_lower_{{ canonical_type_name }}(v)
@@ -149,7 +149,7 @@ class RustBuffer < FFI::Struct
 
   {% when Type::Enum { name: enum_name, .. }  -%}
   {% if !ci.is_name_used_as_error(enum_name) %}
-  {%- let e = ci|get_enum_definition(enum_name) -%}
+  {%- let e = ci.get_enum_definition(enum_name).unwrap() -%}
   # The Enum type {{ enum_name }}.
 
   def self.check_lower_{{ canonical_type_name }}(v)

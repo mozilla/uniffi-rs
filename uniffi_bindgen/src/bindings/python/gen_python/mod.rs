@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use rinja::Template;
 
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
@@ -43,8 +43,8 @@ trait CodeType: Debug {
         self.type_label()
     }
 
-    fn literal(&self, _literal: &Literal) -> String {
-        unimplemented!("Unimplemented for {}", self.type_label())
+    fn literal(&self, _literal: &Literal) -> Result<String> {
+        bail!("Unimplemented for {}", self.type_label())
     }
 
     /// Name of the FfiConverter
@@ -568,8 +568,9 @@ impl<T: AsType> AsCodeType for T {
 }
 
 pub mod filters {
+    use crate::backend::filters::to_rinja_error;
+
     use super::*;
-    pub use crate::backend::filters::*;
 
     pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
         Ok(as_ct.as_codetype().type_label())
@@ -607,13 +608,22 @@ pub mod filters {
         literal: &Literal,
         as_ct: &impl AsCodeType,
     ) -> Result<String, rinja::Error> {
-        Ok(as_ct.as_codetype().literal(literal))
+        as_ct
+            .as_codetype()
+            .literal(literal)
+            .map_err(|e| to_rinja_error(&e))
     }
 
     // Get the idiomatic Python rendering of an individual enum variant's discriminant
     pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, rinja::Error> {
-        let literal = e.variant_discr(*index).expect("invalid index");
-        Ok(Type::UInt64.as_codetype().literal(&literal))
+        let literal = e
+            .variant_discr(*index)
+            .context("invalid index")
+            .map_err(|e| to_rinja_error(&e))?;
+        Type::UInt64
+            .as_codetype()
+            .literal(&literal)
+            .map_err(|e| to_rinja_error(&e))
     }
 
     pub fn ffi_type_name(type_: &FfiType) -> Result<String, rinja::Error> {

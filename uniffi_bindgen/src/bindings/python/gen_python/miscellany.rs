@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::backend::Literal;
+
 use paste::paste;
 
 macro_rules! impl_code_type_for_miscellany {
@@ -19,10 +19,6 @@ macro_rules! impl_code_type_for_miscellany {
 
                 fn canonical_name(&self) -> String {
                     format!("{}", $canonical_name)
-                }
-
-                fn literal(&self, _literal: &Literal) -> String {
-                    unreachable!()
                 }
             }
         }

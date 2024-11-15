@@ -7,14 +7,11 @@ use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
-use anyhow::{anyhow, Context, Result};
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use rinja::Template;
 use serde::{Deserialize, Serialize};
 
-use crate::backend::TemplateExpression;
-
-use crate::interface::*;
+use crate::{anyhow, backend::TemplateExpression, bail, interface::*, Context, Result};
 
 mod callback_interface;
 mod compounds;
@@ -39,7 +36,7 @@ trait CodeType: Debug {
     /// with this type only.
     fn canonical_name(&self) -> String;
 
-    fn literal(&self, _literal: &Literal, ci: &ComponentInterface) -> String {
+    fn literal(&self, _literal: &Literal, ci: &ComponentInterface) -> Result<String> {
         unimplemented!("Unimplemented for {}", self.type_label(ci))
     }
 
@@ -130,9 +127,7 @@ impl KotlinVersion {
             [major, minor, patch] => Ok(Self((*major, *minor, *patch))),
             [major, minor] => Ok(Self((*major, *minor, 0))),
             [major] => Ok(Self((*major, 0, 0))),
-            _ => Err(anyhow!(
-                "Invalid version string (expected 1-3 components): {version}"
-            )),
+            _ => bail!("Invalid version string (expected 1-3 components): {version}"),
         }
     }
 }
@@ -170,6 +165,7 @@ impl Config {
 // Generate kotlin bindings for the given ComponentInterface, as a string.
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
     KotlinWrapper::new(config.clone(), ci)
+        .context("failed to create a binding generator")?
         .render()
         .context("failed to render kotlin bindings")
 }
@@ -278,16 +274,16 @@ pub struct KotlinWrapper<'a> {
 }
 
 impl<'a> KotlinWrapper<'a> {
-    pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
+    pub fn new(config: Config, ci: &'a ComponentInterface) -> Result<Self> {
         let type_renderer = TypeRenderer::new(&config, ci);
-        let type_helper_code = type_renderer.render().unwrap();
+        let type_helper_code = type_renderer.render()?;
         let type_imports = type_renderer.imports.into_inner();
-        Self {
+        Ok(Self {
             config,
             ci,
             type_helper_code,
             type_imports,
-        }
+        })
     }
 
     pub fn initialization_fns(&self) -> Vec<String> {
@@ -324,21 +320,21 @@ fn object_interface_name(ci: &ComponentInterface, obj: &Object) -> String {
 
 // *sigh* - same thing for a trait, which might be either Object or CallbackInterface.
 // (we should either fold it into object or kill it!)
-fn trait_interface_name(ci: &ComponentInterface, name: &str) -> String {
+fn trait_interface_name(ci: &ComponentInterface, name: &str) -> Result<String> {
     let (obj_name, has_callback_interface) = match ci.get_object_definition(name) {
         Some(obj) => (obj.name(), obj.has_callback_interface()),
         None => (
             ci.get_callback_interface_definition(name)
-                .unwrap_or_else(|| panic!("no interface {}", name))
+                .ok_or_else(|| anyhow!("no interface {}", name))?
                 .name(),
             true,
         ),
     };
     let class_name = KotlinCodeOracle.class_name(ci, obj_name);
     if has_callback_interface {
-        class_name
+        Ok(class_name)
     } else {
-        format!("{class_name}Interface")
+        Ok(format!("{class_name}Interface"))
     }
 }
 
@@ -603,7 +599,10 @@ mod filters {
         as_ct: &impl AsType,
         ci: &ComponentInterface,
     ) -> Result<String, rinja::Error> {
-        Ok(as_ct.as_codetype().literal(literal, ci))
+        as_ct
+            .as_codetype()
+            .literal(literal, ci)
+            .map_err(|e| to_rinja_error(&e))
     }
 
     // Get the idiomatic Kotlin rendering of an integer.
@@ -612,14 +611,10 @@ mod filters {
             match t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
                 Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Ok(base10 + "u"),
-                _ => Err(rinja::Error::Custom(Box::new(UniFFIError::new(
-                    "Only ints are supported.".to_string(),
-                )))),
+                _ => Err(to_rinja_error("Only ints are supported.")),
             }
         } else {
-            Err(rinja::Error::Custom(Box::new(UniFFIError::new(
-                "Enum hasn't defined a repr".to_string(),
-            ))))
+            Err(to_rinja_error("Enum hasn't defined a repr"))
         }
     }
 
@@ -631,9 +626,7 @@ mod filters {
             // so we'll need to make sure we define the type as appropriately
             LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
             LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
-            _ => Err(rinja::Error::Custom(Box::new(UniFFIError::new(
-                "Only ints are supported.".to_string(),
-            )))),
+            _ => Err(to_rinja_error("Only ints are supported.")),
         }
     }
 

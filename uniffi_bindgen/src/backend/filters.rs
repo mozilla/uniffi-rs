@@ -4,73 +4,29 @@
 
 //! Backend-agnostic rinja filters
 
-use crate::interface::{
-    AsType, CallbackInterface, ComponentInterface, Enum, FfiType, Function, Object, Record,
-};
-use rinja::Result;
+use crate::interface::{AsType, FfiType};
 use std::fmt;
 
-// Need to define an error that implements std::error::Error, which neither String nor
+// convert `anyhow::Error` and `&str` etc to rinja errors.
+// should only be needed by "filters", otherwise anyhow etc work directly.
+pub fn to_rinja_error<T: ToString + ?Sized>(t: &T) -> rinja::Error {
+    rinja::Error::Custom(Box::new(FilterError(t.to_string())))
+}
+
+// Need a struct to define an error that implements std::error::Error, which neither String nor
 // anyhow::Error do.
 #[derive(Debug)]
-pub struct UniFFIError {
-    message: String,
-}
+struct FilterError(String);
 
-impl UniFFIError {
-    pub fn new(message: String) -> Self {
-        Self { message }
-    }
-}
-
-impl fmt::Display for UniFFIError {
+impl fmt::Display for FilterError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
+        write!(f, "{}", self.0)
     }
 }
 
-impl std::error::Error for UniFFIError {}
-
-macro_rules! lookup_error {
-    ($($args:tt)*) => {
-        rinja::Error::Custom(Box::new(UniFFIError::new(format!($($args)*))))
-    }
-}
-
-/// Get an Enum definition by name
-pub fn get_enum_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result<&'a Enum> {
-    ci.get_enum_definition(name)
-        .ok_or_else(|| lookup_error!("enum {name} not found"))
-}
-
-/// Get a Record definition by name
-pub fn get_record_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result<&'a Record> {
-    ci.get_record_definition(name)
-        .ok_or_else(|| lookup_error!("record {name} not found"))
-}
-
-/// Get a Function definition by name
-pub fn get_function_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result<&'a Function> {
-    ci.get_function_definition(name)
-        .ok_or_else(|| lookup_error!("function {name} not found"))
-}
-
-/// Get an Object definition by name
-pub fn get_object_definition<'a>(ci: &'a ComponentInterface, name: &str) -> Result<&'a Object> {
-    ci.get_object_definition(name)
-        .ok_or_else(|| lookup_error!("object {name} not found"))
-}
-
-/// Get an Callback Interface definition by name
-pub fn get_callback_interface_definition<'a>(
-    ci: &'a ComponentInterface,
-    name: &str,
-) -> Result<&'a CallbackInterface> {
-    ci.get_callback_interface_definition(name)
-        .ok_or_else(|| lookup_error!("callback interface {name} not found"))
-}
+impl std::error::Error for FilterError {}
 
 /// Get the FfiType for a Type
-pub fn ffi_type(type_: &impl AsType) -> Result<FfiType, rinja::Error> {
+pub fn ffi_type(type_: &impl AsType) -> rinja::Result<FfiType, rinja::Error> {
     Ok(type_.as_type().into())
 }

@@ -1,4 +1,4 @@
-{%- let cbi = ci|get_callback_interface_definition(name) %}
+{%- let cbi = ci.get_callback_interface_definition(name).unwrap() %}
 {%- let callback_handler = format!("uniffiCallbackHandler{}", name) %}
 {%- let callback_init = format!("uniffiCallbackInit{}", name) %}
 {%- let methods = cbi.methods() %}
