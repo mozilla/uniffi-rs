@@ -48,6 +48,13 @@ We have [detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrad
 
 - Added the `FfiType::MutReference` variant.
 
+### Deprecations for external bindings authors
+
+- `ComponentInterface` is deprecated, use `interface::ir::BindingsIr` instead.
+  The interface is very similar, but `BindingsIr` is more data-centric.
+  For example, it exposes `pub` fields instead of methods.
+  See https://mozilla.github.io/uniffi-rs/latest/internals/bindings_render_pipeline.html for an overview of the new system.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
 
 ## v0.28.3 (backend crates: v0.28.3) - (_2024-11-08_)

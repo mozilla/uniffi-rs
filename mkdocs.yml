@@ -95,6 +95,6 @@ nav:
   - ./internals/lifting_and_lowering.md
   - ./internals/object_references.md
   - ./internals/async.md
-  - ./internals/rendering_foreign_bindings.md
+  - ./internals/bindings_render_pipeline.md
 
 - ./Upgrading.md
