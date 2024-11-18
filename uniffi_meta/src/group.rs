@@ -183,7 +183,6 @@ impl<'a> ExternalTypeConverter<'a> {
                     module_path,
                     name,
                     kind: ExternalKind::DataClass,
-                    tagged: false,
                 }
             }
             Type::Custom {
@@ -196,7 +195,6 @@ impl<'a> ExternalTypeConverter<'a> {
                     module_path,
                     name,
                     kind: ExternalKind::DataClass,
-                    tagged: false,
                 }
             }
             Type::Object {
@@ -206,7 +204,6 @@ impl<'a> ExternalTypeConverter<'a> {
                 module_path,
                 name,
                 kind: ExternalKind::Interface,
-                tagged: false,
             },
             Type::CallbackInterface { module_path, name }
                 if self.is_module_path_external(&module_path) =>
@@ -243,7 +240,6 @@ impl<'a> ExternalTypeConverter<'a> {
                 module_path,
                 name,
                 kind,
-                tagged,
             } => {
                 assert!(namespace.is_empty());
                 Type::External {
@@ -251,7 +247,6 @@ impl<'a> ExternalTypeConverter<'a> {
                     module_path,
                     name,
                     kind,
-                    tagged,
                 }
             }
 

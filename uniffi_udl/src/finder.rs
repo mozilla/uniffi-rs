@@ -175,7 +175,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                         _ => bail!("Can't work out the type - no attributes and unknown extern type '{typedef_type}'"),
                     }
                 }
-                Some(tagged) => {
+                Some(_tagged) => {
                     // Must be either `[Rust..]` or `[Extern..]`
                     match attrs.rust_kind() {
                         Some(RustKind::Object) => Type::Object {
@@ -206,7 +206,6 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                                 namespace: "".to_string(), // we don't know this yet
                                 module_path: attrs.get_crate_name(),
                                 kind,
-                                tagged,
                             }
                         }
                     }

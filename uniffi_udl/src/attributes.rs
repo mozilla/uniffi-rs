@@ -37,6 +37,7 @@ pub(super) enum Attribute {
         kind: ExternalKind,
         export: bool,
     },
+    Remote,
     Rust {
         kind: RustKind,
     },
@@ -89,6 +90,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "WithForeign" => Ok(Attribute::WithForeign),
                 "Async" => Ok(Attribute::Async),
                 "NonExhaustive" => Ok(Attribute::NonExhaustive),
+                "Remote" => Ok(Attribute::Remote),
                 _ => anyhow::bail!("ExtendedAttributeNoArgs not supported: {:?}", (attr.0).0),
             },
             // Matches assignment-style attributes like ["Throws=Error"]
@@ -215,6 +217,41 @@ where
     Ok(attrs)
 }
 
+/// Attributes that can be attached to an `dictionary` definition in the UDL.
+#[derive(Debug, Clone, Checksum, Default)]
+pub(super) struct DictionaryAttributes(Vec<Attribute>);
+
+impl DictionaryAttributes {
+    pub fn contains_remote(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Remote))
+    }
+}
+
+impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for DictionaryAttributes {
+    type Error = anyhow::Error;
+    fn try_from(
+        weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
+    ) -> Result<Self, Self::Error> {
+        let attrs = parse_attributes(weedle_attributes, |attr| match attr {
+            Attribute::Remote => Ok(()),
+            _ => bail!(format!("{attr:?} not supported for dictionaries")),
+        })?;
+        Ok(Self(attrs))
+    }
+}
+
+impl<T: TryInto<DictionaryAttributes, Error = anyhow::Error>> TryFrom<Option<T>>
+    for DictionaryAttributes
+{
+    type Error = anyhow::Error;
+    fn try_from(value: Option<T>) -> Result<Self, Self::Error> {
+        match value {
+            None => Ok(Default::default()),
+            Some(v) => v.try_into(),
+        }
+    }
+}
+
 /// Attributes that can be attached to an `enum` definition in the UDL.
 #[derive(Debug, Clone, Checksum, Default)]
 pub(super) struct EnumAttributes(Vec<Attribute>);
@@ -229,6 +266,10 @@ impl EnumAttributes {
             .iter()
             .any(|attr| matches!(attr, Attribute::NonExhaustive))
     }
+
+    pub fn contains_remote(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Remote))
+    }
 }
 
 impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
@@ -239,6 +280,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for EnumAttributes {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
             Attribute::Error => Ok(()),
             Attribute::NonExhaustive => Ok(()),
+            Attribute::Remote => Ok(()),
             // Allow `[Enum]`, since we may be parsing an attribute list from an interface with the
             // `[Enum]` attribute.
             Attribute::Enum => Ok(()),
@@ -367,6 +409,10 @@ impl InterfaceAttributes {
         self.0.iter().any(|attr| matches!(attr, Attribute::Trait))
     }
 
+    pub fn contains_remote(&self) -> bool {
+        self.0.iter().any(|attr| matches!(attr, Attribute::Remote))
+    }
+
     pub fn contains_with_foreign(&self) -> bool {
         self.0
             .iter()
@@ -405,6 +451,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for InterfaceAttribu
             Attribute::Trait => Ok(()),
             Attribute::WithForeign => Ok(()),
             Attribute::Traits(_) => Ok(()),
+            Attribute::Remote => Ok(()),
             _ => bail!(format!("{attr:?} not supported for interface definition")),
         })?;
         if attrs.iter().any(|a| matches!(a, Attribute::Enum)) && attrs.len() != 1 {
@@ -895,6 +942,17 @@ mod test {
     }
 
     #[test]
+    fn test_dictionary_attributes() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Remote]").unwrap();
+        let attrs = DictionaryAttributes::try_from(&node).unwrap();
+        assert!(attrs.contains_remote());
+
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
+        let err = DictionaryAttributes::try_from(&node).unwrap_err();
+        assert_eq!(err.to_string(), "Trait not supported for dictionaries");
+    }
+
+    #[test]
     fn test_enum_attribute_on_interface() {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum]").unwrap();
         let attrs = InterfaceAttributes::try_from(&node).unwrap();
@@ -920,10 +978,12 @@ mod test {
     #[test]
     fn test_enum_attributes() {
         let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse("[Error, NonExhaustive]").unwrap();
+            weedle::attribute::ExtendedAttributeList::parse("[Error, NonExhaustive, Remote]")
+                .unwrap();
         let attrs = EnumAttributes::try_from(&node).unwrap();
         assert!(attrs.contains_error_attr());
         assert!(attrs.contains_non_exhaustive_attr());
+        assert!(attrs.contains_remote());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait]").unwrap();
         let err = EnumAttributes::try_from(&node).unwrap_err();
@@ -937,11 +997,12 @@ mod test {
         assert!(EnumAttributes::try_from(&node).is_ok());
 
         let (_, node) =
-            weedle::attribute::ExtendedAttributeList::parse("[Enum, Error, NonExhaustive]")
+            weedle::attribute::ExtendedAttributeList::parse("[Enum, Error, NonExhaustive, Remote]")
                 .unwrap();
         let attrs = EnumAttributes::try_from(&node).unwrap();
         assert!(attrs.contains_error_attr());
         assert!(attrs.contains_non_exhaustive_attr());
+        assert!(attrs.contains_remote());
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Enum, Trait]").unwrap();
         let err = EnumAttributes::try_from(&node).unwrap_err();
@@ -949,7 +1010,11 @@ mod test {
     }
 
     #[test]
-    fn test_other_attributes_not_supported_for_interfaces() {
+    fn test_interface_attributes() {
+        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Remote]").unwrap();
+        let attrs = InterfaceAttributes::try_from(&node).unwrap();
+        assert!(attrs.contains_remote());
+
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Trait, ByRef]").unwrap();
         let err = InterfaceAttributes::try_from(&node).unwrap_err();
         assert_eq!(

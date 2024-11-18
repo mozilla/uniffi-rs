@@ -45,8 +45,5 @@ uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::E
 {% include "CallbackInterfaceTemplate.rs" %}
 {% endfor %}
 
-// External and Wrapped types
-{% include "ExternalTypesTemplate.rs" %}
-
 // Export scaffolding checksums for UDL items
 {% include "Checksums.rs" %}

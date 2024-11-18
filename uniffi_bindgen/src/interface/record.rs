@@ -59,6 +59,7 @@ use super::{AsType, Type, TypeIterator};
 pub struct Record {
     pub(super) name: String,
     pub(super) module_path: String,
+    pub(super) remote: bool,
     pub(super) fields: Vec<Field>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
@@ -71,6 +72,10 @@ impl Record {
 
     pub fn rename(&mut self, name: String) {
         self.name = name;
+    }
+
+    pub fn remote(&self) -> bool {
+        self.remote
     }
 
     pub fn fields(&self) -> &[Field] {
@@ -106,6 +111,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
         Ok(Self {
             name: meta.name,
             module_path: meta.module_path,
+            remote: meta.remote,
             fields: meta
                 .fields
                 .into_iter()

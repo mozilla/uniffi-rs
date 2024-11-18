@@ -307,28 +307,6 @@ impl ComponentInterface {
         self.is_name_used_as_error(&e.name) && (fielded || used_in_foreign_interface)
     }
 
-    /// Get details about all `Type::External` types.
-    /// Returns an iterator of (name, crate_name, kind)
-    pub fn iter_external_types(
-        &self,
-    ) -> impl Iterator<Item = (&String, String, ExternalKind, bool)> {
-        self.types.iter_known_types().filter_map(|t| match t {
-            Type::External {
-                name,
-                module_path,
-                kind,
-                tagged,
-                ..
-            } => Some((
-                name,
-                module_path.split("::").next().unwrap().to_string(),
-                *kind,
-                *tagged,
-            )),
-            _ => None,
-        })
-    }
-
     /// Get details about all `Type::Custom` types
     pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
         self.types.iter_known_types().filter_map(|t| match t {
@@ -1193,6 +1171,7 @@ mod test {
 existing definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    remote: false,
     discr_type: None,
     variants: [
         Variant {
@@ -1215,6 +1194,7 @@ existing definition: Enum {
 new definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    remote: false,
     discr_type: None,
     variants: [
         Variant {
@@ -1376,6 +1356,7 @@ new definition: Enum {
             name: "ob".to_string(),
             module_path: "mp".to_string(),
             imp: ObjectImpl::Struct,
+            remote: false,
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),

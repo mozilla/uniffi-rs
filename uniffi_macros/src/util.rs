@@ -209,10 +209,10 @@ pub fn either_attribute_arg<T: ToTokens>(a: Option<T>, b: Option<T>) -> syn::Res
 pub(crate) fn tagged_impl_header(
     trait_name: &str,
     ident: &impl ToTokens,
-    udl_mode: bool,
+    remote: bool,
 ) -> TokenStream {
     let trait_name = Ident::new(trait_name, Span::call_site());
-    if udl_mode {
+    if remote {
         quote! { impl ::uniffi::#trait_name<crate::UniFfiTag> for #ident }
     } else {
         quote! { impl<T> ::uniffi::#trait_name<T> for #ident }
@@ -221,13 +221,13 @@ pub(crate) fn tagged_impl_header(
 
 pub(crate) fn derive_ffi_traits(
     ty: impl ToTokens,
-    udl_mode: bool,
+    remote: bool,
     trait_names: &[&str],
 ) -> TokenStream {
     let trait_idents = trait_names
         .iter()
         .map(|name| Ident::new(name, Span::call_site()));
-    if udl_mode {
+    if remote {
         quote! {
             #(
                 ::uniffi::derive_ffi_traits!(impl #trait_idents<crate::UniFfiTag> for #ty);
@@ -256,9 +256,6 @@ pub mod kw {
     syn::custom_keyword!(non_exhaustive);
     syn::custom_keyword!(lower);
     syn::custom_keyword!(try_lift);
-    // This isn't currently used, but will be once we land #2087 which should happen before the
-    // next UniFFI release.  It's defined here to avoid needing to make too many changes in
-    // `custom_types.rs` once we do land that PR.
     syn::custom_keyword!(remote);
     syn::custom_keyword!(Record);
     syn::custom_keyword!(Enum);
