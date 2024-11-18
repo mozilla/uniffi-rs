@@ -107,28 +107,28 @@ impl BindingGenerator for SwiftBindingGenerator {
             }
 
             if settings.try_format_code {
-                let mut swift_format_via_xcrun = Command::new("xcrun");
-                swift_format_via_xcrun.args(["--find", "swift-format"]);
-                let official_swift_format = Command::new("swift-format");
-                let mut swift_short_hand = Command::new("swift");
-                swift_short_hand.arg("format");
-                let swiftformat = Command::new("swiftformat");
-
-                let mut commands_to_try = [
-                    swift_format_via_xcrun,
-                    official_swift_format,
-                    swift_short_hand,
-                    swiftformat,
+                let commands_to_try = [
+                    // Available in Xcode 16.
+                    vec!["xcrun", "--find", "swift-format"],
+                    // The official swift-format command name.
+                    vec!["swift-format"],
+                    // Shortcut for the swift-format command.
+                    vec!["swift", "format"],
+                    vec!["swiftformat"],
                 ];
-                for command in &mut commands_to_try {
-                    match command.arg(source_file.as_str()).output() {
-                        Ok(_) => break,
-                        Err(e) => println!(
-                            "Warning: Unable to auto-format {} using {:?}: {e:?}",
-                            source_file.file_name().unwrap(),
-                            command.get_program().to_str(),
-                        ),
-                    }
+
+                let successful_output = commands_to_try.into_iter().find_map(|command| {
+                    Command::new(&command[0])
+                        .args(&command[1..])
+                        .arg(source_file.as_str())
+                        .output()
+                        .ok()
+                });
+                if successful_output.is_none() {
+                    println!(
+                        "Warning: Unable to auto-format {} using swift-format. Please make sure it is installed.",
+                        source_file.as_str()
+                    );
                 }
             }
         }
