@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="ext_types.html">
+        <link rel="prev" href="callback_interfaces.html">
       
       
         <link rel="next" href="custom_types.html">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Declaring External Types - The UniFFI user guide</title>
+        <title>Remote and External types - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#declaring-external-types" class="md-skip">
+        <a href="#remote-and-external-types" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Declaring External Types
+              Remote and External types
             
           </span>
         </div>
@@ -662,64 +662,6 @@
   
   
   
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_8" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_3_8" id="__nav_3_8_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    External Types
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_8_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_8">
-            <span class="md-nav__icon md-icon"></span>
-            External Types
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="ext_types.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    External types
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
     <li class="md-nav__item md-nav__item--active">
       
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
@@ -728,96 +670,15 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Declaring External Types
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="ext_types_external.html" class="md-nav__link md-nav__link--active">
+      <a href="remote_ext_types.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Declaring External Types
+    Remote and External types
   </span>
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#external-interface-and-trait-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      External interface and trait types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#external-procmacro-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      External procmacro types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#foreign-bindings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Foreign bindings
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Foreign bindings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#kotlin" class="md-nav__link">
-    <span class="md-ellipsis">
-      Kotlin
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#swift" class="md-nav__link">
-    <span class="md-ellipsis">
-      Swift
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -840,14 +701,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1467,65 +1320,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#external-interface-and-trait-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      External interface and trait types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#external-procmacro-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      External procmacro types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#foreign-bindings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Foreign bindings
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Foreign bindings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#kotlin" class="md-nav__link">
-    <span class="md-ellipsis">
-      Kotlin
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#swift" class="md-nav__link">
-    <span class="md-ellipsis">
-      Swift
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1542,53 +1336,88 @@
   
 
 
-<h1 id="declaring-external-types">Declaring External Types</h1>
-<p>It is possible to use types defined by UniFFI in an external crate. For example, let's assume
-that you have an existing crate named <code>demo_crate</code> with the following UDL:</p>
-<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>DemoDict<span class="w"> </span>{
-<span class="w">  </span><span class="nb">string</span><span class="w"> </span>string_val;
-<span class="w">  </span>boolean<span class="w"> </span>bool_val;
+<h1 id="remote-and-external-types">Remote and External types</h1>
+<p>Remote and external types can help solve some advanced use-cases when using UniFFI.
+They are grouped this section, since they're often used together.</p>
+<h1 id="remote-types">Remote types</h1>
+<p>"Remote types" refer to types defined in other crates that do not use UniFFI.
+This normally means types from crates that you depend on but don't control.
+Remote types require extra handling to use them in UniFFI APIs, because of Rust's <a href="https://doc.rust-lang.org/book/traits.html#rules-for-implementing-traits">orphan rule</a>.
+See https://github.com/mozilla/uniffi-rs/tree/main/examples/log-formatter for example code.</p>
+<p>In general, using remote types in UniFFI requires writing a type definition that mirrors the real definition found in the remote crate.</p>
+<h2 id="proc-macros">Proc-macros</h2>
+<div class="highlight"><pre><span></span><code><span class="c1">// Type aliases can be used to give remote types nicer names when exposed in the UniFFI api.</span>
+<span class="k">type</span><span class="w"> </span><span class="nc">LogLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log</span><span class="p">::</span><span class="n">Level</span><span class="p">;</span>
+
+<span class="c1">// Write a definition that mirrors the definition from the remote crate and wrap it with `[uniffi::remote(&lt;kind&gt;)]`.</span>
+<span class="c1">//</span>
+<span class="c1">// - UniFFI will generate the FFI scaffolding code for the item, but will not output the item itself</span>
+<span class="c1">//   (since the real item is defined in the remote crate).</span>
+<span class="c1">// - `&lt;kind&gt;` can be any parameter that&#39;s valid for `uniffi::derive()`.</span>
+<span class="cp">#[uniffi::remote(Enum)]</span>
+<span class="k">enum</span><span class="w"> </span><span class="nc">LogLevel</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Error</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Warn</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Info</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Debug</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Trace</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="udl">UDL</h2>
+<p>Wrap the definition with <code>[Remote]</code> attribute:</p>
+<div class="highlight"><pre><span></span><code>[Remote]
+enum<span class="w"> </span>LogLevel<span class="w"> </span>{
+<span class="w">    </span><span class="s2">&quot;Error&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;Warn&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;Info&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;Debug&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;Trace&quot;</span>,
 };
 </code></pre></div>
-<p>Inside another crate, <code>consuming_crate</code>, you'd like to use this dictionary.
-Inside <code>consuming_crate</code>'s UDL file you can reference <code>DemoDict</code> by using a
-<code>typedef</code> with an <code>External</code> attribute, as shown below.</p>
-<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;demo_crate&quot;</span>]
-typedef<span class="w"> </span>extern<span class="w"> </span>DemoDict;
+<h1 id="external-types">External Types</h1>
+<p>"External types" refer to types defined in other crates that use UniFFI.
+This normally means types from other crates in your workspace.</p>
+<h2 id="proc-macros_1">Proc-macros</h2>
+<p>Proc-macro-based code can use external types automatically, without any extra code.</p>
+<h2 id="udl_1">UDL</h2>
+<p>Suppose you depend on the <code>DemoDict</code> type from another UniFFIed crate in your workspace.
+You can reference this type by using the <code>[External]</code> attribute to wrap a typedef describing the concrete type.</p>
+<div class="highlight"><pre><span></span><code>[External]
+typedef<span class="w"> </span>dictionary<span class="w"> </span>One;
 
-<span class="o">//</span><span class="w"> </span>Now<span class="w"> </span>define<span class="w"> </span>our<span class="w"> </span>own<span class="w"> </span>dictionary<span class="w"> </span>which<span class="w"> </span>references<span class="w"> </span>the<span class="w"> </span>imported<span class="w"> </span>type.
+<span class="o">//</span><span class="w"> </span>Now<span class="w"> </span>define<span class="w"> </span>our<span class="w"> </span>own<span class="w"> </span>dictionary<span class="w"> </span>which<span class="w"> </span>references<span class="w"> </span>the<span class="w"> </span>external<span class="w"> </span>type.
 dictionary<span class="w"> </span>ConsumingDict<span class="w"> </span>{
 <span class="w">  </span>DemoDict<span class="w"> </span>demo_dict;
 <span class="w">  </span>boolean<span class="w"> </span>another_bool;
 };
 </code></pre></div>
-<p>Inside <code>consuming_crate</code>'s Rust code you must <code>use</code> that struct as normal - for example,
-<code>consuming_crate</code>'s <code>lib.rs</code> might look like:</p>
-<div class="highlight"><pre><span></span><code><span class="k">use</span><span class="w"> </span><span class="n">demo_crate</span><span class="p">::</span><span class="n">DemoDict</span><span class="p">;</span>
-
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">ConsumingDict</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">demo_dict</span><span class="p">:</span><span class="w"> </span><span class="nc">DemoDict</span><span class="p">,</span>
-<span class="w">    </span><span class="n">another_bool</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="n">uniffi</span><span class="p">::</span><span class="n">include_scaffolding</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;consuming_crate&quot;</span><span class="p">);</span>
-</code></pre></div>
-<p>Your <code>Cargo.toml</code> must reference the external crate as normal.</p>
-<p>The <code>External</code> attribute can be specified on dictionaries, enums, errors.</p>
-<h2 id="external-interface-and-trait-types">External interface and trait types</h2>
-<p>If the external type is an <a href="interfaces.html">Interface</a>, then use the <code>[ExternalInterface]</code> attribute instead of <code>[External]</code>:</p>
-<div class="highlight"><pre><span></span><code>[ExternalInterface<span class="o">=</span><span class="s2">&quot;demo_crate&quot;</span>]
-typedef<span class="w"> </span>extern<span class="w"> </span>DemoInterface;
-</code></pre></div>
-<p>similarly for traits: use <code>[ExternalTrait]</code>.</p>
-<h2 id="external-procmacro-types">External procmacro types</h2>
-<p>The above examples assume the external types were defined via UDL.
-If they were defined by procmacros, you need different attribute names:</p>
+<p>Supported values for the typedef type:</p>
 <ul>
-<li>if <code>DemoDict</code> is implemented by a procmacro in <code>demo_crate</code>, you'd use <code>[ExternalExport=...]</code></li>
-<li>for <code>DemoInterface</code> you'd use <code>[ExternalInterfaceExport=...]</code></li>
+<li>Enums: <code>enum</code></li>
+<li>Records: <code>record</code>, <code>dictionary</code> or <code>struct</code></li>
+<li>Objects: <code>object</code>, <code>impl</code> or <code>interface</code></li>
+<li>Traits: <code>trait</code>, <code>callback</code> or <code>trait_with_foreign</code></li>
 </ul>
-<p>For types defined by procmacros in <em>this</em> crate, see the <a href="ext_types.html">attribute <code>[Rust=...]</code></a></p>
+<h1 id="special-cases-for-remote-types">Special cases for remote types</h1>
+<p>There are a few cases where remote types require extra handling in addition to the rules above.</p>
+<h2 id="remote-external-types">Remote + External types</h2>
+<p>Types that are remote and external require a <code>use_remote_type!</code> macro call.</p>
+<p>If <code>crate_a</code> defines <a href="https://doc.rust-lang.org/std/net/enum.IpAddr.html">IpAddr</a> as a remote type, then <code>crate_b</code> can use that type with the following Rust code:</p>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">use_remote_type</span><span class="o">!</span><span class="p">(</span><span class="n">IpAddr</span><span class="p">,</span><span class="w"> </span><span class="n">crate_a</span><span class="p">);</span>
+</code></pre></div>
+<h2 id="udl_2">UDL</h2>
+<p>UDL-users will also need to add the external type definition:</p>
+<div class="highlight"><pre><span></span><code>[External]
+typedef<span class="w"> </span>enum<span class="w"> </span>IpAddr;
+</code></pre></div>
+<h2 id="remote-custom-types">Remote custom types</h2>
+<p>Types that are remote and custom require using the <code>remote</code> attribute with the <code>custom_type!</code> macro.</p>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">StructFromOtherCrate</span><span class="p">,</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">remote</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lower</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">s</span><span class="o">|</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">to_string</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">try_lift</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">s</span><span class="o">|</span><span class="w"> </span><span class="n">StructFromOtherCrate</span><span class="p">::</span><span class="n">try_from_string</span><span class="p">(</span><span class="n">s</span><span class="p">),</span>
+<span class="p">});</span>
+</code></pre></div>
 <h2 id="foreign-bindings">Foreign bindings</h2>
 <p>The foreign bindings will also need to know how to access the external type,
 which varies slightly for each language:</p>

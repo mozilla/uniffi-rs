@@ -658,68 +658,12 @@
   
   
   
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_3_8" id="__nav_3_8_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    External Types
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_8">
-            <span class="md-nav__icon md-icon"></span>
-            External Types
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../udl/ext_types.html" class="md-nav__link">
+      <a href="../udl/remote_ext_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    External types
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../udl/ext_types_external.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Declaring External Types
+    Remote and External types
   </span>
   
 
@@ -745,14 +689,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -959,49 +895,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#types-from-dependent-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types from dependent crates
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Types from dependent crates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#types-from-udl-based-dependent-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types from UDL-based dependent crates
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#non-uniffi-types-from-dependent-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Non-UniFFI types from dependent crates
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#other-limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      Other limitations
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Other limitations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#conditional-compilation" class="md-nav__link">
     <span class="md-ellipsis">
       Conditional compilation
@@ -1009,9 +902,13 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#mixing-udl-and-proc-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixing UDL and proc-macros
+    </span>
+  </a>
   
 </li>
       
@@ -1716,49 +1613,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#types-from-dependent-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types from dependent crates
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Types from dependent crates">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#types-from-udl-based-dependent-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types from UDL-based dependent crates
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#non-uniffi-types-from-dependent-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Non-UniFFI types from dependent crates
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#other-limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      Other limitations
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Other limitations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#conditional-compilation" class="md-nav__link">
     <span class="md-ellipsis">
       Conditional compilation
@@ -1766,9 +1620,13 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#mixing-udl-and-proc-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mixing UDL and proc-macros
+    </span>
+  </a>
   
 </li>
       
@@ -2160,31 +2018,14 @@ This allows the foreign bindings to implement the interface and pass an instance
 <span class="c1">//     u32 age();</span>
 <span class="c1">// }</span>
 </code></pre></div>
-<h2 id="types-from-dependent-crates">Types from dependent crates</h2>
-<p>When using proc-macros, you can use types from dependent crates in your exported library, as long as
-the dependent crate annotates the type with one of the UniFFI derives.  However, there are a couple
-exceptions:</p>
-<h3 id="types-from-udl-based-dependent-crates">Types from UDL-based dependent crates</h3>
-<p>If the dependent crate uses a UDL file to define their types, then you must invoke one of the
-<code>uniffi::use_udl_*!</code> macros, for example:</p>
-<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_record</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">RecordType</span><span class="p">);</span>
-<span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_enum</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">EnumType</span><span class="p">);</span>
-<span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_error</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">ErrorType</span><span class="p">);</span>
-<span class="n">uniffi</span><span class="p">::</span><span class="n">use_udl_object</span><span class="o">!</span><span class="p">(</span><span class="n">dependent_crate</span><span class="p">,</span><span class="w"> </span><span class="n">ObjectType</span><span class="p">);</span>
-</code></pre></div>
-<h3 id="non-uniffi-types-from-dependent-crates">Non-UniFFI types from dependent crates</h3>
-<p>If the dependent crate doesn't define the type in a UDL file or use one of the UniFFI derive macros,
-then it's currently not possible to use them in an proc-macro exported interface.  However, we hope
-to fix this limitation soon.</p>
-<h2 id="other-limitations">Other limitations</h2>
-<p>In addition to the per-item limitations of the macros presented above, there is also currently a
-global restriction: You can only use the proc-macros inside a crate whose name is the same as the
-namespace in your UDL file. This restriction will be lifted in the future.</p>
-<h3 id="conditional-compilation">Conditional compilation</h3>
+<h2 id="conditional-compilation">Conditional compilation</h2>
 <p><code>uniffi::constructor|method</code> will work if wrapped with <code>cfg_attr</code> attribute:
 <div class="highlight"><pre><span></span><code><span class="cp">#[cfg_attr(feature = </span><span class="s">&quot;foo&quot;</span><span class="cp">, uniffi::constructor)]</span>
 </code></pre></div>
 Other attributes are not currently supported, see <a href="https://github.com/mozilla/uniffi-rs/issues/2000">#2000</a> for more details.</p>
+<h2 id="mixing-udl-and-proc-macros">Mixing UDL and proc-macros</h2>
+<p>If you use both UDL and proc-macro generation, then your crate name must match the namespace in your
+UDL file. This restriction will be lifted in the future.</p>
 
 
 

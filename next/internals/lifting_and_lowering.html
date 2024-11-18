@@ -658,68 +658,12 @@
   
   
   
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_3_8" id="__nav_3_8_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    External Types
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_8">
-            <span class="md-nav__icon md-icon"></span>
-            External Types
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../udl/ext_types.html" class="md-nav__link">
+      <a href="../udl/remote_ext_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    External types
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../udl/ext_types_external.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Declaring External Types
+    Remote and External types
   </span>
   
 
@@ -745,14 +689,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1682,10 +1618,11 @@ integers for its size fields internally.</p>
 <li>We generate a unit struct named <code>UniFfiTag</code> in the root of each UniFFIed crate.</li>
 <li>Each crate uses the <code>FfiConverter&lt;crate::UniFfiTag&gt;</code> trait to lower/lift/serialize values for its scaffolding functions.</li>
 </ul>
-<p>This allows us to work around the orphan rules when defining <code>FfiConverter</code> implementations.
- - UniFFI consumer crates can implement lifting/lowering/serializing types for their own scaffolding functions, for example <code>impl FfiConverter&lt;crate::UniFfiTag&gt; for serde_json::Value</code>.  This is allowed since <code>UniFfiTag</code> is a local type.
+<p>This allows us to work around the orphan rules when defining ffi trait implementations.
  - The <code>uniffi</code> crate can implement lifting/lowering/serializing types for all scaffolding functions using a generic impl, for example <code>impl&lt;UT&gt; FfiConverter&lt;UT&gt; for u8</code>.  "UT" is short for "UniFFI Tag"
- - We don't currently use this, but crates can also implement lifting/lowering/serializing their local types for all scaffolding functions using a similar generic impl (<code>impl&lt;UT&gt; FfiConverter&lt;UT&gt; for MyLocalType</code>).</p>
+ - UniFFI consumer crates usually implement lifting/lowering/serializing types the same way.
+ - However, for remote types, they must only implement ffi traits for their local tag, for example <code>impl FfiConverter&lt;crate::UniFfiTag&gt; for serde_json::Value</code>.  This is valid since <code>UniFfiTag</code> is a local type.
+ - If other crates also want to use the same remote type implementation, the need to implement the ffi traits for their local tag as well.  This is what the <code>use_remote_type!</code> macro does.</p>
 <p>For more details on the specifics of the "orphan rule" and why these are legal implementations, see the <a href="https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules-in-rustc">Rust Chalk Book</a></p>
 
 
