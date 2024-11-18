@@ -109,7 +109,7 @@ impl BindingGenerator for SwiftBindingGenerator {
             if settings.try_format_code {
                 let commands_to_try = [
                     // Available in Xcode 16.
-                    vec!["xcrun", "--find", "swift-format"],
+                    vec!["xcrun", "swift-format"],
                     // The official swift-format command name.
                     vec!["swift-format"],
                     // Shortcut for the swift-format command.
