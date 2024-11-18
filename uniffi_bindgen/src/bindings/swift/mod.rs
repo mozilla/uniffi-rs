@@ -107,14 +107,28 @@ impl BindingGenerator for SwiftBindingGenerator {
             }
 
             if settings.try_format_code {
-                if let Err(e) = Command::new("swiftformat")
-                    .arg(source_file.as_str())
-                    .output()
-                {
-                    println!(
-                        "Warning: Unable to auto-format {} using swiftformat: {e:?}",
-                        source_file.file_name().unwrap(),
-                    );
+                let mut swift_format_via_xcrun = Command::new("xcrun");
+                swift_format_via_xcrun.args(["--find", "swift-format"]);
+                let official_swift_format = Command::new("swift-format");
+                let mut swift_short_hand = Command::new("swift");
+                swift_short_hand.arg("format");
+                let swiftformat = Command::new("swiftformat");
+
+                let mut commands_to_try = [
+                    swift_format_via_xcrun,
+                    official_swift_format,
+                    swift_short_hand,
+                    swiftformat,
+                ];
+                for command in &mut commands_to_try {
+                    match command.arg(source_file.as_str()).output() {
+                        Ok(_) => break,
+                        Err(e) => println!(
+                            "Warning: Unable to auto-format {} using {:?}: {e:?}",
+                            source_file.file_name().unwrap(),
+                            command.get_program().to_str(),
+                        ),
+                    }
                 }
             }
         }
