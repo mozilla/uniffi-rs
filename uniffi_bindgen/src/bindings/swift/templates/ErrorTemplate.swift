@@ -90,8 +90,11 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
 {% endif %}
+
+{% if config.error_types_conform_to_localized_error() %}
 extension {{ type_name }}: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
 }
+{% endif %}

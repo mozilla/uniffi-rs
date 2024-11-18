@@ -174,11 +174,13 @@ public struct {{ ffi_converter_name }}: FfiConverter {
 {# Objects as error #}
 {%- if is_error %}
 
+{% if config.error_types_conform_to_localized_error() %}
 extension {{ type_name }}: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
     }
 }
+{% endif %}
 
 {# Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer holding a pointer #}
 #if swift(>=5.8)
