@@ -118,7 +118,7 @@ impl BindingGenerator for SwiftBindingGenerator {
                 ];
 
                 let successful_output = commands_to_try.into_iter().find_map(|command| {
-                    Command::new(&command[0])
+                    Command::new(command[0])
                         .args(&command[1..])
                         .arg(source_file.as_str())
                         .output()
