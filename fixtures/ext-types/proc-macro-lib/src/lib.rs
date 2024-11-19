@@ -6,7 +6,7 @@ use uniffi_one::{
 };
 use url::Url;
 
-uniffi::remote_type!(Url, custom_types);
+uniffi::use_remote_type!(custom_types, Url);
 
 #[derive(uniffi::Record)]
 pub struct CombinedType {
