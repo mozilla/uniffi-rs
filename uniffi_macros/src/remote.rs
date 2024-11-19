@@ -10,25 +10,25 @@ use syn::{
 };
 
 pub struct RemoteTypeArgs {
-    pub ty: Type,
-    pub sep: Token![,],
     pub implementing_crate: Ident,
+    pub sep: Token![,],
+    pub ty: Type,
 }
 
 impl Parse for RemoteTypeArgs {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         Ok(Self {
-            ty: input.parse()?,
-            sep: input.parse()?,
             implementing_crate: input.parse()?,
+            sep: input.parse()?,
+            ty: input.parse()?,
         })
     }
 }
 
 pub fn expand_remote_type(args: RemoteTypeArgs) -> TokenStream {
     let RemoteTypeArgs {
-        ty,
         implementing_crate,
+        ty,
         ..
     } = args;
     let existing_tag = quote! { #implementing_crate::UniFfiTag };

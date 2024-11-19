@@ -12,7 +12,7 @@ use uniffi_sublib::SubLibType;
 use url::Url;
 
 // Remote types require a macro call in the Rust source
-uniffi::remote_type!(Url, custom_types);
+uniffi::use_remote_type!(custom_types, Url);
 
 pub struct CombinedType {
     pub uoe: UniffiOneEnum,
