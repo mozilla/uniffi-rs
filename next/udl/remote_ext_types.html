@@ -1403,7 +1403,7 @@ dictionary<span class="w"> </span>ConsumingDict<span class="w"> </span>{
 <h2 id="remote-external-types">Remote + External types</h2>
 <p>Types that are remote and external require a <code>use_remote_type!</code> macro call.</p>
 <p>If <code>crate_a</code> defines <a href="https://doc.rust-lang.org/std/net/enum.IpAddr.html">IpAddr</a> as a remote type, then <code>crate_b</code> can use that type with the following Rust code:</p>
-<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">use_remote_type</span><span class="o">!</span><span class="p">(</span><span class="n">IpAddr</span><span class="p">,</span><span class="w"> </span><span class="n">crate_a</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">use_remote_type</span><span class="o">!</span><span class="p">(</span><span class="n">crate_a</span><span class="p">,</span><span class="w"> </span><span class="n">IpAddr</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="udl_2">UDL</h2>
 <p>UDL-users will also need to add the external type definition:</p>
