@@ -11,7 +11,7 @@ use syn::{
 
 pub struct RemoteTypeArgs {
     pub implementing_crate: Ident,
-    pub sep: Token![,],
+    pub sep: Token![::],
     pub ty: Type,
 }
 

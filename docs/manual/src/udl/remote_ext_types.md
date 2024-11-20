@@ -92,7 +92,7 @@ Types that are remote and external require a `use_remote_type!` macro call.
 If `crate_a` defines [IpAddr](https://doc.rust-lang.org/std/net/enum.IpAddr.html) as a remote type, then `crate_b` can use that type with the following Rust code:
 
 ```rust
-uniffi::use_remote_type!(crate_a, IpAddr);
+uniffi::use_remote_type!(crate_a::IpAddr);
 ```
 
 ## UDL
