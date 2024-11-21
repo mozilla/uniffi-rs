@@ -73,5 +73,14 @@ class TestIt(unittest.TestCase):
         self.assertEqual(t1, get_uniffi_one_proc_macro_type(t1))
         self.assertEqual(t1, get_my_proc_macro_type(t1))
 
+    def test_misc_external_types(self):
+        # various edge-cases for various external/custom types.
+        self.assertEqual(get_imported_guid("guid"), "guid")
+        self.assertEqual(get_imported_ouid("ouid"), "ouid")
+        self.assertEqual(get_imported_nested_guid(None), "nested")
+        self.assertEqual(get_imported_nested_ouid(None), "nested")
+        self.assertEqual(get_nested_external_guid(None), "nested-external")
+        self.assertEqual(get_nested_external_ouid(None), "nested-external-ouid")
+
 if __name__=='__main__':
     unittest.main()
