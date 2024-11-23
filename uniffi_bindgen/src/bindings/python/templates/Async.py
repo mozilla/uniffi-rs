@@ -40,7 +40,7 @@ def _uniffi_set_future_result(future, poll_code):
     if not future.cancelled():
         future.set_result(poll_code)
 
-async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free, lift_func, error_ffi_converter):
+async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free, error_ffi_converter):
     try:
         eventloop = _uniffi_get_event_loop()
 
@@ -56,13 +56,11 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
             if poll_code == _UNIFFI_RUST_FUTURE_POLL_READY:
                 break
 
-        return lift_func(
-            _uniffi_rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
-        )
+        return _uniffi_rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
     finally:
         ffi_free(rust_future)
 
-{%- if ci.has_async_callback_interface_definition() %}
+{%- if runtimes.async_callback %}
 def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
     async def make_call_and_call_callback():
         try:
@@ -72,7 +70,7 @@ def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
             traceback.print_exc(file=sys.stderr)
             handle_error(
                 _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR,
-                {{ Type::String.borrow()|lower_fn }}(repr(e)),
+                {{ globals.string_type|lower_fn }}(repr(e)),
             )
     eventloop = _uniffi_get_event_loop()
     task = asyncio.run_coroutine_threadsafe(make_call_and_call_callback(), eventloop)
@@ -94,7 +92,7 @@ def _uniffi_trait_interface_call_async_with_error(make_call, handle_success, han
             traceback.print_exc(file=sys.stderr)
             handle_error(
                 _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR,
-                {{ Type::String.borrow()|lower_fn }}(repr(e)),
+                {{ globals.string_type|lower_fn }}(repr(e)),
             )
     eventloop = _uniffi_get_event_loop()
     task = asyncio.run_coroutine_threadsafe(make_call_and_call_callback(), eventloop)

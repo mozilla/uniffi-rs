@@ -8,6 +8,8 @@
 
 ### ⚠️ Breaking Changes ⚠️
 
+- Python: Added the `type_name` field for custom type configs.  This is required when the name of
+  the custom type differs from the Python type name.
 - The Rust side of the custom type system has changed and users will need to update their code.
   The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
   We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).

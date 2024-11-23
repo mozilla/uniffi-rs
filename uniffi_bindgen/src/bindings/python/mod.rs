@@ -10,6 +10,7 @@ use fs_err as fs;
 mod gen_python;
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
+
 use crate::{BindingGenerator, Component, GenerationSettings};
 
 use gen_python::{generate_python_bindings, Config};
@@ -51,7 +52,7 @@ impl BindingGenerator for PythonBindingGenerator {
     ) -> Result<()> {
         for Component { ci, config, .. } in components {
             let py_file = settings.out_dir.join(format!("{}.py", ci.namespace()));
-            fs::write(&py_file, generate_python_bindings(config, &mut ci.clone())?)?;
+            fs::write(&py_file, generate_python_bindings(config, ci)?)?;
 
             if settings.try_format_code {
                 if let Err(e) = Command::new("yapf").arg(&py_file).output() {
