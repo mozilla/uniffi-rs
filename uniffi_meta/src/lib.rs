@@ -336,6 +336,14 @@ impl EnumShape {
             _ => anyhow::bail!("invalid enum shape discriminant {v}"),
         })
     }
+
+    pub fn is_error(&self) -> bool {
+        matches!(self, Self::Error { .. })
+    }
+
+    pub fn is_flat_error(&self) -> bool {
+        matches!(self, Self::Error { flat: true })
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
