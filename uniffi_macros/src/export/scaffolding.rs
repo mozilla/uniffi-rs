@@ -238,12 +238,6 @@ pub(super) fn gen_ffi_function(
             ScaffoldingBits::new_for_constructor(sig, self_ident, udl_mode)
         }
     };
-    // Scaffolding functions are logically `pub`, but we don't use that in UDL mode since UDL has
-    // historically not required types to be `pub`
-    let vis = match udl_mode {
-        false => quote! { pub },
-        true => quote! {},
-    };
 
     let ffi_ident = sig.scaffolding_fn_ident()?;
     let ffi_fn_name = ffi_ident.to_string();
@@ -259,7 +253,7 @@ pub(super) fn gen_ffi_function(
         quote! {
             #[doc(hidden)]
             #[no_mangle]
-            #vis extern "C" fn #ffi_ident(
+            pub extern "C" fn #ffi_ident(
                 #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> #ffi_return_ty {
