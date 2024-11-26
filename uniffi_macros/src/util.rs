@@ -75,10 +75,7 @@ pub fn mod_path() -> syn::Result<String> {
         .map_err(|e| syn::Error::new(Span::call_site(), e))?;
     Ok(syn::parse::<syn::LitStr>(expanded_module_path)?
         .value()
-        .split("::")
-        .next()
-        .unwrap()
-        .to_owned())
+        .replace("::", "_"))
 }
 
 pub fn try_read_field(f: &syn::Field) -> TokenStream {
