@@ -73,7 +73,12 @@ pub fn mod_path() -> syn::Result<String> {
     // This is a nightly feature, tracked at https://github.com/rust-lang/rust/issues/90765
     let expanded_module_path = TokenStream::expand_expr(&module_path_invoc)
         .map_err(|e| syn::Error::new(Span::call_site(), e))?;
-    Ok(syn::parse::<syn::LitStr>(expanded_module_path)?.value())
+    Ok(syn::parse::<syn::LitStr>(expanded_module_path)?
+        .value()
+        .split("::")
+        .next()
+        .unwrap()
+        .to_owned())
 }
 
 pub fn try_read_field(f: &syn::Field) -> TokenStream {
