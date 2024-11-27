@@ -91,7 +91,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 extension {{ type_name }}: Equatable, Hashable {}
 {% endif %}
 
-{% if config.error_types_conform_to_localized_error() %}
+{% if !config.omit_localized_error_conformance() %}
 extension {{ type_name }}: Foundation.LocalizedError {
     public var errorDescription: String? {
         String(reflecting: self)
