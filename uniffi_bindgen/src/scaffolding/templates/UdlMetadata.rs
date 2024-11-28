@@ -1,4 +1,4 @@
-
+#![allow(clippy::empty_line_after_doc_comments)]
 /// Export info about the UDL while used to create us
 /// See `uniffi_bindgen::macro_metadata` for how this is used.
 
