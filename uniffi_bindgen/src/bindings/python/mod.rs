@@ -13,7 +13,9 @@ pub mod test;
 
 use crate::{BindingGenerator, Component, GenerationSettings};
 
-use gen_python::{generate_python_bindings, Config};
+pub use gen_python::{
+    generate_python_bindings, generate_python_bindings_from_ir, Config, PythonBindingsIr,
+};
 
 pub struct PythonBindingGenerator;
 

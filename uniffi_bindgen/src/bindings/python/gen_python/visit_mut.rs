@@ -77,6 +77,7 @@ pub struct Runtimes {
 }
 
 /// Protocol to define
+#[derive(Debug)]
 pub struct Protocol {
     pub name: String,
     pub base_class: String,

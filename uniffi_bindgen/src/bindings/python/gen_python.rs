@@ -18,7 +18,7 @@ use crate::{
 
 mod visit_mut;
 
-use visit_mut::{BindingsIrVisitor, Protocol, Runtimes};
+pub use visit_mut::{BindingsIrVisitor, Protocol, Runtimes};
 
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -60,36 +60,45 @@ impl Config {
 
 // Generate python bindings for the given ComponentInterface, as a string.
 pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    PythonBindingsIr::new(config.clone(), ci.clone())?
+    PythonBindingsIr::from_ci(ci.clone(), config.clone())?
         .render()
         .context("failed to render python bindings")
 }
 
+pub fn generate_python_bindings_from_ir(ir: PythonBindingsIr) -> Result<String> {
+    ir.render().context("failed to render python bindings")
+}
+
 /// Specializes the BindingsIr for Python
-#[derive(Template)]
+#[derive(Debug, Template)]
 #[template(syntax = "py", escape = "none", path = "wrapper.py")]
-struct PythonBindingsIr {
-    imports: Vec<String>,
-    ffi_definitions: Vec<FfiDefinition>,
-    checksum_checks: Vec<ChecksumCheck>,
-    type_definitions: Vec<TypeDefinition>,
-    functions: Vec<Function>,
-    module_docstring: Option<String>,
-    globals: GlobalDefinitions,
-    protocols: Vec<Protocol>,
-    cdylib_name: String,
-    runtimes: Runtimes,
+pub struct PythonBindingsIr {
+    pub namespace: String,
+    pub imports: Vec<String>,
+    pub ffi_definitions: Vec<FfiDefinition>,
+    pub checksum_checks: Vec<ChecksumCheck>,
+    pub type_definitions: Vec<TypeDefinition>,
+    pub functions: Vec<Function>,
+    pub module_docstring: Option<String>,
+    pub globals: GlobalDefinitions,
+    pub protocols: Vec<Protocol>,
+    pub cdylib_name: String,
+    pub runtimes: Runtimes,
     /// names to export via the __all__ object
-    exports: Vec<String>,
+    pub exports: Vec<String>,
 }
 
 impl PythonBindingsIr {
-    fn new(config: Config, ci: ComponentInterface) -> Result<Self> {
-        let mut ir: BindingsIr = ci.clone().try_into()?;
+    pub fn from_ci(ci: ComponentInterface, config: Config) -> Result<Self> {
+        Self::from_general_ir(ci.try_into()?, config)
+    }
+
+    pub fn from_general_ir(mut ir: BindingsIr, config: Config) -> Result<Self> {
         let cdylib_name = config.cdylib_name();
         let mut visitor = BindingsIrVisitor::new(config);
         ir.visit_mut(&mut visitor)?;
         Ok(Self {
+            namespace: ir.namespace,
             imports: visitor.imports.into_iter().collect(),
             ffi_definitions: ir.ffi_definitions,
             checksum_checks: ir.checksum_checks,

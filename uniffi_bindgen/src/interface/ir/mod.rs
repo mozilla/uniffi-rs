@@ -26,6 +26,7 @@ pub use visit_mut::VisitMut;
 /// See `<https://mozilla.github.io/uniffi-rs/latest/internals/bindings_render_pipeline.html>` for an overview of this.
 #[derive(Debug, Clone)]
 pub struct BindingsIr {
+    pub namespace: String,
     pub crate_docstring: Option<String>,
     pub globals: GlobalDefinitions,
     pub checksum_checks: Vec<ChecksumCheck>,

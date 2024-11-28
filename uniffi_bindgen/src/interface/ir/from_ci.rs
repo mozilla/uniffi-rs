@@ -52,6 +52,7 @@ impl TryFrom<interface::ComponentInterface> for BindingsIr {
             })
             .collect();
         Ok(Self {
+            namespace: ci.namespace().to_string(),
             crate_docstring: ci.types.namespace_docstring,
             globals,
             checksum_checks,

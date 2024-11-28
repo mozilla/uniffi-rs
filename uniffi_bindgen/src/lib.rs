@@ -102,6 +102,7 @@ use std::process::Command;
 
 pub mod backend;
 pub mod bindings;
+pub mod cli_support;
 pub mod interface;
 pub mod library_mode;
 pub mod macro_metadata;
@@ -114,8 +115,9 @@ use crate::interface::{
     Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
     Variant,
 };
-pub use interface::ComponentInterface;
+pub use interface::{BindingsIr, ComponentInterface};
 pub use library_mode::find_components;
+pub use macro_metadata::{load_metadata_from_library, load_metadata_from_udl};
 use scaffolding::RustScaffolding;
 use uniffi_meta::Type;
 
@@ -390,6 +392,67 @@ pub fn generate_bindings<T: BindingGenerator>(
         crate_name,
         try_format_code,
     )
+}
+
+pub fn metadata_groups_to_irs(
+    metadata_groups: Vec<uniffi_meta::MetadataGroup>,
+) -> Result<Vec<BindingsIr>> {
+    metadata_groups
+        .into_iter()
+        .map(|metadata_group| {
+            let mut ci = ComponentInterface::new(&metadata_group.namespace.crate_name);
+            ci.add_metadata(metadata_group)?;
+            BindingsIr::try_from(ci)
+        })
+        .collect()
+}
+
+pub fn metadata_groups_to_components<B, C>(
+    metadata_groups: Vec<uniffi_meta::MetadataGroup>,
+    cdylib: Option<String>,
+    binding_generator: B,
+    config_supplier: C,
+) -> Result<Vec<Component<B::Config>>>
+where
+    B: BindingGenerator,
+    C: BindgenCrateConfigSupplier,
+{
+    let settings = GenerationSettings {
+        cdylib,
+        // Use placeholder values for these, they don't matter for this purpose
+        out_dir: "".into(),
+        try_format_code: false,
+    };
+    let mut components = metadata_groups
+        .into_iter()
+        .map(|metadata_group| {
+            let toml_table = config_supplier
+                .get_toml(&metadata_group.namespace.crate_name)?
+                .unwrap_or_default();
+            let config = binding_generator.new_config(&toml::Value::from(toml_table))?;
+            let mut ci = ComponentInterface::new(&metadata_group.namespace.crate_name);
+            ci.add_metadata(metadata_group)?;
+            Ok(Component { ci, config })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    binding_generator.update_component_configs(&settings, &mut components)?;
+    Ok(components)
+}
+
+pub fn metadata_groups_to_irs_and_configs<B, C>(
+    metadata_groups: Vec<uniffi_meta::MetadataGroup>,
+    cdylib: Option<String>,
+    binding_generator: B,
+    config_supplier: C,
+) -> Result<Vec<(BindingsIr, B::Config)>>
+where
+    B: BindingGenerator,
+    C: BindgenCrateConfigSupplier,
+{
+    metadata_groups_to_components(metadata_groups, cdylib, binding_generator, config_supplier)?
+        .into_iter()
+        .map(|component| Ok((BindingsIr::try_from(component.ci)?, component.config)))
+        .collect()
 }
 
 pub fn print_repr(library_path: &Utf8Path) -> Result<()> {

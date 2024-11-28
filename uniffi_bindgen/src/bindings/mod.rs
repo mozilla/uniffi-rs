@@ -7,13 +7,13 @@
 //! This module contains all the code for generating foreign language bindings,
 //! along with some helpers for executing foreign language scripts or tests.
 
-mod kotlin;
+pub mod kotlin;
 pub use kotlin::KotlinBindingGenerator;
-mod python;
-pub use python::PythonBindingGenerator;
-mod ruby;
+pub mod python;
+pub use python::{PythonBindingGenerator, PythonBindingsIr};
+pub mod ruby;
 pub use ruby::RubyBindingGenerator;
-mod swift;
+pub mod swift;
 pub use swift::{generate_swift_bindings, SwiftBindingGenerator, SwiftBindingsOptions};
 
 #[cfg(feature = "bindgen-tests")]
