@@ -1382,8 +1382,8 @@ This normally means types from other crates in your workspace.</p>
 <h2 id="udl_1">UDL</h2>
 <p>Suppose you depend on the <code>DemoDict</code> type from another UniFFIed crate in your workspace.
 You can reference this type by using the <code>[External]</code> attribute to wrap a typedef describing the concrete type.</p>
-<div class="highlight"><pre><span></span><code>[External]
-typedef<span class="w"> </span>dictionary<span class="w"> </span>One;
+<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;demo_crate&quot;</span>]
+typedef<span class="w"> </span>dictionary<span class="w"> </span>DemoDict;
 
 <span class="o">//</span><span class="w"> </span>Now<span class="w"> </span>define<span class="w"> </span>our<span class="w"> </span>own<span class="w"> </span>dictionary<span class="w"> </span>which<span class="w"> </span>references<span class="w"> </span>the<span class="w"> </span>external<span class="w"> </span>type.
 dictionary<span class="w"> </span>ConsumingDict<span class="w"> </span>{
@@ -1407,7 +1407,7 @@ dictionary<span class="w"> </span>ConsumingDict<span class="w"> </span>{
 </code></pre></div>
 <h2 id="udl_2">UDL</h2>
 <p>UDL-users will also need to add the external type definition:</p>
-<div class="highlight"><pre><span></span><code>[External]
+<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;crate_a&quot;</span>]
 typedef<span class="w"> </span>enum<span class="w"> </span>IpAddr;
 </code></pre></div>
 <h2 id="remote-custom-types">Remote custom types</h2>
