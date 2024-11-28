@@ -64,8 +64,8 @@ Suppose you depend on the `DemoDict` type from another UniFFIed crate in your wo
 You can reference this type by using the `[External]` attribute to wrap a typedef describing the concrete type.
 
 ```idl
-[External]
-typedef dictionary One;
+[External="demo_crate"]
+typedef dictionary DemoDict;
 
 // Now define our own dictionary which references the external type.
 dictionary ConsumingDict {
@@ -100,7 +100,7 @@ uniffi::use_remote_type!(crate_a::IpAddr);
 UDL-users will also need to add the external type definition:
 
 ```idl
-[External]
+[External="crate_a"]
 typedef enum IpAddr;
 ```
 
