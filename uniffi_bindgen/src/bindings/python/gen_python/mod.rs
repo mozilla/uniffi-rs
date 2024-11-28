@@ -33,6 +33,10 @@ pub fn generate_python_bindings(config: &Config, ci: &ComponentInterface) -> Res
         .context("failed to render python bindings")
 }
 
+pub fn generate_python_bindings_from_ir(ir: PythonBindingsIr) -> Result<String> {
+    ir.render().context("failed to render python bindings")
+}
+
 // Config options to customize the generated python.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {

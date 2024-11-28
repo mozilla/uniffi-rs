@@ -1592,6 +1592,7 @@ dependencies = [
  "uniffi_build",
  "uniffi_core",
  "uniffi_macros",
+ "uniffi_meta",
 ]
 
 [[package]]

@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::process::Command;
 
 mod gen_kotlin;
-use gen_kotlin::{generate_bindings, Config};
+pub use gen_kotlin::{generate_bindings, Config};
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
 

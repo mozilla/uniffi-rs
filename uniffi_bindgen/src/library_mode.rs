@@ -143,7 +143,7 @@ pub fn find_components(
         .collect()
 }
 
-fn load_udl_metadata(
+pub fn load_udl_metadata(
     group: &MetadataGroup,
     crate_name: &str,
     config_supplier: &dyn BindgenCrateConfigSupplier,

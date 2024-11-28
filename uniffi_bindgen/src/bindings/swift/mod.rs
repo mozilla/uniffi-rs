@@ -36,14 +36,16 @@ use fs_err as fs;
 use std::process::Command;
 
 mod gen_swift;
-use gen_swift::{generate_bindings, generate_header, generate_modulemap, generate_swift, Config};
+pub use gen_swift::{
+    generate_bindings, generate_header, generate_modulemap, generate_swift, Config,
+};
 
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
 
 /// The Swift bindings generated from a [`crate::ComponentInterface`].
 ///
-struct Bindings {
+pub struct Bindings {
     /// The contents of the generated `.swift` file, as a string.
     library: String,
     /// The contents of the generated `.h` file, as a string.
