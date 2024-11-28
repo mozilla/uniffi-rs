@@ -1,6 +1,6 @@
 
-/// Export info about the UDL while used to create us
-/// See `uniffi_bindgen::macro_metadata` for how this is used.
+// Export info about the UDL file used to create us
+// See `uniffi_bindgen::macro_metadata` for how this is used.
 
 // ditto for info about the UDL which spawned us.
 {%- let const_udl_var = "UNIFFI_META_CONST_UDL_{}"|format(ci.namespace().to_shouty_snake_case()) %}
