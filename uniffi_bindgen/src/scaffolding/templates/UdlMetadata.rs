@@ -1,8 +1,6 @@
-#![allow(clippy::empty_line_after_doc_comments)]
-/// Export info about the UDL while used to create us
-/// See `uniffi_bindgen::macro_metadata` for how this is used.
 
-// ditto for info about the UDL which spawned us.
+/// Export info about this UDL file
+/// See `uniffi_bindgen::macro_metadata` for how this is used.
 {%- let const_udl_var = "UNIFFI_META_CONST_UDL_{}"|format(ci.namespace().to_shouty_snake_case()) %}
 {%- let static_udl_var = "UNIFFI_META_UDL_{}"|format(ci.namespace().to_shouty_snake_case()) %}
 
