@@ -1,4 +1,3 @@
-
 // Export info about this UDL file
 // See `uniffi_bindgen::macro_metadata` for how this is used.
 {%- let const_udl_var = "UNIFFI_META_CONST_UDL_{}"|format(ci.namespace().to_shouty_snake_case()) %}
