@@ -14,10 +14,10 @@ edition = "2021"
 keywords = ["ffi", "bindgen"]
 
 [dependencies]
-uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.3.2", optional = true }
-uniffi_build = { path = "../uniffi_build", version = "=0.3.2", optional = true }
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.3.3", optional = true }
+uniffi_build = { path = "../uniffi_build", version = "=0.3.3", optional = true }
 uniffi_core = { path = "../uniffi_core", version = "=0.25.0" }
-uniffi_macros = { path = "../uniffi_macros", version = "=0.3.2" }
+uniffi_macros = { path = "../uniffi_macros", version = "=0.3.3" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
 clap = { version = "4", features = ["cargo", "std", "derive"], optional = true }
