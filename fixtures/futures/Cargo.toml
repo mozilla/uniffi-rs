@@ -15,13 +15,13 @@ name = "uniffi-fixtures-futures"
 path = "src/bin.rs"
 
 [dependencies]
-uniffi = { path = "../../uniffi", version = "0.3.2", features = ["tokio", "cli"] }
+uniffi = { path = "../../uniffi", version = "0.3.3", features = ["tokio", "cli"] }
 thiserror = "1.0"
 tokio = { version = "1.24.1", features = ["time", "sync"] }
 once_cell = "1.18.0"
 
 [build-dependencies]
-uniffi = { path = "../../uniffi", version = "0.3.2", features = ["build"] }
+uniffi = { path = "../../uniffi", version = "0.3.3", features = ["build"] }
 
 [dev-dependencies]
-uniffi = { path = "../../uniffi", version = "0.3.2", features = ["bindgen-tests"] }
+uniffi = { path = "../../uniffi", version = "0.3.3", features = ["bindgen-tests"] }

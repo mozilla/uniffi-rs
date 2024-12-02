@@ -11,10 +11,10 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_rondpoint"
 
 [dependencies]
-uniffi = {path = "../../uniffi", version = "0.3.2" }
+uniffi = {path = "../../uniffi", version = "0.3.3" }
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", version = "0.3.2", features = ["build"] }
+uniffi = {path = "../../uniffi", version = "0.3.3", features = ["build"] }
 
 [dev-dependencies]
-uniffi = {path = "../../uniffi", version = "0.3.2", features = ["bindgen-tests"] }
+uniffi = {path = "../../uniffi", version = "0.3.3", features = ["bindgen-tests"] }
