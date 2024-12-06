@@ -6,7 +6,88 @@ use camino::{Utf8Path, Utf8PathBuf};
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use std::env;
-use syn::{parse_macro_input, punctuated::Punctuated, LitStr, Token};
+use syn::{parse_macro_input, punctuated::Punctuated, Ident, LitStr, Token};
+
+const TEST_FIXTURES: &[&str] = &[
+    "uniffi-fixture-fn-calls",
+    "uniffi-fixture-primitive-types",
+    // TODO
+    // "uniffi-fixture-compound-types",
+    // "uniffi-fixture-extra-types",
+    // "uniffi-fixture-errors",
+    // "uniffi-fixture-records",
+    // "uniffi-fixture-enums",
+    // "uniffi-fixture-interfaces",
+    // "uniffi-fixture-interface-errors",
+    // "uniffi-fixture-callbacks",
+    // "uniffi-fixture-trait-interfaces",
+    // "uniffi-fixture-async",
+    // "uniffi-fixture-async-callbacks",
+    // "uniffi-fixture-custom-types",
+    // "uniffi-fixture-external-types",
+    // "uniffi-fixture-keywords",
+    // "uniffi-fixture-defaults",
+    // "uniffi-fixture-rust-trait-methods",
+];
+
+pub(crate) fn bindings_tests(tokens: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(tokens as BindingsTestsInput);
+
+    // For each test file found, generate a matching testcase.
+    let test_functions = input
+        .runners
+        .iter()
+        .flat_map(|runner| TEST_FIXTURES.iter().map(move |fixture| (fixture, runner)))
+        .map(|(fixture, runner)| {
+            let runner_name = &runner.name;
+            let runner_ident = &runner.runner;
+            let test_name = format_ident!(
+                "{}_{runner_name}",
+                fixture.replace(|c: char| !c.is_alphanumeric(), "_")
+            );
+            quote! {
+                #[test]
+                fn #test_name () -> ::uniffi::deps::anyhow::Result<()> {
+                    #runner_ident(std::env!("CARGO_TARGET_TMPDIR"), #fixture)
+                }
+            }
+        })
+        .collect::<Vec<proc_macro2::TokenStream>>();
+    let test_module = quote! {
+        #(#test_functions)*
+    };
+    TokenStream::from(test_module)
+}
+
+struct BindingsTestsInput {
+    runners: Vec<BindingsTestRunner>,
+}
+
+struct BindingsTestRunner {
+    name: Ident,
+    _sep: Token![:],
+    runner: Ident,
+}
+
+impl syn::parse::Parse for BindingsTestsInput {
+    fn parse(input: syn::parse::ParseStream<'_>) -> syn::Result<Self> {
+        let runners = Punctuated::<BindingsTestRunner, Token![,]>::parse_terminated(input)?
+            .into_iter()
+            .collect();
+
+        Ok(Self { runners })
+    }
+}
+
+impl syn::parse::Parse for BindingsTestRunner {
+    fn parse(input: syn::parse::ParseStream<'_>) -> syn::Result<Self> {
+        Ok(Self {
+            name: input.parse()?,
+            _sep: input.parse()?,
+            runner: input.parse()?,
+        })
+    }
+}
 
 pub(crate) fn build_foreign_language_testcases(tokens: TokenStream) -> TokenStream {
     let input = parse_macro_input!(tokens as BuildForeignLanguageTestCaseInput);

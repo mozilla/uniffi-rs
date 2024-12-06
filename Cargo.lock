@@ -276,6 +276,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bindings-tests"
+version = "0.1.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1843,6 +1850,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-fn-calls"
+version = "0.1.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-futures"
 version = "0.21.0"
 dependencies = [
@@ -1894,6 +1908,13 @@ dependencies = [
  "uniffi",
  "uniffi_core",
  "uniffi_meta",
+]
+
+[[package]]
+name = "uniffi-fixture-primitive-types"
+version = "0.1.0"
+dependencies = [
+ "uniffi",
 ]
 
 [[package]]

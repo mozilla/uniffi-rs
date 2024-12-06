@@ -5,7 +5,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 use crate::bindings::RunScriptOptions;
 use crate::cargo_metadata::CrateConfigSupplier;
 use crate::library_mode::generate_bindings;
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use camino::Utf8Path;
 use std::env;
 use std::ffi::OsString;
@@ -33,7 +33,11 @@ pub fn run_script(
     args: Vec<String>,
     _options: &RunScriptOptions,
 ) -> Result<()> {
-    let script_path = Utf8Path::new(script_file).canonicalize_utf8()?;
+    let script_path = Utf8Path::new(script_file);
+    if !script_path.exists() {
+        bail!("{script_path} not found");
+    }
+    let script_path = script_path.canonicalize_utf8()?;
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;

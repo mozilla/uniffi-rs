@@ -32,6 +32,14 @@ use self::{
     object::expand_object, record::expand_record,
 };
 
+/// A macro to build test cases for a bindings generator.
+///
+/// See `bindings-tests/tests/tests.rs` for an example of how this is used.
+#[proc_macro]
+pub fn bindings_tests(tokens: TokenStream) -> TokenStream {
+    test::bindings_tests(tokens)
+}
+
 /// A macro to build testcases for a component's generated bindings.
 ///
 /// This macro provides some plumbing to write automated tests for the generated

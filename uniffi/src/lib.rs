@@ -25,6 +25,8 @@ pub use uniffi_bindgen::{
 #[cfg(feature = "build")]
 pub use uniffi_build::{generate_scaffolding, generate_scaffolding_for_crate};
 #[cfg(feature = "bindgen-tests")]
+pub use uniffi_macros::bindings_tests;
+#[cfg(feature = "bindgen-tests")]
 pub use uniffi_macros::build_foreign_language_testcases;
 
 #[cfg(feature = "cli")]
