@@ -200,7 +200,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         override fun run() {
             pointer?.let { ptr ->
                 uniffiRustCall { status ->
-                    UniffiLib.INSTANCE.{{ obj.ffi_object_free().name() }}(ptr, status)
+                    UniffiLib.{{ obj.ffi_object_free().name() }}(ptr, status)
                 }
             }
         }
@@ -208,7 +208,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 
     fun uniffiClonePointer(): Pointer {
         return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
+            UniffiLib.{{ obj.ffi_object_clone().name() }}(pointer!!, status)
         }
     }
 
