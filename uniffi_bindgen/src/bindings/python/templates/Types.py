@@ -1,116 +1,92 @@
-{%- import "macros.py" as py %}
+{%- for type_def in type_definitions %}
 
-{%- for type_ in ci.iter_types() %}
-{%- let type_name = type_|type_name %}
-{%- let ffi_converter_name = type_|ffi_converter_name %}
-{%- let canonical_type_name = type_|canonical_name %}
+{%- let ffi_converter_name = type_def|ffi_converter_name %}
 
-{#
- # Map `Type` instances to an include statement for that type.
- #
- # There is a companion match in `PythonCodeOracle::create_code_type()` which performs a similar function for the
- # Rust code.
- #
- #   - When adding additional types here, make sure to also add a match arm to that function.
- #   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
- #}
-{%- match type_ %}
+{% match type_def %}
 
-{%- when Type::Boolean %}
+{%- when TypeDefinition::Builtin(type_node) %}
+{%- match type_node.kind %}
+{%- when TypeKind::Boolean %}
 {%- include "BooleanHelper.py" %}
 
-{%- when Type::Int8 %}
+{%- when TypeKind::Int8 %}
 {%- include "Int8Helper.py" %}
 
-{%- when Type::Int16 %}
+{%- when TypeKind::Int16 %}
 {%- include "Int16Helper.py" %}
 
-{%- when Type::Int32 %}
+{%- when TypeKind::Int32 %}
 {%- include "Int32Helper.py" %}
 
-{%- when Type::Int64 %}
+{%- when TypeKind::Int64 %}
 {%- include "Int64Helper.py" %}
 
-{%- when Type::UInt8 %}
+{%- when TypeKind::UInt8 %}
 {%- include "UInt8Helper.py" %}
 
-{%- when Type::UInt16 %}
+{%- when TypeKind::UInt16 %}
 {%- include "UInt16Helper.py" %}
 
-{%- when Type::UInt32 %}
+{%- when TypeKind::UInt32 %}
 {%- include "UInt32Helper.py" %}
 
-{%- when Type::UInt64 %}
+{%- when TypeKind::UInt64 %}
 {%- include "UInt64Helper.py" %}
 
-{%- when Type::Float32 %}
+{%- when TypeKind::Float32 %}
 {%- include "Float32Helper.py" %}
 
-{%- when Type::Float64 %}
+{%- when TypeKind::Float64 %}
 {%- include "Float64Helper.py" %}
 
-{%- when Type::String %}
+{%- when TypeKind::String %}
 {%- include "StringHelper.py" %}
 
-{%- when Type::Bytes %}
+{%- when TypeKind::Bytes %}
 {%- include "BytesHelper.py" %}
 
-{%- when Type::Enum { name, module_path } %}
-{%- let e = ci.get_enum_definition(name).unwrap() %}
+{%- when TypeKind::Timestamp %}
+{%- include "TimestampHelper.py" %}
+
+{%- when TypeKind::Duration %}
+{%- include "DurationHelper.py" %}
+
+
+{%- when TypeKind::Optional { inner_type } %}
+{%- include "OptionalTemplate.py" %}
+
+{%- when TypeKind::Sequence { inner_type } %}
+{%- include "SequenceTemplate.py" %}
+
+{%- when TypeKind::Map { key_type, value_type } %}
+{%- include "MapTemplate.py" %}
+
+{%- else %}
+# Invalid Builtin type: {type_def:?}")
+{%- endmatch %}
+
+{%- when TypeDefinition::Enum(e) %}
 {# For enums, there are either an error *or* an enum, they can't be both. #}
-{%- if ci.is_name_used_as_error(name) %}
+
+{%- if e.self_type.is_used_as_error %}
 {%- include "ErrorTemplate.py" %}
 {%- else %}
 {%- include "EnumTemplate.py" %}
 {% endif %}
 
-{%- when Type::Record { name, module_path } %}
+{%- when TypeDefinition::Record(rec) %}
 {%- include "RecordTemplate.py" %}
 
-{%- when Type::Timestamp %}
-{%- include "TimestampHelper.py" %}
+{%- when TypeDefinition::Interface(interface) %}
+{%- include "ObjectTemplate.py" %}
 
-{%- when Type::Duration %}
-{%- include "DurationHelper.py" %}
-
-{%- when Type::Optional { inner_type } %}
-{%- include "OptionalTemplate.py" %}
-
-{%- when Type::Sequence { inner_type } %}
-{%- include "SequenceTemplate.py" %}
-
-{%- when Type::Map { key_type, value_type } %}
-{%- include "MapTemplate.py" %}
-
-{%- when Type::CallbackInterface { name, module_path } %}
+{%- when TypeDefinition::CallbackInterface(cbi) %}
 {%- include "CallbackInterfaceTemplate.py" %}
 
-{%- when Type::Custom { name, module_path, builtin } %}
+{%- when TypeDefinition::Custom(custom_type) %}
 {%- include "CustomType.py" %}
 
-{%- when Type::External { name, module_path, namespace, .. } %}
-{%- include "ExternalTemplate.py" %}
-
-{%- else %}
+{%- when TypeDefinition::External(_) %}
 {%- endmatch %}
-{%- endfor %}
 
-# objects.
-{%- for type_ in self.iter_sorted_object_types() %}
-{%- match type_ %}
-{%- when Type::Object { name, .. } %}
-{%-     let type_name = type_|type_name %}
-{%-     let ffi_converter_name = type_|ffi_converter_name %}
-{%-     let canonical_type_name = type_|canonical_name %}
-{%-     include "ObjectTemplate.py" %}
-{%- else %}
-{%- endmatch %}
-{%- endfor %}
-
-{#-
-Setup type aliases for our custom types, has complications due to
-forward type references, #2067
--#}
-{%- for (name, ty) in self.get_custom_type_aliases() %}
-{{ name }} = {{ ty|type_name }}
-{%- endfor %}
+{% endfor %}

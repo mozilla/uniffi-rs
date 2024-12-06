@@ -8,6 +8,8 @@
 
 ### ⚠️ Breaking Changes ⚠️
 
+- Python: Added the `type_name` field for custom type configs.  This is required when the name of
+  the custom type differs from the Python type name.
 - The Rust side of the custom type system has changed and users will need to update their code.
   The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
   We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
@@ -36,6 +38,13 @@
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
 - Added the `FfiType::MutReference` variant.
+
+### Deprecations for external bindings authors
+
+- `ComponentInterface` is deprecated, use `interface::ir::BindingsIr` instead.
+  The interface is very similar, but `BindingsIr` is more data-centric.
+  For example, it exposes `pub` fields instead of methods.
+  See https://mozilla.github.io/uniffi-rs/latest/internals/bindings_render_pipeline.html for an overview of the new system.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
 

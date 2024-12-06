@@ -209,14 +209,20 @@ impl Enum {
     // in those cases, so by the time this get's run we can be confident these
     // error cases can't exist.
     pub fn variant_discr(&self, variant_index: usize) -> Result<Literal> {
-        if variant_index >= self.variants.len() {
-            anyhow::bail!("Invalid variant index {variant_index}");
+        for (i, lit) in self.variant_discr_iter().enumerate() {
+            let lit = lit?;
+            if i == variant_index {
+                return Ok(lit);
+            }
         }
+        anyhow::bail!("Invalid variant index {variant_index}");
+    }
+
+    // Iterate over variant discriminants
+    pub fn variant_discr_iter(&self) -> impl Iterator<Item = Result<Literal>> + '_ {
         let mut next = 0;
-        let mut this;
-        let mut this_lit = Literal::new_uint(0);
-        for v in self.variants().iter().take(variant_index + 1) {
-            (this, this_lit) = match v.discr {
+        self.variants().iter().map(move |v| {
+            let (this, this_lit) = match v.discr {
                 None => (
                     next,
                     if (next as i64) < 0 {
@@ -231,8 +237,8 @@ impl Enum {
                 _ => anyhow::bail!("Invalid literal type {v:?}"),
             };
             next = this.wrapping_add(1);
-        }
-        Ok(this_lit)
+            Ok(this_lit)
+        })
     }
 
     pub fn variant_discr_type(&self) -> &Option<Type> {
