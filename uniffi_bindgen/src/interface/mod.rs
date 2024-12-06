@@ -657,12 +657,33 @@ impl ComponentInterface {
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
-        self.iter_user_ffi_function_definitions()
+        self.iter_ffi_function_definitions_conditionally_include_checksums(true)
+    }
+
+    pub fn iter_ffi_function_definitions_excluding_checksums(
+        &self,
+    ) -> impl Iterator<Item = FfiFunction> + '_ {
+        self.iter_ffi_function_definitions_conditionally_include_checksums(false)
+    }
+
+    fn iter_ffi_function_definitions_conditionally_include_checksums(
+        &self,
+        include_checksums: bool,
+    ) -> impl Iterator<Item = FfiFunction> + '_ {
+        let iterator = self
+            .iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
             .chain(self.iter_futures_ffi_function_definitions())
-            .chain(self.iter_checksum_ffi_functions())
-            .chain([self.ffi_uniffi_contract_version()])
+            .chain([self.ffi_uniffi_contract_version()]);
+
+        // Conditionally determine if the checksums should be included or not.
+        if include_checksums {
+            Box::new(iterator.chain(self.iter_checksum_ffi_functions()))
+                as Box<dyn Iterator<Item = FfiFunction> + '_>
+        } else {
+            Box::new(iterator) as Box<dyn Iterator<Item = FfiFunction> + '_>
+        }
     }
 
     /// Alternate version of iter_ffi_function_definitions for languages that don't support async
