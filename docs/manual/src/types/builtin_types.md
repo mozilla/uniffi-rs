@@ -1,6 +1,7 @@
 # Built-in types
 
-The following built-in types can be passed as arguments/returned by Rust methods:
+The following built-in types can be used by UniFFI. Ths table shows the types supported
+in Rust, and the types used in UDL.
 
 | Rust type            | UDL type               | Notes                                                           |
 |----------------------|------------------------|-----------------------------------------------------------------|
