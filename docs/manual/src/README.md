@@ -11,6 +11,8 @@ works.
   Deploying using mkdocs will publish into the root of the site, **damaging
   the versioning system we have in place.**
 
+* We do however use `mkdocs` to locally test/preview the docs - see `/mkdocs.yml`.
+
 * We use a [`mike`](https://github.com/jimporter/mike) to manage
   the `mkdocs` build process and the deployment - it deploys to a versioned
   (eg, `./0.27`) directory and manages aliases (eg, `latest`) on the site.

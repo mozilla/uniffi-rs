@@ -14,7 +14,7 @@ This would mean that `Url` would be:
 * Passed across the FFI as a string
 * Represented by the `java.net.URL` type in Kotlin
 
-For terminology, we lean on our existing [lifting and lowering](../internals/lifting_and_lowering.html); in the same way an FFI type is "lifted" into the Rust type, and a Rust type is "lowered" into to FFI, here the bridge type is lifted into our custom type, and our custom type is lowered into the bridge type.
+For terminology, we lean on our existing [lifting and lowering](../internals/lifting_and_lowering.md); in the same way an FFI type is "lifted" into the Rust type, and a Rust type is "lowered" into to FFI, here the bridge type is lifted into our custom type, and our custom type is lowered into the bridge type.
 
 This creates a 2-step lifting/lowering process: our custom type is lifted/lowered to/from the bridge type, then that bridge type lifted/lowered to/from the actual FFI type.
 

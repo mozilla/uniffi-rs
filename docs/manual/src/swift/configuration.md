@@ -17,7 +17,7 @@ more likely to change than other configurations.
 | `omit_argument_labels`              | `false`                  | Whether to omit argument labels in Swift function definitions.                                                                                                     |
 | `generate_immutable_records`        | `false`                  | Whether to generate records with immutable fields (`let` instead of `var`).                                                                                        |
 | `experimental_sendable_value_types` | `false`                  | Whether to mark value types as `Sendable'.                                                                                                                         |
-| `custom_types`                      |                          | A map which controls how custom types are exposed to Swift. See the [custom types section of the manual](../udl/custom_types.md#custom-types-in-the-bindings-code) |
+| `custom_types`                      |                          | A map which controls how custom types are exposed to Swift. See the [custom types section of the manual](../types/custom_types.md#custom-types-in-the-bindings-code) |
 | `omit_localized_error_conformance`  | `false`                  | Whether to make generated error types conform to `LocalizedError`. |
 
 [^1]: `namespace` is the top-level namespace from your UDL file.

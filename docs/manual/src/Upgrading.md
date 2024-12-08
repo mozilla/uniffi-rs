@@ -31,4 +31,4 @@ uniffi::custom_type!(NewCustomType, BridgeType, {
 ```
 
 The `custom_type!` macro is more flexible than the old system - eg, the closures can be omitted in many cases where `From` and `Into` exist.
-See the [Custom Types](./udl/custom_types.md) for details.
+See the [Custom Types](./types/custom_types.md) for details.

@@ -1,6 +1,9 @@
 # The UDL file
 
-This file defines which functions, methods and types are exposed to the foreign-language bindings.
+A UDL file allows you to define an interface externally from your Rust code.
+It defines which functions, methods and types are exposed to the foreign-language bindings.
+
+For example, here we describe a [namespace](../types/namespace.md) with 2 [records](../types/records.md) and an [interface](../types/interfaces.md)
 
 ```udl
 namespace sprites {
