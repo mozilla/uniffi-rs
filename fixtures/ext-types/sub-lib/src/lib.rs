@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneTrait};
+use uniffi_one::{UniffiOneAsyncTrait, UniffiOneEnum, UniffiOneInterface, UniffiOneTrait};
 
 #[derive(Default, uniffi::Record)]
 pub struct SubLibType {
@@ -21,9 +21,55 @@ impl UniffiOneTrait for OneImpl {
     }
 }
 
+#[async_trait::async_trait]
+impl UniffiOneAsyncTrait for OneImpl {
+    async fn hello_async(&self) -> String {
+        "sub-lib async trait impl says hello".to_string()
+    }
+}
+
 #[uniffi::export]
 fn get_trait_impl() -> Arc<dyn UniffiOneTrait> {
     Arc::new(OneImpl {})
+}
+
+#[uniffi::export]
+fn get_async_trait_impl() -> Arc<dyn UniffiOneAsyncTrait> {
+    Arc::new(OneImpl {})
+}
+
+#[derive(uniffi::Object)]
+struct UniffiOneTraitWrapper {
+    inner: Arc<dyn UniffiOneTrait>,
+}
+
+#[uniffi::export]
+impl UniffiOneTraitWrapper {
+    #[uniffi::constructor]
+    fn new(inner: Arc<dyn UniffiOneTrait>) -> Self {
+        Self { inner }
+    }
+
+    fn hello(&self) -> String {
+        self.inner.hello()
+    }
+}
+
+#[derive(uniffi::Object)]
+struct UniffiOneAsyncTraitWrapper {
+    inner: Arc<dyn UniffiOneAsyncTrait>,
+}
+
+#[uniffi::export]
+impl UniffiOneAsyncTraitWrapper {
+    #[uniffi::constructor]
+    fn new(inner: Arc<dyn UniffiOneAsyncTrait>) -> Self {
+        Self { inner }
+    }
+
+    async fn hello_async(&self) -> String {
+        self.inner.hello_async().await
+    }
 }
 
 uniffi::setup_scaffolding!("imported_types_sublib");

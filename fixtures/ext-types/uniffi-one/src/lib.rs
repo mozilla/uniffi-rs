@@ -49,4 +49,10 @@ pub trait UniffiOneUDLTrait: Send + Sync {
     fn hello(&self) -> String;
 }
 
+#[uniffi::export(with_foreign)]
+#[async_trait::async_trait]
+pub trait UniffiOneAsyncTrait: Send + Sync {
+    async fn hello_async(&self) -> String;
+}
+
 uniffi::include_scaffolding!("uniffi-one");

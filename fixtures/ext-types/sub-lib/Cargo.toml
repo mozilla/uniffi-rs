@@ -16,6 +16,7 @@ name = "uniffi_sublib"
 
 [dependencies]
 anyhow = "1"
+async-trait = "0.1"
 uniffi = { workspace = true }
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 
