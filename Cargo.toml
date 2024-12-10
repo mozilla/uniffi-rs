@@ -24,6 +24,9 @@ members = [
   "examples/todolist",
   "examples/traits",
 
+  "bindings-tests",
+  "bindings-tests/fixtures/*",
+
   "fixtures/benchmarks",
   "fixtures/coverall",
   "fixtures/callbacks",
