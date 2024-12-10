@@ -78,6 +78,9 @@ fun {{ func.name() }}(
 // into `IntegrityCheckingUniffiLib` and these methods are called only once,
 // when the library is loaded.
 internal interface IntegrityCheckingUniffiLib : Library {
+    // Integrity check functions only
+    {# newline below wanted #}
+
 {%- call decl_kotlin_functions(ci.iter_ffi_function_integrity_checks()) %}
 }
 
@@ -112,6 +115,11 @@ internal interface UniffiLib : Library {
             // to trigger this issue, the performance impact is negligible, running on
             // a macOS M1 machine the `loadIndirect` call takes ~50ms.
             loadIndirect<UniffiLib>(componentName)
+            {%- if !self.initialization_fns().is_empty() -%}
+                {#-
+                // We only include the `.also` block if there are initialization functions
+                // otherwise we get linting errors saying `lib` is unused.
+                -#}
                 .also { lib: UniffiLib ->
                     // No need to check the contract version and checksums, since 
                     // we already did that with `IntegrityCheckingUniffiLib` above.
@@ -119,6 +127,9 @@ internal interface UniffiLib : Library {
                     {{ fn }}(lib)
                     {% endfor -%}
                 }
+            {%- endif -%}
+
+            // Loading of library with integrity check done.
         }
         {% if ci.contains_object_types() %}
         // The Cleaner for the whole library
@@ -127,6 +138,10 @@ internal interface UniffiLib : Library {
         }
         {%- endif %}
     }
+
+    // FFI functions
+    {# newline below before call decl_kotlin_functions is needed #}
+
     {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
 }
 
