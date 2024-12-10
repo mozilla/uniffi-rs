@@ -4,8 +4,8 @@ Callback interfaces are a special implementation of
 [Rust traits implemented by foreign languages](../foreign_traits.md).
 
 These are described in both UDL and proc-macros as an explicit "callback interface".
-They are (soft) deprecated, remain now for backwards compatibility, but probably
-should be avoided.
+They are (soft) deprecated, remain now for backwards compatibility, but
+[foreign traits](../foreign_traits.md) should be preferred.
 
 This document describes the differences from regular traits.
 
