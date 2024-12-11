@@ -754,9 +754,9 @@ pub mod filters {
         Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
-    /// Like enum_variant_swift_quoted, but a class name.
+    /// Same as enum_variant_swift_quoted, because error types are exported as Swift enums.
     pub fn error_variant_swift_quoted(nm: &str) -> Result<String, rinja::Error> {
-        Ok(quote_general_keyword(oracle().class_name(nm)))
+        Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an FFI callback function name

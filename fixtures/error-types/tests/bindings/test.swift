@@ -22,76 +22,76 @@ do {
     try oopsEnum(i: 0)
     fatalError("Should have thrown")
 } catch let e as Error {
-    assert(e == Error.Oops)
-    assert(String(describing: e) == "Oops")
-    assert(String(reflecting: e) == "error_types.Error.Oops")
+    assert(e == Error.oops)
+    assert(String(describing: e) == "oops")
+    assert(String(reflecting: e) == "error_types.Error.oops")
 }
 do {
     try oopsEnum(i: 0)
     fatalError("Should have thrown")
 } catch {
-    assert(String(describing: error) == "Oops")
-    assert(String(reflecting: error) == "error_types.Error.Oops")
-    assert(error.localizedDescription == "error_types.Error.Oops")
+    assert(String(describing: error) == "oops")
+    assert(String(reflecting: error) == "error_types.Error.oops")
+    assert(error.localizedDescription == "error_types.Error.oops")
 }
 
 do {
     try oopsEnum(i: 1)
     fatalError("Should have thrown")
 } catch {
-    assert(String(describing: error) == "Value(value: \"value\")")
-    assert(String(reflecting: error) == "error_types.Error.Value(value: \"value\")")
-    assert(error.localizedDescription == "error_types.Error.Value(value: \"value\")")
+    assert(String(describing: error) == "value(value: \"value\")")
+    assert(String(reflecting: error) == "error_types.Error.value(value: \"value\")")
+    assert(error.localizedDescription == "error_types.Error.value(value: \"value\")")
 }
 
 do {
     try oopsEnum(i: 2)
     fatalError("Should have thrown")
 } catch {
-    assert(String(describing: error) == "IntValue(value: 2)")
-    assert(String(reflecting: error) == "error_types.Error.IntValue(value: 2)")
-    assert(error.localizedDescription == "error_types.Error.IntValue(value: 2)")
+    assert(String(describing: error) == "intValue(value: 2)")
+    assert(String(reflecting: error) == "error_types.Error.intValue(value: 2)")
+    assert(error.localizedDescription == "error_types.Error.intValue(value: 2)")
 }
 
 do {
     try oopsEnum(i: 3)
     fatalError("Should have thrown")
 } catch let e as Error {
-    assert(String(describing: e) == "FlatInnerError(error: error_types.FlatInner.CaseA(message: \"inner\"))")
-    assert(String(reflecting: e) == "error_types.Error.FlatInnerError(error: error_types.FlatInner.CaseA(message: \"inner\"))")
+    assert(String(describing: e) == "flatInnerError(error: error_types.FlatInner.caseA(message: \"inner\"))")
+    assert(String(reflecting: e) == "error_types.Error.flatInnerError(error: error_types.FlatInner.caseA(message: \"inner\"))")
 }
 
 do {
     try oopsEnum(i: 4)
     fatalError("Should have thrown")
 } catch let e as Error {
-    assert(String(describing: e) == "FlatInnerError(error: error_types.FlatInner.CaseB(message: \"NonUniffiTypeValue: value\"))")
-    assert(String(reflecting: e) == "error_types.Error.FlatInnerError(error: error_types.FlatInner.CaseB(message: \"NonUniffiTypeValue: value\"))")
+    assert(String(describing: e) == "flatInnerError(error: error_types.FlatInner.caseB(message: \"NonUniffiTypeValue: value\"))")
+    assert(String(reflecting: e) == "error_types.Error.flatInnerError(error: error_types.FlatInner.caseB(message: \"NonUniffiTypeValue: value\"))")
 }
 
 do {
     try oopsEnum(i: 5)
     fatalError("Should have thrown")
 } catch let e as Error {
-    assert(String(describing: e) == "InnerError(error: error_types.Inner.CaseA(\"inner\"))")
+    assert(String(describing: e) == "innerError(error: error_types.Inner.caseA(\"inner\"))")
 }
 
 do {
     try oopsTuple(i: 0)
     fatalError("Should have thrown")
 } catch {
-    assert(String(describing: error) == "Oops(\"oops\")")
-    assert(String(reflecting: error) == "error_types.TupleError.Oops(\"oops\")")
-    assert(error.localizedDescription == "error_types.TupleError.Oops(\"oops\")")
+    assert(String(describing: error) == "oops(\"oops\")")
+    assert(String(reflecting: error) == "error_types.TupleError.oops(\"oops\")")
+    assert(error.localizedDescription == "error_types.TupleError.oops(\"oops\")")
 }
 
 do {
     try oopsTuple(i: 1)
     fatalError("Should have thrown")
 } catch {
-    assert(String(describing: error) == "Value(1)")
-    assert(String(reflecting: error) == "error_types.TupleError.Value(1)")
-    assert(error.localizedDescription == "error_types.TupleError.Value(1)")
+    assert(String(describing: error) == "value(1)")
+    assert(String(reflecting: error) == "error_types.TupleError.value(1)")
+    assert(error.localizedDescription == "error_types.TupleError.value(1)")
 }
 
 do {
