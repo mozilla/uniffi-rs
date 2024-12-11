@@ -215,7 +215,9 @@ impl ExtractedItems {
         // This works fine, because `MetadataReader` knows when the serialized data is terminated
         // and will just ignore the trailing data.
         let data = &file_data[offset..];
-        self.items.push(Metadata::read(data)?);
+        self.items.push(
+            Metadata::read(data).with_context(|| format!("extracting metadata for '{name}'"))?,
+        );
         self.names.insert(name.to_string());
         Ok(())
     }
