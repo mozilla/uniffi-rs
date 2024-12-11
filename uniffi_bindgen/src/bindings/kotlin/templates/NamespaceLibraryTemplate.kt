@@ -55,20 +55,81 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
 {%- endmatch %}
 {%- endfor %}
 
+
+{%- macro decl_kotlin_functions(func_list) -%}
+{% for func in func_list -%}
+fun {{ func.name() }}(
+    {%- call kt::arg_list_ffi_decl(func) %}
+): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value }}{% when None %}Unit{% endmatch %}
+{% endfor %}
+{%- endmacro %}
+
+// For large crates we prevent `MethodTooLargeException` (see #2340)
+// N.B. the name of the extension is very misleading, since it is 
+// rather `InterfaceTooLargeException`, caused by too many methods 
+// in the interface for large crates.
+//
+// By splitting the otherwise huge interface into two parts
+// * UniffiLib 
+// * IntegrityCheckingUniffiLib (this)
+// we allow for ~2x as many methods in the UniffiLib interface.
+// 
+// The `ffi_uniffi_contract_version` method and all checksum methods are put 
+// into `IntegrityCheckingUniffiLib` and these methods are called only once,
+// when the library is loaded.
+internal interface IntegrityCheckingUniffiLib : Library {
+    // Integrity check functions only
+    {# newline below wanted #}
+
+{%- call decl_kotlin_functions(ci.iter_ffi_function_integrity_checks()) %}
+}
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
-
 internal interface UniffiLib : Library {
     companion object {
         internal val INSTANCE: UniffiLib by lazy {
-            loadIndirect<UniffiLib>(componentName = "{{ ci.namespace() }}")
-            .also { lib: UniffiLib ->
-                uniffiCheckContractApiVersion(lib)
-                uniffiCheckApiChecksums(lib)
-                {% for fn in self.initialization_fns() -%}
-                {{ fn }}(lib)
-                {% endfor -%}
-            }
+            val componentName = "{{ ci.namespace() }}"
+            // For large crates we prevent `MethodTooLargeException` (see #2340)
+            // N.B. the name of the extension is very misleading, since it is 
+            // rather `InterfaceTooLargeException`, caused by too many methods 
+            // in the interface for large crates.
+            //
+            // By splitting the otherwise huge interface into two parts
+            // * UniffiLib (this)
+            // * IntegrityCheckingUniffiLib
+            // And all checksum methods are put into `IntegrityCheckingUniffiLib`
+            // we allow for ~2x as many methods in the UniffiLib interface.
+            // 
+            // Thus we first load the library with `loadIndirect` as `IntegrityCheckingUniffiLib`
+            // so that we can call `uniffiCheckApiChecksums`...
+            loadIndirect<IntegrityCheckingUniffiLib>(componentName)
+                .also { lib: IntegrityCheckingUniffiLib ->
+                    uniffiCheckContractApiVersion(lib)
+                    uniffiCheckApiChecksums(lib)
+                }
+            // ... and then we load the library as `UniffiLib`
+            // N.B. we cannot use `loadIndirect` once and then try to cast it to `UniffiLib`
+            // => results in `java.lang.ClassCastException: com.sun.proxy.$Proxy cannot be cast to ...`
+            // error. So we must call `loadIndirect` twice. For crates large enough
+            // to trigger this issue, the performance impact is negligible, running on
+            // a macOS M1 machine the `loadIndirect` call takes ~50ms.
+            loadIndirect<UniffiLib>(componentName)
+            {%- if !self.initialization_fns().is_empty() -%}
+                {#-
+                // We only include the `.also` block if there are initialization functions
+                // otherwise we get linting errors saying `lib` is unused.
+                -#}
+                .also { lib: UniffiLib ->
+                    // No need to check the contract version and checksums, since 
+                    // we already did that with `IntegrityCheckingUniffiLib` above.
+                    {% for fn in self.initialization_fns() -%}
+                    {{ fn }}(lib)
+                    {% endfor -%}
+                }
+            {%- endif -%}
+
+            // Loading of library with integrity check done.
         }
         {% if ci.contains_object_types() %}
         // The Cleaner for the whole library
@@ -78,14 +139,13 @@ internal interface UniffiLib : Library {
         {%- endif %}
     }
 
-    {% for func in ci.iter_ffi_function_definitions() -%}
-    fun {{ func.name() }}(
-        {%- call kt::arg_list_ffi_decl(func) %}
-    ): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value }}{% when None %}Unit{% endmatch %}
-    {% endfor %}
+    // FFI functions
+    {# newline below before call decl_kotlin_functions is needed #}
+
+    {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
 }
 
-private fun uniffiCheckContractApiVersion(lib: UniffiLib) {
+private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
     // Get the bindings contract version from our ComponentInterface
     val bindings_contract_version = {{ ci.uniffi_contract_version() }}
     // Get the scaffolding contract version by calling the into the dylib
@@ -96,7 +156,7 @@ private fun uniffiCheckContractApiVersion(lib: UniffiLib) {
 }
 
 @Suppress("UNUSED_PARAMETER")
-private fun uniffiCheckApiChecksums(lib: UniffiLib) {
+private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     {%- for (name, expected_checksum) in ci.iter_checksums() %}
     if (lib.{{ name }}() != {{ expected_checksum }}.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
