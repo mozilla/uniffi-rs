@@ -9,18 +9,22 @@
       
       
       
+        <link rel="prev" href="errors.html">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+        <link rel="next" href="interfaces.html">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22">
     
     
       
-        <title>The UniFFI user guide</title>
+        <title>Functions, Constructors, Methods - The UniFFI user guide</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.732c4fb1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.732c4fb1.min.css">
       
       
 
@@ -39,7 +43,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -58,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#uniffi" class="md-skip">
+        <a href="#functions-constructors-methods" class="md-skip">
           Skip to content
         </a>
       
@@ -78,7 +82,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+    <a href=".." title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -98,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              UniFFI
+              Functions, Constructors, Methods
             
           </span>
         </div>
@@ -148,7 +152,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+    <a href=".." title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -178,7 +182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Motivation.html" class="md-nav__link">
+      <a href="../Motivation.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -233,7 +237,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Getting_started.html" class="md-nav__link">
+      <a href="../Getting_started.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -254,7 +258,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/Prerequisites.html" class="md-nav__link">
+      <a href="../tutorial/Prerequisites.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -275,7 +279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/udl_file.html" class="md-nav__link">
+      <a href="../tutorial/udl_file.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -296,7 +300,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/Rust_scaffolding.html" class="md-nav__link">
+      <a href="../tutorial/Rust_scaffolding.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -317,7 +321,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/foreign_language_bindings.html" class="md-nav__link">
+      <a href="../tutorial/foreign_language_bindings.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -380,7 +384,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/namespace.html" class="md-nav__link">
+      <a href="../types/namespace.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -401,7 +405,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/builtin_types.html" class="md-nav__link">
+      <a href="../types/builtin_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -422,7 +426,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/enumerations.html" class="md-nav__link">
+      <a href="../types/enumerations.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -443,7 +447,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/records.html" class="md-nav__link">
+      <a href="../types/records.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -499,7 +503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/functions.html" class="md-nav__link">
+      <a href="../types/functions.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -520,7 +524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/errors.html" class="md-nav__link">
+      <a href="../types/errors.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -549,7 +553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/interfaces.html" class="md-nav__link">
+      <a href="../types/interfaces.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -570,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/callback_interfaces.html" class="md-nav__link">
+      <a href="../types/callback_interfaces.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -591,7 +595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/remote_ext_types.html" class="md-nav__link">
+      <a href="../types/remote_ext_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -612,7 +616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/custom_types.html" class="md-nav__link">
+      <a href="../types/custom_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -637,17 +641,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -661,7 +667,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Describing the interface
@@ -675,7 +681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="describing.html" class="md-nav__link">
+      <a href="../describing.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -731,7 +737,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/index.html" class="md-nav__link">
+      <a href="../udl/index.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -752,7 +758,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/enumerations.html" class="md-nav__link">
+      <a href="../udl/enumerations.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -773,7 +779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/errors.html" class="md-nav__link">
+      <a href="../udl/errors.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -794,7 +800,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/functions.html" class="md-nav__link">
+      <a href="../udl/functions.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -815,7 +821,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/interfaces.html" class="md-nav__link">
+      <a href="../udl/interfaces.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -836,7 +842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/records.html" class="md-nav__link">
+      <a href="../udl/records.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -857,7 +863,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/docstrings.html" class="md-nav__link">
+      <a href="../udl/docstrings.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -883,17 +889,19 @@
                 
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" checked>
         
           
           <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
@@ -907,7 +915,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             Proc macros
@@ -921,7 +929,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/index.html" class="md-nav__link">
+      <a href="index.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -942,7 +950,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/enumerations.html" class="md-nav__link">
+      <a href="enumerations.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -963,7 +971,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/errors.html" class="md-nav__link">
+      <a href="errors.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -981,10 +989,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="proc_macro/functions.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Functions, Constructors, Methods
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="functions.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -993,6 +1021,50 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#default-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default values
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default values">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#renaming-functions-methods-and-constructors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming functions, methods and constructors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1005,7 +1077,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/interfaces.html" class="md-nav__link">
+      <a href="interfaces.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1026,7 +1098,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/records.html" class="md-nav__link">
+      <a href="records.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1047,7 +1119,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/docstrings.html" class="md-nav__link">
+      <a href="docstrings.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1083,7 +1155,7 @@
   
   
     <li class="md-nav__item">
-      <a href="futures.html" class="md-nav__link">
+      <a href="../futures.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1138,7 +1210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="bindings.html" class="md-nav__link">
+      <a href="../bindings.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1159,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="foreign_traits.html" class="md-nav__link">
+      <a href="../foreign_traits.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1215,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="kotlin/configuration.html" class="md-nav__link">
+      <a href="../kotlin/configuration.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1236,7 +1308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="kotlin/gradle.html" class="md-nav__link">
+      <a href="../kotlin/gradle.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1257,7 +1329,7 @@
   
   
     <li class="md-nav__item">
-      <a href="kotlin/lifetimes.html" class="md-nav__link">
+      <a href="../kotlin/lifetimes.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1321,7 +1393,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/overview.html" class="md-nav__link">
+      <a href="../swift/overview.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1342,7 +1414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/uniffi-bindgen-swift.html" class="md-nav__link">
+      <a href="../swift/uniffi-bindgen-swift.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1363,7 +1435,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/configuration.html" class="md-nav__link">
+      <a href="../swift/configuration.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1384,7 +1456,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/module.html" class="md-nav__link">
+      <a href="../swift/module.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1405,7 +1477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/xcode.html" class="md-nav__link">
+      <a href="../swift/xcode.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1434,7 +1506,7 @@
   
   
     <li class="md-nav__item">
-      <a href="python/configuration.html" class="md-nav__link">
+      <a href="../python/configuration.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1497,7 +1569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/design_principles.html" class="md-nav__link">
+      <a href="../internals/design_principles.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1518,7 +1590,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/crates.html" class="md-nav__link">
+      <a href="../internals/crates.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1539,7 +1611,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/lifting_and_lowering.html" class="md-nav__link">
+      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1560,7 +1632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/object_references.html" class="md-nav__link">
+      <a href="../internals/object_references.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1581,7 +1653,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1609,7 +1681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Upgrading.html" class="md-nav__link">
+      <a href="../Upgrading.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1649,20 +1721,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#design" class="md-nav__link">
+  <a href="#default-values" class="md-nav__link">
     <span class="md-ellipsis">
-      Design
+      Default values
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default values">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#renaming-functions-methods-and-constructors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming functions, methods and constructors
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#supported-languages" class="md-nav__link">
-    <span class="md-ellipsis">
-      Supported languages
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1684,26 +1762,77 @@
   
 
 
-<h1 id="uniffi">UniFFI</h1>
-<p>UniFFI is a tool that automatically generates foreign-language bindings targeting Rust libraries.
-The repository can be found on <a href="https://github.com/mozilla/uniffi-rs/">github</a>.
-It fits in the practice of consolidating business logic in a single Rust library while targeting multiple platforms, making it simpler to develop and maintain a cross-platform codebase.
-Note that this tool will not help you ship a Rust library to these platforms, but it will help you avoid writing bindings code by hand.
-<a href="https://i.kym-cdn.com/photos/images/newsfeed/000/572/078/d6d.jpg">Related</a>.</p>
-<h2 id="design">Design</h2>
-<p>UniFFI requires you to describe your interface via either proc-macros or in an Interface Definition Language (based on <a href="https://webidl.spec.whatwg.org/">WebIDL</a>) file.
-These definitions describe the methods and data structures available to the targeted languages, and are used to generate Rust <em>scaffolding</em> code and foreign-language <em>bindings</em>.
-This process can take place either during the build process or be manually initiated by the developer.</p>
-<p><img alt="uniffi diagram" src="uniffi_diagram.png" /></p>
-<h2 id="supported-languages">Supported languages</h2>
-<p>UniFFI comes with full support for Kotlin, Swift and Python; unless specified otherwise, you can expect all features in
-this manual will work for these languages.</p>
-<p>We also have partial legacy support for Ruby; the UniFFI team keeps the existing Ruby support working but tends to not
-add new features to that language. It seems possible that Ruby support will be split into its own crate at some point, but
-in the meantime we welcome improvements and contributions to Ruby.</p>
-<p>There are also many 3rd party bindings - please see our <a href="https://github.com/mozilla/uniffi-rs/blob/main/README.md">README</a> for references.
-These languages may require older versions of UniFFI and may have partial or non-existant support for some features; see the
-documentation for those bindings for details.</p>
+<h1 id="functions-constructors-methods">Functions, Constructors, Methods</h1>
+<p>Functions are exported to the namespace with the <code>#[uniffi::export]</code> attribute</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">hello_world</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s">&quot;Hello World!&quot;</span><span class="p">.</span><span class="n">to_owned</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>All our owned types can be used as arguments and return types.</p>
+<p>Arguments and receivers can also be references to these types, for example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Input data types as references</span>
+<span class="cp">#[uniffi::export]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">process_data</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">MyRecord</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">MyEnum</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">MyRecord</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>To export methods of an interface you can use the <a href="interfaces.html"><code>#[uniffi::export]</code> attribute on an impl block</a>.</p>
+<h2 id="default-values">Default values</h2>
+<p>Exported functions/methods can have default values using the <code>default</code> argument of the attribute macro that wraps them.
+<code>default</code> inputs a comma-separated list of <code>[name]=[value]</code> items.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(default(text = </span><span class="s">&quot; &quot;</span><span class="cp">, max_splits = None))]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
+<span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sep</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="n">max_splits</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+
+<span class="cp">#[derive(uniffi::Object)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TextSplitter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+
+<span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">TextSplitter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor(default(ignore_unicode_errors = false))]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="n">ignore_unicode_errors</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">..</span><span class="p">.</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cp">#[uniffi::method(default(text = </span><span class="s">&quot; &quot;</span><span class="cp">, max_splits = None))]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
+<span class="w">        </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">        </span><span class="n">sep</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">        </span><span class="n">max_splits</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="o">..</span><span class="p">.</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Supported default values:
+  - String, integer, float, and boolean literals
+  - <code>[]</code> for empty Vecs
+  - <code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></p>
+<h3 id="renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</h3>
+<p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
+<p><div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(name = </span><span class="s">&quot;something&quot;</span><span class="cp">)]</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">do_something</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="p">}</span>
+</code></pre></div>
+will be exposed to foreign bindings as a namespace function <code>something()</code></p>
+<p>You can also rename constructors and methods:
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">Something</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Set this as the default constructor by naming it `new`</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor(name = </span><span class="s">&quot;new&quot;</span><span class="cp">)]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">make_new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Expose this as `obj.something()`</span>
+<span class="w">    </span><span class="cp">#[uniffi::method(name = </span><span class="s">&quot;something&quot;</span><span class="cp">)]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
 
 
 
@@ -1750,10 +1879,10 @@ documentation for those bindings for details.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.5cfa9459.min.js"></script>
+      <script src="../assets/javascripts/bundle.5cfa9459.min.js"></script>
       
     
   </body>
