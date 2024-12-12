@@ -2,15 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::fmt;
+
 use anyhow::{bail, Context, Result};
 use camino::Utf8PathBuf;
 use clap::{Parser, Subcommand};
-use std::fmt;
-use uniffi_bindgen::bindings::*;
+use uniffi_bindgen::{bindings::*, cli_support};
+use uniffi_meta::MetadataGroup;
 
 /// Enumeration of all foreign language targets currently supported by our CLI.
 ///
-#[derive(Copy, Clone, Eq, PartialEq, Hash, clap::ValueEnum)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, clap::Subcommand, clap::ValueEnum)]
 enum TargetLanguage {
     Kotlin,
     Swift,
@@ -132,11 +134,141 @@ enum Commands {
         udl_file: Utf8PathBuf,
     },
 
-    /// Print a debug representation of the interface from a dynamic library
-    PrintRepr {
-        /// Path to the library file (.so, .dll, .dylib, or .a)
-        path: Utf8PathBuf,
+    /// Print a stage of the bindings render pipeline
+    Peek {
+        /// Pass in a cdylib path rather than a UDL file
+        #[clap(long = "library")]
+        library_mode: bool,
+
+        /// Path to the UDL file, or cdylib if `library-mode` is specified
+        source: Utf8PathBuf,
+
+        /// When `--library` is passed, only generate bindings for one crate.
+        /// When `--library` is not passed, use this as the crate name instead of attempting to
+        /// locate and parse Cargo.toml.
+        #[clap(long = "crate")]
+        crate_name: Option<String>,
+
+        /// Whether we should exclude dependencies when running "cargo metadata".
+        /// This will mean external types may not be resolved if they are implemented in crates
+        /// outside of this workspace.
+        /// This can be used in environments when all types are in the namespace and fetching
+        /// all sub-dependencies causes obscure platform specific problems.
+        #[clap(long)]
+        metadata_no_deps: bool,
+
+        /// Target to display
+        #[clap(subcommand)]
+        target: PeekTarget,
     },
+
+    /// Save a stage of the bindings render pipeline for later diffing
+    DiffSave {
+        /// Pass in a cdylib path rather than a UDL file
+        #[clap(long = "library")]
+        library_mode: bool,
+
+        /// Path to the UDL file, or cdylib if `library-mode` is specified
+        source: Utf8PathBuf,
+
+        /// When `--library` is passed, only generate bindings for one crate.
+        /// When `--library` is not passed, use this as the crate name instead of attempting to
+        /// locate and parse Cargo.toml.
+        #[clap(long = "crate")]
+        crate_name: Option<String>,
+
+        /// Whether we should exclude dependencies when running "cargo metadata".
+        /// This will mean external types may not be resolved if they are implemented in crates
+        /// outside of this workspace.
+        /// This can be used in environments when all types are in the namespace and fetching
+        /// all sub-dependencies causes obscure platform specific problems.
+        #[clap(long)]
+        metadata_no_deps: bool,
+    },
+
+    /// Diff a stage of the bindings render pipeline against the data last saved with DiffSave
+    Diff {
+        /// Pass in a cdylib path rather than a UDL file
+        #[clap(long = "library")]
+        library_mode: bool,
+
+        /// Path to the UDL file, or cdylib if `library-mode` is specified
+        source: Utf8PathBuf,
+
+        /// When `--library` is passed, only generate bindings for one crate.
+        /// When `--library` is not passed, use this as the crate name instead of attempting to
+        /// locate and parse Cargo.toml.
+        #[clap(long = "crate")]
+        crate_name: Option<String>,
+
+        /// Whether we should exclude dependencies when running "cargo metadata".
+        /// This will mean external types may not be resolved if they are implemented in crates
+        /// outside of this workspace.
+        /// This can be used in environments when all types are in the namespace and fetching
+        /// all sub-dependencies causes obscure platform specific problems.
+        #[clap(long)]
+        metadata_no_deps: bool,
+
+        /// Target to display
+        #[clap(subcommand)]
+        target: PeekTarget,
+    },
+}
+
+#[derive(Clone, Debug, clap::Subcommand)]
+enum PeekTarget {
+    Metadata,
+    Ir,
+    PythonIr,
+    Kotlin,
+    Swift,
+    Python,
+    Ruby,
+}
+
+impl PeekTarget {
+    fn all() -> Vec<PeekTarget> {
+        vec![
+            PeekTarget::Metadata,
+            PeekTarget::Ir,
+            PeekTarget::PythonIr,
+            PeekTarget::Kotlin,
+            PeekTarget::Swift,
+            PeekTarget::Python,
+            PeekTarget::Ruby,
+        ]
+    }
+}
+
+impl fmt::Display for PeekTarget {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Metadata => write!(f, "metadata"),
+            Self::Ir => write!(f, "ir"),
+            Self::PythonIr => write!(f, "python-ir"),
+            Self::Kotlin => write!(f, "kotlin"),
+            Self::Swift => write!(f, "swift"),
+            Self::Python => write!(f, "python"),
+            Self::Ruby => write!(f, "ruby"),
+        }
+    }
+}
+
+fn config_supplier(
+    metadata_no_deps: bool,
+) -> Result<impl uniffi_bindgen::BindgenCrateConfigSupplier> {
+    #[cfg(feature = "cargo-metadata")]
+    {
+        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        if metadata_no_deps {
+            cmd.no_deps();
+        }
+        let metadata = cmd.exec().context("error running cargo metadata")?;
+        Ok(CrateConfigSupplier::from(metadata))
+    }
+    #[cfg(not(feature = "cargo-metadata"))]
+    Ok(Auniffi_bindgen::EmptyCrateConfigSupplier)
 }
 
 fn gen_library_mode(
@@ -150,18 +282,7 @@ fn gen_library_mode(
 ) -> anyhow::Result<()> {
     use uniffi_bindgen::library_mode::generate_bindings;
 
-    #[cfg(feature = "cargo-metadata")]
-    let config_supplier = {
-        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
-        let mut cmd = cargo_metadata::MetadataCommand::new();
-        if metadata_no_deps {
-            cmd.no_deps();
-        }
-        let metadata = cmd.exec().context("error running cargo metadata")?;
-        CrateConfigSupplier::from(metadata)
-    };
-    #[cfg(not(feature = "cargo-metadata"))]
-    let config_supplier = uniffi_bindgen::EmptyCrateConfigSupplier;
+    let config_supplier = config_supplier(metadata_no_deps)?;
 
     for language in languages {
         // to help avoid mistakes we check the library is actually a cdylib, except
@@ -329,9 +450,198 @@ pub fn run_main() -> anyhow::Result<()> {
                 !no_format,
             )?;
         }
-        Commands::PrintRepr { path } => {
-            uniffi_bindgen::print_repr(&path)?;
+        Commands::Peek {
+            crate_name,
+            source,
+            library_mode,
+            metadata_no_deps,
+            target,
+        } => {
+            let config_supplier = config_supplier(metadata_no_deps)?;
+            let (metadata, cdylib) = if library_mode {
+                let metadata = uniffi_bindgen::load_metadata_from_library(
+                    &source,
+                    crate_name.as_deref(),
+                    config_supplier,
+                )?;
+                (metadata, Some(source.to_string()))
+            } else {
+                let metadata =
+                    uniffi_bindgen::load_metadata_from_udl(&source, crate_name.as_deref())?;
+                (metadata, None)
+            };
+
+            cli_support::peek(get_peek_items(&target, metadata, cdylib, metadata_no_deps)?);
+        }
+        Commands::DiffSave {
+            crate_name,
+            source,
+            library_mode,
+            metadata_no_deps,
+        } => {
+            let config_supplier = config_supplier(metadata_no_deps)?;
+            let (metadata, cdylib) = if library_mode {
+                let metadata = uniffi_bindgen::load_metadata_from_library(
+                    &source,
+                    crate_name.as_deref(),
+                    config_supplier,
+                )?;
+                (metadata, Some(source.to_string()))
+            } else {
+                let metadata =
+                    uniffi_bindgen::load_metadata_from_udl(&source, crate_name.as_deref())?;
+                (metadata, None)
+            };
+
+            for target in PeekTarget::all() {
+                let diff_dir = cli_support::diff_dir_from_cargo_metadata(&target)?;
+                cli_support::save_diff(
+                    &diff_dir,
+                    get_peek_items(&target, metadata.clone(), cdylib.clone(), metadata_no_deps)?,
+                )?
+            }
+        }
+        Commands::Diff {
+            crate_name,
+            source,
+            library_mode,
+            metadata_no_deps,
+            target,
+        } => {
+            let config_supplier = config_supplier(metadata_no_deps)?;
+            let (metadata, cdylib) = if library_mode {
+                let metadata = uniffi_bindgen::load_metadata_from_library(
+                    &source,
+                    crate_name.as_deref(),
+                    config_supplier,
+                )?;
+                (metadata, Some(source.to_string()))
+            } else {
+                let metadata =
+                    uniffi_bindgen::load_metadata_from_udl(&source, crate_name.as_deref())?;
+                (metadata, None)
+            };
+
+            let diff_dir = cli_support::diff_dir_from_cargo_metadata(&target)?;
+            cli_support::diff(
+                &diff_dir,
+                get_peek_items(&target, metadata, cdylib, metadata_no_deps)?,
+            )?;
         }
     };
     Ok(())
+}
+
+fn get_peek_items(
+    target: &PeekTarget,
+    metadata: Vec<MetadataGroup>,
+    cdylib: Option<String>,
+    metadata_no_deps: bool,
+) -> Result<Vec<(String, String)>> {
+    match target {
+        PeekTarget::Metadata => metadata
+            .into_iter()
+            .map(|group| Ok((group.namespace.name.clone(), format!("{group:#?}"))))
+            .collect(),
+        PeekTarget::Ir => {
+            let irs = uniffi_bindgen::metadata_groups_to_irs(metadata)?;
+            irs.into_iter()
+                .map(|ir| Ok((ir.namespace.clone(), format!("{ir:#?}"))))
+                .collect()
+        }
+        PeekTarget::PythonIr => {
+            let irs_and_configs = uniffi_bindgen::metadata_groups_to_irs_and_configs(
+                metadata,
+                cdylib,
+                PythonBindingGenerator,
+                config_supplier(metadata_no_deps)?,
+            )?;
+            irs_and_configs
+                .into_iter()
+                .map(|(ir, config)| {
+                    let ir = PythonBindingsIr::from_general_ir(ir, config)?;
+                    Ok((ir.namespace.clone(), format!("{ir:#?}")))
+                })
+                .collect()
+        }
+        PeekTarget::Kotlin => {
+            let components = uniffi_bindgen::metadata_groups_to_components(
+                metadata,
+                cdylib,
+                KotlinBindingGenerator,
+                config_supplier(metadata_no_deps)?,
+            )?;
+            components
+                .into_iter()
+                .map(|component| {
+                    let name = format!("{}.py", component.ci.namespace());
+                    let contents = kotlin::generate_bindings(&component.config, &component.ci)?;
+                    Ok((name, contents))
+                })
+                .collect()
+        }
+        PeekTarget::Swift => {
+            let components = uniffi_bindgen::metadata_groups_to_components(
+                metadata,
+                cdylib,
+                SwiftBindingGenerator,
+                config_supplier(metadata_no_deps)?,
+            )?;
+            let mut all_content = vec![(
+                "module.modulemap".to_string(),
+                swift::generate_modulemap(
+                    "module".to_string(),
+                    components
+                        .iter()
+                        .map(|c| format!("{}.h", c.ci.namespace()))
+                        .collect(),
+                    false,
+                )?,
+            )];
+            for component in components {
+                all_content.push((
+                    format!("{}.h", component.ci.namespace()),
+                    swift::generate_header(&component.config, &component.ci)?,
+                ));
+                all_content.push((
+                    format!("{}.swift", component.ci.namespace()),
+                    swift::generate_swift(&component.config, &component.ci)?,
+                ));
+            }
+            Ok(all_content)
+        }
+        PeekTarget::Python => {
+            let irs_and_configs = uniffi_bindgen::metadata_groups_to_irs_and_configs(
+                metadata,
+                cdylib,
+                PythonBindingGenerator,
+                config_supplier(metadata_no_deps)?,
+            )?;
+            irs_and_configs
+                .into_iter()
+                .map(|(ir, config)| {
+                    let ir = PythonBindingsIr::from_general_ir(ir, config)?;
+                    let name = format!("{}.py", ir.namespace);
+                    let contents = python::generate_python_bindings_from_ir(ir)?;
+                    Ok((name, contents))
+                })
+                .collect()
+        }
+        PeekTarget::Ruby => {
+            let components = uniffi_bindgen::metadata_groups_to_components(
+                metadata,
+                cdylib,
+                RubyBindingGenerator,
+                config_supplier(metadata_no_deps)?,
+            )?;
+            components
+                .into_iter()
+                .map(|component| {
+                    let name = format!("{}.py", component.ci.namespace());
+                    let contents = ruby::generate_ruby_bindings(&component.config, &component.ci)?;
+                    Ok((name, contents))
+                })
+                .collect()
+        }
+    }
 }

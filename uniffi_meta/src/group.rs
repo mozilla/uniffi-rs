@@ -62,7 +62,7 @@ pub fn group_metadata(group_map: &mut MetadataGroupMap, items: Vec<Metadata>) ->
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MetadataGroup {
     pub namespace: NamespaceMetadata,
     pub namespace_docstring: Option<String>,

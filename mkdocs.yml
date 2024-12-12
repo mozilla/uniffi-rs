@@ -37,7 +37,7 @@ nav:
   - ./tutorial/Prerequisites.md
   - ./tutorial/udl_file.md
   - ./tutorial/Rust_scaffolding.md
-  - ./tutorial/foreign_language_bindings.md
+  - ./tutorial/bindings_render_pipeline.md
 - 'The UDL file':
   - ./udl_file_spec.md
   - ./udl/namespace.md
