@@ -760,7 +760,7 @@ pub mod filters {
         Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
-    /// Same as enum_variant_swift_quoted, because error types are exported as Swift enums.
+    /// Get the Swift rendering of an individual enum variant for an Error type.
     pub fn error_variant_swift_quoted(nm: &str, use_class_name: &bool) -> Result<String, rinja::Error> {
         if *use_class_name {
             Ok(quote_general_keyword(oracle().class_name(nm)))
