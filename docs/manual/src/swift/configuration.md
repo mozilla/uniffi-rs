@@ -19,6 +19,7 @@ more likely to change than other configurations.
 | `experimental_sendable_value_types` | `false`                  | Whether to mark value types as `Sendable'.                                                                                                                         |
 | `custom_types`                      |                          | A map which controls how custom types are exposed to Swift. See the [custom types section of the manual](../types/custom_types.md#custom-types-in-the-bindings-code) |
 | `omit_localized_error_conformance`  | `false`                  | Whether to make generated error types conform to `LocalizedError`. |
+| `error_enum_use_lower_camel_case`   | `false`                  | Whether to use lower camel case for error enum variants. |
 
 [^1]: `namespace` is the top-level namespace from your UDL file.
 

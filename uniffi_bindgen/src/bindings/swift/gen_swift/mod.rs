@@ -198,6 +198,7 @@ pub struct Config {
     generate_immutable_records: Option<bool>,
     experimental_sendable_value_types: Option<bool>,
     omit_localized_error_conformance: Option<bool>,
+    error_enum_use_lower_camel_case: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
 }
@@ -269,6 +270,11 @@ impl Config {
     // Whether to make generated error types conform to `LocalizedError`. Default: false.
     pub fn omit_localized_error_conformance(&self) -> bool {
         self.omit_localized_error_conformance.unwrap_or(false)
+    }
+
+    /// Whether to use lower camel case for error enum variants. Default: false.
+    pub fn error_enum_use_lower_camel_case(&self) -> bool {
+        self.error_enum_use_lower_camel_case.unwrap_or(false)
     }
 }
 
@@ -755,8 +761,12 @@ pub mod filters {
     }
 
     /// Same as enum_variant_swift_quoted, because error types are exported as Swift enums.
-    pub fn error_variant_swift_quoted(nm: &str) -> Result<String, rinja::Error> {
-        Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
+    pub fn error_variant_swift_quoted(nm: &str, use_class_name: &bool) -> Result<String, rinja::Error> {
+        if *use_class_name {
+            Ok(quote_general_keyword(oracle().class_name(nm)))
+        } else {
+            Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
+        }
     }
 
     /// Get the idiomatic Swift rendering of an FFI callback function name
