@@ -1,5 +1,5 @@
 {%- call swift::docstring(e, 0) %}
-{% let use_class_name = config.error_enum_use_lower_camel_case() == false %}
+{% let use_class_name = !config.error_enum_use_lower_camel_case() %}
 public enum {{ type_name }} {
 
     {% if e.is_flat() %}
