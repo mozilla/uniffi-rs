@@ -3,8 +3,12 @@
 UDL file supports docstring comments. The comments are emitted in generated bindings without any
 transformations. What you see in UDL is what you get in generated bindings. The only change made to
 UDL comments are the comment syntax specific to each language. Docstrings can be used for most
-declarations in UDL file. Docstrings are parsed as AST nodes, so incorrectly placed docstrings will
-generate parse errors. Docstrings in UDL are comments prefixed with `///`.
+declarations in UDL file
+
+Docstrings in UDL are comments prefixed with `///`.
+
+Docstrings are parsed as AST nodes, so incorrectly placed docstrings will
+generate parse errors
 
 ## Docstrings in UDL
 ```java

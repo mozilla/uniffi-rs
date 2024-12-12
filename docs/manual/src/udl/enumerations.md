@@ -1,15 +1,6 @@
-# Enumerations
+# Enums in UDL
 
-An enumeration defined in Rust code as
-
-```rust
-enum Animal {
-    Dog,
-    Cat,
-}
-```
-
-Can be exposed in the UDL file with:
+[Our simple enum example](../types/enumerations.md) is defined in UDL as:
 
 ```idl
 enum Animal {
@@ -22,16 +13,7 @@ enum Animal {
 
 Enumerations with associated data require a different syntax,
 due to the limitations of using WebIDL as the basis for UniFFI's interface language.
-An enum like this in Rust:
-
-```rust
-enum IpAddr {
-  V4 {q1: u8, q2: u8, q3: u8, q4: u8},
-  V6 {addr: string},
-}
-```
-
-Can be exposed in the UDL file with:
+An enum like `IpAddr` is specifiedl in UDL like:
 
 ```idl
 [Enum]
@@ -41,23 +23,9 @@ interface IpAddr {
 };
 ```
 
-Only enums with named fields are supported by this syntax.
-However, procmacros support more flexible enums.
-
-```rust
-#[derive(uniffi::Enum)]
-pub enum MyEnum {
-    None,
-    Str(String),
-    All { s: String, i: i64 }
-}
-```
-
 ## Remote, non-exhaustive enums
 
-One corner case is an enum that's:
-  - Defined in another crate.
-  - Has the [non_exhaustive` attribute](https://doc.rust-lang.org/reference/attributes/type_system.html#the-non_exhaustive-attribute).
+One corner case is an enum that's defined in another crate and has the [non_exhaustive` attribute](https://doc.rust-lang.org/reference/attributes/type_system.html#the-non_exhaustive-attribute).
 
 In this case, UniFFI needs to generate a default arm when matching against the enum variants, or else a compile error will be generated.
 Use the `[NonExhaustive]` attribute to handle this case:

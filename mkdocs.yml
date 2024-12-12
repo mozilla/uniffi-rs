@@ -38,22 +38,36 @@ nav:
   - ./tutorial/udl_file.md
   - ./tutorial/Rust_scaffolding.md
   - ./tutorial/foreign_language_bindings.md
-- 'The UDL file':
-  - ./udl_file_spec.md
-  - ./udl/namespace.md
-  - ./udl/builtin_types.md
-  -  ./udl/enumerations.md
-  -  ./udl/structs.md
+- 'UniFFI type model':
+  - ./types/namespace.md
+  - ./types/builtin_types.md
+  - ./types/enumerations.md
+  - ./types/records.md
   - 'Functions':
-    - ./udl/functions.md
+    - ./types/functions.md
+    - ./types/errors.md
+  - ./types/interfaces.md
+  - ./types/callback_interfaces.md
+  - ./types/remote_ext_types.md
+  - ./types/custom_types.md
+- Describing the interface:
+  - ./describing.md
+  - 'UDL Files':
+    - ./udl/index.md
+    - ./udl/enumerations.md
     - ./udl/errors.md
-  - 'Interfaces and Objects':
+    - ./udl/functions.md
     - ./udl/interfaces.md
-    - ./udl/callback_interfaces.md
-  - ./udl/remote_ext_types.md
-  - ./udl/custom_types.md
-  - ./udl/docstrings.md
-- ./proc_macro/index.md
+    - ./udl/records.md
+    - ./udl/docstrings.md
+  - 'Proc macros':
+    - ./proc_macro/index.md
+    - ./proc_macro/enumerations.md
+    - ./proc_macro/errors.md
+    - ./proc_macro/functions.md
+    - ./proc_macro/interfaces.md
+    - ./proc_macro/records.md
+    - ./proc_macro/docstrings.md
 - ./futures.md
 
 - 'Bindings':

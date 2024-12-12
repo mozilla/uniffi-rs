@@ -33,7 +33,7 @@ uniffi::setup_scaffolding!();
 
 Don't use `uniffi::setup_scaffolding!()` in a crate which uses `uniffi::include_scaffolding!()`.
 
-If you don't specify a [`namespace`](../udl/namespace.md) the crate name is used.
+If you don't specify a [`namespace`](../types/namespace.md) the crate name is used.
 
 ### Libraries that depend on UniFFI components
 
