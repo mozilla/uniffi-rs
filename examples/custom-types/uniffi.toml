@@ -48,8 +48,8 @@ from_custom = "{}.toString()"
 
 [bindings.python.custom_types.Url]
 # We're going to be the urllib.parse.ParseResult class, which is the closest
-# thing Python has to a Url class.  No need to specify `type_name` though,
-# since Python is loosely typed.
+# thing Python has to a Url class.
+type_name = "urllib.parse.ParseResult"
 # modules to import
 imports = ["urllib.parse"]
 # Functions to convert between strings and the ParsedUrl class

@@ -219,10 +219,9 @@ lower = "{}.toString()"
 Here's how the configuration works in `uniffi.toml`.
 
 * Create a `[bindings.{language}.custom_types.{CustomTypeName}]` table to enable a custom type on a bindings side.  This has several subkeys:
-  * `type_name` (Optional, Typed languages only): Type/class name for the
-    custom type.  Defaults to the type name used in the UDL.  Note: The UDL
-    type name will still be used in generated function signatures, however it
-    will be defined as a typealias to this type.
+  * `type_name` (Optional): Type/class name for the custom type.
+    Defaults to the type name used in the proc macro.
+    Note: The UDL type name will still be used in generated function signatures for the foreign bindings, however it will be defined as a typealias to this type.
   * `lift`: Expression to convert the UDL type to the custom type.  `{}` will be replaced with the value of the UDL type.
   * `lower`: Expression to convert the custom type to the UDL type.  `{}` will be replaced with the value of the custom type.
   * `imports` (Optional) list of modules to import for your `lift`/`lower` functions.

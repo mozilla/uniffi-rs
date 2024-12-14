@@ -1,42 +1,11 @@
-{%- if func.is_async() %}
+{{ func|def }} {{ func.name }}({{ func|arg_list }}) -> {{ func|return_type }}:
+    {{ func.docstring|docindent(4) -}}
 
-{%- match func.return_type() -%}
-{%- when Some(return_type) %}
-async def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
-{% when None %}
-async def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> None:
-{% endmatch %}
-
-    {%- call py::docstring(func, 4) %}
-    {%- call py::setup_args(func) %}
-    return await _uniffi_rust_call_async(
-        _UniffiLib.{{ func.ffi_func().name() }}({% call py::arg_list_lowered(func) %}),
-        _UniffiLib.{{func.ffi_rust_future_poll(ci) }},
-        _UniffiLib.{{func.ffi_rust_future_complete(ci) }},
-        _UniffiLib.{{func.ffi_rust_future_free(ci) }},
-        # lift function
-        {%- match func.return_type() %}
-        {%- when Some(return_type) %}
-        {{ return_type|lift_fn }},
-        {%- when None %}
-        lambda val: None,
-        {% endmatch %}
-        {% call py::error_ffi_converter(func) %}
+    {%- match func.return_type().ty -%}
+    {%- when Some(return_type) %}
+    return {{ return_type|lift_fn }}(
+        {% if func.is_async() %}await {% endif %}{{ func|ffi_caller_name }}({{ func|arg_names }})
     )
-
-{%- else %}
-{%- match func.return_type() -%}
-{%- when Some(return_type) %}
-
-def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> "{{ return_type|type_name }}":
-    {%- call py::docstring(func, 4) %}
-    {%- call py::setup_args(func) %}
-    return {{ return_type|lift_fn }}({% call py::to_ffi_call(func) %})
-{% when None %}
-
-def {{ func.name() }}({%- call py::arg_list_decl(func) -%}) -> None:
-    {%- call py::docstring(func, 4) %}
-    {%- call py::setup_args(func) %}
-    {% call py::to_ffi_call(func) %}
-{% endmatch %}
-{%- endif %}
+    {% when None %}
+    {% if func.is_async() %}await {% endif %}{{ func|ffi_caller_name }}({{ func|arg_names }})
+    {%- endmatch %}

@@ -1,62 +1,34 @@
-{%- let obj = ci.get_object_definition(name).unwrap() %}
-{%- let methods = obj.methods() %}
-{%- let protocol_name = format!("{type_name}Protocol") %}
-{%- let protocol_docstring = obj.docstring() %}
-{%- let protocol_base_class = "typing.Protocol" %}
-{%- include "Protocol.py" %}
-
-{%- let impl_name %}
-{%- if obj.has_callback_interface() %}
-# {{ type_name }} is a foreign trait so treated like a callback interface, where the
-# primary use-case is the trait being implemented locally.
-# It is a base-class local implementations might subclass.
-{# We reuse "Protocol.py" for this, even though here we are not generating a protocol #}
-{%-     let protocol_name = format!("{type_name}") %}
-{%-     let protocol_base_class = "" %}
-{%      include "Protocol.py" %}
-
-{%-     let impl_name = format!("{type_name}Impl") %}
-# `{{ impl_name }}` is the implementation for a Rust implemented version.
-{%- else %}
-# {{ type_name }} is a Rust-only trait - it's a wrapper around a Rust implementation.
-{%-     let impl_name = type_name.clone() %}
+{%- if let Some(vtable) = interface.vtable %}
+{% include "VTable.py" %}
 {%- endif %}
 
-{%- if ci.is_name_used_as_error(name) %}
-class {{ impl_name }}(Exception):
-{%- else %}
-class {{ impl_name }}({% for t in obj.trait_impls() %}{{ t.trait_name }},{% endfor %}):
-{%- endif %}
-    {%- call py::docstring(obj, 4) %}
+class {{ interface.name }}({{ interface.base_classes|join(", ") }}):
+    {{ interface.docstring|docindent(4) -}}
     _pointer: ctypes.c_void_p
 
-{%- match obj.primary_constructor() %}
-{%-     when Some(cons) %}
-{%-         if cons.is_async() %}
-    def __init__(self, *args, **kw):
-        raise ValueError("async constructors not supported.")
-{%-         else %}
-    def __init__(self, {% call py::arg_list_decl(cons) -%}):
-        {%- call py::docstring(cons, 8) %}
-        {%- call py::setup_args_extra_indent(cons) %}
-        self._pointer = {% call py::to_ffi_call(cons) %}
-{%-         endif %}
-{%-     when None %}
-    {# no __init__ means simple construction without a pointer works, which can confuse #}
-    def __init__(self, *args, **kwargs):
+    {%- match interface.primary_constructor() %}
+    {%- when Some(cons) %}
+    {% filter indent(4) %}{% call py::define_callable(cons) %}{% endfilter %}
+    {%- when None %}
+    {# Define __init__ to prevent construction without a pointer, which can confuse #}
+    def __init__(self):
+        {%- if interface.had_async_constructor %}
+        raise ValueError("Async constructors are not supported in Python, call the `new` classmethod instead.")
+        {%- else %}
         raise ValueError("This class has no default constructor")
-{%- endmatch %}
+        {%- endif %}
+    {%- endmatch %}
 
     def __del__(self):
         # In case of partial initialization of instances.
         pointer = getattr(self, "_pointer", None)
         if pointer is not None:
-            _uniffi_rust_call(_UniffiLib.{{ obj.ffi_object_free().name() }}, pointer)
+            _uniffi_rust_call(_UniffiLib.{{ interface.ffi_free }}, pointer)
 
     def _uniffi_clone_pointer(self):
-        return _uniffi_rust_call(_UniffiLib.{{ obj.ffi_object_clone().name() }}, self._pointer)
+        return _uniffi_rust_call(_UniffiLib.{{ interface.ffi_clone }}, self._pointer)
 
-    # Used by alternative constructors or any methods which return this type.
+    # Used by the lift function to construct a new instance
     @classmethod
     def _make_instance_(cls, pointer):
         # Lightly yucky way to bypass the usual __init__ logic
@@ -65,66 +37,53 @@ class {{ impl_name }}({% for t in obj.trait_impls() %}{{ t.trait_name }},{% endf
         inst._pointer = pointer
         return inst
 
-{%- for cons in obj.alternate_constructors() %}
-    @classmethod
-{%-  if cons.is_async() %}
-    async def {{ cons.name() }}(cls, {% call py::arg_list_decl(cons) %}):
-        {%- call py::docstring(cons, 8) %}
-        {%- call py::setup_args_extra_indent(cons) %}
-
-        return await _uniffi_rust_call_async(
-            _UniffiLib.{{ cons.ffi_func().name() }}({% call py::arg_list_lowered(cons) %}),
-            _UniffiLib.{{ cons.ffi_rust_future_poll(ci) }},
-            _UniffiLib.{{ cons.ffi_rust_future_complete(ci) }},
-            _UniffiLib.{{ cons.ffi_rust_future_free(ci) }},
-            {{ ffi_converter_name }}.lift,
-            {% call py::error_ffi_converter(cons) %}
-        )
-{%-  else %}
-    def {{ cons.name() }}(cls, {% call py::arg_list_decl(cons) %}):
-        {%- call py::docstring(cons, 8) %}
-        {%- call py::setup_args_extra_indent(cons) %}
-        # Call the (fallible) function before creating any half-baked object instances.
-        pointer = {% call py::to_ffi_call(cons) %}
-        return cls._make_instance_(pointer)
-{%-  endif %}
+{%- for cons in interface.alternate_constructors() %}
+    @staticmethod
+    {% filter indent(4) %}{% call py::define_callable(cons) %}{% endfilter %}
 {% endfor %}
 
-{%- for meth in obj.methods() -%}
-    {%- call py::method_decl(meth.name(), meth) %}
-{%- endfor %}
-{%- for tm in obj.uniffi_traits() -%}
-{%-     match tm %}
-{%-         when UniffiTrait::Debug { fmt } %}
-            {%- call py::method_decl("__repr__", fmt) %}
-{%-         when UniffiTrait::Display { fmt } %}
-            {%- call py::method_decl("__str__", fmt) %}
-{%-         when UniffiTrait::Eq { eq, ne } %}
-    def __eq__(self, other: object) -> {{ eq.return_type().unwrap()|type_name }}:
-        if not isinstance(other, {{ type_name }}):
-            return NotImplemented
-
-        return {{ eq.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_clone_pointer()", eq) %})
-
-    def __ne__(self, other: object) -> {{ ne.return_type().unwrap()|type_name }}:
-        if not isinstance(other, {{ type_name }}):
-            return NotImplemented
-
-        return {{ ne.return_type().unwrap()|lift_fn }}({% call py::to_ffi_call_with_prefix("self._uniffi_clone_pointer()", ne) %})
-{%-         when UniffiTrait::Hash { hash } %}
-            {%- call py::method_decl("__hash__", hash) %}
-{%-      endmatch %}
+{%- for meth in interface.methods %}
+    {% filter indent(4) %}{% call py::define_callable(meth) %}{% endfilter %}
 {%- endfor %}
 
-{%- if obj.has_callback_interface() %}
-{%- let ffi_init_callback = obj.ffi_init_callback() %}
-{%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
-{%- let vtable_methods = obj.vtable_methods() %}
-{% include "CallbackInterfaceImpl.py" %}
-{%- endif %}
+{%- for uniffi_trait in interface.uniffi_traits %}
+{%- match uniffi_trait %}
+{%- when UniffiTrait::Eq { eq, ne } %}
+{# Special-case these to return NotImplemented when the wrong type is passed in #}
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, {{ interface.name }}):
+            return NotImplemented
 
-{# Objects as error #}
-{%- if ci.is_name_used_as_error(name) %}
+        return {{ eq.return_type().as_ref().unwrap()|lift_fn }}(
+            _uniffi_rust_call_with_error(
+                None,
+                _UniffiLib.{{ eq.ffi_func() }},
+                self._uniffi_clone_pointer(),
+                {{ interface|lower_fn }}(other),
+            )
+        )
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, {{ interface.name }}):
+            return NotImplemented
+
+        return {{ ne.return_type().as_ref().unwrap()|lift_fn }}(
+            _uniffi_rust_call_with_error(
+                None,
+                _UniffiLib.{{ ne.ffi_func() }},
+                self._uniffi_clone_pointer(),
+                {{ interface|lower_fn }}(other),
+            )
+        )
+{%- else %} 
+{%- for trait_method in uniffi_trait.methods() %}
+    {% filter indent(4) %}{% call py::define_callable(trait_method) %}{% endfilter %}
+{%- endfor %}
+{%- endmatch %}
+{%- endfor %}
+
+{# Interface as error #}
+{%- if interface.is_used_as_error() %}
 {# Due to some mismatches in the ffi converter mechanisms, errors are forced to be a RustBuffer #}
 class {{ ffi_converter_name }}__as_error(_UniffiConverterRustBuffer):
     @classmethod
@@ -148,30 +107,30 @@ class {{ ffi_converter_name }}__as_error(_UniffiConverterRustBuffer):
 {%- endif %}
 
 class {{ ffi_converter_name }}:
-    {%- if obj.has_callback_interface() %}
+    {%- if interface.has_callback_interface() %}
     _handle_map = _UniffiHandleMap()
     {%- endif %}
 
     @staticmethod
     def lift(value: int):
-        return {{ impl_name }}._make_instance_(value)
+        return {{ interface.name }}._make_instance_(value)
 
     @staticmethod
-    def check_lower(value: {{ type_name }}):
-        {%- if obj.has_callback_interface() %}
+    def check_lower(value: {{ interface.protocol_name }}):
+        {%- if interface.has_callback_interface() %}
         pass
         {%- else %}
-        if not isinstance(value, {{ impl_name }}):
-            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
+        if not isinstance(value, {{ interface.name }}):
+            raise TypeError("Expected {{ interface.name }} instance, {} found".format(type(value).__name__))
         {%- endif %}
 
     @staticmethod
-    def lower(value: {{ protocol_name }}):
-        {%- if obj.has_callback_interface() %}
+    def lower(value: {{ interface.protocol_name }}):
+        {%- if interface.has_callback_interface() %}
         return {{ ffi_converter_name }}._handle_map.insert(value)
         {%- else %}
-        if not isinstance(value, {{ impl_name }}):
-            raise TypeError("Expected {{ impl_name }} instance, {} found".format(type(value).__name__))
+        if not isinstance(value, {{ interface.name }}):
+            raise TypeError("Expected {{ interface.name }} instance, {} found".format(type(value).__name__))
         return value._uniffi_clone_pointer()
         {%- endif %}
 
@@ -183,5 +142,5 @@ class {{ ffi_converter_name }}:
         return cls.lift(ptr)
 
     @classmethod
-    def write(cls, value: {{ protocol_name }}, buf: _UniffiRustBuffer):
+    def write(cls, value: {{ interface.protocol_name }}, buf: _UniffiRustBuffer):
         buf.write_u64(cls.lower(value))

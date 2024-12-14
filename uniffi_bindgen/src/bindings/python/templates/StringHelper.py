@@ -1,4 +1,4 @@
-class _UniffiConverterString:
+class {{ ffi_converter_name }}:
     @staticmethod
     def check_lower(value):
         if not isinstance(value, str):

@@ -134,3 +134,115 @@ pub fn checksum_derive(input: TokenStream) -> TokenStream {
     }
     .into()
 }
+
+/// Custom derive for AsType traits
+///
+/// Bindings generators will typically define their own `Type` struct and an `AsType` trait that
+/// maps Bindings IR nodes to that type struct.  The details of these vary by language, but this
+/// macro can derive the `AsType` trait for typical type layouts.
+///
+///
+/// * For structs with a `ty` or `self_type` field, `as_type()` map to that field.
+/// * For new-type style enums where each variant stores another struct, `as_type()` will map to
+///   those struct's `as_type()` method.
+///
+/// See the Python bindings for an example of this in the wild.
+#[proc_macro_derive(AsType)]
+pub fn as_type_derive(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = parse_macro_input!(input);
+    let name = input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    let code = match input.data {
+        Data::Struct(struct_) => {
+            let potential_fields = struct_
+                .fields
+                .iter()
+                .filter(|field| match field.ident.as_ref() {
+                    None => false,
+                    Some(i) => {
+                        let name = i.to_string();
+                        name == "ty" || name == "self_type"
+                    }
+                })
+                .collect::<Vec<_>>();
+            match potential_fields.len() {
+                0 => panic!("#[derive(AsType)] requires a `ty` or `self_type` field"),
+                1 => {
+                    let ident = &potential_fields[0].ident;
+                    quote! {
+                        &self.#ident
+                    }
+                }
+                _ => panic!("#[derive(AsType)] both `ty` and `self_type` defined"),
+            }
+        }
+        Data::Enum(enum_) => {
+            let match_inner = enum_.variants.iter().map(|variant| {
+                let ident = &variant.ident;
+                match &variant.fields {
+                    Fields::Unnamed(fields) => {
+                        if fields.unnamed.len() != 1 {
+                            panic!("#[derive(AsType)] enum variants must have exactly 1 field")
+                        }
+                        quote! {
+                            Self::#ident(inner) => inner.as_type(),
+                        }
+                    }
+                    Fields::Named(fields) => {
+                        if fields.named.len() != 1 {
+                            panic!("#[derive(AsType)] enum variants must have exactly 1 field")
+                        }
+                        let field_ident = fields.named[0].ident.as_ref().unwrap();
+                        quote! {
+                            Self::#ident { #field_ident } => #field_ident.as_type(),
+                        }
+                    }
+                    Fields::Unit => {
+                        panic!("#[derive(AsType)] enum variants must have exactly 1 field");
+                    }
+                }
+            });
+            quote! {
+                match self {
+                    #(#match_inner)*
+                }
+            }
+        }
+        Data::Union(_) => {
+            panic!("#[derive(AsType)] is not supported for unions");
+        }
+    };
+
+    quote! {
+        #[automatically_derived]
+        impl #impl_generics AsType for #name #ty_generics #where_clause {
+            fn as_type(&self) -> &Type {
+                #code
+            }
+        }
+    }
+    .into()
+}
+
+/// Custom derive for AsCallable traits
+///
+/// AsCallable works similarly to AsType, except it maps nodes to the `Callable` struct.
+/// Again, each bindings generator will define their own `Callable` struct and `AsCallable` trait.
+/// This macro can auto-implement that trait for typical type layouts.
+///
+/// This macro only works for structs and is implemented by mapping `&self` -> `&self.callable`
+#[proc_macro_derive(AsCallable)]
+pub fn as_callable_derive(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = parse_macro_input!(input);
+    let name = input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    quote! {
+        #[automatically_derived]
+        impl #impl_generics AsCallable for #name #ty_generics #where_clause {
+            fn as_callable(&self) -> &Callable {
+                &self.callable
+            }
+        }
+    }
+    .into()
+}

@@ -20,6 +20,9 @@ We have [detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrad
   The `UniffiCustomTypeConverter` trait is no longer used, use the
   [`custom_type!` macro](https://mozilla.github.io/uniffi-rs/next/types/custom_types.html) instead.
 
+- Python: Added the `type_name` field for custom type configs.  This is required when the name of
+  the custom type differs from the Python type name.
+
 - The [UDL syntax for external types](https://mozilla.github.io/uniffi-rs/next/udl/external_types.html) has changed.
   `typedef extern MyEnum;` has been replaced
   with `typedef enum MyEnum;`. Attributes other than `[External = "crate_name"]` have been removed.

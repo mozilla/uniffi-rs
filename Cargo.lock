@@ -2052,6 +2052,7 @@ dependencies = [
  "serde",
  "textwrap",
  "toml",
+ "uniffi_internal_macros",
  "uniffi_meta",
  "uniffi_testing",
  "uniffi_udl",

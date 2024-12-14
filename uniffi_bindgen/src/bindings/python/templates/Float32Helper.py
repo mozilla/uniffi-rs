@@ -1,4 +1,4 @@
-class _UniffiConverterFloat(_UniffiConverterPrimitiveFloat):
+class {{ ffi_converter_name }}(_UniffiConverterPrimitiveFloat):
     @staticmethod
     def read(buf):
         return buf.read_float()
