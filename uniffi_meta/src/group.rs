@@ -130,6 +130,10 @@ impl<'a> ExternalTypeConverter<'a> {
                 ..meta
             }),
             Metadata::Enum(meta) => Metadata::Enum(self.convert_enum(meta)),
+            Metadata::CustomType(meta) => Metadata::CustomType(CustomTypeMetadata {
+                builtin: self.convert_type(meta.builtin),
+                ..meta
+            }),
             _ => item,
         }
     }

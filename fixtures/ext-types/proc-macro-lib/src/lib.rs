@@ -1,5 +1,5 @@
 use custom_types::Handle;
-use ext_types_custom::Guid;
+use ext_types_custom::{Guid, Ouid2};
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
@@ -204,6 +204,11 @@ fn get_newtype_handle_value(u: NewtypeHandle) -> i64 {
 #[uniffi::export]
 fn get_guid_procmacro(g: Option<Guid>) -> Guid {
     ext_types_custom::get_guid(g)
+}
+
+#[uniffi::export]
+fn get_ouid2() -> Ouid2 {
+    Ouid2("hello".to_string())
 }
 
 uniffi::setup_scaffolding!("imported_types_lib");

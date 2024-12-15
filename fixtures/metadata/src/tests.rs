@@ -907,3 +907,39 @@ mod test_function_metadata {
         );
     }
 }
+
+mod test_custom_types {
+    use super::*;
+
+    pub struct CustomString(pub String);
+    uniffi::custom_newtype!(CustomString, String);
+
+    pub struct CustomPerson(pub Person);
+    uniffi::custom_newtype!(CustomPerson, Person);
+
+    #[test]
+    fn test_custom_types() {
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CUSTOM_TYPE_CUSTOMSTRING,
+            CustomTypeMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "CustomString".into(),
+                builtin: Type::String,
+                docstring: None,
+            },
+        );
+
+        check_metadata(
+            &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CUSTOM_TYPE_CUSTOMPERSON,
+            CustomTypeMetadata {
+                module_path: "uniffi_fixture_metadata".into(),
+                name: "CustomPerson".into(),
+                builtin: Type::Record {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "Person".into(),
+                },
+                docstring: None,
+            },
+        );
+    }
+}
