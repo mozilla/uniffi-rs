@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="builtin_types.html">
+        <link rel="prev" href="object_references.html">
       
       
-        <link rel="next" href="records.html">
+        <link rel="next" href="rendering_foreign_bindings.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Enumerations - The UniFFI user guide</title>
+        <title>UniFFI Async internals - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#enumerations" class="md-skip">
+        <a href="#uniffi-async-internals" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Enumerations
+              UniFFI Async internals
             
           </span>
         </div>
@@ -346,19 +346,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -372,7 +370,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             UniFFI type model
@@ -386,7 +384,7 @@
   
   
     <li class="md-nav__item">
-      <a href="namespace.html" class="md-nav__link">
+      <a href="../types/namespace.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -407,7 +405,7 @@
   
   
     <li class="md-nav__item">
-      <a href="builtin_types.html" class="md-nav__link">
+      <a href="../types/builtin_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -425,30 +423,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Enumerations
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="enumerations.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../types/enumerations.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -457,44 +435,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#enums-with-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enums with fields
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#remote-non-exhaustive-enums" class="md-nav__link">
-    <span class="md-ellipsis">
-      Remote, non-exhaustive enums
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -507,7 +447,7 @@
   
   
     <li class="md-nav__item">
-      <a href="records.html" class="md-nav__link">
+      <a href="../types/records.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -563,7 +503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="functions.html" class="md-nav__link">
+      <a href="../types/functions.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -584,7 +524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="errors.html" class="md-nav__link">
+      <a href="../types/errors.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -613,7 +553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="interfaces.html" class="md-nav__link">
+      <a href="../types/interfaces.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -634,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="callback_interfaces.html" class="md-nav__link">
+      <a href="../types/callback_interfaces.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -655,7 +595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="remote_ext_types.html" class="md-nav__link">
+      <a href="../types/remote_ext_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -676,7 +616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="custom_types.html" class="md-nav__link">
+      <a href="../types/custom_types.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1523,17 +1463,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1547,7 +1489,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1561,7 +1503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/design_principles.html" class="md-nav__link">
+      <a href="design_principles.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1582,7 +1524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/crates.html" class="md-nav__link">
+      <a href="crates.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1603,7 +1545,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
+      <a href="lifting_and_lowering.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1624,7 +1566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/object_references.html" class="md-nav__link">
+      <a href="object_references.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1642,10 +1584,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../internals/async.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    UniFFI Async internals
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="async.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1654,6 +1616,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-runtime-does-async-code-run-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      What runtime does async code run on?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rust-async-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rust Async functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rust Async functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-not-have-rust_future_poll-return-a-boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why not have rust_future_poll return a boolean?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-async-callback-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign async callback methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-you-really-just-piggyback-on-the-foreign-async-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Can you really just piggyback on the foreign async runtime?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-you-integrating-with-rust-runtimes-like-tokio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Can you integrating with Rust Runtimes like tokio?
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1666,7 +1708,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="rendering_foreign_bindings.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1734,18 +1776,60 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#enums-with-fields" class="md-nav__link">
+  <a href="#what-runtime-does-async-code-run-on" class="md-nav__link">
     <span class="md-ellipsis">
-      Enums with fields
+      What runtime does async code run on?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#remote-non-exhaustive-enums" class="md-nav__link">
+  <a href="#rust-async-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Remote, non-exhaustive enums
+      Rust Async functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rust Async functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-not-have-rust_future_poll-return-a-boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why not have rust_future_poll return a boolean?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-async-callback-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign async callback methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-you-really-just-piggyback-on-the-foreign-async-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Can you really just piggyback on the foreign async runtime?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-you-integrating-with-rust-runtimes-like-tokio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Can you integrating with Rust Runtimes like tokio?
     </span>
   </a>
   
@@ -1769,39 +1853,144 @@
   
 
 
-<h1 id="enumerations">Enumerations</h1>
-<p>Enums must be exposed via <a href="../udl/enumerations.html">UDL</a> or <a href="../proc_macro/enumerations.html">proc-macros</a></p>
-<p>Simple enums just work:</p>
-<div class="highlight"><pre><span></span><code><span class="k">enum</span><span class="w"> </span><span class="nc">Animal</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">Dog</span><span class="p">,</span>
-<span class="w">    </span><span class="n">Cat</span><span class="p">,</span>
-<span class="p">}</span>
+<h1 id="uniffi-async-internals">UniFFI Async internals</h1>
+<h2 id="what-runtime-does-async-code-run-on">What runtime does async code run on?</h2>
+<p>The fundamental issue here is that UniFFI can't rely on a Rust async runtime.
+We don't want to force library authors into a particular runtime.
+Furthermore, we want to allow library authors to not use a runtime at all and instead to integrate with the runtime of the application using the library.</p>
+<p>To accomplish this, UniFFI piggybacks off the runtime from the foreign bindings.
+The generated Rust code schedules work using callbacks provided by the foreign bindings.</p>
+<h2 id="rust-async-functions">Rust Async functions</h2>
+<p>Rust async functions are implemplemented by wrapping the
+<a href="https://doc.rust-lang.org/std/future/trait.Future.html">Future</a> into a <code>uniffi::RustFuture</code> struct
+and providing scaffolding functions so that the foreign bindings can drive the future to completion.</p>
+<div class="highlight"><pre><span></span><code>sequenceDiagram
+  participant User as User code
+  participant Foreign as Foreign Language Bindings
+  participant Rust as Rust Scaffolding
+
+  User-&gt;&gt;+Foreign: call async function
+  Foreign-&gt;&gt;+Rust: call scaffolding function
+  Rust--&gt;&gt;-Foreign: return RustFuture handle
+
+  loop until RustFuture is ready
+    Foreign-&gt;&gt;Rust: call RustFuture poll fn
+    Rust-&gt;&gt;Foreign: call future callback
+  end
+
+  Foreign-&gt;&gt;+Rust: call RustFuture complete fn
+  Rust--&gt;&gt;-Foreign: return result
+  Foreign-&gt;&gt;Rust: call RustFuture free fn
+  Foreign--&gt;&gt;-User: return from async function
 </code></pre></div>
-<p>and naturally used in the bindings:
-<div class="highlight"><pre><span></span><code><span class="n">Animal</span><span class="p">.</span><span class="na">Dog</span><span class="w"> </span><span class="c1">// kotlin</span>
+<p>For each async function, UniFFI generates 4 scaffolding functions:
+* A scaffolding function that returns a <code>RustFuture</code> handle
+* <code>rust_future_poll</code> to poll the future
+* <code>rust_future_complete</code> to receive the completed result of a future
+* <code>rust_future_free</code> to destroy a future freeing any underlying memory
+* Technically, the function names are more like <code>uniffi_[module_prefix]_rust_future_poll</code>, but this document uses above names make for shorthand.</p>
+<p>The UniFFI generated code for an async function performs these steps:</p>
+<ol>
+<li>Call the Rust scaffolding function, receiving a <code>RustFuture</code> handle</li>
+<li>Call the <code>rust_future_poll</code> function for the future until the future is ready.</li>
+<li>The <code>rust_future_poll</code> function inputs a callback function and an opaque pointer (AKA a <code>void *</code>) to call the callback with.</li>
+<li>If the future is pending, then the generated code registers a waker that will call the callback function with <code>RUST_FUTURE_MAYBE_READY</code>.
+     When the generated foreign code sees this, it calls poll again, starting the loop over.</li>
+<li>If the future is ready, then the callback function is immediately called with <code>RUST_FUTURE_READY</code> and we move to the next step.</li>
+<li>Call <code>rust_future_complete</code>, receiving the return value of the future</li>
+<li>Call <code>rust_future_free</code> (ideally in a <code>finally</code> block)</li>
+<li>Return the result from <code>rust_future_complete</code></li>
+</ol>
+<h3 id="why-not-have-rust_future_poll-return-a-boolean">Why not have <code>rust_future_poll</code> return a boolean?</h3>
+<p>As described above, <code>rust_future_poll</code> inputs a callback and an opaque pointer.
+If the future is ready, then <code>rust_future_poll</code> immediately invokes the callback, passing it the pointer back and <code>RUST_FUTURE_READY</code>
+A more straightforward API would be to return a boolean if the future is ready, why not do that?</p>
+<p>The issue is that it doesn't work well with the way foreign code's lifetime management.
+The opaque pointer is usually either something like a raw <code>Arc</code> pointer that holds data about the async call.
+When the foreign code passes the pointer to <code>rust_future_poll</code>, it temporarily <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html#method.into_raw">leaks a reference</a>.
+Then when callback is called, it <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html#method.from_raw">reconstructs the leaked reference</a>, restoring the refcount.</p>
+<p>If <code>rust_future_poll</code> returned <code>true</code> to indicate that the future is ready, then the foreign code is in an awkward situation.
+It wants to use the async call data that the pointer was referring to, but it just sent a leaked pointer to Rust.
+It would have to hold on to a copy of the raw pointer, use that to restore the reference, and assume the callback is never going to be called.
+This could work, but it makes things much more complicated and could easily lead to memory leaks or use-after-free bugs.</p>
+<h2 id="foreign-async-callback-methods">Foreign async callback methods</h2>
+<p>Async callback/trait interface methods are the way that Rust makes async calls across the FFI.
+These are implemented using a callback, which makes them quite a bit simpler than their counterparts.</p>
+<div class="highlight"><pre><span></span><code>sequenceDiagram
+  participant User as User code
+  participant Rust as Rust Scaffolding
+  participant Foreign as Foreign Language Bindings
+
+  User-&gt;&gt;+Rust: call async function
+  Rust-&gt;&gt;Foreign: call scaffolding function, pass a oneshot::Sender pointer
+  Rust--&gt;&gt;-User: return oneshot::Receiver
+
+  Foreign-&gt;&gt;Rust: invoke callback, pass back oneshot::Sender pointer
+  Note over Rust: send callback result to the oneshot::Sender
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">dog</span> <span class="c1">// swift</span>
+<p>The UniFFI generated code for an async trait method performs these steps:</p>
+<ul>
+<li>Create a <code>oneshot::Channel</code> (see <a href="https://docs.rs/oneshot/latest/oneshot/">oneshot crate</a> for how these work, although we don't currently depend on that crate).</li>
+<li>Leak the <code>oneshot::Sender</code> into a raw pointer</li>
+<li>Defines an <code>extern "C"</code> function that will:<ul>
+<li>input that raw pointer plus a return value </li>
+<li>lift the return value</li>
+<li>send the return value into the <code>oneshot::Sender</code>.</li>
+</ul>
+</li>
+<li>Call the callback method, passing a pointer to the function from the last step and the <code>oneshot::Sender</code> raw pointer.</li>
+<li>Return the receiver half of the <code>oneshot::Channel</code>.</li>
+</ul>
+<p>On the foreign side, the generated code simply runs the async function as normal, and call the callback once it completes.</p>
+<h2 id="can-you-really-just-piggyback-on-the-foreign-async-runtime">Can you really just piggyback on the foreign async runtime?</h2>
+<p>It's somewhat surprising, but yes.
+All the async code can run in the foreign runtime and Rust never has to start its own eventloop thread.
+In order to implement this, the Rust async functions must only await functions that fall into one of these categories:</p>
+<ul>
+<li>UniFFI async callback/trait methods
+  This often means defining traits for things like HTTP clients so that Rust can leverage async HTTP libraries from the foreign side.</li>
+<li>Async functions from crates like <a href="https://docs.rs/oneshot/latest/oneshot/">oneshot</a> and <a href="https://docs.rs/async-mutex/latest/async_mutex/">async_mutex</a> that work with any runtime.</li>
+</ul>
+<p>Beware that some Rust crates will present async APIs that silently start up runtimes in the background.
+For example, <a href="https://docs.rs/reqwest/latest/reqwest/">reqwest</a> will start a tokio runtime.</p>
+<p>The <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client">Async API client example</a> shows how this could work in the real-world.
+The Rust library depends an async HTTP callback interface to do the low-level fetching, then deserializes/validates the HTTP response.
+After that, it returns a high-level API response struct to the application.
+Furthermore, let's stipulate that the deserialization/validation is slow enough to be considered blocking.
+To manage this, the Rust library also depends on a (synchronous) callback interface that runs a task in a worker queue where blocking is allowed.
+Here's how the async API call could be handled:</p>
+<div class="highlight"><pre><span></span><code>sequenceDiagram
+  participant AsyncRust as Async Rust code
+  participant SyncRust as Sync Rust code
+  participant WorkerQueue as Work Queue Callback Interface
+  participant Http as Http Callback Interface
+  participant Foreign as Foreign language code
+
+  Foreign-&gt;&gt;+AsyncRust: Start async API call
+  AsyncRust-&gt;&gt;+Http: await method of Http callback interface
+  Http--&gt;&gt;-AsyncRust: Return HTTP response
+  Note over AsyncRust: Create oneshot channel&lt;br/&gt;and deseralization task
+  AsyncRust--&gt;&gt;WorkerQueue: Schedule task&lt;br /&gt;(sends the HTTP response for further processing)
+  Note over AsyncRust: await oneshot channel
+  WorkerQueue-&gt;&gt;SyncRust: Run task (in background thread)
+  SyncRust--&gt;&gt;AsyncRust: Send deserialized response via oneshot channel
+  AsyncRust--&gt;&gt;-Foreign: Return API result
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="n">Animal</span><span class="o">.</span><span class="n">DOG</span><span class="p">()</span> <span class="c1"># python</span>
-<span class="n">a</span><span class="o">.</span><span class="n">is_DOG</span><span class="p">()</span>
-</code></pre></div></p>
-<h2 id="enums-with-fields">Enums with fields</h2>
-<p>Enumerations with associated data are supported.</p>
-<div class="highlight"><pre><span></span><code><span class="k">enum</span><span class="w"> </span><span class="nc">IpAddr</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">V4</span><span class="w"> </span><span class="p">{</span><span class="n">q1</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="n">q2</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="n">q3</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="n">q4</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">},</span>
-<span class="w">  </span><span class="n">V6</span><span class="w"> </span><span class="p">{</span><span class="n">addr</span><span class="p">:</span><span class="w"> </span><span class="nc">string</span><span class="p">},</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>Enums can be very flexible (although <a href="../udl/enumerations.html">UDL</a> doesn't support all of this)</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nb">None</span><span class="p">,</span>
-<span class="w">    </span><span class="n">Str</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span>
-<span class="w">    </span><span class="n">All</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">s</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">:</span><span class="w"> </span><span class="kt">i64</span><span class="w"> </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<h2 id="remote-non-exhaustive-enums">Remote, non-exhaustive enums</h2>
-<p>There are some <a href="../udl/enumerations.html#remote-non-exhaustive-enums">special considerations here when using UDL</a></p>
+<ul>
+<li>Action in this sequence diagram represents calling an async Rust function or async callback interface method, see the above diagrams for details.</li>
+<li>The dotted lines show how the data is passed around during the async call.</li>
+<li>The async Rust code runs in a <a href="https://doc.rust-lang.org/std/future/trait.Future.html#tymethod.poll">Future::poll</a> method, inside the foreign event loop.  This code never blocks.</li>
+<li>The sync Rust code runs inside a worker queue where it's okay to block.</li>
+<li>This all combines together to create an async Rust call that's driven by the foreign event loop.</li>
+</ul>
+<h2 id="can-you-integrating-with-rust-runtimes-like-tokio">Can you integrating with Rust Runtimes like <code>tokio</code>?</h2>
+<p>Yes.  This will vary for each runtime, but the typical procedure is:</p>
+<ul>
+<li>Keep a reference to the runtime</li>
+<li>Use a bridge function like <a href="https://docs.rs/tokio/latest/tokio/runtime/struct.Runtime.html#method.spawn">tokio::Runtime::spawn</a> to await a future that runs in that runtime.</li>
+</ul>
+<p>There's also the <code>uniffi::async_runtime</code> macro attribute to help with this, but it's not clear if we
+want to continue to support it (<a href="https://github.com/mozilla/uniffi-rs/issues/1726">#1726</a>).</p>
 
 
 
