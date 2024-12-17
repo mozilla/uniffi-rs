@@ -473,6 +473,7 @@ pub struct CustomTypeMetadata {
     pub module_path: String,
     pub name: String,
     pub builtin: Type,
+    pub docstring: Option<String>,
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`SipHasher13`].

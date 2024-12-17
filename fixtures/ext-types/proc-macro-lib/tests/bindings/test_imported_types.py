@@ -79,5 +79,8 @@ class TestIt(unittest.TestCase):
         self.assertEqual(h, get_newtype_handle(h))
         self.assertEqual(get_newtype_handle_value(h), 42)
 
+    def test_misc(self):
+        self.assertEqual(get_ouid2(), "hello")
+
 if __name__=='__main__':
     unittest.main()

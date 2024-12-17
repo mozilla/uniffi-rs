@@ -60,6 +60,7 @@ impl<'a> MetadataReader<'a> {
             codes::TRAIT_METHOD => self.read_trait_method()?.into(),
             codes::UNIFFI_TRAIT => self.read_uniffi_trait()?.into(),
             codes::OBJECT_TRAIT_IMPL => self.read_object_trait_impl()?.into(),
+            codes::CUSTOM_TYPE => self.read_custom_type()?.into(),
             _ => bail!("Unexpected metadata code: {value:?}"),
         })
     }
@@ -342,6 +343,15 @@ impl<'a> MetadataReader<'a> {
             name: self.read_string()?,
             remote: false, // only used when generating scaffolding from UDL
             imp,
+            docstring: self.read_optional_long_string()?,
+        })
+    }
+
+    fn read_custom_type(&mut self) -> Result<CustomTypeMetadata> {
+        Ok(CustomTypeMetadata {
+            module_path: self.read_string()?,
+            name: self.read_string()?,
+            builtin: self.read_type()?,
             docstring: self.read_optional_long_string()?,
         })
     }
