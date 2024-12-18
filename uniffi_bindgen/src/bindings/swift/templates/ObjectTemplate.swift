@@ -25,7 +25,7 @@ open class {{ impl_class_name }}:
     {%- if is_error %}
     Swift.Error,
     {% endif %}
-    {{ protocol_name }} {
+    @unchecked Sendable, {{ protocol_name }} {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
