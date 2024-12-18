@@ -2067,14 +2067,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uniffi_checksum_derive"
-version = "0.28.3"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "uniffi_core"
 version = "0.28.3"
 dependencies = [
@@ -2084,6 +2076,14 @@ dependencies = [
  "once_cell",
  "paste",
  "static_assertions",
+]
+
+[[package]]
+name = "uniffi_internal_macros"
+version = "0.28.3"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2110,7 +2110,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "siphasher",
- "uniffi_checksum_derive",
+ "uniffi_internal_macros",
 ]
 
 [[package]]

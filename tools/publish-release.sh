@@ -23,7 +23,7 @@ done
 set -ex
 
 # Note: make sure these are ordered so that dependencies come before the crates that depend on them
-cargo publish -p uniffi_checksum_derive
+cargo publish -p uniffi_internal_macros
 cargo publish -p uniffi_meta
 cargo publish -p uniffi_core
 cargo publish -p uniffi_testing
