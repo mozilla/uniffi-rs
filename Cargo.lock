@@ -1816,6 +1816,7 @@ name = "uniffi-fixture-ext-types-lib-one"
 version = "0.22.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "bytes",
  "uniffi",
 ]
@@ -1838,6 +1839,7 @@ name = "uniffi-fixture-ext-types-sub-lib"
 version = "0.22.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "uniffi",
  "uniffi-fixture-ext-types-lib-one",
 ]
