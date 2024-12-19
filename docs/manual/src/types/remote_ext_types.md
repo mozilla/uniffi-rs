@@ -80,6 +80,7 @@ Supported values for the typedef type:
 * Records: `record`, `dictionary` or `struct`
 * Objects: `object`, `impl` or `interface`
 * Traits: `trait`, `callback` or `trait_with_foreign`
+* Custom types: `custom`
 
 # Special cases for remote types
 
