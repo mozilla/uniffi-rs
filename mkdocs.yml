@@ -59,6 +59,7 @@ nav:
     - ./udl/functions.md
     - ./udl/interfaces.md
     - ./udl/records.md
+    - ./udl/external_types.md
     - ./udl/docstrings.md
   - 'Proc macros':
     - ./proc_macro/index.md

@@ -25,35 +25,34 @@ namespace imported_types_lib {
 // A type defined in a .udl file in the `uniffi-one` crate (ie, in
 // `../../uniffi-one/src/uniffi-one.udl`)
 [External="uniffi_one"]
-typedef extern UniffiOneType;
+typedef dictionary UniffiOneType;
 
 // An enum in the same crate
 [External="uniffi_one"]
-typedef extern UniffiOneEnum;
+typedef enum UniffiOneEnum;
 
 // An interface in the same crate
-[ExternalInterface="uniffi_one"]
-typedef extern UniffiOneInterface;
+[External="uniffi_one"]
+typedef interface UniffiOneInterface;
 
 // An UDL defined trait
-[ExternalTrait="uniffi_one"]
-typedef extern UniffiOneUDLTrait;
+[External="uniffi_one"]
+typedef trait UniffiOneUDLTrait;
 
 // A type defined via procmacros in an external crate
-[ExternalExport="uniffi_one"]
-typedef extern UniffiOneProcMacroType;
+[External="uniffi_one"]
+typedef dictionary UniffiOneProcMacroType;
 
 // A Custom (ie, "wrapped") type defined externally in `../../custom-types/src/lib.rs`,
-// but because it's in a UDL it's still "external" from our POV, so same as the `.udl` type above.
 [External="ext_types_custom"]
-typedef extern Guid;
+typedef custom Guid;
 
 // And re-use the `custom-types` example - this exposes `Url` and `Handle`
 [External="custom_types"]
-typedef extern Url;
+typedef custom Url;
 
 [External="custom_types"]
-typedef extern Handle;
+typedef custom Handle;
 
 // Here are some different kinds of remote types - the types are described
 // in this UDL, but the types themselves are defined in a different crate.

@@ -9,7 +9,10 @@ mod ffi_names;
 pub use ffi_names::*;
 
 mod group;
-pub use group::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
+pub use group::{
+    convert_external_type, create_metadata_groups, fixup_external_type, group_metadata,
+    MetadataGroup,
+};
 
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};

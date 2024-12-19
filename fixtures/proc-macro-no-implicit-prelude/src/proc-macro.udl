@@ -3,22 +3,11 @@ dictionary Zero {
     string inner;
 };
 
-// NOTE: `[Rust=..]` is deprecated and this test hasn't migrated.
-// This helps testing the attribute, so don't remove them unless you are removing support entirely!
-[Rust="record"]
-typedef extern One;
-
-[Rust="enum"]
-typedef extern MaybeBool;
-
-[Rust="interface"]
-typedef extern Object;
-
-[Rust="trait"]
-typedef extern Trait;
-
-[Rust="trait_with_foreign"]
-typedef extern TraitWithForeign;
+typedef record One;
+typedef enum MaybeBool;
+typedef interface Object;
+typedef trait Trait;
+typedef trait_with_foreign TraitWithForeign;
 
 // Then stuff defined here but referencing the imported types.
 dictionary Externals {
