@@ -28,6 +28,7 @@ members = [
   "fixtures/coverall",
   "fixtures/callbacks",
   "fixtures/error-types",
+  "fixtures/error-types-swift",
 
   "fixtures/ext-types/custom-types",
   "fixtures/ext-types/http-headermap",
