@@ -84,6 +84,5 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 }
 
 {% if !contains_object_references %}
-{% if config.experimental_sendable_value_types() %}extension {{ type_name }}: Sendable {} {% endif %}
-extension {{ type_name }}: Equatable, Hashable {}
+extension {{ type_name }}: Equatable, Hashable, Sendable {}
 {% endif %}

@@ -16,8 +16,7 @@ public struct {{ type_name }} {
 }
 
 {% if !contains_object_references %}
-{% if config.experimental_sendable_value_types() %}extension {{ type_name }}: Sendable {} {% endif %}
-extension {{ type_name }}: Equatable, Hashable {
+extension {{ type_name }}: Equatable, Hashable, Sendable {
     public static func ==(lhs: {{ type_name }}, rhs: {{ type_name }}) -> Bool {
         {%- for field in rec.fields() %}
         if lhs.{{ field.name()|var_name }} != rhs.{{ field.name()|var_name }} {
