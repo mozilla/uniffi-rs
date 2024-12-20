@@ -8,11 +8,12 @@ use cargo_metadata::{Message, Metadata, MetadataCommand, Package, Target};
 use fs_err as fs;
 use once_cell::sync::Lazy;
 use std::{
-    collections::hash_map::DefaultHasher,
+    collections::{hash_map::DefaultHasher, HashMap},
     env,
     env::consts::DLL_EXTENSION,
     hash::{Hash, Hasher},
     process::{Command, Stdio},
+    sync::Mutex,
 };
 
 // A source to compile for a test
@@ -25,7 +26,8 @@ pub struct CompileSource {
 // Store Cargo output to in a static to avoid calling it more than once.
 
 static CARGO_METADATA: Lazy<Metadata> = Lazy::new(get_cargo_metadata);
-static CARGO_BUILD_MESSAGES: Lazy<Vec<Message>> = Lazy::new(get_cargo_build_messages);
+static CARGO_BUILD_MESSAGES: Lazy<Mutex<HashMap<String, Vec<Message>>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Struct for running fixture and example tests for bindings generators
 ///
@@ -61,6 +63,12 @@ impl UniFFITestHelper {
     }
 
     fn find_name_and_cdylib_path(package: &Package) -> Result<(String, Utf8PathBuf)> {
+        let build_messages = CARGO_BUILD_MESSAGES
+            .lock()
+            .unwrap()
+            .entry(package.name.clone())
+            .or_insert_with(|| get_cargo_build_messages_for_crate(&package.name))
+            .clone();
         let cdylib_targets: Vec<&Target> = package
             .targets
             .iter()
@@ -72,18 +80,16 @@ impl UniFFITestHelper {
         };
         let target_name = target.name.replace('-', "_");
 
-        let artifacts = CARGO_BUILD_MESSAGES
-            .iter()
-            .filter_map(|message| match message {
-                Message::CompilerArtifact(artifact) => {
-                    if artifact.target == *target {
-                        Some(artifact.clone())
-                    } else {
-                        None
-                    }
+        let artifacts = build_messages.iter().filter_map(|message| match message {
+            Message::CompilerArtifact(artifact) => {
+                if artifact.target == *target {
+                    Some(artifact.clone())
+                } else {
+                    None
                 }
-                _ => None,
-            });
+            }
+            _ => None,
+        });
         let cdylib_files: Vec<Utf8PathBuf> = artifacts
             .into_iter()
             .flat_map(|artifact| {
@@ -161,7 +167,7 @@ fn get_cargo_metadata() -> Metadata {
         .expect("error running cargo metadata")
 }
 
-fn get_cargo_build_messages() -> Vec<Message> {
+fn get_cargo_build_messages_for_crate(crate_name: &str) -> Vec<Message> {
     #[cfg(feature = "ffi-trace")]
     let features_arg = "--features=ffi-trace";
 
@@ -169,9 +175,10 @@ fn get_cargo_build_messages() -> Vec<Message> {
     let features_arg = "--features=";
 
     let mut child = Command::new(env!("CARGO"))
-        .arg("test")
+        .arg("build")
+        .arg("-p")
+        .arg(crate_name)
         .arg(features_arg)
-        .arg("--no-run")
         .arg("--message-format=json")
         .stdout(Stdio::piped())
         .spawn()
