@@ -307,28 +307,6 @@ impl ComponentInterface {
         self.is_name_used_as_error(&e.name) && (fielded || used_in_foreign_interface)
     }
 
-    /// Get details about all `Type::External` types.
-    /// Returns an iterator of (name, crate_name, kind)
-    pub fn iter_external_types(
-        &self,
-    ) -> impl Iterator<Item = (&String, String, ExternalKind, bool)> {
-        self.types.iter_known_types().filter_map(|t| match t {
-            Type::External {
-                name,
-                module_path,
-                kind,
-                tagged,
-                ..
-            } => Some((
-                name,
-                module_path.split("::").next().unwrap().to_string(),
-                *kind,
-                *tagged,
-            )),
-            _ => None,
-        })
-    }
-
     /// Get details about all `Type::Custom` types
     pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
         self.types.iter_known_types().filter_map(|t| match t {
@@ -679,10 +657,36 @@ impl ComponentInterface {
     /// The set of FFI functions is derived automatically from the set of higher-level types
     /// along with the builtin FFI helper functions.
     pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = FfiFunction> + '_ {
-        self.iter_user_ffi_function_definitions()
+        self.iter_ffi_function_definitions_conditionally_include_integrity_checks(true)
+    }
+
+    pub fn iter_ffi_function_definitions_excluding_integrity_checks(
+        &self,
+    ) -> impl Iterator<Item = FfiFunction> + '_ {
+        self.iter_ffi_function_definitions_conditionally_include_integrity_checks(false)
+    }
+
+    fn iter_ffi_function_definitions_conditionally_include_integrity_checks(
+        &self,
+        include_checksums: bool,
+    ) -> impl Iterator<Item = FfiFunction> + '_ {
+        let iterator = self
+            .iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
-            .chain(self.iter_futures_ffi_function_definitions())
+            .chain(self.iter_futures_ffi_function_definitions());
+
+        // Conditionally determine if the checksums should be included or not.
+        if include_checksums {
+            Box::new(iterator.chain(self.iter_ffi_function_integrity_checks()))
+                as Box<dyn Iterator<Item = FfiFunction> + '_>
+        } else {
+            Box::new(iterator) as Box<dyn Iterator<Item = FfiFunction> + '_>
+        }
+    }
+
+    pub fn iter_ffi_function_integrity_checks(&self) -> impl Iterator<Item = FfiFunction> + '_ {
+        iter::empty()
             .chain(self.iter_checksum_ffi_functions())
             .chain([self.ffi_uniffi_contract_version()])
     }
@@ -694,8 +698,7 @@ impl ComponentInterface {
         self.iter_user_ffi_function_definitions()
             .cloned()
             .chain(self.iter_rust_buffer_ffi_function_definitions())
-            .chain(self.iter_checksum_ffi_functions())
-            .chain([self.ffi_uniffi_contract_version()])
+            .chain(self.iter_ffi_function_integrity_checks())
     }
 
     /// List all FFI functions definitions for user-defined interfaces
@@ -1193,6 +1196,7 @@ mod test {
 existing definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    remote: false,
     discr_type: None,
     variants: [
         Variant {
@@ -1215,6 +1219,7 @@ existing definition: Enum {
 new definition: Enum {
     name: \"Testing\",
     module_path: \"crate_name\",
+    remote: false,
     discr_type: None,
     variants: [
         Variant {
@@ -1376,6 +1381,7 @@ new definition: Enum {
             name: "ob".to_string(),
             module_path: "mp".to_string(),
             imp: ObjectImpl::Struct,
+            remote: false,
             constructors: Default::default(),
             methods: Default::default(),
             uniffi_traits: Default::default(),

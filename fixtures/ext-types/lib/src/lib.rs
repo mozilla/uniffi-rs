@@ -11,17 +11,8 @@ use uniffi_one::{
 use uniffi_sublib::SubLibType;
 use url::Url;
 
-// #1988
-uniffi::ffi_converter_forward!(
-    ext_types_custom::Ouid,
-    ext_types_custom::UniFfiTag,
-    crate::UniFfiTag
-);
-uniffi::ffi_converter_forward!(
-    ext_types_custom::ANestedGuid,
-    ext_types_custom::UniFfiTag,
-    crate::UniFfiTag
-);
+// Remote types require a macro call in the Rust source
+uniffi::use_remote_type!(custom_types::Url);
 
 pub struct CombinedType {
     pub uoe: UniffiOneEnum,
@@ -83,10 +74,7 @@ fn get_combined_type(existing: Option<CombinedType>) -> CombinedType {
 #[derive(Default, uniffi::Record)]
 pub struct ObjectsType {
     pub maybe_trait: Option<Arc<dyn UniffiOneTrait>>,
-    // XXX - can't refer to UniffiOneInterface here - #1854
-    //pub maybe_interface: Option<Arc<UniffiOneInterface>>,
-    // Use this in the meantime so the tests can still refer to it.
-    pub maybe_interface: Option<u8>,
+    pub maybe_interface: Option<Arc<UniffiOneInterface>>,
     pub sub: SubLibType,
 }
 
@@ -112,8 +100,10 @@ fn get_maybe_urls(urls: Vec<Option<Url>>) -> Vec<Option<Url>> {
     urls
 }
 
-// XXX - #1854
-// fn get_imported_guid(guid: Guid) -> Guid {
+#[uniffi::export]
+fn get_imported_guid(guid: Guid) -> Guid {
+    guid
+}
 
 #[uniffi::export]
 fn get_imported_ouid(ouid: Ouid) -> Ouid {
@@ -131,11 +121,13 @@ fn get_imported_nested_ouid(guid: Option<ANestedGuid>) -> ANestedGuid {
     guid.unwrap_or_else(|| ANestedGuid(Guid("nested".to_string())))
 }
 
-// A local custom type wrapping an external imported UDL type
-// XXX - #1854
-// pub struct NestedExternalGuid(pub Guid);
-// ...
-// fn get_nested_external_guid(nguid: Option<NestedExternalGuid>) -> NestedExternalGuid {
+pub struct NestedExternalGuid(pub Guid);
+
+#[uniffi::export]
+fn get_nested_external_guid(nguid: Option<NestedExternalGuid>) -> NestedExternalGuid {
+    nguid.unwrap_or_else(|| NestedExternalGuid(Guid("nested-external".to_string())))
+}
+uniffi::custom_newtype!(NestedExternalGuid, Guid);
 
 // A local custom type wrapping an external imported procmacro type
 pub struct NestedExternalOuid(pub Ouid);

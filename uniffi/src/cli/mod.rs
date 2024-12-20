@@ -7,14 +7,14 @@ mod uniffi_bindgen;
 
 pub fn uniffi_bindgen_main() {
     if let Err(e) = uniffi_bindgen::run_main() {
-        eprintln!("{e}");
+        eprintln!("{e:?}");
         std::process::exit(1);
     }
 }
 
 pub fn uniffi_bindgen_swift() {
     if let Err(e) = swift::run_main() {
-        eprintln!("{e}");
+        eprintln!("{e:?}");
         std::process::exit(1);
     }
 }

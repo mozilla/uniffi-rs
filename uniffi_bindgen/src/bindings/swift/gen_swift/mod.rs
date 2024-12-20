@@ -196,6 +196,7 @@ pub struct Config {
     generate_module_map: Option<bool>,
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
+    omit_localized_error_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
 }
@@ -257,6 +258,11 @@ impl Config {
     /// Whether to generate immutable records (`let` instead of `var`)
     pub fn generate_immutable_records(&self) -> bool {
         self.generate_immutable_records.unwrap_or(false)
+    }
+
+    // Whether to make generated error types conform to `LocalizedError`. Default: false.
+    pub fn omit_localized_error_conformance(&self) -> bool {
+        self.omit_localized_error_conformance.unwrap_or(false)
     }
 }
 

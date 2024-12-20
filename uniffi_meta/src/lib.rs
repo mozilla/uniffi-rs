@@ -9,7 +9,10 @@ mod ffi_names;
 pub use ffi_names::*;
 
 mod group;
-pub use group::{create_metadata_groups, fixup_external_type, group_metadata, MetadataGroup};
+pub use group::{
+    convert_external_type, create_metadata_groups, fixup_external_type, group_metadata,
+    MetadataGroup,
+};
 
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
@@ -297,6 +300,7 @@ pub enum Radix {
 pub struct RecordMetadata {
     pub module_path: String,
     pub name: String,
+    pub remote: bool, // only used when generating scaffolding from UDL
     pub fields: Vec<FieldMetadata>,
     pub docstring: Option<String>,
 }
@@ -339,6 +343,7 @@ pub struct EnumMetadata {
     pub module_path: String,
     pub name: String,
     pub shape: EnumShape,
+    pub remote: bool, // only used when generating scaffolding from UDL
     pub variants: Vec<VariantMetadata>,
     pub discr_type: Option<Type>,
     pub non_exhaustive: bool,
@@ -357,6 +362,7 @@ pub struct VariantMetadata {
 pub struct ObjectMetadata {
     pub module_path: String,
     pub name: String,
+    pub remote: bool, // only used when generating scaffolding from UDL
     pub imp: types::ObjectImpl,
     pub docstring: Option<String>,
 }
@@ -470,6 +476,7 @@ pub struct CustomTypeMetadata {
     pub module_path: String,
     pub name: String,
     pub builtin: Type,
+    pub docstring: Option<String>,
 }
 
 /// Returns the last 16 bits of the value's hash as computed with [`SipHasher13`].

@@ -16,13 +16,13 @@ This process can take place either during the build process or be manually initi
 
 ## Supported languages
 
-- Kotlin
-- Swift
-- Python
-- Ruby
+UniFFI comes with full support for Kotlin, Swift and Python; unless specified otherwise, you can expect all features in
+this manual will work for these languages.
 
-## Third-party foreign language bindings
+We also have partial legacy support for Ruby; the UniFFI team keeps the existing Ruby support working but tends to not
+add new features to that language. It seems possible that Ruby support will be split into its own crate at some point, but
+in the meantime we welcome improvements and contributions to Ruby.
 
-* [Kotlin Multiplatform](https://gitlab.com/trixnity/uniffi-kotlin-multiplatform-bindings)
-* [Go bindings](https://github.com/NordSecurity/uniffi-bindgen-go)
-* [C# bindings](https://github.com/NordSecurity/uniffi-bindgen-cs)
+There are also many 3rd party bindings - please see our [README](https://github.com/mozilla/uniffi-rs/blob/main/README.md) for references.
+These languages may require older versions of UniFFI and may have partial or non-existant support for some features; see the
+documentation for those bindings for details.

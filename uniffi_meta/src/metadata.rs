@@ -24,6 +24,7 @@ pub mod codes {
     pub const TRAIT_INTERFACE: u8 = 12;
     pub const CALLBACK_TRAIT_INTERFACE: u8 = 13;
     pub const OBJECT_TRAIT_IMPL: u8 = 14;
+    pub const CUSTOM_TYPE: u8 = 15;
 
     // Type codes
     pub const TYPE_U8: u8 = 0;

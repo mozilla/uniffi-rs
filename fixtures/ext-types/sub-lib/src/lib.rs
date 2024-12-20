@@ -1,9 +1,6 @@
 use std::sync::Arc;
 use uniffi_one::{UniffiOneEnum, UniffiOneInterface, UniffiOneTrait};
 
-uniffi::use_udl_object!(uniffi_one, UniffiOneInterface);
-uniffi::use_udl_enum!(uniffi_one, UniffiOneEnum);
-
 #[derive(Default, uniffi::Record)]
 pub struct SubLibType {
     pub maybe_enum: Option<UniffiOneEnum>,

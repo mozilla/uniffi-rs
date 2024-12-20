@@ -1,17 +1,12 @@
 use custom_types::Handle;
-use ext_types_custom::Guid;
+use ext_types_custom::{Guid, Ouid2};
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
 };
 use url::Url;
 
-uniffi::use_udl_record!(uniffi_one, UniffiOneType);
-uniffi::use_udl_enum!(uniffi_one, UniffiOneEnum);
-uniffi::use_udl_object!(uniffi_one, UniffiOneInterface);
-uniffi::use_udl_record!(ext_types_custom, Guid);
-uniffi::use_udl_record!(custom_types, Url);
-uniffi::use_udl_record!(custom_types, Handle);
+uniffi::use_remote_type!(custom_types::Url);
 
 #[derive(uniffi::Record)]
 pub struct CombinedType {
@@ -209,6 +204,11 @@ fn get_newtype_handle_value(u: NewtypeHandle) -> i64 {
 #[uniffi::export]
 fn get_guid_procmacro(g: Option<Guid>) -> Guid {
     ext_types_custom::get_guid(g)
+}
+
+#[uniffi::export]
+fn get_ouid2() -> Ouid2 {
+    Ouid2("hello".to_string())
 }
 
 uniffi::setup_scaffolding!("imported_types_lib");

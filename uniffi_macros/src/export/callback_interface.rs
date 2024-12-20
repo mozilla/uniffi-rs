@@ -52,7 +52,7 @@ pub(super) fn trait_impl(
         let lift_return_type = ffiops::lift_return_type(&sig.return_ty);
         if !sig.is_async {
             quote! {
-                #ident: extern "C" fn(
+                pub #ident: extern "C" fn(
                     uniffi_handle: u64,
                     #(#param_names: #param_types,)*
                     uniffi_out_return: &mut #lift_return_type,
@@ -61,7 +61,7 @@ pub(super) fn trait_impl(
             }
         } else {
             quote! {
-                #ident: extern "C" fn(
+                pub #ident: extern "C" fn(
                     uniffi_handle: u64,
                     #(#param_names: #param_types,)*
                     uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
@@ -80,15 +80,15 @@ pub(super) fn trait_impl(
     let impl_attributes = has_async_method.then(|| quote! { #[::async_trait::async_trait] });
 
     Ok(quote! {
-        struct #vtable_type {
+        pub struct #vtable_type {
             #(#vtable_fields)*
-            uniffi_free: extern "C" fn(handle: u64),
+            pub uniffi_free: extern "C" fn(handle: u64),
         }
 
         static #vtable_cell: ::uniffi::UniffiForeignPointerCell::<#vtable_type> = ::uniffi::UniffiForeignPointerCell::<#vtable_type>::new();
 
         #[no_mangle]
-        extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
+        pub extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
             #vtable_cell.set(vtable);
         }
 
@@ -129,14 +129,15 @@ pub fn trait_impl_ident(trait_name: &str) -> Ident {
 pub fn ffi_converter_callback_interface_impl(
     trait_ident: &Ident,
     trait_impl_ident: &Ident,
-    udl_mode: bool,
 ) -> TokenStream {
+    // TODO: support remote callback interfaces
+    let remote = false;
     let trait_name = ident_to_string(trait_ident);
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
-    let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, udl_mode);
-    let type_id_impl_spec = tagged_impl_header("TypeId", &box_dyn_trait, udl_mode);
-    let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, udl_mode, &["LiftRef", "LiftReturn"]);
+    let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, remote);
+    let type_id_impl_spec = tagged_impl_header("TypeId", &box_dyn_trait, remote);
+    let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, remote, &["LiftRef", "LiftReturn"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
         Err(e) => return e.into_compile_error(),

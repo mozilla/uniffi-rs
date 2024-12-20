@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::util::{
-    either_attribute_arg, ident_to_string, kw, mod_path, parse_comma_separated, UniffiAttributeArgs,
+    create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
+    parse_comma_separated, UniffiAttributeArgs,
 };
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
@@ -58,10 +59,7 @@ pub struct CustomTypeOptions {
 
 impl CustomTypeOptions {
     fn is_remote(&self) -> bool {
-        // FIXME(#2087): Force all custom types to act as if `remote` was present.  This causes the
-        // generate code to only implement FfiConverter for the local tag, which is the current way
-        // of doing things.
-        true
+        self.remote.is_some()
     }
 }
 
@@ -88,12 +86,11 @@ impl UniffiAttributeArgs for CustomTypeOptions {
                 try_lift: Some(input.parse()?),
                 ..Self::default()
             })
-        // Temporarily disabled until we land #2087 and get the new remote types system
-        // } else if lookahead.peek(kw::remote) {
-        //     Ok(Self {
-        //         remote: Some(input.parse()?),
-        //         ..Self::default()
-        //     })
+        } else if lookahead.peek(kw::remote) {
+            Ok(Self {
+                remote: Some(input.parse()?),
+                ..Self::default()
+            })
         } else {
             Err(lookahead.error())
         }
@@ -199,6 +196,9 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         ),
     };
 
+    let docstring = ""; // todo...
+    let meta_static_var = custom_type_meta_static_var(&name, &uniffi_type, docstring)?;
+
     Ok(quote! {
         #[allow(non_camel_case_types)]
         #impl_spec {
@@ -231,6 +231,8 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         }
 
         #derive_ffi_traits
+
+        #meta_static_var
     })
 }
 
@@ -258,4 +260,26 @@ pub(crate) fn expand_custom_newtype(args: CustomNewtypeArgs) -> syn::Result<Toke
             try_lift: |val| Ok(#ident(val)),
         });
     })
+}
+
+pub(crate) fn custom_type_meta_static_var(
+    name: &str,
+    builtin: &Type,
+    docstring: &str,
+) -> syn::Result<TokenStream> {
+    let module_path = mod_path()?;
+    let builtin = crate::ffiops::type_id_meta(builtin);
+    let metadata_expr = quote! {
+            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CUSTOM_TYPE)
+                .concat_str(#module_path)
+                .concat_str(#name)
+                .concat(#builtin)
+                .concat_long_str(#docstring)
+    };
+    Ok(create_metadata_items(
+        "custom_type",
+        name,
+        metadata_expr,
+        None,
+    ))
 }

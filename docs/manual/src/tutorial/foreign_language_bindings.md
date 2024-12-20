@@ -33,6 +33,7 @@ You can now run `uniffi-bindgen` from your project using `cargo run --features=u
 ### Multi-crate workspaces
 
 In a multiple crates workspace, you can create a separate crate for running `uniffi-bindgen`:
+
   - Name the crate `uniffi-bindgen`, add it to your workspace.
   - Add this dependency to `Cargo.toml`: `uniffi = {version = "0.XX.0", features = ["cli"] }`
   - As above, add the `uniffi-bindgen` binary target
@@ -57,6 +58,7 @@ Then look in the `out` directory.
 When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.
 
 Library mode comes with some extra requirements:
+
   - It must be run from within the cargo workspace of your project
   - Each crate must use exactly 1 UDL file when compiling the Rust library.  However, crates can have
     multiple UDL files as long as they ensure only one is used for any particular build,
