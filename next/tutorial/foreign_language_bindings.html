@@ -969,6 +969,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../udl/external_types.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using types defined outside a UDL.
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../udl/docstrings.html" class="md-nav__link">
         
   
@@ -1746,7 +1767,7 @@
         
   
   <span class="md-ellipsis">
-    v0.28.x -&gt; v0.29.x
+    Upgrading v0.28.x -&gt; v0.29.x
   </span>
   
 
@@ -1886,10 +1907,12 @@ you need to create a binary in your project that does the same thing.</p>
 </code></pre></div></p>
 <p>You can now run <code>uniffi-bindgen</code> from your project using <code>cargo run --features=uniffi/cli --bin uniffi-bindgen [args]</code></p>
 <h3 id="multi-crate-workspaces">Multi-crate workspaces</h3>
-<p>In a multiple crates workspace, you can create a separate crate for running <code>uniffi-bindgen</code>:
-  - Name the crate <code>uniffi-bindgen</code>, add it to your workspace.
-  - Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = "0.XX.0", features = ["cli"] }</code>
-  - As above, add the <code>uniffi-bindgen</code> binary target</p>
+<p>In a multiple crates workspace, you can create a separate crate for running <code>uniffi-bindgen</code>:</p>
+<ul>
+<li>Name the crate <code>uniffi-bindgen</code>, add it to your workspace.</li>
+<li>Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = "0.XX.0", features = ["cli"] }</code></li>
+<li>As above, add the <code>uniffi-bindgen</code> binary target</li>
+</ul>
 <p>Then your can run <code>uniffi-bindgen</code> from any crate in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
 <h2 id="running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
@@ -1902,12 +1925,14 @@ cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --la
 (maybe <code>.dylib</code>, good luck with <code>.dll</code>!)</p>
 <p>Then look in the <code>out</code> directory.</p>
 <p>When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.</p>
-<p>Library mode comes with some extra requirements:
-  - It must be run from within the cargo workspace of your project
-  - Each crate must use exactly 1 UDL file when compiling the Rust library.  However, crates can have
+<p>Library mode comes with some extra requirements:</p>
+<ul>
+<li>It must be run from within the cargo workspace of your project</li>
+<li>Each crate must use exactly 1 UDL file when compiling the Rust library.  However, crates can have
     multiple UDL files as long as they ensure only one is used for any particular build,
-    e.g. by using feature flags.
-  - Rust sources must use <code>uniffi::include_scaffolding!</code> to include the scaffolding code.</p>
+    e.g. by using feature flags.</li>
+<li>Rust sources must use <code>uniffi::include_scaffolding!</code> to include the scaffolding code.</li>
+</ul>
 <h2 id="running-uniffi-bindgen-with-a-single-udl-file">Running uniffi-bindgen with a single UDL file</h2>
 <p>As noted above, library mode is encouraged - building from a single UDL is not recommended.</p>
 <p>Use the <code>generate</code> command to generate bindings by specifying a UDL file.</p>

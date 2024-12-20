@@ -18,7 +18,7 @@
     
     
       
-        <title>v0.28.x -> v0.29.x - The UniFFI user guide</title>
+        <title>Upgrading v0.28.x -> v0.29.x - The UniFFI user guide</title>
       
     
     
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v028x-v029x" class="md-skip">
+        <a href="#upgrading-v028x-v029x" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              v0.28.x -&gt; v0.29.x
+              Upgrading v0.28.x -&gt; v0.29.x
             
           </span>
         </div>
@@ -843,6 +843,27 @@
   
   <span class="md-ellipsis">
     Records in UDL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="udl/external_types.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using types defined outside a UDL.
   </span>
   
 
@@ -1645,7 +1666,7 @@
           
   
   <span class="md-ellipsis">
-    v0.28.x -&gt; v0.29.x
+    Upgrading v0.28.x -&gt; v0.29.x
   </span>
   
 
@@ -1656,7 +1677,7 @@
         
   
   <span class="md-ellipsis">
-    v0.28.x -&gt; v0.29.x
+    Upgrading v0.28.x -&gt; v0.29.x
   </span>
   
 
@@ -1681,6 +1702,33 @@
   <a href="#custom-types" class="md-nav__link">
     <span class="md-ellipsis">
       Custom types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      External Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remote Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shared-rustudl-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shared Rust/UDL types
     </span>
   </a>
   
@@ -1729,6 +1777,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#external-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      External Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remote Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shared-rustudl-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shared Rust/UDL types
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1747,7 +1822,13 @@
   
 
 
-<h1 id="v028x-v029x">v0.28.x -&gt; v0.29.x</h1>
+<h1 id="upgrading-v028x-v029x">Upgrading v0.28.x -&gt; v0.29.x</h1>
+<p>We've made a number of breaking changes in this release, particularly
+to:</p>
+<ul>
+<li>Custom types (both UDL and proc-macros impacted)</li>
+<li>External Types (UDL impacted)</li>
+</ul>
 <h2 id="custom-types">Custom types</h2>
 <p>Custom types are now implemented using a macro rather than implementing the <code>UniffiCustomTypeConverter</code> trait,
 addressing some edge-cases with custom types wrapping types from other crates (eg, Url).</p>
@@ -1772,6 +1853,34 @@ addressing some edge-cases with custom types wrapping types from other crates (e
 </code></pre></div>
 <p>The <code>custom_type!</code> macro is more flexible than the old system - eg, the closures can be omitted in many cases where <code>From</code> and <code>Into</code> exist.
 See the <a href="types/custom_types.html">Custom Types</a> for details.</p>
+<h2 id="external-types">External Types</h2>
+<p>External types can no longer be described in UDL via <code>extern</code> - instead, you must specify the type.</p>
+<p>For example:
+<div class="highlight"><pre><span></span><code>[External=&quot;crate_name&quot;]
+typedef extern MyEnum
+</code></pre></div>
+is no longer accepted - you must use, eg:
+<div class="highlight"><pre><span></span><code>[External=&quot;crate_name&quot;]
+typedef enum MyEnum
+</code></pre></div></p>
+<p>Edge-cases broken include:</p>
+<ul>
+<li>Different variations of the <code>External</code> attribute (eg, <code>[ExternalInterface]</code>) are no longer supported; eg, <code>[ExternalInterface=".."] typedef extern ...</code> becomes <code>[External=".."] typedef interface ...</code> )</li>
+<li>The <code>[Rust=..]</code> attribute has been removed - you should just remove the attribute entirely.</li>
+</ul>
+<p>See <a href="types/remote_ext_types.html">Remote and External Types</a> for more detail.</p>
+<h2 id="remote-types">Remote Types</h2>
+<p>The macros <code>ffi_converter_forward</code> and all <code>use_*</code> macros (eg, <code>use_udl_record!</code>, <code>use_udl_object!</code>, <code>use_udl_enum!</code> etc)
+are now unnecessary so have been removed.</p>
+<p>See <a href="types/remote_ext_types.html">Remote and External Types</a> for more detail.</p>
+<h2 id="shared-rustudl-types">Shared Rust/UDL types</h2>
+<p>The <code>Rust</code> attribute has been removed - use the same typedef syntax described above for External Types.</p>
+<p><div class="highlight"><pre><span></span><code>[Rust=&quot;record&quot;]
+typedef extern One;
+</code></pre></div>
+becomes
+<div class="highlight"><pre><span></span><code>typedef record One;
+</code></pre></div></p>
 
 
 
