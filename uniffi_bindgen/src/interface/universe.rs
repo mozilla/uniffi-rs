@@ -6,7 +6,7 @@
 //! which can be used by the bindings generator code to determine what type-related helper
 //! functions to emit for a given component.
 //!
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
 pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
@@ -45,9 +45,12 @@ impl TypeUniverse {
     fn add_type_definition(&mut self, name: &str, type_: &Type) -> Result<()> {
         match self.type_definitions.entry(name.to_string()) {
             Entry::Occupied(o) => {
-                // all conflicts have been resolved by now in udl.
-                // I doubt procmacros could cause this?
-                assert_eq!(type_, o.get());
+                // mismatched types are bad.
+                let cur = o.get();
+                anyhow::ensure!(
+                    type_ == cur,
+                    "conflicting types:\ncur: {cur:?}\nnew: {type_:?}",
+                );
                 Ok(())
             }
             Entry::Vacant(e) => {
@@ -91,18 +94,22 @@ impl TypeUniverse {
             | Type::External { name, .. } => self.add_type_definition(name, type_)?,
             Type::Custom { name, builtin, .. } => {
                 self.add_type_definition(name, type_)?;
-                self.add_known_type(builtin)?;
+                self.add_known_type(builtin)
+                    .with_context(|| format!("adding custom builtin type {builtin:?}"))?;
             }
             // Structurally recursive types.
             Type::Optional { inner_type, .. } | Type::Sequence { inner_type, .. } => {
-                self.add_known_type(inner_type)?;
+                self.add_known_type(inner_type)
+                    .with_context(|| format!("adding optional type {inner_type:?}"))?;
             }
             Type::Map {
                 key_type,
                 value_type,
             } => {
-                self.add_known_type(key_type)?;
-                self.add_known_type(value_type)?;
+                self.add_known_type(key_type)
+                    .with_context(|| format!("adding map key type {key_type:?}"))?;
+                self.add_known_type(value_type)
+                    .with_context(|| format!("adding map value type {value_type:?}"))?;
             }
         }
         Ok(())
@@ -111,7 +118,8 @@ impl TypeUniverse {
     /// Add many [`Type`]s...
     pub fn add_known_types(&mut self, types: TypeIterator<'_>) -> Result<()> {
         for t in types {
-            self.add_known_type(t)?
+            self.add_known_type(t)
+                .with_context(|| format!("adding type {t:?}"))?
         }
         Ok(())
     }

@@ -49,7 +49,7 @@ use std::{
     iter,
 };
 
-use anyhow::{anyhow, bail, ensure, Result};
+use anyhow::{anyhow, bail, ensure, Context, Result};
 
 pub mod universe;
 pub use uniffi_meta::{AsType, EnumShape, ExternalKind, ObjectImpl, Type};
@@ -822,7 +822,9 @@ impl ComponentInterface {
                 if matches!(defn.shape, EnumShape::Error { .. }) {
                     self.errors.insert(defn.name.clone());
                 }
-                self.types.add_known_types(defn.iter_types())?;
+                self.types
+                    .add_known_types(defn.iter_types())
+                    .with_context(|| format!("adding enum {defn:?}"))?;
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -845,7 +847,9 @@ impl ComponentInterface {
     pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
         match self.records.entry(defn.name().to_owned()) {
             Entry::Vacant(v) => {
-                self.types.add_known_types(defn.iter_types())?;
+                self.types
+                    .add_known_types(defn.iter_types())
+                    .with_context(|| format!("adding record {defn:?}"))?;
                 v.insert(defn);
             }
             Entry::Occupied(o) => {
@@ -874,7 +878,9 @@ impl ComponentInterface {
         if self.types.get_type_definition(defn.name()).is_some() {
             bail!("Conflicting type definition for \"{}\"", defn.name());
         }
-        self.types.add_known_types(defn.iter_types())?;
+        self.types
+            .add_known_types(defn.iter_types())
+            .with_context(|| format!("adding function {defn:?}"))?;
         defn.throws_name()
             .map(|n| self.errors.insert(n.to_string()));
         self.functions.push(defn);
@@ -887,7 +893,9 @@ impl ComponentInterface {
             .ok_or_else(|| anyhow!("add_constructor_meta: object {} not found", &meta.self_name))?;
         let defn: Constructor = meta.into();
 
-        self.types.add_known_types(defn.iter_types())?;
+        self.types
+            .add_known_types(defn.iter_types())
+            .with_context(|| format!("adding constructor {defn:?}"))?;
         defn.throws_name()
             .map(|n| self.errors.insert(n.to_string()));
         object.constructors.push(defn);
@@ -900,7 +908,9 @@ impl ComponentInterface {
         let object = get_object(&mut self.objects, &method.object_name)
             .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &method.object_name))?;
 
-        self.types.add_known_types(method.iter_types())?;
+        self.types
+            .add_known_types(method.iter_types())
+            .with_context(|| format!("adding method {method:?}"))?;
         method
             .throws_name()
             .map(|n| self.errors.insert(n.to_string()));
@@ -913,7 +923,10 @@ impl ComponentInterface {
         let object = get_object(&mut self.objects, meta.self_name())
             .ok_or_else(|| anyhow!("add_uniffitrait_meta: object not found"))?;
         let ut: UniffiTrait = meta.into();
-        self.types.add_known_types(ut.iter_types())?;
+        self.types
+            .add_known_types(ut.iter_types())
+            .with_context(|| format!("adding builtin trait {ut:?}"))?;
+
         object.uniffi_traits.push(ut);
         Ok(())
     }
@@ -925,7 +938,10 @@ impl ComponentInterface {
     /// Called by `APIBuilder` impls to add a newly-parsed object definition to the `ComponentInterface`.
     fn add_object_definition(&mut self, defn: Object) -> Result<()> {
         self.types.add_known_type(&defn.as_type())?;
-        self.types.add_known_types(defn.iter_types())?;
+        self.types
+            .add_known_types(defn.iter_types())
+            .with_context(|| format!("adding object {defn:?}'"))?;
+
         self.objects.push(defn);
         Ok(())
     }
@@ -940,7 +956,10 @@ impl ComponentInterface {
         defn: CallbackInterface,
     ) -> Result<()> {
         self.types.add_known_type(&defn.as_type())?;
-        self.types.add_known_types(defn.iter_types())?;
+        self.types
+            .add_known_types(defn.iter_types())
+            .with_context(|| format!("adding callback {defn:?}'"))?;
+
         self.callback_interfaces.push(defn);
         Ok(())
     }
@@ -962,7 +981,9 @@ impl ComponentInterface {
             if let Some(error) = method.throws_type() {
                 self.callback_interface_throws_types.insert(error.clone());
             }
-            self.types.add_known_types(method.iter_types())?;
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding trait method {method:?}"))?;
             method
                 .throws_name()
                 .map(|n| self.errors.insert(n.to_string()));

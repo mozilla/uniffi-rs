@@ -335,7 +335,8 @@ pub fn generate_component_scaffolding(
     out_dir_override: Option<&Utf8Path>,
     format_code: bool,
 ) -> Result<()> {
-    let component = parse_udl(udl_file, &crate_name_from_cargo_toml(udl_file)?)?;
+    let component = parse_udl(udl_file, &crate_name_from_cargo_toml(udl_file)?)
+        .with_context(|| format!("parsing udl file {udl_file}"))?;
     generate_component_scaffolding_inner(component, udl_file, out_dir_override, format_code)
 }
 
@@ -348,7 +349,8 @@ pub fn generate_component_scaffolding_for_crate(
     out_dir_override: Option<&Utf8Path>,
     format_code: bool,
 ) -> Result<()> {
-    let component = parse_udl(udl_file, crate_name)?;
+    let component =
+        parse_udl(udl_file, crate_name).with_context(|| format!("parsing udl file {udl_file}"))?;
     generate_component_scaffolding_inner(component, udl_file, out_dir_override, format_code)
 }
 
@@ -365,7 +367,7 @@ fn generate_component_scaffolding_inner(
     write!(f, "{}", RustScaffolding::new(&component, file_stem))
         .context("Failed to write output file")?;
     if format_code {
-        format_code_with_rustfmt(&out_path)?;
+        format_code_with_rustfmt(&out_path).context("formatting generated Rust code")?;
     }
     Ok(())
 }
