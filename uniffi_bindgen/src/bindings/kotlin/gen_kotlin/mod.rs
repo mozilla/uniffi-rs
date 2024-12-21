@@ -434,11 +434,11 @@ impl KotlinCodeOracle {
         format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
-    fn ffi_type_label_by_value(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label_by_value(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
-            FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type)),
+            FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type, ci)),
             FfiType::Struct(name) => format!("{}.UniffiByValue", self.ffi_struct_name(name)),
-            _ => self.ffi_type_label(ffi_type),
+            _ => self.ffi_type_label(ffi_type, ci),
         }
     }
 
@@ -446,12 +446,12 @@ impl KotlinCodeOracle {
     ///
     /// The main requirement here is that all types must have default values or else the struct
     /// won't work in some JNA contexts.
-    fn ffi_type_label_for_ffi_struct(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label_for_ffi_struct(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
             // Make callbacks function pointers nullable. This matches the semantics of a C
             // function pointer better and allows for `null` as a default value.
             FfiType::Callback(name) => format!("{}?", self.ffi_callback_name(name)),
-            _ => self.ffi_type_label_by_value(ffi_type),
+            _ => self.ffi_type_label_by_value(ffi_type, ci),
         }
     }
 
@@ -476,7 +476,7 @@ impl KotlinCodeOracle {
         }
     }
 
-    fn ffi_type_label_by_reference(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label_by_reference(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
             FfiType::Int8
             | FfiType::UInt8
@@ -487,15 +487,15 @@ impl KotlinCodeOracle {
             | FfiType::Int64
             | FfiType::UInt64
             | FfiType::Float32
-            | FfiType::Float64 => format!("{}ByReference", self.ffi_type_label(ffi_type)),
+            | FfiType::Float64 => format!("{}ByReference", self.ffi_type_label(ffi_type, ci)),
             FfiType::RustArcPtr(_) => "PointerByReference".to_owned(),
             // JNA structs default to ByReference
-            FfiType::RustBuffer(_) | FfiType::Struct(_) => self.ffi_type_label(ffi_type),
+            FfiType::RustBuffer(_) | FfiType::Struct(_) => self.ffi_type_label(ffi_type, ci),
             _ => panic!("{ffi_type:?} by reference is not implemented"),
         }
     }
 
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
             // Note that unsigned integers in Kotlin are currently experimental, but java.nio.ByteBuffer does not
             // support them yet. Thus, we use the signed variants to represent both signed and unsigned
@@ -509,15 +509,17 @@ impl KotlinCodeOracle {
             FfiType::Handle => "Long".to_string(),
             FfiType::RustArcPtr(_) => "Pointer".to_string(),
             FfiType::RustBuffer(maybe_external) => match maybe_external {
-                Some(external_meta) => format!("RustBuffer{}", external_meta.name),
-                None => "RustBuffer".to_string(),
+                Some(external_meta) if external_meta.module_path != ci.crate_name() => {
+                    format!("RustBuffer{}", external_meta.name)
+                }
+                _ => "RustBuffer".to_string(),
             },
             FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue".to_string(),
             FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) | FfiType::MutReference(inner) => {
-                self.ffi_type_label_by_reference(inner)
+                self.ffi_type_label_by_reference(inner, ci)
             }
             FfiType::VoidPointer => "Pointer".to_string(),
         }
@@ -662,12 +664,18 @@ mod filters {
         }
     }
 
-    pub fn ffi_type_name_by_value(type_: &FfiType) -> Result<String, rinja::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label_by_value(type_))
+    pub fn ffi_type_name_by_value(
+        type_: &FfiType,
+        ci: &ComponentInterface,
+    ) -> Result<String, rinja::Error> {
+        Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
     }
 
-    pub fn ffi_type_name_for_ffi_struct(type_: &FfiType) -> Result<String, rinja::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_))
+    pub fn ffi_type_name_for_ffi_struct(
+        type_: &FfiType,
+        ci: &ComponentInterface,
+    ) -> Result<String, rinja::Error> {
+        Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_, ci))
     }
 
     pub fn ffi_default_value(type_: FfiType) -> Result<String, rinja::Error> {

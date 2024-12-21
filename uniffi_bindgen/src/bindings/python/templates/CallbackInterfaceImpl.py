@@ -85,7 +85,7 @@ class {{ trait_impl }}:
         {{ ffi_converter_name }}._handle_map.remove(uniffi_handle)
 
     # Generate the FFI VTable.  This has a field for each callback interface method.
-    _uniffi_vtable = {{ vtable|ffi_type_name }}(
+    _uniffi_vtable = {{ vtable|ffi_type_name(ci) }}(
         {%- for (_, meth) in vtable_methods.iter() %}
         {{ meth.name() }},
         {%- endfor %}

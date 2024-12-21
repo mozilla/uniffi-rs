@@ -86,7 +86,11 @@
 {%- include "CallbackInterfaceTemplate.py" %}
 
 {%- when Type::Custom { name, module_path, builtin } %}
+{%- if ci.is_external(type_) %}
+{%- include "ExternalTemplate.py" %}
+{%- else %}
 {%- include "CustomType.py" %}
+{%- endif %}
 
 {%- when Type::External { name, .. } %}
 {%- include "ExternalTemplate.py" %}

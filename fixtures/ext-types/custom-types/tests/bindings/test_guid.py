@@ -56,6 +56,7 @@ class TestGuid(unittest.TestCase):
         self.assertEqual(test_callback.saw_guid, "callback-test-payload")
 
     def test_custom(self):
+        self.assertEqual(get_handle_u8(None), 2)
         get_nested_object(InnerObject())
 
 if __name__=='__main__':

@@ -1,5 +1,5 @@
 use custom_types::Handle;
-use ext_types_custom::{ANestedGuid, Guid, Ouid};
+use ext_types_custom::{ANestedGuid, Guid, HandleU8, Ouid};
 use ext_types_external_crate::{
     ExternalCrateDictionary, ExternalCrateInterface, ExternalCrateNonExhaustiveEnum,
 };
@@ -108,6 +108,11 @@ fn get_imported_guid(guid: Guid) -> Guid {
 #[uniffi::export]
 fn get_imported_ouid(ouid: Ouid) -> Ouid {
     ouid
+}
+
+#[uniffi::export]
+fn get_imported_handle_u8(h: Option<HandleU8>) -> HandleU8 {
+    h.unwrap_or(HandleU8(3))
 }
 
 // external custom types wrapping external custom types.

@@ -8,14 +8,14 @@ internal object {{ trait_impl }} {
     internal object {{ meth.name()|var_name }}: {{ ffi_callback.name()|ffi_callback_name }} {
         override fun callback(
             {%- for arg in ffi_callback.arguments() -%}
-            {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value }},
+            {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value(ci) }},
             {%- endfor -%}
             {%- if ffi_callback.has_rust_call_status_arg() -%}
             uniffiCallStatus: UniffiRustCallStatus,
             {%- endif -%}
         )
         {%- if let Some(return_type) = ffi_callback.return_type() %}
-            : {{ return_type|ffi_type_name_by_value }},
+            : {{ return_type|ffi_type_name_by_value(ci) }},
         {%- endif %} {
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiHandle)
             val makeCall = {% if meth.is_async() %}suspend {% endif %}{ ->
@@ -97,7 +97,7 @@ internal object {{ trait_impl }} {
         }
     }
 
-    internal var vtable = {{ vtable|ffi_type_name_by_value }}(
+    internal var vtable = {{ vtable|ffi_type_name_by_value(ci) }}(
         {%- for (ffi_callback, meth) in vtable_methods.iter() %}
         {{ meth.name()|var_name() }},
         {%- endfor %}

@@ -72,7 +72,7 @@ _uniffi_rust_call(
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-    {{ arg.type_().borrow()|ffi_type_name }},
+    {{ arg.type_().borrow()|ffi_type_name(ci) }},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}
     ctypes.POINTER(_UniffiRustCallStatus),{% endif %}

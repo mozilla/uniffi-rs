@@ -271,15 +271,17 @@ impl<'a> TypeRenderer<'a> {
     fn get_custom_type_aliases(&self) -> Vec<(String, &Type)> {
         let mut ordered = vec![];
         for type_ in self.ci.iter_types() {
-            if let Type::Custom { name, builtin, .. } = type_ {
-                match ordered.iter().position(|x: &(&str, &Type)| {
-                    x.1.iter_types()
-                        .any(|nested_type| *name == nested_type.as_codetype().type_label())
-                }) {
-                    // This 'name' appears as a builtin, so we must insert our type first.
-                    Some(pos) => ordered.insert(pos, (name, builtin)),
-                    // Otherwise at the end.
-                    None => ordered.push((name, builtin)),
+            if !self.ci.is_external(type_) {
+                if let Type::Custom { name, builtin, .. } = type_ {
+                    match ordered.iter().position(|x: &(&str, &Type)| {
+                        x.1.iter_types()
+                            .any(|nested_type| *name == nested_type.as_codetype().type_label())
+                    }) {
+                        // This 'name' appears as a builtin, so we must insert our type first.
+                        Some(pos) => ordered.insert(pos, (name, builtin)),
+                        // Otherwise at the end.
+                        None => ordered.push((name, builtin)),
+                    }
                 }
             }
         }
@@ -378,7 +380,7 @@ impl PythonCodeOracle {
         format!("_Uniffi{}", nm.to_upper_camel_case())
     }
 
-    fn ffi_type_label(&self, ffi_type: &FfiType) -> String {
+    fn ffi_type_label(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
             FfiType::Int8 => "ctypes.c_int8".to_string(),
             FfiType::UInt8 => "ctypes.c_uint8".to_string(),
@@ -393,8 +395,10 @@ impl PythonCodeOracle {
             FfiType::Handle => "ctypes.c_uint64".to_string(),
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_external) => match maybe_external {
-                Some(external_meta) => format!("_UniffiRustBuffer{}", external_meta.name),
-                None => "_UniffiRustBuffer".to_string(),
+                Some(external_meta) if external_meta.module_path != ci.crate_name() => {
+                    format!("_UniffiRustBuffer{}", external_meta.name)
+                }
+                _ => "_UniffiRustBuffer".to_string(),
             },
             FfiType::RustCallStatus => "_UniffiRustCallStatus".to_string(),
             FfiType::ForeignBytes => "_UniffiForeignBytes".to_string(),
@@ -402,7 +406,7 @@ impl PythonCodeOracle {
             FfiType::Struct(name) => self.ffi_struct_name(name),
             // Pointer to an `asyncio.EventLoop` instance
             FfiType::Reference(inner) | FfiType::MutReference(inner) => {
-                format!("ctypes.POINTER({})", self.ffi_type_label(inner))
+                format!("ctypes.POINTER({})", self.ffi_type_label(inner, ci))
             }
             FfiType::VoidPointer => "ctypes.c_void_p".to_string(),
         }
@@ -626,8 +630,8 @@ pub mod filters {
             .map_err(|e| to_rinja_error(&e))
     }
 
-    pub fn ffi_type_name(type_: &FfiType) -> Result<String, rinja::Error> {
-        Ok(PythonCodeOracle.ffi_type_label(type_))
+    pub fn ffi_type_name(type_: &FfiType, ci: &ComponentInterface) -> Result<String, rinja::Error> {
+        Ok(PythonCodeOracle.ffi_type_label(type_, ci))
     }
 
     pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, rinja::Error> {

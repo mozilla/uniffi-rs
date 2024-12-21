@@ -91,6 +91,12 @@ impl TypeUniverse {
         Ok(())
     }
 
+    pub fn is_external(&self, t: &Type) -> bool {
+        t.module_path()
+            .map(|p| p != self.namespace.crate_name)
+            .unwrap_or(false)
+    }
+
     #[cfg(test)]
     /// Check if a [Type] is present
     pub fn contains(&self, type_: &Type) -> bool {

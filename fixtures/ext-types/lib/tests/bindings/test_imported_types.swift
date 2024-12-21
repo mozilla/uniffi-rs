@@ -46,6 +46,7 @@ assert(getImportedOuid(ouid: "ouid") ==  "ouid")
 assert(getNestedOuid(nouid: "ouid") ==  "ouid")
 assert(getImportedNestedGuid(guid: nil) == "nested")
 assert(getNestedExternalOuid(ouid: nil) == "nested-external-ouid")
+assert(getImportedHandleU8(h: nil) == 3)
 
 assert(getUniffiOneType(t: UniffiOneType(sval: "hello")).sval == "hello")
 assert(getMaybeUniffiOneType(t: UniffiOneType(sval: "hello"))!.sval == "hello")

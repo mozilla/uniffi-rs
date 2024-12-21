@@ -330,6 +330,10 @@ impl ComponentInterface {
         self.types.iter_known_types()
     }
 
+    pub fn is_external(&self, t: &Type) -> bool {
+        self.types.is_external(t)
+    }
+
     /// Get a specific type
     pub fn get_type(&self, name: &str) -> Option<Type> {
         self.types.get_type_definition(name)
