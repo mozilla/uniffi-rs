@@ -1885,7 +1885,7 @@ The generated Rust code schedules work using callbacks provided by the foreign b
 <p>Rust async functions are implemplemented by wrapping the
 <a href="https://doc.rust-lang.org/std/future/trait.Future.html">Future</a> into a <code>uniffi::RustFuture</code> struct
 and providing scaffolding functions so that the foreign bindings can drive the future to completion.</p>
-<div class="highlight"><pre><span></span><code>sequenceDiagram
+<pre class="mermaid"><code>sequenceDiagram
   participant User as User code
   participant Foreign as Foreign Language Bindings
   participant Rust as Rust Scaffolding
@@ -1902,8 +1902,7 @@ and providing scaffolding functions so that the foreign bindings can drive the f
   Foreign-&gt;&gt;+Rust: call RustFuture complete fn
   Rust--&gt;&gt;-Foreign: return result
   Foreign-&gt;&gt;Rust: call RustFuture free fn
-  Foreign--&gt;&gt;-User: return from async function
-</code></pre></div>
+  Foreign--&gt;&gt;-User: return from async function</code></pre>
 <p>For each async function, UniFFI generates 4 scaffolding functions:
 * A scaffolding function that returns a <code>RustFuture</code> handle
 * <code>rust_future_poll</code> to poll the future
@@ -1937,7 +1936,7 @@ This could work, but it makes things much more complicated and could easily lead
 <h2 id="foreign-async-callback-methods">Foreign async callback methods</h2>
 <p>Async callback/trait interface methods are the way that Rust makes async calls across the FFI.
 These are implemented using a callback, which makes them quite a bit simpler than their counterparts.</p>
-<div class="highlight"><pre><span></span><code>sequenceDiagram
+<pre class="mermaid"><code>sequenceDiagram
   participant User as User code
   participant Rust as Rust Scaffolding
   participant Foreign as Foreign Language Bindings
@@ -1947,8 +1946,7 @@ These are implemented using a callback, which makes them quite a bit simpler tha
   Rust--&gt;&gt;-User: return oneshot::Receiver
 
   Foreign-&gt;&gt;Rust: invoke callback, pass back oneshot::Sender pointer
-  Note over Rust: send callback result to the oneshot::Sender
-</code></pre></div>
+  Note over Rust: send callback result to the oneshot::Sender</code></pre>
 <p>The UniFFI generated code for an async trait method performs these steps:</p>
 <ul>
 <li>Create a <code>oneshot::Channel</code> (see <a href="https://docs.rs/oneshot/latest/oneshot/">oneshot crate</a> for how these work, although we don't currently depend on that crate).</li>
@@ -1980,7 +1978,7 @@ After that, it returns a high-level API response struct to the application.
 Furthermore, let's stipulate that the deserialization/validation is slow enough to be considered blocking.
 To manage this, the Rust library also depends on a (synchronous) callback interface that runs a task in a worker queue where blocking is allowed.
 Here's how the async API call could be handled:</p>
-<div class="highlight"><pre><span></span><code>sequenceDiagram
+<pre class="mermaid"><code>sequenceDiagram
   participant AsyncRust as Async Rust code
   participant SyncRust as Sync Rust code
   participant WorkerQueue as Work Queue Callback Interface
@@ -1995,8 +1993,7 @@ Here's how the async API call could be handled:</p>
   Note over AsyncRust: await oneshot channel
   WorkerQueue-&gt;&gt;SyncRust: Run task (in background thread)
   SyncRust--&gt;&gt;AsyncRust: Send deserialized response via oneshot channel
-  AsyncRust--&gt;&gt;-Foreign: Return API result
-</code></pre></div>
+  AsyncRust--&gt;&gt;-Foreign: Return API result</code></pre>
 <ul>
 <li>Action in this sequence diagram represents calling an async Rust function or async callback interface method, see the above diagrams for details.</li>
 <li>The dotted lines show how the data is passed around during the async call.</li>
