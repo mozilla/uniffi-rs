@@ -272,6 +272,27 @@ impl Config {
     }
 }
 
+// Given a trait, work out what the protocol name we generate for it.
+// This differs based on whether the trait supports foreign impls (ie,
+// whether is has a "callback interface".
+fn trait_protocol_name(ci: &ComponentInterface, name: &str) -> Result<String> {
+    let (obj_name, has_callback_interface) = match ci.get_object_definition(name) {
+        Some(obj) => (obj.name(), obj.has_callback_interface()),
+        None => (
+            ci.get_callback_interface_definition(name)
+                .ok_or_else(|| anyhow::anyhow!("no interface {}", name))?
+                .name(),
+            true,
+        ),
+    };
+    let class_name = SwiftCodeOracle.class_name(obj_name);
+    if has_callback_interface {
+        Ok(class_name)
+    } else {
+        Ok(format!("{class_name}Protocol"))
+    }
+}
+
 /// Generate UniFFI component bindings for Swift, as strings in memory.
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<Bindings> {
     let header = BridgingHeader::new(config, ci)

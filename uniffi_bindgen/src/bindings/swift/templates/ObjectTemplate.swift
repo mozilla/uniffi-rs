@@ -25,7 +25,11 @@ open class {{ impl_class_name }}:
     {%- if is_error %}
     Swift.Error,
     {% endif %}
-    {{ protocol_name }} {
+    {%- for t in obj.trait_impls() %}
+    {{ self::trait_protocol_name(ci, t.trait_name)? }},
+    {% endfor %}
+    {{ protocol_name }}
+    {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
