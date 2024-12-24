@@ -62,7 +62,9 @@ private let initializationResult: InitializationResult = {
     return InitializationResult.ok
 }()
 
-private func uniffiEnsureInitialized() {
+// Make the ensure init function public so that other modules which have external type references to
+// our types can call it.
+public func {{ ensure_init_fn_name }}() {
     switch initializationResult {
     case .ok:
         break

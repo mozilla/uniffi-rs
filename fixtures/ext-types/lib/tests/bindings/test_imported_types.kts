@@ -7,6 +7,16 @@ import uniffi.imported_types_sublib.*
 import uniffi.uniffi_one_ns.*
 import uniffi.ext_types_custom.*
 
+// First step: implement a trait from an external crate in Kotlin and pass it to a function from this
+// crate.  This tests #2343 -- the codegen for this module needs to initialize the vtable from
+// uniffi_one.
+class KtUniffiOneImpl: UniffiOneTrait {
+    override fun hello(): String {
+        return "Hello from Kotlin"
+    }
+}
+assert(invokeUniffiOneTrait(KtUniffiOneImpl()) == "Hello from Kotlin")
+
 val ct = getCombinedType(null)
 assert(ct.uot.sval == "hello")
 assert(ct.guid ==  "a-guid")

@@ -114,22 +114,14 @@ internal interface UniffiLib : Library {
             // error. So we must call `loadIndirect` twice. For crates large enough
             // to trigger this issue, the performance impact is negligible, running on
             // a macOS M1 machine the `loadIndirect` call takes ~50ms.
-            loadIndirect<UniffiLib>(componentName)
-            {%- if !self.initialization_fns().is_empty() -%}
-                {#-
-                // We only include the `.also` block if there are initialization functions
-                // otherwise we get linting errors saying `lib` is unused.
-                -#}
-                .also { lib: UniffiLib ->
-                    // No need to check the contract version and checksums, since 
-                    // we already did that with `IntegrityCheckingUniffiLib` above.
-                    {% for fn in self.initialization_fns() -%}
-                    {{ fn }}(lib)
-                    {% endfor -%}
-                }
-            {%- endif -%}
-
+            val lib = loadIndirect<UniffiLib>(componentName)
+            // No need to check the contract version and checksums, since 
+            // we already did that with `IntegrityCheckingUniffiLib` above.
+            {% for fn in self.initialization_fns() -%}
+            {{ fn }}
+            {% endfor -%}
             // Loading of library with integrity check done.
+            lib
         }
         {% if ci.contains_object_types() %}
         // The Cleaner for the whole library
@@ -162,4 +154,11 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     {%- endfor %}
+}
+
+/**
+ * @suppress
+ */
+public fun uniffiEnsureInitialized() {
+    UniffiLib.INSTANCE
 }

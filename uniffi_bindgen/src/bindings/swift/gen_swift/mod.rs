@@ -426,6 +426,7 @@ pub struct SwiftWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<String>,
+    ensure_init_fn_name: String,
 }
 impl<'a> SwiftWrapper<'a> {
     pub fn new(config: Config, ci: &'a ComponentInterface) -> Self {
@@ -437,6 +438,10 @@ impl<'a> SwiftWrapper<'a> {
             ci,
             type_helper_code,
             type_imports,
+            ensure_init_fn_name: format!(
+                "uniffiEnsure{}Initialized",
+                ci.crate_name().to_upper_camel_case()
+            ),
         }
     }
 
@@ -445,11 +450,30 @@ impl<'a> SwiftWrapper<'a> {
     }
 
     pub fn initialization_fns(&self) -> Vec<String> {
-        self.ci
+        let init_fns = self
+            .ci
             .iter_types()
             .map(|t| SwiftCodeOracle.find(t))
-            .filter_map(|ct| ct.initialization_fn())
-            .collect()
+            .filter_map(|ct| ct.initialization_fn());
+
+        // Also call global initialization function for any external type we use.
+        // For example, we need to make sure that all callback interface vtables are registered
+        // (#2343).
+        let extern_module_init_fns = self
+            .ci
+            .iter_types()
+            .filter_map(|ty| ty.module_path())
+            .filter(|module_path| *module_path != self.ci.crate_name())
+            .map(|module_path| {
+                format!(
+                    "uniffiEnsure{}Initialized",
+                    module_path.to_upper_camel_case()
+                )
+            })
+            // Collect into a hash set to de-dup
+            .collect::<HashSet<_>>();
+
+        init_fns.chain(extern_module_init_fns).collect()
     }
 }
 

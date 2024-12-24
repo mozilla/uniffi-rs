@@ -181,6 +181,11 @@ fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn Un
     t
 }
 
+#[uniffi::export]
+fn invoke_uniffi_one_trait(t: Arc<dyn UniffiOneTrait>) -> String {
+    t.hello()
+}
+
 fn get_uniffi_one_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
     t
 }

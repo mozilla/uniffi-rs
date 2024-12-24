@@ -5,6 +5,16 @@
 import imported_types_lib
 import Foundation
 
+// First step: implement a trait from an external crate in Swift and pass it to a function from this
+// crate.  This tests #2343 -- the codegen for this module needs to initialize the vtable from
+// uniffi_one.
+final class SwiftUniffiOneImpl: UniffiOneTrait {
+    func hello() -> String {
+        "Hello from Swift"
+    }
+}
+assert(invokeUniffiOneTrait(t: SwiftUniffiOneImpl()) == "Hello from Swift")
+
 let ct = getCombinedType(value: nil)
 assert(ct.uot.sval == "hello")
 assert(ct.guid ==  "a-guid")

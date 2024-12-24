@@ -104,6 +104,20 @@ impl Config {
             })
             .unwrap_or(KotlinVersion::new(0, 0, 0))
     }
+
+    // Get the package name for an external type
+    fn external_package_name(&self, module_path: &str, namespace: Option<&str>) -> String {
+        // config overrides are keyed by the crate name, default fallback is the namespace.
+        let crate_name = module_path.split("::").next().unwrap();
+        match self.external_packages.get(crate_name) {
+            Some(name) => name.clone(),
+            // If the module path is not in `external_packages`, we need to fall back to a default
+            // with the namespace, which we hopefully have.  This is quite fragile, but it's
+            // unreachable in library mode - all deps get an entry in `external_packages` with the
+            // correct namespace.
+            None => format!("uniffi.{}", namespace.unwrap_or(module_path)),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -218,13 +232,8 @@ impl<'a> TypeRenderer<'a> {
 
     // Get the package name for an external type
     fn external_type_package_name(&self, module_path: &str, namespace: &str) -> String {
-        // config overrides are keyed by the crate name, default fallback is the namespace.
-        let crate_name = module_path.split("::").next().unwrap();
-        match self.config.external_packages.get(crate_name) {
-            Some(name) => name.clone(),
-            // unreachable in library mode - all deps are in our config with correct namespace.
-            None => format!("uniffi.{namespace}"),
-        }
+        self.config
+            .external_package_name(module_path, Some(namespace))
     }
 
     // The following methods are used by the `Types.kt` macros.
@@ -287,11 +296,38 @@ impl<'a> KotlinWrapper<'a> {
     }
 
     pub fn initialization_fns(&self) -> Vec<String> {
-        self.ci
+        let init_fns = self
+            .ci
             .iter_types()
             .map(|t| KotlinCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
-            .collect()
+            .map(|fn_name| format!("{fn_name}(lib)"));
+
+        // Also call global initialization function for any external type we use.
+        // For example, we need to make sure that all callback interface vtables are registered
+        // (#2343).
+        let extern_module_init_fns = self
+            .ci
+            .iter_types()
+            .filter_map(|ty| {
+                let module_path = ty.module_path()?;
+                if module_path == self.ci.crate_name() {
+                    return None;
+                }
+                let namespace = if let Type::External { namespace, .. } = ty {
+                    Some(namespace.as_str())
+                } else {
+                    None
+                };
+                Some((module_path, namespace))
+            })
+            .map(|(module_path, namespace)| {
+                let package_name = self.config.external_package_name(module_path, namespace);
+                format!("{package_name}.uniffiEnsureInitialized()")
+            })
+            .collect::<HashSet<_>>();
+
+        init_fns.chain(extern_module_init_fns).collect()
     }
 
     pub fn imports(&self) -> Vec<ImportRequirement> {
