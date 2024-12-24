@@ -73,6 +73,9 @@ impl BindingGenerator for KotlinBindingGenerator {
             kt_file.push(format!("{}.kt", ci.namespace()));
             fs::write(&kt_file, generate_bindings(config, ci)?)?;
             if settings.try_format_code {
+                println!(
+                    "Code generation complete, formatting with ktlint (use --no-format to disable)"
+                );
                 if let Err(e) = Command::new("ktlint").arg("-F").arg(&kt_file).output() {
                     println!(
                         "Warning: Unable to auto-format {} using ktlint: {e:?}",
