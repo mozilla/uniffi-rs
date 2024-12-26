@@ -10,7 +10,7 @@ pub use ffi_names::*;
 
 mod group;
 pub use group::{
-    convert_external_type, create_metadata_groups, fixup_external_type, group_metadata,
+    convert_external_metadata_item, convert_external_type, create_metadata_groups, group_metadata,
     MetadataGroup,
 };
 

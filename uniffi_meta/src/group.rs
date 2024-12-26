@@ -47,9 +47,8 @@ pub fn group_metadata(group_map: &mut MetadataGroupMap, items: Vec<Metadata>) ->
             continue;
         }
 
-        let crate_name = calc_crate_name(item.module_path()).to_owned(); // XXX - kill clone?
-
-        let item = fixup_external_type(item, group_map);
+        let crate_name = calc_crate_name(item.module_path()).to_owned();
+        let item = convert_external_metadata_item(item, group_map);
         let group = match group_map.get_mut(&crate_name) {
             Some(ns) => ns,
             None => bail!("Unknown namespace for {item:?} ({crate_name})"),
@@ -75,29 +74,104 @@ impl MetadataGroup {
     }
 }
 
-pub fn fixup_external_type(item: Metadata, group_map: &MetadataGroupMap) -> Metadata {
-    let crate_name = calc_crate_name(item.module_path()).to_owned();
-    let converter = ExternalTypeConverter {
-        crate_name: &crate_name,
-        crate_to_namespace: group_map,
-    };
-    converter.convert_item(item)
-}
+pub fn convert_external_metadata_item(item: Metadata, group_map: &MetadataGroupMap) -> Metadata {
+    let owner_module_path = calc_crate_name(item.module_path()).to_owned();
 
-/// Convert metadata items by replacing types from external crates with Type::External
-struct ExternalTypeConverter<'a> {
-    crate_name: &'a str,
-    crate_to_namespace: &'a MetadataGroupMap,
-}
-
-impl<'a> ExternalTypeConverter<'a> {
-    fn crate_to_namespace(&self, crate_name: &str) -> String {
-        self.crate_to_namespace
+    let crate_to_namespace = |crate_name: &str| {
+        group_map
             .get(crate_name)
             .unwrap_or_else(|| panic!("Can't find namespace for module {crate_name}"))
             .namespace
             .name
             .clone()
+    };
+
+    let convert_external_type =
+        |ty: Type| do_external_type_conversion(ty, &owner_module_path, &crate_to_namespace);
+
+    let converter = TypeConverter::new(convert_external_type);
+    converter.convert_item(item)
+}
+
+pub fn convert_external_type(ty: Type, owner_module_path: &str) -> Type {
+    // don't need the namespace filling capability here.
+    let crate_to_namespace = |s: &str| s.to_string();
+
+    let convert_external_type =
+        |ty: Type| do_external_type_conversion(ty, owner_module_path, &crate_to_namespace);
+
+    let converter = TypeConverter::new(convert_external_type);
+    converter.convert_type(ty)
+}
+
+// The actual logic for external type conversions.
+fn do_external_type_conversion<F>(ty: Type, owner_module_path: &str, crate_to_namespace: &F) -> Type
+where
+    F: Fn(&str) -> String,
+{
+    let is_external = |module_path: &str| calc_crate_name(module_path) != owner_module_path;
+
+    match ty {
+        // Convert `ty` if it's external
+        Type::Enum { module_path, name }
+        | Type::Record { module_path, name }
+        | Type::Custom {
+            module_path, name, ..
+        } if is_external(&module_path) => Type::External {
+            namespace: crate_to_namespace(&module_path),
+            module_path,
+            name,
+            kind: ExternalKind::DataClass,
+        },
+        Type::Object {
+            module_path,
+            name,
+            imp,
+        } if is_external(&module_path) => {
+            let kind = match imp {
+                ObjectImpl::Struct => ExternalKind::Interface,
+                ObjectImpl::Trait => ExternalKind::Trait,
+                ObjectImpl::CallbackTrait => ExternalKind::Trait,
+            };
+            Type::External {
+                namespace: crate_to_namespace(&module_path),
+                module_path,
+                name,
+                kind,
+            }
+        }
+        Type::CallbackInterface { module_path, name } if is_external(&module_path) => {
+            panic!("External callback interfaces not supported ({name})")
+        }
+
+        // Existing External types need namespace fixed.
+        Type::External {
+            module_path,
+            name,
+            kind,
+            ..
+        } => Type::External {
+            namespace: crate_to_namespace(&module_path),
+            module_path,
+            name,
+            kind,
+        },
+        // Otherwise, just return the type unchanged
+        _ => ty,
+    }
+}
+
+// Can walk a metadata item and replace all types via a user defined function.
+struct TypeConverter<F> {
+    converter: F,
+}
+
+impl<F> TypeConverter<F>
+where
+    F: Fn(Type) -> Type,
+{
+    fn new(converter: F) -> Self {
+        Self { converter }
     }
 
     fn convert_item(&self, item: Metadata) -> Metadata {
@@ -177,121 +251,35 @@ impl<'a> ExternalTypeConverter<'a> {
     }
 
     fn convert_type(&self, ty: Type) -> Type {
-        convert_external_type(ty, self.crate_name, &|mod_path| {
-            self.crate_to_namespace(mod_path)
-        })
-    }
-}
-
-// If a type is not owned by "owner_module_path", convert it to an external type. If that conversion
-// happens we'll call the closure to find the correct namespace for the external crate.
-pub fn convert_external_type<F>(ty: Type, owner_module_path: &str, crate_to_namespace: &F) -> Type
-where
-    F: Fn(&str) -> String,
-{
-    let is_external = |module_path: &str| calc_crate_name(module_path) != owner_module_path;
-    match ty {
-        // Convert `ty` if it's external
-        Type::Enum { module_path, name } | Type::Record { module_path, name }
-            if is_external(&module_path) =>
-        {
-            Type::External {
-                namespace: crate_to_namespace(&module_path),
+        // first, we recurse
+        let ty = match ty {
+            Type::Custom {
                 module_path,
                 name,
-                kind: ExternalKind::DataClass,
-            }
-        }
-        Type::Custom {
-            module_path, name, ..
-        } if is_external(&module_path) => {
-            // For now, it's safe to assume that all custom types are data classes.
-            // There's no reason to use a custom type with an interface.
-            Type::External {
-                namespace: crate_to_namespace(&module_path),
+                builtin,
+                ..
+            } => Type::Custom {
                 module_path,
                 name,
-                kind: ExternalKind::DataClass,
-            }
-        }
-        Type::Object {
-            module_path,
-            name,
-            imp,
-        } if is_external(&module_path) => {
-            let kind = match imp {
-                ObjectImpl::Struct => ExternalKind::Interface,
-                ObjectImpl::Trait => ExternalKind::Trait,
-                ObjectImpl::CallbackTrait => ExternalKind::Trait,
-            };
-            Type::External {
-                namespace: crate_to_namespace(&module_path),
-                module_path,
-                name,
-                kind,
-            }
-        }
-        Type::CallbackInterface { module_path, name } if is_external(&module_path) => {
-            panic!("External callback interfaces not supported ({name})")
-        }
-        // Convert child types
-        Type::Custom {
-            module_path,
-            name,
-            builtin,
-            ..
-        } => Type::Custom {
-            module_path,
-            name,
-            builtin: Box::new(convert_external_type(
-                *builtin,
-                owner_module_path,
-                crate_to_namespace,
-            )),
-        },
-        Type::Optional { inner_type } => Type::Optional {
-            inner_type: Box::new(convert_external_type(
-                *inner_type,
-                owner_module_path,
-                crate_to_namespace,
-            )),
-        },
-        Type::Sequence { inner_type } => Type::Sequence {
-            inner_type: Box::new(convert_external_type(
-                *inner_type,
-                owner_module_path,
-                crate_to_namespace,
-            )),
-        },
-        Type::Map {
-            key_type,
-            value_type,
-        } => Type::Map {
-            key_type: Box::new(convert_external_type(
-                *key_type,
-                owner_module_path,
-                crate_to_namespace,
-            )),
-            value_type: Box::new(convert_external_type(
-                *value_type,
-                owner_module_path,
-                crate_to_namespace,
-            )),
-        },
-        // Existing External types need namespace fixed.
-        Type::External {
-            module_path,
-            name,
-            kind,
-            ..
-        } => Type::External {
-            namespace: crate_to_namespace(&module_path),
-            module_path,
-            name,
-            kind,
-        },
-        // Otherwise, just return the type unchanged
-        _ => ty,
+                builtin: Box::new(self.convert_type(*builtin)),
+            },
+            Type::Optional { inner_type } => Type::Optional {
+                inner_type: Box::new(self.convert_type(*inner_type)),
+            },
+            Type::Sequence { inner_type } => Type::Sequence {
+                inner_type: Box::new(self.convert_type(*inner_type)),
+            },
+            Type::Map {
+                key_type,
+                value_type,
+            } => Type::Map {
+                key_type: Box::new(self.convert_type(*key_type)),
+                value_type: Box::new(self.convert_type(*value_type)),
+            },
+            _ => ty,
+        };
+        // then convert
+        (self.converter)(ty)
     }
 }
 
