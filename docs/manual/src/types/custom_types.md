@@ -87,22 +87,18 @@ followed by the custom type.
 typedef i64 Handle;
 ```
 
-**note**: you must still call the `custom_type!` or `custom_newtype!` macros in your Rust code, as described above.
-
-
-#### Using custom types from other crates
-
-To use custom types from other crates from UDL, use a typedef wrapped with the `[External]` attribute.
-
-For example, if another crate wanted to use the examples here:
+You can specify the crate name if the custom type implementation is external.
 
 ```idl
-[External="crate_defining_handle_name"]
+[Custom="crate_defining_handle_name"]
 typedef i64 Handle;
 
-[External="crate_defining_log_record_name"]
+[Custom="crate_defining_log_record_name"]
 typedef dictionary LogRecord;
 ```
+
+**note**: you must still call the `custom_type!` or `custom_newtype!` macros in your Rust code, as described above.
+
 ## User-defined types
 
 All examples so far in this section convert the custom type to a builtin type.

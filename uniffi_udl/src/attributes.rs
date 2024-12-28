@@ -35,7 +35,7 @@ pub(super) enum Attribute {
     External { crate_name: String },
     Remote,
     // Custom type on the scaffolding side
-    Custom,
+    Custom { crate_name: Option<String> },
     // The interface described is implemented as a trait.
     Trait,
     // Modifies `Trait` to enable foreign implementations (callback interfaces)
@@ -66,7 +66,7 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                 "ByRef" => Ok(Attribute::ByRef),
                 "Enum" => Ok(Attribute::Enum),
                 "Error" => Ok(Attribute::Error),
-                "Custom" => Ok(Attribute::Custom),
+                "Custom" => Ok(Attribute::Custom { crate_name: None }),
                 "Trait" => Ok(Attribute::Trait),
                 "WithForeign" => Ok(Attribute::WithForeign),
                 "Async" => Ok(Attribute::Async),
@@ -82,6 +82,9 @@ impl TryFrom<&weedle::attribute::ExtendedAttribute<'_>> for Attribute {
                     "Self" => Ok(Attribute::SelfType(SelfType::try_from(&identity.rhs)?)),
                     "External" => Ok(Attribute::External {
                         crate_name: name_from_id_or_string(&identity.rhs),
+                    }),
+                    "Custom" => Ok(Attribute::Custom {
+                        crate_name: Some(name_from_id_or_string(&identity.rhs)),
                     }),
                     _ => anyhow::bail!(
                         "Attribute identity Identifier not supported: {:?}",
@@ -547,6 +550,10 @@ impl TypedefAttributes {
     pub(super) fn get_crate_name(&self) -> Option<String> {
         self.0.iter().find_map(|attr| match attr {
             Attribute::External { crate_name, .. } => Some(crate_name.clone()),
+            Attribute::Custom {
+                crate_name: Some(crate_name),
+                ..
+            } => Some(crate_name.clone()),
             _ => None,
         })
     }
@@ -564,9 +571,12 @@ impl TryFrom<&weedle::attribute::ExtendedAttributeList<'_>> for TypedefAttribute
         weedle_attributes: &weedle::attribute::ExtendedAttributeList<'_>,
     ) -> Result<Self, Self::Error> {
         let attrs = parse_attributes(weedle_attributes, |attr| match attr {
-            Attribute::External { .. } | Attribute::Custom => Ok(()),
+            Attribute::External { .. } | Attribute::Custom { .. } => Ok(()),
             _ => bail!(format!("{attr:?} not supported for typedefs")),
         })?;
+        if attrs.len() > 1 {
+            bail!("Can't be [Custom] and [External]");
+        }
         Ok(Self(attrs))
     }
 }
@@ -933,6 +943,13 @@ mod test {
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Custom]").unwrap();
         let attrs = TypedefAttributes::try_from(&node).unwrap();
         assert!(attrs.is_custom());
+        assert!(attrs.get_crate_name().is_none());
+
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[Custom=\"crate_name\"]").unwrap();
+        let attrs = TypedefAttributes::try_from(&node).unwrap();
+        assert!(attrs.is_custom());
+        assert_eq!(attrs.get_crate_name().unwrap(), "crate_name");
 
         let (_, node) =
             weedle::attribute::ExtendedAttributeList::parse("[External=crate_name]").unwrap();
@@ -943,12 +960,10 @@ mod test {
 
     #[test]
     fn test_typedef_attributes_malformed() {
-        let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[Custom=foo]").unwrap();
+        let (_, node) =
+            weedle::attribute::ExtendedAttributeList::parse("[External=foo, Custom]").unwrap();
         let err = TypedefAttributes::try_from(&node).unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "Attribute identity Identifier not supported: \"Custom\""
-        );
+        assert_eq!(err.to_string(), "Can't be [Custom] and [External]");
 
         let (_, node) = weedle::attribute::ExtendedAttributeList::parse("[External]").unwrap();
         let err = TypedefAttributes::try_from(&node).unwrap_err();

@@ -44,15 +44,15 @@ typedef trait UniffiOneUDLTrait;
 typedef dictionary UniffiOneProcMacroType;
 
 // A Custom (ie, "wrapped") type defined externally in `../../custom-types/src/lib.rs`,
-[External="ext_types_custom"]
-typedef custom Guid;
+[Custom="ext_types_custom"]
+typedef string Guid;
 
 // And re-use the `custom-types` example - this exposes `Url` and `Handle`
-[External="custom_types"]
-typedef custom Url;
+[Custom="custom_types"]
+typedef string Url;
 
-[External="custom_types"]
-typedef custom Handle;
+[Custom="custom_types"]
+typedef i64 Handle;
 
 // Here are some different kinds of remote types - the types are described
 // in this UDL, but the types themselves are defined in a different crate.

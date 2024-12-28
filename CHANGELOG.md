@@ -11,18 +11,19 @@
 We've made a number of breaking changes to fix long standing paper-cuts with UniFFI in a
 multi-crate environment and to simplify your and our implementations.
 
-While **no changes required to foreign code**, we apologize for the inconvenience!
+[See the detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
 
-You are impacted if you use "Custom types", or use UDL with types from more than one crate.
-We have [detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
+While **no changes are required to foreign code**, we apologize for the inconvenience!
 
-- "Custom Types" have changed, all implementations will need to update their Rust code.
-  The `UniffiCustomTypeConverter` trait is no longer used, use the
+You are impacted if you use `UniffiCustomTypeConverter` to implement "Custom types",
+or use UDL with types from more than one crate.
+
+- `UniffiCustomTypeConverter` has been removed, you must now use the
   [`custom_type!` macro](https://mozilla.github.io/uniffi-rs/next/types/custom_types.html) instead.
 
 - The [UDL syntax for external types](https://mozilla.github.io/uniffi-rs/next/udl/external_types.html) has changed.
   `typedef extern MyEnum;` has been replaced
-  with `typedef enum MyEnum;`. Attributes other than `[External = "crate_name"]` have been removed.
+  with `typedef enum MyEnum;`. `[Custom]` and `[External]` are the only supported  attributes for a `typedef`.
 
 - "remote" types (where UDL can re-export a type defined in
   a non-UniFFI crate - eg, `log::Level`) must now use a
