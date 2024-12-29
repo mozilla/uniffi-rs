@@ -461,9 +461,8 @@ impl<'a> SwiftWrapper<'a> {
         // (#2343).
         let extern_module_init_fns = self
             .ci
-            .iter_types()
-            .filter_map(|ty| ty.module_path())
-            .filter(|module_path| *module_path != self.ci.crate_name())
+            .iter_external_types()
+            .filter_map(|t| t.module_path())
             .map(|module_path| {
                 format!(
                     "uniffiEnsure{}Initialized",

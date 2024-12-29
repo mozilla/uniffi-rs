@@ -218,7 +218,7 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use uniffi_meta::{ExternalKind, ObjectImpl};
+    use uniffi_meta::ObjectImpl;
 
     // A helper to take valid UDL and a closure to check what's in it.
     fn test_a_finding<F>(udl: &str, tester: F)
@@ -302,11 +302,11 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass, .. }
+                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::Enum { name, module_path, .. }
                                                                                  if name == "ExternalType" && module_path == "crate-name")
                 );
                 assert!(
-                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface, .. }
+                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::Object { name, module_path, imp: ObjectImpl::Struct, .. }
                                                                                  if name == "ExternalInterfaceType" && module_path == "crate-name")
                 );
                 assert!(
