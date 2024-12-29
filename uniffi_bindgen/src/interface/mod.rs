@@ -317,17 +317,22 @@ impl ComponentInterface {
         self.is_name_used_as_error(&e.name) && (fielded || used_in_foreign_interface)
     }
 
-    /// Get details about all `Type::Custom` types
-    pub fn iter_custom_types(&self) -> impl Iterator<Item = (&String, &Type)> {
-        self.types.iter_known_types().filter_map(|t| match t {
-            Type::Custom { name, builtin, .. } => Some((name, &**builtin)),
-            _ => None,
-        })
+    /// Iterate over all known local types in the interface.
+    pub fn iter_local_types(&self) -> impl Iterator<Item = &Type> {
+        self.types.iter_local_types()
     }
 
-    /// Iterate over all known types in the interface.
-    pub fn iter_types(&self) -> impl Iterator<Item = &Type> {
-        self.types.iter_known_types()
+    /// Get details about all `Type`s defined in external crates.
+    pub fn iter_external_types(&self) -> impl Iterator<Item = &Type> {
+        self.types.iter_external_types()
+    }
+
+    // Keep only the local types in an iterator of types.
+    pub fn filter_local_types<'a>(
+        &'a self,
+        types: impl Iterator<Item = &'a Type>,
+    ) -> impl Iterator<Item = &'a Type> {
+        self.types.filter_local_types(types)
     }
 
     pub fn is_external(&self, t: &Type) -> bool {
@@ -391,28 +396,28 @@ impl ComponentInterface {
     /// Check whether the interface contains any optional types
     pub fn contains_optional_types(&self) -> bool {
         self.types
-            .iter_known_types()
+            .iter_local_types()
             .any(|t| matches!(t, Type::Optional { .. }))
     }
 
     /// Check whether the interface contains any sequence types
     pub fn contains_sequence_types(&self) -> bool {
         self.types
-            .iter_known_types()
+            .iter_local_types()
             .any(|t| matches!(t, Type::Sequence { .. }))
     }
 
     /// Check whether the interface contains any map types
     pub fn contains_map_types(&self) -> bool {
         self.types
-            .iter_known_types()
+            .iter_local_types()
             .any(|t| matches!(t, Type::Map { .. }))
     }
 
     /// Check whether the interface contains any object types
     pub fn contains_object_types(&self) -> bool {
         self.types
-            .iter_known_types()
+            .iter_local_types()
             .any(|t| matches!(t, Type::Object { .. }))
     }
 

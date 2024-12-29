@@ -481,17 +481,17 @@ mod test {
                 module_path: "crate_name".into()
             }
         );
-        assert_eq!(
+        assert!(matches!(
             farg.ffi_func().arguments()[0].type_(),
-            FfiType::RustBuffer(None)
-        );
+            FfiType::RustBuffer(_)
+        ));
         let fret = ci.get_function_definition("returns_an_enum").unwrap();
         assert!(
             matches!(fret.return_type(), Some(Type::Enum { name, .. }) if name == "TestEnum" && !ci.is_name_used_as_error(name))
         );
         assert!(matches!(
             fret.ffi_func().return_type(),
-            Some(FfiType::RustBuffer(None))
+            Some(FfiType::RustBuffer(_))
         ));
 
         // Enums with associated data pass over the FFI as bytebuffers.
@@ -505,10 +505,10 @@ mod test {
                 module_path: "crate_name".into()
             }
         );
-        assert_eq!(
+        assert!(matches!(
             farg.ffi_func().arguments()[0].type_(),
-            FfiType::RustBuffer(None)
-        );
+            FfiType::RustBuffer(_)
+        ));
         let fret = ci
             .get_function_definition("returns_an_enum_with_data")
             .unwrap();
@@ -517,7 +517,7 @@ mod test {
         );
         assert!(matches!(
             fret.ffi_func().return_type(),
-            Some(FfiType::RustBuffer(None))
+            Some(FfiType::RustBuffer(_))
         ));
     }
 

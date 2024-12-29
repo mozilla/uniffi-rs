@@ -1,6 +1,6 @@
 {%- import "macros.py" as py %}
 
-{%- for type_ in ci.iter_types() %}
+{%- for type_ in ci.iter_local_types() %}
 {%- let type_name = type_|type_name %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
@@ -92,15 +92,12 @@
 {%- include "CustomType.py" %}
 {%- endif %}
 
-{%- when Type::External { name, .. } %}
-{%- include "ExternalTemplate.py" %}
-
 {%- else %}
 {%- endmatch %}
 {%- endfor %}
 
 # objects.
-{%- for type_ in self.iter_sorted_object_types() %}
+{%- for type_ in ci.filter_local_types(self.iter_sorted_object_types()) %}
 {%- match type_ %}
 {%- when Type::Object { name, .. } %}
 {%-     let type_name = type_|type_name %}
@@ -111,6 +108,10 @@
 {%- endmatch %}
 {%- endfor %}
 
+{%- for type_ in ci.iter_external_types() %}
+{%- let name = type_.name().unwrap() %}
+{%- include "ExternalTemplate.py" %}
+{%- endfor %}
 {#-
 Setup type aliases for our custom types, has complications due to
 forward type references, #2067

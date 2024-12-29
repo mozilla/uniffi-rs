@@ -91,54 +91,9 @@ pub fn convert_external_type(ty: Type, owner_module_path: &str) -> Type {
 }
 
 // The actual logic for external type conversions.
-fn do_external_type_conversion(ty: Type, owner_module_path: &str) -> Type {
-    let is_external = |module_path: &str| calc_crate_name(module_path) != owner_module_path;
-
-    match ty {
-        // Convert `ty` if it's external
-        Type::Enum { module_path, name } | Type::Record { module_path, name }
-            if is_external(&module_path) =>
-        {
-            Type::External {
-                module_path,
-                name,
-                kind: ExternalKind::DataClass,
-            }
-        }
-        Type::Object {
-            module_path,
-            name,
-            imp,
-        } if is_external(&module_path) => {
-            let kind = match imp {
-                ObjectImpl::Struct => ExternalKind::Interface,
-                ObjectImpl::Trait => ExternalKind::Trait,
-                ObjectImpl::CallbackTrait => ExternalKind::Trait,
-            };
-            Type::External {
-                module_path,
-                name,
-                kind,
-            }
-        }
-        Type::CallbackInterface { module_path, name } if is_external(&module_path) => {
-            panic!("External callback interfaces not supported ({name})")
-        }
-
-        // Existing External types need namespace fixed.
-        Type::External {
-            module_path,
-            name,
-            kind,
-            ..
-        } => Type::External {
-            module_path,
-            name,
-            kind,
-        },
-        // Otherwise, just return the type unchanged
-        _ => ty,
-    }
+fn do_external_type_conversion(ty: Type, _owner_module_path: &str) -> Type {
+    // todo: remove this entirely!
+    ty
 }
 
 // Can walk a metadata item and replace all types via a user defined function.

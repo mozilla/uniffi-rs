@@ -103,9 +103,20 @@ impl TypeUniverse {
         self.all_known_types.contains(type_)
     }
 
-    /// Iterator over all the known types in this universe.
-    pub fn iter_known_types(&self) -> impl Iterator<Item = &Type> {
-        self.all_known_types.iter()
+    pub fn iter_local_types(&self) -> impl Iterator<Item = &Type> {
+        self.filter_local_types(self.all_known_types.iter())
+    }
+
+    pub fn iter_external_types(&self) -> impl Iterator<Item = &Type> {
+        self.all_known_types.iter().filter(|t| self.is_external(t))
+    }
+
+    // Keep only the local types in an iterator of types.
+    pub fn filter_local_types<'a>(
+        &'a self,
+        types: impl Iterator<Item = &'a Type>,
+    ) -> impl Iterator<Item = &'a Type> {
+        types.filter(|t| !self.is_external(t))
     }
 }
 

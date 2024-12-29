@@ -811,20 +811,20 @@ mod test {
         assert_eq!(ci.object_definitions().len(), 1);
         ci.get_object_definition("Testing").unwrap();
 
-        assert_eq!(ci.iter_types().count(), 6);
-        assert!(ci.iter_types().any(|t| t == &Type::UInt16));
-        assert!(ci.iter_types().any(|t| t == &Type::UInt32));
-        assert!(ci.iter_types().any(|t| t
+        assert_eq!(ci.iter_local_types().count(), 6);
+        assert!(ci.iter_local_types().any(|t| t == &Type::UInt16));
+        assert!(ci.iter_local_types().any(|t| t == &Type::UInt32));
+        assert!(ci.iter_local_types().any(|t| t
             == &Type::Sequence {
                 inner_type: Box::new(Type::UInt32)
             }));
-        assert!(ci.iter_types().any(|t| t == &Type::String));
-        assert!(ci.iter_types().any(|t| t
+        assert!(ci.iter_local_types().any(|t| t == &Type::String));
+        assert!(ci.iter_local_types().any(|t| t
             == &Type::Optional {
                 inner_type: Box::new(Type::String)
             }));
         assert!(ci
-            .iter_types()
+            .iter_local_types()
             .any(|t| matches!(t, Type::Object { name, ..} if name == "Testing")));
     }
 

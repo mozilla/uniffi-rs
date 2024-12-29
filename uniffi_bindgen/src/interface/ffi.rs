@@ -130,9 +130,13 @@ impl From<&Type> for FfiType {
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface { .. } => FfiType::UInt64,
             // Other types are serialized into a bytebuffer and deserialized on the other side.
-            Type::Enum { .. }
-            | Type::Record { .. }
-            | Type::Optional { .. }
+            Type::Enum { name, module_path } | Type::Record { name, module_path } => {
+                FfiType::RustBuffer(Some(ExternalFfiMetadata {
+                    name: name.clone(),
+                    module_path: module_path.clone(),
+                }))
+            }
+            Type::Optional { .. }
             | Type::Sequence { .. }
             | Type::Map { .. }
             | Type::Timestamp
