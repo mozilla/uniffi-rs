@@ -248,15 +248,15 @@ mod test {
         assert_eq!(record.fields()[0].name(), "maybe_name");
         assert_eq!(record.fields()[1].name(), "value");
 
-        assert_eq!(ci.iter_types().count(), 4);
-        assert!(ci.iter_types().any(|t| t == &Type::UInt32));
-        assert!(ci.iter_types().any(|t| t == &Type::String));
-        assert!(ci.iter_types().any(|t| t
+        assert_eq!(ci.iter_local_types().count(), 4);
+        assert!(ci.iter_local_types().any(|t| t == &Type::UInt32));
+        assert!(ci.iter_local_types().any(|t| t == &Type::String));
+        assert!(ci.iter_local_types().any(|t| t
             == &Type::Optional {
                 inner_type: Box::new(Type::String)
             }));
         assert!(ci
-            .iter_types()
+            .iter_local_types()
             .any(|t| matches!(t, Type::Record { name, .. } if name == "Testing")));
     }
 

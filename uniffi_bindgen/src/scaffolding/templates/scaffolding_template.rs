@@ -6,7 +6,7 @@
 
 {% include "UdlMetadata.rs" %}
 
-{% for ty in ci.iter_types() %}
+{% for ty in ci.iter_local_types() %}
 {%- match ty %}
 {%- when Type::Map { key_type: k, value_type: v } -%}
 {# Next comment MUST be after the line to be in the compiler output #}

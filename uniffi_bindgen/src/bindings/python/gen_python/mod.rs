@@ -270,7 +270,7 @@ impl<'a> TypeRenderer<'a> {
     // but that's pathological :)
     fn get_custom_type_aliases(&self) -> Vec<(String, &Type)> {
         let mut ordered = vec![];
-        for type_ in self.ci.iter_types() {
+        for type_ in self.ci.iter_local_types() {
             if !self.ci.is_external(type_) {
                 if let Type::Custom { name, builtin, .. } = type_ {
                     match ordered.iter().position(|x: &(&str, &Type)| {
@@ -295,7 +295,7 @@ impl<'a> TypeRenderer<'a> {
     fn iter_sorted_object_types(&self) -> impl Iterator<Item = &Type> {
         let mut obs: Vec<&Type> = self
             .ci
-            .iter_types()
+            .iter_local_types()
             .filter(|t| matches!(t, Type::Object { .. }))
             .collect();
         obs.sort_by_key(|t| !matches!(t, Type::Object { imp, .. } if imp.is_trait_interface()));

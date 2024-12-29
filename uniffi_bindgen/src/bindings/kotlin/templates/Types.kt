@@ -40,7 +40,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
  * */
 object NoPointer
 
-{%- for type_ in ci.iter_types() %}
+{%- for type_ in ci.iter_local_types() %}
 {%- let type_name = type_|type_name(ci) %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
 {%- let canonical_type_name = type_|canonical_name %}
@@ -135,11 +135,14 @@ object NoPointer
 {% include "CustomTypeTemplate.kt" %}
 {%- endif %}
 
-{%- when Type::External { module_path, name, .. } %}
-{% include "ExternalTypeTemplate.kt" %}
-
 {%- else %}
 {%- endmatch %}
+{%- endfor %}
+
+{%- for type_ in ci.iter_external_types() %}
+{%- let name = type_.name().unwrap() %}
+{%- let module_path = type_.module_path().unwrap() %}
+{% include "ExternalTypeTemplate.kt" %}
 {%- endfor %}
 
 {%- if ci.has_async_fns() %}
