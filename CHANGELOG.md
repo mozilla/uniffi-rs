@@ -8,22 +8,34 @@
 
 ### ⚠️ Breaking Changes ⚠️
 
-- The Rust side of the custom type system has changed and users will need to update their code.
-  The `UniffiCustomTypeConverter` trait is no longer used,  use the `custom_type!` macro instead.
-  We did this to help fix some edge-cases with custom types wrapping types from other crates (eg, Url).
-  See https://mozilla.github.io/uniffi-rs/next/Upgrading.html for help upgrading and https://mozilla.github.io/uniffi-rs/next/udl/custom_types.html for details.
+We've made a number of breaking changes to fix long standing paper-cuts with UniFFI in a
+multi-crate environment and to simplify your and our implementations.
 
-- Handling of remote and external types has changed significantly:
-    - UDL users need to add the `[Remote]` attribute for remote types
-    - The `use_udl_*` macros are no longer needed and have been removed.
-    - To share remote type implementations between crates, use the `use_remote_type` macro.
-    - The UDL syntax for external types in the UDL has been changed.
-    - See https://mozilla.github.io/uniffi-rs/0.29/udl/remote_ext_types.html for details
+While **no changes required to foreign code**, we apologize for the inconvenience!
 
+You are impacted if you use "Custom types", or use UDL with types from more than one crate.
+We have [detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
+
+- "Custom Types" have changed, all implementations will need to update their Rust code.
+  The `UniffiCustomTypeConverter` trait is no longer used, use the
+  [`custom_type!` macro](https://mozilla.github.io/uniffi-rs/next/types/custom_types.html) instead.
+
+- The [UDL syntax for external types](https://mozilla.github.io/uniffi-rs/next/udl/external_types.html) has changed.
+  `typedef extern MyEnum;` has been replaced
+  with `typedef enum MyEnum;`. Attributes other than `[External = "crate_name"]` have been removed.
+
+- "remote" types (where UDL can re-export a type defined in
+  a non-UniFFI crate - eg, `log::Level`) must now use a
+  [`[Remote]` attribute](https://mozilla.github.io/uniffi-rs/next/types/remote_ext_types.html).
+
+- Various `use_udl_*`/`use_remote_type` etc macros have been removed.
+
+[Detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
 ### What's new?
 
-- Kotlin: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
-  hierarcy to reflect that. [#2297](https://github.com/mozilla/uniffi-rs/pull/2297)
+- Kotlin and Swift: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
+  hierarcy to reflect that.
+  [#2297](https://github.com/mozilla/uniffi-rs/pull/2297), [#2363](https://github.com/mozilla/uniffi-rs/pull/2363)
 
 - Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
   to consumers and could have high overhead when lots of FFI calls are made. Instead, the

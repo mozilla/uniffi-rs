@@ -25,6 +25,9 @@ open class {{ impl_class_name }}:
     {%- if is_error %}
     Swift.Error,
     {% endif %}
+    {%- for t in obj.trait_impls() %}
+    {{ self::trait_protocol_name(ci, t.trait_name)? }},
+    {% endfor %}
     #if swift(>=5.7)
     @unchecked Sendable, {{ protocol_name }} {
     #else
