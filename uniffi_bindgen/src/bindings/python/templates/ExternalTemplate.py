@@ -1,6 +1,7 @@
+{%- let namespace = ci.namespace_for_type(type_)? %}
 {%- let module = python_config.module_for_namespace(namespace) -%}
 
-# External type {{name}} is in namespace "{{namespace}}", crate {{module_path}}
+# External type {{ name }}: `from {{ module }} import {{ name }}`
 {%- let ffi_converter_name = "_UniffiConverterType{}"|format(name) %}
 {{ self.add_import_of(module, ffi_converter_name) }}
 {{ self.add_import_of(module, name) }} {#- import the type alias itself -#}

@@ -131,7 +131,7 @@ object NoPointer
 {%- when Type::Custom { module_path, name, builtin } %}
 {% include "CustomTypeTemplate.kt" %}
 
-{%- when Type::External { module_path, name, namespace, .. } %}
+{%- when Type::External { module_path, name, .. } %}
 {% include "ExternalTypeTemplate.kt" %}
 
 {%- else %}
