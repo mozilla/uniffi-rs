@@ -1,7 +1,7 @@
 [package]
-name = "uniffi_checksum_derive"
+name = "uniffi_internal_macros"
 version = "0.28.3"
-description = "a multi-language bindings generator for rust (checksum custom derive)"
+description = "a multi-language bindings generator for rust (interal macro crate)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
