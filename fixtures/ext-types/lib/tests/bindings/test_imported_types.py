@@ -9,6 +9,21 @@ from imported_types_sublib import *
 from uniffi_one_ns import *
 from ext_types_custom import *
 
+def test_external_callback_interface_impl():
+    """
+    Implement a trait from an external crate in Python and pass it to a function from this
+    crate.  This tests #2343 -- the codegen for this module needs to initialize the vtable from
+    uniffi_one.
+
+    This is written as a plain function rather than a unittest, because it
+    needs to run first before there's any chance of a `uniffi_one` funciton
+    being called.
+    """
+    class PyUniffiOneImpl(UniffiOneTrait):
+        def hello(self):
+            return "Hello from Python"
+    assert(invoke_uniffi_one_trait(PyUniffiOneImpl()) == "Hello from Python")
+
 class TestIt(unittest.TestCase):
     def test_it(self):
         ct = get_combined_type(None)
@@ -83,4 +98,5 @@ class TestIt(unittest.TestCase):
         self.assertEqual(get_nested_external_ouid(None), "nested-external-ouid")
 
 if __name__=='__main__':
+    test_external_callback_interface_impl()
     unittest.main()

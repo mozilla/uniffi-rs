@@ -11,9 +11,9 @@ fileprivate func uniffiRustCallAsync<F, T>(
     liftFunc: (F) throws -> T,
     errorHandler: ((RustBuffer) throws -> Swift.Error)?
 ) async throws -> T {
-    // Make sure to call uniffiEnsureInitialized() since future creation doesn't have a
+    // Make sure to call the ensure init function since future creation doesn't have a
     // RustCallStatus param, so doesn't use makeRustCall()
-    uniffiEnsureInitialized()
+    {{ ensure_init_fn_name }}()
     let rustFuture = rustFutureFunc()
     defer {
         freeFunc(rustFuture)

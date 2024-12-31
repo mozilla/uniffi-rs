@@ -64,6 +64,10 @@ impl CallbackInterface {
         &self.name
     }
 
+    pub fn module_path(&self) -> &str {
+        &self.module_path
+    }
+
     pub fn methods(&self) -> Vec<&Method> {
         self.methods.iter().collect()
     }
