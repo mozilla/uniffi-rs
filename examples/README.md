@@ -60,7 +60,7 @@ With that in place, try the following:
   * Change to the root directory of this repo, so the `uniffi-bindgen` package referenced below can be found.
   * Run `cargo run --bin uniffi-bindgen -- scaffolding examples/<example>/src/<namespace>.udl`.
     This will generate the Rust scaffolding code which exposes a C FFI for the component.
-    You can view the generatd code in `./src/<namespace>.uniffi.rs`.
+    You can view the generated code in `./src/<namespace>.uniffi.rs`.
   * Run `cargo run --bin uniffi-bindgen -- generate --language kotlin examples/<example>/src/<namespace>.udl`.
     This will generate the foreign-language bindings for Kotlin, which load the compiled Rust code
     and use the C FFI generated above to interact with it.
