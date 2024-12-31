@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import sys
+
 # Test namespace
 import uniffi_docstring
 assert uniffi_docstring.__doc__
@@ -10,7 +12,12 @@ from uniffi_docstring import *
 
 # Test function
 assert test.__doc__.strip() == "<docstring-function>"
-assert test_multiline.__doc__.strip() == "<docstring-multiline-function>\n    <second-line>"
+if sys.version_info >= (3, 13):
+    # 3.13 strips leading docstring whitespace
+    assert test_multiline.__doc__.strip() == "<docstring-multiline-function>\n<second-line>"
+else:
+    # Previous versions don't
+    assert test_multiline.__doc__.strip() == "<docstring-multiline-function>\n    <second-line>"
 assert test_without_docstring.__doc__ is None
 
 # Test enums
