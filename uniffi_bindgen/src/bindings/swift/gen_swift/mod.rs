@@ -55,27 +55,6 @@ trait CodeType: Debug {
         format!("FfiConverter{}", self.canonical_name())
     }
 
-    // XXX - the below should be removed and replace with the ffi_converter_name reference in the template.
-    /// An expression for lowering a value into something we can pass over the FFI.
-    fn lower(&self) -> String {
-        format!("{}.lower", self.ffi_converter_name())
-    }
-
-    /// An expression for writing a value into a byte buffer.
-    fn write(&self) -> String {
-        format!("{}.write", self.ffi_converter_name())
-    }
-
-    /// An expression for lifting a value from something we received over the FFI.
-    fn lift(&self) -> String {
-        format!("{}.lift", self.ffi_converter_name())
-    }
-
-    /// An expression for reading a value from a byte buffer.
-    fn read(&self) -> String {
-        format!("{}.read", self.ffi_converter_name())
-    }
-
     /// A list of imports that are needed if this type is in use.
     /// Classes are imported exactly once.
     fn imports(&self) -> Option<Vec<String>> {
@@ -700,20 +679,38 @@ pub mod filters {
         Ok(name)
     }
 
+    // To better support external types, we always call the "public" lift and lower functions for
+    // "named" types, regardless of whether they are being called from a type in the same crate
+    // (ie, a "local" type) or from a different crate (ie, an "external" type)
     pub fn lower_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
-        Ok(oracle().find(&as_type.as_type()).lower())
+        let ty = &as_type.as_type();
+        let ffi_converter_name = oracle().find(ty).ffi_converter_name();
+        Ok(match ty.name() {
+            Some(_) => format!("{}_lower", ffi_converter_name),
+            None => format!("{}.lower", ffi_converter_name),
+        })
     }
 
     pub fn write_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
-        Ok(oracle().find(&as_type.as_type()).write())
+        let ty = &as_type.as_type();
+        let ffi_converter_name = oracle().find(ty).ffi_converter_name();
+        Ok(format!("{}.write", ffi_converter_name))
     }
 
+    // See above re lower_fn - we always use the public version for named types.
     pub fn lift_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
-        Ok(oracle().find(&as_type.as_type()).lift())
+        let ty = &as_type.as_type();
+        let ffi_converter_name = oracle().find(ty).ffi_converter_name();
+        Ok(match ty.name() {
+            Some(_) => format!("{}_lift", ffi_converter_name),
+            None => format!("{}.lift", ffi_converter_name),
+        })
     }
 
     pub fn read_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
-        Ok(oracle().find(&as_type.as_type()).read())
+        let ty = &as_type.as_type();
+        let ffi_converter_name = oracle().find(ty).ffi_converter_name();
+        Ok(format!("{}.read", ffi_converter_name))
     }
 
     pub fn literal_swift(literal: &Literal, as_type: &impl AsType) -> Result<String, rinja::Error> {

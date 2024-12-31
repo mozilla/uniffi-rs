@@ -211,7 +211,7 @@ public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
 {%- endif %}
 
 {#
-We always write these public functions just in case the enum is used as
+We always write these public functions just in case the object is used as
 an external type by another crate.
 #}
 #if swift(>=5.8)
