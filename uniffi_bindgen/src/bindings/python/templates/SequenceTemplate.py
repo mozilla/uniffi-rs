@@ -1,4 +1,4 @@
-{%- let inner_ffi_converter = inner_type|ffi_converter_name %}
+{%- let inner_ffi_converter = inner.ffi_converter_name %}
 
 class {{ ffi_converter_name}}(_UniffiConverterRustBuffer):
     @classmethod

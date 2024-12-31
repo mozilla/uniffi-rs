@@ -18,6 +18,7 @@ uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.28.3", optional = t
 uniffi_build = { path = "../uniffi_build", version = "=0.28.3", optional = true }
 uniffi_core = { path = "../uniffi_core", version = "=0.28.3" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.28.3" }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.28.3" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
 cargo_metadata = { version = "0.15", optional = true }

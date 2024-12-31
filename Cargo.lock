@@ -1592,6 +1592,7 @@ dependencies = [
  "uniffi_build",
  "uniffi_core",
  "uniffi_macros",
+ "uniffi_meta",
 ]
 
 [[package]]
@@ -2052,6 +2053,7 @@ dependencies = [
  "serde",
  "textwrap",
  "toml",
+ "uniffi_internal_macros",
  "uniffi_meta",
  "uniffi_testing",
  "uniffi_udl",
@@ -2067,14 +2069,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "uniffi_checksum_derive"
-version = "0.28.3"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "uniffi_core"
 version = "0.28.3"
 dependencies = [
@@ -2084,6 +2078,14 @@ dependencies = [
  "once_cell",
  "paste",
  "static_assertions",
+]
+
+[[package]]
+name = "uniffi_internal_macros"
+version = "0.28.3"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2110,7 +2112,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "siphasher",
- "uniffi_checksum_derive",
+ "uniffi_internal_macros",
 ]
 
 [[package]]

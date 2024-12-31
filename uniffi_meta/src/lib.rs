@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use std::{collections::BTreeMap, hash::Hasher};
-pub use uniffi_checksum_derive::Checksum;
+pub use uniffi_internal_macros::Checksum;
 
 mod ffi_names;
 pub use ffi_names::*;
@@ -335,6 +335,14 @@ impl EnumShape {
             2 => EnumShape::Error { flat: true },
             _ => anyhow::bail!("invalid enum shape discriminant {v}"),
         })
+    }
+
+    pub fn is_error(&self) -> bool {
+        matches!(self, Self::Error { .. })
+    }
+
+    pub fn is_flat_error(&self) -> bool {
+        matches!(self, Self::Error { flat: true })
     }
 }
 

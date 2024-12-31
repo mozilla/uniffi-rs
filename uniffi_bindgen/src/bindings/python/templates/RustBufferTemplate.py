@@ -12,14 +12,14 @@ class _UniffiRustBuffer(ctypes.Structure):
 
     @staticmethod
     def alloc(size):
-        return _uniffi_rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_alloc().name() }}, size)
+        return _uniffi_rust_call(_UniffiLib.{{ globals.ffi_rustbuffer_alloc }}, size)
 
     @staticmethod
     def reserve(rbuf, additional):
-        return _uniffi_rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_reserve().name() }}, rbuf, additional)
+        return _uniffi_rust_call(_UniffiLib.{{ globals.ffi_rustbuffer_reserve }}, rbuf, additional)
 
     def free(self):
-        return _uniffi_rust_call(_UniffiLib.{{ ci.ffi_rustbuffer_free().name() }}, self)
+        return _uniffi_rust_call(_UniffiLib.{{ globals.ffi_rustbuffer_free }}, self)
 
     def __str__(self):
         return "_UniffiRustBuffer(capacity={}, len={}, data={})".format(

@@ -31,7 +31,7 @@ def _uniffi_get_event_loop():
 
 # Continuation callback for async functions
 # lift the return value or error and resolve the future, causing the async function to resume.
-@_UNIFFI_RUST_FUTURE_CONTINUATION_CALLBACK
+@_UNIFFI_FN_RUST_FUTURE_CONTINUATION_CALLBACK
 def _uniffi_continuation_callback(future_ptr, poll_code):
     (eventloop, future) = _UniffiContinuationHandleMap.remove(future_ptr)
     eventloop.call_soon_threadsafe(_uniffi_set_future_result, future, poll_code)
@@ -40,7 +40,7 @@ def _uniffi_set_future_result(future, poll_code):
     if not future.cancelled():
         future.set_result(poll_code)
 
-async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free, lift_func, error_ffi_converter):
+async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free, error_ffi_converter):
     try:
         eventloop = _uniffi_get_event_loop()
 
@@ -56,13 +56,11 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
             if poll_code == _UNIFFI_RUST_FUTURE_POLL_READY:
                 break
 
-        return lift_func(
-            _uniffi_rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
-        )
+        return _uniffi_rust_call_with_error(error_ffi_converter, ffi_complete, rust_future)
     finally:
         ffi_free(rust_future)
 
-{%- if ci.has_async_callback_interface_definition() %}
+{%- if runtimes.async_callback %}
 def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
     async def make_call_and_call_callback():
         try:
@@ -72,12 +70,12 @@ def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
             traceback.print_exc(file=sys.stderr)
             handle_error(
                 _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR,
-                {{ Type::String.borrow()|lower_fn }}(repr(e)),
+                {{ globals.string_type|lower_fn }}(repr(e)),
             )
     eventloop = _uniffi_get_event_loop()
     task = asyncio.run_coroutine_threadsafe(make_call_and_call_callback(), eventloop)
     handle = _UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert((eventloop, task))
-    return _UniffiForeignFuture(handle, _uniffi_foreign_future_free)
+    return _UniffiStructForeignFuture(handle, _uniffi_foreign_future_free)
 
 def _uniffi_trait_interface_call_async_with_error(make_call, handle_success, handle_error, error_type, lower_error):
     async def make_call_and_call_callback():
@@ -94,16 +92,16 @@ def _uniffi_trait_interface_call_async_with_error(make_call, handle_success, han
             traceback.print_exc(file=sys.stderr)
             handle_error(
                 _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR,
-                {{ Type::String.borrow()|lower_fn }}(repr(e)),
+                {{ globals.string_type|lower_fn }}(repr(e)),
             )
     eventloop = _uniffi_get_event_loop()
     task = asyncio.run_coroutine_threadsafe(make_call_and_call_callback(), eventloop)
     handle = _UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert((eventloop, task))
-    return _UniffiForeignFuture(handle, _uniffi_foreign_future_free)
+    return _UniffiStructForeignFuture(handle, _uniffi_foreign_future_free)
 
 _UNIFFI_FOREIGN_FUTURE_HANDLE_MAP = _UniffiHandleMap()
 
-@_UNIFFI_FOREIGN_FUTURE_FREE
+@_UNIFFI_FN_FOREIGN_FUTURE_FREE
 def _uniffi_foreign_future_free(handle):
     (eventloop, task) = _UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.remove(handle)
     eventloop.call_soon(_uniffi_foreign_future_do_free, task)

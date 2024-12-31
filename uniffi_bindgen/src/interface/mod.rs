@@ -55,6 +55,9 @@ pub mod universe;
 pub use uniffi_meta::{AsType, EnumShape, ExternalKind, ObjectImpl, Type};
 use universe::{TypeIterator, TypeUniverse};
 
+pub mod ir;
+pub use ir::BindingsIr;
+
 mod callbacks;
 pub use callbacks::CallbackInterface;
 mod enum_;
