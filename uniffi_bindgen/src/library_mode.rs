@@ -24,7 +24,7 @@ use camino::Utf8Path;
 use std::{collections::HashMap, fs};
 use toml::value::Table as TomlTable;
 use uniffi_meta::{
-    create_metadata_groups, fixup_external_type, group_metadata, Metadata, MetadataGroup,
+    convert_external_metadata_item, create_metadata_groups, group_metadata, Metadata, MetadataGroup,
 };
 
 /// Generate foreign bindings
@@ -119,7 +119,7 @@ pub fn find_components(
             metadata_group.items = metadata_group
                 .items
                 .into_iter()
-                .map(|item| fixup_external_type(item, &metadata_groups))
+                .map(|item| convert_external_metadata_item(item, &metadata_groups))
                 // some items are both in UDL and library metadata. For many that's fine but
                 // uniffi-traits aren't trivial to compare meaning we end up with dupes.
                 // We filter out such problematic items here.

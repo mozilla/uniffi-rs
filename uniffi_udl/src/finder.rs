@@ -194,7 +194,7 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
             }
         };
         // mangle external types - Type::External must die.
-        let ty = uniffi_meta::convert_external_type(ty, &types.module_path(), &|s| s.to_string());
+        let ty = uniffi_meta::convert_external_type(ty, &types.module_path());
         types.add_type_definition(self.identifier.0, ty)
     }
 }
