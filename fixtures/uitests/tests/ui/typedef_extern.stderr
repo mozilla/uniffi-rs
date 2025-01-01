@@ -1,4 +1,4 @@
-error: Failed to generate scaffolding from UDL file at ../../../../fixtures/uitests/src/typedef_extern.udl: `typedef extern` is no longer supported.
+error: Failed to generate scaffolding from UDL file at ../../../../fixtures/uitests/src/typedef_extern.udl: parsing udl file ../../../../fixtures/uitests/src/typedef_extern.udl: `typedef extern` is no longer supported.
        You must replace `extern` with the type of the object:
        * "enum" for Enums.
        * "record", "dictionary" or "struct" for Records.

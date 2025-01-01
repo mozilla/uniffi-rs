@@ -19,7 +19,7 @@ use crate::{
     macro_metadata, overridden_config_value, BindgenCrateConfigSupplier, BindingGenerator,
     Component, ComponentInterface, GenerationSettings, Result,
 };
-use anyhow::bail;
+use anyhow::{bail, Context};
 use camino::Utf8Path;
 use std::{collections::HashMap, fs};
 use toml::value::Table as TomlTable;
@@ -43,11 +43,14 @@ pub fn generate_bindings<T: BindingGenerator + ?Sized>(
     out_dir: &Utf8Path,
     try_format_code: bool,
 ) -> Result<Vec<Component<T::Config>>> {
-    let mut components = find_components(library_path, config_supplier)?
+    let mut components = find_components(library_path, config_supplier)
+        .with_context(|| format!("finding components in '{library_path}'"))?
         .into_iter()
         .map(|Component { ci, config }| {
             let toml_value = overridden_config_value(config, config_file_override)?;
-            let config = binding_generator.new_config(&toml_value)?;
+            let config = binding_generator
+                .new_config(&toml_value)
+                .context("loading toml")?;
             Ok(Component { ci, config })
         })
         .collect::<Result<Vec<_>>>()?;
