@@ -1717,6 +1717,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#external-custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      External Custom Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#remote-types" class="md-nav__link">
     <span class="md-ellipsis">
       Remote Types
@@ -1787,6 +1796,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#external-custom-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      External Custom Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#remote-types" class="md-nav__link">
     <span class="md-ellipsis">
       Remote Types
@@ -1826,12 +1844,11 @@
 <p>We've made a number of breaking changes in this release, particularly
 to:</p>
 <ul>
-<li>Custom types (both UDL and proc-macros impacted)</li>
-<li>External Types (UDL impacted)</li>
+<li>Custom types: UniffiCustomTypeConverter has been removed.</li>
+<li>External types: <code>extern</code> has been removed; you must describe the type.</li>
 </ul>
 <h2 id="custom-types">Custom types</h2>
-<p>Custom types are now implemented using a macro rather than implementing the <code>UniffiCustomTypeConverter</code> trait,
-addressing some edge-cases with custom types wrapping types from other crates (eg, Url).</p>
+<p>Custom types still implemented via the <code>UniffiCustomTypeConverter</code> trait must move to proc-macros.</p>
 <p>Before:</p>
 <div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">UniffiCustomTypeConverter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">NewCustomType</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="nc">Builtin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BridgeType</span><span class="p">;</span>
@@ -1846,10 +1863,10 @@ addressing some edge-cases with custom types wrapping types from other crates (e
 <span class="p">}</span>
 </code></pre></div>
 <p>After:</p>
-<div class="highlight"><pre><span></span><code>uniffi::custom_type!(NewCustomType, BridgeType, {
-    try_lift: |val| { Ok(...) },
-    lower: |obj| { ... },
-})
+<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">custom_type</span><span class="o">!</span><span class="p">(</span><span class="n">NewCustomType</span><span class="p">,</span><span class="w"> </span><span class="n">BridgeType</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">try_lift</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">val</span><span class="o">|</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">Ok</span><span class="p">(</span><span class="o">..</span><span class="p">.)</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="n">lower</span><span class="p">:</span><span class="w"> </span><span class="o">|</span><span class="n">obj</span><span class="o">|</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">},</span>
+<span class="p">})</span>
 </code></pre></div>
 <p>The <code>custom_type!</code> macro is more flexible than the old system - eg, the closures can be omitted in many cases where <code>From</code> and <code>Into</code> exist.
 See the <a href="types/custom_types.html">Custom Types</a> for details.</p>
@@ -1857,11 +1874,11 @@ See the <a href="types/custom_types.html">Custom Types</a> for details.</p>
 <p>External types can no longer be described in UDL via <code>extern</code> - instead, you must specify the type.</p>
 <p>For example:
 <div class="highlight"><pre><span></span><code>[External=&quot;crate_name&quot;]
-typedef extern MyEnum
+typedef extern MyEnum;
 </code></pre></div>
 is no longer accepted - you must use, eg:
 <div class="highlight"><pre><span></span><code>[External=&quot;crate_name&quot;]
-typedef enum MyEnum
+typedef enum MyEnum;
 </code></pre></div></p>
 <p>Edge-cases broken include:</p>
 <ul>
@@ -1869,6 +1886,15 @@ typedef enum MyEnum
 <li>The <code>[Rust=..]</code> attribute has been removed - you should just remove the attribute entirely.</li>
 </ul>
 <p>See <a href="types/remote_ext_types.html">Remote and External Types</a> for more detail.</p>
+<h2 id="external-custom-types">External Custom Types</h2>
+<p>Previously you could describe an external Custom Type <code>Url</code> in UDL as:
+<div class="highlight"><pre><span></span><code>[External=&quot;crate_name&quot;]
+typedef extern Url;
+</code></pre></div></p>
+<p>But now you must use:
+<div class="highlight"><pre><span></span><code>[Custom=&quot;crate_name&quot;]
+typedef string Url; // replace `string` with any appropriate type.
+</code></pre></div></p>
 <h2 id="remote-types">Remote Types</h2>
 <p>The macros <code>ffi_converter_forward</code> and all <code>use_*</code> macros (eg, <code>use_udl_record!</code>, <code>use_udl_object!</code>, <code>use_udl_enum!</code> etc)
 are now unnecessary so have been removed.</p>
@@ -1878,7 +1904,7 @@ are now unnecessary so have been removed.</p>
 <p><div class="highlight"><pre><span></span><code>[Rust=&quot;record&quot;]
 typedef extern One;
 </code></pre></div>
-becomes
+becomes a <code>typedef</code> with no attributes
 <div class="highlight"><pre><span></span><code>typedef record One;
 </code></pre></div></p>
 

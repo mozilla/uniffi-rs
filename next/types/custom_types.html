@@ -707,21 +707,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="UDL">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-custom-types-from-other-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using custom types from other crates
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -1888,21 +1873,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="UDL">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-custom-types-from-other-crates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using custom types from other crates
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -2032,16 +2002,14 @@ followed by the custom type.</p>
 <div class="highlight"><pre><span></span><code>[Custom]
 typedef<span class="w"> </span>i64<span class="w"> </span>Handle;
 </code></pre></div>
-<p><strong>note</strong>: you must still call the <code>custom_type!</code> or <code>custom_newtype!</code> macros in your Rust code, as described above.</p>
-<h4 id="using-custom-types-from-other-crates">Using custom types from other crates</h4>
-<p>To use custom types from other crates from UDL, use a typedef wrapped with the <code>[External]</code> attribute.</p>
-<p>For example, if another crate wanted to use the examples here:</p>
-<div class="highlight"><pre><span></span><code>[External<span class="o">=</span><span class="s2">&quot;crate_defining_handle_name&quot;</span>]
+<p>You can specify the crate name if the custom type implementation is external.</p>
+<div class="highlight"><pre><span></span><code>[Custom<span class="o">=</span><span class="s2">&quot;crate_defining_handle_name&quot;</span>]
 typedef<span class="w"> </span>i64<span class="w"> </span>Handle;
 
-[External<span class="o">=</span><span class="s2">&quot;crate_defining_log_record_name&quot;</span>]
+[Custom<span class="o">=</span><span class="s2">&quot;crate_defining_log_record_name&quot;</span>]
 typedef<span class="w"> </span>dictionary<span class="w"> </span>LogRecord;
 </code></pre></div>
+<p><strong>note</strong>: you must still call the <code>custom_type!</code> or <code>custom_newtype!</code> macros in your Rust code, as described above.</p>
 <h2 id="user-defined-types">User-defined types</h2>
 <p>All examples so far in this section convert the custom type to a builtin type.
 It's also possible to convert them to a user-defined type (Record, Enum, Interface, etc.).
