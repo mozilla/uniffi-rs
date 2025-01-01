@@ -3,13 +3,12 @@
 We've made a number of breaking changes in this release, particularly
 to:
 
-* Custom types (both UDL and proc-macros impacted)
-* External Types (UDL impacted)
+* Custom types: UniffiCustomTypeConverter has been removed.
+* External types: `extern` has been removed; you must describe the type.
 
 ## Custom types
 
-Custom types are now implemented using a macro rather than implementing the `UniffiCustomTypeConverter` trait,
-addressing some edge-cases with custom types wrapping types from other crates (eg, Url).
+Custom types still implemented via the `UniffiCustomTypeConverter` trait must move to proc-macros.
 
 Before:
 
@@ -29,7 +28,7 @@ impl UniffiCustomTypeConverter for NewCustomType {
 
 After:
 
-```
+```rust
 uniffi::custom_type!(NewCustomType, BridgeType, {
     try_lift: |val| { Ok(...) },
     lower: |obj| { ... },
@@ -46,12 +45,12 @@ External types can no longer be described in UDL via `extern` - instead, you mus
 For example:
 ```
 [External="crate_name"]
-typedef extern MyEnum
+typedef extern MyEnum;
 ```
 is no longer accepted - you must use, eg:
 ```
 [External="crate_name"]
-typedef enum MyEnum
+typedef enum MyEnum;
 ```
 
 Edge-cases broken include:
@@ -60,6 +59,20 @@ Edge-cases broken include:
 * The `[Rust=..]` attribute has been removed - you should just remove the attribute entirely.
 
 See [Remote and External Types](./types/remote_ext_types.md) for more detail.
+
+## External Custom Types
+
+Previously you could describe an external Custom Type `Url` in UDL as:
+```
+[External="crate_name"]
+typedef extern Url;
+```
+
+But now you must use:
+```
+[Custom="crate_name"]
+typedef string Url; // replace `string` with any appropriate type.
+```
 
 ## Remote Types
 
@@ -76,7 +89,7 @@ The `Rust` attribute has been removed - use the same typedef syntax described ab
 [Rust="record"]
 typedef extern One;
 ```
-becomes
+becomes a `typedef` with no attributes
 ```
 typedef record One;
 ```

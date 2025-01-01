@@ -4,7 +4,6 @@ error: Failed to generate scaffolding from UDL file at ../../../../fixtures/uite
        * "record", "dictionary" or "struct" for Records.
        * "object", "impl" or "interface" for objects.
        * "trait", "callback" or "trait_with_foreign" for traits.
-       * "custom" for Custom Types.
 
        For example:
        [External="crate_name"]
@@ -15,6 +14,14 @@ error: Failed to generate scaffolding from UDL file at ../../../../fixtures/uite
        typedef enum ExternalEnum;
 
        See https://mozilla.github.io/uniffi-rs/next/types/remote_ext_types.html for more.
+
+       External Custom Types must be declared in the same way, but with
+       [Custom="crate_name"] instead of [Extern="crate_name"]
+
+       [Custom="crate_name"]
+       typedef string Url;
+
+       See https://mozilla.github.io/uniffi-rs/next/types/custom_types.html for more.
  --> tests/ui/typedef_extern.rs:2:1
   |
 2 | uniffi_macros::generate_and_include_scaffolding!("../../../../fixtures/uitests/src/typedef_extern.udl");
