@@ -129,8 +129,14 @@ pub enum Type {
 }
 
 impl Type {
+    // iterate over all types contained in the type, *including self*.
     pub fn iter_types(&self) -> TypeIterator<'_> {
-        let nested_types = match self {
+        Box::new(std::iter::once(self).chain(self.iter_nested_types()))
+    }
+
+    // iterate over all types contained in the type but *not including self*.
+    pub fn iter_nested_types(&self) -> TypeIterator<'_> {
+        match self {
             Type::Optional { inner_type } | Type::Sequence { inner_type } => {
                 inner_type.iter_types()
             }
@@ -138,9 +144,9 @@ impl Type {
                 key_type,
                 value_type,
             } => Box::new(key_type.iter_types().chain(value_type.iter_types())),
+            Type::Custom { builtin, .. } => builtin.iter_types(),
             _ => Box::new(std::iter::empty()),
-        };
-        Box::new(std::iter::once(self).chain(nested_types))
+        }
     }
 
     pub fn name(&self) -> Option<&str> {
@@ -150,6 +156,7 @@ impl Type {
             Type::Enum { name, .. } => Some(name),
             Type::External { name, .. } => Some(name),
             Type::Custom { name, .. } => Some(name),
+            Type::CallbackInterface { name, .. } => Some(name),
             _ => None,
         }
     }
@@ -161,6 +168,7 @@ impl Type {
             Type::Enum { module_path, .. } => Some(module_path),
             Type::External { module_path, .. } => Some(module_path),
             Type::Custom { module_path, .. } => Some(module_path),
+            Type::CallbackInterface { module_path, .. } => Some(module_path),
             _ => None,
         }
     }
