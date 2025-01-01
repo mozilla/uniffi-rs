@@ -10,7 +10,7 @@ class TestCallback(GuidCallback):
         self.saw_guid = guid
         return guid
 
-class TestGuid(unittest.TestCase):
+class TestCustomTypes(unittest.TestCase):
     def test_get_guid(self):
         self.assertEqual(get_guid(None), "NewGuid")
         self.assertEqual(get_guid("SomeGuid"), "SomeGuid")
