@@ -295,7 +295,7 @@ impl<'a> KotlinWrapper<'a> {
         })
     }
 
-    pub fn initialization_fns(&self) -> Vec<String> {
+    pub fn initialization_fns(&self, ci: &ComponentInterface) -> Vec<String> {
         let init_fns = self
             .ci
             .iter_types()
@@ -314,11 +314,7 @@ impl<'a> KotlinWrapper<'a> {
                 if module_path == self.ci.crate_name() {
                     return None;
                 }
-                let namespace = if let Type::External { namespace, .. } = ty {
-                    Some(namespace.as_str())
-                } else {
-                    None
-                };
+                let namespace = Some(ci.namespace_for_module_path(module_path).unwrap());
                 Some((module_path, namespace))
             })
             .map(|(module_path, namespace)| {

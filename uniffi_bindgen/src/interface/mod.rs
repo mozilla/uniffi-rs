@@ -96,6 +96,8 @@ pub struct ComponentInterface {
     errors: HashSet<String>,
     // Types which were seen used as callback interface error.
     callback_interface_throws_types: BTreeSet<Type>,
+    // A mapping from an external module path to the external namespace.
+    crate_to_namespace: BTreeMap<String, NamespaceMetadata>,
 }
 
 impl ComponentInterface {
@@ -151,6 +153,14 @@ impl ComponentInterface {
         self.types.add_known_type(&uniffi_meta::Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
         Ok(())
+    }
+
+    pub fn set_crate_to_namespace_map(&mut self, namespaces: BTreeMap<String, NamespaceMetadata>) {
+        assert_eq!(
+            namespaces.get(self.crate_name()).unwrap().name,
+            self.namespace()
+        );
+        self.crate_to_namespace = namespaces
     }
 
     /// The string namespace within which this API should be presented to the caller.
@@ -323,6 +333,22 @@ impl ComponentInterface {
     /// Get a specific type
     pub fn get_type(&self, name: &str) -> Option<Type> {
         self.types.get_type_definition(name)
+    }
+
+    pub fn namespace_for_type(&self, ty: &Type) -> Result<&str> {
+        let mod_path = ty
+            .module_path()
+            .ok_or_else(|| anyhow!("type {ty:?} has no module path"))?;
+        self.namespace_for_module_path(mod_path)
+    }
+
+    pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
+        self.crate_to_namespace
+            .get(module_path)
+            .map(|n| n.name.as_ref())
+            // incase not library mode and we've not been told
+            .or_else(|| (module_path == self.crate_name()).then(|| self.namespace()))
+            .ok_or_else(|| anyhow!("unresolved module path {module_path}"))
     }
 
     /// Iterate over all types contained in the given item.
@@ -1439,5 +1465,14 @@ new definition: Enum {
             })
         );
         assert!(ci.get_callback_interface_definition("cb").is_some());
+    }
+
+    #[test]
+    fn test_namespaces() {
+        let mut ci = ComponentInterface::new("crate");
+        ci.types.namespace.name = "ns".to_string();
+        // have not called `ci.set_crate_to_namespace_map()`, should still resolve our own
+        assert_eq!(ci.namespace_for_module_path("crate").unwrap(), "ns");
+        assert!(ci.namespace_for_module_path("oops").is_err());
     }
 }

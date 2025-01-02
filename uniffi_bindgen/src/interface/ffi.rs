@@ -151,12 +151,10 @@ impl From<&Type> for FfiType {
                 name,
                 kind: ExternalKind::DataClass,
                 module_path,
-                namespace,
                 ..
             } => FfiType::RustBuffer(Some(ExternalFfiMetadata {
                 name: name.clone(),
                 module_path: module_path.clone(),
-                namespace: namespace.clone(),
             })),
             Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
         }
@@ -167,7 +165,6 @@ impl From<&Type> for FfiType {
 pub struct ExternalFfiMetadata {
     pub name: String,
     pub module_path: String,
-    pub namespace: String,
 }
 
 // Needed for rust scaffolding rinja template

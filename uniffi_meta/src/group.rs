@@ -48,7 +48,7 @@ pub fn group_metadata(group_map: &mut MetadataGroupMap, items: Vec<Metadata>) ->
         }
 
         let crate_name = calc_crate_name(item.module_path()).to_owned();
-        let item = convert_external_metadata_item(item, group_map);
+        let item = convert_external_metadata_item(item);
         let group = match group_map.get_mut(&crate_name) {
             Some(ns) => ns,
             None => bail!("Unknown namespace for {item:?} ({crate_name})"),
@@ -74,41 +74,24 @@ impl MetadataGroup {
     }
 }
 
-pub fn convert_external_metadata_item(item: Metadata, group_map: &MetadataGroupMap) -> Metadata {
+pub fn convert_external_metadata_item(item: Metadata) -> Metadata {
     let owner_module_path = calc_crate_name(item.module_path()).to_owned();
 
-    let crate_to_namespace = |crate_name: &str| {
-        group_map
-            .get(crate_name)
-            .unwrap_or_else(|| panic!("Can't find namespace for module {crate_name}"))
-            .namespace
-            .name
-            .clone()
-    };
-
-    let convert_external_type =
-        |ty: Type| do_external_type_conversion(ty, &owner_module_path, &crate_to_namespace);
+    let convert_external_type = |ty: Type| do_external_type_conversion(ty, &owner_module_path);
 
     let converter = TypeConverter::new(convert_external_type);
     converter.convert_item(item)
 }
 
 pub fn convert_external_type(ty: Type, owner_module_path: &str) -> Type {
-    // don't need the namespace filling capability here.
-    let crate_to_namespace = |s: &str| s.to_string();
-
-    let convert_external_type =
-        |ty: Type| do_external_type_conversion(ty, owner_module_path, &crate_to_namespace);
+    let convert_external_type = |ty: Type| do_external_type_conversion(ty, owner_module_path);
 
     let converter = TypeConverter::new(convert_external_type);
     converter.convert_type(ty)
 }
 
 // The actual logic for external type conversions.
-fn do_external_type_conversion<F>(ty: Type, owner_module_path: &str, crate_to_namespace: &F) -> Type
-where
-    F: Fn(&str) -> String,
-{
+fn do_external_type_conversion(ty: Type, owner_module_path: &str) -> Type {
     let is_external = |module_path: &str| calc_crate_name(module_path) != owner_module_path;
 
     match ty {
@@ -118,7 +101,6 @@ where
         | Type::Custom {
             module_path, name, ..
         } if is_external(&module_path) => Type::External {
-            namespace: crate_to_namespace(&module_path),
             module_path,
             name,
             kind: ExternalKind::DataClass,
@@ -134,7 +116,6 @@ where
                 ObjectImpl::CallbackTrait => ExternalKind::Trait,
             };
             Type::External {
-                namespace: crate_to_namespace(&module_path),
                 module_path,
                 name,
                 kind,
@@ -151,7 +132,6 @@ where
             kind,
             ..
         } => Type::External {
-            namespace: crate_to_namespace(&module_path),
             module_path,
             name,
             kind,

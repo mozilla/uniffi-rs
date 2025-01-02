@@ -21,10 +21,14 @@ use crate::{
 };
 use anyhow::{bail, Context};
 use camino::Utf8Path;
-use std::{collections::HashMap, fs};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs,
+};
 use toml::value::Table as TomlTable;
 use uniffi_meta::{
-    convert_external_metadata_item, create_metadata_groups, group_metadata, Metadata, MetadataGroup,
+    convert_external_metadata_item, create_metadata_groups, group_metadata, Metadata,
+    MetadataGroup, NamespaceMetadata,
 };
 
 /// Generate foreign bindings
@@ -119,7 +123,7 @@ pub fn find_components(
             metadata_group.items = metadata_group
                 .items
                 .into_iter()
-                .map(|item| convert_external_metadata_item(item, &metadata_groups))
+                .map(convert_external_metadata_item)
                 // some items are both in UDL and library metadata. For many that's fine but
                 // uniffi-traits aren't trivial to compare meaning we end up with dupes.
                 // We filter out such problematic items here.
@@ -128,6 +132,11 @@ pub fn find_components(
             udl_items.insert(crate_name, metadata_group);
         };
     }
+
+    let crate_to_namespace_map: BTreeMap<String, NamespaceMetadata> = metadata_groups
+        .iter()
+        .map(|(k, v)| (k.clone(), v.namespace.clone()))
+        .collect();
 
     metadata_groups
         .into_values()
@@ -141,6 +150,7 @@ pub fn find_components(
             let config = config_supplier
                 .get_toml(ci.crate_name())?
                 .unwrap_or_default();
+            ci.set_crate_to_namespace_map(crate_to_namespace_map.clone());
             Ok(Component { ci, config })
         })
         .collect()
