@@ -71,46 +71,13 @@ impl TypeUniverse {
         if !self.all_known_types.contains(type_) {
             self.all_known_types.insert(type_.to_owned());
         }
-        match type_ {
-            Type::UInt8 => self.add_type_definition("u8", type_)?,
-            Type::Int8 => self.add_type_definition("i8", type_)?,
-            Type::UInt16 => self.add_type_definition("u16", type_)?,
-            Type::Int16 => self.add_type_definition("i16", type_)?,
-            Type::UInt32 => self.add_type_definition("i32", type_)?,
-            Type::Int32 => self.add_type_definition("u32", type_)?,
-            Type::UInt64 => self.add_type_definition("u64", type_)?,
-            Type::Int64 => self.add_type_definition("i64", type_)?,
-            Type::Float32 => self.add_type_definition("f32", type_)?,
-            Type::Float64 => self.add_type_definition("f64", type_)?,
-            Type::Boolean => self.add_type_definition("bool", type_)?,
-            Type::String => self.add_type_definition("string", type_)?,
-            Type::Bytes => self.add_type_definition("bytes", type_)?,
-            Type::Timestamp => self.add_type_definition("timestamp", type_)?,
-            Type::Duration => self.add_type_definition("duration", type_)?,
-            Type::Object { name, .. }
-            | Type::Record { name, .. }
-            | Type::Enum { name, .. }
-            | Type::CallbackInterface { name, .. }
-            | Type::External { name, .. } => self.add_type_definition(name, type_)?,
-            Type::Custom { name, builtin, .. } => {
-                self.add_type_definition(name, type_)?;
-                self.add_known_type(builtin)
-                    .with_context(|| format!("adding custom builtin type {builtin:?}"))?;
-            }
-            // Structurally recursive types.
-            Type::Optional { inner_type, .. } | Type::Sequence { inner_type, .. } => {
-                self.add_known_type(inner_type)
-                    .with_context(|| format!("adding optional type {inner_type:?}"))?;
-            }
-            Type::Map {
-                key_type,
-                value_type,
-            } => {
-                self.add_known_type(key_type)
-                    .with_context(|| format!("adding map key type {key_type:?}"))?;
-                self.add_known_type(value_type)
-                    .with_context(|| format!("adding map value type {value_type:?}"))?;
-            }
+        // all sub-types, but we want to skip this type as we just added it above.
+        for sub in type_.iter_nested_types() {
+            self.add_known_type(sub)?;
+        }
+        if let Some(name) = type_.name() {
+            self.add_type_definition(name, type_)
+                .with_context(|| format!("adding named type {name}"))?;
         }
         Ok(())
     }
