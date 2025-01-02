@@ -36,7 +36,7 @@ struct Cli {
 
     /// Consolidate crate bindings into single Swift target.
     ///
-    /// Otherwise separate targets will be generated to help avoid name conflicts.
+    /// Otherwise separate Swift targets will be generated
     #[arg(short = 'c', long)]
     consolidate: bool,
 
