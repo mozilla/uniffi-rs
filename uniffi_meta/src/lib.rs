@@ -9,16 +9,13 @@ mod ffi_names;
 pub use ffi_names::*;
 
 mod group;
-pub use group::{
-    convert_external_metadata_item, convert_external_type, create_metadata_groups, group_metadata,
-    MetadataGroup,
-};
+pub use group::{create_metadata_groups, group_metadata, MetadataGroup};
 
 mod reader;
 pub use reader::{read_metadata, read_metadata_type};
 
 mod types;
-pub use types::{AsType, ExternalKind, ObjectImpl, Type, TypeIterator};
+pub use types::{AsType, ObjectImpl, Type, TypeIterator};
 
 mod metadata;
 

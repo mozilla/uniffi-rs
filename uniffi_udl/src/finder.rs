@@ -193,8 +193,6 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 _ => bail!("Can't work out the type - no attributes and unknown extern type '{typedef_type}'"),
             }
         };
-        // mangle external types - Type::External must die.
-        let ty = uniffi_meta::convert_external_type(ty, &types.module_path());
         types.add_type_definition(self.identifier.0, ty)
     }
 }
