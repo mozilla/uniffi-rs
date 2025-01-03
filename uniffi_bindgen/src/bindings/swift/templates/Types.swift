@@ -65,7 +65,9 @@
 {%- include "CallbackInterfaceTemplate.swift" %}
 
 {%- when Type::Custom { name, module_path, builtin } %}
+{%- if !ci.is_external(type_) %}
 {%- include "CustomType.swift" %}
+{%- endif %}
 
 {%- when Type::Enum { name, module_path } %}
 {%- let e = ci.get_enum_definition(name).unwrap() %}

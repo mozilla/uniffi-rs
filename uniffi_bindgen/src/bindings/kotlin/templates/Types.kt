@@ -129,7 +129,11 @@ object NoPointer
 {% include "DurationHelper.kt" %}
 
 {%- when Type::Custom { module_path, name, builtin } %}
+{%- if ci.is_external(type_) %}
+{% include "ExternalTypeTemplate.kt" %}
+{%- else %}
 {% include "CustomTypeTemplate.kt" %}
+{%- endif %}
 
 {%- when Type::External { module_path, name, .. } %}
 {% include "ExternalTypeTemplate.kt" %}

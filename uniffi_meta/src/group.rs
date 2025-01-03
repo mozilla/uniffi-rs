@@ -96,15 +96,15 @@ fn do_external_type_conversion(ty: Type, owner_module_path: &str) -> Type {
 
     match ty {
         // Convert `ty` if it's external
-        Type::Enum { module_path, name }
-        | Type::Record { module_path, name }
-        | Type::Custom {
-            module_path, name, ..
-        } if is_external(&module_path) => Type::External {
-            module_path,
-            name,
-            kind: ExternalKind::DataClass,
-        },
+        Type::Enum { module_path, name } | Type::Record { module_path, name }
+            if is_external(&module_path) =>
+        {
+            Type::External {
+                module_path,
+                name,
+                kind: ExternalKind::DataClass,
+            }
+        }
         Type::Object {
             module_path,
             name,

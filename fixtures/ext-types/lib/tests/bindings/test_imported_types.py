@@ -61,6 +61,7 @@ class TestIt(unittest.TestCase):
         self.assertEqual(get_ouid("ouid"), "ouid")
         self.assertEqual(get_ouid("uuid"), "uuid")
         self.assertEqual(get_nested_guid("uuid"), "uuid")
+        self.assertEqual(get_imported_handle_u8(None), 3)
 
     def test_get_uniffi_one_type(self):
         t1 = UniffiOneType(sval="hello")

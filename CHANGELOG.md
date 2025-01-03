@@ -50,6 +50,10 @@ or use UDL with types from more than one crate.
 
 - Added the `FfiType::MutReference` variant.
 
+- `Type::Custom` is no longer turned in to a `Type::External` for the bindings. Binding authors
+  must check the type is local themselves before deciding to treat it as a local or external type.
+  We expect `Type::External` will be removed soon and all types will be treated in this way.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
 
 ## v0.28.3 (backend crates: v0.28.3) - (_2024-11-08_)

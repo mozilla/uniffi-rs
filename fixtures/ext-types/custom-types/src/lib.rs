@@ -61,6 +61,15 @@ pub fn get_ouid(ouid: Option<Ouid>) -> Ouid {
     ouid.unwrap_or_else(|| Ouid("Ouid".to_string()))
 }
 
+// A custom-type wrapping a simple ffitype which is also consumed as an external type (#2025)
+pub struct HandleU8(pub u8);
+uniffi::custom_newtype!(HandleU8, u8);
+
+#[uniffi::export]
+pub fn get_handle_u8(h: Option<HandleU8>) -> HandleU8 {
+    h.unwrap_or(HandleU8(2))
+}
+
 pub struct GuidHelper {
     pub guid: Guid,
     pub guids: Vec<Guid>,

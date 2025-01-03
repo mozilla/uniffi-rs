@@ -156,7 +156,24 @@ impl From<&Type> for FfiType {
                 name: name.clone(),
                 module_path: module_path.clone(),
             })),
-            Type::Custom { builtin, .. } => FfiType::from(builtin.as_ref()),
+            Type::Custom {
+                builtin,
+                name,
+                module_path,
+                ..
+            } => {
+                // We need ffitype of the builtin.
+                match FfiType::from(builtin.as_ref()) {
+                    // and if that builtin was a "local" RustBuffer, we need to
+                    // let emit enough metadata so the bindings can call the rustbuffer impl
+                    // if necessary.
+                    FfiType::RustBuffer(None) => FfiType::RustBuffer(Some(ExternalFfiMetadata {
+                        name: name.clone(),
+                        module_path: module_path.clone(),
+                    })),
+                    t => t,
+                }
+            }
         }
     }
 }

@@ -43,6 +43,7 @@ assert(getGuid("guid") == "guid")
 assert(getOuid("ouid") == "ouid")
 //assert(getImportedGuid("guid") == "guid")
 assert(getImportedOuid("ouid") == "ouid")
+assert(getImportedHandleU8(null) == 3u.toUByte())
 
 val uot = UniffiOneType("hello")
 assert(getUniffiOneType(uot) == uot)
