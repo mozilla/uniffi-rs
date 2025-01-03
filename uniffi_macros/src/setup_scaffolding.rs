@@ -11,16 +11,20 @@ use uniffi_meta::UNIFFI_CONTRACT_VERSION;
 
 pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let module_path = mod_path()?;
-    let ffi_contract_version_ident = format_ident!("ffi_{module_path}_uniffi_contract_version");
+    let normalized_module_path = module_path.replace("::", "__");
+    let ffi_contract_version_ident =
+        format_ident!("ffi_{normalized_module_path}_uniffi_contract_version");
     let namespace_upper = namespace.to_ascii_uppercase();
     let namespace_const_ident = format_ident!("UNIFFI_META_CONST_NAMESPACE_{namespace_upper}");
     let namespace_static_ident = format_ident!("UNIFFI_META_NAMESPACE_{namespace_upper}");
-    let ffi_rustbuffer_alloc_ident = format_ident!("ffi_{module_path}_rustbuffer_alloc");
-    let ffi_rustbuffer_from_bytes_ident = format_ident!("ffi_{module_path}_rustbuffer_from_bytes");
-    let ffi_rustbuffer_free_ident = format_ident!("ffi_{module_path}_rustbuffer_free");
-    let ffi_rustbuffer_reserve_ident = format_ident!("ffi_{module_path}_rustbuffer_reserve");
-    let reexport_hack_ident = format_ident!("{module_path}_uniffi_reexport_hack");
-    let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&module_path);
+    let ffi_rustbuffer_alloc_ident = format_ident!("ffi_{normalized_module_path}_rustbuffer_alloc");
+    let ffi_rustbuffer_from_bytes_ident =
+        format_ident!("ffi_{normalized_module_path}_rustbuffer_from_bytes");
+    let ffi_rustbuffer_free_ident = format_ident!("ffi_{normalized_module_path}_rustbuffer_free");
+    let ffi_rustbuffer_reserve_ident =
+        format_ident!("ffi_{normalized_module_path}_rustbuffer_reserve");
+    let reexport_hack_ident = format_ident!("{normalized_module_path}_uniffi_reexport_hack");
+    let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&normalized_module_path);
 
     Ok(quote! {
         // Unit struct to parameterize the FfiConverter trait.
