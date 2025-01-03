@@ -1772,6 +1772,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-error-types-swift"
+version = "0.22.0"
+dependencies = [
+ "anyhow",
+ "thiserror",
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-ext-types"
 version = "0.22.0"
 dependencies = [
