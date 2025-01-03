@@ -58,17 +58,6 @@ mod filters {
                 type_rs(value_type)?
             ),
             Type::Custom { name, .. } => format!("r#{name}"),
-            Type::External {
-                name,
-                kind: ExternalKind::Interface,
-                ..
-            } => format!("::std::sync::Arc<r#{name}>"),
-            Type::External {
-                name,
-                kind: ExternalKind::Trait,
-                ..
-            } => format!("::std::sync::Arc<dyn r#{name}>"),
-            Type::External { name, .. } => format!("r#{name}"),
         })
     }
 }

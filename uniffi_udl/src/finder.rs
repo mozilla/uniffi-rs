@@ -193,8 +193,6 @@ impl TypeFinder for weedle::TypedefDefinition<'_> {
                 _ => bail!("Can't work out the type - no attributes and unknown extern type '{typedef_type}'"),
             }
         };
-        // mangle external types - Type::External must die.
-        let ty = uniffi_meta::convert_external_type(ty, &types.module_path());
         types.add_type_definition(self.identifier.0, ty)
     }
 }
@@ -218,7 +216,7 @@ impl TypeFinder for weedle::CallbackInterfaceDefinition<'_> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use uniffi_meta::{ExternalKind, ObjectImpl};
+    use uniffi_meta::ObjectImpl;
 
     // A helper to take valid UDL and a closure to check what's in it.
     fn test_a_finding<F>(udl: &str, tester: F)
@@ -302,11 +300,11 @@ mod test {
         "#,
             |types| {
                 assert!(
-                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::External { name, module_path, kind: ExternalKind::DataClass, .. }
+                    matches!(types.get_type_definition("ExternalType").unwrap(), Type::Enum { name, module_path, .. }
                                                                                  if name == "ExternalType" && module_path == "crate-name")
                 );
                 assert!(
-                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::External { name, module_path, kind: ExternalKind::Interface, .. }
+                    matches!(types.get_type_definition("ExternalInterfaceType").unwrap(), Type::Object { name, module_path, imp: ObjectImpl::Struct, .. }
                                                                                  if name == "ExternalInterfaceType" && module_path == "crate-name")
                 );
                 assert!(

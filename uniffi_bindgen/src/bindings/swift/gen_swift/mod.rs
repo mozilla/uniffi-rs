@@ -23,7 +23,6 @@ mod callback_interface;
 mod compounds;
 mod custom;
 mod enum_;
-mod external;
 mod miscellany;
 mod object;
 mod primitives;
@@ -461,9 +460,8 @@ impl<'a> SwiftWrapper<'a> {
         // (#2343).
         let extern_module_init_fns = self
             .ci
-            .iter_types()
-            .filter_map(|ty| ty.module_path())
-            .filter(|module_path| *module_path != self.ci.crate_name())
+            .iter_external_types()
+            .filter_map(|t| t.module_path())
             .map(|module_path| {
                 format!(
                     "uniffiEnsure{}Initialized",
@@ -523,7 +521,6 @@ impl SwiftCodeOracle {
                 key_type,
                 value_type,
             } => Box::new(compounds::MapCodeType::new(*key_type, *value_type)),
-            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }

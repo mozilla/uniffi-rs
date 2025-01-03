@@ -9,7 +9,7 @@
 use anyhow::{Context, Result};
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
-pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
+pub use uniffi_meta::{AsType, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
 
 /// The set of all possible types used in a particular component interface.
 ///
@@ -103,9 +103,20 @@ impl TypeUniverse {
         self.all_known_types.contains(type_)
     }
 
-    /// Iterator over all the known types in this universe.
-    pub fn iter_known_types(&self) -> impl Iterator<Item = &Type> {
-        self.all_known_types.iter()
+    pub fn iter_local_types(&self) -> impl Iterator<Item = &Type> {
+        self.filter_local_types(self.all_known_types.iter())
+    }
+
+    pub fn iter_external_types(&self) -> impl Iterator<Item = &Type> {
+        self.all_known_types.iter().filter(|t| self.is_external(t))
+    }
+
+    // Keep only the local types in an iterator of types.
+    pub fn filter_local_types<'a>(
+        &'a self,
+        types: impl Iterator<Item = &'a Type>,
+    ) -> impl Iterator<Item = &'a Type> {
+        types.filter(|t| !self.is_external(t))
     }
 }
 

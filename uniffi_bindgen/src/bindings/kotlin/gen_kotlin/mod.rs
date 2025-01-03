@@ -17,7 +17,6 @@ mod callback_interface;
 mod compounds;
 mod custom;
 mod enum_;
-mod external;
 mod miscellany;
 mod object;
 mod primitives;
@@ -308,17 +307,13 @@ impl<'a> KotlinWrapper<'a> {
         // (#2343).
         let extern_module_init_fns = self
             .ci
-            .iter_types()
-            .filter_map(|ty| {
-                let module_path = ty.module_path()?;
-                if module_path == self.ci.crate_name() {
-                    return None;
-                }
-                let namespace = Some(ci.namespace_for_module_path(module_path).unwrap());
-                Some((module_path, namespace))
-            })
-            .map(|(module_path, namespace)| {
-                let package_name = self.config.external_package_name(module_path, namespace);
+            .iter_external_types()
+            .filter_map(|ty| ty.module_path())
+            .map(|module_path| {
+                let namespace = ci.namespace_for_module_path(module_path).unwrap();
+                let package_name = self
+                    .config
+                    .external_package_name(module_path, Some(namespace));
                 format!("{package_name}.uniffiEnsureInitialized()")
             })
             .collect::<HashSet<_>>();
@@ -573,7 +568,6 @@ impl<T: AsType> AsCodeType for T {
                 key_type,
                 value_type,
             } => Box::new(compounds::MapCodeType::new(*key_type, *value_type)),
-            Type::External { name, .. } => Box::new(external::ExternalCodeType::new(name)),
             Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
         }
     }
@@ -742,16 +736,19 @@ mod filters {
         let ffi_func = callable.ffi_rust_future_complete(ci);
         let call = format!("UniffiLib.INSTANCE.{ffi_func}(future, continuation)");
         let call = match callable.return_type() {
-            Some(Type::External {
-                kind: ExternalKind::DataClass,
-                name,
-                ..
-            }) => {
-                // Need to convert the RustBuffer from our package to the RustBuffer of the external package
-                let suffix = KotlinCodeOracle.class_name(ci, &name);
-                format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
+            Some(return_type) => {
+                match return_type {
+                    Type::Enum { name, .. } | Type::Record { name, .. }
+                        if ci.is_external(&return_type) =>
+                    {
+                        // Need to convert the RustBuffer from our package to the RustBuffer of the external package
+                        let suffix = KotlinCodeOracle.class_name(ci, &name);
+                        format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
+                    }
+                    _ => call,
+                }
             }
-            _ => call,
+            None => call,
         };
         Ok(format!("{{ future, continuation -> {call} }}"))
     }
