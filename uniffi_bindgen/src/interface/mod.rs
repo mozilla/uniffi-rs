@@ -52,7 +52,7 @@ use std::{
 use anyhow::{anyhow, bail, ensure, Context, Result};
 
 pub mod universe;
-pub use uniffi_meta::{AsType, EnumShape, ExternalKind, ObjectImpl, Type};
+pub use uniffi_meta::{AsType, EnumShape, ObjectImpl, Type};
 use universe::{TypeIterator, TypeUniverse};
 
 mod callbacks;
@@ -374,17 +374,8 @@ impl ComponentInterface {
     /// This is important to know in language bindings that cannot integrate object types
     /// tightly with the host GC, and hence need to perform manual destruction of objects.
     pub fn item_contains_object_references(&self, item: &Type) -> bool {
-        // this is surely broken for external records with object refs?
-        self.iter_types_in_item(item).any(|t| {
-            matches!(
-                t,
-                Type::Object { .. }
-                    | Type::External {
-                        kind: ExternalKind::Interface,
-                        ..
-                    }
-            )
-        })
+        self.iter_types_in_item(item)
+            .any(|t| matches!(t, Type::Object { .. }))
     }
 
     /// Check whether the given item contains any (possibly nested) unsigned types

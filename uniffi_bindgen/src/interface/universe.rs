@@ -9,7 +9,7 @@
 use anyhow::{Context, Result};
 use std::{collections::hash_map::Entry, collections::BTreeSet, collections::HashMap};
 
-pub use uniffi_meta::{AsType, ExternalKind, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
+pub use uniffi_meta::{AsType, NamespaceMetadata, ObjectImpl, Type, TypeIterator};
 
 /// The set of all possible types used in a particular component interface.
 ///

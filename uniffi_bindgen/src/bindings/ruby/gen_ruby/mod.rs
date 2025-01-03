@@ -71,8 +71,7 @@ pub fn canonical_name(t: &Type) -> String {
             canonical_name(key_type).to_upper_camel_case(),
             canonical_name(value_type).to_upper_camel_case()
         ),
-        // A type that exists externally.
-        Type::External { name, .. } | Type::Custom { name, .. } => format!("Type{name}"),
+        Type::Custom { name, .. } => format!("Type{name}"),
     }
 }
 
@@ -247,7 +246,6 @@ mod filters {
                     )
                 }
             }
-            Type::External { .. } => panic!("No support for external types, yet"),
             Type::Custom { .. } => panic!("No support for custom types, yet"),
         })
     }
@@ -301,7 +299,6 @@ mod filters {
                 class_name_rb(&canonical_name(type_))?,
                 nm
             ),
-            Type::External { .. } => panic!("No support for lowering external types, yet"),
             Type::Custom { .. } => panic!("No support for lowering custom types, yet"),
         })
     }
@@ -341,7 +338,6 @@ mod filters {
                 nm,
                 class_name_rb(&canonical_name(type_))?
             ),
-            Type::External { .. } => panic!("No support for lifting external types, yet"),
             Type::Custom { .. } => panic!("No support for lifting custom types, yet"),
         })
     }
