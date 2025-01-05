@@ -175,6 +175,24 @@ public struct {{ ffi_converter_name }}: FfiConverter {
     }
 }
 
+{#
+We always write these public functions just in case the object is used as
+an external type by another crate.
+#}
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func {{ ffi_converter_name }}_lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
+    return try {{ ffi_converter_name }}.lift(pointer)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
+    return {{ ffi_converter_name }}.lower(value)
+}
+
 {# Objects as error #}
 {%- if is_error %}
 
@@ -208,22 +226,20 @@ public struct {{ ffi_converter_name }}__as_error: FfiConverterRustBuffer {
         fatalError("not implemented")
     }
 }
+
+{# Error FFI converters also need these public functions. #}
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func {{ ffi_converter_name }}__as_error_lift(_ buf: RustBuffer) throws -> {{ type_name }} {
+    return try {{ ffi_converter_name }}__as_error.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func {{ ffi_converter_name }}__as_error_lower(_ value: {{ type_name }}) -> RustBuffer {
+    return {{ ffi_converter_name }}__as_error.lower(value)
+}
+
 {%- endif %}
-
-{#
-We always write these public functions just in case the object is used as
-an external type by another crate.
-#}
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func {{ ffi_converter_name }}_lift(_ pointer: UnsafeMutableRawPointer) throws -> {{ type_name }} {
-    return try {{ ffi_converter_name }}.lift(pointer)
-}
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMutableRawPointer {
-    return {{ ffi_converter_name }}.lower(value)
-}

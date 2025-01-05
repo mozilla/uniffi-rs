@@ -42,6 +42,8 @@ or use UDL with types from more than one crate.
   to consumers and could have high overhead when lots of FFI calls are made. Instead, the
   `ffi-trace` feature can be used to get tracing-style printouts about the FFI.
 
+- External errors work for Swift and Python. Kotlin does not work - see #2392.
+
 ### What's changed?
 
 - Switching jinja template engine from askama to rinja.

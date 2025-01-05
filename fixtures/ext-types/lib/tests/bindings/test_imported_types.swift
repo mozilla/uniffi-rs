@@ -61,5 +61,23 @@ assert(getMaybeUniffiOneEnum(e: nil) == nil)
 assert(getUniffiOneEnums(es: [UniffiOneEnum.one]) == [UniffiOneEnum.one])
 assert(getMaybeUniffiOneEnums(es: [UniffiOneEnum.one, nil]) == [UniffiOneEnum.one, nil])
 
+do {
+    try throwUniffiOneError()
+    fatalError("Should have thrown")
+} catch let e as UniffiOneError {
+    if case let .Oops(reason) = e {
+        assert(reason == "oh no")
+    } else {
+        fatalError("wrong error variant: \(e)")
+    }
+}
+
+do {
+    try throwUniffiOneErrorInterface()
+    fatalError("Should have thrown")
+} catch let e as UniffiOneErrorInterface {
+    assert(e.message() == "interface oops")
+}
+
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface(val: "foo").value() == "foo")
