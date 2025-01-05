@@ -133,7 +133,8 @@ impl Function {
             self.arguments
                 .iter()
                 .flat_map(Argument::iter_types)
-                .chain(self.return_type.iter().flat_map(Type::iter_types)),
+                .chain(self.return_type.iter().flat_map(Type::iter_types))
+                .chain(self.throws.iter().flat_map(Type::iter_types)),
         )
     }
 
@@ -425,5 +426,30 @@ mod test {
                 .unwrap(),
             "informative docstring"
         );
+    }
+
+    #[test]
+    fn test_iter_types() {
+        let f = Function {
+            name: "fn".to_string(),
+            module_path: "fn".to_string(),
+            is_async: false,
+            arguments: vec![Argument {
+                name: "a".to_string(),
+                type_: Type::Int32,
+                by_ref: false,
+                optional: true,
+                default: None,
+            }],
+            return_type: Some(Type::Int64),
+            ffi_func: FfiFunction::default(),
+            docstring: None,
+            throws: Some(Type::Int8),
+            checksum_fn_name: "".to_string(),
+            checksum: None,
+        };
+        assert!(f.iter_types().any(|t| matches!(t, Type::Int32)));
+        assert!(f.iter_types().any(|t| matches!(t, Type::Int64)));
+        assert!(f.iter_types().any(|t| matches!(t, Type::Int8)));
     }
 }
