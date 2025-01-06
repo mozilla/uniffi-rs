@@ -603,7 +603,7 @@ impl ComponentInterface {
     }
 
     /// Iterate over return/throws types for async functions
-    pub fn iter_async_result_types(&self) -> impl Iterator<Item = ResultType> {
+    pub fn iter_async_result_types(&self) -> impl Iterator<Item = ResultType<'_>> {
         let unique_results = self
             .iter_callables()
             .map(|c| c.result_type())
