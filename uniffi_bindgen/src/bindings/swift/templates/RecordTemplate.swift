@@ -16,11 +16,7 @@ public struct {{ type_name }} {
 }
 
 {% if !contains_object_references %}
-#if swift(>=5.7)
-extension {{ type_name }}: Equatable, Hashable, Sendable {
-#else
 extension {{ type_name }}: Equatable, Hashable {
-#endif
     public static func ==(lhs: {{ type_name }}, rhs: {{ type_name }}) -> Bool {
         {%- for field in rec.fields() %}
         if lhs.{{ field.name()|var_name }} != rhs.{{ field.name()|var_name }} {
@@ -36,6 +32,10 @@ extension {{ type_name }}: Equatable, Hashable {
         {%- endfor %}
     }
 }
+
+#if swift(>=6.0)
+extension {{ type_name }}: Sendable {}
+#endif
 {% endif %}
 
 #if swift(>=5.8)

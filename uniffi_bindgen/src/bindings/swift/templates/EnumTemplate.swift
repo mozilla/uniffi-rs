@@ -84,9 +84,8 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 }
 
 {% if !contains_object_references %}
-#if swift(>=5.7)
-extension {{ type_name }}: Equatable, Hashable, Sendable {}
-#else
 extension {{ type_name }}: Equatable, Hashable {}
+#if swift(>=6.0)
+extension {{ type_name }}: Sendable {}
 #endif
 {% endif %}
