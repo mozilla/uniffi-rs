@@ -29,7 +29,16 @@
 {%- endmacro -%}
 
 {%- macro func_decl(func_decl, callable, indent) %}
+    {%- if self::can_render_callable(callable, ci) %}
+        {%- call render_func_decl(func_decl, callable, indent) %}
+    {%- else %}
+// Sorry, the callable "{{ callable.name() }}" isn't supported.
+    {%- endif %}
+{%- endmacro %}
+
+{%- macro render_func_decl(func_decl, callable, indent) %}
     {%- call docstring(callable, indent) %}
+
     {%- match callable.throws_type() -%}
     {%-     when Some(throwable) %}
     @Throws({{ throwable|type_name(ci) }}::class)

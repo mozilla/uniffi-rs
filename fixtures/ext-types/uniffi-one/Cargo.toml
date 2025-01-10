@@ -13,6 +13,7 @@ name = "uniffi_one"
 [dependencies]
 anyhow = "1"
 bytes = "1.3"
+thiserror = "1"
 uniffi = { workspace = true }
 
 [build-dependencies]

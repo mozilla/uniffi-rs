@@ -5,8 +5,8 @@ use ext_types_external_crate::{
 };
 use std::sync::Arc;
 use uniffi_one::{
-    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
-    UniffiOneUDLTrait,
+    UniffiOneEnum, UniffiOneError, UniffiOneErrorInterface, UniffiOneInterface,
+    UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType, UniffiOneUDLTrait,
 };
 use uniffi_sublib::SubLibType;
 use url::Url;
@@ -193,6 +193,19 @@ fn invoke_uniffi_one_trait(t: Arc<dyn UniffiOneTrait>) -> String {
 
 fn get_uniffi_one_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
     t
+}
+
+#[uniffi::export]
+fn throw_uniffi_one_error() -> Result<(), UniffiOneError> {
+    Err(UniffiOneError::Oops("oh no".to_string()))
+}
+
+// external interface errors don't quite work.
+#[uniffi::export]
+fn throw_uniffi_one_error_interface() -> Result<(), UniffiOneErrorInterface> {
+    Err(UniffiOneErrorInterface {
+        e: "interface oops".to_string(),
+    })
 }
 
 fn get_external_crate_interface(val: String) -> Arc<ExternalCrateInterface> {

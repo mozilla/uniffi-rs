@@ -98,6 +98,13 @@ class TestIt(unittest.TestCase):
         self.assertEqual(get_nested_external_guid(None), "nested-external")
         self.assertEqual(get_nested_external_ouid(None), "nested-external-ouid")
 
+    def test_external_errors(self):
+        with self.assertRaises(UniffiOneError) as cm:
+            throw_uniffi_one_error()
+
+        with self.assertRaises(UniffiOneErrorInterface) as cm:
+            throw_uniffi_one_error_interface()
+
 if __name__=='__main__':
     test_external_callback_interface_impl()
     unittest.main()
