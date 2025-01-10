@@ -1,0 +1,13 @@
+[package]
+name = "uniffi-fixture-fn-calls"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+uniffi = { workspace = true }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]
