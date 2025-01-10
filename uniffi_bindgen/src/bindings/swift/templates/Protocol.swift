@@ -1,5 +1,5 @@
 {%- call swift::docstring_value(protocol_docstring, 0) %}
-public protocol {{ protocol_name }} : AnyObject {
+public protocol {{ protocol_name }}: AnyObject {
     {% for meth in methods.iter() -%}
     {%- call swift::docstring(meth, 4) %}
     func {{ meth.name()|fn_name }}({% call swift::arg_list_protocol(meth) %}) {% call swift::is_async(meth) -%}{% call swift::throws(meth) -%}
@@ -10,3 +10,6 @@ public protocol {{ protocol_name }} : AnyObject {
     {% endfor %}
 }
 
+#if swift(>=6.0)
+extension {{ protocol_name }}: Sendable {}
+#endif

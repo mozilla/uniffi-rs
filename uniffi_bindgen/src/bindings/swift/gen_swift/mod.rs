@@ -174,7 +174,6 @@ pub struct Config {
     generate_module_map: Option<bool>,
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
-    experimental_sendable_value_types: Option<bool>,
     omit_localized_error_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
@@ -237,11 +236,6 @@ impl Config {
     /// Whether to generate immutable records (`let` instead of `var`)
     pub fn generate_immutable_records(&self) -> bool {
         self.generate_immutable_records.unwrap_or(false)
-    }
-
-    /// Whether to mark value types as 'Sendable'
-    pub fn experimental_sendable_value_types(&self) -> bool {
-        self.experimental_sendable_value_types.unwrap_or(false)
     }
 
     // Whether to make generated error types conform to `LocalizedError`. Default: false.
