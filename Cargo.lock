@@ -1602,6 +1602,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-bindgen-swift-cli"
+version = "0.1.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-example-arithmetic"
 version = "0.22.0"
 dependencies = [
