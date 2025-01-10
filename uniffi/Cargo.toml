@@ -29,7 +29,7 @@ trybuild = "1"
 [features]
 default = ["cargo-metadata"]
 # Printout tracing information on FFI calls.  Useful for debugging issues with the bindings code.
-ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindgen/ffi-trace"]
+ffi-trace = ["uniffi_core/ffi-trace", "uniffi_bindgen?/ffi-trace"]
 # Support for features needed by the `build.rs` script. Enable this in your
 # `build-dependencies`.
 build = [ "dep:uniffi_build" ]
@@ -43,7 +43,7 @@ cargo-metadata = ["dep:cargo_metadata", "uniffi_bindgen?/cargo-metadata"]
 cli = [ "bindgen", "dep:clap", "dep:camino" ]
 # Support for running example/fixture tests for `uniffi-bindgen`.  You probably
 # don't need to enable this.
-bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen/bindgen-tests" ]
+bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen?/bindgen-tests" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]
