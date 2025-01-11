@@ -64,7 +64,7 @@ except MyError as e:
 
 This works for procmacros too - just derive or export the types.
 ```rs
-#[derive(Debug, uniffi::Error)]
+#[derive(Debug, uniffi::Object)]
 pub struct MyError { ... }
 #[uniffi::export]
 impl MyError { ... }
