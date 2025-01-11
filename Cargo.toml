@@ -64,6 +64,7 @@ members = [
   "fixtures/struct-default-values",
   "fixtures/swift-omit-labels",
   "fixtures/futures",
+  "fixtures/futures-wasm",
   "fixtures/swift-bridging-header-compile",
   "fixtures/type-limits",
   "fixtures/large-enum",
