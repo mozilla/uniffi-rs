@@ -8,8 +8,7 @@
 
 ### ⚠️ Breaking Changes ⚠️
 
-We've made a number of breaking changes to fix long standing paper-cuts with UniFFI in a
-multi-crate environment and to simplify your and our implementations.
+We've made a number of breaking changes to fix long standing paper-cuts with UniFFI in multi-crate and procmacro+udl environments.
 
 [See the detailed upgrade notes](https://mozilla.github.io/uniffi-rs/next/Upgrading.html)
 
@@ -39,9 +38,13 @@ or use UDL with types from more than one crate.
 
 ### What's new?
 
-- Kotlin and Swift: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
+- Kotlin and Swift follow Python: Proc-macros exporting an `impl Trait for Struct` block now has a class inheritance
   hierarcy to reflect that.
   [#2297](https://github.com/mozilla/uniffi-rs/pull/2297), [#2363](https://github.com/mozilla/uniffi-rs/pull/2363)
+
+- External types work much better, particularly between UDL and proc-macros. (Kotlin external errors do not work - #2392).
+
+- Swift interfaces are marked as `Sendable` ([#2318](https://github.com/mozilla/uniffi-rs/pull/2318))
 
 - Removed the `log` dependency and logging statements about FFI calls.  These were not really useful
   to consumers and could have high overhead when lots of FFI calls are made. Instead, the
@@ -65,8 +68,13 @@ or use UDL with types from more than one crate.
 
 - Added the `FfiType::MutReference` variant.
 
+- `Callable` trait has changed, `return_type` and `throws_type` are now references.
+
 - `Type::External` has been removed. Binding authors must now check the type is local themselves before
    deciding to treat it as a local or external type.
+
+  To get a feel for the impact on the bindings, see where we [first did this for custom types](https://github.com/mozilla/uniffi-rs/commit/c5a437e9f34f9d46c097848810bf6111cfa13a9f),
+    and where we [then stopped using it entirely](https://github.com/mozilla/uniffi-rs/commit/df514fd1cc748da5c05ab64ccb02d7791012a9cb)
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
 
