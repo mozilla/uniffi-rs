@@ -1,0 +1,24 @@
+[package]
+name = "uniffi-fixture-error-types-swift"
+version = "0.22.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+name = "uniffi_error_types"
+
+[dependencies]
+uniffi = {path = "../../uniffi"}
+anyhow = "1"
+thiserror = "1.0"
+
+[build-dependencies]
+uniffi = {path = "../../uniffi", features = ["build"] }
+
+[dev-dependencies]
+uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]

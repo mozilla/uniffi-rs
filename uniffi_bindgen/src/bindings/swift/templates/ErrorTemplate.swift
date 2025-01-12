@@ -1,16 +1,17 @@
 {%- call swift::docstring(e, 0) %}
+{% let use_class_name = !config.error_enum_use_lower_camel_case() %}
 public enum {{ type_name }} {
 
     {% if e.is_flat() %}
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
-    case {{ variant.name()|class_name }}(message: String)
+    case {{ variant.name()|error_variant_swift_quoted(use_class_name) }}(message: String)
     {% endfor %}
 
     {%- else %}
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
-    case {{ variant.name()|class_name }}{% if variant.fields().len() > 0 %}(
+    case {{ variant.name()|error_variant_swift_quoted(use_class_name) }}{% if variant.fields().len() > 0 %}(
         {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
     ){% endif -%}
     {% endfor %}
@@ -32,7 +33,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {% if e.is_flat() %}
 
         {% for variant in e.variants() %}
-        case {{ loop.index }}: return .{{ variant.name()|class_name }}(
+        case {{ loop.index }}: return .{{ variant.name()|error_variant_swift_quoted(use_class_name) }}(
             message: try {{ Type::String.borrow()|read_fn }}(from: &buf)
         )
         {% endfor %}
@@ -40,7 +41,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {% else %}
 
         {% for variant in e.variants() %}
-        case {{ loop.index }}: return .{{ variant.name()|error_variant_swift_quoted }}{% if variant.has_fields() %}(
+        case {{ loop.index }}: return .{{ variant.name()|error_variant_swift_quoted(use_class_name) }}{% if variant.has_fields() %}(
             {% for field in variant.fields() -%}
             {%-     if variant.has_nameless_fields() -%}
             try {{ field|read_fn }}(from: &buf)
@@ -63,7 +64,7 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         {% if e.is_flat() %}
 
         {% for variant in e.variants() %}
-        case .{{ variant.name()|class_name }}(_ /* message is ignored*/):
+        case .{{ variant.name()|error_variant_swift_quoted(use_class_name) }}(_ /* message is ignored*/):
             writeInt(&buf, Int32({{ loop.index }}))
         {%- endfor %}
 
@@ -71,13 +72,13 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
-        case let .{{ variant.name()|error_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+        case let .{{ variant.name()|error_variant_swift_quoted(use_class_name) }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             writeInt(&buf, Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
             {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}, into: &buf)
             {% endfor -%}
         {% else %}
-        case .{{ variant.name()|class_name }}:
+        case .{{ variant.name()|error_variant_swift_quoted(use_class_name) }}:
             writeInt(&buf, Int32({{ loop.index }}))
         {% endif %}
         {%- endfor %}

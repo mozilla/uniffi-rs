@@ -1,0 +1,34 @@
+namespace error_types {
+    [Throws=ErrorInterface]
+    void oops();
+
+    [Throws=ErrorInterface]
+    void oops_nowrap();
+
+    ErrorInterface get_error(string message);
+
+    [Throws=RichError]
+    void throw_rich(string message);
+};
+
+interface TestInterface {
+    constructor();
+
+    [Throws=ErrorInterface, Name="fallible_new"]
+    constructor();
+
+    [Throws=ErrorInterface]
+    void oops();
+};
+
+[Traits=(Debug, Display)]
+interface ErrorInterface {
+    sequence<string> chain();
+    string? link(u64 index);
+};
+
+// Kotlin replaces a trailing "Error" with "Exception"
+// for enums, so we should check it does for objects too.
+[Traits=(Debug, Display)]
+interface RichError {
+};
