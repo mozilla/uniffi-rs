@@ -1824,7 +1824,7 @@ then in Python:
   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;oops&quot;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">())</span>
 </code></pre></div></p>
 <p>This works for procmacros too - just derive or export the types.
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, uniffi::Error)]</span>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, uniffi::Object)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyError</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 <span class="cp">#[uniffi::export]</span>
 <span class="k">impl</span><span class="w"> </span><span class="n">MyError</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
