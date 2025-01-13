@@ -8,28 +8,7 @@
 {% include "Protocol.swift" %}
 
 {%- call swift::docstring(obj, 0) %}
-open class {{ impl_class_name }}:
-    {%- for tm in obj.uniffi_traits() %}
-    {%-     match tm %}
-    {%-         when UniffiTrait::Display { fmt } %}
-    CustomStringConvertible,
-    {%-         when UniffiTrait::Debug { fmt } %}
-    CustomDebugStringConvertible,
-    {%-         when UniffiTrait::Eq { eq, ne } %}
-    Equatable,
-    {%-         when UniffiTrait::Hash { hash } %}
-    Hashable,
-    {%-         else %}
-    {%-    endmatch %}
-    {%- endfor %}
-    {%- if is_error %}
-    Swift.Error,
-    {% endif %}
-    {%- for t in obj.trait_impls() %}
-    {{ self::trait_protocol_name(ci, t.trait_name)? }},
-    {% endfor %}
-    {{ protocol_name }}
-    {
+open class {{ impl_class_name }}: {{ protocol_name }} {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -130,6 +109,33 @@ open class {{ impl_class_name }}:
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
 {% include "CallbackInterfaceImpl.swift" %}
 {%- endif %}
+
+{%- for tm in obj.uniffi_traits() %}
+{%-     match tm %}
+{%-         when UniffiTrait::Display { fmt } %}
+extension {{ impl_class_name }}: CustomStringConvertible {}
+{%-         when UniffiTrait::Debug { fmt } %}
+extension {{ impl_class_name }}: CustomDebugStringConvertible {}
+{%-         when UniffiTrait::Eq { eq, ne } %}
+extension {{ impl_class_name }}: Equatable {}
+{%-         when UniffiTrait::Hash { hash } %}
+extension {{ impl_class_name }}: Hashable {}
+{%-         else %}
+{%-    endmatch %}
+{%- endfor %}
+
+{%- if is_error %}
+extension {{ impl_class_name }}: Swift.Error {}
+{% endif %}
+
+{%- for t in obj.trait_impls() %}
+extension {{impl_class_name}}: {{ self::trait_protocol_name(ci, t.trait_name)? }} {}
+{% endfor %}
+
+#if swift(>=6.0)
+extension {{ impl_class_name }}: Sendable {}
+#endif
+
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
