@@ -581,7 +581,7 @@ fn can_render_callable(callable: &dyn Callable, ci: &ComponentInterface) -> bool
     // can't handle external errors.
     callable
         .throws_type()
-        .map(|t| !ci.is_external(&t))
+        .map(|t| !ci.is_external(t))
         .unwrap_or(true)
 }
 
@@ -749,7 +749,7 @@ mod filters {
         let call = format!("UniffiLib.INSTANCE.{ffi_func}(future, continuation)");
         // May need to convert the RustBuffer from our package to the RustBuffer of the external package
         let call = match callable.return_type() {
-            Some(return_type) if ci.is_external(&return_type) => {
+            Some(return_type) if ci.is_external(return_type) => {
                 let ffi_type = FfiType::from(return_type);
                 match ffi_type {
                     FfiType::RustBuffer(Some(ExternalFfiMetadata { name, .. })) => {

@@ -128,16 +128,6 @@ impl Function {
         Ok(())
     }
 
-    pub fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(
-            self.arguments
-                .iter()
-                .flat_map(Argument::iter_types)
-                .chain(self.return_type.iter().flat_map(Type::iter_types))
-                .chain(self.throws.iter().flat_map(Type::iter_types)),
-        )
-    }
-
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
     }
@@ -239,15 +229,15 @@ impl From<&Argument> for FfiArgument {
 
 /// Combines the return and throws type of a function/method
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq)]
-pub struct ResultType {
-    pub return_type: Option<Type>,
-    pub throws_type: Option<Type>,
+pub struct ResultType<'a> {
+    pub return_type: Option<&'a Type>,
+    pub throws_type: Option<&'a Type>,
 }
 
-impl ResultType {
+impl<'a> ResultType<'a> {
     /// Get the `T` parameters for the `FutureCallback<T>` for this ResultType
     pub fn future_callback_param(&self) -> FfiType {
-        match &self.return_type {
+        match self.return_type {
             Some(t) => t.into(),
             None => FfiType::UInt8,
         }
@@ -257,18 +247,29 @@ impl ResultType {
 /// Implemented by function-like types (Function, Method, Constructor)
 pub trait Callable {
     fn arguments(&self) -> Vec<&Argument>;
-    fn return_type(&self) -> Option<Type>;
-    fn throws_type(&self) -> Option<Type>;
+    fn return_type(&self) -> Option<&Type>;
+    fn throws_type(&self) -> Option<&Type>;
     fn is_async(&self) -> bool;
     fn docstring(&self) -> Option<&str>;
     fn takes_self(&self) -> bool {
         false
     }
-    fn result_type(&self) -> ResultType {
+    fn result_type(&self) -> ResultType<'_> {
         ResultType {
             return_type: self.return_type(),
             throws_type: self.throws_type(),
         }
+    }
+
+    fn iter_types(&self) -> TypeIterator<'_> {
+        let types: Vec<&Type> = self
+            .arguments()
+            .iter()
+            .flat_map(|a| a.iter_types())
+            .chain(self.return_type().iter().flat_map(|t| t.iter_types()))
+            .chain(self.throws_type().iter().flat_map(|t| t.iter_types()))
+            .collect();
+        Box::new(types.into_iter())
     }
 
     // Scaffolding function
@@ -306,12 +307,12 @@ impl Callable for Function {
         self.arguments()
     }
 
-    fn return_type(&self) -> Option<Type> {
-        self.return_type().cloned()
+    fn return_type(&self) -> Option<&Type> {
+        self.return_type()
     }
 
-    fn throws_type(&self) -> Option<Type> {
-        self.throws_type().cloned()
+    fn throws_type(&self) -> Option<&Type> {
+        self.throws_type()
     }
 
     fn docstring(&self) -> Option<&str> {
@@ -333,11 +334,11 @@ impl<T: Callable> Callable for &T {
         (*self).arguments()
     }
 
-    fn return_type(&self) -> Option<Type> {
+    fn return_type(&self) -> Option<&Type> {
         (*self).return_type()
     }
 
-    fn throws_type(&self) -> Option<Type> {
+    fn throws_type(&self) -> Option<&Type> {
         (*self).throws_type()
     }
 

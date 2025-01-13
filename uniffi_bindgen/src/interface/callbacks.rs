@@ -40,7 +40,7 @@ use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiField, FfiFunction, FfiStruct, FfiType};
 use super::object::Method;
-use super::{AsType, Type, TypeIterator};
+use super::{AsType, Callable, Type, TypeIterator};
 
 #[derive(Debug, Clone, Checksum)]
 pub struct CallbackInterface {

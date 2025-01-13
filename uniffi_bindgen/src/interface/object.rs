@@ -395,6 +395,8 @@ pub struct Constructor {
     // Force a checksum value, or we'll fallback to the trait.
     #[checksum_ignore]
     pub(super) checksum: Option<u16>,
+    // to help with lifetimes elsewhere...
+    pub(super) self_type: Type,
 }
 
 impl Constructor {
@@ -461,15 +463,6 @@ impl Constructor {
             self.arguments.iter().map(Into::into),
         );
     }
-
-    pub fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(
-            self.arguments
-                .iter()
-                .flat_map(Argument::iter_types)
-                .chain(self.throws.iter().flat_map(Type::iter_types)),
-        )
-    }
 }
 
 impl From<uniffi_meta::ConstructorMetadata> for Constructor {
@@ -483,6 +476,11 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             is_async: meta.is_async,
             ..FfiFunction::default()
         };
+        let self_type = Type::Object {
+            module_path: meta.module_path.clone(),
+            name: meta.self_name.clone(),
+            imp: ObjectImpl::Struct,
+        };
         Self {
             name: meta.name,
             object_name: meta.self_name,
@@ -494,6 +492,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             throws: meta.throws.map(Into::into),
             checksum_fn_name,
             checksum: meta.checksum,
+            self_type,
         }
     }
 }
@@ -616,16 +615,6 @@ impl Method {
         Ok(())
     }
 
-    pub fn iter_types(&self) -> TypeIterator<'_> {
-        Box::new(
-            self.arguments
-                .iter()
-                .flat_map(Argument::iter_types)
-                .chain(self.return_type.iter().flat_map(Type::iter_types))
-                .chain(self.throws.iter().flat_map(Type::iter_types)),
-        )
-    }
-
     /// For async callback interface methods, the FFI struct to pass to the completion function.
     pub fn foreign_future_ffi_result_struct(&self) -> FfiStruct {
         callbacks::foreign_future_ffi_result_struct(self.return_type.as_ref().map(FfiType::from))
@@ -738,16 +727,12 @@ impl Callable for Constructor {
         self.arguments()
     }
 
-    fn return_type(&self) -> Option<Type> {
-        Some(Type::Object {
-            name: self.object_name.clone(),
-            module_path: self.object_module_path.clone(),
-            imp: ObjectImpl::Struct,
-        })
+    fn return_type(&self) -> Option<&Type> {
+        Some(&self.self_type)
     }
 
-    fn throws_type(&self) -> Option<Type> {
-        self.throws_type().cloned()
+    fn throws_type(&self) -> Option<&Type> {
+        self.throws_type()
     }
 
     fn docstring(&self) -> Option<&str> {
@@ -768,12 +753,12 @@ impl Callable for Method {
         self.arguments()
     }
 
-    fn return_type(&self) -> Option<Type> {
-        self.return_type().cloned()
+    fn return_type(&self) -> Option<&Type> {
+        self.return_type()
     }
 
-    fn throws_type(&self) -> Option<Type> {
-        self.throws_type().cloned()
+    fn throws_type(&self) -> Option<&Type> {
+        self.throws_type()
     }
 
     fn docstring(&self) -> Option<&str> {
