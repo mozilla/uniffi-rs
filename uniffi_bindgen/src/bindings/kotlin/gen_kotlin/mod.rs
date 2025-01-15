@@ -73,6 +73,8 @@ pub struct Config {
     pub(super) cdylib_name: Option<String>,
     generate_immutable_records: Option<bool>,
     #[serde(default)]
+    omit_checksums: bool,
+    #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
     pub(super) external_packages: HashMap<String, String>,

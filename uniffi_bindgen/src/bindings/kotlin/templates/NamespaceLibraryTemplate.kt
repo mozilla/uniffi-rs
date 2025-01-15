@@ -102,11 +102,13 @@ internal interface UniffiLib : Library {
             // we allow for ~2x as many methods in the UniffiLib interface.
             // 
             // Thus we first load the library with `loadIndirect` as `IntegrityCheckingUniffiLib`
-            // so that we can call `uniffiCheckApiChecksums`...
+            // so that we can (optionally!) call `uniffiCheckApiChecksums`...
             loadIndirect<IntegrityCheckingUniffiLib>(componentName)
                 .also { lib: IntegrityCheckingUniffiLib ->
                     uniffiCheckContractApiVersion(lib)
+{%- if !config.omit_checksums %}
                     uniffiCheckApiChecksums(lib)
+{%- endif %}
                 }
             // ... and then we load the library as `UniffiLib`
             // N.B. we cannot use `loadIndirect` once and then try to cast it to `UniffiLib`
@@ -147,6 +149,7 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
     }
 }
 
+{%- if !config.omit_checksums %}
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     {%- for (name, expected_checksum) in ci.iter_checksums() %}
@@ -155,6 +158,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     }
     {%- endfor %}
 }
+{%- endif %}
 
 /**
  * @suppress
