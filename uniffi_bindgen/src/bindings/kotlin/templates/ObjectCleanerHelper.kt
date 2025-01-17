@@ -33,6 +33,9 @@ private class UniffiJnaCleanable(
     override fun clean() = cleanable.clean()
 }
 
+{% if config.disable_java_cleaner() %}
+private fun UniffiCleaner.Companion.create(): UniffiCleaner = UniffiJnaCleaner()
+{% else %}
 // We decide at uniffi binding generation time whether we were
 // using Android or not.
 // There are further runtime checks to chose the correct implementation
@@ -41,4 +44,5 @@ private class UniffiJnaCleanable(
 {%-   include "ObjectCleanerHelperAndroid.kt" %}
 {%- else %}
 {%-   include "ObjectCleanerHelperJvm.kt" %}
+{%- endif %}
 {%- endif %}
