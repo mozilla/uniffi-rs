@@ -195,6 +195,14 @@ class TestCoverall(unittest.TestCase):
         e = get_simple_flat_macro_enum(0)
         self.assertTrue(isinstance(e, SimpleFlatMacroEnum.FIRST))
 
+        self.assertTrue(get_maybe_simple_dict(0).is_YEAH())
+        self.assertEqual(get_maybe_simple_dict(0).d.text, "")
+        self.assertTrue(get_maybe_simple_dict(1).is_NAH())
+
+        self.assertTrue(get_maybe_object(0).is_OBJ())
+        self.assertEqual(get_maybe_object(0).p.get_color(), Color.RED)
+        self.assertTrue(get_maybe_object(1).is_NAH())
+
     def test_self_by_arc(self):
         coveralls = Coveralls("test_self_by_arc")
         # One reference is held by the handlemap, and one by the `Arc<Self>` method receiver.

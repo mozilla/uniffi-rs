@@ -93,6 +93,12 @@ interface MaybeSimpleDict {
     Nah();
 };
 
+[Enum]
+interface MaybeObject {
+    Obj(Patch p);
+    Nah();
+};
+
 // Note that UDL *can not* express flat enums (ie, those with variants that carry data which
 // should be ignored for the ffi), only flat errors?
 //enum SimpleFlatEnum {

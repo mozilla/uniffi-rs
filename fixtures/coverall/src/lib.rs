@@ -265,6 +265,23 @@ fn get_maybe_simple_dict(index: i8) -> MaybeSimpleDict {
     }
 }
 
+#[derive(Debug)]
+enum MaybeObject {
+    Obj { p: Arc<Patch> },
+    Nah,
+}
+
+#[uniffi::export]
+fn get_maybe_object(index: i8) -> MaybeObject {
+    match index {
+        0 => MaybeObject::Obj {
+            p: Arc::new(Patch { color: Color::Red }),
+        },
+        1 => MaybeObject::Nah,
+        _ => unreachable!("invalid index: {index}"),
+    }
+}
+
 // UDL can not describe this as a "flat" enum, but we'll keep it here to help demonstrate that!
 #[derive(Debug, Clone)]
 pub enum SimpleFlatEnum {
