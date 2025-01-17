@@ -49,6 +49,8 @@ or use UDL with types from more than one crate.
 
 - External errors work for Swift and Python. Kotlin does not work - see #2392.
 
+- Added `disable_java_cleaner` option for kotlin to allow for Java 8 compatible code
+
 ### What's changed?
 
 - Switching jinja template engine from askama to rinja.

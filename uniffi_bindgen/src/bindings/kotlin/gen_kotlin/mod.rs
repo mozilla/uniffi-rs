@@ -82,6 +82,8 @@ pub struct Config {
     android_cleaner: Option<bool>,
     #[serde(default)]
     kotlin_target_version: Option<String>,
+    #[serde(default)]
+    disable_java_cleaner: bool,
 }
 
 impl Config {
@@ -175,6 +177,10 @@ impl Config {
     /// Whether to generate immutable records (`val` instead of `var`)
     pub fn generate_immutable_records(&self) -> bool {
         self.generate_immutable_records.unwrap_or(false)
+    }
+
+    pub fn disable_java_cleaner(&self) -> bool {
+        self.disable_java_cleaner
     }
 }
 
