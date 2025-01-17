@@ -49,11 +49,13 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.contractVersionMismatch
     }
 
+{%- if !config.omit_checksums %}
     {%- for (name, expected_checksum) in ci.iter_checksums() %}
     if ({{ name }}() != {{ expected_checksum }}) {
         return InitializationResult.apiChecksumMismatch
     }
     {%- endfor %}
+{%- endif %}
 
     {% for fn in self.initialization_fns() -%}
     {{ fn }}()
