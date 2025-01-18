@@ -78,7 +78,7 @@ fn channel() -> (Sender, Arc<dyn RustFutureFfi<RustBuffer>>) {
         result: None,
         waker: None,
     }));
-    let rust_future = RustFuture::new(Receiver(channel.clone()), crate::UniFfiTag);
+    let rust_future = RustFuture::new(Box::pin(Receiver(channel.clone())), crate::UniFfiTag);
     (Sender(channel), rust_future)
 }
 
@@ -246,7 +246,8 @@ fn test_wake_during_poll() {
             Poll::Ready(Ok("All done".to_owned()))
         }
     });
-    let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> = RustFuture::new(future, crate::UniFfiTag);
+    let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> =
+        RustFuture::new(Box::pin(future), crate::UniFfiTag);
     let continuation_result = poll(&rust_future);
     // The continuation function should called immediately
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
