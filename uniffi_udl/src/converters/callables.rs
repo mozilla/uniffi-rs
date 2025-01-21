@@ -12,7 +12,7 @@ use anyhow::{bail, Result};
 
 use uniffi_meta::{
     ConstructorMetadata, FieldMetadata, FnMetadata, FnParamMetadata, MethodMetadata,
-    TraitMethodMetadata, Type,
+    TraitMethodMetadata,
 };
 
 impl APIConverter<FieldMetadata> for weedle::argument::Argument<'_> {
@@ -27,17 +27,12 @@ impl APIConverter<FieldMetadata> for weedle::argument::Argument<'_> {
 impl APIConverter<FieldMetadata> for weedle::argument::SingleArgument<'_> {
     fn convert(&self, ci: &mut InterfaceCollector) -> Result<FieldMetadata> {
         let type_ = ci.resolve_type_expression(&self.type_)?;
-        if let Type::Object { .. } = type_ {
-            bail!("Objects cannot currently be used in enum variant data");
-        }
         if self.default.is_some() {
             bail!("enum interface variant fields must not have default values");
         }
         if self.attributes.is_some() {
             bail!("enum interface variant fields must not have attributes");
         }
-        // TODO: maybe we should use our own `Field` type here with just name and type,
-        // rather than appropriating record::Field..?
         Ok(FieldMetadata {
             name: self.identifier.0.to_string(),
             ty: type_,

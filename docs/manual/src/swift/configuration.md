@@ -18,6 +18,7 @@ more likely to change than other configurations.
 | `generate_immutable_records`       | `false`                  | Whether to generate records with immutable fields (`let` instead of `var`).                                                                                          |
 | `custom_types`                     |                          | A map which controls how custom types are exposed to Swift. See the [custom types section of the manual](../types/custom_types.md#custom-types-in-the-bindings-code) |
 | `omit_localized_error_conformance` | `false`                  | Whether to make generated error types conform to `LocalizedError`.                                                                                                   |
+| `omit_checksums`                   | `false`                  | Whether to omit checking the library checksums as the library is initialized. Changing this will shoot yourself in the foot if you mixup your build pipeline in any way, but might speed up initialization.
 
 [^1]: `namespace` is the top-level namespace from your UDL file.
 

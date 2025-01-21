@@ -28,5 +28,13 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(AnimalSignedInt.WALLABY.value, 0)
         self.assertEqual(AnimalSignedInt.WOMBAT.value, 1)
 
+    def test_containers(self):
+        self.assertTrue(get_animal_enum(Animal.DOG).is_DOG())
+        self.assertEqual(get_animal_enum(Animal.DOG)[0].get_record().name, "dog")
+        self.assertEqual(get_animal_enum(Animal.DOG), get_animal_enum(Animal.DOG))
+        self.assertEqual(get_animal_enum(Animal.CAT)[0].name, "cat")
+        self.assertEqual(get_animal_enum(Animal.CAT), get_animal_enum(Animal.CAT))
+        self.assertNotEqual(get_animal_enum(Animal.DOG), get_animal_enum(Animal.CAT))
+
 if __name__=='__main__':
     unittest.main()
