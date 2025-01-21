@@ -49,6 +49,8 @@ or use UDL with types from more than one crate.
 
 - External errors work for Swift and Python. Kotlin does not work - see #2392.
 
+- Added `disable_java_cleaner` option for kotlin to allow for Java 8 compatible code
+
 - Proc-macros now allow Enums to hold objects (#1372)
 
 - Swift and Kotlin make it possible to opt-out of the runtime checksum integrity tests done as the library is initialized.
