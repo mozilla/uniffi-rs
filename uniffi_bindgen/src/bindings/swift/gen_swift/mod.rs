@@ -172,6 +172,8 @@ pub struct Config {
     ffi_module_name: Option<String>,
     ffi_module_filename: Option<String>,
     generate_module_map: Option<bool>,
+    #[serde(default)]
+    omit_checksums: bool,
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
     omit_localized_error_conformance: Option<bool>,

@@ -51,6 +51,10 @@ or use UDL with types from more than one crate.
 
 - Proc-macros now allow Enums to hold objects (#1372)
 
+- Swift and Kotlin make it possible to opt-out of the runtime checksum integrity tests done as the library is initialized.
+  Opting out will shoot yourself in the foot if you mixup your build pipeline in any way, but might speed the initialization.
+  (Python apparently hasn't made these checks for some time, so no changes there!)
+
 ### What's changed?
 
 - Switching jinja template engine from askama to rinja.
