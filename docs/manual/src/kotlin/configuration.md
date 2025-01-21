@@ -14,7 +14,7 @@ The generated Kotlin modules can be configured using a `uniffi.toml` configurati
 | `android`                    | `false`                  | Used to toggle on Android specific optimizations
 | `android_cleaner`            | `android`                | Use the [`android.system.SystemCleaner`](https://developer.android.com/reference/android/system/SystemCleaner) instead of [`java.lang.ref.Cleaner`](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ref/Cleaner.html). Fallback in both instances is the one shipped with JNA.
 | `kotlin_target_version`      | `"x.y.z"`                | When provided, it will enable features in the bindings supported for this version. The build process will fail if an invalid format is used.
-| `disable_java_cleaner`       | `false`                  | Will disable use of `java.lange.ref.Cleaner` so generated code can be compatible with Java 8.
+| `disable_java_cleaner`       | `false`                  | Will disable use of `java.lang.ref.Cleaner` so generated code can be compatible with Java 8.
 | `omit_checksums`             | `false`                  | Whether to omit checking the library checksums as the library is initialized. Changing this will shoot yourself in the foot if you mixup your build pipeline in any way, but might speed up initialization.
 
 ## Example
