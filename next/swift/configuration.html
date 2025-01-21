@@ -1851,6 +1851,11 @@ more likely to change than other configurations.</p>
 <td><code>false</code></td>
 <td>Whether to make generated error types conform to <code>LocalizedError</code>.</td>
 </tr>
+<tr>
+<td><code>omit_checksums</code></td>
+<td><code>false</code></td>
+<td>Whether to omit checking the library checksums as the library is initialized. Changing this will shoot yourself in the foot if you mixup your build pipeline in any way, but might speed up initialization.</td>
+</tr>
 </tbody>
 </table>
 <p>[^1]: <code>namespace</code> is the top-level namespace from your UDL file.</p>
