@@ -49,6 +49,8 @@ or use UDL with types from more than one crate.
 
 - External errors work for Swift and Python. Kotlin does not work - see #2392.
 
+- Proc-macros now allow Enums to hold objects (#1372)
+
 ### What's changed?
 
 - Switching jinja template engine from askama to rinja.

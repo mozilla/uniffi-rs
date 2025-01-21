@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::sync::Arc;
+
 pub enum Animal {
     Dog,
     Cat,
@@ -39,29 +41,61 @@ pub enum AnimalSignedInt {
     Wombat,  // 1
 }
 
-#[derive(uniffi::Record)]
+#[derive(Default, PartialEq, Eq, Clone, uniffi::Record)]
 pub struct AnimalRecord {
-    value: u8,
+    name: String,
 }
 
-#[derive(uniffi::Object)]
+impl AnimalRecord {
+    fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+        }
+    }
+}
+
+#[derive(Default, PartialEq, Eq, uniffi::Object)]
+#[uniffi::export(Eq)]
 pub struct AnimalObject {
     pub value: AnimalRecord,
 }
 
-use std::sync::Arc;
-// Adding an enum with a Associated Type that is a exported Arc<Object> with a exported Record field.
-// This is done to check for compilation errors.
+impl AnimalObject {
+    fn new(name: &str) -> Self {
+        Self {
+            value: AnimalRecord::new(name),
+        }
+    }
+}
+
+#[uniffi::export]
+impl AnimalObject {
+    fn get_record(&self) -> AnimalRecord {
+        self.value.clone()
+    }
+}
+
+// An enum with non-primitive types
 #[derive(uniffi::Enum)]
-pub(crate) enum AnimalAssociatedType {
+pub(crate) enum AnimalEnum {
+    None,
     Dog(Arc<AnimalObject>),
-    Cat,
+    Cat(AnimalRecord),
+}
+
+#[uniffi::export]
+fn get_animal_enum(animal: Animal) -> AnimalEnum {
+    match animal {
+        Animal::Dog => AnimalEnum::Dog(Arc::new(AnimalObject::new("dog"))),
+        Animal::Cat => AnimalEnum::Cat(AnimalRecord::new("cat")),
+    }
 }
 
 #[derive(uniffi::Enum)]
-pub(crate) enum AnimalNamedAssociatedType {
-    Dog { value: Arc<AnimalObject> },
-    Cat,
+pub(crate) enum AnimalNamedEnum {
+    None,
+    Dog { object: Arc<AnimalObject> },
+    Cat { record: AnimalRecord },
 }
 
 #[uniffi::export]
