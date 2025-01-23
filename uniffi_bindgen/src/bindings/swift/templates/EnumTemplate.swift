@@ -3,7 +3,7 @@
 {%- call swift::docstring(e, 0) %}
 {% match e.variant_discr_type() %}
 {% when None %}
-public enum {{ type_name }} {
+public enum {{ type_name }}: Sendable {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
@@ -12,7 +12,7 @@ public enum {{ type_name }} {
     {% endfor %}
 }
 {% when Some(variant_discr_type) %}
-public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
+public enum {{ type_name }} : {{ variant_discr_type|type_name }}, Sendable {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
@@ -85,7 +85,4 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
-#if swift(>=6.0)
-extension {{ type_name }}: Sendable {}
-#endif
 {% endif %}

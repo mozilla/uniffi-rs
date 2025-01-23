@@ -1,6 +1,6 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
 {%- call swift::docstring(rec, 0) %}
-public struct {{ type_name }} {
+public struct {{ type_name }}: Sendable {
     {%- for field in rec.fields() %}
     {%- call swift::docstring(field, 4) %}
     public {% if config.generate_immutable_records() %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
@@ -33,9 +33,6 @@ extension {{ type_name }}: Equatable, Hashable {
     }
 }
 
-#if swift(>=6.0)
-extension {{ type_name }}: Sendable {}
-#endif
 {% endif %}
 
 #if swift(>=5.8)
