@@ -30,6 +30,17 @@ pub enum RustFuturePoll {
 /// to continue progress on the future.
 pub type RustFutureContinuationCallback = extern "C" fn(callback_data: u64, RustFuturePoll);
 
+/// This marker trait allows us to put different bounds on the `Future`s we support, based on
+/// `#[cfg()]` configuration.
+pub trait FutureResult<T, E>: Future<Output = Result<T, E>> + 'static {}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<T, F, E> FutureResult<T, E> for F where F: Future<Output = Result<T, E>> + Send + 'static {}
+
+// `Promise`s cannot be sent to or from WebWorkers, but `JsValue` is not `Send`.
+#[cfg(target_arch = "wasm32")]
+impl<T, F, E> FutureResult<T, E> for F where F: Future<Output = Result<T, E>> + 'static {}
+
 // === Public FFI API ===
 
 /// Create a new [Handle] for a Rust future
@@ -44,7 +55,7 @@ where
     // since it will move between threads for an indeterminate amount of time as the foreign
     // executor calls polls it and the Rust executor wakes it.  It does not need to by `Sync`,
     // since we synchronize all access to the values.
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: FutureResult<T, LiftArgsError>,
     // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
     // 'static for the same reason as F.
     T: LowerReturn<UT> + Send + 'static,
