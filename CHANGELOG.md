@@ -64,6 +64,9 @@ or use UDL with types from more than one crate.
 
 - Switching jinja template engine from askama to rinja.
 
+- For `wasm32` build targets, `Future`s do not have to be `Send` ([#2418](https://github.com/mozilla/uniffi-rs/pull/2418)),
+  making them compatible with `wasm-bindgen` `Future`s.
+
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
 - Added the `FfiType::MutReference` variant.
