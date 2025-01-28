@@ -1,6 +1,6 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
 {%- call swift::docstring(rec, 0) %}
-public struct {{ type_name }}: Sendable {
+public struct {{ type_name }} {
     {%- for field in rec.fields() %}
     {%- call swift::docstring(field, 4) %}
     public {% if config.generate_immutable_records() %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
@@ -14,6 +14,10 @@ public struct {{ type_name }}: Sendable {
         {%- endfor %}
     }
 }
+
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
 
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {

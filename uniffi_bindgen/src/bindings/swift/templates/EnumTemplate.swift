@@ -3,7 +3,7 @@
 {%- call swift::docstring(e, 0) %}
 {% match e.variant_discr_type() %}
 {% when None %}
-public enum {{ type_name }}: Sendable {
+public enum {{ type_name }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
@@ -12,7 +12,7 @@ public enum {{ type_name }}: Sendable {
     {% endfor %}
 }
 {% when Some(variant_discr_type) %}
-public enum {{ type_name }} : {{ variant_discr_type|type_name }}, Sendable {
+public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
@@ -21,6 +21,10 @@ public enum {{ type_name }} : {{ variant_discr_type|type_name }}, Sendable {
     {% endfor %}
 }
 {% endmatch %}
+
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
