@@ -12,7 +12,7 @@ use cargo_metadata::Metadata;
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::OsStr;
 use std::fs::{read_to_string, File};
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use std::process::{Command, Stdio};
 use uniffi_testing::UniFFITestHelper;
 
@@ -47,7 +47,6 @@ pub fn run_script(
         test_helper.cargo_metadata(),
         &out_dir,
     )?;
-    let swift_version = script_swift_version(&script_path)?;
 
     // Compile the generated sources together to create a single swift module
     compile_swift_module(
@@ -55,7 +54,6 @@ pub fn run_script(
         &generated_sources.main_module,
         &generated_sources.generated_swift_files,
         &generated_sources.module_map,
-        &swift_version,
         options,
     )?;
 
@@ -63,8 +61,6 @@ pub fn run_script(
     let mut command = create_command("swift", options);
     command
         .current_dir(&out_dir)
-        .arg("-swift-version")
-        .arg(swift_version)
         .arg("-I")
         .arg(&out_dir)
         .arg("-L")
@@ -93,7 +89,6 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     module_name: &str,
     sources: impl IntoIterator<Item = T>,
     module_map: &Utf8Path,
-    swift_version: &str,
     options: &RunScriptOptions,
 ) -> Result<()> {
     let output_filename = format!("{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}");
@@ -115,8 +110,6 @@ fn compile_swift_module<T: AsRef<OsStr>>(
         .arg("-L")
         .arg(out_dir)
         .args(calc_library_args(out_dir)?)
-        .arg("-swift-version")
-        .arg(swift_version)
         .args(sources);
     let status = command
         .spawn()
@@ -201,24 +194,6 @@ fn create_command(program: &str, options: &RunScriptOptions) -> Command {
         command.stderr(Stdio::null());
     }
     command
-}
-
-/// Test script files can specify the Swift language mode the uniffi Swift library and
-/// the test file itself should use, by putting "// swift-version: <5|6>" at the first line.
-/// The default Swift language mode is v5.
-fn script_swift_version(script_path: &Utf8PathBuf) -> Result<String> {
-    let file = File::open(script_path)?;
-    let mut reader = BufReader::new(file);
-    let mut line = String::new();
-    reader.read_line(&mut line)?;
-
-    if line.starts_with("// swift-version: ") {
-        if let Some(swift_version) = line.trim().strip_prefix("// swift-version: ") {
-            return Ok(swift_version.to_string());
-        }
-    }
-
-    Ok("5".to_string())
 }
 
 // Wraps glob to use Utf8Paths and flattens errors
