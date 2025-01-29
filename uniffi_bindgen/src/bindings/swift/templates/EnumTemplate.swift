@@ -22,6 +22,10 @@ public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
 }
 {% endmatch %}
 
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
@@ -85,7 +89,4 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
-#if swift(>=6.0)
-extension {{ type_name }}: Sendable {}
-#endif
 {% endif %}

@@ -9,7 +9,3 @@ public protocol {{ protocol_name }}: AnyObject {
     {%- endmatch %}
     {% endfor %}
 }
-
-#if swift(>=6.0)
-extension {{ protocol_name }}: Sendable {}
-#endif

@@ -15,6 +15,10 @@ public struct {{ type_name }} {
     }
 }
 
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
+
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {
     public static func ==(lhs: {{ type_name }}, rhs: {{ type_name }}) -> Bool {
@@ -33,9 +37,6 @@ extension {{ type_name }}: Equatable, Hashable {
     }
 }
 
-#if swift(>=6.0)
-extension {{ type_name }}: Sendable {}
-#endif
 {% endif %}
 
 #if swift(>=5.8)

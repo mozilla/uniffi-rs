@@ -8,7 +8,7 @@
 {% include "Protocol.swift" %}
 
 {%- call swift::docstring(obj, 0) %}
-open class {{ impl_class_name }}: {{ protocol_name }} {
+open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
     fileprivate let pointer: UnsafeMutableRawPointer!
 
     /// Used to instantiate a [FFIObject] without an actual pointer, for fakes in tests, mostly.
@@ -131,10 +131,6 @@ extension {{ impl_class_name }}: Swift.Error {}
 {%- for t in obj.trait_impls() %}
 extension {{impl_class_name}}: {{ self::trait_protocol_name(ci, t.trait_name)? }} {}
 {% endfor %}
-
-#if swift(>=6.0)
-extension {{ impl_class_name }}: Sendable {}
-#endif
 
 
 #if swift(>=5.8)
