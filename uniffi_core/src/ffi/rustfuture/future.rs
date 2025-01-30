@@ -76,7 +76,6 @@
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
 use std::{
-    future::Future,
     marker::PhantomData,
     ops::Deref,
     panic,
@@ -85,14 +84,14 @@ use std::{
     task::{Context, Poll, Wake},
 };
 
-use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler};
+use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler, UniffiCompatibleFuture};
 use crate::{rust_call_with_out_status, FfiDefault, LiftArgsError, LowerReturn, RustCallStatus};
 
 /// Wraps the actual future we're polling
 struct WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -106,7 +105,7 @@ where
 impl<F, T, UT> WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -186,7 +185,7 @@ where
 unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -196,7 +195,7 @@ where
 pub(super) struct RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -212,7 +211,7 @@ where
 impl<F, T, UT> RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -267,7 +266,7 @@ where
 impl<F, T, UT> Wake for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -302,7 +301,7 @@ pub trait RustFutureFfi<ReturnType>: Send + Sync {
 impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
 where
     // See rust_future_new for an explanation of these trait bounds
-    F: Future<Output = Result<T, LiftArgsError>> + Send + 'static,
+    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
