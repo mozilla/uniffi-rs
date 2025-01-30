@@ -27,7 +27,7 @@ pub(crate) fn sp(input: &str) -> IResult<&str, &str> {
 }
 
 /// ws also ignores line & block comments
-pub(crate) fn ws<'a, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&str, &str>
+pub(crate) fn ws<'a, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, &'a str>
 where
     F: Parser<&'a str, &'a str, nom::error::Error<&'a str>>,
 {

@@ -5,14 +5,14 @@ error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
   |                                                   ^^^ the trait `std::cmp::Eq` is not implemented for `f32`
   |
   = help: the following other types implement trait `std::cmp::Eq`:
-            isize
-            i8
+            i128
             i16
             i32
             i64
-            i128
-            usize
-            u8
+            i8
+            isize
+            u128
+            u16
           and $N others
 note: required by a bound in `assert_impl_all`
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
@@ -28,14 +28,14 @@ error[E0277]: the trait bound `f32: Hash` is not satisfied
   |                                                   ^^^ the trait `Hash` is not implemented for `f32`
   |
   = help: the following other types implement trait `Hash`:
-            isize
-            i8
+            i128
             i16
             i32
             i64
-            i128
-            usize
-            u8
+            i8
+            isize
+            u128
+            u16
           and $N others
 note: required by a bound in `assert_impl_all`
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
@@ -48,17 +48,17 @@ error[E0277]: the trait bound `f32: Hash` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
   | #[::uniffi::export_for_udl]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Hash` is not implemented for `f32`, which is required by `HashMap<f32, u64>: LowerReturn<UniFfiTag>`
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Hash` is not implemented for `f32`
   |
   = help: the following other types implement trait `Hash`:
-            isize
-            i8
+            i128
             i16
             i32
             i64
-            i128
-            usize
-            u8
+            i8
+            isize
+            u128
+            u16
           and $N others
   = note: required for `HashMap<f32, u64>` to implement `Lower<UniFfiTag>`
   = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
@@ -68,20 +68,58 @@ error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
  --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
   |
   | #[::uniffi::export_for_udl]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f32`, which is required by `HashMap<f32, u64>: LowerReturn<UniFfiTag>`
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f32`
   |
   = help: the following other types implement trait `std::cmp::Eq`:
-            isize
-            i8
+            i128
             i16
             i32
             i64
-            i128
-            usize
-            u8
+            i8
+            isize
+            u128
+            u16
           and $N others
   = note: required for `HashMap<f32, u64>` to implement `Lower<UniFfiTag>`
   = note: required for `HashMap<f32, u64>` to implement `LowerReturn<UniFfiTag>`
+  = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `f32: Hash` is not satisfied
+ --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
+  |
+  | #[::uniffi::export_for_udl]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Hash` is not implemented for `f32`
+  |
+  = help: the following other types implement trait `Hash`:
+            i128
+            i16
+            i32
+            i64
+            i8
+            isize
+            u128
+            u16
+          and $N others
+  = note: required for `HashMap<f32, u64>` to implement `Lower<UniFfiTag>`
+  = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `f32: std::cmp::Eq` is not satisfied
+ --> $OUT_DIR[uniffi_uitests]/records.uniffi.rs
+  |
+  | #[::uniffi::export_for_udl]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `std::cmp::Eq` is not implemented for `f32`
+  |
+  = help: the following other types implement trait `std::cmp::Eq`:
+            i128
+            i16
+            i32
+            i64
+            i8
+            isize
+            u128
+            u16
+          and $N others
+  = note: required for `HashMap<f32, u64>` to implement `Lower<UniFfiTag>`
   = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0425]: cannot find function `get_dict` in this scope

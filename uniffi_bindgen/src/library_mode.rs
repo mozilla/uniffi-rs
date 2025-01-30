@@ -34,7 +34,7 @@ use uniffi_meta::{
 /// interface and allows for more flexibility in how the external bindings are generated.
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
-pub fn generate_bindings<T: BindingGenerator + ?Sized>(
+pub fn generate_bindings<T: BindingGenerator>(
     library_path: &Utf8Path,
     crate_name: Option<String>,
     binding_generator: &T,
@@ -155,7 +155,7 @@ fn load_udl_metadata(
         .items
         .iter()
         .filter_map(|i| match i {
-            uniffi_meta::Metadata::UdlFile(meta) => Some(meta),
+            Metadata::UdlFile(meta) => Some(meta),
             _ => None,
         })
         .collect::<Vec<_>>();

@@ -54,12 +54,6 @@ trait CodeType: Debug {
         format!("FfiConverter{}", self.canonical_name())
     }
 
-    /// A list of imports that are needed if this type is in use.
-    /// Classes are imported exactly once.
-    fn imports(&self) -> Option<Vec<String>> {
-        None
-    }
-
     /// Function to run at startup
     fn initialization_fn(&self) -> Option<String> {
         None
