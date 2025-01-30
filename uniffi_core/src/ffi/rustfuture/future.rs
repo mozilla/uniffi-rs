@@ -13,16 +13,16 @@
 //! 0. At startup, register a [RustFutureContinuationCallback] by calling
 //!    rust_future_continuation_callback_set.
 //! 1. Call the scaffolding function to get a [Handle]
-//! 2a. In a loop:
+//! 2. In a loop:
 //!   - Call [rust_future_poll]
 //!   - Suspend the function until the [rust_future_poll] continuation function is called
 //!   - If the continuation was function was called with [RustFuturePoll::Ready], then break
 //!     otherwise continue.
-//! 2b. If the async function is cancelled, then call [rust_future_cancel].  This causes the
-//!     continuation function to be called with [RustFuturePoll::Ready] and the [RustFuture] to
-//!     enter a cancelled state.
-//! 3. Call [rust_future_complete] to get the result of the future.
-//! 4. Call [rust_future_free] to free the future, ideally in a finally block.  This:
+//! 3. If the async function is cancelled, then call [rust_future_cancel].  This causes the
+//!    continuation function to be called with [RustFuturePoll::Ready] and the [RustFuture] to
+//!    enter a cancelled state.
+//! 4. Call [rust_future_complete] to get the result of the future.
+//! 5. Call [rust_future_free] to free the future, ideally in a finally block.  This:
 //!    - Releases any resources held by the future
 //!    - Calls any continuation callbacks that have not been called yet
 //!

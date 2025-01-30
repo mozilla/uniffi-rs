@@ -234,7 +234,7 @@ pub struct ResultType<'a> {
     pub throws_type: Option<&'a Type>,
 }
 
-impl<'a> ResultType<'a> {
+impl ResultType<'_> {
     /// Get the `T` parameters for the `FutureCallback<T>` for this ResultType
     pub fn future_callback_param(&self) -> FfiType {
         match self.return_type {

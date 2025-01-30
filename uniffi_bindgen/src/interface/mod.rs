@@ -32,8 +32,9 @@
 //!
 //!   * It should prevent user error and the possibility of generating bad code by doing (at least)
 //!     the following checks:
-//!       * No duplicate names (types, methods, args, etc)
-//!       * No shadowing of builtin names, or names we use in code generation
+//!     * No duplicate names (types, methods, args, etc)
+//!     * No shadowing of builtin names, or names we use in code generation
+//!
 //!     We expect that if the user actually does one of these things, then they *should* get a compile
 //!     error when trying to build the component, because the codegen will be invalid. But we can't
 //!     guarantee that there's not some edge-case where it produces valid-but-incorrect code.
@@ -150,7 +151,7 @@ impl ComponentInterface {
         }
 
         // Unconditionally add the String type, which is used by the panic handling
-        self.types.add_known_type(&uniffi_meta::Type::String)?;
+        self.types.add_known_type(&Type::String)?;
         crate::macro_metadata::add_group_to_ci(self, group)?;
         Ok(())
     }

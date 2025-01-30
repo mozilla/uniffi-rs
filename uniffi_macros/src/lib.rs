@@ -3,6 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #![cfg_attr(feature = "nightly", feature(proc_macro_expand))]
 #![warn(rust_2018_idioms, unused_qualifications)]
+// somewhere between 1.77 and 1.84 we got a lot of new `dead_code` warnings because
+// we use structs to aid in parsing but don't actually use the items otherwise.
+#![allow(dead_code)]
 
 //! Macros for `uniffi`.
 

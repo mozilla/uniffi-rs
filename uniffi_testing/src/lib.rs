@@ -177,9 +177,11 @@ fn get_cargo_build_messages() -> Vec<Message> {
         .spawn()
         .expect("Error running cargo build");
     let output = std::io::BufReader::new(child.stdout.take().unwrap());
-    Message::parse_stream(output)
+    let result = Message::parse_stream(output)
         .map(|m| m.expect("Error parsing cargo build messages"))
-        .collect()
+        .collect();
+    child.wait().expect("failed to wait for child");
+    result
 }
 
 fn hash_path(path: &Utf8Path) -> String {

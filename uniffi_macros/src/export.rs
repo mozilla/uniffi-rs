@@ -189,7 +189,7 @@ pub fn rewrite_self_type(item: &mut Item) {
 
     struct RewriteSelfVisitor<'a>(&'a Type);
 
-    impl<'a> VisitMut for RewriteSelfVisitor<'a> {
+    impl VisitMut for RewriteSelfVisitor<'_> {
         fn visit_type_mut(&mut self, i: &mut Type) {
             match i {
                 Type::Path(p) if p.qself.is_none() && p.path.is_ident("Self") => {
