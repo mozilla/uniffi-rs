@@ -44,6 +44,19 @@ pub trait UniffiOneTrait: Send + Sync {
     fn hello(&self) -> String;
 }
 
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+pub enum UniffiOneTraitError {
+    #[error("Callback failed")]
+    Error,
+}
+
+#[uniffi::export(with_foreign)]
+#[async_trait::async_trait]
+pub trait UniffiOneAsyncTrait: Send + Sync {
+    async fn hello(&self) -> String;
+    async fn try_hello(&self) -> Result<String, UniffiOneTraitError>;
+}
+
 // A couple of errors used as external types.
 #[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum UniffiOneError {
