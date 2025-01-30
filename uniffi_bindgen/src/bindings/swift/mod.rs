@@ -12,10 +12,10 @@
 //! we generate:
 //!
 //!   * A C header file `exampleFFI.h` declaring the low-level structs and functions for calling
-//!    into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.
+//!     into Rust, along with a corresponding `exampleFFI.modulemap` to expose them to Swift.
 //!
 //!   * A Swift source file `example.swift` that imports the `exampleFFI` module and wraps it
-//!    to provide the higher-level Swift API.
+//!     to provide the higher-level Swift API.
 //!
 //! Most of the concepts in a [`crate::ComponentInterface`] have an obvious counterpart in Swift,
 //! with the details documented in inline comments where appropriate.

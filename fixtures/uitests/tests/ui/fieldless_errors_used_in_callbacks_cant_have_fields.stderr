@@ -1,7 +1,11 @@
 error[E0533]: expected value, found struct variant `Self::DivisionByZero`
- --> $OUT_DIR[uniffi_uitests]/errors.uniffi.rs
-  |
-  | #[::uniffi::udl_derive(Error)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not a value
-  |
-  = note: this error originates in the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $OUT_DIR[uniffi_uitests]/errors.uniffi.rs
+   |
+   | #[::uniffi::udl_derive(Error)]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not a value
+   |
+   = note: this error originates in the attribute macro `::uniffi::udl_derive` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might have meant to create a new value of the struct
+   |
+29 | #[::uniffi::udl_derive(Error)] { numerator: /* value */ }
+   |                                ++++++++++++++++++++++++++

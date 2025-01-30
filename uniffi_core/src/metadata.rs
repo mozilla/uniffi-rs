@@ -241,6 +241,12 @@ impl MetadataBuffer {
     }
 }
 
+impl Default for MetadataBuffer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AsRef<[u8]> for MetadataBuffer {
     fn as_ref(&self) -> &[u8] {
         &self.bytes[..self.size]

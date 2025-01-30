@@ -8,7 +8,7 @@ fn main() { /* empty main required by `trybuild` */}
 pub struct TraitMethods {}
 
 impl TraitMethods {
-    fn new(name: String) -> Self {
+    fn new(_name: String) -> Self {
         unreachable!();
     }
 }

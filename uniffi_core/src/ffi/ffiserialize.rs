@@ -210,7 +210,7 @@ impl FfiSerialize for RustBuffer {
     fn get(buf: &[FfiBufferElement]) -> Self {
         // Safety: the foreign bindings are responsible for sending us the correct data.
         let (capacity, len, data) = unsafe { (buf[0].u64, buf[1].u64, buf[2].ptr as *mut u8) };
-        unsafe { crate::RustBuffer::from_raw_parts(data, len, capacity) }
+        unsafe { RustBuffer::from_raw_parts(data, len, capacity) }
     }
 
     fn put(buf: &mut [FfiBufferElement], value: Self) {

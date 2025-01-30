@@ -19,6 +19,6 @@ error[E0277]: `TraitMethods` doesn't implement `std::fmt::Display`
   | #[uniffi::export(Display)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^ `TraitMethods` cannot be formatted with the default formatter
   |
-  = help: the trait `std::fmt::Display` is not implemented for `TraitMethods`, which is required by `&TraitMethods: std::fmt::Display`
+  = help: the trait `std::fmt::Display` is not implemented for `TraitMethods`
   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
   = note: this error originates in the macro `$crate::__export::format_args` which comes from the expansion of the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
