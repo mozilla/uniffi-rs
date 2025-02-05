@@ -262,7 +262,7 @@ impl BindgenCrateConfigSupplier for EmptyCrateConfigSupplier {}
 /// A convenience function for the CLI to help avoid using static libs
 /// in places cdylibs are required.
 pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
-    crate::library_mode::calc_cdylib_name(library_file.as_ref()).is_some()
+    library_mode::calc_cdylib_name(library_file.as_ref()).is_some()
 }
 
 /// Generate bindings for an external binding generator
@@ -311,7 +311,7 @@ pub fn generate_external_bindings<T: BindingGenerator>(
     let settings = GenerationSettings {
         cdylib: match library_file {
             Some(ref library_file) => {
-                crate::library_mode::calc_cdylib_name(library_file.as_ref()).map(ToOwned::to_owned)
+                library_mode::calc_cdylib_name(library_file.as_ref()).map(ToOwned::to_owned)
             }
             None => None,
         },

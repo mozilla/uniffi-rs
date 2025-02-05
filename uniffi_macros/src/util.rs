@@ -287,7 +287,7 @@ impl Parse for ExternalTypeItem {
 }
 
 pub(crate) fn extract_docstring(attrs: &[Attribute]) -> syn::Result<String> {
-    return attrs
+    attrs
         .iter()
         .filter(|attr| attr.path().is_ident("doc"))
         .map(|attr| {
@@ -300,5 +300,5 @@ pub(crate) fn extract_docstring(attrs: &[Attribute]) -> syn::Result<String> {
             Err(syn::Error::new_spanned(attr, "Cannot parse doc attribute"))
         })
         .collect::<syn::Result<Vec<_>>>()
-        .map(|lines| lines.join("\n"));
+        .map(|lines| lines.join("\n"))
 }

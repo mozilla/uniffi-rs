@@ -137,7 +137,7 @@ pub fn extract_from_macho(macho: MachO<'_>, file_data: &[u8]) -> anyhow::Result<
         if nlist.is_global()
             && nlist.get_type() == symbols::N_SECT
             && is_metadata_symbol(name)
-            && nlist.n_sect != goblin::mach::symbols::NO_SECT as usize
+            && nlist.n_sect != symbols::NO_SECT as usize
         {
             let section = &sections[nlist.n_sect - 1];
 

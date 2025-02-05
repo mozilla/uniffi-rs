@@ -2,7 +2,7 @@ error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
   --> tests/ui/proc_macro_arc.rs:10:1
    |
 10 | #[uniffi::export]
-   | ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`, which is required by `Arc<Foo>: LowerReturn<UniFfiTag>`
+   | ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
    |
    = help: the trait `LowerReturn<UT>` is implemented for `Arc<T>`
    = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
@@ -14,7 +14,7 @@ error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
   --> tests/ui/proc_macro_arc.rs:11:18
    |
 11 | fn make_foo() -> Arc<Foo> {
-   |                  ^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`, which is required by `Arc<Foo>: uniffi::TypeId<UniFfiTag>`
+   |                  ^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
    |
    = help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
    = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
@@ -24,7 +24,7 @@ error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not sa
   --> tests/ui/proc_macro_arc.rs:20:5
    |
 20 |     #[uniffi::export]
-   |     ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`, which is required by `Arc<child::Foo>: Lift<UniFfiTag>`
+   |     ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
    |
    = help: the trait `Lift<UT>` is implemented for `Arc<T>`
    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
@@ -35,8 +35,48 @@ error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not sa
   --> tests/ui/proc_macro_arc.rs:21:22
    |
 21 |     fn take_foo(foo: Arc<Foo>) {
-   |                      ^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`, which is required by `Arc<child::Foo>: uniffi::TypeId<UniFfiTag>`
+   |                      ^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
    |
    = help: the trait `uniffi::TypeId<UT>` is implemented for `Arc<T>`
    = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
    = note: required for `Arc<child::Foo>` to implement `uniffi::TypeId<UniFfiTag>`
+
+error[E0277]: the trait bound `Foo: FfiConverterArc<UniFfiTag>` is not satisfied
+  --> tests/ui/proc_macro_arc.rs:10:1
+   |
+10 | #[uniffi::export]
+   | ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `Foo`
+   |
+   = help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
+   = note: required for `Arc<Foo>` to implement `FfiConverter<UniFfiTag>`
+   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `child::Foo: FfiConverterArc<UniFfiTag>` is not satisfied
+  --> tests/ui/proc_macro_arc.rs:20:5
+   |
+20 |     #[uniffi::export]
+   |     ^^^^^^^^^^^^^^^^^ the trait `FfiConverterArc<UniFfiTag>` is not implemented for `child::Foo`
+   |
+   = help: the trait `FfiConverter<UT>` is implemented for `Arc<T>`
+   = note: required for `Arc<child::Foo>` to implement `FfiConverter<UniFfiTag>`
+   = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&child::Foo` is non-empty
+  --> tests/ui/proc_macro_arc.rs:22:15
+   |
+22 |         match &*foo {}
+   |               ^^^^^
+   |
+note: `child::Foo` defined here
+  --> tests/ui/proc_macro_arc.rs:18:10
+   |
+18 |     enum Foo {}
+   |          ^^^
+   = note: the matched value is of type `&child::Foo`
+   = note: references are always considered inhabited
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+22 ~         match &*foo {
+23 +             _ => todo!(),
+24 +         }
+   |
