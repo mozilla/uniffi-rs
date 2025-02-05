@@ -183,6 +183,13 @@ impl UniffiOneAsyncTrait for UniffiOneAsyncTraitImpl {
     }
 }
 
+#[uniffi::export]
+fn get_uniffi_one_async_trait(
+    t: Option<Arc<dyn UniffiOneAsyncTrait>>,
+) -> Option<Arc<dyn UniffiOneAsyncTrait>> {
+    t
+}
+
 // Some custom types via macros.
 // Another guid - here we use a regular struct.
 pub struct Uuid {
