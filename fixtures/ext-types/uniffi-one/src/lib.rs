@@ -57,6 +57,12 @@ pub trait UniffiOneAsyncTrait: Send + Sync {
     async fn try_hello(&self) -> Result<String, UniffiOneTraitError>;
 }
 
+// We *must* have this so support is generated. We should fix that and remove this. See #2423.
+#[uniffi::export]
+fn _just_to_get_trait_support() -> std::sync::Arc<dyn UniffiOneAsyncTrait> {
+    panic!()
+}
+
 // A couple of errors used as external types.
 #[derive(thiserror::Error, uniffi::Error, Debug)]
 pub enum UniffiOneError {
