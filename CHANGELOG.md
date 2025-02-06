@@ -4,7 +4,11 @@
 
 <!-- next-header -->
 
-## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+
+[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...NEXT_HEAD).
+
+## [[UnreleasedUniFFIVersion]] (backend crates: v0.29.0) - (_2025-02-06_)
 
 ### ⚠️ Breaking Changes ⚠️
 
