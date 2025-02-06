@@ -8,6 +8,7 @@ release-backend-crates = [
     "-p", "uniffi_bindgen",
     "-p", "uniffi_build",
     "-p", "uniffi_checksum_derive",
+    "-p", "uniffi_internal_macros",
     "-p", "uniffi_macros",
     "-p", "uniffi_meta",
     "-p", "uniffi_testing",
