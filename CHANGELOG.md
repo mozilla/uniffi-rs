@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.29.0) - (_2025-02-06_)
+## v0.29.0 (backend crates: v0.29.0) - (_2025-02-06_)
 
 ### ⚠️ Breaking Changes ⚠️
 
@@ -83,7 +83,7 @@ or use UDL with types from more than one crate.
   To get a feel for the impact on the bindings, see where we [first did this for custom types](https://github.com/mozilla/uniffi-rs/commit/c5a437e9f34f9d46c097848810bf6111cfa13a9f),
     and where we [then stopped using it entirely](https://github.com/mozilla/uniffi-rs/commit/df514fd1cc748da5c05ab64ccb02d7791012a9cb)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...HEAD).
+[All changes in v0.29.0](https://github.com/mozilla/uniffi-rs/compare/v0.28.3...v0.29.0).
 
 ## v0.28.3 (backend crates: v0.28.3) - (_2024-11-08_)
 
