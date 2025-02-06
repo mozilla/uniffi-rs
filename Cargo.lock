@@ -2072,7 +2072,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_internal_macros"
-version = "0.28.3"
+version = "0.29.0"
 dependencies = [
  "quote",
  "syn",
