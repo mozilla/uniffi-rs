@@ -13,8 +13,6 @@ use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
-use crate::backend::TemplateExpression;
-
 use crate::interface::*;
 use crate::VisitMut;
 
@@ -108,12 +106,35 @@ pub struct Config {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct CustomTypeConfig {
     // This `CustomTypeConfig` doesn't have a `type_name` like the others -- which is why we have
     // separate structs rather than a shared one.
     imports: Option<Vec<String>>,
-    into_custom: TemplateExpression,
-    from_custom: TemplateExpression,
+    into_custom: String, // b/w compat alias for lift
+    lift: String,
+    from_custom: String, // b/w compat alias for lower
+    lower: String,
+}
+
+// functions replace literal "{}" in strings with a specified value.
+impl CustomTypeConfig {
+    fn lift(&self, name: &str) -> String {
+        let converter = if self.lift.is_empty() {
+            &self.into_custom
+        } else {
+            &self.lift
+        };
+        converter.replace("{}", name)
+    }
+    fn lower(&self, name: &str) -> String {
+        let converter = if self.lower.is_empty() {
+            &self.from_custom
+        } else {
+            &self.lower
+        };
+        converter.replace("{}", name)
+    }
 }
 
 impl Config {

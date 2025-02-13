@@ -34,26 +34,26 @@ class _UniffiConverterType{{ name }}:
 class _UniffiConverterType{{ name }}:
     @staticmethod
     def write(value, buf):
-        builtin_value = {{ config.from_custom.render("value") }}
+        builtin_value = {{ config.lower("value") }}
         {{ builtin|write_fn }}(builtin_value, buf)
 
     @staticmethod
     def read(buf):
         builtin_value = {{ builtin|read_fn }}(buf)
-        return {{ config.into_custom.render("builtin_value") }}
+        return {{ config.lift("builtin_value") }}
 
     @staticmethod
     def lift(value):
         builtin_value = {{ builtin|lift_fn }}(value)
-        return {{ config.into_custom.render("builtin_value") }}
+        return {{ config.lift("builtin_value") }}
 
     @staticmethod
     def check_lower(value):
-        builtin_value = {{ config.from_custom.render("value") }}
+        builtin_value = {{ config.lower("value") }}
         return {{ builtin|check_lower_fn }}(builtin_value)
 
     @staticmethod
     def lower(value):
-        builtin_value = {{ config.from_custom.render("value") }}
+        builtin_value = {{ config.lower("value") }}
         return {{ builtin|lower_fn }}(builtin_value)
 {%- endmatch %}
