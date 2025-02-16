@@ -1,5 +1,5 @@
 {%- call swift::docstring(e, 0) %}
-public enum {{ type_name }} {
+public enum {{ type_name }}: Swift.Error {
 
     {% if e.is_flat() %}
     {% for variant in e.variants() %}
