@@ -7,6 +7,9 @@ use std::process::Command;
 use anyhow::Result;
 use fs_err as fs;
 
+mod pipeline;
+pub use pipeline::pipeline;
+
 mod gen_python;
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
