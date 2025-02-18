@@ -21,7 +21,8 @@ uniffi_macros = { path = "../uniffi_macros", version = "=0.29.0" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
 cargo_metadata = { version = "0.15", optional = true }
-clap = { version = "4", features = ["cargo", "std", "derive"], optional = true }
+# avoid 'clap/color' due to dependency hell.
+clap = { version = "4", default-features = false, features = [ "cargo", "derive", "error-context", "help", "suggestions", "std", "usage" ], optional = true }
 
 [dev-dependencies]
 trybuild = "1"
