@@ -5,6 +5,7 @@ members = [
   "uniffi_core",
   "uniffi_macros",
   "uniffi_meta",
+  "uniffi_pipeline",
   "uniffi_testing",
   "uniffi_udl",
   "uniffi",

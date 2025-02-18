@@ -9,7 +9,7 @@ publish = false
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-async-std = "1.12.0"
+async-std = "1.13"
 thiserror = "1.0"
 uniffi = { workspace = true }
 
