@@ -1,7 +1,7 @@
 [package]
-name = "uniffi_internal_macros"
+name = "uniffi_pipeline"
 version = "0.29.1"
-description = "a multi-language bindings generator for rust (interal macro crate)"
+description = "a multi-language bindings generator for rust (codegen and cli tooling)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
@@ -10,16 +10,9 @@ edition = "2021"
 keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
-[lib]
-proc-macro = true
-
 [dependencies]
 anyhow = "1"
+heck = "0.5"
 indexmap = { version = "2.2" }
-proc-macro2 = "1.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full", "visit-mut", "extra-traits"] }
-
-[features]
-default = []
-nightly = []
+tempfile = "3"
+uniffi_internal_macros = { path = "../uniffi_internal_macros", version = "=0.29.1" }
