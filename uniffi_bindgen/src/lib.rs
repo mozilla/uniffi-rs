@@ -105,6 +105,7 @@ pub mod bindings;
 pub mod interface;
 pub mod library_mode;
 pub mod macro_metadata;
+pub mod pipeline;
 pub mod scaffolding;
 
 #[cfg(feature = "cargo-metadata")]
