@@ -4,13 +4,14 @@
 
 use anyhow::{bail, Context, Result};
 use camino::Utf8PathBuf;
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fmt;
 use uniffi_bindgen::bindings::*;
+use uniffi_bindgen::ir::{InitialRoot, Pipeline, PrintStepsOptions};
 
 /// Enumeration of all foreign language targets currently supported by our CLI.
 ///
-#[derive(Copy, Clone, Eq, PartialEq, Hash, clap::ValueEnum)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, ValueEnum)]
 enum TargetLanguage {
     Kotlin,
     Swift,
@@ -132,11 +133,49 @@ enum Commands {
         udl_file: Utf8PathBuf,
     },
 
-    /// Print a debug representation of the interface from a dynamic library
-    PrintRepr {
-        /// Path to the library file (.so, .dll, .dylib, or .a)
-        path: Utf8PathBuf,
-    },
+    /// Inspect the bindings render pipeline
+    Pipeline(PipelineArgs),
+}
+
+#[derive(Args)]
+struct PipelineArgs {
+    /// Pass in a cdylib path rather than a UDL file
+    #[clap(long = "library")]
+    library_mode: bool,
+
+    /// Path to the UDL file, or cdylib if `library-mode` is specified
+    source: Utf8PathBuf,
+
+    /// When `--library` is passed, only generate bindings for one crate.
+    /// When `--library` is not passed, use this as the crate name instead of attempting to
+    /// locate and parse Cargo.toml.
+    #[clap(long = "crate")]
+    crate_name: Option<String>,
+
+    /// Whether we should exclude dependencies when running "cargo metadata".
+    /// This will mean external types may not be resolved if they are implemented in crates
+    /// outside of this workspace.
+    /// This can be used in environments when all types are in the namespace and fetching
+    /// all sub-dependencies causes obscure platform specific problems.
+    #[clap(long)]
+    metadata_no_deps: bool,
+
+    /// Bindings Language
+    language: TargetLanguage,
+
+    /// Only show pass steps that match <STEP>
+    ///
+    /// Use `last` to only show the last step, this can be useful when you're writing new pipelines
+    #[clap(short, long)]
+    steps: Option<String>,
+
+    /// Only show data for types with name <FILTER_TYPE>
+    #[clap(short = 't', long = "type")]
+    filter_type: Option<String>,
+
+    /// Only show data for items with fields that match <FILTER>
+    #[clap(short = 'n', long = "name")]
+    filter_name: Option<String>,
 }
 
 fn config_supplier(
@@ -335,8 +374,23 @@ pub fn run_main() -> anyhow::Result<()> {
                 !no_format,
             )?;
         }
-        Commands::PrintRepr { path } => {
-            uniffi_bindgen::print_repr(&path)?;
+        Commands::Pipeline(args) => {
+            let config_supplier = config_supplier(args.metadata_no_deps)?;
+            let initial_root = if args.library_mode {
+                InitialRoot::from_library(config_supplier, &args.source, args.crate_name)?
+            } else {
+                InitialRoot::from_udl(&args.source, args.crate_name)?
+            };
+
+            let opts = PrintStepsOptions {
+                steps: args.steps,
+                filter_type: args.filter_type,
+                filter_name: args.filter_name,
+            };
+            match args.language {
+                TargetLanguage::Python => python_pipeline(initial_root).print_steps(opts)?,
+                language => unimplemented!("{language} does not use the nanopass pipeline yet"),
+            };
         }
     };
     Ok(())
