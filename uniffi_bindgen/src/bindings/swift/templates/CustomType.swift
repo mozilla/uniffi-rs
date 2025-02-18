@@ -54,21 +54,21 @@ public struct FfiConverterType{{ name }}: FfiConverter {
 
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
         let builtinValue = try {{ builtin|read_fn }}(from: &buf)
-        return {{ config.into_custom.render("builtinValue") }}
+        return {{ config.lift("builtinValue") }}
     }
 
     public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
-        let builtinValue = {{ config.from_custom.render("value") }}
+        let builtinValue = {{ config.lower("value") }}
         return {{ builtin|write_fn }}(builtinValue, into: &buf)
     }
 
     public static func lift(_ value: {{ ffi_type_name }}) throws -> {{ type_name }} {
         let builtinValue = try {{ builtin|lift_fn }}(value)
-        return {{ config.into_custom.render("builtinValue") }}
+        return {{ config.lift("builtinValue") }}
     }
 
     public static func lower(_ value: {{ type_name }}) -> {{ ffi_type_name }} {
-        let builtinValue = {{ config.from_custom.render("value") }}
+        let builtinValue = {{ config.lower("value") }}
         return {{ builtin|lower_fn }}(builtinValue)
     }
 }

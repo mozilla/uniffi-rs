@@ -3,18 +3,18 @@
 type_name = "URL"
 # Modules that need to be imported
 imports = ["Foundation"]
-# Functions to convert between strings and URLs
-into_custom = "URL(string: {})!"
-from_custom = "String(describing: {})"
+# Function to lift a string from Rust into a Swift URL.
+lift = "URL(string: {})!"
+# and to lower it to a Rust string
+lower = "String(describing: {})"
 
 [bindings.swift.custom_types.TimeIntervalMs]
 # Name of the type in the Swift code
 type_name = "Date"
 # Modules that need to be imported
 imports = ["Foundation"]
-# Functions to convert between i64 and TimeIntervalMs
-into_custom = "Date(timeIntervalSince1970: TimeInterval({}) / 1000.0)"
-from_custom = "Int64({}.timeIntervalSince1970 * 1000.0)"
+lift = "Date(timeIntervalSince1970: TimeInterval({}) / 1000.0)"
+lower = "Int64({}.timeIntervalSince1970 * 1000.0)"
 
 [bindings.swift.custom_types.TimeIntervalSecDbl]
 # Name of the type in the Swift code
@@ -22,8 +22,8 @@ type_name = "Date"
 # Modules that need to be imported
 imports = ["Foundation"]
 # Functions to convert between f64 and TimeIntervalSecDbl
-into_custom = "Date(timeIntervalSince1970: {})"
-from_custom = "{}.timeIntervalSince1970"
+lift = "Date(timeIntervalSince1970: {})"
+lower = "{}.timeIntervalSince1970"
 
 [bindings.swift.custom_types.TimeIntervalSecFlt]
 # Name of the type in the Swift code
@@ -31,6 +31,7 @@ type_name = "Date"
 # Modules that need to be imported
 imports = ["Foundation"]
 # Functions to convert between f32 and TimeIntervalSecFlt
+# (here we use the deprecated names instead of `lift` and `lower`)
 into_custom = "Date(timeIntervalSince1970: TimeInterval({}))"
 from_custom = "Float({}.timeIntervalSince1970)"
 
@@ -42,9 +43,10 @@ package_name = "customtypes"
 type_name = "URL"
 # Classes that need to be imported
 imports = [ "java.net.URI", "java.net.URL" ]
-# Functions to convert between strings and URLs
-into_custom = "URI({}).toURL()"
-from_custom = "{}.toString()"
+# Function to lift a string from Rust into a Kotlin URL.
+lift = "URI({}).toURL()"
+# and to lower it to a Rust string
+lower = "{}.toString()"
 
 [bindings.python.custom_types.Url]
 # We're going to be the urllib.parse.ParseResult class, which is the closest
@@ -52,6 +54,7 @@ from_custom = "{}.toString()"
 # since Python is loosely typed.
 # modules to import
 imports = ["urllib.parse"]
-# Functions to convert between strings and the ParsedUrl class
-into_custom = "urllib.parse.urlparse({})"
-from_custom = "urllib.parse.urlunparse({})"
+# Function to lift a string from Rust into a Python URL.
+lift = "urllib.parse.urlparse({})"
+# and to lower it to a Rust string
+lower = "urllib.parse.urlunparse({})"
