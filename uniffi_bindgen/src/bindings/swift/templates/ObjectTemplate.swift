@@ -201,8 +201,6 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UnsafeMu
 {# Objects as error #}
 {%- if is_error %}
 
-extension {{ type_name }}: Swift.Error {}
-
 {% if !config.omit_localized_error_conformance() %}
 extension {{ type_name }}: Foundation.LocalizedError {
     public var errorDescription: String? {
