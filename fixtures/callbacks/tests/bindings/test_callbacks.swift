@@ -14,7 +14,7 @@ struct SomeOtherError: Error { }
 // Make the callback methods use multiple arguments, with a variety of types, and
 // with a variety of return types.
 let rustGetters = RustGetters()
-class SwiftGetters: ForeignGetters {
+final class SwiftGetters: ForeignGetters {
     func getBool(v: Bool, argumentTwo: Bool) throws -> Bool { v != argumentTwo }
     func getString(v: String, arg2: Bool) throws -> String { 
         if v == "bad-argument" {
@@ -87,7 +87,7 @@ do {
     // This is crucial if we want to configure a system at startup,
     // then use it without passing callbacks all the time.
 
-    class StoredSwiftStringifier: StoredForeignStringifier {
+    final class StoredSwiftStringifier: StoredForeignStringifier {
         func fromSimpleType(value: Int32) -> String { "swift: \(value)" }
         // We don't test this, but we're checking that the arg type is included in the minimal list of types used
         // in the UDL.

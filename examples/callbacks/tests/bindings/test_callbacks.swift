@@ -11,8 +11,8 @@ struct SomeOtherError: Error { }
 // Simple example just to see it work.
 // Pass in a string, get a string back.
 // Pass in nothing, get unit back.
-class OnCallAnsweredImpl : CallAnswerer {
-    var mode: String
+final class OnCallAnsweredImpl : CallAnswerer {
+    let mode: String
 
     init(withMode: String) {
         mode = withMode
@@ -38,7 +38,7 @@ let sim = getSimCards()[0];
 assert(try! telephone.call(sim: sim, answerer: OnCallAnsweredImpl(withMode: "ready")) == "Bonjour")
 
 // We can implement our own sim cards.
-class Sim : SimCard {
+final class Sim : SimCard {
     func name() -> String {
         return "swift"
     }

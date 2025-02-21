@@ -9,7 +9,7 @@ for button in getButtons() {
 }
 
 // Test a Button implemented in Swift
-class SwiftButton: Button {
+final class SwiftButton: Button {
     func name() -> String {
         return "SwiftButton"
     }
