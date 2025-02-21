@@ -19,8 +19,11 @@ pub struct CrateConfigSupplier {
 
 impl BindgenCrateConfigSupplier for CrateConfigSupplier {
     fn get_toml(&self, crate_name: &str) -> anyhow::Result<Option<toml::value::Table>> {
-        let toml = self.paths.get(crate_name).map(|p| p.join("uniffi.toml"));
-        crate::load_toml_file(toml.as_deref())
+        crate::load_toml_file(self.get_toml_path(crate_name).as_deref())
+    }
+
+    fn get_toml_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        self.paths.get(crate_name).map(|p| p.join("uniffi.toml"))
     }
 
     fn get_udl(&self, crate_name: &str, udl_name: &str) -> anyhow::Result<String> {

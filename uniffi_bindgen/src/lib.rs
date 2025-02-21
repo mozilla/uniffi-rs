@@ -246,10 +246,18 @@ pub struct Component<Config> {
 /// In most cases `cargo_metadata` can be used, but this should be able to work in
 /// more environments.
 pub trait BindgenCrateConfigSupplier {
-    /// Get the toml for the crate. Probably came from uniffi.toml in the root of the crate source.
+    /// Get a `toml::value::Table` instance for the crate.
     fn get_toml(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
         Ok(None)
     }
+
+    /// Get the path to the TOML file for a crate.
+    ///
+    /// This is usually the `uniffi.toml` path in the root of the crate source.
+    fn get_toml_path(&self, _crate_name: &str) -> Option<Utf8PathBuf> {
+        None
+    }
+
     /// Obtains the contents of the named UDL file which was referenced by the type metadata.
     fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
         bail!("Crate {crate_name} has no UDL {udl_name}")
