@@ -48,12 +48,16 @@ pub fn run_script(
         &out_dir,
     )?;
 
+    // We need something better than this env var, but it's a reasonable start.
+    let swift_version = std::env::var("UNIFFI_TEST_SWIFT_VERSION").unwrap_or("5".to_string());
+
     // Compile the generated sources together to create a single swift module
     compile_swift_module(
         &out_dir,
         &generated_sources.main_module,
         &generated_sources.generated_swift_files,
         &generated_sources.module_map,
+        &swift_version,
         options,
     )?;
 
@@ -66,6 +70,8 @@ pub fn run_script(
         .arg("-L")
         .arg(&out_dir)
         .args(calc_library_args(&out_dir)?)
+        .arg("-swift-version")
+        .arg(swift_version)
         .arg("-Xcc")
         .arg(format!(
             "-fmodule-map-file={}",
@@ -89,6 +95,7 @@ fn compile_swift_module<T: AsRef<OsStr>>(
     module_name: &str,
     sources: impl IntoIterator<Item = T>,
     module_map: &Utf8Path,
+    swift_version: &str,
     options: &RunScriptOptions,
 ) -> Result<()> {
     let output_filename = format!("{DLL_PREFIX}testmod_{module_name}{DLL_SUFFIX}");
@@ -103,6 +110,8 @@ fn compile_swift_module<T: AsRef<OsStr>>(
         .arg("-o")
         .arg(output_filename)
         .arg("-emit-library")
+        .arg("-swift-version")
+        .arg(swift_version)
         .arg("-Xcc")
         .arg(format!("-fmodule-map-file={module_map}"))
         .arg("-I")
