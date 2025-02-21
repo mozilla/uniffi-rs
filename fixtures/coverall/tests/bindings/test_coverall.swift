@@ -299,7 +299,7 @@ do {
 struct SomeOtherError: Error { }
 
 
-class SwiftGetters: Getters {
+final class SwiftGetters: Getters {
     func getBool(v: Bool, arg2: Bool) -> Bool { v != arg2 }
     func getString(v: String, arg2: Bool) throws -> String {
         if v == "too-many-holes" {
@@ -404,7 +404,7 @@ func testGettersFromSwift(getters: Getters) {
     }
 }
 
-class SwiftNode: NodeTrait {
+final class SwiftNode: NodeTrait, @unchecked Sendable {
     var p: NodeTrait? = nil
 
     func name() -> String {

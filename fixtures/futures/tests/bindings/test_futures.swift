@@ -169,7 +169,7 @@ counter.enter()
 
 struct UnexpectedError : Error { }
 
-class SwiftAsyncParser: AsyncParser {
+final class SwiftAsyncParser: AsyncParser, @unchecked Sendable {
     var completedDelays: Int = 0
 
     func asString(delayMs: Int32, value: Int32) async -> String {

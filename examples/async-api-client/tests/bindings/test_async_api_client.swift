@@ -8,7 +8,7 @@ import Foundation // To get `DispatchGroup`
     import async_api_client
 #endif
 
-class SwiftHttpClient : HttpClient {
+final class SwiftHttpClient : HttpClient {
     func fetch(url: String, credentials: String) async throws -> String {
         if (credentials != "username:password") {
             throw ApiError.Http(reason: "Unauthorized")
@@ -25,7 +25,7 @@ class SwiftHttpClient : HttpClient {
     }
 }
 
-class SwiftTaskRunner : TaskRunner {
+final class SwiftTaskRunner : TaskRunner {
     func runTask(task: RustTask) async {
         let swiftTask = Task { task.execute() }
         let _ = await swiftTask.result
