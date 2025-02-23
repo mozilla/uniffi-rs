@@ -22,9 +22,7 @@ public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
 }
 {% endmatch %}
 
-#if compiler(>=6)
 extension {{ type_name }}: Sendable {}
-#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)

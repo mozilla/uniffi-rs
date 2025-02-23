@@ -15,9 +15,7 @@ public struct {{ type_name }} {
     }
 }
 
-#if compiler(>=6)
 extension {{ type_name }}: Sendable {}
-#endif
 
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {
