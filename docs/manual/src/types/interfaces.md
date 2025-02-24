@@ -37,7 +37,7 @@ UniFFI will generate these proxies with an interface or protocol to help with te
 interface TodoListInterface {
     fun addItem(todo: String)
     fun getItems(): List<String>
-}
+};
 
 class TodoList : TodoListInterface {
    // implementations to call the Rust code.
@@ -141,7 +141,7 @@ For example, consider the following example:
 [Traits=(Debug)]
 interface TodoList {
     ...
-}
+};
 ```
 and the following Rust code:
 ```rust
