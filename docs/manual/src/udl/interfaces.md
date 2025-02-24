@@ -29,6 +29,7 @@ interface TodoList {
     [Async, Name=new_async]
     constructor(sequence<string> items);
     ...
+};
 ```
 
 For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
