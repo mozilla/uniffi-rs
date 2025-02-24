@@ -1863,6 +1863,7 @@ must be given an explicit name, provided in the UDL with the <code>[Name]</code>
 <span class="w">    </span>[Async,<span class="w"> </span>Name<span class="o">=</span>new_async]
 <span class="w">    </span>constructor(sequence<span class="o">&lt;</span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>items);
 <span class="w">    </span>...
+};
 </code></pre></div>
 <p>For each alternate constructor, UniFFI will expose an appropriate static-method, class-method or similar
 in the foreign language binding, and will connect it to the Rust method of the same name on the underlying

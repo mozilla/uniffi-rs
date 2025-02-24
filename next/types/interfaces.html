@@ -1940,7 +1940,7 @@ calling any methods on them, including a constructor results in the correspondin
 <div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">TodoListInterface</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">addItem</span><span class="p">(</span><span class="n">todo</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">getItems</span><span class="p">():</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span>
-<span class="p">}</span>
+<span class="p">};</span>
 
 <span class="kd">class</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TodoListInterface</span><span class="w"> </span><span class="p">{</span>
 <span class="w">   </span><span class="c1">// implementations to call the Rust code.</span>
@@ -2012,7 +2012,7 @@ generate special methods on the object.</p>
 <div class="highlight"><pre><span></span><code>[Traits=(Debug)]
 interface TodoList {
     ...
-}
+};
 </code></pre></div>
 and the following Rust code:
 <div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug)]</span>
