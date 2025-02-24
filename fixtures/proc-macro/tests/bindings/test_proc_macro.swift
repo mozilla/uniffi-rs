@@ -73,7 +73,7 @@ assert(objWithDefaults.addToNum() == 42)
 
 // Traits
 
-class SwiftTestCallbackInterface : TestCallbackInterface {
+final class SwiftTestCallbackInterface : TestCallbackInterface {
     func doNothing() { }
 
     func add(a: UInt32, b: UInt32) -> UInt32 {
@@ -110,7 +110,7 @@ class SwiftTestCallbackInterface : TestCallbackInterface {
     }
 }
 
-class SwiftTestCallbackInterface2 : OtherCallbackInterface {
+final class SwiftTestCallbackInterface2 : OtherCallbackInterface {
     func multiply(a: UInt32, b: UInt32) -> UInt32 {
         return a * b;
     }
