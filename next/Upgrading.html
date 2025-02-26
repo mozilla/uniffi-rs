@@ -1896,6 +1896,12 @@ typedef extern Url;
 typedef string Url; // replace `string` with any appropriate type.
 </code></pre></div></p>
 <h2 id="remote-types">Remote Types</h2>
+<p>Remote types in UDL now need the <code>[Remote]</code> attribute:
+<div class="highlight"><pre><span></span><code>[Remote]
+dictionary RemoteRecord {
+    ...
+};
+</code></pre></div></p>
 <p>The macros <code>ffi_converter_forward</code> and all <code>use_*</code> macros (eg, <code>use_udl_record!</code>, <code>use_udl_object!</code>, <code>use_udl_enum!</code> etc)
 are now unnecessary so have been removed.</p>
 <p>See <a href="types/remote_ext_types.html">Remote and External Types</a> for more detail.</p>
