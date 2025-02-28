@@ -7,7 +7,7 @@
 
 import regression_test_callbacks_omit_labels
 
-class ClientDelegateImpl: ClientDelegate {
+final class ClientDelegateImpl: ClientDelegate, @unchecked Sendable {
     var recvCount: Int = 0
     var lastFriend = ""
 

@@ -31,7 +31,7 @@ obj2.test()
 var rec = RecordTest(test: 123)
 var recField = rec.test
 
-class CallbackImpls: CallbackTest {
+final class CallbackImpls: CallbackTest {
     func test() {}
 }
 

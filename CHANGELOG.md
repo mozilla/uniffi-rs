@@ -14,6 +14,10 @@
 
 - The uniffi-bindgen CLI support no longer brings in the `clap/color` feature, reducing dependencies ([#2435](https://github.com/mozilla/uniffi-rs/pull/2435))
 
+- Protocols generated for Swift now conform to the `Sendable` protocol. This means that UniFFI traits will too, but
+  it also means foreign implemented traits also must when Swift 6 conformance is enabled.
+  See the Swift section of the manual for more. ([#2450](https://github.com/mozilla/uniffi-rs/pull/2450))
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...HEAD).
 
 ## v0.29.0 (backend crates: v0.29.0) - (_2025-02-06_)
