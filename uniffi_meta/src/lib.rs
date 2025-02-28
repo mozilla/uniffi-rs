@@ -509,7 +509,7 @@ impl Metadata {
         read_metadata(data)
     }
 
-    pub(crate) fn module_path(&self) -> &str {
+    pub fn module_path(&self) -> &str {
         match self {
             Metadata::Namespace(meta) => &meta.crate_name,
             Metadata::UdlFile(meta) => &meta.module_path,
