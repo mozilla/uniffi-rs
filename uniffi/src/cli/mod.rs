@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 mod swift;
+mod swift_package;
 mod uniffi_bindgen;
 
 pub fn uniffi_bindgen_main() {
@@ -14,6 +15,13 @@ pub fn uniffi_bindgen_main() {
 
 pub fn uniffi_bindgen_swift() {
     if let Err(e) = swift::run_main() {
+        eprintln!("{e:?}");
+        std::process::exit(1);
+    }
+}
+
+pub fn uniffi_bindgen_swift_package() {
+    if let Err(e) = swift_package::run_main() {
         eprintln!("{e:?}");
         std::process::exit(1);
     }
