@@ -122,3 +122,5 @@ val eb = MixedEnum.Both("hi", 2)
 val (s, i) = eb
 assert(s == "hi")
 assert(i == 2L)
+
+assert(getMixedEnum(MixedEnum.Vec(listOf("hello"))) == MixedEnum.Vec(listOf("hello")))

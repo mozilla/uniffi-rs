@@ -10,6 +10,8 @@
 
 - Bindings support `lift` and `lower` for CustomTypes in uniffi.toml to match the docs ([#2438](https://github.com/mozilla/uniffi-rs/issues/2438))
 
+- Python: fix using Vecs and other composite types in tuple enums ([#2445](https://github.com/mozilla/uniffi-rs/issues/2445))
+
 ### What's changed?
 
 - The uniffi-bindgen CLI support no longer brings in the `clap/color` feature, reducing dependencies ([#2435](https://github.com/mozilla/uniffi-rs/pull/2435))

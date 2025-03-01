@@ -143,3 +143,5 @@ switch MixedEnum.all(s: "string", i: 2) {
     default:
         assert(false)
 }
+
+assert(getMixedEnum(v: MixedEnum.vec(["hello"])) == .vec(["hello"]))
