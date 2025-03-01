@@ -28,10 +28,6 @@ class {{ type_name }}:
         def __init__(self, *values):
             if len(values) != {{ variant.fields().len() }}:
                 raise TypeError(f"Expected {{ variant.fields().len() }} arguments, found {len(values)}")
-        {%- for field in variant.fields() %}
-            if not isinstance(values[{{ loop.index0 }}], {{ field|type_name }}):
-                raise TypeError(f"unexpected type for tuple element {{ loop.index0 }} - expected '{{ field|type_name }}', got '{type(values[{{ loop.index0 }}])}'")
-        {%- endfor %}
             self._values = values
 
         def __getitem__(self, index):
