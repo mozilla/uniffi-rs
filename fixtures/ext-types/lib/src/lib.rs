@@ -200,6 +200,11 @@ fn throw_uniffi_one_error() -> Result<(), UniffiOneError> {
     Err(UniffiOneError::Oops("oh no".to_string()))
 }
 
+#[uniffi::export]
+async fn throw_uniffi_one_error_async() -> Result<(), UniffiOneError> {
+    Err(UniffiOneError::Oops("oh no - async".to_string()))
+}
+
 // external interface errors don't quite work.
 #[uniffi::export]
 fn throw_uniffi_one_error_interface() -> Result<(), UniffiOneErrorInterface> {
