@@ -2040,8 +2040,8 @@ alias for <code>anyhow::Result</code>) and might be wondering what happens if yo
 <ul>
 <li>
 <p>If the value is being used as an argument to a function/constructor that does not return
-  a <code>Result</code> (ie, does not have the <code>throws</code> attribute in the .udl), then the uniffi generated
-  scaffolding code will <code>panic!()</code></p>
+  a <code>Result</code> (ie, does not have the <code>throws</code> attribute in the .udl), then the generated
+  code will fail at runtime with a Rust <code>panic!()</code> or the foreign language equivalent.</p>
 </li>
 <li>
 <p>If the value is being used as an argument to a function/constructor that <em>does</em> return a
@@ -2050,7 +2050,7 @@ alias for <code>anyhow::Result</code>) and might be wondering what happens if yo
   that declared error type and:</p>
 </li>
 <li>If that conversion succeeds, it will be used as the <code>Err</code> for the function.</li>
-<li>If that conversion fails, it will <code>panic()</code></li>
+<li>If that conversion fails, the code will fail at runtime.</li>
 </ul>
 <h3 id="example">Example</h3>
 <p>For example, consider the following UDL:
@@ -2087,9 +2087,9 @@ namespace<span class="w"> </span>errors_example<span class="w"> </span>{
 </code></pre></div></p>
 <p>The behavior of the generated scaffolding will be:</p>
 <ul>
-<li>Calling <code>take_handle_1</code> with a value of <code>0</code> or <code>-1</code> will always panic.</li>
+<li>Calling <code>take_handle_1</code> with a value of <code>0</code> or <code>-1</code> will always cause a runtime failure.</li>
 <li>Calling <code>take_handle_2</code> with a value of <code>0</code> will throw an <code>ExampleError</code> exception</li>
-<li>Calling <code>take_handle_2</code> with a value of <code>-1</code> will always panic.</li>
+<li>Calling <code>take_handle_2</code> with a value of <code>-1</code> will always cause a runtime failure.</li>
 <li>All other values will return <code>Ok(ExampleHandle)</code></li>
 </ul>
 <h2 id="custom-types-in-the-bindings-code">Custom types in the bindings code</h2>
