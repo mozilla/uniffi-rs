@@ -136,15 +136,16 @@ alias for `anyhow::Result`) and might be wondering what happens if you return an
 It depends on the context. In short:
 
 * If the value is being used as an argument to a function/constructor that does not return
-  a `Result` (ie, does not have the `throws` attribute in the .udl), then the uniffi generated
-  scaffolding code will `panic!()`
+  a `Result` (ie, does not have the `throws` attribute in the .udl), then the generated
+  code will fail at runtime with a Rust `panic!()` or the foreign language equivalent.
+
 
 * If the value is being used as an argument to a function/constructor that *does* return a
   `Result` (ie, does have a `throws` attribute in the .udl), then the uniffi generated
   scaffolding code will use `anyhow::Error::downcast()` to try and convert the failure into
   that declared error type and:
   * If that conversion succeeds, it will be used as the `Err` for the function.
-  * If that conversion fails, it will `panic()`
+  * If that conversion fails, the code will fail at runtime.
 
 ### Example
 For example, consider the following UDL:
@@ -185,9 +186,9 @@ uniffi::custom_type!(ExampleHandle, Builtin, {
 
 The behavior of the generated scaffolding will be:
 
-* Calling `take_handle_1` with a value of `0` or `-1` will always panic.
+* Calling `take_handle_1` with a value of `0` or `-1` will always cause a runtime failure.
 * Calling `take_handle_2` with a value of `0` will throw an `ExampleError` exception
-* Calling `take_handle_2` with a value of `-1` will always panic.
+* Calling `take_handle_2` with a value of `-1` will always cause a runtime failure.
 * All other values will return `Ok(ExampleHandle)`
 
 ## Custom types in the bindings code
