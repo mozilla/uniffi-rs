@@ -88,7 +88,7 @@ public convenience init(
             {%- endmatch %}
             {%- match callable.throws_type() %}
             {%- when Some with (e) %}
-            errorHandler: {{ e|ffi_error_converter_name }}.lift
+            errorHandler: {{ e|ffi_error_converter_name }}_lift
             {%- else %}
             errorHandler: nil
             {% endmatch %}
