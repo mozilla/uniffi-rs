@@ -85,6 +85,7 @@ Task {
             fatalError("wrong error variant: \(e)")
         }
     }
+    counter.leave()
 }
 counter.wait()
 
