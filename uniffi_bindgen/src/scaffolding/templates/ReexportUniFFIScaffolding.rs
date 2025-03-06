@@ -20,7 +20,7 @@ pub const fn uniffi_reexport_hack() {}
 macro_rules! uniffi_reexport_scaffolding {
     () => {
         #[doc(hidden)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub extern "C" fn {{ ci.namespace() }}_uniffi_reexport_hack() {
             $crate::uniffi_reexport_hack()
         }
