@@ -489,7 +489,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
             arguments,
             ffi_func,
             docstring: meta.docstring.clone(),
-            throws: meta.throws.map(Into::into),
+            throws: meta.throws,
             checksum_fn_name,
             checksum: meta.checksum,
             self_type,
@@ -626,7 +626,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
-        let return_type = meta.return_type.map(Into::into);
+        let return_type = meta.return_type;
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FfiFunction {
@@ -645,7 +645,7 @@ impl From<uniffi_meta::MethodMetadata> for Method {
             return_type,
             ffi_func,
             docstring: meta.docstring.clone(),
-            throws: meta.throws.map(Into::into),
+            throws: meta.throws,
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
             checksum: meta.checksum,
@@ -658,7 +658,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
         let is_async = meta.is_async;
-        let return_type = meta.return_type.map(Into::into);
+        let return_type = meta.return_type;
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
         let ffi_func = FfiFunction {
             name: ffi_name,
@@ -673,7 +673,7 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
             arguments,
             return_type,
             docstring: meta.docstring.clone(),
-            throws: meta.throws.map(Into::into),
+            throws: meta.throws,
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
             checksum: meta.checksum,
