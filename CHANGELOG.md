@@ -14,6 +14,8 @@
 
 ### What's changed?
 
+- Minimum supported Rust is 1.82.0
+
 - The uniffi-bindgen CLI support no longer brings in the `clap/color` feature, reducing dependencies ([#2435](https://github.com/mozilla/uniffi-rs/pull/2435))
 
 - Protocols generated for Swift now conform to the `Sendable` protocol. This means that UniFFI traits will too, but
