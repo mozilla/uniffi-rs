@@ -14,7 +14,7 @@
 
 ### What's changed?
 
-- Minimum supported Rust is 1.82.0
+- Rust 2024 edition is supported, msrv is 1.82.0
 
 - The uniffi-bindgen CLI support no longer brings in the `clap/color` feature, reducing dependencies ([#2435](https://github.com/mozilla/uniffi-rs/pull/2435))
 
