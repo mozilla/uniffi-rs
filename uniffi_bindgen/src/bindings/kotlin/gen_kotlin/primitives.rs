@@ -9,7 +9,6 @@ use crate::{
     interface::{ComponentInterface, Radix, Type},
     Result,
 };
-use paste::paste;
 
 fn render_literal(literal: &Literal, _ci: &ComponentInterface) -> Result<String> {
     fn typed_number(type_: &Type, num_str: String) -> Result<String> {
@@ -57,23 +56,21 @@ fn render_literal(literal: &Literal, _ci: &ComponentInterface) -> Result<String>
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $class_name:literal) => {
-        paste! {
-            #[derive(Debug)]
-            pub struct $T;
+    ($T:ident, $class_name:literal) => {
+        #[derive(Debug)]
+        pub struct $T;
 
-            impl CodeType for $T  {
-                fn type_label(&self, _ci: &ComponentInterface) -> String {
-                    format!("kotlin.{}", $class_name)
-                }
+        impl CodeType for $T {
+            fn type_label(&self, _ci: &ComponentInterface) -> String {
+                format!("kotlin.{}", $class_name)
+            }
 
-                fn canonical_name(&self) -> String {
-                    $class_name.into()
-                }
+            fn canonical_name(&self) -> String {
+                $class_name.into()
+            }
 
-                fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> Result<String> {
-                    render_literal(&literal, ci)
-                }
+            fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> Result<String> {
+                render_literal(&literal, ci)
             }
         }
     };

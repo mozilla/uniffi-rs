@@ -4,7 +4,6 @@
 
 use super::CodeType;
 use crate::{backend::Literal, bail, interface::Radix, Result};
-use paste::paste;
 
 fn render_literal(literal: &Literal) -> Result<String> {
     Ok(match literal {
@@ -34,22 +33,20 @@ fn render_literal(literal: &Literal) -> Result<String> {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $python_name:literal, $canonical_name:literal) => {
-        paste! {
-            #[derive(Debug)]
-            pub struct $T;
-            impl CodeType for $T  {
-                fn type_label(&self) -> String {
-                    $python_name.into()
-                }
+    ($T:ident, $python_name:literal, $canonical_name:literal) => {
+        #[derive(Debug)]
+        pub struct $T;
+        impl CodeType for $T {
+            fn type_label(&self) -> String {
+                $python_name.into()
+            }
 
-                fn canonical_name(&self) -> String {
-                    $canonical_name.into()
-                }
+            fn canonical_name(&self) -> String {
+                $canonical_name.into()
+            }
 
-                fn literal(&self, literal: &Literal) -> Result<String> {
-                    render_literal(&literal)
-                }
+            fn literal(&self, literal: &Literal) -> Result<String> {
+                render_literal(&literal)
             }
         }
     };

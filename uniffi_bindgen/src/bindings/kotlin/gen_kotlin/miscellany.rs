@@ -4,22 +4,19 @@
 
 use super::CodeType;
 use crate::ComponentInterface;
-use paste::paste;
 
 macro_rules! impl_code_type_for_miscellany {
-    ($T:ty, $class_name:literal, $canonical_name:literal) => {
-        paste! {
-            #[derive(Debug)]
-            pub struct $T;
+    ($T:ident, $class_name:literal, $canonical_name:literal) => {
+        #[derive(Debug)]
+        pub struct $T;
 
-            impl CodeType for $T  {
-                fn type_label(&self, _ci: &ComponentInterface) -> String {
-                    $class_name.into()
-                }
+        impl CodeType for $T {
+            fn type_label(&self, _ci: &ComponentInterface) -> String {
+                $class_name.into()
+            }
 
-                fn canonical_name(&self) -> String {
-                   $canonical_name.into()
-               }
+            fn canonical_name(&self) -> String {
+                $canonical_name.into()
             }
         }
     };

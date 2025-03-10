@@ -9,7 +9,6 @@ use crate::{
     interface::{Radix, Type},
     Result,
 };
-use paste::paste;
 
 fn render_literal(literal: &Literal) -> Result<String> {
     fn typed_number(type_: &Type, num_str: String) -> Result<String> {
@@ -66,19 +65,17 @@ fn render_literal(literal: &Literal) -> Result<String> {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ty, $class_name:literal) => {
-        paste! {
-            #[derive(Debug)]
-            pub struct $T;
+    ($T:ident, $class_name:literal) => {
+        #[derive(Debug)]
+        pub struct $T;
 
-            impl CodeType for $T  {
-                fn type_label(&self) -> String {
-                    $class_name.into()
-                }
+        impl CodeType for $T {
+            fn type_label(&self) -> String {
+                $class_name.into()
+            }
 
-                fn literal(&self, literal: &Literal) -> Result<String> {
-                    render_literal(&literal)
-                }
+            fn literal(&self, literal: &Literal) -> Result<String> {
+                render_literal(&literal)
             }
         }
     };
