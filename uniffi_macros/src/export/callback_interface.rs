@@ -87,7 +87,7 @@ pub(super) fn trait_impl(
 
         static #vtable_cell: ::uniffi::UniffiForeignPointerCell::<#vtable_type> = ::uniffi::UniffiForeignPointerCell::<#vtable_type>::new();
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
             #vtable_cell.set(vtable);
         }
