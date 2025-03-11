@@ -62,7 +62,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
 
     Ok(quote! {
         #[doc(hidden)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn #clone_fn_ident(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
@@ -75,7 +75,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
         }
 
         #[doc(hidden)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn #free_fn_ident(
             ptr: *const ::std::ffi::c_void,
             call_status: &mut ::uniffi::RustCallStatus
