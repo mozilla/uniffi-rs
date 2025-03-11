@@ -22,6 +22,8 @@
   it also means foreign implemented traits also must when Swift 6 conformance is enabled.
   See the Swift section of the manual for more. ([#2450](https://github.com/mozilla/uniffi-rs/pull/2450))
 
+- You can now optionally specify extra frameworks like `CoreBluetooth` or `CoreFoundation` when generating a modulemap file for an xcframework.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...HEAD).
 
 ## v0.29.0 (backend crates: v0.29.0) - (_2025-02-06_)
