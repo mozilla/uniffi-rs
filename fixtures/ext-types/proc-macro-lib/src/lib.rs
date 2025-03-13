@@ -2,7 +2,8 @@ use custom_types::Handle;
 use ext_types_custom::{Guid, Ouid2};
 use std::sync::Arc;
 use uniffi_one::{
-    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
+    UniffiOneAsyncTrait, UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait,
+    UniffiOneTraitError, UniffiOneType,
 };
 use url::Url;
 
@@ -154,6 +155,38 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
 
 #[uniffi::export]
 fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn UniffiOneTrait>> {
+    t
+}
+
+#[derive(uniffi::Object)]
+pub struct UniffiOneTraitImpl;
+
+#[uniffi::export]
+impl UniffiOneTrait for UniffiOneTraitImpl {
+    fn hello(&self) -> String {
+        "uniffi-one-trait-impl".to_string()
+    }
+}
+
+#[derive(uniffi::Object)]
+pub struct UniffiOneAsyncTraitImpl;
+
+#[uniffi::export]
+#[async_trait::async_trait]
+impl UniffiOneAsyncTrait for UniffiOneAsyncTraitImpl {
+    async fn hello(&self) -> String {
+        "uniffi-one-trait-impl".to_string()
+    }
+
+    async fn try_hello(&self) -> Result<String, UniffiOneTraitError> {
+        Ok("uniffi-one-trait-impl".to_string())
+    }
+}
+
+#[uniffi::export]
+fn get_uniffi_one_async_trait(
+    t: Option<Arc<dyn UniffiOneAsyncTrait>>,
+) -> Option<Arc<dyn UniffiOneAsyncTrait>> {
     t
 }
 
