@@ -80,6 +80,7 @@ pub(super) fn trait_impl(
     let impl_attributes = has_async_method.then(|| quote! { #[::async_trait::async_trait] });
 
     Ok(quote! {
+        #[allow(missing_docs)]
         pub struct #vtable_type {
             #(#vtable_fields)*
             pub uniffi_free: extern "C" fn(handle: u64),
@@ -87,6 +88,7 @@ pub(super) fn trait_impl(
 
         static #vtable_cell: ::uniffi::UniffiForeignPointerCell::<#vtable_type> = ::uniffi::UniffiForeignPointerCell::<#vtable_type>::new();
 
+        #[allow(missing_docs)]
         #[no_mangle]
         pub extern "C" fn #init_ident(vtable: ::std::ptr::NonNull<#vtable_type>) {
             #vtable_cell.set(vtable);
