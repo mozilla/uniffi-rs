@@ -33,6 +33,9 @@ struct Cli {
     /// all sub-dependencies causes obscure platform specific problems.
     #[clap(long)]
     metadata_no_deps: bool,
+    /// What frameworks to link against when generating the modulemap file.
+    #[arg(long)]
+    link_frameworks: Vec<String>,
 }
 
 #[derive(Debug, Args)]
@@ -68,6 +71,7 @@ impl From<Cli> for SwiftBindingsOptions {
             module_name: cli.module_name,
             modulemap_filename: cli.modulemap_filename,
             metadata_no_deps: cli.metadata_no_deps,
+            link_frameworks: cli.link_frameworks,
         }
     }
 }

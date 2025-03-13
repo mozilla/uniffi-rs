@@ -65,6 +65,7 @@ members = [
   "fixtures/swift-omit-labels",
   "fixtures/futures",
   "fixtures/swift-bridging-header-compile",
+  "fixtures/swift-link-frameworks",
   "fixtures/type-limits",
   "fixtures/large-enum",
   "fixtures/large-error",

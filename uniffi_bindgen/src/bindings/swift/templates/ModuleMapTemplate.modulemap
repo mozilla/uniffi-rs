@@ -3,4 +3,7 @@
     header "{{ filename }}"
     {%- endfor %}
     export *
+    {%- for link_framework in link_frameworks %}
+    link framework "{{ link_framework }}"
+    {%- endfor %}
 }
