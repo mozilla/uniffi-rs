@@ -40,6 +40,19 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal(d.maybe_float64, 1.0)
 
     assert_equal(d.coveralls.get_name(), "some_dict")
+
+    assert_equal(d.coveralls_list[0].get_name, "some_dict_1")
+    assert_nil(d.coveralls_list[1])
+    assert_equal(d.coveralls_list[2].get_name, "some_dict_2")
+
+    assert_equal(d.coveralls_map["some_dict_3"].get_name, "some_dict_3")
+    assert_nil(d.coveralls_map["none"])
+    assert_equal(d.coveralls_map["some_dict_4"].get_name, "some_dict_4")
+
+    assert_equal 5, Coverall.get_num_alive
+    d = nil
+    GC.start
+    assert_equal 0, Coverall.get_num_alive
   end
 
   def test_none_dict
@@ -67,6 +80,11 @@ class TestCoverall < Test::Unit::TestCase
     assert_nil(d.maybe_float32)
     assert_equal(d.float64, 0.0)
     assert_nil(d.maybe_float64)
+
+    assert_equal 0, Coverall.get_num_alive
+    d = nil
+    GC.start
+    assert_equal 0, Coverall.get_num_alive
   end
 
   def test_constructors
