@@ -49,6 +49,7 @@ class TestCoverall < Test::Unit::TestCase
     assert_nil(d.coveralls_map["none"])
     assert_equal(d.coveralls_map["some_dict_4"].get_name, "some_dict_4")
 
+    GC.start
     assert_equal 5, Coverall.get_num_alive
     d = nil
     GC.start
@@ -81,6 +82,7 @@ class TestCoverall < Test::Unit::TestCase
     assert_equal(d.float64, 0.0)
     assert_nil(d.maybe_float64)
 
+    GC.start
     assert_equal 0, Coverall.get_num_alive
     d = nil
     GC.start
