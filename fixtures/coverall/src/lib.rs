@@ -194,6 +194,8 @@ pub struct SimpleDict {
     float64: f64,
     maybe_float64: Option<f64>,
     coveralls: Option<Arc<Coveralls>>,
+    coveralls_list: Vec<Option<Arc<Coveralls>>>,
+    coveralls_map: HashMap<String, Option<Arc<Coveralls>>>,
     test_trait: Option<Arc<dyn NodeTrait>>,
 }
 
@@ -329,6 +331,24 @@ fn create_some_dict() -> SimpleDict {
         float64: 0.0,
         maybe_float64: Some(1.0),
         coveralls: Some(Arc::new(Coveralls::new("some_dict".to_string()))),
+        coveralls_list: vec![
+            Some(Arc::new(Coveralls::new("some_dict_1".to_string()))),
+            None,
+            Some(Arc::new(Coveralls::new("some_dict_2".to_string()))),
+        ],
+        coveralls_map: [
+            (
+                "some_dict_3".to_string(),
+                Some(Arc::new(Coveralls::new("some_dict_3".to_string()))),
+            ),
+            ("none".to_string(), None),
+            (
+                "some_dict_4".to_string(),
+                Some(Arc::new(Coveralls::new("some_dict_4".to_string()))),
+            ),
+        ]
+        .into_iter()
+        .collect(),
         test_trait: Some(Arc::new(traits::Node::default())),
     }
 }

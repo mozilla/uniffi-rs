@@ -12,6 +12,8 @@
 
 - Python: fix using Vecs and other composite types in tuple enums ([#2445](https://github.com/mozilla/uniffi-rs/issues/2445))
 
+- Kotlin: fix interfaces in sequences and records being not disposed ([#2479](https://github.com/mozilla/uniffi-rs/issues/2479))
+
 ### What's changed?
 
 - Rust 2024 edition is supported, msrv is 1.82.0
