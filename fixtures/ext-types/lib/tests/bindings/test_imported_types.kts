@@ -67,7 +67,7 @@ assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface("foo").value() == "foo")
 
-val rustBuffer = SubLibTypeRustBuffer.create(0L, 0L, null)
+val rustBuffer = SubLibTypeRustBuffer.create(0UL, 0UL, null)
 assert(rustBuffer.capacity == 0L)
 assert(rustBuffer.len == 0L)
 assert(rustBuffer.data == null)
