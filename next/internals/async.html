@@ -1882,7 +1882,7 @@ Furthermore, we want to allow library authors to not use a runtime at all and in
 <p>To accomplish this, UniFFI piggybacks off the runtime from the foreign bindings.
 The generated Rust code schedules work using callbacks provided by the foreign bindings.</p>
 <h2 id="rust-async-functions">Rust Async functions</h2>
-<p>Rust async functions are implemplemented by wrapping the
+<p>Rust async functions are implemented by wrapping the
 <a href="https://doc.rust-lang.org/std/future/trait.Future.html">Future</a> into a <code>uniffi::RustFuture</code> struct
 and providing scaffolding functions so that the foreign bindings can drive the future to completion.</p>
 <pre class="mermaid"><code>sequenceDiagram
