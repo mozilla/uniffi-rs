@@ -11,7 +11,7 @@ The generated Rust code schedules work using callbacks provided by the foreign b
 
 ## Rust Async functions
 
-Rust async functions are implemplemented by wrapping the
+Rust async functions are implemented by wrapping the
 [Future](https://doc.rust-lang.org/std/future/trait.Future.html) into a `uniffi::RustFuture` struct
 and providing scaffolding functions so that the foreign bindings can drive the future to completion.
 
