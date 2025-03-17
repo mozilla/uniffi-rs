@@ -6,6 +6,7 @@ import uniffi.imported_types_lib.*
 import uniffi.imported_types_sublib.*
 import uniffi.uniffi_one_ns.*
 import uniffi.ext_types_custom.*
+import uniffi.imported_types_sublib.RustBuffer as SubLibTypeRustBuffer
 
 // First step: implement a trait from an external crate in Kotlin and pass it to a function from this
 // crate.  This tests #2343 -- the codegen for this module needs to initialize the vtable from
@@ -65,3 +66,8 @@ assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
 
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface("foo").value() == "foo")
+
+val rustBuffer = SubLibTypeRustBuffer.create(0, 0, null)
+assert(rustBuffer.capacity == 0)
+assert(rustBuffer.len == 0)
+assert(rustBuffer.data == null)
