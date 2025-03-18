@@ -76,6 +76,7 @@
 //! [`RawWaker`]: https://doc.rust-lang.org/std/task/struct.RawWaker.html
 
 use std::{
+    future::Future,
     marker::PhantomData,
     ops::Deref,
     panic,
@@ -87,29 +88,27 @@ use std::{
 use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler, UniffiCompatibleFuture};
 use crate::{rust_call_with_out_status, FfiDefault, LiftArgsError, LowerReturn, RustCallStatus};
 
+type BoxedFuture<T> = Pin<Box<dyn UniffiCompatibleFuture<Result<T, LiftArgsError>>>>;
+
 /// Wraps the actual future we're polling
-struct WrappedFuture<F, T, UT>
+struct WrappedFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     // Note: this could be a single enum, but that would make it easy to mess up the future pinning
     // guarantee.   For example you might want to call `std::mem::take()` to try to get the result,
     // but if the future happened to be stored that would move and break all internal references.
-    future: Option<F>,
+    future: Option<BoxedFuture<T>>,
     result: Option<Result<T::ReturnType, RustCallStatus>>,
 }
 
-impl<F, T, UT> WrappedFuture<F, T, UT>
+impl<T, UT> WrappedFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    fn new(future: F) -> Self {
+    fn new(future: BoxedFuture<T>) -> Self {
         Self {
             future: Some(future),
             result: None,
@@ -182,40 +181,34 @@ where
 //
 // Rust will not mark it Send by default when T::ReturnType is a raw pointer.  This is promising
 // that we will treat the raw pointer properly, for example by not returning it twice.
-unsafe impl<F, T, UT> Send for WrappedFuture<F, T, UT>
+unsafe impl<T, UT> Send for WrappedFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
 }
 
 /// Future that the foreign code is awaiting
-pub(super) struct RustFuture<F, T, UT>
+pub(super) struct RustFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
-    future: Mutex<WrappedFuture<F, T, UT>>,
+    future: Mutex<WrappedFuture<T, UT>>,
     scheduler: Mutex<Scheduler>,
     // UT is used as the generic parameter for [LowerReturn].
     // Let's model this with PhantomData as a function that inputs a UT value.
     _phantom: PhantomData<fn(UT) -> ()>,
 }
 
-impl<F, T, UT> RustFuture<F, T, UT>
+impl<T, UT> RustFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
-    pub(super) fn new(future: F, _tag: UT) -> Arc<Self> {
+    pub(super) fn new(future: BoxedFuture<T>, _tag: UT) -> Arc<Self> {
         Arc::new(Self {
             future: Mutex::new(WrappedFuture::new(future)),
             scheduler: Mutex::new(Scheduler::new()),
@@ -263,10 +256,8 @@ where
     }
 }
 
-impl<F, T, UT> Wake for RustFuture<F, T, UT>
+impl<T, UT> Wake for RustFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {
@@ -298,10 +289,8 @@ pub trait RustFutureFfi<ReturnType>: Send + Sync {
     fn ffi_free(self: Arc<Self>);
 }
 
-impl<F, T, UT> RustFutureFfi<T::ReturnType> for RustFuture<F, T, UT>
+impl<T, UT> RustFutureFfi<T::ReturnType> for RustFuture<T, UT>
 where
-    // See rust_future_new for an explanation of these trait bounds
-    F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: LowerReturn<UT> + Send + 'static,
     UT: Send + 'static,
 {

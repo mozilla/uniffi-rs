@@ -139,6 +139,23 @@ enum Commands {
     },
 }
 
+fn config_supplier(
+    metadata_no_deps: bool,
+) -> Result<impl uniffi_bindgen::BindgenCrateConfigSupplier> {
+    #[cfg(feature = "cargo-metadata")]
+    {
+        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        if metadata_no_deps {
+            cmd.no_deps();
+        }
+        let metadata = cmd.exec().context("error running cargo metadata")?;
+        Ok(CrateConfigSupplier::from(metadata))
+    }
+    #[cfg(not(feature = "cargo-metadata"))]
+    Ok(uniffi_bindgen::EmptyCrateConfigSupplier)
+}
+
 fn gen_library_mode(
     library_path: &camino::Utf8Path,
     crate_name: Option<String>,
@@ -150,18 +167,7 @@ fn gen_library_mode(
 ) -> anyhow::Result<()> {
     use uniffi_bindgen::library_mode::generate_bindings;
 
-    #[cfg(feature = "cargo-metadata")]
-    let config_supplier = {
-        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
-        let mut cmd = cargo_metadata::MetadataCommand::new();
-        if metadata_no_deps {
-            cmd.no_deps();
-        }
-        let metadata = cmd.exec().context("error running cargo metadata")?;
-        CrateConfigSupplier::from(metadata)
-    };
-    #[cfg(not(feature = "cargo-metadata"))]
-    let config_supplier = uniffi_bindgen::EmptyCrateConfigSupplier;
+    let config_supplier = config_supplier(metadata_no_deps)?;
 
     for language in languages {
         // to help avoid mistakes we check the library is actually a cdylib, except

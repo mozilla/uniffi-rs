@@ -45,7 +45,18 @@ do {
     assert(d.float64.almostEquals(0.0))
     assert(d.maybeFloat64!.almostEquals(1.0))
     assert(d.coveralls!.getName() == "some_dict")
+
+    assert(d.coverallsList[0]!.getName() == "some_dict_1")
+    assert(d.coverallsList[1] == nil)
+    assert(d.coverallsList[2]!.getName() == "some_dict_2")
+
+    assert(d.coverallsMap["some_dict_3"]!!.getName() == "some_dict_3")
+    assert(d.coverallsMap["none"]! == nil)
+    assert(d.coverallsMap["some_dict_4"]!!.getName() == "some_dict_4")
+
+    assert(getNumAlive() == 5)
 }
+assert(getNumAlive() == 0)
 
 // Test none_dict().
 do {
@@ -71,7 +82,10 @@ do {
     assert(d.float64.almostEquals(0.0))
     assert(d.maybeFloat64 == nil)
     assert(d.coveralls == nil)
+
+    assert(getNumAlive() == 0)
 }
+assert(getNumAlive() == 0)
 
 // Test arcs.
 do {
@@ -299,7 +313,7 @@ do {
 struct SomeOtherError: Error { }
 
 
-class SwiftGetters: Getters {
+final class SwiftGetters: Getters {
     func getBool(v: Bool, arg2: Bool) -> Bool { v != arg2 }
     func getString(v: String, arg2: Bool) throws -> String {
         if v == "too-many-holes" {
@@ -404,7 +418,7 @@ func testGettersFromSwift(getters: Getters) {
     }
 }
 
-class SwiftNode: NodeTrait {
+final class SwiftNode: NodeTrait, @unchecked Sendable {
     var p: NodeTrait? = nil
 
     func name() -> String {

@@ -76,6 +76,14 @@ typedef string Url; // replace `string` with any appropriate type.
 
 ## Remote Types
 
+Remote types in UDL now need the `[Remote]` attribute:
+```
+[Remote]
+dictionary RemoteRecord {
+    ...
+};
+```
+
 The macros `ffi_converter_forward` and all `use_*` macros (eg, `use_udl_record!`, `use_udl_object!`, `use_udl_enum!` etc)
 are now unnecessary so have been removed.
 

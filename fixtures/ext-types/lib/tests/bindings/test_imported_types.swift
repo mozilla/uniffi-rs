@@ -72,6 +72,23 @@ do {
     }
 }
 
+var counter = DispatchGroup()
+counter.enter()
+Task {
+    do {
+        try await throwUniffiOneErrorAsync()
+        fatalError("Should have thrown")
+    } catch let e as UniffiOneError {
+        if case let .Oops(reason) = e {
+            assert(reason == "oh no - async")
+        } else {
+            fatalError("wrong error variant: \(e)")
+        }
+    }
+    counter.leave()
+}
+counter.wait()
+
 do {
     try throwUniffiOneErrorInterface()
     fatalError("Should have thrown")

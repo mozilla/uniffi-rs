@@ -234,6 +234,7 @@ pub enum MixedEnum {
     Int(i64),
     Both(String, i64),
     All { s: String, i: i64 },
+    Vec(Vec<String>),
 }
 
 #[uniffi::export]

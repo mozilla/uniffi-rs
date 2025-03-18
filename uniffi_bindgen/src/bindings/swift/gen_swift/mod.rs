@@ -15,7 +15,6 @@ use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use super::Bindings;
-use crate::backend::TemplateExpression;
 
 use crate::interface::*;
 
@@ -173,14 +172,39 @@ pub struct Config {
     omit_localized_error_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    link_frameworks: Vec<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct CustomTypeConfig {
     imports: Option<Vec<String>>,
     type_name: Option<String>,
-    into_custom: TemplateExpression,
-    from_custom: TemplateExpression,
+    into_custom: String, // b/w compat alias for lift
+    lift: String,
+    from_custom: String, // b/w compat alias for lower
+    lower: String,
+}
+
+// functions replace literal "{}" in strings with a specified value.
+impl CustomTypeConfig {
+    fn lift(&self, name: &str) -> String {
+        let converter = if self.lift.is_empty() {
+            &self.into_custom
+        } else {
+            &self.lift
+        };
+        converter.replace("{}", name)
+    }
+    fn lower(&self, name: &str) -> String {
+        let converter = if self.lower.is_empty() {
+            &self.from_custom
+        } else {
+            &self.lower
+        };
+        converter.replace("{}", name)
+    }
 }
 
 impl Config {
@@ -234,9 +258,15 @@ impl Config {
         self.generate_immutable_records.unwrap_or(false)
     }
 
-    // Whether to make generated error types conform to `LocalizedError`. Default: false.
+    /// Whether to make generated error types conform to `LocalizedError`. Default: false.
     pub fn omit_localized_error_conformance(&self) -> bool {
         self.omit_localized_error_conformance.unwrap_or(false)
+    }
+
+    /// Extra frameworks to link this Swift module against. This is populated in the modulemap file,
+    /// usually as part of an `xcframework`.
+    pub fn link_frameworks(&self) -> Vec<String> {
+        self.link_frameworks.clone()
     }
 }
 
@@ -304,11 +334,13 @@ pub fn generate_modulemap(
     module_name: String,
     header_filenames: Vec<String>,
     xcframework: bool,
+    link_frameworks: Vec<String>,
 ) -> Result<String> {
     ModuleMap {
         module_name,
         header_filenames,
         xcframework,
+        link_frameworks,
     }
     .render()
     .context("failed to render Swift library")
@@ -396,6 +428,7 @@ pub struct ModuleMap {
     module_name: String,
     header_filenames: Vec<String>,
     xcframework: bool,
+    link_frameworks: Vec<String>,
 }
 
 impl ModuleMap {
@@ -404,6 +437,7 @@ impl ModuleMap {
             module_name: config.ffi_module_name(),
             header_filenames: vec![config.header_filename()],
             xcframework: false,
+            link_frameworks: config.link_frameworks(),
         }
     }
 }

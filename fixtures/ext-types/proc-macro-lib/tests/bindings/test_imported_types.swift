@@ -30,6 +30,10 @@ assert(getMaybeUniffiOneType(t: nil) == nil)
 assert(getUniffiOneTypes(ts: [UniffiOneType(sval: "hello")]) == [UniffiOneType(sval: "hello")])
 assert(getMaybeUniffiOneTypes(ts: [UniffiOneType(sval: "hello"), nil]) == [UniffiOneType(sval: "hello"), nil])
 
+#if swift(>=6)
+print("skipping known-but-not-understood failure to start a task with swift 6 (#2451)")
+#else
+print("swift 5, so can start a task - swift 6 needs help here! (#2451)")
 var counter = DispatchGroup()
 counter.enter()
 Task {
@@ -44,7 +48,7 @@ Task {
     counter.leave()
 }
 counter.wait()
-
+#endif
 
 assert(getUniffiOneProcMacroType(t: UniffiOneProcMacroType(sval: "hello from proc-macro world")).sval == "hello from proc-macro world")
 assert(getMyProcMacroType(t: UniffiOneProcMacroType(sval: "proc-macros all the way down")).sval == "proc-macros all the way down")

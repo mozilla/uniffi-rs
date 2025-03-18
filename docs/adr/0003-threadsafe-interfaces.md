@@ -148,7 +148,7 @@ We would advise Nimbus SDK to update their UDL definition for `NimbusClient` lik
 [Threadsafe]
 interface NimbusClient {
   // existing method definitions remain unchanged
-}
+};
 ```
 
 The [`uniffi_bindgen::interface::Object`](https://github.com/mozilla/uniffi-rs/blob/803bb3d79daa8ea088fb2d8f05c08ada09821986/uniffi_bindgen/src/interface/mod.rs#L722) struct

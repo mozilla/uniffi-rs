@@ -63,6 +63,8 @@ dictionary SimpleDict {
     double float64;
     double? maybe_float64;
     Coveralls? coveralls;
+    sequence<Coveralls?> coveralls_list;
+    record<string, Coveralls?> coveralls_map;
     NodeTrait? test_trait;
 };
 

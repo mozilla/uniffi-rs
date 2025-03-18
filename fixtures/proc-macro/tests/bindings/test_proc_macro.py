@@ -81,6 +81,8 @@ assert(record_with_defaults.vec == [])
 assert(record_with_defaults.opt_vec == None)
 assert(record_with_defaults.opt_integer == 42)
 
+assert(RecordWithDefaults(no_default_string="", vec=["oops"]) == RecordWithDefaults(no_default_string="", vec=["oops"]))
+
 assert(double_with_default() == 42)
 
 obj_with_defaults = ObjectWithDefaults()
@@ -156,3 +158,5 @@ assert(str(MixedEnum.BOTH("hello", 2)) == "MixedEnum.BOTH('hello', 2)")
 # variant checker as, eg, `is_ALL()` vs `is_all()` so decided to do both.
 assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_all())
 assert(get_mixed_enum(MixedEnum.ALL("string", 2)).is_ALL())
+
+assert(get_mixed_enum(MixedEnum.VEC(["string"])).is_VEC())

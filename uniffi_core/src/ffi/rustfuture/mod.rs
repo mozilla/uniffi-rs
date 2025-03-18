@@ -109,8 +109,8 @@ where
     // Needed to allocate a handle
     dyn RustFutureFfi<T::ReturnType>: HandleAlloc<UT>,
 {
-    let handle = <dyn RustFutureFfi<T::ReturnType> as HandleAlloc<UT>>::new_handle(
-        RustFuture::new(future, tag) as Arc<dyn RustFutureFfi<T::ReturnType>>,
+    let handle = HandleAlloc::new_handle(
+        RustFuture::new(Box::pin(future), tag) as Arc<dyn RustFutureFfi<T::ReturnType>>
     );
     trace!("rust_future_new: {handle:?}");
     handle
