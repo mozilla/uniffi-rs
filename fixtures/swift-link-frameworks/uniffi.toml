@@ -1,0 +1,2 @@
+[bindings.swift]
+link_frameworks = ["CoreFoundation"]
