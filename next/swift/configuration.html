@@ -1856,6 +1856,11 @@ more likely to change than other configurations.</p>
 <td><code>false</code></td>
 <td>Whether to omit checking the library checksums as the library is initialized. Changing this will shoot yourself in the foot if you mixup your build pipeline in any way, but might speed up initialization.</td>
 </tr>
+<tr>
+<td><code>link_frameworks</code></td>
+<td><code>[]</code></td>
+<td>The extra frameworks to link this binary against, such as <code>CoreBluetooth</code> or <code>CoreAudio</code>. Usually only used for interacting with native platform libraries.</td>
+</tr>
 </tbody>
 </table>
 <p>[^1]: <code>namespace</code> is the top-level namespace from your UDL file.</p>
