@@ -14,6 +14,9 @@ We use a separate version number for `uniffi` compared to all the other crates:
     functionality.  `uniffi` gets breaking version bumps less often than the other crates (see below
     for details).
 
+Note that in all cases it's *not* necessary for you edit version numbers in any `Cargo.toml` file;
+the commands below update all version numbers as required.
+
 Steps:
 
 1. Take a look over `CHANGELOG.md` and make sure the "unreleased" section lists all changes for
@@ -53,15 +56,20 @@ Steps:
 
 1. Review the changes
 
-1. Create a PR with the changes and get it approved
+1. Create a PR with the changes (ie, to merge your local changes on `release-v{MAJOR}.{MINOR}.x` into `origin/release-v{MAJOR}.{MINOR}.x`),
+   get it approved, then merge it using the github option to create a "merge commit"
 
 1. Publish the new release:
     * Run `cargo login` if you're not already logged in
     * Run `./tools/publish-release.sh`
 
-1. Push the tag: `git push v{MAJOR}.{MINOR}.{PATCH}`
+1. Push the tag: `git push origin tag v{MAJOR}.{MINOR}.{PATCH}`
 
 1. Create a PR to merge the changes back to the main branch
+   * Make a new branch, eg, `git co -b merge-{MAJOR}.{MINOR}.{PATH}-to-main main`
+   * On your local `main` branch, execute `git merge v{MAJOR}.{MINOR}.{PATH}`
+   * Push it: `git push origin merge-{MAJOR}.{MINOR}.{PATH}-to-main`
+   * Create the PR as normal, get it reviewed, merge it using the github option to create a "merge commit".
 
 1. Publish the docs for the new version. See the [README](../manual/src/README.md) for details, but the short version is:
     * Execute `pip install -r tools/requirements_docs.txt`
