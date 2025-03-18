@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
+
+## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
+
 ### What's fixed?
 
 - Bindings support `lift` and `lower` for CustomTypes in uniffi.toml to match the docs ([#2438](https://github.com/mozilla/uniffi-rs/issues/2438))
@@ -26,7 +30,7 @@
 
 - You can now optionally specify extra frameworks like `CoreBluetooth` or `CoreFoundation` when generating a modulemap file for an xcframework.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...HEAD).
+[All changes in v0.29.1](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...v0.29.1).
 
 ## v0.29.0 (backend crates: v0.29.0) - (_2025-02-06_)
 
