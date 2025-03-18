@@ -1,0 +1,328 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+//! Organize the metadata, transforming it from a simple list to a more tree-like structure.
+
+use anyhow::anyhow;
+
+use super::*;
+
+pub fn pass(root: &mut Root) -> Result<()> {
+    let mut temp = TempMetadataStore::default();
+    temp.take_from_metadata_list(root)?;
+    temp.add_items_to_modules(root)?;
+    temp.normalize_type_module_names(root)?;
+    Ok(())
+}
+
+// Temporary storage for metadata items
+//
+// This pass will move all items out of `Root.metadata` into here, then move them from here into
+// the modules.
+#[derive(Default)]
+struct TempMetadataStore {
+    // Map module_path to `Module::name`
+    //
+    // This is needed because UDL and proc-macro code can generate different module paths.  To
+    // normalize things, we find the `NamespaceMetadata::name` that matches the module path.
+    module_path_map: IndexMap<String, String>,
+    // Top-level type definitions and functions, keyed by module name
+    functions: IndexMap<String, Vec<Function>>,
+    records: IndexMap<String, Vec<Record>>,
+    callback_interfaces: IndexMap<String, Vec<CallbackInterface>>,
+    enums: IndexMap<String, Vec<Enum>>,
+    custom_types: IndexMap<String, Vec<CustomType>>,
+    interfaces: IndexMap<String, Vec<Interface>>,
+    // Child items, keyed by module name + parent name
+    constructors: IndexMap<(String, String), Vec<Constructor>>,
+    methods: IndexMap<(String, String), Vec<Method>>,
+    trait_methods: IndexMap<(String, String), Vec<TraitMethod>>,
+    uniffi_traits: IndexMap<(String, String), Vec<UniffiTrait>>,
+    trait_impls: IndexMap<(String, String), Vec<ObjectTraitImpl>>,
+}
+
+impl TempMetadataStore {
+    // Remove items from `root.metadata` and store them here
+    //
+    // Namespace items are treated specially.  They're converted to modules and added to
+    // `root.modules`.
+    fn take_from_metadata_list(&mut self, root: &mut Root) -> Result<()> {
+        for meta in root.metadata.drain(..) {
+            match meta {
+                Metadata::Namespace(namespace) => {
+                    self.module_path_map
+                        .insert(namespace.crate_name.clone(), namespace.name.clone());
+                    root.modules
+                        .entry(namespace.name.clone())
+                        .or_insert(Module! {
+                            // TODO: Is this the correct crate name in all cases?  I'm pretty sure
+                            // it is for proc-macro based generation, since the proc-macro
+                            // namespace is added to the metadata list before the UDL one.
+                            // However, I'm not so sure what happens if we're generating from a UDL
+                            // file.
+                            crate_name: namespace.crate_name,
+                            docstring: root.docstrings.shift_remove(&namespace.name),
+                            name: namespace.name,
+                            functions: vec![],
+                            type_definitions: vec![],
+                        });
+                }
+                Metadata::Func(func) => {
+                    self.functions
+                        .entry(func.module_path.clone())
+                        .or_default()
+                        .push(func);
+                }
+                Metadata::Record(rec) => {
+                    self.records
+                        .entry(rec.module_path.clone())
+                        .or_default()
+                        .push(rec);
+                }
+                Metadata::Enum(en) => {
+                    self.enums
+                        .entry(en.module_path.clone())
+                        .or_default()
+                        .push(en);
+                }
+                Metadata::Interface(int) => {
+                    self.interfaces
+                        .entry(int.module_path.clone())
+                        .or_default()
+                        .push(int);
+                }
+                Metadata::CallbackInterface(cbi) => {
+                    self.callback_interfaces
+                        .entry(cbi.module_path.clone())
+                        .or_default()
+                        .push(cbi);
+                }
+                Metadata::CustomType(custom) => {
+                    self.custom_types
+                        .entry(custom.module_path.clone())
+                        .or_default()
+                        .push(custom);
+                }
+                Metadata::Constructor(cons) => {
+                    self.constructors
+                        .entry((cons.module_path.clone(), cons.self_name.clone()))
+                        .or_default()
+                        .push(cons);
+                }
+                Metadata::Method(meth) => {
+                    self.methods
+                        .entry((meth.module_path.clone(), meth.self_name.clone()))
+                        .or_default()
+                        .push(meth);
+                }
+                Metadata::TraitMethod(meth) => {
+                    self.trait_methods
+                        .entry((meth.module_path.clone(), meth.trait_name.clone()))
+                        .or_default()
+                        .push(meth);
+                }
+                Metadata::UniffiTrait(ut) => {
+                    let meth = match &ut {
+                        UniffiTrait::Debug { fmt } => fmt,
+                        UniffiTrait::Display { fmt } => fmt,
+                        UniffiTrait::Eq { eq, .. } => eq,
+                        UniffiTrait::Hash { hash } => hash,
+                    };
+
+                    self.uniffi_traits
+                        .entry((meth.module_path.clone(), meth.self_name.clone()))
+                        .or_default()
+                        .push(ut);
+                }
+                Metadata::ObjectTraitImpl(imp) => {
+                    let (module_path, name) = match &imp.ty.ty {
+                        Type::Interface {
+                            module_path, name, ..
+                        }
+                        | Type::Record {
+                            module_path, name, ..
+                        }
+                        | Type::Enum {
+                            module_path, name, ..
+                        }
+                        | Type::Custom {
+                            module_path, name, ..
+                        }
+                        | Type::CallbackInterface {
+                            module_path, name, ..
+                        } => (module_path, name),
+                        _ => bail!("Invalid ObjectTraitImpl type: {:?}", imp.ty),
+                    };
+                    self.trait_impls
+                        .entry((module_path.to_string(), name.to_string()))
+                        .or_default()
+                        .push(imp);
+                }
+                Metadata::UdlFile(_) => (),
+            }
+        }
+        Ok(())
+    }
+
+    fn add_items_to_modules(&mut self, root: &mut Root) -> Result<()> {
+        // Move child items into their parents
+        for (module_path, funcs) in self.functions.drain(..) {
+            get_module(&self.module_path_map, root, &module_path)?
+                .functions
+                .extend(funcs);
+        }
+        for (module_path, list) in self.records.drain(..) {
+            get_module(&self.module_path_map, root, &module_path)?
+                .type_definitions
+                .extend(list.into_iter().map(TypeDefinition::Record));
+        }
+        for (module_path, list) in self.enums.drain(..) {
+            get_module(&self.module_path_map, root, &module_path)?
+                .type_definitions
+                .extend(list.into_iter().map(TypeDefinition::Enum));
+        }
+        for (module_path, list) in self.custom_types.drain(..) {
+            get_module(&self.module_path_map, root, &module_path)?
+                .type_definitions
+                .extend(list.into_iter().map(TypeDefinition::Custom));
+        }
+        // For, Interfaces and callback also collect the child items
+        for (module_path, list) in self.interfaces.drain(..) {
+            get_module(&self.module_path_map, root, &module_path)?
+                .type_definitions
+                .extend(
+                    list.into_iter()
+                        .map(|mut int| {
+                            let key = (module_path.clone(), int.name.clone());
+                            if let Some(methods) = self.methods.shift_remove(&key) {
+                                if self.trait_methods.contains_key(&key) {
+                                    // Trait methods have an explicit index, so mixing them with
+                                    // regular methods won't work.
+                                    bail!("{} contains both methods and trait methods", int.name)
+                                }
+                                int.methods.extend(methods);
+                            } else if let Some(trait_methods) =
+                                self.trait_methods.shift_remove(&key)
+                            {
+                                int.methods
+                                    .extend(Self::convert_trait_methods(trait_methods));
+                            }
+                            if let Some(constructors) = self.constructors.shift_remove(&key) {
+                                int.constructors.extend(constructors)
+                            }
+                            if let Some(uniffi_traits) = self.uniffi_traits.shift_remove(&key) {
+                                int.uniffi_traits.extend(uniffi_traits)
+                            }
+                            if let Some(trait_impls) = self.trait_impls.shift_remove(&key) {
+                                int.trait_impls.extend(trait_impls)
+                            }
+                            Ok(TypeDefinition::Interface(int))
+                        })
+                        .collect::<Result<Vec<_>>>()?,
+                )
+        }
+        for (module_path, list) in self.callback_interfaces.drain(..) {
+            get_module(&self.module_path_map, root, &module_path)?
+                .type_definitions
+                .extend(list.into_iter().map(|mut cbi| {
+                    let key = (module_path.clone(), cbi.name.clone());
+                    if let Some(trait_methods) = self.trait_methods.shift_remove(&key) {
+                        cbi.methods
+                            .extend(Self::convert_trait_methods(trait_methods));
+                    }
+                    TypeDefinition::CallbackInterface(cbi)
+                }))
+        }
+        if !self.constructors.is_empty() {
+            bail!("Leftover constructors: {:?}", self.constructors)
+        }
+        if !self.methods.is_empty() {
+            bail!("Leftover methods: {:?}", self.methods)
+        }
+        if !self.trait_methods.is_empty() {
+            bail!("Leftover trait_methods: {:?}", self.trait_methods)
+        }
+        if !self.uniffi_traits.is_empty() {
+            bail!("Leftover uniffi_traits: {:?}", self.uniffi_traits)
+        }
+        if !self.trait_impls.is_empty() {
+            bail!("Leftover trait_impls: {:?}", self.trait_impls)
+        }
+        Ok(())
+    }
+
+    fn convert_trait_methods(mut trait_methods: Vec<TraitMethod>) -> impl Iterator<Item = Method> {
+        trait_methods.sort_by_key(|tm| tm.index);
+        trait_methods.into_iter().map(Self::convert_trait_method)
+    }
+
+    fn convert_trait_method(trait_method: TraitMethod) -> Method {
+        Method! {
+            self_name: trait_method.trait_name,
+            name: trait_method.name,
+            is_async: trait_method.is_async,
+            inputs: trait_method.inputs,
+            return_type: trait_method.return_type,
+            throws: trait_method.throws,
+            takes_self_by_arc: trait_method.takes_self_by_arc,
+            checksum: trait_method.checksum,
+            docstring: trait_method.docstring,
+        }
+    }
+
+    fn normalize_type_module_names(&self, root: &mut Root) -> Result<()> {
+        root.try_visit_mut(|ty: &mut Type| match ty {
+            Type::Interface {
+                module_path,
+                module_name,
+                ..
+            }
+            | Type::Record {
+                module_path,
+                module_name,
+                ..
+            }
+            | Type::Enum {
+                module_path,
+                module_name,
+                ..
+            }
+            | Type::CallbackInterface {
+                module_path,
+                module_name,
+                ..
+            }
+            | Type::Custom {
+                module_path,
+                module_name,
+                ..
+            } => {
+                *module_name = get_module_name(&self.module_path_map, module_path)?.to_string();
+                Ok(())
+            }
+            _ => Ok(()),
+        })
+    }
+}
+
+fn get_module_name<'a>(
+    module_path_map: &'a IndexMap<String, String>,
+    module_path: &str,
+) -> Result<&'a str> {
+    module_path_map
+        .get(module_path)
+        .map(String::as_str)
+        .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))
+}
+
+fn get_module<'a>(
+    module_path_map: &IndexMap<String, String>,
+    root: &'a mut Root,
+    module_path: &str,
+) -> Result<&'a mut Module> {
+    let module_name = get_module_name(module_path_map, module_path)?;
+    root.modules
+        .get_mut(module_name)
+        .ok_or_else(|| anyhow!("root module lookup failed: {module_path:?}"))
+}
