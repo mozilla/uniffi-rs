@@ -205,6 +205,7 @@ mod test_metadata {
                     },
                 ],
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }

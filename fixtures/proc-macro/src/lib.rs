@@ -9,6 +9,7 @@ mod callback_interface;
 use callback_interface::TestCallbackInterface;
 
 #[derive(uniffi::Record)]
+#[uniffi(swift_protocols = ["Copyable", "Codable"])]
 pub struct One {
     inner: i32,
 }

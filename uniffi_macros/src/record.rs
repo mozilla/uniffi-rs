@@ -4,7 +4,9 @@ use syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Token};
 
 use crate::{
     default::{default_value_metadata_calls, DefaultValue},
+    enum_::string_array,
     ffiops,
+    swift_protocols::SwiftProtocols,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
         mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
@@ -18,6 +20,7 @@ struct RecordItem {
     ident: Ident,
     record: DataStruct,
     docstring: String,
+    attr: RecordAttr,
 }
 
 impl RecordItem {
@@ -35,6 +38,7 @@ impl RecordItem {
             ident: input.ident,
             record,
             docstring: extract_docstring(&input.attrs)?,
+            attr: input.attrs.parse_uniffi_attr_args()?,
         })
     }
 
@@ -53,12 +57,17 @@ impl RecordItem {
     fn docstring(&self) -> &str {
         self.docstring.as_str()
     }
+
+    pub fn swift_protocols(&self) -> Vec<String> {
+        self.attr
+            .swift_protocols
+            .as_ref()
+            .map(|p| p.to_vec())
+            .unwrap_or_default()
+    }
 }
 
 pub fn expand_record(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
-    if let Some(e) = input.attrs.uniffi_attr_args_not_allowed_here() {
-        return Err(e);
-    }
     let record = RecordItem::new(input)?;
     let ffi_converter =
         record_ffi_converter_impl(&record, &options).unwrap_or_else(syn::Error::into_compile_error);
@@ -170,17 +179,43 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
         })
         .collect::<syn::Result<_>>()?;
 
-    Ok(create_metadata_items(
-        "record",
-        &name,
-        quote! {
-            ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
-                .concat_str(#module_path)
-                .concat_str(#name)
-                .concat_value(#fields_len)
-                #concat_fields
-                .concat_long_str(#docstring)
-        },
-        None,
-    ))
+    let mut metadata_expr = quote! {
+        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
+        .concat_str(#module_path)
+        .concat_str(#name)
+        .concat_value(#fields_len)
+        #concat_fields
+        .concat_long_str(#docstring)
+    };
+    metadata_expr.extend(string_array(&record.swift_protocols())?);
+
+    Ok(create_metadata_items("record", &name, metadata_expr, None))
+}
+
+/// Handle #[uniffi(...)] attributes for Record
+#[derive(Clone, Default)]
+pub struct RecordAttr {
+    pub swift_protocols: Option<SwiftProtocols>,
+}
+
+impl UniffiAttributeArgs for RecordAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::swift_protocols) {
+            let _: kw::swift_protocols = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                swift_protocols: Some(input.parse()?),
+                ..Self::default()
+            })
+        } else {
+            Err(lookahead.error())
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            swift_protocols: either_attribute_arg(self.swift_protocols, other.swift_protocols)?,
+        })
+    }
 }

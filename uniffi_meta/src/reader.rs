@@ -313,6 +313,7 @@ impl<'a> MetadataReader<'a> {
             remote: false, // only used when generating scaffolding from UDL
             fields: self.read_fields()?,
             docstring: self.read_optional_long_string()?,
+            swift_protocols: self.read_string_array()?,
         })
     }
 
