@@ -24,7 +24,7 @@ error: attribute `with_foreign` is not supported here.
 17 | #[uniffi::export(with_foreign)]
    |                  ^^^^^^^^^^^^
 
-error: attribute arguments are not currently recognized in this position
+error: expected `swift_protocols`
   --> tests/ui/export_attrs.rs:22:10
    |
 22 | #[uniffi(flat_error)]

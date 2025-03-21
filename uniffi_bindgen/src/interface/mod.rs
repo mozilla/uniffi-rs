@@ -1263,6 +1263,7 @@ existing definition: Enum {
     shape: Enum,
     non_exhaustive: false,
     docstring: None,
+    swift_protocols: [],
 },
 new definition: Enum {
     name: \"Testing\",
@@ -1288,6 +1289,7 @@ new definition: Enum {
     },
     non_exhaustive: false,
     docstring: None,
+    swift_protocols: [],
 }",
         );
 
