@@ -134,6 +134,11 @@ impl<'a> MetadataReader<'a> {
         Ok(Some(self.read_long_string()?).filter(|str| !str.is_empty()))
     }
 
+    fn read_string_array(&mut self) -> Result<Vec<String>> {
+        let len = self.read_u8()?;
+        (0..len).map(|_| self.read_string()).collect()
+    }
+
     fn read_type(&mut self) -> Result<Type> {
         let value = self.read_u8()?;
         Ok(match value {
@@ -324,6 +329,9 @@ impl<'a> MetadataReader<'a> {
             EnumShape::Enum | EnumShape::Error { flat: false } => self.read_variants()?,
             EnumShape::Error { flat: true } => self.read_flat_variants()?,
         };
+        let non_exhaustive = self.read_bool()?;
+        let docstring = self.read_optional_long_string()?;
+        let swift_protocols = self.read_string_array()?;
 
         Ok(EnumMetadata {
             module_path,
@@ -332,8 +340,9 @@ impl<'a> MetadataReader<'a> {
             remote: false, // only used when generating scaffolding from UDL
             discr_type,
             variants,
-            non_exhaustive: self.read_bool()?,
-            docstring: self.read_optional_long_string()?,
+            non_exhaustive,
+            docstring,
+            swift_protocols,
         })
     }
 

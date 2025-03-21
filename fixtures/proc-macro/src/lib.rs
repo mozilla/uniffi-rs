@@ -221,10 +221,19 @@ fn make_record_with_bytes() -> RecordWithBytes {
 }
 
 #[derive(uniffi::Enum)]
+#[uniffi(swift_protocols = "CaseIterable")]
 pub enum MaybeBool {
     True,
     False,
     Uncertain,
+}
+
+#[derive(uniffi::Enum)]
+#[uniffi(swift_protocols = ["CaseIterable", "Codable"])]
+pub enum SwiftCaseIterableAndCodable {
+    A,
+    B,
+    C,
 }
 
 #[derive(uniffi::Enum)]

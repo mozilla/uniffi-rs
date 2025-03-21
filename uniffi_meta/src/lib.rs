@@ -345,6 +345,7 @@ pub struct EnumMetadata {
     pub discr_type: Option<Type>,
     pub non_exhaustive: bool,
     pub docstring: Option<String>,
+    pub swift_protocols: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]

@@ -265,6 +265,7 @@ pub mod kw {
     syn::custom_keyword!(Display);
     syn::custom_keyword!(Eq);
     syn::custom_keyword!(Hash);
+    syn::custom_keyword!(swift_protocols);
     // Not used anymore
     syn::custom_keyword!(handle_unknown_callback_error);
 }

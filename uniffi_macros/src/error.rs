@@ -4,7 +4,7 @@ use syn::{DeriveInput, Index};
 use uniffi_meta::EnumShape;
 
 use crate::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem},
+    enum_::{rich_error_ffi_converter_impl, string_array, variant_metadata, EnumItem},
     ffiops,
     util::{
         chain, create_metadata_items, extract_docstring, ident_to_string, mod_path,
@@ -200,6 +200,8 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
         .concat_bool(#non_exhaustive)
         .concat_long_str(#docstring)
     });
+    metadata_expr.extend(string_array(&[])?); // swift_protocols
+
     Ok(create_metadata_items("error", &name, metadata_expr, None))
 }
 

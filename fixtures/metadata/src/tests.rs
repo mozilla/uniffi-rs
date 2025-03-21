@@ -241,6 +241,7 @@ mod test_metadata {
                 ],
                 non_exhaustive: false,
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }
@@ -290,6 +291,7 @@ mod test_metadata {
                 ],
                 non_exhaustive: false,
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }
@@ -326,6 +328,7 @@ mod test_metadata {
                 ],
                 non_exhaustive: false,
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }
@@ -348,6 +351,7 @@ mod test_metadata {
                 }],
                 non_exhaustive: false,
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }
@@ -378,6 +382,7 @@ mod test_metadata {
                 ],
                 non_exhaustive: false,
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }
@@ -427,6 +432,7 @@ mod test_metadata {
                 ],
                 non_exhaustive: false,
                 docstring: None,
+                swift_protocols: vec![],
             },
         );
     }
