@@ -206,7 +206,6 @@ impl UniffiAttributeArgs for RecordAttr {
             let _: Token![=] = input.parse()?;
             Ok(Self {
                 swift_protocols: Some(input.parse()?),
-                ..Self::default()
             })
         } else {
             Err(lookahead.error())
