@@ -170,6 +170,7 @@ pub struct Config {
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
     omit_localized_error_conformance: Option<bool>,
+    generate_codable_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
@@ -261,6 +262,11 @@ impl Config {
     /// Whether to make generated error types conform to `LocalizedError`. Default: false.
     pub fn omit_localized_error_conformance(&self) -> bool {
         self.omit_localized_error_conformance.unwrap_or(false)
+    }
+
+    /// Whether to make generated records, enums and errors conform to `Codable`. Default: false.
+    pub fn generate_codable_conformance(&self) -> bool {
+        self.generate_codable_conformance.unwrap_or(false)
     }
 
     /// Extra frameworks to link this Swift module against. This is populated in the modulemap file,
