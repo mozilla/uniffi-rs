@@ -238,8 +238,6 @@ impl ImportRequirement {
 pub struct TypeRenderer<'a> {
     config: &'a Config,
     ci: &'a ComponentInterface,
-    // Track included modules for the `include_once()` macro
-    include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<ImportRequirement>>,
 }
@@ -249,7 +247,6 @@ impl<'a> TypeRenderer<'a> {
         Self {
             config,
             ci,
-            include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
         }
     }
@@ -261,16 +258,6 @@ impl<'a> TypeRenderer<'a> {
     }
 
     // The following methods are used by the `Types.kt` macros.
-
-    // Helper for the including a template, but only once.
-    //
-    // The first time this is called with a name it will return true, indicating that we should
-    // include the template.  Subsequent calls will return false.
-    fn include_once_check(&self, name: &str) -> bool {
-        self.include_once_names
-            .borrow_mut()
-            .insert(name.to_string())
-    }
 
     // Helper to add an import statement
     //

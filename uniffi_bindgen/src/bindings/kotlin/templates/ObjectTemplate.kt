@@ -96,9 +96,6 @@
 //
 
 {{ self.add_import("java.util.concurrent.atomic.AtomicBoolean") }}
-{%- if self.include_once_check("interface-support") %}
-    {%- include "ObjectCleanerHelper.kt" %}
-{%- endif %}
 
 {%- let obj = ci.get_object_definition(name).unwrap() %}
 {%- let interface_name = self::object_interface_name(ci, obj) %}

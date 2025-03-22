@@ -1,4 +1,3 @@
-{% if self.include_once_check("CallbackInterfaceRuntime.py") %}{% include "CallbackInterfaceRuntime.py" %}{% endif %}
 {%- let trait_impl=format!("_UniffiTraitImpl{}", name) %}
 
 # Put all the bits inside a class to keep the top-level namespace clean
