@@ -41,6 +41,7 @@ impl APIConverter<EnumMetadata> for weedle::EnumDefinition<'_> {
                 .collect::<Result<Vec<_>>>()?,
             non_exhaustive: attributes.contains_non_exhaustive_attr(),
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
+            swift_protocols: vec![],
         })
     }
 }
@@ -76,6 +77,7 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
             discr_type: None,
             non_exhaustive: attributes.contains_non_exhaustive_attr(),
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
+            swift_protocols: vec![],
             // Enums declared using the `[Enum] interface` syntax might have variants with fields.
             //flat: false,
         })

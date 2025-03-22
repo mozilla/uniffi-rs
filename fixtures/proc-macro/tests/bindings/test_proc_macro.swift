@@ -145,3 +145,7 @@ switch MixedEnum.all(s: "string", i: 2) {
 }
 
 assert(getMixedEnum(v: MixedEnum.vec(["hello"])) == .vec(["hello"]))
+
+// Swift protocols
+assert(MaybeBool.allCases.map({ "\($0)" }).joined(separator: ", ") == "true, false, uncertain")
+assert(SwiftCaseIterableAndCodable.allCases.map({ "\($0)" }).joined(separator: ", ") == "a, b, c")

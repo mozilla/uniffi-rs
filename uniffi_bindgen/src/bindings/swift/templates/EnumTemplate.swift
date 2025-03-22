@@ -90,3 +90,7 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
 {% endif %}
+
+{% for swift_protocol in e.swift_protocols() %}
+extension {{ type_name }}: {{ swift_protocol }} {}
+{% endfor %}

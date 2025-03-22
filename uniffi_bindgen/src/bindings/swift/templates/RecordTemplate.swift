@@ -39,6 +39,10 @@ extension {{ type_name }}: Equatable, Hashable {
 
 {% endif %}
 
+{% for swift_protocol in rec.swift_protocols() %}
+extension {{ type_name }}: {{ swift_protocol }} {}
+{% endfor %}
+
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif

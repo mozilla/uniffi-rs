@@ -63,6 +63,7 @@ pub struct Record {
     pub(super) fields: Vec<Field>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
+    pub(super) swift_protocols: Vec<String>,
 }
 
 impl Record {
@@ -84,6 +85,10 @@ impl Record {
 
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
+    }
+
+    pub fn swift_protocols(&self) -> &[String] {
+        &self.swift_protocols
     }
 
     pub fn iter_types(&self) -> TypeIterator<'_> {
@@ -118,6 +123,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
             docstring: meta.docstring.clone(),
+            swift_protocols: meta.swift_protocols,
         })
     }
 }

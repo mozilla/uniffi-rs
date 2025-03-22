@@ -181,6 +181,7 @@ pub struct Enum {
     pub(super) non_exhaustive: bool,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
+    pub(super) swift_protocols: Vec<String>,
 }
 
 impl Enum {
@@ -263,6 +264,10 @@ impl Enum {
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
     }
+
+    pub fn swift_protocols(&self) -> &[String] {
+        &self.swift_protocols
+    }
 }
 
 impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
@@ -281,7 +286,8 @@ impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
                 .collect::<Result<_>>()?,
             shape: meta.shape,
             non_exhaustive: meta.non_exhaustive,
-            docstring: meta.docstring.clone(),
+            docstring: meta.docstring,
+            swift_protocols: meta.swift_protocols,
         })
     }
 }
@@ -680,6 +686,7 @@ mod test {
             shape: EnumShape::Enum,
             non_exhaustive: false,
             docstring: None,
+            swift_protocols: vec![],
         };
 
         assert!(e.variant_discr(0).is_err());

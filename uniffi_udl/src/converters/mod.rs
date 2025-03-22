@@ -101,6 +101,7 @@ impl APIConverter<RecordMetadata> for weedle::DictionaryDefinition<'_> {
             remote: attributes.contains_remote(),
             fields: self.members.body.convert(ci)?,
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
+            swift_protocols: vec![],
         })
     }
 }

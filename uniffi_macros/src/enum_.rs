@@ -2,11 +2,12 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
     parse::ParseStream, spanned::Spanned, Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit,
-    Variant,
+    Token, Variant,
 };
 
 use crate::{
     ffiops,
+    swift_protocols::SwiftProtocols,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
         mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
@@ -121,6 +122,14 @@ impl EnumItem {
 
     pub fn generate_error_try_read(&self) -> bool {
         self.attr.with_try_read.is_some()
+    }
+
+    pub fn swift_protocols(&self) -> Vec<String> {
+        self.attr
+            .swift_protocols
+            .as_ref()
+            .map(|p| p.to_vec())
+            .unwrap_or_default()
     }
 }
 
@@ -291,6 +300,7 @@ pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> 
         .concat_bool(#non_exhaustive)
         .concat_long_str(#docstring)
     });
+    metadata_expr.extend(string_array(&item.swift_protocols())?);
     Ok(create_metadata_items("enum", &name, metadata_expr, None))
 }
 
@@ -394,6 +404,13 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
         .collect()
 }
 
+pub fn string_array(items: &[String]) -> syn::Result<Vec<TokenStream>> {
+    let len = try_metadata_value_from_usize(items.len(), "UniFFI limits arrays to 256")?;
+    std::iter::once(Ok(quote! { .concat_value(#len) }))
+        .chain(items.iter().map(|item| Ok(quote! { .concat_str(#item) })))
+        .collect()
+}
+
 /// Handle #[uniffi(...)] attributes for enums
 #[derive(Clone, Default)]
 pub struct EnumAttr {
@@ -401,6 +418,7 @@ pub struct EnumAttr {
     // can reuse EnumItem for errors.
     pub flat_error: Option<kw::flat_error>,
     pub with_try_read: Option<kw::with_try_read>,
+    pub swift_protocols: Option<SwiftProtocols>,
 }
 
 impl UniffiAttributeArgs for EnumAttr {
@@ -416,6 +434,13 @@ impl UniffiAttributeArgs for EnumAttr {
                 with_try_read: input.parse()?,
                 ..Self::default()
             })
+        } else if lookahead.peek(kw::swift_protocols) {
+            let _: kw::swift_protocols = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            Ok(Self {
+                swift_protocols: Some(input.parse()?),
+                ..Self::default()
+            })
         } else if lookahead.peek(kw::handle_unknown_callback_error) {
             // Not used anymore, but still allowed
             Ok(Self::default())
@@ -428,6 +453,7 @@ impl UniffiAttributeArgs for EnumAttr {
         Ok(Self {
             flat_error: either_attribute_arg(self.flat_error, other.flat_error)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
+            swift_protocols: either_attribute_arg(self.swift_protocols, other.swift_protocols)?,
         })
     }
 }

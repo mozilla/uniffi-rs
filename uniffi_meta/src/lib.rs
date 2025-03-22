@@ -300,6 +300,7 @@ pub struct RecordMetadata {
     pub remote: bool, // only used when generating scaffolding from UDL
     pub fields: Vec<FieldMetadata>,
     pub docstring: Option<String>,
+    pub swift_protocols: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -345,6 +346,7 @@ pub struct EnumMetadata {
     pub discr_type: Option<Type>,
     pub non_exhaustive: bool,
     pub docstring: Option<String>,
+    pub swift_protocols: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
