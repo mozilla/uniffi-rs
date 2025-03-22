@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's fixed?
+
+- Allow `uniffi_reexport_scaffolding!` macro to work in Rust 2024 ([#2476](https://github.com/mozilla/uniffi-rs/issues/2476))
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
