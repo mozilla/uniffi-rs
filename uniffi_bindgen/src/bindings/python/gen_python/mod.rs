@@ -405,7 +405,7 @@ impl PythonCodeOracle {
             FfiType::RustArcPtr(_) => "ctypes.c_void_p".to_string(),
             FfiType::RustBuffer(maybe_external) => match maybe_external {
                 Some(external_meta) if external_meta.module_path != ci.crate_name() => {
-                    format!("_UniffiRustBuffer{}", external_meta.name)
+                    format!("_UniffiRustBuffer{}", self.class_name(&external_meta.name))
                 }
                 _ => "_UniffiRustBuffer".to_string(),
             },

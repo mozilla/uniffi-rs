@@ -10,6 +10,8 @@
 
 - Allow `uniffi_reexport_scaffolding!` macro to work in Rust 2024 ([#2476](https://github.com/mozilla/uniffi-rs/issues/2476))
 
+- Python: fix issues with unusual name capitalization, ([#2464](https://github.com/mozilla/uniffi-rs/issues/2464))
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
