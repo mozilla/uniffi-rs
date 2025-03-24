@@ -1,5 +1,9 @@
 {%- import "macros.py" as py %}
 
+{%- if ci.has_callback_definitions() %}
+{%- include "CallbackInterfaceRuntime.py" %}
+{%- endif %}
+
 {%- for type_ in ci.iter_local_types() %}
 {%- let type_name = type_|type_name %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}
