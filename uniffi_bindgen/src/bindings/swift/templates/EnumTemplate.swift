@@ -91,6 +91,6 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 extension {{ type_name }}: Equatable, Hashable {}
 {% endif %}
 
-{% if !e.contains_variant_fields() %}
+{% if !config.omit_case_iterable_conformance() && !e.contains_variant_fields() %}
 extension {{ type_name }}: CaseIterable {}
 {% endif %}
