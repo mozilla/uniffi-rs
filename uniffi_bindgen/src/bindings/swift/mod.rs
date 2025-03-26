@@ -223,7 +223,7 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SwiftBindingsOptions {
     pub generate_swift_sources: bool,
     pub generate_headers: bool,
