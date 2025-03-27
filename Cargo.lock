@@ -1048,12 +1048,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paste"
-version = "1.0.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de3145af08024dea9fa9914f381a17b8fc6034dfb00f3a84013f7ff43f29ed4c"
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1572,7 +1566,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -1989,6 +1983,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-swift-link-frameworks"
+version = "0.1.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-swift-omit-argument-labels"
 version = "0.22.0"
 dependencies = [
@@ -2029,7 +2030,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -2039,7 +2040,6 @@ dependencies = [
  "goblin",
  "heck",
  "once_cell",
- "paste",
  "rinja",
  "serde",
  "textwrap",
@@ -2051,7 +2051,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -2060,7 +2060,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_core"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -2071,7 +2071,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_internal_macros"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "quote",
  "syn",
@@ -2079,7 +2079,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "camino",
  "fs-err",
@@ -2095,7 +2095,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "siphasher",
@@ -2104,7 +2104,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "camino",
@@ -2115,7 +2115,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_udl"
-version = "0.29.0"
+version = "0.29.1"
 dependencies = [
  "anyhow",
  "textwrap",

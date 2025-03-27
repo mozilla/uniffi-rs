@@ -39,7 +39,19 @@ createSomeDict().use { d ->
     assert(d.maybeFloat64!!.almostEquals(1.0))
 
     assert(d.coveralls!!.getName() == "some_dict")
+
+    assert(d.coverallsList[0]!!.getName() == "some_dict_1")
+    assert(d.coverallsList[1] == null)
+    assert(d.coverallsList[2]!!.getName() == "some_dict_2")
+
+    assert(d.coverallsMap["some_dict_3"]!!.getName() == "some_dict_3")
+    assert(d.coverallsMap["none"] == null)
+    assert(d.coverallsMap["some_dict_4"]!!.getName() == "some_dict_4")
+
+    assert(getNumAlive() == 5UL)
 }
+
+assert(getNumAlive() == 0UL)
 
 createNoneDict().use { d ->
     assert(d.text == "text")
@@ -69,8 +81,11 @@ createNoneDict().use { d ->
     assert(d.maybeFloat64 == null)
 
     assert(d.coveralls == null)
+
+    assert(getNumAlive() == 0UL)
 }
 
+assert(getNumAlive() == 0UL)
 
 // Test arcs.
 

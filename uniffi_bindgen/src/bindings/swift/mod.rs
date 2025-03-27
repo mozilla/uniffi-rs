@@ -210,8 +210,12 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
             .map(|Component { config, .. }| config.header_filename())
             .collect();
         header_filenames.sort();
-        let modulemap_source =
-            generate_modulemap(module_name, header_filenames, options.xcframework)?;
+        let modulemap_source = generate_modulemap(
+            module_name,
+            header_filenames,
+            options.xcframework,
+            options.link_frameworks,
+        )?;
         let modulemap_path = options.out_dir.join(modulemap_filename);
         fs::write(modulemap_path, modulemap_source)?;
     }
@@ -219,7 +223,7 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SwiftBindingsOptions {
     pub generate_swift_sources: bool,
     pub generate_headers: bool,
@@ -230,4 +234,5 @@ pub struct SwiftBindingsOptions {
     pub module_name: Option<String>,
     pub modulemap_filename: Option<String>,
     pub metadata_no_deps: bool,
+    pub link_frameworks: Vec<String>,
 }

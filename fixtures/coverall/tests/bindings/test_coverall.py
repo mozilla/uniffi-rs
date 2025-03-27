@@ -41,6 +41,18 @@ class TestCoverall(unittest.TestCase):
         self.assertAlmostEqual(d.float64, 0.0)
         self.assertAlmostEqual(d.maybe_float64, 1.0)
 
+        self.assertEqual(d.coveralls_list[0].get_name(), "some_dict_1")
+        self.assertIsNone(d.coveralls_list[1])
+        self.assertEqual(d.coveralls_list[2].get_name(), "some_dict_2")
+
+        self.assertEqual(d.coveralls_map["some_dict_3"].get_name(), "some_dict_3")
+        self.assertIsNone(d.coveralls_map["none"])
+        self.assertEqual(d.coveralls_map["some_dict_4"].get_name(), "some_dict_4")
+
+        self.assertEqual(get_num_alive(), 5)
+        d = None
+        self.assertEqual(get_num_alive(), 0)
+
     def test_none_dict(self):
         d = create_none_dict()
         self.assertEqual(d.text, "text")
@@ -66,6 +78,10 @@ class TestCoverall(unittest.TestCase):
         self.assertIsNone(d.maybe_float64)
         self.assertIsNone(d.coveralls)
         self.assertIsNone(d.test_trait)
+
+        self.assertEqual(get_num_alive(), 0)
+        d = None
+        self.assertEqual(get_num_alive(), 0)
 
     def test_constructors(self):
         self.assertEqual(get_num_alive(), 0)

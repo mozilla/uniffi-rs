@@ -8,9 +8,21 @@
 
 ### What's fixed?
 
+- Allow `uniffi_reexport_scaffolding!` macro to work in Rust 2024 ([#2476](https://github.com/mozilla/uniffi-rs/issues/2476))
+
+- Python: fix issues with unusual name capitalization, ([#2464](https://github.com/mozilla/uniffi-rs/issues/2464))
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
+
+## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
+
+### What's fixed?
+
 - Bindings support `lift` and `lower` for CustomTypes in uniffi.toml to match the docs ([#2438](https://github.com/mozilla/uniffi-rs/issues/2438))
 
 - Python: fix using Vecs and other composite types in tuple enums ([#2445](https://github.com/mozilla/uniffi-rs/issues/2445))
+
+- Kotlin: fix interfaces in sequences and records being not disposed ([#2479](https://github.com/mozilla/uniffi-rs/issues/2479))
 
 ### What's changed?
 
@@ -22,7 +34,9 @@
   it also means foreign implemented traits also must when Swift 6 conformance is enabled.
   See the Swift section of the manual for more. ([#2450](https://github.com/mozilla/uniffi-rs/pull/2450))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...HEAD).
+- You can now optionally specify extra frameworks like `CoreBluetooth` or `CoreFoundation` when generating a modulemap file for an xcframework.
+
+[All changes in v0.29.1](https://github.com/mozilla/uniffi-rs/compare/v0.29.0...v0.29.1).
 
 ## v0.29.0 (backend crates: v0.29.0) - (_2025-02-06_)
 

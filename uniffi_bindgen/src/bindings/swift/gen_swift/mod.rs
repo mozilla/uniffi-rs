@@ -172,6 +172,8 @@ pub struct Config {
     omit_localized_error_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    link_frameworks: Vec<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -256,9 +258,15 @@ impl Config {
         self.generate_immutable_records.unwrap_or(false)
     }
 
-    // Whether to make generated error types conform to `LocalizedError`. Default: false.
+    /// Whether to make generated error types conform to `LocalizedError`. Default: false.
     pub fn omit_localized_error_conformance(&self) -> bool {
         self.omit_localized_error_conformance.unwrap_or(false)
+    }
+
+    /// Extra frameworks to link this Swift module against. This is populated in the modulemap file,
+    /// usually as part of an `xcframework`.
+    pub fn link_frameworks(&self) -> Vec<String> {
+        self.link_frameworks.clone()
     }
 }
 
@@ -326,11 +334,13 @@ pub fn generate_modulemap(
     module_name: String,
     header_filenames: Vec<String>,
     xcframework: bool,
+    link_frameworks: Vec<String>,
 ) -> Result<String> {
     ModuleMap {
         module_name,
         header_filenames,
         xcframework,
+        link_frameworks,
     }
     .render()
     .context("failed to render Swift library")
@@ -345,8 +355,6 @@ pub fn generate_modulemap(
 pub struct TypeRenderer<'a> {
     config: &'a Config,
     ci: &'a ComponentInterface,
-    // Track included modules for the `include_once()` macro
-    include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<String>>,
 }
@@ -356,22 +364,11 @@ impl<'a> TypeRenderer<'a> {
         Self {
             config,
             ci,
-            include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
         }
     }
 
     // The following methods are used by the `Types.swift` macros.
-
-    // Helper for the including a template, but only once.
-    //
-    // The first time this is called with a name it will return true, indicating that we should
-    // include the template.  Subsequent calls will return false.
-    fn include_once_check(&self, name: &str) -> bool {
-        self.include_once_names
-            .borrow_mut()
-            .insert(name.to_string())
-    }
 
     // Helper to add an import statement
     //
@@ -418,6 +415,7 @@ pub struct ModuleMap {
     module_name: String,
     header_filenames: Vec<String>,
     xcframework: bool,
+    link_frameworks: Vec<String>,
 }
 
 impl ModuleMap {
@@ -426,6 +424,7 @@ impl ModuleMap {
             module_name: config.ffi_module_name(),
             header_filenames: vec![config.header_filename()],
             xcframework: false,
+            link_frameworks: config.link_frameworks(),
         }
     }
 }

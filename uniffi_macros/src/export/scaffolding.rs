@@ -252,7 +252,7 @@ pub(super) fn gen_ffi_function(
             ffi_buffer_scaffolding_fn(&ffi_ident, &ffi_return_ty, &param_types, true);
         quote! {
             #[doc(hidden)]
-            #[no_mangle]
+            #[unsafe(no_mangle)]
             pub extern "C" fn #ffi_ident(
                 #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
@@ -287,7 +287,7 @@ pub(super) fn gen_ffi_function(
 
         quote! {
             #[doc(hidden)]
-            #[no_mangle]
+            #[unsafe(no_mangle)]
             pub extern "C" fn #ffi_ident(#(#param_names: #param_types,)*) -> ::uniffi::Handle {
                 ::uniffi::deps::trace!("calling: {}", #name);
                 let uniffi_lifted_args = (#lift_closure)();
@@ -326,7 +326,7 @@ fn ffi_buffer_scaffolding_fn(
     if has_rust_call_status {
         quote! {
             #[doc(hidden)]
-            #[no_mangle]
+            #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ident(
                 arg_ptr: *mut ::uniffi::FfiBufferElement,
                 return_ptr: *mut ::uniffi::FfiBufferElement,
@@ -348,7 +348,7 @@ fn ffi_buffer_scaffolding_fn(
     } else {
         quote! {
             #[doc(hidden)]
-            #[no_mangle]
+            #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ident(
                 arg_ptr: *mut ::uniffi::FfiBufferElement,
                 return_ptr: *mut ::uniffi::FfiBufferElement,
