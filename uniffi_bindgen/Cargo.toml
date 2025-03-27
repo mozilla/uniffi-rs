@@ -18,7 +18,7 @@ ffi-trace = ["uniffi_testing?/ffi-trace"]
 
 [dependencies]
 anyhow = "1"
-rinja = { version = "0.3.4", default-features = false, features = ["config"] }
+askama = { version = "0.13.0", default-features = false, features = ["config", "derive", "alloc"] }
 camino = "1.0.8"
 cargo_metadata = { version = "0.15", optional = true }
 fs-err = "2.7.0"
