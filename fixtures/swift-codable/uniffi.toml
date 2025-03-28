@@ -1,0 +1,2 @@
+[bindings.swift]
+generate_codable_conformance = true

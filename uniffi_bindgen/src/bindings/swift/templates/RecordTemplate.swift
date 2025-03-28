@@ -36,7 +36,9 @@ extension {{ type_name }}: Equatable, Hashable {
         {%- endfor %}
     }
 }
-
+{% if config.generate_codable_conformance() %}
+extension {{ type_name }}: Codable {}
+{% endif %}
 {% endif %}
 
 #if swift(>=5.8)
