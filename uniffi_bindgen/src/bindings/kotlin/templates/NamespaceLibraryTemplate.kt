@@ -119,8 +119,8 @@ internal interface UniffiLib : Library {
             val lib = loadIndirect<UniffiLib>(componentName)
             // No need to check the contract version and checksums, since 
             // we already did that with `IntegrityCheckingUniffiLib` above.
-            {% for fn in self.initialization_fns(ci) -%}
-            {{ fn }}
+            {% for fn_item in self.initialization_fns(ci) -%}
+            {{ fn_item }}
             {% endfor -%}
             // Loading of library with integrity check done.
             lib

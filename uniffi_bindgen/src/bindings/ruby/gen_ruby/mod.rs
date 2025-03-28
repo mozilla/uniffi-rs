@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::Result;
-use rinja::Template;
+use askama::Template;
 
 use heck::{ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
@@ -115,7 +115,7 @@ impl<'a> RubyWrapper<'a> {
 mod filters {
     use super::*;
 
-    pub fn type_ffi(type_: &FfiType) -> Result<String, rinja::Error> {
+    pub fn type_ffi(type_: &FfiType) -> Result<String, askama::Error> {
         Ok(match type_ {
             FfiType::Int8 => ":int8".to_string(),
             FfiType::UInt8 => ":uint8".to_string(),
@@ -145,7 +145,7 @@ mod filters {
         })
     }
 
-    pub fn literal_rb(literal: &Literal) -> Result<String, rinja::Error> {
+    pub fn literal_rb(literal: &Literal) -> Result<String, askama::Error> {
         Ok(match literal {
             Literal::Boolean(v) => {
                 if *v {
@@ -181,22 +181,22 @@ mod filters {
         })
     }
 
-    pub fn class_name_rb(nm: &str) -> Result<String, rinja::Error> {
+    pub fn class_name_rb(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_upper_camel_case())
     }
 
-    pub fn fn_name_rb(nm: &str) -> Result<String, rinja::Error> {
+    pub fn fn_name_rb(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_snake_case())
     }
 
-    pub fn var_name_rb(nm: &str) -> Result<String, rinja::Error> {
+    pub fn var_name_rb(nm: &str) -> Result<String, askama::Error> {
         let nm = nm.to_string();
         let prefix = if is_reserved_word(&nm) { "_" } else { "" };
 
         Ok(format!("{prefix}{}", nm.to_snake_case()))
     }
 
-    pub fn enum_name_rb(nm: &str) -> Result<String, rinja::Error> {
+    pub fn enum_name_rb(nm: &str) -> Result<String, askama::Error> {
         Ok(nm.to_string().to_shouty_snake_case())
     }
 
@@ -204,7 +204,7 @@ mod filters {
         nm: S1,
         ns: S2,
         type_: &Type,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         let nm = nm.as_ref();
         let ns = ns.as_ref();
         Ok(match type_ {
@@ -250,7 +250,7 @@ mod filters {
         })
     }
 
-    pub fn check_lower_rb<S: AsRef<str>>(nm: S, type_: &Type) -> Result<String, rinja::Error> {
+    pub fn check_lower_rb<S: AsRef<str>>(nm: S, type_: &Type) -> Result<String, askama::Error> {
         let nm = nm.as_ref();
         Ok(match type_ {
             Type::Object { name, .. } => {
@@ -269,7 +269,7 @@ mod filters {
         })
     }
 
-    pub fn lower_rb(nm: &str, type_: &Type) -> Result<String, rinja::Error> {
+    pub fn lower_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8
@@ -303,7 +303,7 @@ mod filters {
         })
     }
 
-    pub fn lift_rb(nm: &str, type_: &Type) -> Result<String, rinja::Error> {
+    pub fn lift_rb(nm: &str, type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8
             | Type::UInt8

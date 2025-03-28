@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::Result;
-use rinja::Template;
+use askama::Template;
 use std::borrow::Borrow;
 
 use super::interface::*;
@@ -23,7 +23,7 @@ impl<'a> RustScaffolding<'a> {
 mod filters {
     use super::*;
 
-    pub fn type_rs(type_: &Type) -> Result<String, rinja::Error> {
+    pub fn type_rs(type_: &Type) -> Result<String, askama::Error> {
         Ok(match type_ {
             Type::Int8 => "i8".into(),
             Type::UInt8 => "u8".into(),

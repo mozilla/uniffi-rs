@@ -66,7 +66,7 @@ impl BindingGenerator for RubyBindingGenerator {
 
 // Generate ruby bindings for the given ComponentInterface, as a string.
 pub fn generate_ruby_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
-    use rinja::Template;
+    use askama::Template;
     RubyWrapper::new(config.clone(), ci)
         .render()
         .context("failed to render ruby bindings")
