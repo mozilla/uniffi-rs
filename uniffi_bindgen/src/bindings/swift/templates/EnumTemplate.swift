@@ -90,3 +90,7 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
 {% endif %}
+
+{% if !config.omit_case_iterable_conformance() && !e.contains_variant_fields() %}
+extension {{ type_name }}: CaseIterable {}
+{% endif %}

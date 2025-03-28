@@ -219,7 +219,7 @@ impl Enum {
     }
 
     // Iterate over variant discriminants
-    pub fn variant_discr_iter(&self) -> impl Iterator<Item = Result<Literal>> + '_ {
+    fn variant_discr_iter(&self) -> impl Iterator<Item = Result<Literal>> + '_ {
         let mut next = 0;
         self.variants().iter().map(move |v| {
             let (this, this_lit) = match v.discr {
@@ -262,6 +262,10 @@ impl Enum {
 
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
+    }
+
+    pub fn contains_variant_fields(&self) -> bool {
+        self.variants().iter().any(|v| v.has_fields())
     }
 }
 
