@@ -4,8 +4,8 @@
 
 use super::CodeType;
 use crate::{
-    backend::Literal,
     bail,
+    interface::Literal,
     interface::{ComponentInterface, Radix, Type},
     Result,
 };

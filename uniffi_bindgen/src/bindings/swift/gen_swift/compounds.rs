@@ -4,8 +4,9 @@
 
 use super::CodeType;
 use crate::{
-    backend::{Literal, Type},
-    bail, Result,
+    bail,
+    interface::{Literal, Type},
+    Result,
 };
 
 #[derive(Debug)]

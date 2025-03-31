@@ -96,11 +96,11 @@ use anyhow::{anyhow, bail, Context, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err::{self as fs, File};
 use serde::Deserialize;
+use std::fmt;
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::process::Command;
 
-pub mod backend;
 pub mod bindings;
 pub mod interface;
 pub mod library_mode;
@@ -540,6 +540,25 @@ fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
         }
     }
 }
+
+// convert `anyhow::Error` and `&str` etc to askama errors.
+// should only be needed by "filters", otherwise anyhow etc work directly.
+pub fn to_askama_error<T: ToString + ?Sized>(t: &T) -> askama::Error {
+    askama::Error::Custom(Box::new(BindingsTemplateError(t.to_string())))
+}
+
+// Need a struct to define an error that implements std::error::Error, which neither String nor
+// anyhow::Error do.
+#[derive(Debug)]
+struct BindingsTemplateError(String);
+
+impl fmt::Display for BindingsTemplateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for BindingsTemplateError {}
 
 // FIXME(HACK):
 // Include the askama config file into the build.

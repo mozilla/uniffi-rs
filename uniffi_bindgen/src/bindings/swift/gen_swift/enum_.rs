@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::{backend::Literal, bail, Result};
+use crate::{bail, interface::Literal, Result};
 
 #[derive(Debug)]
 pub struct EnumCodeType {
