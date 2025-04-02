@@ -221,6 +221,11 @@ impl ComponentInterface {
         self.functions.iter().find(|f| f.name == name)
     }
 
+    /// Returns `true` if we have any objects in this interface.
+    pub fn has_object_definitions(&self) -> bool {
+        !self.objects.is_empty()
+    }
+
     /// Get the definitions for every Object type in the interface.
     pub fn object_definitions(&self) -> &[Object] {
         &self.objects
@@ -275,6 +280,14 @@ impl ComponentInterface {
                 .objects
                 .iter()
                 .any(|o| o.has_callback_interface() && o.has_async_method())
+    }
+
+    pub fn has_callback_definitions(&self) -> bool {
+        !self.callback_interface_definitions().is_empty()
+            || self
+                .object_definitions()
+                .iter()
+                .any(|o| o.has_callback_interface())
     }
 
     /// Get the definitions for every Method type in the interface.

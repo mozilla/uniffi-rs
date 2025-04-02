@@ -169,7 +169,7 @@ pub struct ExternalFfiMetadata {
     pub module_path: String,
 }
 
-// Needed for rust scaffolding rinja template
+// Needed for rust scaffolding askama template
 impl From<Type> for FfiType {
     fn from(ty: Type) -> Self {
         (&ty).into()

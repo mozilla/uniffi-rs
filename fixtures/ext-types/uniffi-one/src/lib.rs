@@ -29,6 +29,10 @@ impl UniffiOneInterface {
     }
 }
 
+// A Three Letter Acronym, testing unusual capitalization.
+#[derive(Eq, PartialEq, Debug, uniffi::Record)]
+pub struct UniffiOneTLA {}
+
 #[uniffi::export]
 fn get_my_proc_macro_type(t: UniffiOneProcMacroType) -> UniffiOneProcMacroType {
     t

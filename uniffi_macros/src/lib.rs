@@ -176,7 +176,7 @@ pub fn udl_remote(attrs: TokenStream, input: TokenStream) -> TokenStream {
 
 /// Derive items for UDL mode
 ///
-/// The Rinja templates generate placeholder items wrapped with the `#[udl_derive(<kind>)]`
+/// The Askama templates generate placeholder items wrapped with the `#[udl_derive(<kind>)]`
 /// attribute.  The macro code then generates derived items based on the input.  This system ensures
 /// that the same code path is used for UDL-based code and proc-macros.
 ///
