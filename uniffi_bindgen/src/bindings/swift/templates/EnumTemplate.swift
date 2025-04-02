@@ -94,6 +94,6 @@ extension {{ type_name }}: Codable {}
 {% endif %}
 {% endif %}
 
-{% if !config.omit_case_iterable_conformance() && !e.contains_variant_fields() %}
+{% if config.generate_case_iterable_conformance() && !e.contains_variant_fields() %}
 extension {{ type_name }}: CaseIterable {}
 {% endif %}

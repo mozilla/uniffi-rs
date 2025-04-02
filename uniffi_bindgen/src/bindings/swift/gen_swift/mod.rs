@@ -170,7 +170,7 @@ pub struct Config {
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
     omit_localized_error_conformance: Option<bool>,
-    omit_case_iterable_conformance: Option<bool>,
+    generate_case_iterable_conformance: Option<bool>,
     generate_codable_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
@@ -266,8 +266,8 @@ impl Config {
     }
 
     /// Whether to make simple generated enum and error types conform to `CaseIterable`. Default: false.
-    pub fn omit_case_iterable_conformance(&self) -> bool {
-        self.omit_case_iterable_conformance.unwrap_or(false)
+    pub fn generate_case_iterable_conformance(&self) -> bool {
+        self.generate_case_iterable_conformance.unwrap_or(false)
     }
 
     /// Whether to make generated records, enums and errors conform to `Codable`. Default: false.
