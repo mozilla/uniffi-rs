@@ -12,6 +12,10 @@
 
 - Python: fix issues with unusual name capitalization, ([#2464](https://github.com/mozilla/uniffi-rs/issues/2464))
 
+- Swift bindings can now generate automatic conformance to the `CaseIterable` protocol for simple enums and errors using `generate_case_iterable_conformance = true` in the configuration.
+
+- Swift bindings can now generate automatic conformance to the `Codable` protocol for records, enums and errors using `generate_codable_conformance = true` in the configuration. Be aware that serialization in Swift may lead to different and incompatible results compared to serialization in Rust.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
