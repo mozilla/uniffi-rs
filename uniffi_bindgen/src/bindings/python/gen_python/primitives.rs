@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::{backend::Literal, bail, interface::Radix, Result};
+use crate::{bail, interface::Literal, interface::Radix, Result};
 
 fn render_literal(literal: &Literal) -> Result<String> {
     Ok(match literal {
