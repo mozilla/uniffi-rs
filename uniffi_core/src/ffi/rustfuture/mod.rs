@@ -41,10 +41,15 @@ pub type RustFutureContinuationCallback = extern "C" fn(callback_data: u64, Rust
 #[doc(hidden)]
 pub trait UniffiCompatibleFuture<T>: Future<Output = T> {}
 
+#[doc(hidden)]
+pub trait FutureLowerReturn<UT>: LowerReturn<UT> {}
+
 /// The `Send` bound is required because the Foreign code may call the
 /// `rust_future_*` methods from different threads.
 #[cfg(not(target_arch = "wasm32"))]
 impl<T, F> UniffiCompatibleFuture<T> for F where F: Future<Output = T> + Send {}
+#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
+impl<UT, LR> FutureLowerReturn<UT> for LR where LR: LowerReturn<UT> + Send {}
 
 /// `Future`'s on WASM32 are not `Send` because it's a single threaded environment.
 ///
@@ -85,6 +90,8 @@ impl<T, F> UniffiCompatibleFuture<T> for F where F: Future<Output = T> + Send {}
 /// [transferable]: (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects
 #[cfg(target_arch = "wasm32")]
 impl<T, F> UniffiCompatibleFuture<T> for F where F: Future<Output = T> {}
+#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+impl<UT, LR> FutureLowerReturn<UT> for LR where LR: LowerReturn<UT> {}
 
 // === Public FFI API ===
 
@@ -103,7 +110,7 @@ where
     F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     // T is the output of the Future.  It needs to implement [LowerReturn].  Also it must be Send +
     // 'static for the same reason as F.
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     // The UniFfiTag ZST. The Send + 'static bound is to keep rustc happy.
     UT: Send + 'static,
     // Needed to allocate a handle

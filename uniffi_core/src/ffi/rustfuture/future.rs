@@ -85,15 +85,18 @@ use std::{
     task::{Context, Poll, Wake},
 };
 
-use super::{RustFutureContinuationCallback, RustFuturePoll, Scheduler, UniffiCompatibleFuture};
-use crate::{rust_call_with_out_status, FfiDefault, LiftArgsError, LowerReturn, RustCallStatus};
+use super::{
+    FutureLowerReturn, RustFutureContinuationCallback, RustFuturePoll, Scheduler,
+    UniffiCompatibleFuture,
+};
+use crate::{rust_call_with_out_status, FfiDefault, LiftArgsError, RustCallStatus};
 
 type BoxedFuture<T> = Pin<Box<dyn UniffiCompatibleFuture<Result<T, LiftArgsError>>>>;
 
 /// Wraps the actual future we're polling
 struct WrappedFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
     // Note: this could be a single enum, but that would make it easy to mess up the future pinning
@@ -105,7 +108,7 @@ where
 
 impl<T, UT> WrappedFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
     fn new(future: BoxedFuture<T>) -> Self {
@@ -183,7 +186,7 @@ where
 // that we will treat the raw pointer properly, for example by not returning it twice.
 unsafe impl<T, UT> Send for WrappedFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
 }
@@ -191,7 +194,7 @@ where
 /// Future that the foreign code is awaiting
 pub(super) struct RustFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
     // This Mutex should never block if our code is working correctly, since there should not be
@@ -205,7 +208,7 @@ where
 
 impl<T, UT> RustFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
     pub(super) fn new(future: BoxedFuture<T>, _tag: UT) -> Arc<Self> {
@@ -258,7 +261,7 @@ where
 
 impl<T, UT> Wake for RustFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
     fn wake(self: Arc<Self>) {
@@ -291,7 +294,7 @@ pub trait RustFutureFfi<ReturnType>: Send + Sync {
 
 impl<T, UT> RustFutureFfi<T::ReturnType> for RustFuture<T, UT>
 where
-    T: LowerReturn<UT> + Send + 'static,
+    T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
 {
     fn ffi_poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {

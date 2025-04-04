@@ -11,10 +11,10 @@ name = "wasm_unstable_single_threaded"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { workspace = true, features = ["cli"] }
+uniffi = { workspace = true, features = ["cli", "wasm-unstable-single-threaded"] }
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "wasm-unstable-single-threaded"] }
 
 [dev-dependencies]
-uniffi = { workspace = true, features = ["bindgen-tests"] }
+uniffi = { workspace = true, features = ["bindgen-tests", "wasm-unstable-single-threaded"] }
