@@ -122,8 +122,8 @@ note: required by a bound in `uniffi::FfiConverterArc::FfiType`
   |
   | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
   |                                       ^^^^ required by this bound in `FfiConverterArc::FfiType`
-  |     type FfiType: FfiDefault;
-  |          ------- required by a bound in this associated type
+  |     define_ffi_converter_arc_trait_body!();
+  |     -------------------------------------- required by a bound in this associated type
   = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `(dyn Trait + 'static)` cannot be shared between threads safely
@@ -138,8 +138,8 @@ note: required by a bound in `uniffi::FfiConverterArc::FfiType`
   |
   | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
   |                                              ^^^^ required by this bound in `FfiConverterArc::FfiType`
-  |     type FfiType: FfiDefault;
-  |          ------- required by a bound in this associated type
+  |     define_ffi_converter_arc_trait_body!();
+  |     -------------------------------------- required by a bound in this associated type
   = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `(dyn ProcMacroTrait + 'static)` cannot be sent between threads safely
@@ -154,8 +154,8 @@ note: required by a bound in `uniffi::FfiConverterArc::FfiType`
    |
    | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
    |                                       ^^^^ required by this bound in `FfiConverterArc::FfiType`
-   |     type FfiType: FfiDefault;
-   |          ------- required by a bound in this associated type
+   |     define_ffi_converter_arc_trait_body!();
+   |     -------------------------------------- required by a bound in this associated type
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `(dyn ProcMacroTrait + 'static)` cannot be shared between threads safely
@@ -170,6 +170,6 @@ note: required by a bound in `uniffi::FfiConverterArc::FfiType`
    |
    | pub unsafe trait FfiConverterArc<UT>: Send + Sync {
    |                                              ^^^^ required by this bound in `FfiConverterArc::FfiType`
-   |     type FfiType: FfiDefault;
-   |          ------- required by a bound in this associated type
+   |     define_ffi_converter_arc_trait_body!();
+   |     -------------------------------------- required by a bound in this associated type
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
