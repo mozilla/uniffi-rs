@@ -51,3 +51,10 @@ tokio = ["uniffi_core/tokio"]
 # Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
 # This is needed for the gecko-js bindings.
 scaffolding-ffi-buffer-fns = ["uniffi_core/scaffolding-ffi-buffer-fns", "uniffi_macros/scaffolding-ffi-buffer-fns"]
+
+# Support for WebAssembly targets in a single-threaded environment.
+# This feature is unstable and may change in the future.
+wasm-unstable-single-threaded = [
+    "uniffi_core/wasm-unstable-single-threaded",
+    "uniffi_macros/wasm-unstable-single-threaded",
+]

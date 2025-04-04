@@ -36,6 +36,7 @@ pub struct SimpleObject {
 }
 
 impl SimpleObject {
+    #[cfg_attr(target_arch = "wasm32", allow(clippy::arc_with_non_send_sync))]
     fn new_with_callback(cb: Box<EventHandlerFn>) -> Arc<Self> {
         Arc::new(SimpleObject {
             inner: Mutex::new("key".to_string()),

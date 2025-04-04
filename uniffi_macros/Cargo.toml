@@ -35,3 +35,6 @@ scaffolding-ffi-buffer-fns = []
 # * Add the full module path of exported items to FFI metadata instead of just the crate name.
 #   This may be used by language backends to generate nested module structures in the future.
 nightly = []
+# Support for WebAssembly targets in a single-threaded environment.
+# This feature is unstable and may change in the future.
+wasm-unstable-single-threaded = []
