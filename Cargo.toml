@@ -71,6 +71,7 @@ members = [
   "fixtures/large-enum",
   "fixtures/large-error",
   "fixtures/enum-types",
+  "fixtures/wasm-unstable-single-threaded",
 ]
 
 resolver = "2"
