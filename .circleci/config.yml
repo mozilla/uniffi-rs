@@ -20,6 +20,7 @@ commands:
       # So long as this is executed after the checkout it will use the version specified in rust-toolchain.yaml
       - run: rustup self update
       - run: rustup toolchain install
+      - run: rustup target add wasm32-unknown-unknown
   # Our minimum supported rust version is specified here.
   prepare-rust-min-version:
     steps:
