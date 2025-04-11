@@ -49,6 +49,11 @@ class TestIt(unittest.TestCase):
             self.assertEqual(await get_uniffi_one_async(), UniffiOneEnum.ONE)
             # This async function comes from the `proc-macro-lib` crate
             self.assertEqual(t1, await get_uniffi_one_type_async(t1))
+
+            t2 = UniffiOneTraitImpl()
+            self.assertEqual(await t2.hello(), "uniffi-one-trait-impl")
+            self.assertEqual(await t2.try_hello(), "uniffi-one-trait-impl")
+
         asyncio.run(test())
 
     def test_get_uniffi_one_proc_macro_type(self):
