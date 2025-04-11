@@ -151,7 +151,20 @@ pub unsafe trait FfiConverter<UT>: Sized {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
+#[cfg(not(target_arch = "wasm32"))]
 pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+    type FfiType: FfiDefault;
+
+    fn lower(obj: Arc<Self>) -> Self::FfiType;
+    fn try_lift(v: Self::FfiType) -> Result<Arc<Self>>;
+    fn write(obj: Arc<Self>, buf: &mut Vec<u8>);
+    fn try_read(buf: &mut &[u8]) -> Result<Arc<Self>>;
+
+    const TYPE_ID_META: MetadataBuffer;
+}
+
+#[cfg(target_arch = "wasm32")]
+pub unsafe trait FfiConverterArc<UT> {
     type FfiType: FfiDefault;
 
     fn lower(obj: Arc<Self>) -> Self::FfiType;

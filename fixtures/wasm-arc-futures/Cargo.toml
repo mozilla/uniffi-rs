@@ -1,0 +1,26 @@
+[package]
+name = "uniffi-fixtures-wasm-arc-futures"
+version = "0.21.0"
+authors = ["zzorba", "jhugman"]
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "wasm_arc_futures"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+uniffi = { workspace = true, features = ["cli"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-timers = { version = "0.2.6", features = ["futures"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.24.1", features = ["time", "sync"] }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }
