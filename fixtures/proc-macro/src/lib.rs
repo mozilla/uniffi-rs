@@ -264,6 +264,12 @@ pub enum BasicError {
     UnexpectedError { reason: String },
 }
 
+#[derive(uniffi::Error, Debug)]
+pub enum SimpleError {
+    A,
+    B,
+}
+
 impl From<uniffi::UnexpectedUniFFICallbackError> for BasicError {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
         Self::UnexpectedError { reason: e.reason }

@@ -1,2 +1,5 @@
 [bindings.kotlin]
 package_name = "uniffi.fixture.proc_macro"
+
+[bindings.swift]
+generate_case_iterable_conformance = true
