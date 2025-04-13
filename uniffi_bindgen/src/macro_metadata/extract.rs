@@ -9,7 +9,7 @@ use goblin::{
     archive::Archive,
     elf::Elf,
     mach::{segment::Section, symbols, Mach, MachO, SingleArch},
-    pe::PE,
+    pe::{Coff, PE},
     Object,
 };
 use std::collections::HashSet;
@@ -30,6 +30,7 @@ fn extract_from_bytes(file_data: &[u8]) -> anyhow::Result<Vec<Metadata>> {
         Object::PE(pe) => extract_from_pe(pe, file_data),
         Object::Mach(mach) => extract_from_mach(mach, file_data),
         Object::Archive(archive) => extract_from_archive(archive, file_data),
+        Object::COFF(coff) => extract_from_coff(coff, file_data),
         _ => bail!("Unknown library format"),
     }
 }
@@ -186,6 +187,49 @@ pub fn extract_from_archive(
         );
     }
     Ok(items)
+}
+
+pub fn extract_from_coff(coff: Coff<'_>, file_data: &[u8]) -> anyhow::Result<Vec<Metadata>> {
+    // https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#coff-file-header-object-and-image
+    let Some(strings) = coff.strings else {
+        return Ok(vec![]);
+    };
+    let Some(symbols) = coff.symbols else {
+        return Ok(vec![]);
+    };
+
+    let mut extracted = ExtractedItems::new();
+
+    for (_, _, symbol) in symbols.iter() {
+        // COFF uses a one-based section index. Non-positive values have specifial meanings.
+        // 0 : IMAGE_SYM_UNDEFINED
+        // -1: IMAGE_SYM_ABSOLUTE
+        // -2: IMAGE_SYM_DEBUG
+        // See https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#section-number-values
+        // for details.
+        if symbol.section_number <= 0 {
+            continue;
+        }
+        let Ok(name) = symbol.name(&strings) else {
+            continue;
+        };
+        let section = coff
+            .sections
+            .get((symbol.section_number - 1) as usize)
+            .with_context(|| format!("Index error looking up section header for {name}"))?;
+        if !is_metadata_symbol(name) {
+            continue;
+        }
+        extracted.extract_item(
+            name,
+            file_data,
+            (section.pointer_to_raw_data as usize)
+                .checked_add(symbol.value as usize)
+                .context("Error getting symbol offset")?,
+        )?;
+    }
+
+    Ok(extracted.into_metadata())
 }
 
 /// Container for extracted metadata items
