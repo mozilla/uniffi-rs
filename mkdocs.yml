@@ -98,7 +98,8 @@ nav:
   - ./internals/crates.md
   - ./internals/lifting_and_lowering.md
   - ./internals/object_references.md
-  - ./internals/async.md
+  - ./internals/async-overview.md
+  - ./internals/async-ffi.md
   - ./internals/rendering_foreign_bindings.md
 
 - ./Upgrading.md
