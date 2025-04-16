@@ -43,6 +43,7 @@ interface Keychain {
 ```
 
 The `with_foreign` / `WithForeign` attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.
+Note that [references in foreign trait methods aren't supported](https://github.com/mozilla/uniffi-rs/issues/2263), so all parameters must be passed by value.
 
 ## 2. Allow it to be passed into Rust
 
