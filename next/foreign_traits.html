@@ -1748,7 +1748,8 @@ Otherwise define this trait in your UDL file:</p>
     <span class="kt">void</span> <span class="nf">put</span><span class="p">(</span><span class="nc">string</span> <span class="nv">key</span><span class="p">,</span> <span class="nc">string</span> <span class="nv">data</span><span class="p">);</span>
 <span class="p">};</span>
 </code></pre></div>
-<p>The <code>with_foreign</code> / <code>WithForeign</code> attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.</p>
+<p>The <code>with_foreign</code> / <code>WithForeign</code> attributes specify that you want to enable support for foreign implementations of that trait as well as Rust ones.
+Note that <a href="https://github.com/mozilla/uniffi-rs/issues/2263">references in foreign trait methods aren't supported</a>, so all parameters must be passed by value.</p>
 <h2 id="2-allow-it-to-be-passed-into-rust">2. Allow it to be passed into Rust</h2>
 <p>Here, we define a new object with a constructor which takes a keychain.</p>
 <div class="highlight"><pre><span></span><code><span class="k">interface</span> <span class="nc">Authenticator</span> <span class="p">{</span>
