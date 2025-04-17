@@ -65,9 +65,9 @@ pub(super) fn trait_impl(
                 pub #ident: extern "C" fn(
                     uniffi_handle: u64,
                     #(#param_names: #param_types,)*
-                    uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
+                    uniffi_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
                     uniffi_callback_data: u64,
-                    uniffi_out_return: &mut ::uniffi::ForeignFuture,
+                    uniffi_out_dropped_callback: &mut ::uniffi::ForeignFutureDroppedCallbackStruct,
                 ),
             }
         }
@@ -241,10 +241,15 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
         Ok(quote! {
             async fn #ident(#self_param, #(#params),*) -> #return_ty {
                 let vtable = #vtable_cell.get();
-                ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(move |uniffi_future_callback, uniffi_future_callback_data| {
-                    let mut uniffi_foreign_future: ::uniffi::ForeignFuture = ::uniffi::FfiDefault::ffi_default();
-                    (vtable.#ident)(self.handle, #(#lower_exprs,)* uniffi_future_callback, uniffi_future_callback_data, &mut uniffi_foreign_future);
-                    uniffi_foreign_future
+                ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(
+                    move |uniffi_future_callback, uniffi_future_callback_data, uniffi_foreign_future_dropped_callback| {
+                        (vtable.#ident)(
+                            self.handle,
+                            #(#lower_exprs,)*
+                            uniffi_future_callback,
+                            uniffi_future_callback_data,
+                            uniffi_foreign_future_dropped_callback
+                        );
                 }).await
             }
         })

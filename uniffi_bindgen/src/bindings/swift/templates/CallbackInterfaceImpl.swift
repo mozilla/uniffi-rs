@@ -80,20 +80,21 @@ fileprivate struct {{ trait_impl }} {
 
             {%- match meth.throws_type() %}
             {%- when None %}
-            let uniffiForeignFuture = uniffiTraitInterfaceCallAsync(
-                makeCall: makeCall,
-                handleSuccess: uniffiHandleSuccess,
-                handleError: uniffiHandleError
-            )
-            {%- when Some(error_type) %}
-            let uniffiForeignFuture = uniffiTraitInterfaceCallAsyncWithError(
+            uniffiTraitInterfaceCallAsync(
                 makeCall: makeCall,
                 handleSuccess: uniffiHandleSuccess,
                 handleError: uniffiHandleError,
-                lowerError: {{ error_type|lower_fn }}
+                droppedCallback: uniffiOutDroppedCallback
+            )
+            {%- when Some(error_type) %}
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall: makeCall,
+                handleSuccess: uniffiHandleSuccess,
+                handleError: uniffiHandleError,
+                lowerError: {{ error_type|lower_fn }},
+                droppedCallback: uniffiOutDroppedCallback
             )
             {%- endmatch %}
-            uniffiOutReturn.pointee = uniffiForeignFuture
             {%- endif %}
         },
         {%- endfor %}

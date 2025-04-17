@@ -21,7 +21,7 @@ pub enum RustFuturePoll {
     /// The future is ready and is waiting for [rust_future_complete] to be called
     Ready = 0,
     /// The future might be ready and [rust_future_poll] should be called again
-    MaybeReady = 1,
+    Wake = 1,
 }
 
 /// Foreign callback that's passed to [rust_future_poll]
