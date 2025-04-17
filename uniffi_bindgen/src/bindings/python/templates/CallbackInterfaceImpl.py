@@ -73,9 +73,9 @@ class {{ trait_impl }}:
 
         {%- match meth.throws_type() %}
         {%- when None %}
-        uniffi_out_return[0] = _uniffi_trait_interface_call_async(make_call, handle_success, handle_error)
+        _uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callback, handle_success, handle_error)
         {%- when Some(error) %}
-        uniffi_out_return[0] = _uniffi_trait_interface_call_async_with_error(make_call, handle_success, handle_error, {{ error|type_name }}, {{ error|lower_fn }})
+        _uniffi_trait_interface_call_async_with_error(make_call, uniffi_out_dropped_callback, handle_success, handle_error, {{ error|type_name }}, {{ error|lower_fn }})
         {%- endmatch %}
         {%- endif %}
     {%- endfor %}

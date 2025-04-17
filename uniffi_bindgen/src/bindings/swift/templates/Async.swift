@@ -1,5 +1,5 @@
 private let UNIFFI_RUST_FUTURE_POLL_READY: Int8 = 0
-private let UNIFFI_RUST_FUTURE_POLL_MAYBE_READY: Int8 = 1
+private let UNIFFI_RUST_FUTURE_POLL_WAKE: Int8 = 1
 
 fileprivate let uniffiContinuationHandleMap = UniffiHandleMap<UnsafeContinuation<Int8, Never>>()
 
@@ -49,8 +49,9 @@ fileprivate func uniffiFutureContinuationCallback(handle: UInt64, pollResult: In
 private func uniffiTraitInterfaceCallAsync<T>(
     makeCall: @escaping () async throws -> T,
     handleSuccess: @escaping (T) -> (),
-    handleError: @escaping (Int8, RustBuffer) -> ()
-) -> UniffiForeignFuture {
+    handleError: @escaping (Int8, RustBuffer) -> (),
+    droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+) {
     let task = Task {
         do {
             handleSuccess(try await makeCall())
@@ -59,16 +60,19 @@ private func uniffiTraitInterfaceCallAsync<T>(
         }
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
-    return UniffiForeignFuture(handle: handle, free: uniffiForeignFutureFree)
-
+    droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
+        handle: handle,
+        free: uniffiForeignFutureDroppedCallback
+    )
 }
 
 private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
     makeCall: @escaping () async throws -> T,
     handleSuccess: @escaping (T) -> (),
     handleError: @escaping (Int8, RustBuffer) -> (),
-    lowerError: @escaping (E) -> RustBuffer
-) -> UniffiForeignFuture {
+    lowerError: @escaping (E) -> RustBuffer,
+    droppedCallback: UnsafeMutablePointer<UniffiForeignFutureDroppedCallbackStruct>
+) {
     let task = Task {
         do {
             handleSuccess(try await makeCall())
@@ -79,7 +83,10 @@ private func uniffiTraitInterfaceCallAsyncWithError<T, E>(
         }
     }
     let handle = UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.insert(obj: task)
-    return UniffiForeignFuture(handle: handle, free: uniffiForeignFutureFree)
+    droppedCallback.pointee = UniffiForeignFutureDroppedCallbackStruct(
+        handle: handle,
+        free: uniffiForeignFutureDroppedCallback
+    )
 }
 
 // Borrow the callback handle map implementation to store foreign future handles
@@ -96,7 +103,7 @@ fileprivate protocol UniffiForeignFutureTask {
 
 extension Task: UniffiForeignFutureTask {}
 
-private func uniffiForeignFutureFree(handle: UInt64) {
+private func uniffiForeignFutureDroppedCallback(handle: UInt64) {
     do {
         let task = try UNIFFI_FOREIGN_FUTURE_HANDLE_MAP.remove(handle: handle)
         // Set the cancellation flag on the task.  If it's still running, the code can check the
@@ -104,7 +111,7 @@ private func uniffiForeignFutureFree(handle: UInt64) {
         // a no-op.
         task.cancel()
     } catch {
-        print("uniffiForeignFutureFree: handle missing from handlemap")
+        print("uniffiForeignFutureDroppedCallback: handle missing from handlemap")
     }
 }
 
