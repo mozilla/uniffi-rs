@@ -20,7 +20,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         }
         .into(),
         FfiFunctionType {
-            name: FfiFunctionTypeName("ForeignFutureFree".to_owned()),
+            name: FfiFunctionTypeName("ForeignFutureDroppedCallback".to_owned()),
             arguments: vec![FfiArgument::new(
                 "handle",
                 FfiType::Handle(HandleKind::ForeignFuture),
@@ -30,12 +30,14 @@ pub fn pass(module: &mut Module) -> Result<()> {
         }
         .into(),
         FfiStruct {
-            name: FfiStructName("ForeignFuture".to_owned()),
+            name: FfiStructName("ForeignFutureDroppedCallbackStruct".to_owned()),
             fields: vec![
                 FfiField::new("handle", FfiType::Handle(HandleKind::ForeignFuture)),
                 FfiField::new(
                     "free",
-                    FfiType::Function(FfiFunctionTypeName("ForeignFutureFree".to_owned())),
+                    FfiType::Function(FfiFunctionTypeName(
+                        "ForeignFutureDroppedCallback".to_owned(),
+                    )),
                 ),
             ],
         }

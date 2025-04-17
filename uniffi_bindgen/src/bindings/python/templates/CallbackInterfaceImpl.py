@@ -16,7 +16,7 @@ class {{ trait_impl }}:
             {%- else %}
             uniffi_future_callback,
             uniffi_callback_data,
-            uniffi_out_return,
+            uniffi_out_dropped_callback,
             {%- endif %}
         ):
         uniffi_obj = {{ ffi_converter_name }}._handle_map.get(uniffi_handle)
@@ -78,10 +78,11 @@ class {{ trait_impl }}:
 
         {%- match callable.throws_type.ty %}
         {%- when None %}
-        uniffi_out_return[0] = _uniffi_trait_interface_call_async(make_call, handle_success, handle_error)
+        _uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callback, handle_success, handle_error)
         {%- when Some(error) %}
-        uniffi_out_return[0] = _uniffi_trait_interface_call_async_with_error(
+        _uniffi_trait_interface_call_async_with_error(
             make_call,
+            uniffi_out_dropped_callback,
             handle_success,
             handle_error,
             {{ error.type_name }},

@@ -308,7 +308,7 @@ fn vtable_method_async(
             FfiArgument {
                 name: "uniffi_out_return".into(),
                 ty: FfiType::MutReference(Box::new(FfiType::Struct(FfiStructName(
-                    "ForeignFuture".to_owned(),
+                    "ForeignFutureDroppedCallbackStruct".to_owned(),
                 ))))
                 .into(),
             },

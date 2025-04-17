@@ -67,23 +67,23 @@ internal object {{ trait_impl }} {
                 )
             }
 
-            uniffiOutReturn.uniffiSetValue(
-                {%- match meth.throws_type() %}
-                {%- when None %}
-                uniffiTraitInterfaceCallAsync(
-                    makeCall,
-                    uniffiHandleSuccess,
-                    uniffiHandleError
-                )
-                {%- when Some(error_type) %}
-                uniffiTraitInterfaceCallAsyncWithError(
-                    makeCall,
-                    uniffiHandleSuccess,
-                    uniffiHandleError,
-                    { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) }
-                )
-                {%- endmatch %}
+            {%- match meth.throws_type() %}
+            {%- when None %}
+            uniffiTraitInterfaceCallAsync(
+                makeCall,
+                uniffiHandleSuccess,
+                uniffiHandleError,
+                uniffiOutDroppedCallback
             )
+            {%- when Some(error_type) %}
+            uniffiTraitInterfaceCallAsyncWithError(
+                makeCall,
+                uniffiHandleSuccess,
+                uniffiHandleError,
+                { e: {{error_type|type_name(ci) }} -> {{ error_type|lower_fn }}(e) },
+                uniffiOutDroppedCallback
+            )
+            {%- endmatch %}
             {%- endif %}
         }
     }
