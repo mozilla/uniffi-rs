@@ -109,13 +109,13 @@ fn test_success() {
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.wake();
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     // Test polling the rust future when it's ready
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.send(Ok("All done".into()));
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     // Future polls should immediately return ready
     let continuation_result = poll(&rust_future);
@@ -137,7 +137,7 @@ fn test_error() {
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.send(Err("Something went wrong".into()));
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
@@ -160,7 +160,7 @@ fn test_lift_args_error() {
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
     sender.send_lift_args_error("arg0", anyhow::anyhow!("Invalid handle"));
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
 
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
@@ -250,7 +250,7 @@ fn test_wake_during_poll() {
         RustFuture::new(Box::pin(future), crate::UniFfiTag);
     let continuation_result = poll(&rust_future);
     // The continuation function should called immediately
-    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::MaybeReady));
+    assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
     // A second poll should finish the future
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
