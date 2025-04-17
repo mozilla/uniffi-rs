@@ -51,9 +51,8 @@ The UniFFI generated code for an async function performs these steps:
 
 1. Call the Rust scaffolding function, receiving a `RustFuture` handle
 1. Call the `rust_future_poll` function for the future until the future is ready.
-   * The `rust_future_poll` function inputs a callback function and an opaque pointer (AKA a `void *`) to call the callback with.
-   * If the future is pending, then the generated code registers a waker that will call the callback function with `RUST_FUTURE_MAYBE_READY`.
-     When the generated foreign code sees this, it calls poll again, starting the loop over.
+   * The `rust_future_poll` function inputs a callback function and a `u64` callback data value to pass to the callback.
+   * If the future is pending, then the generated code registers a waker that will call the callback function with `RUST_FUTURE_WAKE`.
    * If the future is ready, then the callback function is immediately called with `RUST_FUTURE_READY` and we move to the next step.
 1. Call `rust_future_complete`, receiving the return value of the future
 1. Call `rust_future_free` (ideally in a `finally` block)

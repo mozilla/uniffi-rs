@@ -658,7 +658,7 @@ impl ComponentInterface {
             }
             .into(),
             FfiCallbackFunction {
-                name: "ForeignFutureFree".to_owned(),
+                name: "ForeignFutureDroppedCallback".to_owned(),
                 arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
                 return_type: None,
                 has_rust_call_status_arg: false,
@@ -672,10 +672,13 @@ impl ComponentInterface {
             }
             .into(),
             FfiStruct {
-                name: "ForeignFuture".to_owned(),
+                name: "ForeignFutureDroppedCallbackStruct".to_owned(),
                 fields: vec![
                     FfiField::new("handle", FfiType::UInt64),
-                    FfiField::new("free", FfiType::Callback("ForeignFutureFree".to_owned())),
+                    FfiField::new(
+                        "free",
+                        FfiType::Callback("ForeignFutureDroppedCallback".to_owned()),
+                    ),
                 ],
             }
             .into(),
