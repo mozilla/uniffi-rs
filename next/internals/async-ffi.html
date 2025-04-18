@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="lifting_and_lowering.html">
+        <link rel="prev" href="async-overview.html">
       
       
-        <link rel="next" href="async-overview.html">
+        <link rel="next" href="rendering_foreign_bindings.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Managing Object References - The UniFFI user guide</title>
+        <title>UniFFI Async FFI details - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#managing-object-references" class="md-skip">
+        <a href="#uniffi-async-ffi-details" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Managing Object References
+              UniFFI Async FFI details
             
           </span>
         </div>
@@ -1584,30 +1584,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Managing Object References
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="object_references.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="object_references.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1616,44 +1596,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#concurrency" class="md-nav__link">
-    <span class="md-ellipsis">
-      Concurrency
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#lifetimes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Lifetimes
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1684,10 +1626,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="async-ffi.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    UniFFI Async FFI details
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="async-ffi.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1696,6 +1658,143 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#rust-async-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rust async functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rust async functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cancellation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cancellation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-the-rustfuture-handle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Managing the RustFuture handle
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ffi-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      FFI definitions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FFI definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scaffolding-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scaffolding functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rust_future_poll" class="md-nav__link">
+    <span class="md-ellipsis">
+      rust_future_poll
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-rustfuture-ffi-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other RustFuture FFI functions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-async-callback-interface-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign async callback interface methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Foreign async callback interface methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completing-async-methods-with-complete_func" class="md-nav__link">
+    <span class="md-ellipsis">
+      Completing async methods with complete_func
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cancellation-with-foreign_future_dropped_callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cancellation with foreign_future_dropped_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-the-foreignfuture-handle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Managing the ForeignFuture handle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1776,20 +1875,119 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#concurrency" class="md-nav__link">
+  <a href="#rust-async-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Concurrency
+      Rust async functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rust async functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cancellation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cancellation
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#lifetimes" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#managing-the-rustfuture-handle" class="md-nav__link">
     <span class="md-ellipsis">
-      Lifetimes
+      Managing the RustFuture handle
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ffi-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      FFI definitions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FFI definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scaffolding-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scaffolding functions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rust_future_poll" class="md-nav__link">
+    <span class="md-ellipsis">
+      rust_future_poll
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-rustfuture-ffi-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other RustFuture FFI functions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-async-callback-interface-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign async callback interface methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Foreign async callback interface methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completing-async-methods-with-complete_func" class="md-nav__link">
+    <span class="md-ellipsis">
+      Completing async methods with complete_func
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cancellation-with-foreign_future_dropped_callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cancellation with foreign_future_dropped_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-the-foreignfuture-handle" class="md-nav__link">
+    <span class="md-ellipsis">
+      Managing the ForeignFuture handle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1811,74 +2009,247 @@
   
 
 
-<h1 id="managing-object-references">Managing Object References</h1>
-<p>UniFFI <a href="../udl/interfaces.html">interfaces</a> represent instances of objects
-that have methods and contain state. One of Rust's core innovations
-is its ability to provide compile-time guarantees about working with such instances,
-including:</p>
-<ul>
-<li>Ensuring that each instance has a unique owner responsible for disposing of it.</li>
-<li>Ensuring that there is only a single writer <em>or</em> multiple readers of an object
-  active at any point in the program.</li>
-<li>Guarding against data races.</li>
-</ul>
-<p>The very nature of the problems UniFFI tries to solve is that calls may come
-from foreign languages on any thread, outside of the control of Rust's ownership
-system. UniFFI itself tries to take a hands-off approach as much as possible and
-depends on the Rust compiler itself to uphold safety guarantees, without assuming
-that foreign-language callers will be "well behaved".</p>
-<h2 id="concurrency">Concurrency</h2>
-<p>UniFFI's hands-off approach means that all object instances exposed by UniFFI must be safe to
-access concurrently. In Rust terminology, they must be <code>Send+Sync</code> and must be useable
-without taking any <code>&amp;mut</code> references.</p>
-<p>Typically this will mean that the Rust implementation of an object uses some of Rust's
-data structures for thread-safe interior mutability, such as a <code>Mutex</code> or <code>RwLock</code> or
-the types from <code>std::atomic</code>. The precise details are completely up to the author
-of the component - as much as possible, UniFFI tries to stay out of your way, simply requiring
-that the object implementation is <code>Send+Sync</code> and letting the Rust compiler ensure that
-this is so.</p>
-<h2 id="lifetimes">Lifetimes</h2>
-<p>In order to allow for instances to be used as flexibly as possible from foreign-language code,
-UniFFI wraps all object instances in an <code>Arc</code> and leverages their reference-count based lifetimes,
-allowing UniFFI to largely stay out of handling lifetimes entirely for these objects.</p>
-<p>When constructing a new object, UniFFI is able to add the <code>Arc</code> automatically, because it
-knows that the return type of the Rust constructor must be a new uniquely-owned struct of
-the corresponding type.</p>
-<p>When you want to return object instances from functions or methods, or store object instances
-as fields in records, the underlying Rust code will need to work with <code>Arc&lt;T&gt;</code> directly, to ensure
-that the code behaves in the way that UniFFI expects.</p>
-<p>When accepting instances as arguments, the underlying Rust code can choose to accept it as an <code>Arc&lt;T&gt;</code>
-or as the underlying struct <code>T</code>, as there are different use-cases for each scenario.</p>
-<p>For example, given a interface definition like this:</p>
-<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>TodoList<span class="w"> </span>{
-<span class="w">    </span>constructor();
-<span class="w">    </span>void<span class="w"> </span>add_item(<span class="nb">string</span><span class="w"> </span>todo);
-<span class="w">    </span>sequence<span class="o">&lt;</span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>get_items();
-};
+<h1 id="uniffi-async-ffi-details">UniFFI Async FFI details</h1>
+<p>This document describes the low-level FFI details of UniFFI async calls.
+Check out <a href="async-overview.html">Async overview</a> for high-level description of what's going on
+here.</p>
+<h2 id="rust-async-functions">Rust async functions</h2>
+<p>Rust async functions are implemented by a <a href="../glossary.html#scaffolding">scaffolding</a> function that return a <code>RustFuture</code> handle.
+For example, a <code>fn add(a: u32, b: u32) -&gt; u32</code> function would be implemented by something like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">ffi_add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">uniffi</span><span class="p">::</span><span class="n">Handle</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Creates a future for the `add` function and returns handle that represents that handle.</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>On the Rust side of the generated bindings:
- - The instance constructor will create an instance of the corresponding <code>TodoList</code> Rust struct
- - The owned value is wrapped in an <code>Arc&lt;&gt;</code>
- - The <code>Arc&lt;&gt;</code> is lowered into the foreign code using <code>Arc::into_raw</code> and returned as an object pointer.</p>
-<p>This is the "arc to pointer" dance. Note that this has "leaked" the <code>Arc&lt;&gt;</code>
-reference out of Rusts ownership system and given it to the foreign-language
-code. The foreign-language code must pass that pointer back into Rust in order
-to free it, or our instance will leak.</p>
-<p>When invoking a method on the instance:
- - The foreign-language code passes the raw pointer back to the Rust code, conceptually passing a "borrow" of the <code>Arc&lt;&gt;</code> to the Rust scaffolding.
- - The Rust side calls <code>Arc::from_raw</code> to convert the pointer into an an <code>Arc&lt;&gt;</code>
- - It wraps the <code>Arc</code> in <code>std::mem::ManuallyDrop&lt;&gt;</code>, which we never actually
-   drop.  This is because the Rust side is borrowing the Arc and shouldn't
-   run the destructor and decrement the reference count.
- - The <code>Arc&lt;&gt;</code> is cloned and passed to the Rust code</p>
-<p>Finally, when the foreign-language code frees the instance, it
-passes the raw pointer a special destructor function so that the Rust code can
-drop that initial reference (and if that happens to be the final reference,
-the Rust object will be dropped.).  This simply calls <code>Arc::from_raw</code>, then
-lets the value drop.</p>
-<p>Passing instances as arguments and returning them as values works similarly, except that
-UniFFI does not automatically wrap/unwrap the containing <code>Arc</code>.</p>
-<p>To see this in action, use <code>cargo expand</code> to see the exact generated code.</p>
+<p>The <a href="../glossary.html#bindings">bindings</a> then sets up an asynchronous loop that polls the RustFuture until it's complete.</p>
+<p>Here's some Python code that shows how this works:</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="c1"># Get a future handle by calling the scaffolding function</span>
+    <span class="n">rust_future_handle</span> <span class="o">=</span> <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">ffi_add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># asynchronously loop until the future is ready</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># create a future to handle a single iteration of the polling loop.</span>
+            <span class="n">inner_future</span> <span class="o">=</span> <span class="n">eventloop</span><span class="o">.</span><span class="n">create_future</span><span class="p">()</span>
+            <span class="c1"># Create a handle to send to Rust that represents `inner_future`</span>
+            <span class="n">inner_future_handle</span> <span class="o">=</span> <span class="n">create_future_handle</span><span class="p">(</span><span class="n">inner_future</span><span class="p">)</span>
+            <span class="c1"># Call the rust_future_poll scaffolding function (see below for how that&#39;s handled).</span>
+            <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">ffi_rust_future_poll_u32</span><span class="p">(</span>
+                <span class="n">rust_future_handle</span><span class="p">,</span>
+                <span class="n">uniffi_continuation_callback</span><span class="p">,</span>
+                <span class="n">inner_future_handle</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># await the inner future.  When this completes, there&#39;s are 2 possibilities:</span>
+            <span class="c1">#  * The RustFuture is ready and we can complete it</span>
+            <span class="c1">#  * The RustFuture should be polled again and we should perform another iteration</span>
+            <span class="n">poll_code</span> <span class="o">=</span> <span class="k">await</span> <span class="n">inner_future</span>
+            <span class="k">if</span> <span class="n">poll_code</span> <span class="o">==</span> <span class="n">_UNIFFI_RUST_FUTURE_POLL_READY</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="c1"># Call the complete function to get:</span>
+        <span class="c1">#   * The future&#39;s return value</span>
+        <span class="c1">#   * The call status -- returned by an out pointer and used to return errors.</span>
+        <span class="n">call_status</span> <span class="o">=</span> <span class="n">UniffiRustCallStatus</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+        <span class="n">return_value</span> <span class="o">=</span> <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">rust_future_complete_u32</span><span class="p">(</span><span class="n">rust_future_handle</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">call_status</span><span class="p">))</span>
+
+        <span class="c1"># We can then lift the result the same way we would a sync call</span>
+        <span class="k">return</span> <span class="n">lift_result</span><span class="p">(</span><span class="n">return_value</span><span class="p">,</span> <span class="n">call_status</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># In the finally block, we call `rust_future_free` to ensure we cleanup the future handle</span>
+        <span class="c1"># regardless of any errors</span>
+        <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">rust_future_free_u32</span><span class="p">(</span><span class="n">rust_future_handle</span><span class="p">)</span>
+
+<span class="c1"># Continuation callback, this is called from Rust when progress can be made on the future, either</span>
+<span class="c1"># because it&#39;s ready or it needs to be polled again.</span>
+<span class="k">def</span> <span class="nf">uniffi_continuation_callback</span><span class="p">(</span><span class="n">future_handle</span><span class="p">,</span> <span class="n">poll_code</span><span class="p">):</span>
+    <span class="c1"># Convert the handle we sent to Rust to a Python Future</span>
+    <span class="n">future</span> <span class="o">=</span> <span class="n">get_future_from_handle</span><span class="p">(</span><span class="n">future_handle</span><span class="p">)</span>
+    <span class="c1"># Complete the future with the code that indicates if the future is ready or not.</span>
+    <span class="n">eventloop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">set_result</span><span class="p">,</span> <span class="n">poll_code</span><span class="p">)</span>
+
+<span class="c1"># Create a `u64` handle that represents a Python Future object.</span>
+<span class="k">def</span> <span class="nf">create_future_handle</span><span class="p">(</span><span class="n">future</span><span class="p">):</span>
+    <span class="c1"># The code to do this will vary by language.</span>
+
+<span class="c1"># Re-create the Python Future object from a `u64` handle.</span>
+<span class="k">def</span> <span class="nf">get_future_from_handle</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
+    <span class="c1"># The code to do this will vary by language.</span>
+</code></pre></div>
+<h3 id="cancellation">Cancellation</h3>
+<p>Some languages have builtin cancellation semantics.  For those, you can call the
+<code>rust_future_cancel</code> to request that the future be cancelled.  On the Rust side, this causes the
+future to be dropped.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">cancel_future</span><span class="p">(</span><span class="n">future_handle</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rust_future_has_not_been_freed</span><span class="p">(</span><span class="n">future_handle</span><span class="p">):</span>
+        <span class="n">RustScaffoldingLibrary</span><span class="o">.</span><span class="n">rust_future_cancel_u32</span><span class="p">(</span><span class="n">rust_future_handle</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="managing-the-rustfuture-handle">Managing the RustFuture handle</h3>
+<ul>
+<li>The foreign code is responsible for calling the <code>rust_future_free</code> function when it's done with the handle.
+  The code must always call <code>rust_future_free</code>, regardless of if the future is completed or cancelled.
+  Once that function is called, the handle must not be used again.</li>
+<li><code>rust_future_complete</code> must only be called once.  Once it's called, <code>rust_future_poll</code> should not
+  be called again.</li>
+<li>If your bindings call <code>rust_future_cancel</code> make sure there are no races that allow it to be called
+  after <code>rust_future_free</code>.</li>
+</ul>
+<h3 id="ffi-definitions">FFI definitions</h3>
+<h4 id="scaffolding-functions">Scaffolding functions</h4>
+<div class="highlight"><pre><span></span><code><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="p">[</span><span class="n">scaffolding_function_name</span><span class="p">](</span>
+<span class="w">    </span><span class="c1">// The lowered type for each argument of the Rust function</span>
+<span class="w">    </span><span class="n">foo</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
+<span class="w">    </span><span class="n">bar</span><span class="p">:</span><span class="w"> </span><span class="nc">RustBuffer</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// No `RustCallStatus` argument.  Errors are handled by calling the `rust_future_complete`</span>
+<span class="w">    </span><span class="c1">// function.</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u64</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="c1">// Returns a RustFuture handle</span>
+</code></pre></div>
+<h4 id="rust_future_poll">rust_future_poll</h4>
+<p>A <code>rust_future_poll</code> method is defined for each lowered return type.  For example:
+<div class="highlight"><pre><span></span><code><span class="sd">/// `rust_future_poll` for return types that lower to `RustBuffer`.  This handles exported functions</span>
+<span class="sd">/// that return `String`, `Vec`, records, etc.</span>
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">rust_future_poll_rustbuffer</span><span class="p">(</span>
+<span class="w">    </span><span class="n">rust_future_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">/// Callback to call when progress can be made to the future</span>
+<span class="w">    </span><span class="n">continuation_callback</span><span class="p">:</span><span class="w"> </span><span class="nc">RustFutureContinuationCallback</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">/// Data to pass to the continuation callback</span>
+<span class="w">    </span><span class="n">continuation_callback_data</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+
+<span class="k">type</span><span class="w"> </span><span class="nc">RustFutureContinuationCallback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">fn</span><span class="p">(</span><span class="n">callback_data</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">poll_code</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">)</span>
+
+<span class="c1">// The future is ready, call `rust_future_complete`</span>
+<span class="k">const</span><span class="w"> </span><span class="n">POLL_CODE_RUST_FUTURE_READY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="c1">// Wake the future by calling `rust_future_poll` again.</span>
+<span class="k">const</span><span class="w"> </span><span class="n">POLL_CODE_RUST_FUTURE_WAKE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</code></pre></div></p>
+<h4 id="other-rustfuture-ffi-functions">Other RustFuture FFI functions</h4>
+<div class="highlight"><pre><span></span><code><span class="sd">/// `rust_future_complete` for return types that lower to `u8`</span>
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">rust_future_complete_u8</span><span class="p">(</span>
+<span class="w">    </span><span class="n">rust_future_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">/// RustCallStatus out pointer.  This indicates if the call was successful.</span>
+<span class="w">    </span><span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="n">RustCallStatus</span><span class="w"> </span><span class="n">out_status</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u8</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="c1">// lowered return value, in this case a `u8`.</span>
+
+<span class="sd">/// `rust_future_cancel` for return types that lower to `f32`.</span>
+<span class="sd">///</span>
+<span class="sd">/// Languages that support cancellation can call this to cancel the future.  It will cause the</span>
+<span class="sd">/// `Future` object to be dropped in Rust.</span>
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">rust_future_cancel_f32</span><span class="p">(</span>
+<span class="w">    </span><span class="n">rust_future_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+
+<span class="sd">/// `rust_future_free` for void return types.</span>
+<span class="sd">///</span>
+<span class="sd">/// This must be called for each RustFuture you receive and it must be the last call you pass the</span>
+<span class="sd">/// RustFuture handle to.</span>
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">rust_future_free_void</span><span class="p">(</span>
+<span class="w">    </span><span class="n">rust_future_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h2 id="foreign-async-callback-interface-methods">Foreign async callback interface methods</h2>
+<p>Async callback interface methods are defined as fields in the callback interface vtable like sync
+methods.  However, they have no return value and 3 extra arguments:</p>
+<ul>
+<li><code>complete_func</code>: Function to call when the async method completes.</li>
+<li><code>complete_func_data</code>: <code>u64</code> value to pass to the complete function</li>
+<li><code>foreign_future_dropped_callback</code>: Out pointer to the future dropped callback.
+  If the foreign bindings set this, it will be called when the Rust future is dropped.
+  This is used to handle cancellation for languages that support it.</li>
+</ul>
+<p>For example: </p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[repr(C)]</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">CallbackInterfaceVTable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">add</span><span class="p">:</span><span class="w"> </span><span class="nc">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="p">(</span>
+<span class="w">        </span><span class="c1">// The lowered type for each argument of the method</span>
+<span class="w">        </span><span class="n">a</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
+<span class="w">        </span><span class="n">b</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">/// Function pointer for the completion func</span>
+<span class="w">        </span><span class="n">complete_func</span><span class="p">:</span><span class="w"> </span><span class="nc">ForeignFutureCompleteU32</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">/// Data to pass to the completion func</span>
+<span class="w">        </span><span class="n">complete_func_data</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span>
+<span class="w">        </span><span class="sd">/// Out pointer that can be used to set the future dropped callback</span>
+<span class="w">        </span><span class="n">out_dropped_callback</span><span class="p">:</span><span class="w"> </span><span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="n">ForeignFutureDroppedCallbackStruct</span><span class="p">,</span>
+<span class="w">    </span><span class="p">),</span><span class="w"> </span><span class="c1">// Note: no return value, `complete_func` is used for that.</span>
+<span class="w">    </span><span class="c1">// .. other methods here</span>
+<span class="p">}</span>
+
+<span class="sd">/// Complete func signature, details in the next section</span>
+<span class="k">type</span><span class="w"> </span><span class="nc">ForeignFutureCompleteU32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="p">(</span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">ForeignFutureResultU32</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="completing-async-methods-with-complete_func">Completing async methods with <code>complete_func</code></h3>
+<p>The <code>complete_func</code> should be called when the async callback method has completed and ready to
+return data.  Pass it 2 arguments:</p>
+<ul>
+<li>The <code>complete_func_data</code> passed to the callback method.</li>
+<li>A foreign future result struct, which contains the return value and the RustCallStatus for the
+  call.</li>
+</ul>
+<p>The foreign future result struct varies based on the return value:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[repr(C)]</span>
+<span class="sd">/// Result struct for `u8` </span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">ForeignFutureResultU8</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="sd">/// Lowered return value.  For error calls, set this to a placeholder value like `0`</span>
+<span class="w">    </span><span class="n">return_value</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">/// RustCallStatus.  This indicates if the call was successful or not</span>
+<span class="w">    </span><span class="n">call_status</span><span class="p">:</span><span class="w"> </span><span class="nc">RustCallStatus</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="sd">/// Result struct for `RustBuffer` </span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">ForeignFutureResultRustBuffer</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="sd">/// Lowered return value.  For error calls, set this to empty `RustBuffer`.</span>
+<span class="w">    </span><span class="n">return_value</span><span class="p">:</span><span class="w"> </span><span class="nc">RustBuffer</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">/// RustCallStatus.  This indicates if the call was successful or not</span>
+<span class="w">    </span><span class="n">call_status</span><span class="p">:</span><span class="w"> </span><span class="nc">RustCallStatus</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="sd">/// Result struct for void returns</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">ForeignFutureResultVoid</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// No return value field.</span>
+
+<span class="w">    </span><span class="sd">/// RustCallStatus.  This indicates if the call was successful or not</span>
+<span class="w">    </span><span class="n">call_status</span><span class="p">:</span><span class="w"> </span><span class="nc">RustCallStatus</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="sd">/// ...etc.</span>
+</code></pre></div>
+<h3 id="cancellation-with-foreign_future_dropped_callback">Cancellation with <code>foreign_future_dropped_callback</code></h3>
+<p>The <code>foreign_future_dropped_callback</code> is a pointer to a <code>ForeignFutureDroppedCallbackStruct</code>.
+This can be used to get a callback when the underlying Future is dropped in <code>Rust</code>.
+The main reason to do this is to cancel the Foreign async task.  If you want to support
+cancellation, set the <code>ForeignFutureDroppedCallbackStruct</code> data and connect it to some mechanism for
+cancelling the future.</p>
+<div class="highlight"><pre><span></span><code>type ForeignFutureDroppedCallback = extern &quot;C&quot; fn(u64);
+
+#[repr(C)]
+struct ForeignFutureDroppedCallbackStruct {
+    /// Data to pass to the callback
+    callback_data: u64,
+    /// Callback function pointer
+    callback: ForeignFutureDroppedCallback,
+}
+</code></pre></div>
+<p>Languages that don't want to support cancellation are free to ignore this field by not setting a value.</p>
+<h3 id="managing-the-foreignfuture-handle">Managing the ForeignFuture handle</h3>
+<p>If an async callback method is called, you must ensure that the <code>complete_func</code> is called which will
+complete the future and allow the async task to progress.  The <code>complete_func</code> must be called
+exactly once.</p>
+<p>If you don't want to support cancellation, then managing this handle is fairly easy:</p>
+<ul>
+<li>Start an async task to execute the method</li>
+<li>Chain a function to that task that calls <code>complete_func</code> with the handle when it's complete</li>
+<li>Ensure that <code>complete_func</code> is also called if the function errors out.
+  In this case you can pass a <code>ForeignFutureResult*</code> value with
+  <code>RustCallStatus.code = CallStatus::InternalError</code>.</li>
+</ul>
+<p>If you want to support cancellation, then there are some additional steps:</p>
+<ul>
+<li>Create a <code>u64</code> handle for the async task that was started.</li>
+<li>Set the <code>foreign_future_dropped_callback</code> with a callback and handle.</li>
+<li>In the callback:</li>
+<li>Cancel the task if it's still running</li>
+<li>Release the handle in whatever way the foreign language requires</li>
+<li>Note: this callback can be called after the task completes. You may need to avoid calling
+     methods that are invalid for completed tasks.</li>
+</ul>
 
 
 
