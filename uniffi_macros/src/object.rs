@@ -121,6 +121,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn't being met.
+        #[cfg(not(target_arch = "wasm32"))]
         ::uniffi::deps::static_assertions::assert_impl_all!(
             #ident: ::core::marker::Sync, ::core::marker::Send
         );
