@@ -1,4 +1,7 @@
-# UniFFI Async internals
+# UniFFI Async Overview
+
+This document describes how UniFFI implements async from a high-level.
+Once you've read this, you can also check out the low-level [Async FFI details](../udl/async-ffi.md).
 
 ## What runtime does async code run on?
 
@@ -150,7 +153,7 @@ sequenceDiagram
 * The sync Rust code runs inside a worker queue where it's okay to block.
 * This all combines together to create an async Rust call that's driven by the foreign event loop.
 
-## Can you integrating with Rust Runtimes like `tokio`?
+## Can you integrate with Rust Runtimes like `tokio`?
 
 Yes.  This will vary for each runtime, but the typical procedure is:
 
