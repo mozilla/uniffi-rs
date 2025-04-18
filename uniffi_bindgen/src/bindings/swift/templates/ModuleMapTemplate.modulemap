@@ -3,6 +3,9 @@
     header "{{ filename }}"
     {%- endfor %}
     export *
+    use "Darwin"
+    use "_Builtin_stdbool"
+    use "_Builtin_stdint"
     {%- for link_framework in link_frameworks %}
     link framework "{{ link_framework }}"
     {%- endfor %}
