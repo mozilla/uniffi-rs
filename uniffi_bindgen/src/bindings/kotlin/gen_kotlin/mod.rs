@@ -596,7 +596,6 @@ fn can_render_callable(callable: &dyn Callable, ci: &ComponentInterface) -> bool
 
 mod filters {
     use super::*;
-    pub use crate::backend::filters::*;
     use uniffi_meta::LiteralMetadata;
 
     pub(super) fn type_name(
@@ -612,6 +611,10 @@ mod filters {
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
+    }
+
+    pub(super) fn ffi_type(type_: &impl AsType) -> askama::Result<FfiType, askama::Error> {
+        Ok(type_.as_type().into())
     }
 
     pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -648,10 +651,10 @@ mod filters {
         as_ct: &impl AsType,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
-        as_ct
+        Ok(as_ct
             .as_codetype()
             .literal(literal, ci)
-            .map_err(|e| to_askama_error(&e))
+            .expect("invalid literal: {literal:?}"))
     }
 
     // Get the idiomatic Kotlin rendering of an integer.
@@ -660,10 +663,10 @@ mod filters {
             match t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
                 Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Ok(base10 + "u"),
-                _ => Err(to_askama_error("Only ints are supported.")),
+                _ => panic!("Only ints are supported for enum literals: {t:?}"),
             }
         } else {
-            Err(to_askama_error("Enum hasn't defined a repr"))
+            panic!("Enum hasn't defined a repr: {t:?}")
         }
     }
 
@@ -675,7 +678,7 @@ mod filters {
             // so we'll need to make sure we define the type as appropriately
             LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
             LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
-            _ => Err(to_askama_error("Only ints are supported.")),
+            _ => panic!("Only ints are supported: {literal:?}"),
         }
     }
 

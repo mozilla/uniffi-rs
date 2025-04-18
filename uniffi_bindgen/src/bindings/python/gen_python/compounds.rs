@@ -4,9 +4,9 @@
 
 use super::CodeType;
 use crate::{
-    backend::{Literal, Type},
     bail,
     bindings::python::gen_python::AsCodeType,
+    interface::{Literal, Type},
     Result,
 };
 
