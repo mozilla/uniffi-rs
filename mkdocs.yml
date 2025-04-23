@@ -32,6 +32,7 @@ extra:
 plugins:
   # otherwise a no-op docs build ends with a diff to sitemap.xml.gz
   - no-sitemap
+  - search
 
 # This lists all the files that become part of the documentation
 nav:
