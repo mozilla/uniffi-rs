@@ -93,6 +93,9 @@ nav:
 
   - 'Python': ./python/configuration.md
 
+  - 'WASM':
+    - ./wasm/configuration.md
+
 - Internals:
   - ./internals/design_principles.md
   - ./internals/crates.md
