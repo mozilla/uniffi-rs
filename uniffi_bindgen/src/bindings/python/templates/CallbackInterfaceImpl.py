@@ -63,7 +63,7 @@ class {{ trait_impl }}:
                 {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
                     {%- match meth.return_type() %}
                     {%- when Some(return_type) %}
-                    {{ meth.return_type().map(FfiType::from)|ffi_default_value }},
+                    {{ meth.return_type().map(FfiType::from)|ffi_default_value(ci) }},
                     {%- when None %}
                     {%- endmatch %}
                     _UniffiRustCallStatus(status_code, rust_buffer),
