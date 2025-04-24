@@ -6,7 +6,7 @@ commands:
   install-mkdocs:
     steps:
       - run:
-          name: Install mdBook
+          name: Install Material for MkDocs
           command: |
             sudo apt-get update -qq
             sudo apt-get install -qy --no-install-recommends python3-pip
