@@ -411,7 +411,7 @@ impl PythonCodeOracle {
     /// Default values for FFI types
     ///
     /// Used to set a default return value when returning an error
-    fn ffi_default_value(&self, return_type: Option<&FfiType>) -> String {
+    fn ffi_default_value(&self, return_type: Option<&FfiType>, ci: &ComponentInterface) -> String {
         match return_type {
             Some(t) => match t {
                 FfiType::UInt8
@@ -425,10 +425,10 @@ impl PythonCodeOracle {
                 FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
                 FfiType::RustArcPtr(_) => "ctypes.c_void_p()".to_owned(),
                 FfiType::RustBuffer(maybe_external) => match maybe_external {
-                    Some(external_meta) => {
+                    Some(external_meta) if external_meta.module_path != ci.crate_name() => {
                         format!("_UniffiRustBuffer{}.default()", external_meta.name)
                     }
-                    None => "_UniffiRustBuffer.default()".to_owned(),
+                    _ => "_UniffiRustBuffer.default()".to_owned(),
                 },
                 _ => unimplemented!("FFI return type: {t:?}"),
             },
@@ -632,8 +632,11 @@ pub mod filters {
         Ok(PythonCodeOracle.ffi_type_label(type_, ci))
     }
 
-    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
-        Ok(PythonCodeOracle.ffi_default_value(return_type.as_ref()))
+    pub fn ffi_default_value(
+        return_type: Option<FfiType>,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        Ok(PythonCodeOracle.ffi_default_value(return_type.as_ref(), ci))
     }
 
     /// Get the idiomatic Python rendering of an FFI callback function name
