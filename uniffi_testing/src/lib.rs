@@ -4,7 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 use anyhow::{bail, Result};
 use camino::{Utf8Path, Utf8PathBuf};
-use cargo_metadata::{Message, Metadata, MetadataCommand, Package, Target};
+use cargo_metadata::{CrateType, Message, Metadata, MetadataCommand, Package, Target};
 use fs_err as fs;
 use once_cell::sync::Lazy;
 use std::{
@@ -64,7 +64,7 @@ impl UniFFITestHelper {
         let cdylib_targets: Vec<&Target> = package
             .targets
             .iter()
-            .filter(|t| t.crate_types.iter().any(|t| t == "cdylib"))
+            .filter(|t| t.crate_types.iter().any(|t| *t == CrateType::CDyLib))
             .collect();
         let target = match cdylib_targets.len() {
             1 => cdylib_targets[0],
