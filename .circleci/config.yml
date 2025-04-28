@@ -59,6 +59,13 @@ jobs:
       - run: rustup component add clippy
       - run: cargo clippy --version
       - run: cargo clippy --all --all-targets -- -D warnings
+      - run: |
+            for manifest_path in $(ls fixtures/wasm-*/Cargo.toml) ; do
+              cargo clippy \
+                --target wasm32-unknown-unknown \
+                --manifest-path "$manifest_path" \
+                -- -D warnings
+            done
   Lint Rust Docs:
     docker:
       - image: cimg/rust:1.77.1
@@ -86,6 +93,14 @@ jobs:
           command: |
             # Ensures that all examples are built and avaiable
             cargo build
+      - run:
+          name: Build WASM crates
+          command: |
+            for manifest_path in $(ls fixtures/wasm-*/Cargo.toml) ; do
+              cargo build \
+                --target wasm32-unknown-unknown \
+                --manifest-path "$manifest_path"
+            done
       - run: cargo test
       - run:
           name: mypy Python typechecks
