@@ -1,4 +1,4 @@
-class _UniffiConverterBytes(_UniffiConverterRustBuffer):
+class {{ type_node.ffi_converter_name }}(_UniffiConverterRustBuffer):
     @staticmethod
     def read(buf):
         size = buf.read_i32()

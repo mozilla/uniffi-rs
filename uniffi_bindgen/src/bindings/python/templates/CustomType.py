@@ -1,7 +1,8 @@
-{%- match python_config.custom_types.get(name.as_str())  %}
+{%- let builtin = custom.builtin %}
+{%- match custom.config %}
 {% when None %}
 {#- No custom type config, just forward all methods to our builtin type #}
-class _UniffiConverterType{{ name }}:
+class {{ custom|ffi_converter_name }}:
     @staticmethod
     def write(value, buf):
         {{ builtin|ffi_converter_name }}.write(value, buf)
@@ -22,16 +23,18 @@ class _UniffiConverterType{{ name }}:
     def lower(value):
         return {{ builtin|ffi_converter_name }}.lower(value)
 
+{# Render a type alias from the custom type name to the concrete type name #}
+{{ custom.name }} = {{ builtin|type_name -}}
+
 {%- when Some(config) %}
 
-{%- if let Some(imports) = config.imports %}
-{%- for import_name in imports %}
-{{ self.add_import(import_name) }}
-{%- endfor %}
+{%- if let Some(type_name) = config.type_name %}
+{# Render a type alias from the custom type name to the concrete type name #}
+{{ custom.name }} = {{ type_name }}
 {%- endif %}
 
 {#- Custom type config supplied, use it to convert the builtin type #}
-class _UniffiConverterType{{ name }}:
+class {{ custom|ffi_converter_name }}:
     @staticmethod
     def write(value, buf):
         builtin_value = {{ config.lower("value") }}
