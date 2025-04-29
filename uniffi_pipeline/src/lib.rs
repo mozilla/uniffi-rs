@@ -9,5 +9,5 @@ mod value;
 pub use anyhow::{bail, Result};
 pub use node::{FromValueError, Node};
 pub use pipeline::{new_pipeline, Pass, Pipeline, PipelineRecorder, PrintOptions};
-pub use uniffi_internal_macros::{AsRef, Node};
+pub use uniffi_internal_macros::Node;
 pub use value::Value;

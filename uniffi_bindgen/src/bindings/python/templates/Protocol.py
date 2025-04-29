@@ -1,9 +1,10 @@
 {# misnamed - a generic "abstract base class". Used as both a protocol and an ABC for traits. #}
-class {{ protocol_name }}({{ protocol_base_class }}):
-    {%- call py::docstring_value(protocol_docstring, 4) %}
-    {%- for meth in methods.iter() %}
-    def {{ meth.name() }}(self, {% call py::arg_list_decl(meth) %}):
-        {%- call py::docstring(meth, 8) %}
+class {{ protocol.name }}({{ protocol.base_classes|join(", ") }}):
+    {{ protocol.docstring|docstring(4) -}}
+    {%- for meth in protocol.methods.iter() %}
+    {%- let callable = meth.callable %}
+    def {{ meth.callable.name }}(self, {% include "CallableArgs.py" %}):
+        {{ meth.docstring|docstring(8) -}}
         raise NotImplementedError
     {%- else %}
     pass

@@ -3,7 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use askama::Template;
+use heck::ToSnakeCase;
 use indexmap::IndexMap;
+use serde::Deserialize;
+
+use crate::bindings::python::filters;
 use uniffi_pipeline::Node;
 
 /// Initial IR, this stores the metadata and other data
@@ -15,19 +19,17 @@ pub struct Root {
 }
 
 #[derive(Debug, Clone, Node, Template)]
-#[template(syntax = "py", escape = "none", source = "TODO", ext = "py")]
+#[template(syntax = "py", escape = "none", path = "Module.py")]
 pub struct Module {
     pub name: String,
     pub crate_name: String,
-    /// contents of the `uniffi.toml` file for this module, if present
     pub config_toml: Option<String>,
+    pub config: PythonConfig,
     pub docstring: Option<String>,
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
     pub ffi_definitions: Vec<FfiDefinition>,
-    /// Checksum functions
     pub checksums: Vec<Checksum>,
-    // FFI functions names for this module
     pub ffi_rustbuffer_alloc: RustFfiFunctionName,
     pub ffi_rustbuffer_from_bytes: RustFfiFunctionName,
     pub ffi_rustbuffer_free: RustFfiFunctionName,
@@ -35,20 +37,39 @@ pub struct Module {
     pub ffi_uniffi_contract_version: RustFfiFunctionName,
     // Correct contract version value
     pub correct_contract_version: String,
-    // TypeNode for String.  Strings are used in error handling, this ensures that the FFI
-    // converters for them are always defined and easy to lookup.
     pub string_type_node: TypeNode,
+    pub cdylib_name: String,
+    pub has_async_fns: bool,
+    pub has_callback_interface: bool,
+    pub has_async_callback_method: bool,
+    pub imports: Vec<String>,
+    pub exported_names: Vec<String>,
+}
+
+// Config options to customize the generated python.
+#[derive(Debug, Clone, Deserialize, Node)]
+pub struct PythonConfig {
+    pub(super) cdylib_name: Option<String>,
+    #[serde(default)]
+    pub custom_types: IndexMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    pub external_packages: IndexMap<String, String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Node)]
+#[serde(default)]
+pub struct CustomTypeConfig {
+    pub imports: Option<Vec<String>>,
+    pub type_name: Option<String>, // b/w compat alias for lift
+    pub into_custom: String,       // b/w compat alias for lift
+    pub lift: String,
+    pub from_custom: String, // b/w compat alias for lower
+    pub lower: String,
 }
 
 #[derive(Debug, Clone, Node)]
 pub struct Function {
-    pub name: String,
     pub callable: Callable,
-    pub is_async: bool,
-    pub inputs: Vec<Argument>,
-    pub return_type: Option<Type>,
-    pub throws: Option<Type>,
-    pub checksum: Option<u16>,
     pub docstring: Option<String>,
 }
 
@@ -71,24 +92,13 @@ pub enum TypeDefinition {
 
 #[derive(Debug, Clone, Node)]
 pub struct Constructor {
-    pub name: String,
     pub callable: Callable,
-    pub is_async: bool,
-    pub inputs: Vec<Argument>,
-    pub throws: Option<Type>,
-    pub checksum: Option<u16>,
     pub docstring: Option<String>,
 }
 
 #[derive(Debug, Clone, Node)]
 pub struct Method {
-    pub name: String,
     pub callable: Callable,
-    pub is_async: bool,
-    pub inputs: Vec<Argument>,
-    pub return_type: Option<Type>,
-    pub throws: Option<Type>,
-    pub checksum: Option<u16>,
     pub docstring: Option<String>,
 }
 
@@ -127,6 +137,7 @@ pub enum CallableKind {
 #[derive(Debug, Clone, Node)]
 pub struct ReturnType {
     pub ty: Option<TypeNode>,
+    pub type_name: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -157,6 +168,8 @@ pub struct Argument {
 #[derive(Debug, Clone, Node)]
 pub struct LiteralNode {
     pub lit: Literal,
+    /// The literal rendered as a Python string
+    pub py_lit: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -245,8 +258,11 @@ pub struct Variant {
 #[derive(Debug, Clone, Node)]
 pub struct Interface {
     pub name: String,
+    pub base_classes: Vec<String>,
+    pub protocol: Protocol,
     pub docstring: Option<String>,
     pub constructors: Vec<Constructor>,
+    pub has_primary_constructor: bool,
     pub methods: Vec<Method>,
     pub uniffi_traits: Vec<UniffiTrait>,
     pub trait_impls: Vec<ObjectTraitImpl>,
@@ -258,9 +274,18 @@ pub struct Interface {
 }
 
 #[derive(Debug, Clone, Node)]
+pub struct Protocol {
+    pub name: String,
+    pub base_classes: Vec<String>,
+    pub docstring: Option<String>,
+    pub methods: Vec<Method>,
+}
+
+#[derive(Debug, Clone, Node)]
 pub struct CallbackInterface {
     pub name: String,
     pub docstring: Option<String>,
+    pub protocol: Protocol,
     pub vtable: VTable,
     pub methods: Vec<Method>,
     pub self_type: TypeNode,
@@ -287,6 +312,7 @@ pub struct VTableMethod {
     pub callable: Callable,
     /// FfiType::Function type that corresponds to the method
     pub ffi_type: FfiTypeNode,
+    pub ffi_default_value: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -309,6 +335,7 @@ pub struct CustomType {
     pub name: String,
     pub builtin: TypeNode,
     pub docstring: Option<String>,
+    pub config: Option<CustomTypeConfig>,
     pub self_type: TypeNode,
 }
 
@@ -342,14 +369,10 @@ pub struct ExternalType {
 #[derive(Debug, Clone, Node)]
 pub struct TypeNode {
     pub ty: Type,
-    /// Unique UpperCamelCase name for the type
-    ///
-    /// This is used for a couple reasons:
-    ///   - Defining classes to handle things related to the type.
-    ///     Many bindings will create a `UniffiConverter[canonical_name]` class.
-    ///   - Creating a unique key for a type
     pub canonical_name: String,
     pub is_used_as_error: bool,
+    pub type_name: String,
+    pub ffi_converter_name: String,
     pub ffi_type: FfiTypeNode,
 }
 
@@ -359,6 +382,7 @@ pub struct TypeNode {
 #[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiTypeNode {
     pub ty: FfiType,
+    pub type_name: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Node)]
@@ -393,23 +417,29 @@ pub enum Type {
     // User defined types in the API
     Interface {
         module_name: String,
+        /// Python package name for external types
+        external_package_name: Option<String>,
         name: String,
         imp: ObjectImpl,
     },
     Record {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
     },
     Enum {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
     },
     CallbackInterface {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
     },
     Custom {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
         builtin: Box<Type>,
     },
@@ -581,79 +611,37 @@ pub struct Checksum {
     pub checksum: u16,
 }
 
-impl FfiDefinition {
-    pub fn name(&self) -> &str {
-        match self {
-            Self::RustFunction(func) => &func.name.0,
-            Self::FunctionType(func_type) => &func_type.name.0,
-            Self::Struct(st) => &st.name.0,
-        }
-    }
-}
-
-impl From<FfiFunction> for FfiDefinition {
-    fn from(func: FfiFunction) -> Self {
-        Self::RustFunction(func)
-    }
-}
-
-impl From<FfiFunctionType> for FfiDefinition {
-    fn from(func_type: FfiFunctionType) -> Self {
-        Self::FunctionType(func_type)
-    }
-}
-
-impl From<FfiStruct> for FfiDefinition {
-    fn from(st: FfiStruct) -> Self {
-        Self::Struct(st)
-    }
-}
-
-impl From<FfiType> for FfiTypeNode {
-    fn from(ty: FfiType) -> Self {
-        Self { ty }
-    }
-}
-
-impl FfiArgument {
-    pub fn new(name: impl Into<String>, ty: FfiType) -> Self {
-        Self {
-            name: name.into(),
-            ty: FfiTypeNode { ty },
-        }
-    }
-}
-
-impl FfiField {
-    pub fn new(name: impl Into<String>, ty: FfiType) -> Self {
-        Self {
-            name: name.into(),
-            ty: FfiTypeNode { ty },
-        }
-    }
-}
-
 impl Callable {
-    pub fn is_async(&self) -> bool {
-        self.async_data.is_some()
+    pub fn is_method(&self) -> bool {
+        matches!(self.kind, CallableKind::Method { .. })
+    }
+
+    pub fn is_primary_constructor(&self) -> bool {
+        matches!(self.kind, CallableKind::Constructor { primary: true, .. })
     }
 }
 
-impl Type {
-    pub fn name(&self) -> Option<&str> {
-        match &self {
-            Type::Record { name, .. }
-            | Type::Enum { name, .. }
-            | Type::Interface { name, .. }
-            | Type::CallbackInterface { name, .. }
-            | Type::Custom { name, .. } => Some(name.as_str()),
-            _ => None,
-        }
+impl CustomTypeConfig {
+    fn lift(&self, name: &str) -> String {
+        let converter = if self.lift.is_empty() {
+            &self.into_custom
+        } else {
+            &self.lift
+        };
+        converter.replace("{}", name)
+    }
+    fn lower(&self, name: &str) -> String {
+        let converter = if self.lower.is_empty() {
+            &self.from_custom
+        } else {
+            &self.lower
+        };
+        converter.replace("{}", name)
     }
 }
 
-impl ObjectImpl {
-    pub fn has_callback_interface(&self) -> bool {
-        matches!(self, Self::CallbackTrait)
+impl Variant {
+    fn has_unnamed_fields(&self) -> bool {
+        matches!(self.fields_kind, FieldsKind::Unnamed)
     }
 }
