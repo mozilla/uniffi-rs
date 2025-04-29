@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::pipeline::{general, initial, Pipeline};
+pub use crate::pipeline::{general, initial, Pipeline};
 
 // For now, this is just the general pipeline.
 // Defining this allows us to use the pipeline CLI to inspect the general pipeline.
