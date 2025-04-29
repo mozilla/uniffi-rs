@@ -4,7 +4,7 @@ Timestamp = datetime.datetime
 # There is a loss of precision when converting from Rust timestamps,
 # which are accurate to the nanosecond,
 # to Python datetimes, which have a variable precision due to the use of float as representation.
-class _UniffiConverterTimestamp(_UniffiConverterRustBuffer):
+class {{ type_node.ffi_converter_name }}(_UniffiConverterRustBuffer):
     @staticmethod
     def read(buf):
         seconds = buf.read_i64()

@@ -62,7 +62,7 @@ async def _uniffi_rust_call_async(rust_future, ffi_poll, ffi_complete, ffi_free,
     finally:
         ffi_free(rust_future)
 
-{%- if ci.has_async_callback_interface_definition() %}
+{%- if has_async_callback_method %}
 def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
     async def make_call_and_call_callback():
         try:
@@ -72,7 +72,7 @@ def _uniffi_trait_interface_call_async(make_call, handle_success, handle_error):
             traceback.print_exc(file=sys.stderr)
             handle_error(
                 _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR,
-                {{ Type::String.borrow()|lower_fn }}(repr(e)),
+                {{ string_type_node.ffi_converter_name }}.lower(repr(e)),
             )
     eventloop = _uniffi_get_event_loop()
     task = asyncio.run_coroutine_threadsafe(make_call_and_call_callback(), eventloop)
@@ -94,7 +94,7 @@ def _uniffi_trait_interface_call_async_with_error(make_call, handle_success, han
             traceback.print_exc(file=sys.stderr)
             handle_error(
                 _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR,
-                {{ Type::String.borrow()|lower_fn }}(repr(e)),
+                {{ string_type_node.ffi_converter_name }}.lower(repr(e)),
             )
     eventloop = _uniffi_get_event_loop()
     task = asyncio.run_coroutine_threadsafe(make_call_and_call_callback(), eventloop)
