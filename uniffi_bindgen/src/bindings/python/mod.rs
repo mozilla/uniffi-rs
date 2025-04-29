@@ -5,6 +5,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
+use askama::Template;
 use camino::Utf8Path;
 use fs_err as fs;
 use serde::{Deserialize, Serialize};
@@ -45,7 +46,7 @@ pub fn run_pipeline(initial_root: pipeline::initial::Root, out_dir: &Utf8Path) -
     }
     for module in python_root.modules.values() {
         let path = out_dir.join(format!("{}.py", module.name));
-        let content = "TODO";
+        let content = module.render()?;
         println!("writing {path}");
         fs::write(path, content)?;
     }
