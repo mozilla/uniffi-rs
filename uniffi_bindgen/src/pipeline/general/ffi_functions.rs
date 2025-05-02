@@ -32,7 +32,8 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 ty: FfiType::RustArcPtr {
                     module_name: module_name.clone(),
                     object_name: interface_name.clone(),
-                },
+                }
+                .into(),
             }),
             _ => None,
         };
@@ -70,7 +71,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
                     .chain(base_arguments)
                     .collect(),
                 return_type: FfiReturnType {
-                    ty: Some(FfiType::Handle(HandleKind::RustFuture)),
+                    ty: Some(FfiType::Handle(HandleKind::RustFuture).into()),
                 },
                 has_rust_call_status_arg: false,
                 kind: FfiFunctionKind::Scaffolding,
