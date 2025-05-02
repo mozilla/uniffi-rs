@@ -21,10 +21,10 @@ pub fn pass(module: &mut Module) -> Result<()> {
             async_data: None,
             arguments: vec![FfiArgument {
                 name: "size".to_string(),
-                ty: FfiType::UInt64,
+                ty: FfiType::UInt64.into(),
             }],
             return_type: FfiReturnType {
-                ty: Some(FfiType::RustBuffer(None)),
+                ty: Some(FfiType::RustBuffer(None).into()),
             },
             has_rust_call_status_arg: true,
             kind: FfiFunctionKind::RustBufferAlloc,
@@ -36,10 +36,10 @@ pub fn pass(module: &mut Module) -> Result<()> {
             async_data: None,
             arguments: vec![FfiArgument {
                 name: "bytes".to_string(),
-                ty: FfiType::ForeignBytes,
+                ty: FfiType::ForeignBytes.into(),
             }],
             return_type: FfiReturnType {
-                ty: Some(FfiType::RustBuffer(None)),
+                ty: Some(FfiType::RustBuffer(None).into()),
             },
             has_rust_call_status_arg: true,
             kind: FfiFunctionKind::RustBufferFromBytes,
@@ -51,7 +51,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
             async_data: None,
             arguments: vec![FfiArgument {
                 name: "buf".to_string(),
-                ty: FfiType::RustBuffer(None),
+                ty: FfiType::RustBuffer(None).into(),
             }],
             return_type: FfiReturnType { ty: None },
             has_rust_call_status_arg: true,
@@ -65,15 +65,15 @@ pub fn pass(module: &mut Module) -> Result<()> {
             arguments: vec![
                 FfiArgument {
                     name: "buf".to_string(),
-                    ty: FfiType::RustBuffer(None),
+                    ty: FfiType::RustBuffer(None).into(),
                 },
                 FfiArgument {
                     name: "additional".to_string(),
-                    ty: FfiType::UInt64,
+                    ty: FfiType::UInt64.into(),
                 },
             ],
             return_type: FfiReturnType {
-                ty: Some(FfiType::RustBuffer(None)),
+                ty: Some(FfiType::RustBuffer(None).into()),
             },
             has_rust_call_status_arg: true,
             kind: FfiFunctionKind::RustBufferReserve,
