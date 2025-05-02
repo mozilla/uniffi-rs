@@ -96,21 +96,21 @@ impl DependencyLogic for FfiDefinitionDependencyLogic {
             FfiDefinition::Struct(ffi_struct) => ffi_struct
                 .fields
                 .iter()
-                .filter_map(|f| Self::type_dependency_name(&f.ty))
+                .filter_map(|f| Self::type_dependency_name(&f.ty.ty))
                 .collect(),
             FfiDefinition::RustFunction(func) => func
                 .arguments
                 .iter()
                 .map(|a| &a.ty)
                 .chain(&func.return_type.ty)
-                .filter_map(Self::type_dependency_name)
+                .filter_map(|ty| Self::type_dependency_name(&ty.ty))
                 .collect(),
             FfiDefinition::FunctionType(func_type) => func_type
                 .arguments
                 .iter()
                 .map(|a| &a.ty)
                 .chain(&func_type.return_type.ty)
-                .filter_map(Self::type_dependency_name)
+                .filter_map(|ty| Self::type_dependency_name(&ty.ty))
                 .collect(),
         }
     }
