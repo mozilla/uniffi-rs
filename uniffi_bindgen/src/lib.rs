@@ -105,6 +105,7 @@ pub mod bindings;
 pub mod interface;
 pub mod library_mode;
 pub mod macro_metadata;
+pub mod pipeline;
 pub mod scaffolding;
 
 #[cfg(feature = "cargo-metadata")]
@@ -541,14 +542,14 @@ fn merge_toml(a: &mut toml::value::Table, b: toml::value::Table) {
 }
 
 // FIXME(HACK):
-// Include the rinja config file into the build.
+// Include the askama config file into the build.
 // That way cargo tracks the file and other tools relying on file tracking see it as well.
 // See https://bugzilla.mozilla.org/show_bug.cgi?id=1774585
-// In the future rinja should handle that itself by using the `track_path::path` API,
+// In the future askama should handle that itself by using the `track_path::path` API,
 // see https://github.com/rust-lang/rust/pull/84029
 #[allow(dead_code)]
 mod __unused {
-    const _: &[u8] = include_bytes!("../rinja.toml");
+    const _: &[u8] = include_bytes!("../askama.toml");
 }
 
 #[cfg(test)]

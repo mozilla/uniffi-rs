@@ -11,6 +11,7 @@ release-backend-crates = [
     "-p", "uniffi_internal_macros",
     "-p", "uniffi_macros",
     "-p", "uniffi_meta",
+    "-p", "uniffi_pipeline",
     "-p", "uniffi_testing",
     "-p", "uniffi_udl",
 ]

@@ -57,8 +57,8 @@ private let initializationResult: InitializationResult = {
     {%- endfor %}
 {%- endif %}
 
-    {% for fn in self.initialization_fns() -%}
-    {{ fn }}()
+    {% for fn_item in self.initialization_fns() -%}
+    {{ fn_item }}()
     {% endfor -%}
 
     return InitializationResult.ok

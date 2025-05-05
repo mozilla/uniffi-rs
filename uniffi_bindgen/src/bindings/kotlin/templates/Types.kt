@@ -65,6 +65,14 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
  * */
 object NoPointer
 
+{%- if ci.has_callback_definitions() %}
+{%- include "CallbackInterfaceRuntime.kt" %}
+{%- endif %}
+
+{%- if ci.has_object_definitions() %}
+{%- include "ObjectCleanerHelper.kt" %}
+{%- endif %}
+
 {%- for type_ in ci.iter_local_types() %}
 {%- let type_name = type_|type_name(ci) %}
 {%- let ffi_converter_name = type_|ffi_converter_name %}

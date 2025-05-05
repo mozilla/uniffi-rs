@@ -14,8 +14,11 @@ readme = "../README.md"
 proc-macro = true
 
 [dependencies]
+anyhow = "1"
+indexmap = { version = "2.2" }
+proc-macro2 = "1.0"
 quote = "1.0"
-syn = { version = "2.0", features = ["derive", "parsing"] }
+syn = { version = "2.0", features = ["full", "visit-mut", "extra-traits"] }
 
 [features]
 default = []

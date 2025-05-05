@@ -61,12 +61,12 @@ typedef
         RustCallStatus *_Nonnull uniffiCallStatus
         {%- endif %}
     );
-{% when FfiDefinition::Struct(struct) %}
-typedef struct {{ struct.name()|ffi_struct_name }} {
-    {%- for field in struct.fields() %}
+{% when FfiDefinition::Struct(struct_item) %}
+typedef struct {{ struct_item.name()|ffi_struct_name }} {
+    {%- for field in struct_item.fields() %}
     {{ field.type_().borrow()|header_ffi_type_name }} {{ field.name()|var_name }};
     {%- endfor %}
-} {{ struct.name()|ffi_struct_name }};
+} {{ struct_item.name()|ffi_struct_name }};
 {% when FfiDefinition::Function(func) %}
 {% match func.return_type() -%}{%- when Some(type_) %}{{ type_|header_ffi_type_name }}{% when None %}void{% endmatch %} {{ func.name() }}(
     {%- if func.arguments().len() > 0 %}

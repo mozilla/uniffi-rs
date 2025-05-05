@@ -23,9 +23,8 @@
 /// "UT" means an arbitrary `UniFfiTag` type.
 use crate::{
     check_remaining, derive_ffi_traits, ffi_converter_rust_buffer_lift_and_lower, metadata,
-    ConvertError, FfiConverter, Lift, LiftArgsError, LiftRef, LiftReturn, Lower, LowerError,
-    LowerReturn, MetadataBuffer, Result, RustBuffer, RustCallError, TypeId,
-    UnexpectedUniFFICallbackError,
+    ConvertError, FfiConverter, Lift, LiftRef, LiftReturn, Lower, LowerError, LowerReturn,
+    MetadataBuffer, Result, RustBuffer, RustCallError, TypeId, UnexpectedUniFFICallbackError,
 };
 use anyhow::bail;
 use bytes::buf::{Buf, BufMut};
@@ -471,6 +470,7 @@ impl<UT> TypeId<UT> for () {
 // Implement LowerReturn/LiftReturn for `Result<R, E>`.  This is where we handle exceptions/Err
 // results.
 
+#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
 unsafe impl<UT, R, E> LowerReturn<UT> for Result<R, E>
 where
     R: LowerReturn<UT>,
@@ -485,13 +485,29 @@ where
         }
     }
 
-    fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
+    fn handle_failed_lift(error: crate::LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
         match error.error.downcast::<E>() {
             Ok(downcast) => Err(RustCallError::Error(E::lower_error(downcast))),
             Err(e) => {
                 let msg = format!("Failed to convert arg '{}': {e}", error.arg_name);
                 Err(RustCallError::InternalError(msg))
             }
+        }
+    }
+}
+
+#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+unsafe impl<UT, R, E> LowerReturn<UT> for Result<R, E>
+where
+    R: LowerReturn<UT>,
+    E: LowerError<UT> + Display + Debug + 'static,
+{
+    type ReturnType = R::ReturnType;
+
+    fn lower_return(v: Self) -> Result<Self::ReturnType, RustCallError> {
+        match v {
+            Ok(r) => R::lower_return(r),
+            Err(e) => Err(RustCallError::Error(E::lower_error(e))),
         }
     }
 }

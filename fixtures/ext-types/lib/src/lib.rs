@@ -6,7 +6,7 @@ use ext_types_external_crate::{
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneError, UniffiOneErrorInterface, UniffiOneInterface,
-    UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType, UniffiOneUDLTrait,
+    UniffiOneProcMacroType, UniffiOneTLA, UniffiOneTrait, UniffiOneType, UniffiOneUDLTrait,
 };
 use uniffi_sublib::SubLibType;
 use url::Url;
@@ -158,6 +158,11 @@ fn get_maybe_uniffi_one_type(t: Option<UniffiOneType>) -> Option<UniffiOneType> 
 
 fn get_maybe_uniffi_one_types(ts: Vec<Option<UniffiOneType>>) -> Vec<Option<UniffiOneType>> {
     ts
+}
+
+#[uniffi::export]
+fn get_uniffi_one_tla() -> UniffiOneTLA {
+    unreachable!()
 }
 
 // An enum

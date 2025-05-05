@@ -18,9 +18,10 @@ uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.29.1", optional = t
 uniffi_build = { path = "../uniffi_build", version = "=0.29.1", optional = true }
 uniffi_core = { path = "../uniffi_core", version = "=0.29.1" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.29.1" }
+uniffi_pipeline = { path = "../uniffi_pipeline", version = "=0.29.1" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
-cargo_metadata = { version = "0.15", optional = true }
+cargo_metadata = { version = "0.19", optional = true }
 # avoid 'clap/color' due to dependency hell.
 clap = { version = "4", default-features = false, features = [ "cargo", "derive", "error-context", "help", "suggestions", "std", "usage" ], optional = true }
 
@@ -51,3 +52,10 @@ tokio = ["uniffi_core/tokio"]
 # Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
 # This is needed for the gecko-js bindings.
 scaffolding-ffi-buffer-fns = ["uniffi_core/scaffolding-ffi-buffer-fns", "uniffi_macros/scaffolding-ffi-buffer-fns"]
+
+# Support for WebAssembly targets in a single-threaded environment.
+# This feature is unstable and may change in the future.
+wasm-unstable-single-threaded = [
+    "uniffi_core/wasm-unstable-single-threaded",
+    "uniffi_macros/wasm-unstable-single-threaded",
+]

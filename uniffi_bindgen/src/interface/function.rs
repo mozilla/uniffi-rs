@@ -328,7 +328,7 @@ impl Callable for Function {
     }
 }
 
-// Needed because Rinja likes to add extra refs to variables
+// Needed because Askama likes to add extra refs to variables
 impl<T: Callable> Callable for &T {
     fn arguments(&self) -> Vec<&Argument> {
         (*self).arguments()

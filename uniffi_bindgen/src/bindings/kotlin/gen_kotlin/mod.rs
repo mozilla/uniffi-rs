@@ -7,8 +7,8 @@ use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
+use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
-use rinja::Template;
 use serde::{Deserialize, Serialize};
 
 use crate::{anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, Context, Result};
@@ -238,8 +238,6 @@ impl ImportRequirement {
 pub struct TypeRenderer<'a> {
     config: &'a Config,
     ci: &'a ComponentInterface,
-    // Track included modules for the `include_once()` macro
-    include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<ImportRequirement>>,
 }
@@ -249,7 +247,6 @@ impl<'a> TypeRenderer<'a> {
         Self {
             config,
             ci,
-            include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
         }
     }
@@ -262,22 +259,12 @@ impl<'a> TypeRenderer<'a> {
 
     // The following methods are used by the `Types.kt` macros.
 
-    // Helper for the including a template, but only once.
-    //
-    // The first time this is called with a name it will return true, indicating that we should
-    // include the template.  Subsequent calls will return false.
-    fn include_once_check(&self, name: &str) -> bool {
-        self.include_once_names
-            .borrow_mut()
-            .insert(name.to_string())
-    }
-
     // Helper to add an import statement
     //
     // Call this inside your template to cause an import statement to be added at the top of the
     // file.  Imports will be sorted and de-deuped.
     //
-    // Returns an empty string so that it can be used inside an rinja `{{ }}` block.
+    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
     fn add_import(&self, name: &str) -> &str {
         self.imports.borrow_mut().insert(ImportRequirement::Import {
             name: name.to_owned(),
@@ -615,44 +602,44 @@ mod filters {
     pub(super) fn type_name(
         as_ct: &impl AsCodeType,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().type_label(ci))
     }
 
-    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
-    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
     }
 
-    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.lower",
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    pub(super) fn allocation_size_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn allocation_size_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.allocationSize",
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.write",
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!("{}.lift", as_ct.as_codetype().ffi_converter_name()))
     }
 
-    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, rinja::Error> {
+    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
@@ -660,53 +647,53 @@ mod filters {
         literal: &Literal,
         as_ct: &impl AsType,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         as_ct
             .as_codetype()
             .literal(literal, ci)
-            .map_err(|e| to_rinja_error(&e))
+            .map_err(|e| to_askama_error(&e))
     }
 
     // Get the idiomatic Kotlin rendering of an integer.
-    fn int_literal(t: &Option<Type>, base10: String) -> Result<String, rinja::Error> {
+    fn int_literal(t: &Option<Type>, base10: String) -> Result<String, askama::Error> {
         if let Some(t) = t {
             match t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
                 Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Ok(base10 + "u"),
-                _ => Err(to_rinja_error("Only ints are supported.")),
+                _ => Err(to_askama_error("Only ints are supported.")),
             }
         } else {
-            Err(to_rinja_error("Enum hasn't defined a repr"))
+            Err(to_askama_error("Enum hasn't defined a repr"))
         }
     }
 
     // Get the idiomatic Kotlin rendering of an individual enum variant's discriminant
-    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, rinja::Error> {
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         match literal {
             // Kotlin doesn't convert between signed and unsigned by default
             // so we'll need to make sure we define the type as appropriately
             LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
             LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
-            _ => Err(to_rinja_error("Only ints are supported.")),
+            _ => Err(to_askama_error("Only ints are supported.")),
         }
     }
 
     pub fn ffi_type_name_by_value(
         type_: &FfiType,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
     }
 
     pub fn ffi_type_name_for_ffi_struct(
         type_: &FfiType,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_, ci))
     }
 
-    pub fn ffi_default_value(type_: FfiType) -> Result<String, rinja::Error> {
+    pub fn ffi_default_value(type_: FfiType) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_default_value(&type_))
     }
 
@@ -714,49 +701,49 @@ mod filters {
     pub fn class_name<S: AsRef<str>>(
         nm: S,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.class_name(ci, nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn fn_name<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
+    pub fn fn_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.fn_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
+    pub fn var_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name_raw<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
+    pub fn var_name_raw<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name_raw(nm.as_ref()))
     }
 
     /// Get a String representing the name used for an individual enum variant.
-    pub fn variant_name(v: &Variant) -> Result<String, rinja::Error> {
+    pub fn variant_name(v: &Variant) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
     }
 
-    pub fn error_variant_name(v: &Variant) -> Result<String, rinja::Error> {
+    pub fn error_variant_name(v: &Variant) -> Result<String, askama::Error> {
         let name = v.name().to_string().to_upper_camel_case();
         Ok(KotlinCodeOracle.convert_error_suffix(&name))
     }
 
     /// Get the idiomatic Kotlin rendering of an FFI callback function name
-    pub fn ffi_callback_name<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
+    pub fn ffi_callback_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_callback_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of an FFI struct name
-    pub fn ffi_struct_name<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
+    pub fn ffi_struct_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
     }
 
     pub fn async_poll(
         callable: impl Callable,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_poll(ci);
         Ok(format!(
             "{{ future, callback, continuation -> UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}"
@@ -766,7 +753,7 @@ mod filters {
     pub fn async_complete(
         callable: impl Callable,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_complete(ci);
         let call = format!("UniffiLib.INSTANCE.{ffi_func}(future, continuation)");
         // May need to convert the RustBuffer from our package to the RustBuffer of the external package
@@ -789,7 +776,7 @@ mod filters {
     pub fn async_free(
         callable: impl Callable,
         ci: &ComponentInterface,
-    ) -> Result<String, rinja::Error> {
+    ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_free(ci);
         Ok(format!(
             "{{ future -> UniffiLib.INSTANCE.{ffi_func}(future) }}"
@@ -801,12 +788,12 @@ mod filters {
     /// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to
     /// render the name unquoted.  One example is the message property for errors where we want to
     /// display the name for the user.
-    pub fn unquote<S: AsRef<str>>(nm: S) -> Result<String, rinja::Error> {
+    pub fn unquote<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(nm.as_ref().trim_matches('`').to_string())
     }
 
     /// Get the idiomatic Kotlin rendering of docstring
-    pub fn docstring<S: AsRef<str>>(docstring: S, spaces: &i32) -> Result<String, rinja::Error> {
+    pub fn docstring<S: AsRef<str>>(docstring: S, spaces: &i32) -> Result<String, askama::Error> {
         let middle = textwrap::indent(&textwrap::dedent(docstring.as_ref()), " * ");
         let wrapped = format!("/**\n{middle}\n */");
 

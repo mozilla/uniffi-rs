@@ -107,6 +107,9 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuff
 
 {% if !contains_object_references %}
 extension {{ type_name }}: Equatable, Hashable {}
+{% if config.generate_codable_conformance() %}
+extension {{ type_name }}: Codable {}
+{% endif %}
 {% endif %}
 
 {% if !config.omit_localized_error_conformance() %}
@@ -115,4 +118,8 @@ extension {{ type_name }}: Foundation.LocalizedError {
         String(reflecting: self)
     }
 }
+{% endif %}
+
+{% if config.generate_case_iterable_conformance() && !e.is_flat() && !e.contains_variant_fields() %}
+extension {{ type_name }}: CaseIterable {}
 {% endif %}

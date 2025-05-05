@@ -9,7 +9,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use anyhow::{Context, Result};
-use rinja::Template;
+use askama::Template;
 
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
@@ -170,6 +170,8 @@ pub struct Config {
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
     omit_localized_error_conformance: Option<bool>,
+    generate_case_iterable_conformance: Option<bool>,
+    generate_codable_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
@@ -261,6 +263,16 @@ impl Config {
     /// Whether to make generated error types conform to `LocalizedError`. Default: false.
     pub fn omit_localized_error_conformance(&self) -> bool {
         self.omit_localized_error_conformance.unwrap_or(false)
+    }
+
+    /// Whether to make simple generated enum and error types conform to `CaseIterable`. Default: false.
+    pub fn generate_case_iterable_conformance(&self) -> bool {
+        self.generate_case_iterable_conformance.unwrap_or(false)
+    }
+
+    /// Whether to make generated records, enums and errors conform to `Codable`. Default: false.
+    pub fn generate_codable_conformance(&self) -> bool {
+        self.generate_codable_conformance.unwrap_or(false)
     }
 
     /// Extra frameworks to link this Swift module against. This is populated in the modulemap file,
@@ -355,8 +367,6 @@ pub fn generate_modulemap(
 pub struct TypeRenderer<'a> {
     config: &'a Config,
     ci: &'a ComponentInterface,
-    // Track included modules for the `include_once()` macro
-    include_once_names: RefCell<HashSet<String>>,
     // Track imports added with the `add_import()` macro
     imports: RefCell<BTreeSet<String>>,
 }
@@ -366,29 +376,18 @@ impl<'a> TypeRenderer<'a> {
         Self {
             config,
             ci,
-            include_once_names: RefCell::new(HashSet::new()),
             imports: RefCell::new(BTreeSet::new()),
         }
     }
 
     // The following methods are used by the `Types.swift` macros.
 
-    // Helper for the including a template, but only once.
-    //
-    // The first time this is called with a name it will return true, indicating that we should
-    // include the template.  Subsequent calls will return false.
-    fn include_once_check(&self, name: &str) -> bool {
-        self.include_once_names
-            .borrow_mut()
-            .insert(name.to_string())
-    }
-
     // Helper to add an import statement
     //
     // Call this inside your template to cause an import statement to be added at the top of the
     // file.  Imports will be sorted and de-deuped.
     //
-    // Returns an empty string so that it can be used inside an rinja `{{ }}` block.
+    // Returns an empty string so that it can be used inside an askama `{{ }}` block.
     fn add_import(&self, name: &str) -> &str {
         self.imports.borrow_mut().insert(name.to_owned());
         ""
@@ -672,26 +671,26 @@ pub mod filters {
         &SwiftCodeOracle
     }
 
-    pub fn type_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn type_name(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).type_label())
     }
 
-    pub fn return_type_name(as_type: Option<&impl AsType>) -> Result<String, rinja::Error> {
+    pub fn return_type_name(as_type: Option<&impl AsType>) -> Result<String, askama::Error> {
         Ok(match as_type {
             Some(as_type) => oracle().find(&as_type.as_type()).type_label(),
             None => "()".to_owned(),
         })
     }
 
-    pub fn canonical_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn canonical_name(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).canonical_name())
     }
 
-    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn ffi_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
         Ok(oracle().find(&as_type.as_type()).ffi_converter_name())
     }
 
-    pub fn ffi_error_converter_name(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn ffi_error_converter_name(as_type: &impl AsType) -> Result<String, askama::Error> {
         // special handling for types used as errors.
         let mut name = oracle().find(&as_type.as_type()).ffi_converter_name();
         if matches!(&as_type.as_type(), Type::Object { .. }) {
@@ -703,7 +702,7 @@ pub mod filters {
     // To better support external types, we always call the "public" lift and lower functions for
     // "named" types, regardless of whether they are being called from a type in the same crate
     // (ie, a "local" type) or from a different crate (ie, an "external" type)
-    pub fn lower_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn lower_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
         let ty = &as_type.as_type();
         let ffi_converter_name = oracle().find(ty).ffi_converter_name();
         Ok(match ty.name() {
@@ -712,14 +711,14 @@ pub mod filters {
         })
     }
 
-    pub fn write_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn write_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
         let ty = &as_type.as_type();
         let ffi_converter_name = oracle().find(ty).ffi_converter_name();
         Ok(format!("{}.write", ffi_converter_name))
     }
 
     // See above re lower_fn - we always use the public version for named types.
-    pub fn lift_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn lift_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
         let ty = &as_type.as_type();
         let ffi_converter_name = oracle().find(ty).ffi_converter_name();
         Ok(match ty.name() {
@@ -728,21 +727,24 @@ pub mod filters {
         })
     }
 
-    pub fn read_fn(as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn read_fn(as_type: &impl AsType) -> Result<String, askama::Error> {
         let ty = &as_type.as_type();
         let ffi_converter_name = oracle().find(ty).ffi_converter_name();
         Ok(format!("{}.read", ffi_converter_name))
     }
 
-    pub fn literal_swift(literal: &Literal, as_type: &impl AsType) -> Result<String, rinja::Error> {
+    pub fn literal_swift(
+        literal: &Literal,
+        as_type: &impl AsType,
+    ) -> Result<String, askama::Error> {
         oracle()
             .find(&as_type.as_type())
             .literal(literal)
-            .map_err(|e| to_rinja_error(&e))
+            .map_err(|e| to_askama_error(&e))
     }
 
     // Get the idiomatic Swift rendering of an individual enum variant's discriminant
-    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, rinja::Error> {
+    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         match literal {
             LiteralMetadata::UInt(v, _, _) => Ok(v.to_string()),
@@ -752,17 +754,17 @@ pub mod filters {
     }
 
     /// Get the Swift type for an FFIType
-    pub fn ffi_type_name(ffi_type: &FfiType) -> Result<String, rinja::Error> {
+    pub fn ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(oracle().ffi_type_label(ffi_type))
     }
 
-    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, rinja::Error> {
+    pub fn ffi_default_value(return_type: Option<FfiType>) -> Result<String, askama::Error> {
         Ok(oracle().ffi_default_value(return_type.as_ref()))
     }
 
     /// Like `ffi_type_name`, but used in `BridgingHeaderTemplate.h` which uses a slightly different
     /// names.
-    pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, rinja::Error> {
+    pub fn header_ffi_type_name(ffi_type: &FfiType) -> Result<String, askama::Error> {
         Ok(match ffi_type {
             FfiType::Int8 => "int8_t".into(),
             FfiType::UInt8 => "uint8_t".into(),
@@ -792,53 +794,53 @@ pub mod filters {
     }
 
     /// Get the idiomatic Swift rendering of a class name (for enums, records, errors, etc).
-    pub fn class_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn class_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().class_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of a function name.
-    pub fn fn_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn fn_name(nm: &str) -> Result<String, askama::Error> {
         Ok(quote_general_keyword(oracle().fn_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of a variable name.
-    pub fn var_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn var_name(nm: &str) -> Result<String, askama::Error> {
         Ok(quote_general_keyword(oracle().var_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an arguments name.
     /// This is the same as the var name but quoting is not required.
-    pub fn arg_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn arg_name(nm: &str) -> Result<String, askama::Error> {
         Ok(quote_arg_keyword(oracle().var_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an individual enum variant, quoted if it is a keyword (for use in e.g. declarations)
-    pub fn enum_variant_swift_quoted(nm: &str) -> Result<String, rinja::Error> {
+    pub fn enum_variant_swift_quoted(nm: &str) -> Result<String, askama::Error> {
         Ok(quote_general_keyword(oracle().enum_variant_name(nm)))
     }
 
     /// Like enum_variant_swift_quoted, but a class name.
-    pub fn error_variant_swift_quoted(nm: &str) -> Result<String, rinja::Error> {
+    pub fn error_variant_swift_quoted(nm: &str) -> Result<String, askama::Error> {
         Ok(quote_general_keyword(oracle().class_name(nm)))
     }
 
     /// Get the idiomatic Swift rendering of an FFI callback function name
-    pub fn ffi_callback_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn ffi_callback_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().ffi_callback_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of an FFI struct name
-    pub fn ffi_struct_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn ffi_struct_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().ffi_struct_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of an if guard name
-    pub fn if_guard_name(nm: &str) -> Result<String, rinja::Error> {
+    pub fn if_guard_name(nm: &str) -> Result<String, askama::Error> {
         Ok(oracle().if_guard_name(nm))
     }
 
     /// Get the idiomatic Swift rendering of docstring
-    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, rinja::Error> {
+    pub fn docstring(docstring: &str, spaces: &i32) -> Result<String, askama::Error> {
         let middle = textwrap::indent(&textwrap::dedent(docstring), " * ");
         let wrapped = format!("/**\n{middle}\n */");
 
@@ -846,7 +848,7 @@ pub mod filters {
         Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
     }
 
-    pub fn object_names(obj: &Object) -> Result<(String, String), rinja::Error> {
+    pub fn object_names(obj: &Object) -> Result<(String, String), askama::Error> {
         Ok(SwiftCodeOracle.object_names(obj))
     }
 }
