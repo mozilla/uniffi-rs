@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.2...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.2...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.29.2) - (_2025-05-05_)
+## v0.29.2 (backend crates: v0.29.2) - (_2025-05-05_)
 
 ### What's fixed?
 
@@ -20,7 +20,7 @@
 
 - Swift bindings can now generate automatic conformance to the `Codable` protocol for records, enums and errors using `generate_codable_conformance = true` in the configuration. Be aware that serialization in Swift may lead to different and incompatible results compared to serialization in Rust.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
+[All changes in v0.29.2](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...v0.29.2).
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
 
