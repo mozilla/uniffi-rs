@@ -16,3 +16,6 @@ heck = "0.5"
 indexmap = { version = "2.2" }
 tempfile = "3"
 uniffi_internal_macros = { path = "../uniffi_internal_macros", version = "=0.29.1" }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]

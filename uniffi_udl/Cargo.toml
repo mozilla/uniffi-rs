@@ -17,3 +17,6 @@ weedle2 = { version = "5.0.0", path = "../weedle2" }
 # docstrings.
 textwrap = { version = "0.16", features = ["smawk"], default-features = false }
 uniffi_meta = { path = "../uniffi_meta", version = "=0.29.1" }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]
