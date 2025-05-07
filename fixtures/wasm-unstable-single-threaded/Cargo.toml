@@ -11,6 +11,7 @@ name = "wasm_unstable_single_threaded"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
+async-trait = "0.1"
 uniffi = { workspace = true, features = ["cli", "wasm-unstable-single-threaded"] }
 
 [build-dependencies]
