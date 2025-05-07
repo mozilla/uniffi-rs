@@ -13,7 +13,7 @@ use crate::{
     },
     ffiops,
     object::interface_meta_static_var,
-    util::{ident_to_string, tagged_impl_header},
+    util::{ident_to_string, tagged_impl_header, wasm_single_threaded_annotation},
 };
 
 pub(super) fn gen_trait_scaffolding(
@@ -155,12 +155,14 @@ pub(crate) fn ffi_converter(
     };
     let lower_self = ffiops::lower(quote! { ::std::sync::Arc<Self> });
     let try_lift_self = ffiops::try_lift(quote! { ::std::sync::Arc<Self> });
+    let single_threaded_annotation = wasm_single_threaded_annotation();
 
     quote! {
         // All traits must be `Sync + Send`. The generated scaffolding will fail to compile
         // if they are not, but unfortunately it fails with an unactionably obscure error message.
         // By asserting the requirement explicitly, we help Rust produce a more scrutable error message
         // and thus help the user debug why the requirement isn't being met.
+        #single_threaded_annotation
         ::uniffi::deps::static_assertions::assert_impl_all!(
             dyn #trait_ident: ::core::marker::Sync, ::core::marker::Send
         );
