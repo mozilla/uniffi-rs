@@ -9,6 +9,18 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 
+use async_trait::async_trait;
+
+#[derive(uniffi::Object)]
+pub struct NoopObject;
+
+#[uniffi::export]
+impl NoopObject {
+    pub async fn noop(self: Arc<Self>) {
+        // NOOP
+    }
+}
+
 /// This will return a Future which is Send + Sync for non-wasm targets, but
 /// not for wasm targets.
 #[uniffi::export]
@@ -105,6 +117,105 @@ impl fmt::Display for ErrorObject {
 async fn throw_error_object() -> Result<(), Arc<ErrorObject>> {
     let obj = Arc::new(ErrorObject);
     Err(obj)
+}
+
+// These use NoopObject.
+#[uniffi::export(with_foreign)]
+pub trait SimpleNoopTrait: Send + Sync {
+    fn return_void(&self);
+    fn return_obj(&self, obj: Arc<NoopObject>);
+    fn get_obj(&self) -> Arc<NoopObject>;
+}
+
+// NoopObject cannot be used in a return position, so
+// `get_obj` can't be implemented as an async method.
+#[cfg(not(target_arch = "wasm32"))]
+#[uniffi::export(with_foreign)]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+pub trait AsyncNoopTrait: Send + Sync {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<NoopObject>);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[uniffi::export(with_foreign)]
+#[async_trait(?Send)]
+pub trait AsyncNoopTrait {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<NoopObject>);
+}
+
+#[uniffi::export(callback_interface)]
+pub trait SimpleNoopCbi: Send + Sync {
+    fn return_void(&self);
+    fn return_obj(&self, obj: Arc<NoopObject>);
+    fn get_obj(&self) -> Arc<NoopObject>;
+}
+
+// NoopObject cannot be used in a return position, so
+// `get_obj` can't be implemented as an async method.
+#[cfg(not(target_arch = "wasm32"))]
+#[uniffi::export(callback_interface)]
+#[async_trait]
+pub trait AsyncNoopCbi: Send + Sync {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<NoopObject>);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[uniffi::export(callback_interface)]
+#[async_trait(?Send)]
+pub trait AsyncNoopCbi {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<NoopObject>);
+}
+
+// Now use SimpleObject, which has the Send/Sync differences.
+#[uniffi::export(with_foreign)]
+pub trait SimpleTrait: Send + Sync {
+    fn return_void(&self);
+    fn return_obj(&self, obj: Arc<SimpleObject>);
+    fn get_obj(&self) -> Arc<SimpleObject>;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[uniffi::export(with_foreign)]
+#[async_trait]
+pub trait AsyncTrait: Send + Sync {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<SimpleObject>);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[uniffi::export(with_foreign)]
+#[async_trait(?Send)]
+pub trait AsyncTrait {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<SimpleObject>);
+}
+
+#[uniffi::export(callback_interface)]
+pub trait SimpleCbi: Send + Sync {
+    fn return_void(&self);
+    fn return_obj(&self, obj: Arc<SimpleObject>);
+    fn get_obj(&self) -> Arc<SimpleObject>;
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[uniffi::export(callback_interface)]
+#[async_trait]
+pub trait AsyncSimpleCbi: Send + Sync {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<SimpleObject>);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[uniffi::export(callback_interface)]
+#[async_trait(?Send)]
+pub trait AsyncSimpleCbi {
+    async fn return_void(&self);
+    async fn return_obj(&self, obj: Arc<SimpleObject>);
 }
 
 uniffi::setup_scaffolding!();

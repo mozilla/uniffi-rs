@@ -1992,6 +1992,7 @@ dependencies = [
 name = "uniffi-fixtures-wasm-unstable-single-threaded"
 version = "0.29.0"
 dependencies = [
+ "async-trait",
  "uniffi",
 ]
 
