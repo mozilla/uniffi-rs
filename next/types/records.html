@@ -1994,11 +1994,12 @@ They consist of one of more named <em>fields</em>, each of which holds a value o
 <span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The fields in a record can be of almost any type, including objects or other records.
-The current limitations are:</p>
+<p>The fields in a record can be of any UniFFI supported type, including objects, vecs, maps and other records.
+The limitations are:</p>
 <ul>
 <li>They cannot recursively contain another instance of the <em>same</em> record type.</li>
-<li>They cannot contain references to callback interfaces (which is exactly why callback interfaces should be avoided, use traits)</li>
+<li>They cannot contain references to callback interfaces (another reason callback interfaces should be avoided, use traits)</li>
+<li>You must directly use an owned UniFFI supported type directly - no references, no smart-pointers etc.</li>
 </ul>
 <h1 id="fields-holding-object-references">Fields holding object references</h1>
 <p>A record containing an <a href="interfaces.html">interface</a> must use an <code>Arc&lt;&gt;</code>.</p>
@@ -2044,7 +2045,7 @@ in record fields.</p>
 <span class="w">    </span><span class="c1">// ...</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The default for this can be <code>null/None/etc</code> generating:</p>
+<p>The default for this can be <code>None</code>, which would translate to <code>null</code>/<code>None</code>/<code>etc</code> in the bindings. Kotlin generates:</p>
 <div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">TodoEntry</span><span class="w"> </span><span class="p">(</span>
 <span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">done</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
 <span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">text</span><span class="p">:</span><span class="w"> </span><span class="kt">String?</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span>
