@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../wasm/configuration.html">
+        <link rel="prev" href="object_references.html">
       
       
-        <link rel="next" href="crates.html">
+        <link rel="next" href="async-ffi.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Design Principles - The UniFFI user guide</title>
+        <title>UniFFI Async Overview - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#design-principles" class="md-skip">
+        <a href="#uniffi-async-overview" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Design Principles
+              UniFFI Async Overview
             
           </span>
         </div>
@@ -1748,32 +1748,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Design Principles
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="design_principles.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="design_principles.html" class="md-nav__link">
         
   
   
@@ -1784,71 +1762,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prioritize-mozillas-short-term-needs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prioritize Mozilla's short-term needs
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#safety-first" class="md-nav__link">
-    <span class="md-ellipsis">
-      Safety First
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-is-a-feature-but-not-a-deal-breaker" class="md-nav__link">
-    <span class="md-ellipsis">
-      Performance is a feature, but not a deal-breaker
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#produce-bindings-that-feel-idiomatic-for-the-target-language" class="md-nav__link">
-    <span class="md-ellipsis">
-      Produce bindings that feel idiomatic for the target language
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#empower-users-to-debug-and-maintain-the-tool" class="md-nav__link">
-    <span class="md-ellipsis">
-      Empower users to debug and maintain the tool
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1927,10 +1840,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="async-overview.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Async Overview
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="async-overview.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1941,6 +1876,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-runtime-does-async-code-run-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      What runtime does async code run on?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rust-async-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rust Async functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rust Async functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-not-have-rust_future_poll-return-a-boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why not have rust_future_poll return a boolean?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-async-callback-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign async callback methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-you-really-just-piggyback-on-the-foreign-async-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      Can you really just piggyback on the foreign async runtime?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#can-you-integrate-with-rust-runtimes-like-tokio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Can you integrate with Rust Runtimes like tokio?
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2048,45 +2063,60 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prioritize-mozillas-short-term-needs" class="md-nav__link">
+  <a href="#what-runtime-does-async-code-run-on" class="md-nav__link">
     <span class="md-ellipsis">
-      Prioritize Mozilla's short-term needs
+      What runtime does async code run on?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#safety-first" class="md-nav__link">
+  <a href="#rust-async-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Safety First
+      Rust Async functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Rust Async functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-not-have-rust_future_poll-return-a-boolean" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why not have rust_future_poll return a boolean?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foreign-async-callback-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign async callback methods
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#performance-is-a-feature-but-not-a-deal-breaker" class="md-nav__link">
+  <a href="#can-you-really-just-piggyback-on-the-foreign-async-runtime" class="md-nav__link">
     <span class="md-ellipsis">
-      Performance is a feature, but not a deal-breaker
+      Can you really just piggyback on the foreign async runtime?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#produce-bindings-that-feel-idiomatic-for-the-target-language" class="md-nav__link">
+  <a href="#can-you-integrate-with-rust-runtimes-like-tokio" class="md-nav__link">
     <span class="md-ellipsis">
-      Produce bindings that feel idiomatic for the target language
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#empower-users-to-debug-and-maintain-the-tool" class="md-nav__link">
-    <span class="md-ellipsis">
-      Empower users to debug and maintain the tool
+      Can you integrate with Rust Runtimes like tokio?
     </span>
   </a>
   
@@ -2111,66 +2141,143 @@
   
 
 
-<h1 id="design-principles">Design Principles</h1>
-<p>These are some high-level points to consider when making changes to UniFFI (or when wondering why past changes were made in a particular way).</p>
-<h3 id="prioritize-mozillas-short-term-needs">Prioritize Mozilla's short-term needs</h3>
-<p>The initial consumers of this tool are teams working on features for Mozilla's mobile browsers.
-While we try to make the tool generally useful, we'll invest first in things that are the most valuable
-to those teams, which are reflected in the points below.</p>
-<h3 id="safety-first">Safety First</h3>
-<p>The generated bindings need to be safe by default. It should be impossible for foreign-language code
-to trigger undefined behaviour in Rust by calling the public API of the generated bindings, even if it
-is called in egregiously wrong or malicious ways. We will accept reduced performance in the interests
-of ensuring this safety.</p>
-<p>(The meaning of "impossible" and "public API" will of course depend on the target language. For example,
-code in Python might mutate internal attributes of an object that are marked as private with a leading
-underscore, and there's not much we can do to guard against that.)</p>
-<p>Where possible, we use Rust's typesystem to encode safety guarantees. If that's not possible then the
-generated Rust code may use <code>unsafe</code> and assume that the generated foreign-language code will uphold
-safety guarantees at runtime.</p>
-<p><strong>Example:</strong> We insist that all object instances exposed to foreign-language code be <code>Sync</code> and <code>Send</code>,
-so that they're safe to access regardless of the threading model of the calling code. We do not allow
-thread-safety guarantees to be deferred to assumptions about how the code is called.</p>
-<p><strong>Example:</strong> We do not allow returning any borrowed data from function calls, because we can't make
-any guarantees about when or how the foreign-language could access it.</p>
-<h3 id="performance-is-a-feature-but-not-a-deal-breaker">Performance is a feature, but not a deal-breaker</h3>
-<p>Our initial use-cases are not performance-critical, and our team are not low-level Rust experts,
-so we're highly motivated to favour simplicity and maintainability over performance. Given the choice
-we will pick "simple but slow" over "fast but complicated".</p>
-<p>However, we know that performance can degrade through thousands of tiny cuts, so we'll keep iterating
-towards the winning combination of "simple <em>and</em> fast" over time.</p>
-<p><strong>Example:</strong> Initial versions of the tool used opaque integer handles and explicit mutexes to manage
-object references, favouring simplicity (in the "we're confident this works as intended" sense) over
-performance. As we got more experience and confidence with the approach and tool we replaced handles with
-raw <code>Arc</code> pointers, which both simplified the code and removed some runtime overheads.</p>
-<p><strong>Violation:</strong> The tool currently passes structured data over the FFI by serializing it to a byte
-buffer, favouring ease of implementation and understanding over performance. This was fine as a starting
-point! However, we have not done any work to measure the performance impact or iterate towards something
-with lower overhead (such as using <code>repr(C)</code> structs).</p>
-<h3 id="produce-bindings-that-feel-idiomatic-for-the-target-language">Produce bindings that feel idiomatic for the target language</h3>
-<p>The generated bindings should feel idiomatic for their end users, and what feels idiomatic can differ
-between different target languages. Ideally consumers should not even realize that they're using
-bindings to Rust under the hood.</p>
-<p>We'll accept extra complexity inside of UniFFI if it means producing bindings that are nicer for consumers to use.</p>
-<p><strong>Example:</strong> We case-convert names to match the accepted standards of the target language,
-so a method named <code>do_the_thing</code> in Rust might be called <code>doTheThing</code> in its Kotlin bindings.</p>
-<p><strong>Example:</strong> Object references try to integrate with the GC of the target language, so that holding
-a reference to a Rust struct feels like holding an ordinary object instance.</p>
-<p><strong>Violation:</strong> The Kotlin bindings have an explicit <code>destroy</code> method on object instances, because we haven't
-yet found a good way to integrate with the JVM's GC.</p>
-<h3 id="empower-users-to-debug-and-maintain-the-tool">Empower users to debug and maintain the tool</h3>
-<p>To succeed long-term, we can't depend on a dedicated team of "UniFFI experts" for debugging and maintenance.
-The people using the tool need to be empowered to debug, maintain and develop it.</p>
-<p>If you're using UniFFI-generated bindings and something doesn't work quite right, it should be possible
-for you to dig in to the generated foreign-language code, follow it through to the underlying Rust code,
-and work out what's going wrong without being an expert in Rust or UniFFI.</p>
-<p><strong>Example:</strong> We try to include comments in the generated code to help guide users who may be reading
-through it to debug some issue.</p>
-<p><strong>Violation:</strong> We don't have very good "overview" documentation on how each set of foreign-language bindings
-works, so someone trying to debug the Kotlin bindings would need to poke around in the generated code to
-try to build up a mental model of how it's supposed to work.</p>
-<p><strong>Violation:</strong> A lack of structure in our code-generation templates means that it's hard for non-experts
-to find and change the codegen logic for a particular piece of functionality.</p>
+<h1 id="uniffi-async-overview">UniFFI Async Overview</h1>
+<p>This document describes how UniFFI implements async from a high-level.
+Once you've read this, you can also check out the low-level <a href="../udl/async-ffi.md">Async FFI details</a>.</p>
+<h2 id="what-runtime-does-async-code-run-on">What runtime does async code run on?</h2>
+<p>The fundamental issue here is that UniFFI can't rely on a Rust async runtime.
+We don't want to force library authors into a particular runtime.
+Furthermore, we want to allow library authors to not use a runtime at all and instead to integrate with the runtime of the application using the library.</p>
+<p>To accomplish this, UniFFI piggybacks off the runtime from the foreign bindings.
+The generated Rust code schedules work using callbacks provided by the foreign bindings.</p>
+<h2 id="rust-async-functions">Rust Async functions</h2>
+<p>Rust async functions are implemented by wrapping the
+<a href="https://doc.rust-lang.org/std/future/trait.Future.html">Future</a> into a <code>uniffi::RustFuture</code> struct
+and providing scaffolding functions so that the foreign bindings can drive the future to completion.</p>
+<pre class="mermaid"><code>sequenceDiagram
+  participant User as User code
+  participant Foreign as Foreign Language Bindings
+  participant Rust as Rust Scaffolding
+
+  User-&gt;&gt;+Foreign: call async function
+  Foreign-&gt;&gt;+Rust: call scaffolding function
+  Rust--&gt;&gt;-Foreign: return RustFuture handle
+
+  loop until RustFuture is ready
+    Foreign-&gt;&gt;Rust: call RustFuture poll fn
+    Rust-&gt;&gt;Foreign: call future callback
+  end
+
+  Foreign-&gt;&gt;+Rust: call RustFuture complete fn
+  Rust--&gt;&gt;-Foreign: return result
+  Foreign-&gt;&gt;Rust: call RustFuture free fn
+  Foreign--&gt;&gt;-User: return from async function</code></pre>
+<p>For each async function, UniFFI generates 4 scaffolding functions:
+* A scaffolding function that returns a <code>RustFuture</code> handle
+* <code>rust_future_poll</code> to poll the future
+* <code>rust_future_complete</code> to receive the completed result of a future
+* <code>rust_future_free</code> to destroy a future freeing any underlying memory
+* Technically, the function names are more like <code>uniffi_[module_prefix]_rust_future_poll</code>, but this document uses above names make for shorthand.</p>
+<p>The UniFFI generated code for an async function performs these steps:</p>
+<ol>
+<li>Call the Rust scaffolding function, receiving a <code>RustFuture</code> handle</li>
+<li>Call the <code>rust_future_poll</code> function for the future until the future is ready.</li>
+<li>The <code>rust_future_poll</code> function inputs a callback function and an opaque pointer (AKA a <code>void *</code>) to call the callback with.</li>
+<li>If the future is pending, then the generated code registers a waker that will call the callback function with <code>RUST_FUTURE_MAYBE_READY</code>.
+     When the generated foreign code sees this, it calls poll again, starting the loop over.</li>
+<li>If the future is ready, then the callback function is immediately called with <code>RUST_FUTURE_READY</code> and we move to the next step.</li>
+<li>Call <code>rust_future_complete</code>, receiving the return value of the future</li>
+<li>Call <code>rust_future_free</code> (ideally in a <code>finally</code> block)</li>
+<li>Return the result from <code>rust_future_complete</code></li>
+</ol>
+<h3 id="why-not-have-rust_future_poll-return-a-boolean">Why not have <code>rust_future_poll</code> return a boolean?</h3>
+<p>As described above, <code>rust_future_poll</code> inputs a callback and an opaque pointer.
+If the future is ready, then <code>rust_future_poll</code> immediately invokes the callback, passing it the pointer back and <code>RUST_FUTURE_READY</code>
+A more straightforward API would be to return a boolean if the future is ready, why not do that?</p>
+<p>The issue is that it doesn't work well with the way foreign code's lifetime management.
+The opaque pointer is usually either something like a raw <code>Arc</code> pointer that holds data about the async call.
+When the foreign code passes the pointer to <code>rust_future_poll</code>, it temporarily <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html#method.into_raw">leaks a reference</a>.
+Then when callback is called, it <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html#method.from_raw">reconstructs the leaked reference</a>, restoring the refcount.</p>
+<p>If <code>rust_future_poll</code> returned <code>true</code> to indicate that the future is ready, then the foreign code is in an awkward situation.
+It wants to use the async call data that the pointer was referring to, but it just sent a leaked pointer to Rust.
+It would have to hold on to a copy of the raw pointer, use that to restore the reference, and assume the callback is never going to be called.
+This could work, but it makes things much more complicated and could easily lead to memory leaks or use-after-free bugs.</p>
+<h2 id="foreign-async-callback-methods">Foreign async callback methods</h2>
+<p>Async callback/trait interface methods are the way that Rust makes async calls across the FFI.
+These are implemented using a callback, which makes them quite a bit simpler than their counterparts.</p>
+<pre class="mermaid"><code>sequenceDiagram
+  participant User as User code
+  participant Rust as Rust Scaffolding
+  participant Foreign as Foreign Language Bindings
+
+  User-&gt;&gt;+Rust: call async function
+  Rust-&gt;&gt;Foreign: call scaffolding function, pass a oneshot::Sender pointer
+  Rust--&gt;&gt;-User: return oneshot::Receiver
+
+  Foreign-&gt;&gt;Rust: invoke callback, pass back oneshot::Sender pointer
+  Note over Rust: send callback result to the oneshot::Sender</code></pre>
+<p>The UniFFI generated code for an async trait method performs these steps:</p>
+<ul>
+<li>Create a <code>oneshot::Channel</code> (see <a href="https://docs.rs/oneshot/latest/oneshot/">oneshot crate</a> for how these work, although we don't currently depend on that crate).</li>
+<li>Leak the <code>oneshot::Sender</code> into a raw pointer</li>
+<li>Defines an <code>extern "C"</code> function that will:<ul>
+<li>input that raw pointer plus a return value </li>
+<li>lift the return value</li>
+<li>send the return value into the <code>oneshot::Sender</code>.</li>
+</ul>
+</li>
+<li>Call the callback method, passing a pointer to the function from the last step and the <code>oneshot::Sender</code> raw pointer.</li>
+<li>Return the receiver half of the <code>oneshot::Channel</code>.</li>
+</ul>
+<p>On the foreign side, the generated code simply runs the async function as normal, and call the callback once it completes.</p>
+<h2 id="can-you-really-just-piggyback-on-the-foreign-async-runtime">Can you really just piggyback on the foreign async runtime?</h2>
+<p>It's somewhat surprising, but yes.
+All the async code can run in the foreign runtime and Rust never has to start its own eventloop thread.
+In order to implement this, the Rust async functions must only await functions that fall into one of these categories:</p>
+<ul>
+<li>UniFFI async callback/trait methods
+  This often means defining traits for things like HTTP clients so that Rust can leverage async HTTP libraries from the foreign side.</li>
+<li>Async functions from crates like <a href="https://docs.rs/oneshot/latest/oneshot/">oneshot</a> and <a href="https://docs.rs/async-mutex/latest/async_mutex/">async_mutex</a> that work with any runtime.</li>
+</ul>
+<p>Beware that some Rust crates will present async APIs that silently start up runtimes in the background.
+For example, <a href="https://docs.rs/reqwest/latest/reqwest/">reqwest</a> will start a tokio runtime.</p>
+<p>The <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-api-client">Async API client example</a> shows how this could work in the real-world.
+The Rust library depends an async HTTP callback interface to do the low-level fetching, then deserializes/validates the HTTP response.
+After that, it returns a high-level API response struct to the application.
+Furthermore, let's stipulate that the deserialization/validation is slow enough to be considered blocking.
+To manage this, the Rust library also depends on a (synchronous) callback interface that runs a task in a worker queue where blocking is allowed.
+Here's how the async API call could be handled:</p>
+<pre class="mermaid"><code>sequenceDiagram
+  participant AsyncRust as Async Rust code
+  participant SyncRust as Sync Rust code
+  participant WorkerQueue as Work Queue Callback Interface
+  participant Http as Http Callback Interface
+  participant Foreign as Foreign language code
+
+  Foreign-&gt;&gt;+AsyncRust: Start async API call
+  AsyncRust-&gt;&gt;+Http: await method of Http callback interface
+  Http--&gt;&gt;-AsyncRust: Return HTTP response
+  Note over AsyncRust: Create oneshot channel&lt;br/&gt;and deseralization task
+  AsyncRust--&gt;&gt;WorkerQueue: Schedule task&lt;br /&gt;(sends the HTTP response for further processing)
+  Note over AsyncRust: await oneshot channel
+  WorkerQueue-&gt;&gt;SyncRust: Run task (in background thread)
+  SyncRust--&gt;&gt;AsyncRust: Send deserialized response via oneshot channel
+  AsyncRust--&gt;&gt;-Foreign: Return API result</code></pre>
+<ul>
+<li>Action in this sequence diagram represents calling an async Rust function or async callback interface method, see the above diagrams for details.</li>
+<li>The dotted lines show how the data is passed around during the async call.</li>
+<li>The async Rust code runs in a <a href="https://doc.rust-lang.org/std/future/trait.Future.html#tymethod.poll">Future::poll</a> method, inside the foreign event loop.  This code never blocks.</li>
+<li>The sync Rust code runs inside a worker queue where it's okay to block.</li>
+<li>This all combines together to create an async Rust call that's driven by the foreign event loop.</li>
+</ul>
+<h2 id="can-you-integrate-with-rust-runtimes-like-tokio">Can you integrate with Rust Runtimes like <code>tokio</code>?</h2>
+<p>Yes.  This will vary for each runtime, but the typical procedure is:</p>
+<ul>
+<li>Keep a reference to the runtime</li>
+<li>Use a bridge function like <a href="https://docs.rs/tokio/latest/tokio/runtime/struct.Runtime.html#method.spawn">tokio::Runtime::spawn</a> to await a future that runs in that runtime.</li>
+</ul>
+<p>There's also the <code>uniffi::async_runtime</code> macro attribute to help with this, but it's not clear if we
+want to continue to support it (<a href="https://github.com/mozilla/uniffi-rs/issues/1726">#1726</a>).</p>
 
 
 

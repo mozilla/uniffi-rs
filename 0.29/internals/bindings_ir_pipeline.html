@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="../wasm/configuration.html">
-      
-      
-        <link rel="next" href="crates.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>Design Principles - The UniFFI user guide</title>
+        <title>Bindings IR Pipeline - The UniFFI user guide</title>
       
     
     
@@ -62,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#design-principles" class="md-skip">
+        <a href="#bindings-ir-pipeline" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +98,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Design Principles
+              Bindings IR Pipeline
             
           </span>
         </div>
@@ -1708,20 +1704,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1737,7 +1731,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1748,32 +1742,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Design Principles
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="design_principles.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="design_principles.html" class="md-nav__link">
         
   
   
@@ -1784,71 +1756,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prioritize-mozillas-short-term-needs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prioritize Mozilla's short-term needs
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#safety-first" class="md-nav__link">
-    <span class="md-ellipsis">
-      Safety First
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-is-a-feature-but-not-a-deal-breaker" class="md-nav__link">
-    <span class="md-ellipsis">
-      Performance is a feature, but not a deal-breaker
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#produce-bindings-that-feel-idiomatic-for-the-target-language" class="md-nav__link">
-    <span class="md-ellipsis">
-      Produce bindings that feel idiomatic for the target language
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#empower-users-to-debug-and-maintain-the-tool" class="md-nav__link">
-    <span class="md-ellipsis">
-      Empower users to debug and maintain the tool
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2048,45 +1955,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prioritize-mozillas-short-term-needs" class="md-nav__link">
+  <a href="#nodes" class="md-nav__link">
     <span class="md-ellipsis">
-      Prioritize Mozilla's short-term needs
+      Nodes
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#safety-first" class="md-nav__link">
+  <a href="#node-conversions" class="md-nav__link">
     <span class="md-ellipsis">
-      Safety First
+      Node conversions
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#performance-is-a-feature-but-not-a-deal-breaker" class="md-nav__link">
+  <a href="#module-structure" class="md-nav__link">
     <span class="md-ellipsis">
-      Performance is a feature, but not a deal-breaker
+      Module structure
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#produce-bindings-that-feel-idiomatic-for-the-target-language" class="md-nav__link">
+  <a href="#defining-irs" class="md-nav__link">
     <span class="md-ellipsis">
-      Produce bindings that feel idiomatic for the target language
+      Defining IRs
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#empower-users-to-debug-and-maintain-the-tool" class="md-nav__link">
+  <a href="#constructing-nodes-with-partial-field-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Empower users to debug and maintain the tool
+      Constructing nodes with partial field data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asref" class="md-nav__link">
+    <span class="md-ellipsis">
+      AsRef
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peeking-behind-the-curtains-with-the-pipeline-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peeking behind the curtains with the pipeline CLI
     </span>
   </a>
   
@@ -2111,66 +2036,194 @@
   
 
 
-<h1 id="design-principles">Design Principles</h1>
-<p>These are some high-level points to consider when making changes to UniFFI (or when wondering why past changes were made in a particular way).</p>
-<h3 id="prioritize-mozillas-short-term-needs">Prioritize Mozilla's short-term needs</h3>
-<p>The initial consumers of this tool are teams working on features for Mozilla's mobile browsers.
-While we try to make the tool generally useful, we'll invest first in things that are the most valuable
-to those teams, which are reflected in the points below.</p>
-<h3 id="safety-first">Safety First</h3>
-<p>The generated bindings need to be safe by default. It should be impossible for foreign-language code
-to trigger undefined behaviour in Rust by calling the public API of the generated bindings, even if it
-is called in egregiously wrong or malicious ways. We will accept reduced performance in the interests
-of ensuring this safety.</p>
-<p>(The meaning of "impossible" and "public API" will of course depend on the target language. For example,
-code in Python might mutate internal attributes of an object that are marked as private with a leading
-underscore, and there's not much we can do to guard against that.)</p>
-<p>Where possible, we use Rust's typesystem to encode safety guarantees. If that's not possible then the
-generated Rust code may use <code>unsafe</code> and assume that the generated foreign-language code will uphold
-safety guarantees at runtime.</p>
-<p><strong>Example:</strong> We insist that all object instances exposed to foreign-language code be <code>Sync</code> and <code>Send</code>,
-so that they're safe to access regardless of the threading model of the calling code. We do not allow
-thread-safety guarantees to be deferred to assumptions about how the code is called.</p>
-<p><strong>Example:</strong> We do not allow returning any borrowed data from function calls, because we can't make
-any guarantees about when or how the foreign-language could access it.</p>
-<h3 id="performance-is-a-feature-but-not-a-deal-breaker">Performance is a feature, but not a deal-breaker</h3>
-<p>Our initial use-cases are not performance-critical, and our team are not low-level Rust experts,
-so we're highly motivated to favour simplicity and maintainability over performance. Given the choice
-we will pick "simple but slow" over "fast but complicated".</p>
-<p>However, we know that performance can degrade through thousands of tiny cuts, so we'll keep iterating
-towards the winning combination of "simple <em>and</em> fast" over time.</p>
-<p><strong>Example:</strong> Initial versions of the tool used opaque integer handles and explicit mutexes to manage
-object references, favouring simplicity (in the "we're confident this works as intended" sense) over
-performance. As we got more experience and confidence with the approach and tool we replaced handles with
-raw <code>Arc</code> pointers, which both simplified the code and removed some runtime overheads.</p>
-<p><strong>Violation:</strong> The tool currently passes structured data over the FFI by serializing it to a byte
-buffer, favouring ease of implementation and understanding over performance. This was fine as a starting
-point! However, we have not done any work to measure the performance impact or iterate towards something
-with lower overhead (such as using <code>repr(C)</code> structs).</p>
-<h3 id="produce-bindings-that-feel-idiomatic-for-the-target-language">Produce bindings that feel idiomatic for the target language</h3>
-<p>The generated bindings should feel idiomatic for their end users, and what feels idiomatic can differ
-between different target languages. Ideally consumers should not even realize that they're using
-bindings to Rust under the hood.</p>
-<p>We'll accept extra complexity inside of UniFFI if it means producing bindings that are nicer for consumers to use.</p>
-<p><strong>Example:</strong> We case-convert names to match the accepted standards of the target language,
-so a method named <code>do_the_thing</code> in Rust might be called <code>doTheThing</code> in its Kotlin bindings.</p>
-<p><strong>Example:</strong> Object references try to integrate with the GC of the target language, so that holding
-a reference to a Rust struct feels like holding an ordinary object instance.</p>
-<p><strong>Violation:</strong> The Kotlin bindings have an explicit <code>destroy</code> method on object instances, because we haven't
-yet found a good way to integrate with the JVM's GC.</p>
-<h3 id="empower-users-to-debug-and-maintain-the-tool">Empower users to debug and maintain the tool</h3>
-<p>To succeed long-term, we can't depend on a dedicated team of "UniFFI experts" for debugging and maintenance.
-The people using the tool need to be empowered to debug, maintain and develop it.</p>
-<p>If you're using UniFFI-generated bindings and something doesn't work quite right, it should be possible
-for you to dig in to the generated foreign-language code, follow it through to the underlying Rust code,
-and work out what's going wrong without being an expert in Rust or UniFFI.</p>
-<p><strong>Example:</strong> We try to include comments in the generated code to help guide users who may be reading
-through it to debug some issue.</p>
-<p><strong>Violation:</strong> We don't have very good "overview" documentation on how each set of foreign-language bindings
-works, so someone trying to debug the Kotlin bindings would need to poke around in the generated code to
-try to build up a mental model of how it's supposed to work.</p>
-<p><strong>Violation:</strong> A lack of structure in our code-generation templates means that it's hard for non-experts
-to find and change the codegen logic for a particular piece of functionality.</p>
+<h1 id="bindings-ir-pipeline">Bindings IR Pipeline</h1>
+<p><strong>Note:</strong> the Bindings IR is currently an experiment.
+It's checked in so that we can use it for the gecko-js external binding generator.
+Our current recommendation for other external bindings authors is to avoid using it for now since we haven't fully committed to this new system and expect it to change.</p>
+<p>The Bindings IR pipeline is used to transform different <a href="bindings_ir.html">intermediate representations of the generated bindings</a>.</p>
+<ul>
+<li>The foundational code lives in the <code>uniffi_pipeline</code> crate.
+  This defines things like the <code>Node</code> trait.</li>
+<li>The macro code lives in the <code>uniffi_internal_macros</code> crate.
+  This defines things like the <code>Node</code> derive macro.</li>
+<li><code>uniffi_bindgen</code> defines the general pipeline.
+  This converts <code>uniffi_meta</code> metadata to the initial IR then converts that to the general IR.</li>
+<li>Finally, each language defines their own pipeline, which extends the general pipeline and outputs a language-specific IR.</li>
+</ul>
+<h2 id="nodes">Nodes</h2>
+<p>Types inside an IR are called "nodes" and they must derive a <code>Node</code> trait impl.
+The top-level node is always named <code>Root</code>.
+When this document talks about converting between two IRs, this means converting between the root nodes of those IRs.</p>
+<p><code>Node</code> trait provides functionality to:
+  * Traverse the node tree.  <code>Node::visit()</code> and <code>Node::visit_mut()</code> allows you to visit all
+    descendants with a given type.
+  * Convert between any two nodes using <code>Node::try_from_node</code>.  This conversion is described in the
+    next section.</p>
+<h2 id="node-conversions">Node conversions</h2>
+<p><code>Node::try_from_node</code> attempts to convert a node from one IR to the corresponding node from another IR.
+For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node</code> using the following rules:</p>
+<ul>
+<li>Any fields in <code>into_ir::Node</code>, but not <code>from_ir::Node</code> are added using <code>Default::default</code>, which the <code>Node</code> derive macro also derives.</li>
+<li>Any fields in <code>from_ir::Node</code>, but not <code>into_ir::Node</code> are ignored</li>
+<li>Any fields in both are recursively converted using <code>Node::try_from_node</code>.</li>
+<li><code>try_from_node</code> is automatically derived using the <code>Node</code> derive macro.
+  The conversion can be customized using macro attributes.</li>
+</ul>
+<p>Renamed node types, variants, and fields can be handled by adding the <code>#[node(from([name]))]</code> attribute:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Node</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="sd">/// `from_ir::Node::prev_name` fields become `into_ir::Node::new_name` fields.</span>
+<span class="w">    </span><span class="cp">#[node(from(prev_name))]</span>
+<span class="w">    </span><span class="n">new_name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Also, nodes can be "wrapped" in the new IR using the <code>#[node(wraps([type]))]</code> attribute:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Node</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="sd">/// `into_ir::Node` wraps `from_ir::WrappedNode`.</span>
+<span class="w">    </span><span class="sd">/// All `from_ir::WrappedNode` values will be replaced with `Node { wrapped: wrapped_node }` values.</span>
+<span class="w">    </span><span class="sd">/// Any other fields will be initialized to their default values.</span>
+<span class="w">    </span><span class="sd">///</span>
+<span class="w">    </span><span class="sd">/// This is mostly used as a way to add fields to enum types.</span>
+<span class="w">    </span><span class="sd">/// Wrap the enum with a struct, then add fields to to that struct.</span>
+<span class="w">    </span><span class="sd">/// For example, `TypeNode` wraps the `Type` enum from `uniffi_meta`.</span>
+<span class="w">    </span><span class="cp">#[node(wraps)]</span>
+<span class="w">    </span><span class="n">wrapped</span><span class="p">:</span><span class="w"> </span><span class="nc">WrappedNode</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="module-structure">Module structure</h2>
+<p>Each IRs will typically have a module dedicated to them with the following structure:
+* <code>mod.rs</code> -- Top-level module.  This is where the pipeline for the IR is defined.
+* <code>nodes.rs</code> -- Node definitions
+* <em>other submodules</em> -- Define pipeline pass functions.  These are named <code>pass()</code> by convention.</p>
+<h2 id="defining-irs">Defining IRs</h2>
+<ul>
+<li>Start with an existing IR, let's assume it lives in the <code>from_ir</code> module.</li>
+<li>Define a new module for your IR, let's call it <code>into_ir</code></li>
+<li>Copy the <code>from_ir/nodes.rs</code> to <code>into_ir/nodes.rs</code></li>
+<li>Add new fields to the structs in <code>into_ir::nodes</code></li>
+<li>Define pipeline passes to populate the new fields, using the existing fields.  For example, <code>into_ir/mod.rs</code> might define a pipeline like this:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// The output type is a pipeline that converts from `initial::Root` to the `Root` node from this IR.</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">():</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Start with `from_ir&#39;s` pipeline.  This converts `initial::root` to `from_ir::Root`.</span>
+<span class="w">    </span><span class="n">from_ir</span><span class="p">::</span><span class="n">pipeline</span><span class="p">()</span>
+<span class="w">        </span><span class="c1">// Convert to `into_ir::Root`.</span>
+<span class="w">        </span><span class="c1">// This will use the logic from the Node conversions section above.</span>
+<span class="w">        </span><span class="p">.</span><span class="n">convert_ir_pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="o">&gt;</span><span class="p">()</span>
+<span class="w">        </span><span class="c1">// Add passes to populate the new fields, mutate existing fields, etc.</span>
+<span class="w">        </span><span class="c1">// Each pass</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">foo</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">bar</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">baz</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li>Define the pipeline passes.
+  These input a node type in the IR and mutate all instances of that node.
+  <code>visit()</code> and <code>visit_mut()</code> are extremely helpful here.
+  For example, the general IR pass that adds FFI types to types looks like this:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">// Visiting all `Module` nodes</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pass</span><span class="p">(</span><span class="n">module</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Module</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Save a copy of the module name, then visit all `TypeNode` nodes.</span>
+<span class="w">    </span><span class="c1">// Note: TypeNode wraps the `Type` enum from the initial IR</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">module_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">module</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">    </span><span class="c1">// Visit all `TypeNode` instances that are descendants of `Module`.</span>
+<span class="w">    </span><span class="n">module</span><span class="p">.</span><span class="n">visit_mut</span><span class="p">(</span><span class="o">|</span><span class="n">node</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">TypeNode</span><span class="o">|</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Derive the FfiType from the type and module name</span>
+<span class="w">        </span><span class="n">node</span><span class="p">.</span><span class="n">ffi_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">generate_ffi_type</span><span class="p">(</span><span class="o">&amp;</span><span class="n">node</span><span class="p">.</span><span class="n">ty</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">module_name</span><span class="p">);</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>See <code>uniffi_bindgen::pipeline::general</code> for examples.</p>
+<h2 id="constructing-nodes-with-partial-field-data">Constructing nodes with partial field data</h2>
+<p>Passes that construct new nodes often only want to specify partial field data and let a later pass populate the rest of the fields.
+Use the <code>Default::default()</code> to handle this case, which the <code>Node</code> derive also implements.
+Here's how this works in the <code>callables</code> pass:</p>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pass</span><span class="p">(</span><span class="n">root</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Root</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">root</span><span class="p">.</span><span class="n">visit_mut</span><span class="p">(</span><span class="o">|</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Function</span><span class="o">|</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">func</span><span class="p">.</span><span class="n">callable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Callable</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// Most of the fields are simply copied from `Function`</span>
+<span class="w">            </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">is_async</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">is_async</span><span class="p">,</span>
+<span class="w">            </span><span class="n">kind</span><span class="p">:</span><span class="w"> </span><span class="nc">CallableKind</span><span class="p">::</span><span class="n">Function</span><span class="p">,</span>
+<span class="w">            </span><span class="n">arguments</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">inputs</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">return_type</span><span class="p">:</span><span class="w"> </span><span class="nc">ReturnType</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">return_type</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">ty</span><span class="o">|</span><span class="w"> </span><span class="n">TypeNode</span><span class="o">!</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="n">throws_type</span><span class="p">:</span><span class="w"> </span><span class="nc">ThrowsType</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">throws</span><span class="p">.</span><span class="n">clone</span><span class="p">().</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">ty</span><span class="o">|</span><span class="w"> </span><span class="n">TypeNode</span><span class="o">!</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="n">checksum</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">checksum</span><span class="p">,</span>
+<span class="w">            </span><span class="c1">// However, `async_data` and `ffi_func` are derived in a later pass.</span>
+<span class="w">            </span><span class="c1">// Use `default()` to create placeholder values for now</span>
+<span class="w">            </span><span class="o">..</span><span class="n">Callable</span><span class="p">::</span><span class="n">default</span><span class="p">()</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">    </span><span class="c1">// ... repeat for methods and constructors</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="asref">AsRef</h2>
+<p>The <code>uniffi_pipeline</code> crate also defines an <code>AsRef</code> derive macro to derive <a href="https://doc.rust-lang.org/std/convert/trait.AsRef.html"><code>std::convert::AsRef</code></a>.
+This is somewhat tangential to the IR pipeline, but it's often very helpful for IRs.
+For example:</p>
+<ul>
+<li>Many nodes contain a <code>TypeNode</code> field.</li>
+<li>Language IRs will typically add the <code>TypeNode::ffi_converter</code> field which we want to use in the template code.</li>
+<li>By implementing <code>AsRef&lt;TypeNode&gt;</code>, we can implement a filter that works for all nodes that contain a <code>TypeNode</code> field.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">mod</span><span class="w"> </span><span class="nn">filters</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">lift_fn</span><span class="p">(</span><span class="n">node</span><span class="p">:</span><span class="w"> </span><span class="nb">AsRef</span><span class="o">&lt;</span><span class="n">TypeNode</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi_converter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">node</span><span class="p">.</span><span class="n">as_ref</span><span class="p">().</span><span class="n">ffi_converter</span><span class="p">;</span>
+<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">&quot;{ffi_converter}.lift&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>AsRef</code> derive macro can be used to easily define these AsRef trait impls:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, AsRef)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Argument</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// This `#[as_ref]` attribute generates an `AsRef&lt;TypeNode&gt;` impl that returns `&amp;arg.ty`</span>
+<span class="w">    </span><span class="cp">#[as_ref]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">TypeNode</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1">// You can also use the AsRef macro can implement `AsRef` for the type itself.</span>
+<span class="c1">// This impl invocation generates code for `impl AsRef&lt;TypeNode&gt; for TypeNode`.</span>
+<span class="cp">#[derive(Node, AsRef)]</span>
+<span class="cp">#[as_ref]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TypeNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">,</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ffi_converter</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="peeking-behind-the-curtains-with-the-pipeline-cli">Peeking behind the curtains with the <code>pipeline</code> CLI</h2>
+<p>Use the <code>pipeline</code> subcommand from any UniFFI CLI to inspect IR data at various stages of the pipeline.</p>
+<ul>
+<li>Build a UniFFI crate that you'd like to inspect, for example <code>cargo build -p uniffi-example-arithmetic</code></li>
+<li>Run the <a href="../tutorial/foreign_language_bindings.html">uniffi-bindgen CLI</a>, with these arguments <code>pipeline --library path/to/library.so_a_or_dll [language]</code></li>
+<li>For example, in the UniFFI repo, <code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python</code></li>
+</ul>
+<p>This will print out:</p>
+<ul>
+<li>The initial IR</li>
+<li>The diff after each pass</li>
+<li>The final IR</li>
+</ul>
+<p>This is a lot of data.  Use CLI flags to reduce it to a reasonable amount:</p>
+<ul>
+<li><code>-p</code>, <code>--pass</code> only show a single pass.</li>
+<li>Use <code>-p final</code> to only show the final pass in the process, which can be usefull when you're adding pass functions and want to see their effects.</li>
+<li><code>-t</code>, <code>--type</code> to only show one node type (e.g. <code>-t Record</code> or <code>-t Interface</code>).</li>
+<li><code>-n</code>, <code>--name</code> to only show with nodes with a specific name</li>
+</ul>
+<p>Alternatively, if you want to see the full IR for each pass, you can use <code>--no-diff</code> to print it out.
+Piping to a pager like <code>less</code> is highly recommended in this case.</p>
+<p>You can test this out yourself by running the following command to follow the <code>add</code> function as it moves throw the IR pipeline:</p>
+<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add</code> </p>
 
 
 
