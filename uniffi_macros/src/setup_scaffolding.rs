@@ -108,16 +108,16 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
 
         // Code to re-export the UniFFI scaffolding functions.
         //
-        // Rust won't always re-export the functions from dependencies
-        // ([rust-lang#50007](https://github.com/rust-lang/rust/issues/50007))
+        // Some build environments won't always re-export the functions from dependencies.
+        // Originally attributed to [rust-lang#50007](https://github.com/rust-lang/rust/issues/50007),
+        // it's still needed in mozilla-central with that resolved.
         //
         // A workaround for this is to have the dependent crate reference a function from its dependency in
-        // an extern "C" function. This is clearly hacky and brittle, but at least we have some unittests
-        // that check if this works (fixtures/reexport-scaffolding-macro).
+        // an extern "C" function.
         //
-        // The main way we use this macro is for that contain multiple UniFFI components (libxul,
-        // megazord).  The combined library has a cargo dependency for each component and calls
-        // uniffi_reexport_scaffolding!() for each one.
+        // The main way we use this macro is for libraries which contain multiple UniFFI components (libxul,
+        // megazord).  This library has a cargo dependency for each component and calls
+        // uniffi_reexport_scaffolding!() in each one.
 
         #[allow(missing_docs)]
         #[doc(hidden)]
