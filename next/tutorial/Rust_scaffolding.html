@@ -2110,15 +2110,13 @@ All you need to do is add this to the top of <code>lib.rs</code></p>
 <h3 id="libraries-that-depend-on-uniffi-components">Libraries that depend on UniFFI components</h3>
 <p>Suppose you want to create a shared library that includes one or more
 components using UniFFI. The typical way to achieve this is to create a new
-crate that depends on the component crates.  However, this can run into
-<a href="https://github.com/rust-lang/rust/issues/50007">rust-lang#50007</a>.  Under
-certain circumstances, the scaffolding functions that the component crates
-export do not get re-exported by the dependent crate.</p>
-<p>Use the <code>uniffi_reexport_scaffolding!</code> macro to work around this issue.  If your
-library depends on <code>foo_component</code>, then add
-<code>foo_component::uniffi_reexport_scaffolding!();</code> to your <code>lib.rs</code> file and
-UniFFI will add workaround code that forces the functions to be re-exported.</p>
-<p>Each scaffolding function contains a hash that's derived from the UDL file.
+crate that depends on the component crates.  However, this can run into issues
+where public symbols from the dependent crates aren't re-exported, resulting
+in these symbols not being available at runtime.</p>
+<p>If you encounter this, you can use the <code>uniffi_reexport_scaffolding!()</code> macro as a work around.
+For example, <code>foo_component::uniffi_reexport_scaffolding!();</code> in your library's <code>lib.rs</code> will have
+UniFFI generate workaround code that forces <code>foo_component</code>s functions to be exported from the library.</p>
+<p>Each scaffolding function contains a hash that's derived from the namespace.
 This avoids name collisions when combining multiple UniFFI components into
 one library.</p>
 
