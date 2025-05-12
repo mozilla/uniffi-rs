@@ -1,11 +1,7 @@
 
 ## What?
 
-We're interested in building re-useable components for sync- and storage-related browser
-functionality - things like [storing and syncing passwords](https://github.com/mozilla/application-services/tree/main/components/logins),
-[working with bookmarks](https://github.com/mozilla/application-services/tree/main/components/places) and
-[signing in to your Firefox Account](https://github.com/mozilla/application-services/tree/main/components/fxa-client).
-
+We're interested in building re-useable components for our browsers.
 We want to write the code for these components once, in Rust. We want to easily re-use these components from
 all the different languages and on all the different platforms for which we build browsers, which currently
 includes JavaScript for PCs, Kotlin for Android, and Swift for iOS.
