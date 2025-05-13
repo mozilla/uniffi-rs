@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! TypeNode::is_used_as_error field
+//! Set the TypeNode::is_used_as_error field
 //!
 //! Bindings often treat error types differently, for example by adding `Exception` to their names.
 
@@ -23,6 +23,16 @@ pub fn pass(module: &mut Module) -> Result<()> {
         }
         Ok(())
     })?;
+    // Enums with `EnumShape::Error` are always considered errors, even if they're not directly
+    // used as errors in the interface.  See the `FlatInner` error from the `error-types` fixture
+    // for an example.  It's not totally clear that this is correct, but this is how things have
+    // historically worked.
+    module.visit(|en: &Enum| {
+        if matches!(en.shape, EnumShape::Error { .. }) {
+            used_as_error.insert(en.name.clone());
+        }
+    });
+
     module.visit_mut(|type_node: &mut TypeNode| {
         if let Some(name) = type_node.ty.name() {
             type_node.is_used_as_error = used_as_error.contains(name);

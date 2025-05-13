@@ -65,6 +65,28 @@ pub struct Node {
 }
 ```
 
+### Field Conversion order
+
+Fields are converted in declaration order.
+If a node contains 2 fields that can come from a single source field, the first one declared will "win".
+
+```rust
+#[derive(Node)]
+pub struct SourceNode {
+    foo: Option<String>
+}
+
+#[derive(Node)]
+pub struct DestNode {
+    /// This field will be set to `SourceNode::foo`
+    #[node(from(foo))]
+    maybe_foo: Option<String>
+    /// This field will be set to an empty string
+    /// A pipeline pass can then populate this field using `maybe_foo`
+    foo: String,
+}
+```
+
 ## Module structure
 
 Each IRs will typically have a module dedicated to them with the following structure:

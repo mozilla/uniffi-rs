@@ -4,7 +4,7 @@
 
 use std::{any::Any, fmt, hash::Hash};
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use indexmap::{IndexMap, IndexSet};
 
 use super::Value;
@@ -107,6 +107,32 @@ pub trait Node: fmt::Debug + Any {
         Self: Sized,
     {
         (self as &mut dyn Node).try_visit_descendents_recurse_mut(&mut visitor)
+    }
+
+    /// Does this node has any descendant where the closure returns `true`?
+    fn has_descendant<T: Node>(&self, mut matcher: impl FnMut(&T) -> bool) -> bool
+    where
+        Self: Sized,
+    {
+        self.try_visit(|node: &T| {
+            if matcher(node) {
+                // `matcher` returned true, so we want to short-circuit the `try_visit`.  To do
+                // that, return an error, then check the error after `try_visit` completes.  It's
+                // weird, but it works
+                bail!("");
+            } else {
+                Ok(())
+            }
+        })
+        .is_err()
+    }
+
+    /// Does this node have any descendant of a given type?
+    fn has_descendant_with_type<T: Node>(&self) -> bool
+    where
+        Self: Sized,
+    {
+        self.has_descendant(|_: &T| true)
     }
 
     /// Take the current value from `self` leaving behind an empty value
