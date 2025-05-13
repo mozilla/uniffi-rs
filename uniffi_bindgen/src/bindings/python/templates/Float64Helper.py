@@ -1,4 +1,4 @@
-class _UniffiConverterDouble(_UniffiConverterPrimitiveFloat):
+class {{ type_node.ffi_converter_name }}(_UniffiConverterPrimitiveFloat):
     @staticmethod
     def read(buf):
         return buf.read_double()

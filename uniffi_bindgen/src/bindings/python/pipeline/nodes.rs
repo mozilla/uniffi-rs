@@ -2,8 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use askama::Template;
+use heck::ToSnakeCase;
 use indexmap::IndexMap;
-use uniffi_pipeline::Node;
+use serde::Deserialize;
+
+use crate::bindings::python::filters;
+use uniffi_pipeline::{AsRef, Node};
 
 /// Initial IR, this stores the metadata and other data
 #[derive(Debug, Clone, Node)]
@@ -13,19 +18,18 @@ pub struct Root {
     pub modules: IndexMap<String, Module>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Template)]
+#[template(syntax = "py", escape = "none", path = "Module.py")]
 pub struct Module {
     pub name: String,
     pub crate_name: String,
-    /// contents of the `uniffi.toml` file for this module, if present
     pub config_toml: Option<String>,
+    pub config: PythonConfig,
     pub docstring: Option<String>,
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
     pub ffi_definitions: Vec<FfiDefinition>,
-    /// Checksum functions
     pub checksums: Vec<Checksum>,
-    // FFI functions names for this module
     pub ffi_rustbuffer_alloc: RustFfiFunctionName,
     pub ffi_rustbuffer_from_bytes: RustFfiFunctionName,
     pub ffi_rustbuffer_free: RustFfiFunctionName,
@@ -33,14 +37,38 @@ pub struct Module {
     pub ffi_uniffi_contract_version: RustFfiFunctionName,
     // Correct contract version value
     pub correct_contract_version: String,
-    // TypeNode for String.  Strings are used in error handling, this ensures that the FFI
-    // converters for them are always defined and easy to lookup.
     pub string_type_node: TypeNode,
+    pub cdylib_name: String,
+    pub has_async_fns: bool,
+    pub has_callback_interface: bool,
+    pub has_async_callback_method: bool,
+    pub imports: Vec<String>,
+    pub exported_names: Vec<String>,
+}
+
+// Config options to customize the generated python.
+#[derive(Debug, Clone, Deserialize, Node)]
+pub struct PythonConfig {
+    pub(super) cdylib_name: Option<String>,
+    #[serde(default)]
+    pub custom_types: IndexMap<String, CustomTypeConfig>,
+    #[serde(default)]
+    pub external_packages: IndexMap<String, String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Node)]
+#[serde(default)]
+pub struct CustomTypeConfig {
+    pub imports: Option<Vec<String>>,
+    pub type_name: Option<String>, // b/w compat alias for lift
+    pub into_custom: String,       // b/w compat alias for lift
+    pub lift: String,
+    pub from_custom: String, // b/w compat alias for lower
+    pub lower: String,
 }
 
 #[derive(Debug, Clone, Node)]
 pub struct Function {
-    pub name: String,
     pub callable: Callable,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -69,7 +97,6 @@ pub enum TypeDefinition {
 
 #[derive(Debug, Clone, Node)]
 pub struct Constructor {
-    pub name: String,
     pub callable: Callable,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -80,7 +107,6 @@ pub struct Constructor {
 
 #[derive(Debug, Clone, Node)]
 pub struct Method {
-    pub name: String,
     pub callable: Callable,
     pub is_async: bool,
     pub inputs: Vec<Argument>,
@@ -125,6 +151,7 @@ pub enum CallableKind {
 #[derive(Debug, Clone, Node)]
 pub struct ReturnType {
     pub ty: Option<TypeNode>,
+    pub type_name: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -144,9 +171,10 @@ pub struct AsyncData {
     pub ffi_foreign_future_result: FfiStructName,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct Argument {
     pub name: String,
+    #[as_ref]
     pub ty: TypeNode,
     pub optional: bool,
     pub default: Option<LiteralNode>,
@@ -154,8 +182,9 @@ pub struct Argument {
 
 #[derive(Debug, Clone, Node)]
 pub struct LiteralNode {
-    #[node(wraps)]
     pub lit: Literal,
+    /// The literal rendered as a Python string
+    pub py_lit: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -188,12 +217,13 @@ pub enum Radix {
     Hexadecimal = 16,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct Record {
     pub name: String,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
@@ -204,9 +234,10 @@ pub enum FieldsKind {
     Unnamed,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct Field {
     pub name: String,
+    #[as_ref]
     pub ty: TypeNode,
     pub default: Option<LiteralNode>,
     pub docstring: Option<String>,
@@ -218,61 +249,65 @@ pub enum EnumShape {
     Error { flat: bool },
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct Enum {
     pub name: String,
     /// Is this a "flat" enum -- one with no associated data
     pub is_flat: bool,
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
-    /// Enum discriminant type from the metadata.  This is the value specified in the source code.
-    #[node(from(discr_type))]
     pub meta_discr_type: Option<TypeNode>,
-    /// Enum discriminant type to use in generated code.  If the source code doesn't specify a
-    /// type, this will be a sized integer type that's large enough to store all the discriminant
-    /// values. We try to mimic what `rustc` does, but there's no guarantee that this will be
-    /// exactly the same type.
     pub discr_type: TypeNode,
     pub docstring: Option<String>,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
 #[derive(Debug, Clone, Node)]
 pub struct Variant {
     pub name: String,
-    /// Discriminant from the metadata.  This is the value specified in the source code.
-    #[node(from(discr))]
     pub meta_discr: Option<LiteralNode>,
-    /// Actual discriminant value.  When `meta_discr=None` this is determined using the Rust's rules
-    /// for implicit discriminants:
-    /// <https://doc.rust-lang.org/reference/items/enumerations.html#implicit-discriminants>
     pub discr: LiteralNode,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct Interface {
     pub name: String,
+    pub base_classes: Vec<String>,
+    pub protocol: Protocol,
     pub docstring: Option<String>,
     pub constructors: Vec<Constructor>,
+    pub has_primary_constructor: bool,
     pub methods: Vec<Method>,
     pub uniffi_traits: Vec<UniffiTrait>,
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
+    #[as_ref]
     pub self_type: TypeNode,
     pub vtable: Option<VTable>,
     pub ffi_func_clone: RustFfiFunctionName,
     pub ffi_func_free: RustFfiFunctionName,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
+pub struct Protocol {
+    pub name: String,
+    pub base_classes: Vec<String>,
+    pub docstring: Option<String>,
+    pub methods: Vec<Method>,
+}
+
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct CallbackInterface {
     pub name: String,
     pub docstring: Option<String>,
+    pub protocol: Protocol,
     pub vtable: VTable,
     pub methods: Vec<Method>,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
@@ -297,6 +332,7 @@ pub struct VTableMethod {
     pub callable: Callable,
     /// FfiType::Function type that corresponds to the method
     pub ffi_type: FfiTypeNode,
+    pub ffi_default_value: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -314,30 +350,35 @@ pub struct ObjectTraitImpl {
     pub tr_module_name: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct CustomType {
     pub name: String,
     pub builtin: TypeNode,
     pub docstring: Option<String>,
+    pub config: Option<CustomTypeConfig>,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct OptionalType {
     pub inner: TypeNode,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct SequenceType {
     pub inner: TypeNode,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
 pub struct MapType {
     pub key: TypeNode,
     pub value: TypeNode,
+    #[as_ref]
     pub self_type: TypeNode,
 }
 
@@ -349,18 +390,14 @@ pub struct ExternalType {
 }
 
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
-#[derive(Debug, Clone, Node)]
+#[derive(AsRef, Debug, Clone, Node)]
+#[as_ref]
 pub struct TypeNode {
-    #[node(wraps)]
     pub ty: Type,
-    /// Unique UpperCamelCase name for the type
-    ///
-    /// This is used for a couple reasons:
-    ///   - Defining classes to handle things related to the type.
-    ///     Many bindings will create a `UniffiConverter[canonical_name]` class.
-    ///   - Creating a unique key for a type
     pub canonical_name: String,
     pub is_used_as_error: bool,
+    pub type_name: String,
+    pub ffi_converter_name: String,
     pub ffi_type: FfiTypeNode,
 }
 
@@ -370,6 +407,7 @@ pub struct TypeNode {
 #[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiTypeNode {
     pub ty: FfiType,
+    pub type_name: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Node)]
@@ -404,23 +442,29 @@ pub enum Type {
     // User defined types in the API
     Interface {
         module_name: String,
+        /// Python package name for external types
+        external_package_name: Option<String>,
         name: String,
         imp: ObjectImpl,
     },
     Record {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
     },
     Enum {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
     },
     CallbackInterface {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
     },
     Custom {
         module_name: String,
+        external_package_name: Option<String>,
         name: String,
         builtin: Box<Type>,
     },
@@ -592,79 +636,37 @@ pub struct Checksum {
     pub checksum: u16,
 }
 
-impl FfiDefinition {
-    pub fn name(&self) -> &str {
-        match self {
-            Self::RustFunction(func) => &func.name.0,
-            Self::FunctionType(func_type) => &func_type.name.0,
-            Self::Struct(st) => &st.name.0,
-        }
-    }
-}
-
-impl From<FfiFunction> for FfiDefinition {
-    fn from(func: FfiFunction) -> Self {
-        Self::RustFunction(func)
-    }
-}
-
-impl From<FfiFunctionType> for FfiDefinition {
-    fn from(func_type: FfiFunctionType) -> Self {
-        Self::FunctionType(func_type)
-    }
-}
-
-impl From<FfiStruct> for FfiDefinition {
-    fn from(st: FfiStruct) -> Self {
-        Self::Struct(st)
-    }
-}
-
-impl From<FfiType> for FfiTypeNode {
-    fn from(ty: FfiType) -> Self {
-        Self { ty }
-    }
-}
-
-impl FfiArgument {
-    pub fn new(name: impl Into<String>, ty: FfiType) -> Self {
-        Self {
-            name: name.into(),
-            ty: FfiTypeNode { ty },
-        }
-    }
-}
-
-impl FfiField {
-    pub fn new(name: impl Into<String>, ty: FfiType) -> Self {
-        Self {
-            name: name.into(),
-            ty: FfiTypeNode { ty },
-        }
-    }
-}
-
 impl Callable {
-    pub fn is_async(&self) -> bool {
-        self.async_data.is_some()
+    pub fn is_method(&self) -> bool {
+        matches!(self.kind, CallableKind::Method { .. })
+    }
+
+    pub fn is_primary_constructor(&self) -> bool {
+        matches!(self.kind, CallableKind::Constructor { primary: true, .. })
     }
 }
 
-impl Type {
-    pub fn name(&self) -> Option<&str> {
-        match &self {
-            Type::Record { name, .. }
-            | Type::Enum { name, .. }
-            | Type::Interface { name, .. }
-            | Type::CallbackInterface { name, .. }
-            | Type::Custom { name, .. } => Some(name.as_str()),
-            _ => None,
-        }
+impl CustomTypeConfig {
+    fn lift(&self, name: &str) -> String {
+        let converter = if self.lift.is_empty() {
+            &self.into_custom
+        } else {
+            &self.lift
+        };
+        converter.replace("{}", name)
+    }
+    fn lower(&self, name: &str) -> String {
+        let converter = if self.lower.is_empty() {
+            &self.from_custom
+        } else {
+            &self.lower
+        };
+        converter.replace("{}", name)
     }
 }
 
-impl ObjectImpl {
-    pub fn has_callback_interface(&self) -> bool {
-        matches!(self, Self::CallbackTrait)
+impl Variant {
+    fn has_unnamed_fields(&self) -> bool {
+        matches!(self.fields_kind, FieldsKind::Unnamed)
     }
 }
