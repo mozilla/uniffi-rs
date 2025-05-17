@@ -42,8 +42,12 @@ trait CodeType: Debug {
         self.type_label()
     }
 
-    fn literal(&self, _literal: &Literal) -> Result<String> {
-        unimplemented!("Unimplemented for {}", self.type_label())
+    // default for named types is to assume a ctor exists.
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default => Ok(format!("{}()", self.type_label())),
+            DefaultValue::Literal(_) => crate::bail!("Literals for named types are not supported"),
+        }
     }
 
     /// Name of the FfiConverter
@@ -736,14 +740,14 @@ pub mod filters {
         Ok(format!("{}.read", ffi_converter_name))
     }
 
-    pub fn literal_swift(
-        literal: &Literal,
+    pub fn default_swift(
+        default: &DefaultValue,
         as_type: &impl AsType,
     ) -> Result<String, askama::Error> {
         Ok(oracle()
             .find(&as_type.as_type())
-            .literal(literal)
-            .expect("invalid literal: {literal:?}"))
+            .default(default)
+            .expect("invalid default: {default:?}"))
     }
 
     // Get the idiomatic Swift rendering of an individual enum variant's discriminant
