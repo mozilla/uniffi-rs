@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::{backend::Literal, bail, Result};
 
 #[derive(Debug)]
 pub struct CallbackInterfaceCodeType {
@@ -23,9 +22,5 @@ impl CodeType for CallbackInterfaceCodeType {
 
     fn canonical_name(&self) -> String {
         format!("Type{}", self.type_label())
-    }
-
-    fn literal(&self, _literal: &Literal) -> Result<String> {
-        bail!("literals not supported here")
     }
 }

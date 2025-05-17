@@ -26,14 +26,15 @@ To export methods of an interface you can use the [`#[uniffi::export]` attribute
 ## Default values
 
 Exported functions/methods can have default values using the `default` argument of the attribute macro that wraps them.
-`default` inputs a comma-separated list of `[name]=[value]` items.
+`default` inputs a comma-separated list of either `[name]` items (where the type's *foreign* default value should be used)
+or `[name]=[value]` items (where the default value is specified as a literal).
 
 ```rust
-#[uniffi::export(default(text = " ", max_splits = None))]
+#[uniffi::export(default(text = " ", max_splits))]
 pub fn split(
-    text: String,
+    text: String, // will have a default of " "
     sep: String,
-    max_splits: Option<u32>,
+    max_splits: Option<u32>, // Will have a default of `None`
 ) -> Vec<String> {
   ...
 }
@@ -44,11 +45,14 @@ pub struct TextSplitter { ... }
 #[uniffi::export]
 impl TextSplitter {
     #[uniffi::constructor(default(ignore_unicode_errors = false))]
+    // Because we want the default value for the bool to be `false` it's not necessary to specify it, so
+    // we could have written this as:
+    // #[uniffi::constructor(default(ignore_unicode_errors))]
     fn new(ignore_unicode_errors: boolean) -> Self {
         ...
     }
 
-    #[uniffi::method(default(text = " ", max_splits = None))]
+    #[uniffi::method(default(text = " ", max_splits))]
     fn split(
         text: String,
         sep: String,
@@ -59,11 +63,23 @@ impl TextSplitter {
 }
 ```
 
-Supported default values:
+Supported defaults without a literal:
 
-  - String, integer, float, and boolean literals
-  - `[]` for empty Vecs
-  - `Option<T>` allows either `None` or `Some(T)`
+| Type | Default value |
+|---------|----------------------|
+| `Option` | `None` |
+| `String` | Empty string |
+| `Vec<T>` | Empty list |
+| `HashMap<T>` | Empty map |
+| Builtin numeric types | 0 |
+| `bool` | false |
+| Records | Record with all fields set to their default value (only valid if they all have defaults) |
+| Objects | Primary constructor called with 0 arguments |
+
+Supported literal values:
+
+- String, integer, float, and boolean literals
+- `Option<T>` allows either `None` or `Some(T)`
 
 ### Renaming functions, methods and constructors
 

@@ -3,7 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::{backend::Literal, bail, Result};
+use crate::{
+    bail,
+    interface::{DefaultValue, Literal},
+    Result,
+};
 
 #[derive(Debug)]
 pub struct EnumCodeType {
@@ -25,15 +29,15 @@ impl CodeType for EnumCodeType {
         format!("Type{}", self.type_label())
     }
 
-    fn literal(&self, literal: &Literal) -> Result<String> {
-        if let Literal::Enum(v, _) = literal {
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        if let DefaultValue::Literal(Literal::Enum(v, _)) = default {
             Ok(format!(
                 "{}.{}",
                 self.type_label(),
                 super::PythonCodeOracle.enum_variant_name(v)
             ))
         } else {
-            bail!("Invalid literal for enum type: {literal:?}")
+            bail!("Invalid default for enum type: {default:?}")
         }
     }
 }

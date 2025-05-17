@@ -6,7 +6,8 @@ use crate::{attributes::DictionaryAttributes, literal::convert_default_value, In
 use anyhow::{bail, Result};
 
 use uniffi_meta::{
-    CallbackInterfaceMetadata, FieldMetadata, RecordMetadata, TraitMethodMetadata, VariantMetadata,
+    CallbackInterfaceMetadata, DefaultValueMetadata, FieldMetadata, RecordMetadata,
+    TraitMethodMetadata, VariantMetadata,
 };
 
 mod callables;
@@ -113,7 +114,9 @@ impl APIConverter<FieldMetadata> for weedle::dictionary::DictionaryMember<'_> {
         let type_ = ci.resolve_type_expression(&self.type_)?;
         let default = match self.default {
             None => None,
-            Some(v) => Some(convert_default_value(&v.value, &type_)?),
+            Some(v) => Some(DefaultValueMetadata::Literal(convert_default_value(
+                &v.value, &type_,
+            )?)),
         };
         Ok(FieldMetadata {
             name: self.identifier.0.to_string(),
@@ -199,7 +202,11 @@ mod test {
                 assert_eq!(record.fields[1].ty, Type::UInt32);
                 assert!(matches!(
                     record.fields[1].default,
-                    Some(LiteralMetadata::UInt(0, Radix::Decimal, Type::UInt32))
+                    Some(DefaultValueMetadata::Literal(LiteralMetadata::UInt(
+                        0,
+                        Radix::Decimal,
+                        Type::UInt32
+                    )))
                 ));
                 assert_eq!(record.fields[2].name, "spin");
                 assert_eq!(record.fields[2].ty, Type::Boolean);
