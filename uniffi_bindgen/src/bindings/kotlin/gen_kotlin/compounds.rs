@@ -5,7 +5,7 @@
 use super::{AsCodeType, CodeType};
 use crate::{
     bail,
-    interface::{Literal, Type},
+    interface::{DefaultValue, Literal, Type},
     ComponentInterface, Result,
 };
 
@@ -38,11 +38,13 @@ impl CodeType for OptionalCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal, ci: &ComponentInterface) -> Result<String> {
-        match literal {
-            Literal::None => Ok("null".into()),
-            Literal::Some { inner } => super::KotlinCodeOracle.find(&self.inner).literal(inner, ci),
-            _ => bail!("Invalid literal for Optional type: {literal:?}"),
+    fn default(&self, default: &DefaultValue, ci: &ComponentInterface) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::None) => Ok("null".into()),
+            DefaultValue::Literal(Literal::Some { inner }) => {
+                super::KotlinCodeOracle.find(&self.inner).default(inner, ci)
+            }
+            _ => bail!("Invalid literal for Optional type: {default:?}"),
         }
     }
 }
@@ -76,10 +78,12 @@ impl CodeType for SequenceCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal, _ci: &ComponentInterface) -> Result<String> {
-        match literal {
-            Literal::EmptySequence => Ok("listOf()".into()),
-            _ => bail!("Invalid literal for List type: {literal:?}"),
+    fn default(&self, default: &DefaultValue, _ci: &ComponentInterface) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::EmptySequence) => {
+                Ok("listOf()".into())
+            }
+            _ => bail!("Invalid literal for List type: {default:?}"),
         }
     }
 }
@@ -121,10 +125,12 @@ impl CodeType for MapCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal, _ci: &ComponentInterface) -> Result<String> {
-        match literal {
-            Literal::EmptyMap => Ok("mapOf()".into()),
-            _ => bail!("Invalid literal for Map type: {literal:?}"),
+    fn default(&self, default: &DefaultValue, _ci: &ComponentInterface) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::EmptyMap) => {
+                Ok("mapOf()".into())
+            }
+            _ => bail!("Invalid literal for Map type: {default:?}"),
         }
     }
 }

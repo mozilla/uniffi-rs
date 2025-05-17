@@ -1,7 +1,7 @@
 {%- for arg in callable.arguments %}
-{%- if let Some(lit) = arg.default %}
+{%- if let Some(default) = arg.default %}
 if {{ arg.name }} is _DEFAULT:
-    {{ arg.name }} = {{ lit.py_lit }}
+    {{ arg.name }} = {{ default.py_default }}
 {%- endif %}
 {{ arg.ty.ffi_converter_name }}.check_lower({{ arg.name }})
 {% endfor -%}

@@ -13,6 +13,7 @@ pub mod nodes;
 mod callable;
 mod callback_interfaces;
 mod checksums;
+mod default;
 mod enums;
 mod ffi_async_data;
 mod ffi_functions;
@@ -56,4 +57,5 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
         .pass(ffi_functions::pass)
         .pass(checksums::pass)
         .pass(sort::pass)
+        .pass(default::pass)
 }

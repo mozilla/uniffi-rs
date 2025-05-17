@@ -74,10 +74,11 @@ pub use ffi::{
 };
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata,
+    ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata,
     ObjectTraitImplMetadata, TraitMethodMetadata, UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
+pub type DefaultValue = DefaultValueMetadata;
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.

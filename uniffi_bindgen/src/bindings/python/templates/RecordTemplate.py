@@ -15,9 +15,9 @@ class {{ rec.self_type.type_name }}:
         {%- match field.default %}
         {%- when None %}
         self.{{ field.name }} = {{ field.name }}
-        {%- when Some(lit) %}
+        {%- when Some(default) %}
         if {{ field.name }} is _DEFAULT:
-            self.{{ field.name }} = {{ lit.py_lit }}
+            self.{{ field.name }} = {{ default.py_default }}
         else:
             self.{{ field.name }} = {{ field.name }}
         {%- endmatch %}

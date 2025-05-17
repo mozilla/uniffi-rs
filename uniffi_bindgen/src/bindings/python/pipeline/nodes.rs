@@ -162,7 +162,21 @@ pub struct Argument {
     pub name: String,
     pub ty: TypeNode,
     pub optional: bool,
-    pub default: Option<LiteralNode>,
+    pub default: Option<DefaultValueNode>,
+}
+
+#[derive(Debug, Clone, Node)]
+pub enum DefaultValue {
+    Default(TypeNode),
+    Literal(LiteralNode),
+}
+
+#[derive(Debug, Clone, Node)]
+pub struct DefaultValueNode {
+    #[node(wraps)]
+    pub default: DefaultValue,
+    /// The default value rendered as a Python string
+    pub py_default: String,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -190,7 +204,7 @@ pub enum Literal {
     EmptySequence,
     EmptyMap,
     None,
-    Some { inner: Box<Literal> },
+    Some { inner: Box<DefaultValue> },
 }
 
 // Represent the radix of integer literal values.
@@ -222,7 +236,7 @@ pub enum FieldsKind {
 pub struct Field {
     pub name: String,
     pub ty: TypeNode,
-    pub default: Option<LiteralNode>,
+    pub default: Option<DefaultValueNode>,
     pub docstring: Option<String>,
 }
 

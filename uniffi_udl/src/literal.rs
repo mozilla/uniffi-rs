@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use anyhow::{bail, Result};
-use uniffi_meta::{LiteralMetadata, Radix, Type};
+use uniffi_meta::{DefaultValueMetadata, LiteralMetadata, Radix, Type};
 
 // We are able to use LiteralMetadata directly.
 pub type Literal = LiteralMetadata;
@@ -87,7 +87,10 @@ pub(super) fn convert_default_value(
         }
         (weedle::literal::DefaultValue::Null(_), Type::Optional { .. }) => Literal::None,
         (_, Type::Optional { inner_type, .. }) => Literal::Some {
-            inner: Box::new(convert_default_value(default_value, inner_type)?),
+            inner: Box::new(DefaultValueMetadata::Literal(convert_default_value(
+                default_value,
+                inner_type,
+            )?)),
         },
 
         // We'll ensure the type safety in the convert_* number methods.
