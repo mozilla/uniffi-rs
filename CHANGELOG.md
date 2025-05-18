@@ -16,6 +16,10 @@
 
 - Swift bindings can now generate automatic conformance to the `Codable` protocol for records, enums and errors using `generate_codable_conformance = true` in the configuration. Be aware that serialization in Swift may lead to different and incompatible results compared to serialization in Rust.
 
+### What's new?
+
+- HashMaps in UDL now support a default value with an empty map ([#2539](https://github.com/mozilla/uniffi-rs/pull/2539)).
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)

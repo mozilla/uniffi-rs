@@ -298,6 +298,8 @@ class TestCoverall(unittest.TestCase):
         self.assertEqual("default-value", d.name)
         self.assertEqual(None, d.category)
         self.assertEqual(31, d.integer)
+        self.assertEqual(d.item_list, [])
+        self.assertEqual(d.item_map, {})
 
         d = DictWithDefaults(name="this", category="that", integer=42)
         self.assertEqual("this", d.name)

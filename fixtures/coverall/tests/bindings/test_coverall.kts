@@ -492,6 +492,8 @@ var d = DictWithDefaults()
 assert(d.name == "default-value")
 assert(d.category == null)
 assert(d.integer == 31UL)
+assert(d.itemList.isEmpty())
+assert(d.itemMap == emptyMap<String, String>())
 
 d = DictWithDefaults(name = "this", category = "that", integer = 42UL)
 assert(d.name == "this")

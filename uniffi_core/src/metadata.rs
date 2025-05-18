@@ -80,6 +80,7 @@ pub mod codes {
     pub const LIT_NONE: u8 = 4;
     pub const LIT_SOME: u8 = 5;
     pub const LIT_EMPTY_SEQ: u8 = 6;
+    pub const LIT_EMPTY_MAP: u8 = 7;
 }
 
 // For large errors (e.g. enums) a buffer size of ~4k - ~8k
