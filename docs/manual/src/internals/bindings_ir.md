@@ -339,10 +339,11 @@ The final phase takes the language-specific IR and uses it to generate the bindi
 We use the [Askama](https://askama.readthedocs.io/en/stable/) template rendering engine for this.
 
 In this phase, the top-level `add` function is implemented by:
-  - checking/lowering all arguments using the class named by `Argument.ty.lang_data.ffi_converter_name`
-  - calling the scaffolding function named by `ffi_func.name`
-  - handling errors using the class named by `ReturnType.ty.lang_dataffi_converter_name`
-  - lifting the return value using the class named by `ThrowsType.ty.lang_data.ffi_converter_name`
+
+* checking/lowering all arguments using the class named by `Argument.ty.lang_data.ffi_converter_name`
+* calling the scaffolding function named by `ffi_func.name`
+* handling errors using the class named by `ReturnType.ty.lang_dataffi_converter_name`
+* lifting the return value using the class named by `ThrowsType.ty.lang_data.ffi_converter_name`
 
 ```python
 def add(a: int, b: int) -> int:
