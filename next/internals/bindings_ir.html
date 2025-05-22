@@ -2339,11 +2339,13 @@ Some examples are:</p>
 <h2 id="language-specific-ir-generated-bindings-code">Language-specific IR -&gt; Generated Bindings Code</h2>
 <p>The final phase takes the language-specific IR and uses it to generate the bindings code.
 We use the <a href="https://askama.readthedocs.io/en/stable/">Askama</a> template rendering engine for this.</p>
-<p>In this phase, the top-level <code>add</code> function is implemented by:
-  - checking/lowering all arguments using the class named by <code>Argument.ty.lang_data.ffi_converter_name</code>
-  - calling the scaffolding function named by <code>ffi_func.name</code>
-  - handling errors using the class named by <code>ReturnType.ty.lang_dataffi_converter_name</code>
-  - lifting the return value using the class named by <code>ThrowsType.ty.lang_data.ffi_converter_name</code></p>
+<p>In this phase, the top-level <code>add</code> function is implemented by:</p>
+<ul>
+<li>checking/lowering all arguments using the class named by <code>Argument.ty.lang_data.ffi_converter_name</code></li>
+<li>calling the scaffolding function named by <code>ffi_func.name</code></li>
+<li>handling errors using the class named by <code>ReturnType.ty.lang_dataffi_converter_name</code></li>
+<li>lifting the return value using the class named by <code>ThrowsType.ty.lang_data.ffi_converter_name</code></li>
+</ul>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="n">_UniffiConverterUInt64</span><span class="o">.</span><span class="n">check_lower</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
     <span class="n">_UniffiConverterUInt64</span><span class="o">.</span><span class="n">check_lower</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>

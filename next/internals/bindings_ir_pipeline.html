@@ -2054,11 +2054,13 @@ Our current recommendation for other external bindings authors is to avoid using
 <p>Types inside an IR are called "nodes" and they must derive a <code>Node</code> trait impl.
 The top-level node is always named <code>Root</code>.
 When this document talks about converting between two IRs, this means converting between the root nodes of those IRs.</p>
-<p><code>Node</code> trait provides functionality to:
-  * Traverse the node tree.  <code>Node::visit()</code> and <code>Node::visit_mut()</code> allows you to visit all
-    descendants with a given type.
-  * Convert between any two nodes using <code>Node::try_from_node</code>.  This conversion is described in the
-    next section.</p>
+<p><code>Node</code> trait provides functionality to:</p>
+<ul>
+<li>Traverse the node tree.  <code>Node::visit()</code> and <code>Node::visit_mut()</code> allows you to visit all
+  descendants with a given type.</li>
+<li>Convert between any two nodes using <code>Node::try_from_node</code>.  This conversion is described in the
+  next section.</li>
+</ul>
 <h2 id="node-conversions">Node conversions</h2>
 <p><code>Node::try_from_node</code> attempts to convert a node from one IR to the corresponding node from another IR.
 For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node</code> using the following rules:</p>
@@ -2085,17 +2087,19 @@ For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node
 <span class="w">    </span><span class="sd">/// Any other fields will be initialized to their default values.</span>
 <span class="w">    </span><span class="sd">///</span>
 <span class="w">    </span><span class="sd">/// This is mostly used as a way to add fields to enum types.</span>
-<span class="w">    </span><span class="sd">/// Wrap the enum with a struct, then add fields to to that struct.</span>
+<span class="w">    </span><span class="sd">/// Wrap the enum with a struct, then add fields to that struct.</span>
 <span class="w">    </span><span class="sd">/// For example, `TypeNode` wraps the `Type` enum from `uniffi_meta`.</span>
 <span class="w">    </span><span class="cp">#[node(wraps)]</span>
 <span class="w">    </span><span class="n">wrapped</span><span class="p">:</span><span class="w"> </span><span class="nc">WrappedNode</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="module-structure">Module structure</h2>
-<p>Each IRs will typically have a module dedicated to them with the following structure:
-* <code>mod.rs</code> -- Top-level module.  This is where the pipeline for the IR is defined.
-* <code>nodes.rs</code> -- Node definitions
-* <em>other submodules</em> -- Define pipeline pass functions.  These are named <code>pass()</code> by convention.</p>
+<p>Each IRs will typically have a module dedicated to them with the following structure:</p>
+<ul>
+<li><code>mod.rs</code> -- Top-level module.  This is where the pipeline for the IR is defined.</li>
+<li><code>nodes.rs</code> -- Node definitions.</li>
+<li><em>other submodules</em> -- Define pipeline pass functions.  These are named <code>pass()</code> by convention.</li>
+</ul>
 <h2 id="defining-irs">Defining IRs</h2>
 <ul>
 <li>Start with an existing IR, let's assume it lives in the <code>from_ir</code> module.</li>
@@ -2105,7 +2109,7 @@ For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node
 <li>Define pipeline passes to populate the new fields, using the existing fields.  For example, <code>into_ir/mod.rs</code> might define a pipeline like this:</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="c1">// The output type is a pipeline that converts from `initial::Root` to the `Root` node from this IR.</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">():</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Pipeline</span><span class="o">&lt;</span><span class="n">initial</span><span class="p">::</span><span class="n">Root</span><span class="p">,</span><span class="w"> </span><span class="n">Root</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Start with `from_ir&#39;s` pipeline.  This converts `initial::root` to `from_ir::Root`.</span>
 <span class="w">    </span><span class="n">from_ir</span><span class="p">::</span><span class="n">pipeline</span><span class="p">()</span>
 <span class="w">        </span><span class="c1">// Convert to `into_ir::Root`.</span>
@@ -2144,7 +2148,7 @@ Use the <code>Default::default()</code> to handle this case, which the <code>Nod
 Here's how this works in the <code>callables</code> pass:</p>
 <div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">pass</span><span class="p">(</span><span class="n">root</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Root</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">root</span><span class="p">.</span><span class="n">visit_mut</span><span class="p">(</span><span class="o">|</span><span class="n">func</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">Function</span><span class="o">|</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">func</span><span class="p">.</span><span class="n">callable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Callable</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">func</span><span class="p">.</span><span class="n">callable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Callable</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="c1">// Most of the fields are simply copied from `Function`</span>
 <span class="w">            </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">(),</span>
 <span class="w">            </span><span class="n">is_async</span><span class="p">:</span><span class="w"> </span><span class="nc">func</span><span class="p">.</span><span class="n">is_async</span><span class="p">,</span>
@@ -2223,7 +2227,7 @@ For example:</p>
 <p>Alternatively, if you want to see the full IR for each pass, you can use <code>--no-diff</code> to print it out.
 Piping to a pager like <code>less</code> is highly recommended in this case.</p>
 <p>You can test this out yourself by running the following command to follow the <code>add</code> function as it moves throw the IR pipeline:</p>
-<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add</code> </p>
+<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add</code></p>
 
 
 
