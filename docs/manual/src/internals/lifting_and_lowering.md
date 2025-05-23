@@ -13,11 +13,50 @@ receiving side "***lifts***" that primitive type into its own language-specific
 data type.
 
 Lifting and lowering simple types such as integers is done by directly casting the
-value to and from an appropriate type. For complex types such as optionals and
-records we currently implement lifting and lowering by serializing into a byte
-buffer, but this is an implementation detail that may change in future. (See
-[ADR-0002](https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0002-serialize-complex-datatypes.md) for the reasoning
-behind this choice.)
+value to and from an appropriate type. Non-trivial types such as Strings, Optionals and
+Records, etc. are lowered to a byte buffer called a `RustBuffer` internally.
+
+For example, a Python `str` is passed to Rust by lowering it to a `RustBuffer`, which is then
+lifted to a Rust `String`
+
+```mermaid
+block-beta
+  columns 2
+  block:PythonLayer
+    columns 1
+    PythonTitle["Python"]
+    PythonStr["str"]
+  end
+  block:RustLayer
+    columns 1
+    RustTitle["Rust"]
+    RustString["String"]
+  end
+  block:FFILayer:2
+    columns 3
+    space:2
+    FfiTitle["FFI"]
+    space
+    RustBuffer["RustBuffer"]
+    space
+  end
+
+  PythonStr --"Lower"--> RustBuffer
+  RustBuffer --"Lift"--> RustString
+
+classDef default stroke:transparent,fill:#fff
+classDef layer stroke:#c0c0c0,fill:#cae9ff
+classDef title stroke:transparent,fill:transparent,color:#f72585
+classDef invisible stroke:transparent,fill:transparent
+class RustLayer layer
+class PythonLayer layer
+class FFILayer layer
+class RustTitle title
+class PythonTitle title
+class FfiTitle title
+```
+
+## Lifting and Lowering when calling functions
 
 As a concrete example, consider this interface for accumulating a list of integers:
 
@@ -27,27 +66,61 @@ namespace example {
 }
 ```
 
-Calling this function from foreign language code involves the following steps:
+Calling this function from foreign language code involves lowering the arguments, calling an FFI
+function, lifting the arguments, then calling the original function.
 
-1. The user-provided calling code invokes the `add_to_list` function that is exposed by the
-   UniFFI-generated foreign language bindings, passing `item` as an appropriate language-native
-   integer.
-2. The foreign language bindings ***lower*** each argument to a function call into
-   something that can be passed over the C-style FFI. Since the `item` argument is a plain integer,
+```mermaid
+block-beta
+  columns 2
+  block:PythonUserLayer
+    columns 1
+    PythonTitle["Generated Python function"]
+    PythonFunc["add_to_list(int) -> [int]"]
+  end
+  block:RustUserLayer
+    columns 1
+    RustTitle["User-defined Rust Function"]
+    RustFunc["add_to_list(i32) -> Vec<i32>"]
+  end
+  space:2
+  block:ScaffoldingLayer:2
+    columns 1
+    ScaffoldingFunc["uniffi_fn_add_to_list(int32_t) -> RustBuffer"]
+    ScaffoldingTitle["Generated Rust scaffolding function"]
+  end
+
+  PythonFunc -- "Lower" --> ScaffoldingFunc
+  ScaffoldingFunc -- "Lift" --> RustFunc
+
+classDef default stroke:transparent,fill:#fff
+classDef layer stroke:#c0c0c0,fill:#cae9ff
+classDef title stroke:transparent,fill:transparent,color:#f72585
+classDef invisible stroke:transparent,fill:transparent
+
+class PythonUserLayer layer
+class RustUserLayer layer
+class ScaffoldingLayer layer
+
+class RustTitle title
+class PythonTitle title
+class ScaffoldingTitle title
+```
+
+Details:
+
+1. UniFFI generates an `add_to_list` function in the foreign language (Python in the example
+   diagram).  In this function the `item` argument and the return type are language-native types.
+2. The generated function ***lowers*** each argument.  Since the `item` argument is a plain integer,
    it is lowered by casting to an `int32_t`.
-3. The foreign language bindings pass the lowered arguments to a C FFI function named
-   like `example_XYZ_add_to_list` that is exposed by the UniFFI-generated Rust scaffolding.
-4. The Rust scaffolding ***lifts*** each argument received over the FFI into a native
-   Rust type. Since `item` is a plain integer it is lifted by casting to a Rust `i32`.
-5. The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
-   the `add_to_list` function, which returns a `Vec<i32>`.
-6. The Rust scaffolding now needs to ***lower*** the return value in order to pass it back
-   to the foreign language code. Since this is a complex data type, it is lowered by serializing
-   the values into a byte buffer and returning the buffer pointer and length from the
-   FFI function.
-7. The foreign language bindings receive the return value and need to ***lift*** it into an
-   appropriate native data type. Since it is a complex data type, it is lifted by deserializing
-   from the returned byte buffer into a language-native list of integers.
+3. The generated Python function passes the lowered arguments to the Rust scaffolding function.
+   This is a `repr(C)` FFI function in Rust library and named `uniffi_fn_add_to_list` in this example.
+4. The Rust scaffolding function ***lifts*** each argument received over the FFI into a native Rust type.
+   Since `item` is a plain integer no conversion is needed.
+5. The Rust scaffolding passes the lifted arguments to the user-defined Rust `add_to_list` function, which then executes normally.
+6. The Rust scaffolding function receives the return value and now needs to ***lower*** the it to pass it back across the FFI.
+   Since this type's `::FfiType` is a `RustBuffer`, it's lowered by serializing the values into a byte buffer (`RustBuffer`), which is then returned.
+7. The generated Python function receives the return value, and then ***lifts*** it to a native data type.
+   Since this type's `::FfiType` is a `RustBuffer`, it's lifted by deserializing a language-native list of integers from the RustBuffer.
 
 ## Lowered Types
 
@@ -95,23 +168,3 @@ Note that length fields in this format are serialized as *signed* integers
 despite the fact that they will always be non-negative. This is to help
 ease compatibility with JVM-based languages since the JVM uses signed 32-bit
 integers for its size fields internally.
-
-## Code Generation and the FfiConverter trait
-
-UniFFI needs to generate Rust code to lift/lower types.  To help with this, we define the `FfiConverter` trait which contains the code to lift/lower/serialize a particular type.
-
-The most straightforward approach would be to define `FfiConverter` on the type being lifted/lowered/serialized.  However, this wouldn't work for remote types defined in 3rd-party crates because of the Rust orphan rules.  For example, our crates can't implement `FfiConverter` on `serde_json::Value` because both the trait and the type are remote.
-
-To work around this we do several things:
-
- - `FfiConverter` gets a generic type parameter.  This type is basically arbitrary and doesn't affect the lowering/lifting/serialization process.
- - We generate a unit struct named `UniFfiTag` in the root of each UniFFIed crate.
- - Each crate uses the `FfiConverter<crate::UniFfiTag>` trait to lower/lift/serialize values for its scaffolding functions.
-
-This allows us to work around the orphan rules when defining ffi trait implementations.
- - The `uniffi` crate can implement lifting/lowering/serializing types for all scaffolding functions using a generic impl, for example `impl<UT> FfiConverter<UT> for u8`.  "UT" is short for "UniFFI Tag"
- - UniFFI consumer crates usually implement lifting/lowering/serializing types the same way.
- - However, for remote types, they must only implement ffi traits for their local tag, for example `impl FfiConverter<crate::UniFfiTag> for serde_json::Value`.  This is valid since `UniFfiTag` is a local type.
- - If other crates also want to use the same remote type implementation, the need to implement the ffi traits for their local tag as well.  This is what the `use_remote_type!` macro does.
-
-For more details on the specifics of the "orphan rule" and why these are legal implementations, see the [Rust Chalk Book](https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules-in-rustc)

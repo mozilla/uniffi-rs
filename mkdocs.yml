@@ -101,6 +101,7 @@ nav:
   - ./internals/design_principles.md
   - ./internals/crates.md
   - ./internals/lifting_and_lowering.md
+  - ./internals/ffi_converter_traits.md
   - ./internals/rust_calls.md
   - ./internals/foreign_calls.md
   - ./internals/object_references.md
