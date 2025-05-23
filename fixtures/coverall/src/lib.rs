@@ -249,6 +249,8 @@ pub struct DictWithDefaults {
     name: String,
     category: Option<String>,
     integer: u64,
+    item_list: Vec<String>,
+    item_map: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone)]

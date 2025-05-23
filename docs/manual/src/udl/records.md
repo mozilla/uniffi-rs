@@ -71,3 +71,14 @@ dictionary TodoEntry {
 };
 ```
 
+### Vecs and maps
+
+Empty collections are supported.
+
+```idl
+dictionary TodoEntry {
+    sequence<string> item_list = [];
+    record<string, string> item_map = {};
+};
+```
+

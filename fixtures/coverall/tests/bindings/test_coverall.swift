@@ -260,6 +260,8 @@ do {
     assert(d.name == "default-value")
     assert(d.category == nil)
     assert(d.integer == 31)
+    assert(d.itemList == [])
+    assert(d.itemMap == [:])
 
     let d2 = DictWithDefaults(name: "this", category: "that", integer: 42)
     assert(d2.name == "this")
