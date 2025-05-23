@@ -9,7 +9,7 @@ use super::*;
 pub fn pass(module: &mut Module) -> Result<()> {
     let module_name = module.name.clone();
     module.visit_mut(|node: &mut TypeNode| {
-        node.ffi_type = generate_ffi_type(&node.ty, &module_name);
+        node.ffi_type = FfiTypeNode::from(generate_ffi_type(&node.ty, &module_name));
     });
     Ok(())
 }
@@ -58,6 +58,21 @@ fn generate_ffi_type(ty: &Type, current_module_name: &str) -> FfiType {
         | Type::Map { .. }
         | Type::Timestamp
         | Type::Duration => FfiType::RustBuffer(None),
-        Type::Custom { builtin, .. } => generate_ffi_type(builtin, current_module_name),
+        Type::Custom {
+            module_name,
+            builtin,
+            ..
+        } => {
+            match generate_ffi_type(builtin, current_module_name) {
+                // Fixup `module_name` for primitive types that lower to `RustBuffer`.
+                //
+                // This is needed to handle external custom types, where the builtin type is
+                // something like `String`.
+                FfiType::RustBuffer(None) if module_name != current_module_name => {
+                    FfiType::RustBuffer(Some(module_name.clone()))
+                }
+                ffi_type => ffi_type,
+            }
+        }
     }
 }

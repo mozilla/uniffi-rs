@@ -21,7 +21,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
             async_data: None,
             arguments: vec![],
             return_type: FfiReturnType {
-                ty: Some(FfiType::UInt32),
+                ty: Some(FfiType::UInt32.into()),
             },
             has_rust_call_status_arg: false,
             kind: FfiFunctionKind::UniffiContractVersion,
@@ -33,13 +33,9 @@ pub fn pass(module: &mut Module) -> Result<()> {
     // Checksums, these are used to check that the bindings were built against the same
     // exported interface as the loaded library.
     let mut checksums = vec![];
-    module.try_visit(|callable: &Callable| {
+    // Closure to visit a callable
+    let mut visit_callable = |callable: &Callable| {
         let Some(checksum) = callable.checksum else {
-            if matches!(callable.kind, CallableKind::VTableMethod { .. }) {
-                // UDL-based callbacks don't have checksum functions, ignore those rather than
-                // returning an error.
-                return Ok(());
-            }
             bail!("Checksum not set for {:#?}", callable);
         };
         let fn_name = match &callable.kind {
@@ -66,7 +62,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 async_data: None,
                 arguments: vec![],
                 return_type: FfiReturnType {
-                    ty: Some(FfiType::UInt16),
+                    ty: Some(FfiType::UInt16.into()),
                 },
                 has_rust_call_status_arg: false,
                 kind: FfiFunctionKind::Checksum,
@@ -75,7 +71,21 @@ pub fn pass(module: &mut Module) -> Result<()> {
             checksum,
         ));
         Ok(())
+    };
+    // Call `visit_callable` for callables that we have checksums for
+    // (functions/constructors/methods), but not ones where we don't (VTable methods and UniFFI
+    // traits).
+    module.try_visit(|function: &Function| function.try_visit(&mut visit_callable))?;
+    module.try_visit(|int: &Interface| {
+        for cons in int.constructors.iter() {
+            visit_callable(&cons.callable)?;
+        }
+        for meth in int.methods.iter() {
+            visit_callable(&meth.callable)?;
+        }
+        Ok(())
     })?;
+
     for (ffi_func, checksum) in checksums {
         module.checksums.push(Checksum {
             fn_name: ffi_func.name.clone(),
