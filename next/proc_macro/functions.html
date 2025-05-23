@@ -2119,10 +2119,12 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Supported default values:
-  - String, integer, float, and boolean literals
-  - <code>[]</code> for empty Vecs
-  - <code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></p>
+<p>Supported default values:</p>
+<ul>
+<li>String, integer, float, and boolean literals</li>
+<li><code>[]</code> for empty Vecs</li>
+<li><code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></li>
+</ul>
 <h3 id="renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</h3>
 <p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
 <p><div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(name = </span><span class="s">&quot;something&quot;</span><span class="cp">)]</span>
