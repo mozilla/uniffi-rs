@@ -22,6 +22,15 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+* Some async-related names have changed.  Bindings authors may need to update their code to reflect
+  the new names.  This is a name-change only -- the FFI and semantics are still the same.
+
+  * `UniffiForeignFutureFree` is now `UniffiForeignFutureDroppedCallback`
+  * `UniffiForeignFuture` is `UniffiForeignFutureDroppedCallbackStruct`.
+  * `RustFuturePoll::MaybeReady` is now `RustFuturePoll::Wake`.
+
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
 
 ### What's fixed?

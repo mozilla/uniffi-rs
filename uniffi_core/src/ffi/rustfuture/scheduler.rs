@@ -24,7 +24,7 @@ pub(super) enum Scheduler {
     /// No continuations set, neither wake() nor cancel() called.
     Empty,
     /// `wake()` was called when there was no continuation set.  The next time `store` is called,
-    /// the continuation should be immediately invoked with `RustFuturePoll::MaybeReady`
+    /// the continuation should be immediately invoked with `RustFuturePoll::Wake`
     Waked,
     /// The future has been cancelled, any future `store` calls should immediately result in the
     /// continuation being called with `RustFuturePoll::Ready`.
@@ -52,7 +52,7 @@ impl Scheduler {
             }
             Self::Waked => {
                 *self = Self::Empty;
-                callback(data, RustFuturePoll::MaybeReady);
+                callback(data, RustFuturePoll::Wake);
             }
             Self::Cancelled => {
                 callback(data, RustFuturePoll::Ready);
@@ -67,7 +67,7 @@ impl Scheduler {
                 let old_data = *old_data;
                 let callback = *callback;
                 *self = Self::Empty;
-                callback(old_data, RustFuturePoll::MaybeReady);
+                callback(old_data, RustFuturePoll::Wake);
             }
             // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
             // is called, we will immediately call the continuation.
