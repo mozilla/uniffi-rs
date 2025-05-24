@@ -664,7 +664,6 @@ impl SwiftCodeOracle {
 
 pub mod filters {
     use super::*;
-    pub use crate::backend::filters::*;
     use uniffi_meta::LiteralMetadata;
 
     fn oracle() -> &'static SwiftCodeOracle {
@@ -697,6 +696,10 @@ pub mod filters {
             name.push_str("__as_error")
         }
         Ok(name)
+    }
+
+    pub(super) fn ffi_type(type_: &impl AsType) -> askama::Result<FfiType, askama::Error> {
+        Ok(type_.as_type().into())
     }
 
     // To better support external types, we always call the "public" lift and lower functions for
@@ -737,10 +740,10 @@ pub mod filters {
         literal: &Literal,
         as_type: &impl AsType,
     ) -> Result<String, askama::Error> {
-        oracle()
+        Ok(oracle()
             .find(&as_type.as_type())
             .literal(literal)
-            .map_err(|e| to_askama_error(&e))
+            .expect("invalid literal: {literal:?}"))
     }
 
     // Get the idiomatic Swift rendering of an individual enum variant's discriminant
