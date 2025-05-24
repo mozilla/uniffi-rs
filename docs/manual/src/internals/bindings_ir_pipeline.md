@@ -66,6 +66,33 @@ pub struct Node {
 }
 ```
 
+### Field Conversion order
+
+Fields are converted in declaration order.
+This matters when a field is listed twice with one of them using `#[node(from(<name_of_the_another_field>)]`.
+In this case the first field declared will be initialized with the data from the previous pass and the second field will be initialized to the default value.
+
+You can take advantage of this to convert an optional value into a non-optional value.
+For example:
+
+```rust
+#[derive(Node)]
+pub struct SourceNode {
+    foo: Option<String>
+}
+
+#[derive(Node)]
+pub struct DestNode {
+    /// This field will be set to `SourceNode::foo`
+    #[node(from(foo))]
+    maybe_foo: Option<String>
+    /// This field will be a non-optional version of `SourceNode::foo`.
+    /// It will be initialized to an empty string, then a pipeline pass will populate it using
+    // `maybe_foo` combined with logic to handle the `None` case.
+    foo: String,
+}
+```
+
 ## Module structure
 
 Each IRs will typically have a module dedicated to them with the following structure:

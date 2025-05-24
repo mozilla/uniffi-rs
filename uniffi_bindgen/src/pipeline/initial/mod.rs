@@ -57,7 +57,7 @@ impl Root {
             )?;
         }
         let mut root = metadata_converter.try_into_initial_ir()?;
-        root.cdylib = Some(path.to_string());
+        root.cdylib = calc_cdylib_name(path);
         Ok(root)
     }
 
@@ -136,4 +136,17 @@ impl Root {
         }
         Ok(())
     }
+}
+
+// If `library_path` is a C dynamic library, return its name
+fn calc_cdylib_name(library_path: &Utf8Path) -> Option<String> {
+    let cdylib_extensions = [".so", ".dll", ".dylib"];
+    let filename = library_path.file_name()?;
+    let filename = filename.strip_prefix("lib").unwrap_or(filename);
+    for ext in cdylib_extensions {
+        if let Some(f) = filename.strip_suffix(ext) {
+            return Some(f.to_string());
+        }
+    }
+    None
 }
