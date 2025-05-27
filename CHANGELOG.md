@@ -6,6 +6,14 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- HashMaps in UDL now support a default value with an empty map ([#2539](https://github.com/mozilla/uniffi-rs/pull/2539)).
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.2...HEAD).
+
+## v0.29.2 (backend crates: v0.29.2) - (_2025-05-05_)
+
 ### What's fixed?
 
 - Allow `uniffi_reexport_scaffolding!` macro to work in Rust 2024 ([#2476](https://github.com/mozilla/uniffi-rs/issues/2476))
@@ -16,11 +24,7 @@
 
 - Swift bindings can now generate automatic conformance to the `Codable` protocol for records, enums and errors using `generate_codable_conformance = true` in the configuration. Be aware that serialization in Swift may lead to different and incompatible results compared to serialization in Rust.
 
-### What's new?
-
-- HashMaps in UDL now support a default value with an empty map ([#2539](https://github.com/mozilla/uniffi-rs/pull/2539)).
-
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
+[All changes in v0.29.2](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...v0.29.2).
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
 
