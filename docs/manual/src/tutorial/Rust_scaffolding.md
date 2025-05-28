@@ -39,16 +39,14 @@ If you don't specify a [`namespace`](../types/namespace.md) the crate name is us
 
 Suppose you want to create a shared library that includes one or more
 components using UniFFI. The typical way to achieve this is to create a new
-crate that depends on the component crates.  However, this can run into
-[rust-lang#50007](https://github.com/rust-lang/rust/issues/50007).  Under
-certain circumstances, the scaffolding functions that the component crates
-export do not get re-exported by the dependent crate.
+crate that depends on the component crates.  However, this can run into issues
+where public symbols from the dependent crates aren't re-exported, resulting
+in these symbols not being available at runtime.
 
-Use the `uniffi_reexport_scaffolding!` macro to work around this issue.  If your
-library depends on `foo_component`, then add
-`foo_component::uniffi_reexport_scaffolding!();` to your `lib.rs` file and
-UniFFI will add workaround code that forces the functions to be re-exported.
+If you encounter this, you can use the `uniffi_reexport_scaffolding!()` macro as a work around.
+For example, `foo_component::uniffi_reexport_scaffolding!();` in your library's `lib.rs` will have
+UniFFI generate workaround code that forces `foo_component`s functions to be exported from the library.
 
-Each scaffolding function contains a hash that's derived from the UDL file.
+Each scaffolding function contains a hash that's derived from the namespace.
 This avoids name collisions when combining multiple UniFFI components into
 one library.

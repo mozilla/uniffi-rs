@@ -571,6 +571,7 @@ impl<'a> MetadataReader<'a> {
                 _ => bail!("field {name} of type {ty:?} can't have a default value of None"),
             },
             codes::LIT_EMPTY_SEQ => LiteralMetadata::EmptySequence,
+            codes::LIT_EMPTY_MAP => LiteralMetadata::EmptyMap,
             _ => bail!("Unexpected literal kind code: {literal_kind:?}"),
         })
     }

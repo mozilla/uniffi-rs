@@ -47,7 +47,7 @@ pub trait Node: fmt::Debug + Any {
 
     /// Create a value from this node's data
     ///
-    /// Logically, this consumes `self`.  However, in inputs `&mut self` because it works better
+    /// Logically, this consumes `self`.  However, it inputs `&mut self` because it works better
     /// with dyn traits.  It leaves behind an empty node.
     fn take_into_value(&mut self) -> Value;
 

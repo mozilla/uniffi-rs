@@ -4,7 +4,10 @@ use syn::DeriveInput;
 
 use crate::{
     ffiops,
-    util::{create_metadata_items, extract_docstring, ident_to_string, mod_path},
+    util::{
+        create_metadata_items, extract_docstring, ident_to_string, mod_path,
+        wasm_single_threaded_annotation,
+    },
     DeriveOptions,
 };
 use uniffi_meta::ObjectImpl;
@@ -94,19 +97,6 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
         #interface_impl
         #meta_static_var
     })
-}
-
-fn wasm_single_threaded_annotation() -> TokenStream {
-    #[cfg(feature = "wasm-unstable-single-threaded")]
-    {
-        quote! {
-            #[cfg(not(target_arch = "wasm32"))]
-        }
-    }
-    #[cfg(not(feature = "wasm-unstable-single-threaded"))]
-    {
-        TokenStream::default()
-    }
 }
 
 fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {

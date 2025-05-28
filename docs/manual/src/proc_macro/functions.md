@@ -60,6 +60,7 @@ impl TextSplitter {
 ```
 
 Supported default values:
+
   - String, integer, float, and boolean literals
   - `[]` for empty Vecs
   - `Option<T>` allows either `None` or `Some(T)`

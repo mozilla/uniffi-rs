@@ -4,6 +4,8 @@ UniFFI supports exposing async Rust functions over the FFI. It can convert a Rus
 
 Check out the [examples](https://github.com/mozilla/uniffi-rs/tree/main/examples/futures) or the more terse and thorough [fixtures](https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures).
 
+We've also [documentation on the internals of how this works](internals/async-overview.md).
+
 ## Example
 
 This is a short "async sleep()" example:
@@ -83,11 +85,11 @@ Python bindings export a function named `uniffi_set_event_loop()` which handles 
 integrating async Rust and Python code. `uniffi_set_event_loop()` is needed when Python async
 functions run outside of the eventloop, for example:
 
-    - Rust code is executing outside of the eventloop.  Some examples:
-        - Rust code spawned its own thread
-        - Python scheduled the Rust code using `EventLoop.run_in_executor`
-    - The Rust code calls a Python async callback method, using something like `pollster` to block
-      on the async call.
+* Rust code is executing outside of the eventloop.  Some examples:
+    * Rust code spawned its own thread
+    * Python scheduled the Rust code using `EventLoop.run_in_executor`
+* The Rust code calls a Python async callback method, using something like `pollster` to block
+  on the async call.
 
 In this case, we need an event loop to run the Python async function, but there's no eventloop set for the thread.
 Use `uniffi_set_event_loop()` to handle this case.
@@ -103,4 +105,4 @@ You should build your cancellation in a separate, library specific channel; for 
 Cancellation can then be exposed in the API and be mapped to one of the error variants, or None/empty-vec/whatever makes sense.
 There's no builtin way to cancel a future, nor to cause/raise a platform native async cancellation error (eg, a swift `CancellationError`).
 
-See also https://github.com/mozilla/uniffi-rs/pull/1768.
+See also [this github PR](https://github.com/mozilla/uniffi-rs/pull/1768).

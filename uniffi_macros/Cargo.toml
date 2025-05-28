@@ -38,3 +38,6 @@ nightly = []
 # Support for WebAssembly targets in a single-threaded environment.
 # This feature is unstable and may change in the future.
 wasm-unstable-single-threaded = []
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]
