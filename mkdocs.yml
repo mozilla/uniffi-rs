@@ -101,6 +101,8 @@ nav:
   - ./internals/design_principles.md
   - ./internals/crates.md
   - ./internals/lifting_and_lowering.md
+  - ./internals/rust_calls.md
+  - ./internals/foreign_calls.md
   - ./internals/object_references.md
   - ./internals/async-overview.md
   - ./internals/async-ffi.md
