@@ -87,6 +87,8 @@ dictionary DictWithDefaults {
     string name = "default-value";
     string? category = null;
     u64 integer = 31;
+    sequence<string> item_list = [];
+    record<string, string> item_map = {};
 };
 
 [Enum]

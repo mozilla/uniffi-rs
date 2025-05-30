@@ -1,7 +1,7 @@
 # UniFFI Async Overview
 
 This document describes how UniFFI implements async from a high-level.
-Once you've read this, you can also check out the low-level [Async FFI details](../udl/async-ffi.md).
+Once you've read this, you can also check out the low-level [Async FFI details](async-ffi.md).
 
 ## What runtime does async code run on?
 

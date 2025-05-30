@@ -21,3 +21,5 @@ pub struct MyRecord {
     pub some_flag: bool,
 }
 ```
+
+Most types can have default values - all defaults described for [function arguments](./functions.md#default-values) apply here too.

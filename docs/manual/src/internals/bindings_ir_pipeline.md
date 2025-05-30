@@ -21,10 +21,11 @@ The top-level node is always named `Root`.
 When this document talks about converting between two IRs, this means converting between the root nodes of those IRs.
 
 `Node` trait provides functionality to:
-  * Traverse the node tree.  `Node::visit()` and `Node::visit_mut()` allows you to visit all
-    descendants with a given type.
-  * Convert between any two nodes using `Node::try_from_node`.  This conversion is described in the
-    next section.
+
+* Traverse the node tree.  `Node::visit()` and `Node::visit_mut()` allows you to visit all
+  descendants with a given type.
+* Convert between any two nodes using `Node::try_from_node`.  This conversion is described in the
+  next section.
 
 ## Node conversions
 
@@ -58,7 +59,7 @@ pub struct Node {
     /// Any other fields will be initialized to their default values.
     ///
     /// This is mostly used as a way to add fields to enum types.
-    /// Wrap the enum with a struct, then add fields to to that struct.
+    /// Wrap the enum with a struct, then add fields to that struct.
     /// For example, `TypeNode` wraps the `Type` enum from `uniffi_meta`.
     #[node(wraps)]
     wrapped: WrappedNode,
@@ -68,8 +69,9 @@ pub struct Node {
 ## Module structure
 
 Each IRs will typically have a module dedicated to them with the following structure:
+
 * `mod.rs` -- Top-level module.  This is where the pipeline for the IR is defined.
-* `nodes.rs` -- Node definitions
+* `nodes.rs` -- Node definitions.
 * *other submodules* -- Define pipeline pass functions.  These are named `pass()` by convention.
 
 ## Defining IRs
@@ -82,7 +84,7 @@ Each IRs will typically have a module dedicated to them with the following struc
 
 ```rust
 // The output type is a pipeline that converts from `initial::Root` to the `Root` node from this IR.
-pub fn pipeline(): Pipeline<initial::Root, Root> {
+pub fn pipeline() -> Pipeline<initial::Root, Root> {
     // Start with `from_ir's` pipeline.  This converts `initial::root` to `from_ir::Root`.
     from_ir::pipeline()
         // Convert to `into_ir::Root`.
@@ -127,7 +129,7 @@ Here's how this works in the `callables` pass:
 ```rust
 pub fn pass(root: &mut Root) -> Result<()> {
     root.visit_mut(|func: &mut Function| {
-        func.callable = Callable! {
+        func.callable = Callable {
             // Most of the fields are simply copied from `Function`
             name: func.name.clone(),
             is_async: func.is_async,
@@ -216,4 +218,4 @@ Piping to a pager like `less` is highly recommended in this case.
 
 You can test this out yourself by running the following command to follow the `add` function as it moves throw the IR pipeline:
 
-`cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add` 
+`cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add`

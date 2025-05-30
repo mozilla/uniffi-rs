@@ -23,3 +23,6 @@ syn = { version = "2.0", features = ["full", "visit-mut", "extra-traits"] }
 [features]
 default = []
 nightly = []
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]
