@@ -7,7 +7,7 @@ Any valid type can be a bridge type - not only builtins, but structs, records, e
 
 This not only allows using types which otherwise would be impossible over the FFI (eg, `url::Url`), but other interesting "newtype" options to extend the type system.
 
-The foreign bindings will treat these types as the bridge type - but they may optionally transform the type. For example, our `Url` has a bridged type of `string` - we could choose for Kotin to either get that as a `String`, or supply a conversion to/from a Kotlin `java.net.URL`.
+The foreign bindings will treat these types as the bridge type - but they may optionally transform the type. For example, our `Url` has a bridged type of `string` - we could choose for Kotlin to either get that as a `String`, or supply a conversion to/from a Kotlin `java.net.URL`.
 
 This would mean that `Url` would be:
 * Represented by the `url::Url` type in Rust
