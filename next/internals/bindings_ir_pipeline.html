@@ -1970,6 +1970,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Node conversions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-conversion-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field Conversion order
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2093,6 +2108,28 @@ For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node
 <span class="w">    </span><span class="n">wrapped</span><span class="p">:</span><span class="w"> </span><span class="nc">WrappedNode</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
+<h3 id="field-conversion-order">Field Conversion order</h3>
+<p>Fields are converted in declaration order.
+This matters when a field is listed twice with one of them using <code>#[node(from(&lt;name_of_the_other_field&gt;)]</code>.
+In this case the first field declared will be initialized with the data from the previous pass and the second field will be initialized to the default value.</p>
+<p>You can take advantage of this to convert an optional value into a non-optional value.
+For example:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">SourceNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span>
+<span class="p">}</span>
+
+<span class="cp">#[derive(Node)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">DestNode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="sd">/// This field will be set to `SourceNode::name`</span>
+<span class="w">    </span><span class="cp">#[node(from(name))]</span>
+<span class="w">    </span><span class="n">name_from_previous_pass</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="sd">/// This field will be a non-optional version of `SourceNode::name`.</span>
+<span class="w">    </span><span class="sd">/// It will be initialized to an empty string, then a pipeline pass will populate it using</span>
+<span class="w">    </span><span class="sd">/// `name_from_previous_pass` combined with logic to handle the `None` case.</span>
+<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="module-structure">Module structure</h2>
 <p>Each IRs will typically have a module dedicated to them with the following structure:</p>
 <ul>
@@ -2116,7 +2153,6 @@ For example, <code>from_ir::Node</code> will be converted to <code>into_ir::Node
 <span class="w">        </span><span class="c1">// This will use the logic from the Node conversions section above.</span>
 <span class="w">        </span><span class="p">.</span><span class="n">convert_ir_pass</span><span class="p">::</span><span class="o">&lt;</span><span class="n">Root</span><span class="o">&gt;</span><span class="p">()</span>
 <span class="w">        </span><span class="c1">// Add passes to populate the new fields, mutate existing fields, etc.</span>
-<span class="w">        </span><span class="c1">// Each pass</span>
 <span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">foo</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">bar</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="n">pass</span><span class="p">(</span><span class="n">baz</span><span class="p">::</span><span class="n">pass</span><span class="p">)</span>
