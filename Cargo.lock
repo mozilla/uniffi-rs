@@ -1836,6 +1836,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-name-collisions"
+version = "0.22.0"
+dependencies = [
+ "uniffi",
+ "uniffi-fixture-callbacks",
+]
+
+[[package]]
 name = "uniffi-fixture-proc-macro"
 version = "0.22.0"
 dependencies = [

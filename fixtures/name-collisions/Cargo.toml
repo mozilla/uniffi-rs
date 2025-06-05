@@ -1,0 +1,21 @@
+[package]
+name = "uniffi-fixture-name-collisions"
+version = "0.22.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_name_collisions"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+uniffi = { workspace = true }
+# We'll depend on callbacks fixture to create a collision scenario
+uniffi-fixture-callbacks = { path = "../callbacks" }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }

@@ -25,6 +25,8 @@ members = [
   "examples/todolist",
   "examples/traits",
 
+  "fixtures/name-collisions",
+
   "fixtures/benchmarks",
   "fixtures/coverall",
   "fixtures/callbacks",
