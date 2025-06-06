@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="interfaces.html">
+        <link rel="prev" href="lifting_and_lowering.html">
       
       
-        <link rel="next" href="docstrings.html">
+        <link rel="next" href="foreign_calls.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>The uniffi::Record derive - The UniFFI user guide</title>
+        <title>Foreign -> Rust calls - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-uniffirecord-derive" class="md-skip">
+        <a href="#foreign-rust-calls" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              The uniffi::Record derive
+              Foreign -&gt; Rust calls
             
           </span>
         </div>
@@ -722,20 +722,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -751,7 +749,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Describing the interface
@@ -1015,20 +1013,18 @@
                 
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
         
           
           <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
@@ -1044,7 +1040,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             Proc macros
@@ -1058,7 +1054,7 @@
   
   
     <li class="md-nav__item">
-      <a href="index.html" class="md-nav__link">
+      <a href="../proc_macro/index.html" class="md-nav__link">
         
   
   
@@ -1081,7 +1077,7 @@
   
   
     <li class="md-nav__item">
-      <a href="enumerations.html" class="md-nav__link">
+      <a href="../proc_macro/enumerations.html" class="md-nav__link">
         
   
   
@@ -1104,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="errors.html" class="md-nav__link">
+      <a href="../proc_macro/errors.html" class="md-nav__link">
         
   
   
@@ -1127,7 +1123,7 @@
   
   
     <li class="md-nav__item">
-      <a href="functions.html" class="md-nav__link">
+      <a href="../proc_macro/functions.html" class="md-nav__link">
         
   
   
@@ -1150,7 +1146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="interfaces.html" class="md-nav__link">
+      <a href="../proc_macro/interfaces.html" class="md-nav__link">
         
   
   
@@ -1170,19 +1166,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="records.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../proc_macro/records.html" class="md-nav__link">
         
   
   
@@ -1193,7 +1180,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -1206,7 +1192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docstrings.html" class="md-nav__link">
+      <a href="../proc_macro/docstrings.html" class="md-nav__link">
         
   
   
@@ -1722,18 +1708,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1749,7 +1737,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1763,7 +1751,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/design_principles.html" class="md-nav__link">
+      <a href="design_principles.html" class="md-nav__link">
         
   
   
@@ -1786,7 +1774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/crates.html" class="md-nav__link">
+      <a href="crates.html" class="md-nav__link">
         
   
   
@@ -1809,7 +1797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
+      <a href="lifting_and_lowering.html" class="md-nav__link">
         
   
   
@@ -1829,10 +1817,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../internals/rust_calls.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Foreign -&gt; Rust calls
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="rust_calls.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1843,6 +1853,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-ffi-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      The FFI function
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rustcallstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      RustCallStatus
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Method calls
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#panic-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Panic handling
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1855,7 +1921,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/foreign_calls.html" class="md-nav__link">
+      <a href="foreign_calls.html" class="md-nav__link">
         
   
   
@@ -1878,7 +1944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/object_references.html" class="md-nav__link">
+      <a href="object_references.html" class="md-nav__link">
         
   
   
@@ -1901,7 +1967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/async-overview.html" class="md-nav__link">
+      <a href="async-overview.html" class="md-nav__link">
         
   
   
@@ -1924,7 +1990,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/async-ffi.html" class="md-nav__link">
+      <a href="async-ffi.html" class="md-nav__link">
         
   
   
@@ -1947,7 +2013,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="rendering_foreign_bindings.html" class="md-nav__link">
         
   
   
@@ -2012,6 +2078,50 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-ffi-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      The FFI function
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rustcallstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      RustCallStatus
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Method calls
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#panic-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Panic handling
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2029,26 +2139,74 @@
   
 
 
-<h1 id="the-uniffirecord-derive">The <code>uniffi::Record</code> derive</h1>
-<p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
-supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types
-here.</p>
-<p>It is permitted to use this macro on a type that is also defined in the UDL file, as long as all
-field types are UniFFI builtin types; user-defined types might be allowed in the future. You also
-have to maintain a consistent field order between the Rust and UDL files (otherwise compilation
-will fail).</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyRecord</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">field_a</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">field_b</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">MyObject</span><span class="o">&gt;&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="c1">// Fields can have default values</span>
-<span class="w">    </span><span class="cp">#[uniffi(default = </span><span class="s">&quot;hello&quot;</span><span class="cp">)]</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">greeting</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="cp">#[uniffi(default = true)]</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">some_flag</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<h1 id="foreign-rust-calls">Foreign -&gt; Rust calls</h1>
+<p>What happens when code in the foreign language makes a call to Rust?
+The <a href="lifting_and_lowering.html">lifting and lowering</a> docs describe this at a high-level, this document will explore the details.</p>
+<p>This document only describes non-async Rust calls.
+See the <a href="async-ffi.html">Async FFI</a> docs for a description of async calls.</p>
+<h2 id="the-ffi-function">The FFI function</h2>
+<p>For each exported Rust function, an FFI function is generated.
+This <code>extern "C"</code> function is exported in the Rust library and its what's called by the foreign code.</p>
+<p>Different bindings use different techniques to call these functions.
+For example, Python uses <a href="https://docs.python.org/3/library/ctypes.html">ctypes</a> to call into a dynamic library, while Swift links to a static library and calls the C functions directly.</p>
+<p>The signature for the FFI function is:
+* Arguments:
+  * The <a href="lifting_and_lowering.html">lowered type</a> for each argument of the Rust function
+  * A <code>RustCallStatus</code> out pointer
+* Returns:
+  * For non-unit type returns: the <a href="lifting_and_lowering.html">lowered type</a> of the return value for the Rust function
+  * For unit type returns: <code>void</code> (i.e. no return value, which is special-cased in <code>C</code>).</p>
+<h2 id="rustcallstatus">RustCallStatus</h2>
+<p>The last argument for the FFI function is a pointer to a <code>RustCallStatus</code> struct.
+The FFI function writes to this struct to report errors when calling the Rust function.</p>
+<p>Here's the layout for this struct:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[repr(C)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">RustCallStatus</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">code</span><span class="p">:</span><span class="w"> </span><span class="nc">RustCallStatusCode</span><span class="p">,</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">error_buf</span><span class="p">:</span><span class="w"> </span><span class="nc">RustBuffer</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="cp">#[repr(i8)]</span>
+<span class="cp">#[derive(Debug, PartialEq, Eq)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">RustCallStatusCode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="n">UnexpectedError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Cancelled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="c1">// Only used for async calls</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Most types can have default values - all defaults described for <a href="functions.html#default-values">function arguments</a> apply here too.</p>
+<p>When the foreign code calls the Rust FFI function, it initializes <code>RustCallStatus.code</code> to <code>RustCallStatus::Success</code> and <code>RustCallStatus.error_buf</code> to an empty RustBuffer.  After calling the real Rust function, the generated FFI function writes to this struct:</p>
+<ul>
+<li>If the function returns successfully (i.e. it runs normally and returns <code>Ok</code> value for <code>Result</code> return types), then nothing is written.
+  Since the foreign bindings initialize <code>code=RustCallStatus::Success</code>, this will be interpreted as a successful call.</li>
+<li>If a <code>Result::Err</code> value is returned then:</li>
+<li>The generated Rust code sets <code>code</code> to <code>RustCallStatusCode::Error</code></li>
+<li>The generated Rust code serializes the error into a <code>RustBuffer</code> and stores that in <code>error_buf</code>.</li>
+<li>The foreign bindings are responsible for deserializing that error into an exception value and
+    throwing that exception.</li>
+<li>A placeholder value is returned (e.g. <code>0</code> or an empty <code>RustBuffer</code>);</li>
+<li>If an unexpected error happens, for example a failure when lifting the arguments, then:</li>
+<li>The generated Rust code sets <code>code</code> to <code>RustCallStatusCode::InternalError</code></li>
+<li>The generated Rust code tries to serialize the error message to a <code>RustBuffer</code> and store it <code>error_buf</code>.
+    However, it's possible this fails in which case <code>error_buf</code> not be written to.</li>
+<li>A placeholder value is returned</li>
+<li>The foreign bindings are responsible throwing some sort of UniFFI internal exception.
+    If possible, this exception should contain the error message.</li>
+</ul>
+<h2 id="method-calls">Method calls</h2>
+<p>Method calls work the same as function calls, except there's an extra argument for the object handle.
+This means the arguments are:</p>
+<ul>
+<li>The object handle (<code>void *</code>).
+  This is cloned before making the call as described in <a href="object_references.html">object references</a>.</li>
+<li>The lowered type for each Rust argument</li>
+<li>A <code>RustCallStatus</code> out pointer</li>
+</ul>
+<h2 id="panic-handling">Panic handling</h2>
+<p>UniFFI uses <code>std::panic::catch_unwind</code> to try to catch any panics in the Rust code.
+The main reason is to prevent them from moving up the call stack into the foreign language's frames, which would almost certainly lead to a crash.
+Panics are treated as unexpected errors as described above.
+UniFFI can't always catch panics, for example when the Rust panic handler is set to <code>abort</code>.</p>
 
 
 

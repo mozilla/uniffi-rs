@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="interfaces.html">
+        <link rel="prev" href="rust_calls.html">
       
       
-        <link rel="next" href="docstrings.html">
+        <link rel="next" href="object_references.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>The uniffi::Record derive - The UniFFI user guide</title>
+        <title>Rust -> Foreign calls - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-uniffirecord-derive" class="md-skip">
+        <a href="#rust-foreign-calls" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              The uniffi::Record derive
+              Rust -&gt; Foreign calls
             
           </span>
         </div>
@@ -722,20 +722,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -751,7 +749,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Describing the interface
@@ -1015,20 +1013,18 @@
                 
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
         
           
           <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
@@ -1044,7 +1040,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             Proc macros
@@ -1058,7 +1054,7 @@
   
   
     <li class="md-nav__item">
-      <a href="index.html" class="md-nav__link">
+      <a href="../proc_macro/index.html" class="md-nav__link">
         
   
   
@@ -1081,7 +1077,7 @@
   
   
     <li class="md-nav__item">
-      <a href="enumerations.html" class="md-nav__link">
+      <a href="../proc_macro/enumerations.html" class="md-nav__link">
         
   
   
@@ -1104,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="errors.html" class="md-nav__link">
+      <a href="../proc_macro/errors.html" class="md-nav__link">
         
   
   
@@ -1127,7 +1123,7 @@
   
   
     <li class="md-nav__item">
-      <a href="functions.html" class="md-nav__link">
+      <a href="../proc_macro/functions.html" class="md-nav__link">
         
   
   
@@ -1150,7 +1146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="interfaces.html" class="md-nav__link">
+      <a href="../proc_macro/interfaces.html" class="md-nav__link">
         
   
   
@@ -1170,19 +1166,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="records.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../proc_macro/records.html" class="md-nav__link">
         
   
   
@@ -1193,7 +1180,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -1206,7 +1192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="docstrings.html" class="md-nav__link">
+      <a href="../proc_macro/docstrings.html" class="md-nav__link">
         
   
   
@@ -1722,18 +1708,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1749,7 +1737,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1763,7 +1751,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/design_principles.html" class="md-nav__link">
+      <a href="design_principles.html" class="md-nav__link">
         
   
   
@@ -1786,7 +1774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/crates.html" class="md-nav__link">
+      <a href="crates.html" class="md-nav__link">
         
   
   
@@ -1809,7 +1797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
+      <a href="lifting_and_lowering.html" class="md-nav__link">
         
   
   
@@ -1832,7 +1820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/rust_calls.html" class="md-nav__link">
+      <a href="rust_calls.html" class="md-nav__link">
         
   
   
@@ -1852,10 +1840,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../internals/foreign_calls.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Rust -&gt; Foreign calls
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="foreign_calls.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1866,6 +1876,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vtables" class="md-nav__link">
+    <span class="md-ellipsis">
+      VTables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vtable-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      VTable methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vtable-free-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      VTable free method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registering-vtables-and-calling-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Registering VTables and calling methods
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1878,7 +1944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/object_references.html" class="md-nav__link">
+      <a href="object_references.html" class="md-nav__link">
         
   
   
@@ -1901,7 +1967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/async-overview.html" class="md-nav__link">
+      <a href="async-overview.html" class="md-nav__link">
         
   
   
@@ -1924,7 +1990,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/async-ffi.html" class="md-nav__link">
+      <a href="async-ffi.html" class="md-nav__link">
         
   
   
@@ -1947,7 +2013,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="rendering_foreign_bindings.html" class="md-nav__link">
         
   
   
@@ -2012,6 +2078,50 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vtables" class="md-nav__link">
+    <span class="md-ellipsis">
+      VTables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vtable-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      VTable methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vtable-free-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      VTable free method
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registering-vtables-and-calling-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Registering VTables and calling methods
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2029,26 +2139,76 @@
   
 
 
-<h1 id="the-uniffirecord-derive">The <code>uniffi::Record</code> derive</h1>
-<p>The <code>Record</code> derive macro exposes a <code>struct</code> with named fields over FFI. All types that are
-supported as parameter and return types by <code>#[uniffi::export]</code> are also supported as field types
-here.</p>
-<p>It is permitted to use this macro on a type that is also defined in the UDL file, as long as all
-field types are UniFFI builtin types; user-defined types might be allowed in the future. You also
-have to maintain a consistent field order between the Rust and UDL files (otherwise compilation
-will fail).</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyRecord</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">field_a</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">field_b</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">MyObject</span><span class="o">&gt;&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="c1">// Fields can have default values</span>
-<span class="w">    </span><span class="cp">#[uniffi(default = </span><span class="s">&quot;hello&quot;</span><span class="cp">)]</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">greeting</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="cp">#[uniffi(default = true)]</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">some_flag</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<h1 id="rust-foreign-calls">Rust -&gt; Foreign calls</h1>
+<p>How can Rust code make a call into the foreign language?
+The <a href="lifting_and_lowering.html">lifting and lowering</a> docs describe this at a high-level, this document will explore the details.</p>
+<p>This document only describes non-async calls.
+See the <a href="async-ffi.html">Async FFI</a> docs for a description of async calls.</p>
+<h2 id="vtables">VTables</h2>
+<p>Calling into foreign code has 2 major differences from <a href="rust_calls.html">calling Rust code</a>:</p>
+<ul>
+<li>Foreign code is only called via an interface.</li>
+<li>The Rust code does not have knowledge of the FFI functions on the foreign language side.</li>
+</ul>
+<p>Because of this, the foreign calls all go through a vtable defined in the foreign language.
+This is a <code>repr(C)</code> struct where each entry is a function pointer corresponding to a method in a callback interface.</p>
+<p>For example:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">/// For this trait interface...</span>
+<span class="cp">#[uniffi::export(with_foreign)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">);</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">get_items</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">;</span>
 <span class="p">}</span>
+
+<span class="sd">/// A VTable like this will be generated:</span>
+<span class="cp">#[repr(C)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">UniffiTodoListVTable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// One function pointer field for each method</span>
+<span class="w">    </span><span class="c1">// title is passed as a `RustBuffer` as described in [Lifting and lowering](./lifting_and_lowering.md)</span>
+<span class="w">    </span><span class="n">append</span><span class="p">:</span><span class="w"> </span><span class="nc">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="p">(</span><span class="n">uniffi_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">:</span><span class="w"> </span><span class="nc">RustBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">uniffi_out_return</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="p">(),</span><span class="w"> </span><span class="n">uniffi_call_status</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">RustCallStatus</span><span class="p">),</span>
+<span class="w">    </span><span class="n">get_items</span><span class="p">:</span><span class="w"> </span><span class="nc">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="p">(</span><span class="n">uniffi_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">,</span><span class="w"> </span><span class="n">uniffi_out_return</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">RustBuffer</span><span class="p">,</span><span class="w"> </span><span class="n">uniffi_call_status</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">RustCallStatus</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// A function pointer for freeing the callback interface</span>
+<span class="w">    </span><span class="n">uniffi_free</span><span class="p">:</span><span class="w"> </span><span class="nc">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="p">(</span><span class="n">uniffi_handle</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="sd">/// Called by the generated foreign bindings to register the VTable</span>
+<span class="cp">#[no_mangle]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">uniffi_init_todo_list_vtable</span><span class="p">(</span><span class="n">vtable</span><span class="p">:</span><span class="w"> </span><span class="nc">std</span><span class="p">::</span><span class="n">ptr</span><span class="p">::</span><span class="n">NonNull</span><span class="o">&lt;</span><span class="n">UniffiTodoListVTable</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="o">..</span><span class="p">.}</span>
 </code></pre></div>
-<p>Most types can have default values - all defaults described for <a href="functions.html#default-values">function arguments</a> apply here too.</p>
+<h2 id="vtable-methods">VTable methods</h2>
+<p>VTable methods work similar to a <a href="rust_calls.html">Rust method call</a>], with some exceptions.</p>
+<p>Instead of returning the value as normal, it's written to a pointer that Rust passes as extra argument to the method (AKA an out pointer).
+This is because some foreign languages, like Python, don't support returning C structs like <code>RustBuffer</code> (<a href="https://github.com/python/cpython/issues/49960">issue</a>).
+Methods that don't return anything still have an out pointer argument, but it's never written to.</p>
+<p>The first argument is a <code>u64</code> handle.
+Different bindings have different systems for callback interface handles, but they generally fall into 2 camps:
+* The handle is the key to a hash map that maps <code>u64</code> -&gt; callback interface objects.
+* The is a raw pointer to a callback interface object cast to a <code>u64</code>.</p>
+<p>The method call is handled very similarly to a Rust method call:</p>
+<ul>
+<li>If the function returns successfully then the lowered return value is written to <code>uniffi_out_return</code> and nothing is written to <code>uniffi_call_status</code>.</li>
+<li>If the function throws the exception that corresponds to the <code>Result::Err</code> side of the Rust function, then:</li>
+<li>The foreign bindings set <code>uniffi_call_status.code</code> to <code>RustCallStatusCode::Error</code></li>
+<li>The foreign bindings serialize the error into a <code>RustBuffer</code> and write it to <code>uniffi_call_status.error_buf</code>.</li>
+<li>Nothing is written to <code>uniffi_out_return</code>.</li>
+<li>If the method throws some other exception, then:</li>
+<li>The foreign bindings set <code>uniffi_call_status.code</code> to <code>RustCallStatusCode::InternalError</code></li>
+<li>The foreign bindings should try to to serialize the error message to a <code>RustBuffer</code> and write it to <code>error_buf</code>.
+    However, bindings may also not write to <code>error_buf</code> and the generated Rust code will handle this.</li>
+<li>Nothing is written to <code>uniffi_out_return</code>.</li>
+<li>If the callback method returns a <code>Result&lt;T, E&gt;</code> type and the bindings implement <code>From&lt;uniffi::UnexpectedUniFFICallbackError&gt; for E</code>,
+    then the generated Rust will convert the error to an <code>Err(E)</code> value and return it.</li>
+<li>If not, then the Rust bindings will panic.
+    This is why it's recommended to always have callback methods return <code>Result</code> types and implement <code>From&lt;uniffi::UnexpectedUniFFICallbackError&gt;</code>.</li>
+</ul>
+<h2 id="vtable-free-method">VTable free method</h2>
+<p>Each vtable also stores a free method that inputs a <code>uniffi_handle</code>.
+The generated Rust code calls this in the <code>Drop</code> implementation for the callback interface.
+The foreign bindings are responsible for releasing any resources associated with the handle, this usually means removing the hash map entry for it or freeing the raw pointer.</p>
+<h2 id="registering-vtables-and-calling-methods">Registering VTables and calling methods</h2>
+<p>As shown in the example code, UniFFI generates a function to register the vtable for each callback interface.
+The foreign bindings must all this function before returning any callback interface handles, usually this is done at startup.
+When a callback interface method is called, the generated code finds the registered vtable, looks up the field for the method, then uses the function pointer for that field to make the call.</p>
 
 
 
