@@ -1,0 +1,5 @@
+---
+source: uniffi/tests/custom_types.rs
+expression: result.unwrap_err()
+---
+Value cannot contain 'invalid'
