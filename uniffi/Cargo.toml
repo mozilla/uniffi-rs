@@ -7,18 +7,18 @@ repository = "https://github.com/mozilla/uniffi-rs"
 # Incrementing the minor version here means a breaking change to consumers.
 #   * See `docs/uniffi-versioning.md` for guidance on when to increment this
 #   * Make sure to also update `uniffi_bindgen::UNIFFI_CONTRACT_VERSION"
-version = "0.29.2"
+version = "0.29.3"
 license = "MPL-2.0"
 edition = "2021"
 keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [dependencies]
-uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.29.2", optional = true }
-uniffi_build = { path = "../uniffi_build", version = "=0.29.2", optional = true }
-uniffi_core = { path = "../uniffi_core", version = "=0.29.2" }
-uniffi_macros = { path = "../uniffi_macros", version = "=0.29.2" }
-uniffi_pipeline = { path = "../uniffi_pipeline", version = "=0.29.2" }
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.29.3", optional = true }
+uniffi_build = { path = "../uniffi_build", version = "=0.29.3", optional = true }
+uniffi_core = { path = "../uniffi_core", version = "=0.29.3" }
+uniffi_macros = { path = "../uniffi_macros", version = "=0.29.3" }
+uniffi_pipeline = { path = "../uniffi_pipeline", version = "=0.29.3" }
 anyhow = "1"
 camino = { version = "1.0.8", optional = true }
 cargo_metadata = { version = "0.19", optional = true }

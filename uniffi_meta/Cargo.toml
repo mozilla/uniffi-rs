@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_meta"
-version = "0.29.2"
+version = "0.29.3"
 edition = "2021"
 description = "uniffi_meta"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -12,8 +12,8 @@ readme = "../README.md"
 [dependencies]
 anyhow = "1"
 siphasher = "0.3"
-uniffi_internal_macros = { version = "0.29.2", path = "../uniffi_internal_macros" }
-uniffi_pipeline = { version = "0.29.2", path = "../uniffi_pipeline" }
+uniffi_internal_macros = { version = "0.29.3", path = "../uniffi_internal_macros" }
+uniffi_pipeline = { version = "0.29.3", path = "../uniffi_pipeline" }
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--generate-link-to-definition"]

@@ -6,11 +6,15 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
+
+## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)
+
 ### What's new?
 
 - HashMaps in UDL now support a default value with an empty map ([#2539](https://github.com/mozilla/uniffi-rs/pull/2539)).
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.2...HEAD).
+[All changes in v0.29.3](https://github.com/mozilla/uniffi-rs/compare/v0.29.2...v0.29.3).
 
 ## v0.29.2 (backend crates: v0.29.2) - (_2025-05-05_)
 
