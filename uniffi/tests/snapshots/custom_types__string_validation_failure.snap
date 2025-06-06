@@ -1,5 +1,8 @@
 ---
 source: uniffi/tests/custom_types.rs
-expression: result.unwrap_err()
+expression: "format!(\"{:?}\", result.unwrap_err())"
 ---
-Value cannot contain 'invalid'
+While Converting Custom Type with <alloc::string::String as TryInto<custom_types::ValidatedString>>::try_into(val)
+
+Caused by:
+    Value cannot contain 'invalid'

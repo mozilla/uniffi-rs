@@ -192,8 +192,24 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         Some(convert_closure) => convert_closure.token_tuple(),
         None => (
             quote! { val },
-            quote! { Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?) },
+            quote! {
+                Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?)
+            },
         ),
+    };
+
+    let custom_type_context = {
+        let name = try_lift.to_string();
+        let uniffi_type_name = uniffi_type.to_string();
+        let custom_type_name = custom_type.to_string();
+        quote! {
+            format!(
+                "Lifting Custom Type with <{} as TryInto<{}>>::try_into({}) Failed",
+                #uniffi_type_name,
+                #custom_type_name,
+                #name
+            )
+        }
     };
 
     let docstring = ""; // todo...
@@ -212,7 +228,10 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
 
             fn try_lift(v: Self::FfiType) -> ::uniffi::Result<#custom_type> {
                 let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(v)?;
-                #try_lift_expr
+                ::uniffi::deps::anyhow::Context::with_context(
+                    (move || -> ::uniffi::deps::anyhow::Result<#custom_type> { #try_lift_expr })(),
+                    || #custom_type_context
+                )
             }
 
             fn write(#lower_param: #custom_type, buf: &mut Vec<u8>) {
@@ -221,7 +240,10 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<#custom_type> {
                 let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?;
-                #try_lift_expr
+                ::uniffi::deps::anyhow::Context::with_context(
+                    (move || -> ::uniffi::deps::anyhow::Result<#custom_type> { #try_lift_expr })(),
+                    || #custom_type_context
+                )
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)

@@ -47,5 +47,5 @@ fn test_string_validation_failure() {
 
     let result: anyhow::Result<RecordWithValidatedStrings> = uniffi::Lift::<UniFfiTag>::try_lift(uniffi::Lower::<UniFfiTag>::lower(base));
 
-    insta::assert_snapshot!(result.unwrap_err());
+    insta::assert_snapshot!(format!("{:?}", result.unwrap_err()));
 }
