@@ -62,7 +62,8 @@ fn vtable(
 ) -> Result<VTable> {
     Ok(VTable {
         struct_type: FfiType::Struct(FfiStructName(format!(
-            "VTableCallbackInterface{}",
+            "VTableCallbackInterface{}{}",
+            module_name.to_upper_camel_case(),
             interface_name
         )))
         .into(),
@@ -82,7 +83,8 @@ fn vtable(
                 Ok(VTableMethod {
                     callable: meth.callable,
                     ffi_type: FfiType::Function(FfiFunctionTypeName(format!(
-                        "CallbackInterface{}Method{i}",
+                        "CallbackInterface{}{}Method{i}",
+                        module_name.to_upper_camel_case(),
                         interface_name
                     )))
                     .into(),
@@ -100,7 +102,11 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
         let interface_name = &vtable.interface_name;
         // FFI Function Type for each method in the VTable
         for (i, meth) in vtable.methods.iter().enumerate() {
-            let method_name = format!("CallbackInterface{interface_name}Method{i}");
+            let method_name = format!(
+                "CallbackInterface{}{}Method{i}",
+                module_name.to_upper_camel_case(),
+                interface_name
+            );
             match &meth.callable.async_data {
                 Some(async_data) => {
                     ffi_definitions.push(vtable_method_async(
@@ -187,7 +193,11 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
             }
             .into(),
             FfiStruct {
-                name: FfiStructName(format!("VTableCallbackInterface{}", interface_name)),
+                name: FfiStructName(format!(
+                    "VTableCallbackInterface{}{}",
+                    module_name.to_upper_camel_case(),
+                    interface_name
+                )),
                 fields: vtable
                     .methods
                     .iter()
