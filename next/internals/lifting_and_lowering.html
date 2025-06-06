@@ -12,7 +12,7 @@
         <link rel="prev" href="crates.html">
       
       
-        <link rel="next" href="rust_calls.html">
+        <link rel="next" href="ffi_converter_traits.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -1847,6 +1847,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#lifting-and-lowering-when-calling-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lifting and Lowering when calling functions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lowered-types" class="md-nav__link">
     <span class="md-ellipsis">
       Lowered Types
@@ -1864,19 +1873,33 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#code-generation-and-the-fficonverter-trait" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Generation and the FfiConverter trait
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ffi_converter_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ffi converter traits
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -2076,6 +2099,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#lifting-and-lowering-when-calling-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lifting and Lowering when calling functions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lowered-types" class="md-nav__link">
     <span class="md-ellipsis">
       Lowered Types
@@ -2088,15 +2120,6 @@
   <a href="#serialization-format" class="md-nav__link">
     <span class="md-ellipsis">
       Serialization Format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-generation-and-the-fficonverter-trait" class="md-nav__link">
-    <span class="md-ellipsis">
-      Code Generation and the FfiConverter trait
     </span>
   </a>
   
@@ -2133,37 +2156,101 @@ into one of the primitive types supported by the FFI-layer functions, and the
 receiving side "<strong><em>lifts</em></strong>" that primitive type into its own language-specific
 data type.</p>
 <p>Lifting and lowering simple types such as integers is done by directly casting the
-value to and from an appropriate type. For complex types such as optionals and
-records we currently implement lifting and lowering by serializing into a byte
-buffer, but this is an implementation detail that may change in future. (See
-<a href="https://github.com/mozilla/uniffi-rs/blob/main/docs/adr/0002-serialize-complex-datatypes.md">ADR-0002</a> for the reasoning
-behind this choice.)</p>
+value to and from an appropriate type. Non-trivial types such as Strings, Optionals and
+Records, etc. are lowered to a byte buffer called a <code>RustBuffer</code> internally.</p>
+<p>For example, a Python <code>str</code> is passed to Rust by lowering it to a <code>RustBuffer</code>, which is then
+lifted to a Rust <code>String</code></p>
+<pre class="mermaid"><code>block-beta
+  columns 2
+  block:PythonLayer
+    columns 1
+    PythonTitle["Python"]
+    PythonStr["str"]
+  end
+  block:RustLayer
+    columns 1
+    RustTitle["Rust"]
+    RustString["String"]
+  end
+  block:FFILayer:2
+    columns 3
+    space:2
+    FfiTitle["FFI"]
+    space
+    RustBuffer["RustBuffer"]
+    space
+  end
+
+  PythonStr --"Lower"--&gt; RustBuffer
+  RustBuffer --"Lift"--&gt; RustString
+
+classDef default stroke:transparent,fill:#fff
+classDef layer stroke:#c0c0c0,fill:#cae9ff
+classDef title stroke:transparent,fill:transparent,color:#f72585
+classDef invisible stroke:transparent,fill:transparent
+class RustLayer layer
+class PythonLayer layer
+class FFILayer layer
+class RustTitle title
+class PythonTitle title
+class FfiTitle title</code></pre>
+<h2 id="lifting-and-lowering-when-calling-functions">Lifting and Lowering when calling functions</h2>
 <p>As a concrete example, consider this interface for accumulating a list of integers:</p>
 <div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>example<span class="w"> </span>{
 <span class="w">  </span>sequence<span class="o">&lt;</span>i32<span class="o">&gt;</span><span class="w"> </span>add_to_list(i32<span class="w"> </span>item);
 }
 </code></pre></div>
-<p>Calling this function from foreign language code involves the following steps:</p>
+<p>Calling this function from foreign language code involves lowering the arguments, calling an FFI
+function, lifting the arguments, then calling the original function.</p>
+<pre class="mermaid"><code>block-beta
+  columns 2
+  block:PythonUserLayer
+    columns 1
+    PythonTitle["Generated Python function"]
+    PythonFunc["add_to_list(int) -&gt; [int]"]
+  end
+  block:RustUserLayer
+    columns 1
+    RustTitle["User-defined Rust Function"]
+    RustFunc["add_to_list(i32) -&gt; Vec&lt;i32&gt;"]
+  end
+  space:2
+  block:ScaffoldingLayer:2
+    columns 1
+    ScaffoldingFunc["uniffi_fn_add_to_list(int32_t) -&gt; RustBuffer"]
+    ScaffoldingTitle["Generated Rust scaffolding function"]
+  end
+
+  PythonFunc -- "Lower" --&gt; ScaffoldingFunc
+  ScaffoldingFunc -- "Lift" --&gt; RustFunc
+
+classDef default stroke:transparent,fill:#fff
+classDef layer stroke:#c0c0c0,fill:#cae9ff
+classDef title stroke:transparent,fill:transparent,color:#f72585
+classDef invisible stroke:transparent,fill:transparent
+
+class PythonUserLayer layer
+class RustUserLayer layer
+class ScaffoldingLayer layer
+
+class RustTitle title
+class PythonTitle title
+class ScaffoldingTitle title</code></pre>
+<p>Details:</p>
 <ol>
-<li>The user-provided calling code invokes the <code>add_to_list</code> function that is exposed by the
-   UniFFI-generated foreign language bindings, passing <code>item</code> as an appropriate language-native
-   integer.</li>
-<li>The foreign language bindings <strong><em>lower</em></strong> each argument to a function call into
-   something that can be passed over the C-style FFI. Since the <code>item</code> argument is a plain integer,
+<li>UniFFI generates an <code>add_to_list</code> function in the foreign language (Python in the example
+   diagram).  In this function the <code>item</code> argument and the return type are language-native types.</li>
+<li>The generated function <strong><em>lowers</em></strong> each argument.  Since the <code>item</code> argument is a plain integer,
    it is lowered by casting to an <code>int32_t</code>.</li>
-<li>The foreign language bindings pass the lowered arguments to a C FFI function named
-   like <code>example_XYZ_add_to_list</code> that is exposed by the UniFFI-generated Rust scaffolding.</li>
-<li>The Rust scaffolding <strong><em>lifts</em></strong> each argument received over the FFI into a native
-   Rust type. Since <code>item</code> is a plain integer it is lifted by casting to a Rust <code>i32</code>.</li>
-<li>The Rust scaffolding passes the lifted arguments to the user-provided Rust code for
-   the <code>add_to_list</code> function, which returns a <code>Vec&lt;i32&gt;</code>.</li>
-<li>The Rust scaffolding now needs to <strong><em>lower</em></strong> the return value in order to pass it back
-   to the foreign language code. Since this is a complex data type, it is lowered by serializing
-   the values into a byte buffer and returning the buffer pointer and length from the
-   FFI function.</li>
-<li>The foreign language bindings receive the return value and need to <strong><em>lift</em></strong> it into an
-   appropriate native data type. Since it is a complex data type, it is lifted by deserializing
-   from the returned byte buffer into a language-native list of integers.</li>
+<li>The generated Python function passes the lowered arguments to the Rust scaffolding function.
+   This is a <code>repr(C)</code> FFI function in Rust library and named <code>uniffi_fn_add_to_list</code> in this example.</li>
+<li>The Rust scaffolding function <strong><em>lifts</em></strong> each argument received over the FFI into a native Rust type.
+   Since <code>item</code> is a plain integer no conversion is needed.</li>
+<li>The Rust scaffolding passes the lifted arguments to the user-defined Rust <code>add_to_list</code> function, which then executes normally.</li>
+<li>The Rust scaffolding function receives the return value and now needs to <strong><em>lower</em></strong> the it to pass it back across the FFI.
+   Since this type's <code>::FfiType</code> is a <code>RustBuffer</code>, it's lowered by serializing the values into a byte buffer (<code>RustBuffer</code>), which is then returned.</li>
+<li>The generated Python function receives the return value, and then <strong><em>lifts</em></strong> it to a native data type.
+   Since this type's <code>::FfiType</code> is a <code>RustBuffer</code>, it's lifted by deserializing a language-native list of integers from the RustBuffer.</li>
 </ol>
 <h2 id="lowered-types">Lowered Types</h2>
 <table>
@@ -2302,21 +2389,6 @@ The details of this format are internal only and may change between versions of 
 despite the fact that they will always be non-negative. This is to help
 ease compatibility with JVM-based languages since the JVM uses signed 32-bit
 integers for its size fields internally.</p>
-<h2 id="code-generation-and-the-fficonverter-trait">Code Generation and the FfiConverter trait</h2>
-<p>UniFFI needs to generate Rust code to lift/lower types.  To help with this, we define the <code>FfiConverter</code> trait which contains the code to lift/lower/serialize a particular type.</p>
-<p>The most straightforward approach would be to define <code>FfiConverter</code> on the type being lifted/lowered/serialized.  However, this wouldn't work for remote types defined in 3rd-party crates because of the Rust orphan rules.  For example, our crates can't implement <code>FfiConverter</code> on <code>serde_json::Value</code> because both the trait and the type are remote.</p>
-<p>To work around this we do several things:</p>
-<ul>
-<li><code>FfiConverter</code> gets a generic type parameter.  This type is basically arbitrary and doesn't affect the lowering/lifting/serialization process.</li>
-<li>We generate a unit struct named <code>UniFfiTag</code> in the root of each UniFFIed crate.</li>
-<li>Each crate uses the <code>FfiConverter&lt;crate::UniFfiTag&gt;</code> trait to lower/lift/serialize values for its scaffolding functions.</li>
-</ul>
-<p>This allows us to work around the orphan rules when defining ffi trait implementations.
- - The <code>uniffi</code> crate can implement lifting/lowering/serializing types for all scaffolding functions using a generic impl, for example <code>impl&lt;UT&gt; FfiConverter&lt;UT&gt; for u8</code>.  "UT" is short for "UniFFI Tag"
- - UniFFI consumer crates usually implement lifting/lowering/serializing types the same way.
- - However, for remote types, they must only implement ffi traits for their local tag, for example <code>impl FfiConverter&lt;crate::UniFfiTag&gt; for serde_json::Value</code>.  This is valid since <code>UniFfiTag</code> is a local type.
- - If other crates also want to use the same remote type implementation, the need to implement the ffi traits for their local tag as well.  This is what the <code>use_remote_type!</code> macro does.</p>
-<p>For more details on the specifics of the "orphan rule" and why these are legal implementations, see the <a href="https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules-in-rustc">Rust Chalk Book</a></p>
 
 
 
