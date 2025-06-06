@@ -5,17 +5,24 @@
 //! FFI info for callback interfaces
 
 use super::*;
+use heck::ToUpperCamelCase;
 use std::collections::HashSet;
 
 pub fn pass(module: &mut Module) -> Result<()> {
     let crate_name = module.crate_name.clone();
+    let module_name = module.name.clone();
     module.try_visit_mut(|cbi: &mut CallbackInterface| {
-        cbi.vtable = vtable(&crate_name, &cbi.name, cbi.methods.clone())?;
+        cbi.vtable = vtable(&module_name, &crate_name, &cbi.name, cbi.methods.clone())?;
         Ok(())
     })?;
     module.try_visit_mut(|int: &mut Interface| {
         if int.imp.has_callback_interface() {
-            int.vtable = Some(vtable(&crate_name, &int.name, int.methods.clone())?);
+            int.vtable = Some(vtable(
+                &module_name,
+                &crate_name,
+                &int.name,
+                int.methods.clone(),
+            )?);
         }
         Ok(())
     })?;
@@ -47,16 +54,27 @@ pub fn pass(module: &mut Module) -> Result<()> {
     Ok(())
 }
 
-fn vtable(crate_name: &str, interface_name: &str, methods: Vec<Method>) -> Result<VTable> {
+fn vtable(
+    module_name: &str,
+    crate_name: &str,
+    interface_name: &str,
+    methods: Vec<Method>,
+) -> Result<VTable> {
     Ok(VTable {
         struct_type: FfiType::Struct(FfiStructName(format!(
-            "VTableCallbackInterface{}",
+            "VTableCallbackInterface{}{}",
+            module_name.to_upper_camel_case(),
             interface_name
-        ))),
+        )))
+        .into(),
         interface_name: interface_name.to_string(),
         init_fn: RustFfiFunctionName(uniffi_meta::init_callback_vtable_fn_symbol_name(
             crate_name,
             interface_name,
+        )),
+        free_fn_type: FfiFunctionTypeName(format!(
+            "CallbackInterfaceFree{}_{interface_name}",
+            module_name.to_upper_camel_case(),
         )),
         methods: methods
             .into_iter()
@@ -65,9 +83,11 @@ fn vtable(crate_name: &str, interface_name: &str, methods: Vec<Method>) -> Resul
                 Ok(VTableMethod {
                     callable: meth.callable,
                     ffi_type: FfiType::Function(FfiFunctionTypeName(format!(
-                        "CallbackInterface{}Method{i}",
+                        "CallbackInterface{}{}Method{i}",
+                        module_name.to_upper_camel_case(),
                         interface_name
-                    ))),
+                    )))
+                    .into(),
                 })
             })
             .collect::<Result<Vec<_>>>()?,
@@ -82,7 +102,11 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
         let interface_name = &vtable.interface_name;
         // FFI Function Type for each method in the VTable
         for (i, meth) in vtable.methods.iter().enumerate() {
-            let method_name = format!("CallbackInterface{interface_name}Method{i}");
+            let method_name = format!(
+                "CallbackInterface{}{}Method{i}",
+                module_name.to_upper_camel_case(),
+                interface_name
+            );
             match &meth.callable.async_data {
                 Some(async_data) => {
                     ffi_definitions.push(vtable_method_async(
@@ -119,7 +143,7 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
                         name: async_info.ffi_foreign_future_result.clone(),
                         fields: match ffi_return_type {
                             Some(return_ffi_type) => vec![
-                                FfiField::new("return_value", return_ffi_type),
+                                FfiField::new("return_value", return_ffi_type.ty),
                                 FfiField::new("call_status", FfiType::RustCallStatus),
                             ],
                             None => vec![
@@ -154,7 +178,8 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
         ffi_definitions.extend([
             FfiFunctionType {
                 name: FfiFunctionTypeName(format!(
-                    "CallbackInterfaceFree{module_name}_{interface_name}"
+                    "CallbackInterfaceFree{}_{interface_name}",
+                    module_name.to_upper_camel_case(),
                 )),
                 arguments: vec![FfiArgument::new(
                     "handle",
@@ -168,17 +193,23 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
             }
             .into(),
             FfiStruct {
-                name: FfiStructName(format!("VTableCallbackInterface{}", interface_name)),
+                name: FfiStructName(format!(
+                    "VTableCallbackInterface{}{}",
+                    module_name.to_upper_camel_case(),
+                    interface_name
+                )),
                 fields: vtable
                     .methods
                     .iter()
-                    .map(|vtable_meth| {
-                        FfiField::new(&vtable_meth.callable.name, vtable_meth.ffi_type.clone())
+                    .map(|vtable_meth| FfiField {
+                        name: vtable_meth.callable.name.clone(),
+                        ty: vtable_meth.ffi_type.clone(),
                     })
                     .chain([FfiField::new(
                         "uniffi_free",
                         FfiType::Function(FfiFunctionTypeName(format!(
-                            "CallbackInterfaceFree{module_name}_{interface_name}"
+                            "CallbackInterfaceFree{}_{interface_name}",
+                            module_name.to_upper_camel_case(),
                         ))),
                     )])
                     .collect(),
@@ -191,7 +222,7 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
                 name: vtable.init_fn.clone(),
                 arguments: vec![FfiArgument {
                     name: "vtable".into(),
-                    ty: FfiType::Reference(Box::new(vtable.struct_type.clone())),
+                    ty: FfiType::Reference(Box::new(vtable.struct_type.ty.clone())).into(),
                 }],
                 return_type: FfiReturnType { ty: None },
                 async_data: None,
@@ -220,7 +251,8 @@ fn vtable_method(
             ty: FfiType::Handle(HandleKind::CallbackInterface {
                 module_name: module_name.to_string(),
                 interface_name: interface_name.to_string(),
-            }),
+            })
+            .into(),
         })
         .chain(callable.arguments.iter().map(|arg| FfiArgument {
             name: arg.name.clone(),
@@ -229,11 +261,11 @@ fn vtable_method(
         .chain(std::iter::once(match &callable.return_type.ty {
             Some(ty) => FfiArgument {
                 name: "uniffi_out_return".into(),
-                ty: FfiType::MutReference(Box::new(ty.ffi_type.clone())),
+                ty: FfiType::MutReference(Box::new(ty.ffi_type.ty.clone())).into(),
             },
             None => FfiArgument {
                 name: "uniffi_out_return".into(),
-                ty: FfiType::VoidPointer,
+                ty: FfiType::VoidPointer.into(),
             },
         }))
         .collect(),
@@ -257,7 +289,8 @@ fn vtable_method_async(
             ty: FfiType::Handle(HandleKind::CallbackInterface {
                 module_name: module_name.to_string(),
                 interface_name: interface_name.to_string(),
-            }),
+            })
+            .into(),
         })
         .chain(callable.arguments.iter().map(|arg| FfiArgument {
             name: arg.name.clone(),
@@ -266,17 +299,18 @@ fn vtable_method_async(
         .chain([
             FfiArgument {
                 name: "uniffi_future_callback".into(),
-                ty: FfiType::Function(async_data.ffi_foreign_future_complete.clone()),
+                ty: FfiType::Function(async_data.ffi_foreign_future_complete.clone()).into(),
             },
             FfiArgument {
                 name: "uniffi_callback_data".into(),
-                ty: FfiType::Handle(HandleKind::ForeignFutureCallbackData),
+                ty: FfiType::Handle(HandleKind::ForeignFutureCallbackData).into(),
             },
             FfiArgument {
                 name: "uniffi_out_return".into(),
                 ty: FfiType::MutReference(Box::new(FfiType::Struct(FfiStructName(
                     "ForeignFuture".to_owned(),
-                )))),
+                ))))
+                .into(),
             },
         ])
         .collect(),

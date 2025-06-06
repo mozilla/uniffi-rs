@@ -54,7 +54,7 @@ internal inline fun<T> uniffiTraitInterfaceCallAsync(
     val job = GlobalScope.launch {
         try {
             handleSuccess(makeCall())
-        } catch(e: Exception) {
+        } catch(e: kotlin.Exception) {
             handleError(
                 UniffiRustCallStatus.create(
                     UNIFFI_CALL_UNEXPECTED_ERROR,
@@ -78,7 +78,7 @@ internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallAsyncWithEr
     val job = GlobalScope.launch {
         try {
             handleSuccess(makeCall())
-        } catch(e: Exception) {
+        } catch(e: kotlin.Exception) {
             if (e is E) {
                 handleError(
                     UniffiRustCallStatus.create(
