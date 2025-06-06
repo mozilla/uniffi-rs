@@ -9,20 +9,22 @@
       
       
       
+        <link rel="prev" href="ffi_converter_traits.html">
       
-        <link rel="next" href="Getting_started.html">
+      
+        <link rel="next" href="foreign_calls.html">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
-        <title>Motivation - The UniFFI user guide</title>
+        <title>Foreign -> Rust calls - The UniFFI user guide</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
       
       
 
@@ -41,7 +43,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#what" class="md-skip">
+        <a href="#foreign-rust-calls" class="md-skip">
           Skip to content
         </a>
       
@@ -80,7 +82,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+    <a href=".." title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -100,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Motivation
+              Foreign -&gt; Rust calls
             
           </span>
         </div>
@@ -190,7 +192,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+    <a href=".." title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -217,30 +219,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Motivation
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="Motivation.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../Motivation.html" class="md-nav__link">
         
   
   
@@ -251,60 +233,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what" class="md-nav__link">
-    <span class="md-ellipsis">
-      What?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how" class="md-nav__link">
-    <span class="md-ellipsis">
-      How?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-not" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why Not?
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -354,7 +282,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Getting_started.html" class="md-nav__link">
+      <a href="../Getting_started.html" class="md-nav__link">
         
   
   
@@ -377,7 +305,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/Prerequisites.html" class="md-nav__link">
+      <a href="../tutorial/Prerequisites.html" class="md-nav__link">
         
   
   
@@ -400,7 +328,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/udl_file.html" class="md-nav__link">
+      <a href="../tutorial/udl_file.html" class="md-nav__link">
         
   
   
@@ -423,7 +351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/Rust_scaffolding.html" class="md-nav__link">
+      <a href="../tutorial/Rust_scaffolding.html" class="md-nav__link">
         
   
   
@@ -446,7 +374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/foreign_language_bindings.html" class="md-nav__link">
+      <a href="../tutorial/foreign_language_bindings.html" class="md-nav__link">
         
   
   
@@ -514,7 +442,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/namespace.html" class="md-nav__link">
+      <a href="../types/namespace.html" class="md-nav__link">
         
   
   
@@ -537,7 +465,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/builtin_types.html" class="md-nav__link">
+      <a href="../types/builtin_types.html" class="md-nav__link">
         
   
   
@@ -560,7 +488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/enumerations.html" class="md-nav__link">
+      <a href="../types/enumerations.html" class="md-nav__link">
         
   
   
@@ -583,7 +511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/records.html" class="md-nav__link">
+      <a href="../types/records.html" class="md-nav__link">
         
   
   
@@ -644,7 +572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/functions.html" class="md-nav__link">
+      <a href="../types/functions.html" class="md-nav__link">
         
   
   
@@ -667,7 +595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/errors.html" class="md-nav__link">
+      <a href="../types/errors.html" class="md-nav__link">
         
   
   
@@ -698,7 +626,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/interfaces.html" class="md-nav__link">
+      <a href="../types/interfaces.html" class="md-nav__link">
         
   
   
@@ -721,7 +649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/callback_interfaces.html" class="md-nav__link">
+      <a href="../types/callback_interfaces.html" class="md-nav__link">
         
   
   
@@ -744,7 +672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/remote_ext_types.html" class="md-nav__link">
+      <a href="../types/remote_ext_types.html" class="md-nav__link">
         
   
   
@@ -767,7 +695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="types/custom_types.html" class="md-nav__link">
+      <a href="../types/custom_types.html" class="md-nav__link">
         
   
   
@@ -835,7 +763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="describing.html" class="md-nav__link">
+      <a href="../describing.html" class="md-nav__link">
         
   
   
@@ -896,7 +824,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/index.html" class="md-nav__link">
+      <a href="../udl/index.html" class="md-nav__link">
         
   
   
@@ -919,7 +847,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/enumerations.html" class="md-nav__link">
+      <a href="../udl/enumerations.html" class="md-nav__link">
         
   
   
@@ -942,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/errors.html" class="md-nav__link">
+      <a href="../udl/errors.html" class="md-nav__link">
         
   
   
@@ -965,7 +893,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/functions.html" class="md-nav__link">
+      <a href="../udl/functions.html" class="md-nav__link">
         
   
   
@@ -988,7 +916,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/interfaces.html" class="md-nav__link">
+      <a href="../udl/interfaces.html" class="md-nav__link">
         
   
   
@@ -1011,7 +939,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/records.html" class="md-nav__link">
+      <a href="../udl/records.html" class="md-nav__link">
         
   
   
@@ -1034,7 +962,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/external_types.html" class="md-nav__link">
+      <a href="../udl/external_types.html" class="md-nav__link">
         
   
   
@@ -1057,7 +985,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl/docstrings.html" class="md-nav__link">
+      <a href="../udl/docstrings.html" class="md-nav__link">
         
   
   
@@ -1126,7 +1054,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/index.html" class="md-nav__link">
+      <a href="../proc_macro/index.html" class="md-nav__link">
         
   
   
@@ -1149,7 +1077,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/enumerations.html" class="md-nav__link">
+      <a href="../proc_macro/enumerations.html" class="md-nav__link">
         
   
   
@@ -1172,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/errors.html" class="md-nav__link">
+      <a href="../proc_macro/errors.html" class="md-nav__link">
         
   
   
@@ -1195,7 +1123,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/functions.html" class="md-nav__link">
+      <a href="../proc_macro/functions.html" class="md-nav__link">
         
   
   
@@ -1218,7 +1146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/interfaces.html" class="md-nav__link">
+      <a href="../proc_macro/interfaces.html" class="md-nav__link">
         
   
   
@@ -1241,7 +1169,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/records.html" class="md-nav__link">
+      <a href="../proc_macro/records.html" class="md-nav__link">
         
   
   
@@ -1264,7 +1192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proc_macro/docstrings.html" class="md-nav__link">
+      <a href="../proc_macro/docstrings.html" class="md-nav__link">
         
   
   
@@ -1302,7 +1230,7 @@
   
   
     <li class="md-nav__item">
-      <a href="futures.html" class="md-nav__link">
+      <a href="../futures.html" class="md-nav__link">
         
   
   
@@ -1362,7 +1290,7 @@
   
   
     <li class="md-nav__item">
-      <a href="bindings.html" class="md-nav__link">
+      <a href="../bindings.html" class="md-nav__link">
         
   
   
@@ -1385,7 +1313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="foreign_traits.html" class="md-nav__link">
+      <a href="../foreign_traits.html" class="md-nav__link">
         
   
   
@@ -1446,7 +1374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="kotlin/configuration.html" class="md-nav__link">
+      <a href="../kotlin/configuration.html" class="md-nav__link">
         
   
   
@@ -1469,7 +1397,7 @@
   
   
     <li class="md-nav__item">
-      <a href="kotlin/gradle.html" class="md-nav__link">
+      <a href="../kotlin/gradle.html" class="md-nav__link">
         
   
   
@@ -1492,7 +1420,7 @@
   
   
     <li class="md-nav__item">
-      <a href="kotlin/lifetimes.html" class="md-nav__link">
+      <a href="../kotlin/lifetimes.html" class="md-nav__link">
         
   
   
@@ -1561,7 +1489,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/overview.html" class="md-nav__link">
+      <a href="../swift/overview.html" class="md-nav__link">
         
   
   
@@ -1584,7 +1512,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/uniffi-bindgen-swift.html" class="md-nav__link">
+      <a href="../swift/uniffi-bindgen-swift.html" class="md-nav__link">
         
   
   
@@ -1607,7 +1535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/configuration.html" class="md-nav__link">
+      <a href="../swift/configuration.html" class="md-nav__link">
         
   
   
@@ -1630,7 +1558,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/module.html" class="md-nav__link">
+      <a href="../swift/module.html" class="md-nav__link">
         
   
   
@@ -1653,7 +1581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="swift/xcode.html" class="md-nav__link">
+      <a href="../swift/xcode.html" class="md-nav__link">
         
   
   
@@ -1684,7 +1612,7 @@
   
   
     <li class="md-nav__item">
-      <a href="python/configuration.html" class="md-nav__link">
+      <a href="../python/configuration.html" class="md-nav__link">
         
   
   
@@ -1745,7 +1673,7 @@
   
   
     <li class="md-nav__item">
-      <a href="wasm/configuration.html" class="md-nav__link">
+      <a href="../wasm/configuration.html" class="md-nav__link">
         
   
   
@@ -1780,18 +1708,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1807,7 +1737,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1821,7 +1751,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/design_principles.html" class="md-nav__link">
+      <a href="design_principles.html" class="md-nav__link">
         
   
   
@@ -1844,7 +1774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/crates.html" class="md-nav__link">
+      <a href="crates.html" class="md-nav__link">
         
   
   
@@ -1867,7 +1797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/lifting_and_lowering.html" class="md-nav__link">
+      <a href="lifting_and_lowering.html" class="md-nav__link">
         
   
   
@@ -1890,7 +1820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/ffi_converter_traits.html" class="md-nav__link">
+      <a href="ffi_converter_traits.html" class="md-nav__link">
         
   
   
@@ -1910,10 +1840,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="internals/rust_calls.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Foreign -&gt; Rust calls
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="rust_calls.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1924,6 +1876,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-ffi-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      The FFI function
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rustcallstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      RustCallStatus
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Method calls
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#panic-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Panic handling
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1936,7 +1944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/foreign_calls.html" class="md-nav__link">
+      <a href="foreign_calls.html" class="md-nav__link">
         
   
   
@@ -1959,7 +1967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/object_references.html" class="md-nav__link">
+      <a href="object_references.html" class="md-nav__link">
         
   
   
@@ -1982,7 +1990,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/async-overview.html" class="md-nav__link">
+      <a href="async-overview.html" class="md-nav__link">
         
   
   
@@ -2005,7 +2013,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/async-ffi.html" class="md-nav__link">
+      <a href="async-ffi.html" class="md-nav__link">
         
   
   
@@ -2028,7 +2036,7 @@
   
   
     <li class="md-nav__item">
-      <a href="internals/rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="rendering_foreign_bindings.html" class="md-nav__link">
         
   
   
@@ -2058,7 +2066,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Upgrading.html" class="md-nav__link">
+      <a href="../Upgrading.html" class="md-nav__link">
         
   
   
@@ -2090,6 +2098,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -2098,36 +2108,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what" class="md-nav__link">
+  <a href="#the-ffi-function" class="md-nav__link">
     <span class="md-ellipsis">
-      What?
+      The FFI function
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#how" class="md-nav__link">
+  <a href="#rustcallstatus" class="md-nav__link">
     <span class="md-ellipsis">
-      How?
+      RustCallStatus
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#why" class="md-nav__link">
+  <a href="#method-calls" class="md-nav__link">
     <span class="md-ellipsis">
-      Why?
+      Method calls
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-not" class="md-nav__link">
+  <a href="#panic-handling" class="md-nav__link">
     <span class="md-ellipsis">
-      Why Not?
+      Panic handling
     </span>
   </a>
   
@@ -2152,57 +2162,74 @@
   
 
 
-  <h1>Motivation</h1>
+<h1 id="foreign-rust-calls">Foreign -&gt; Rust calls</h1>
+<p>What happens when code in the foreign language makes a call to Rust?
+The <a href="lifting_and_lowering.html">lifting and lowering</a> docs describe this at a high-level, this document will explore the details.</p>
+<p>This document only describes non-async Rust calls.
+See the <a href="async-ffi.html">Async FFI</a> docs for a description of async calls.</p>
+<h2 id="the-ffi-function">The FFI function</h2>
+<p>For each exported Rust function, an FFI function is generated.
+This <code>extern "C"</code> function is exported in the Rust library and its what's called by the foreign code.</p>
+<p>Different bindings use different techniques to call these functions.
+For example, Python uses <a href="https://docs.python.org/3/library/ctypes.html">ctypes</a> to call into a dynamic library, while Swift links to a static library and calls the C functions directly.</p>
+<p>The signature for the FFI function is:
+* Arguments:
+  * The <a href="lifting_and_lowering.html">lowered type</a> for each argument of the Rust function
+  * A <code>RustCallStatus</code> out pointer
+* Returns:
+  * For non-unit type returns: the <a href="lifting_and_lowering.html">lowered type</a> of the return value for the Rust function
+  * For unit type returns: <code>void</code> (i.e. no return value, which is special-cased in <code>C</code>).</p>
+<h2 id="rustcallstatus">RustCallStatus</h2>
+<p>The last argument for the FFI function is a pointer to a <code>RustCallStatus</code> struct.
+The FFI function writes to this struct to report errors when calling the Rust function.</p>
+<p>Here's the layout for this struct:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[repr(C)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">RustCallStatus</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">code</span><span class="p">:</span><span class="w"> </span><span class="nc">RustCallStatusCode</span><span class="p">,</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">error_buf</span><span class="p">:</span><span class="w"> </span><span class="nc">RustBuffer</span><span class="p">,</span>
+<span class="p">}</span>
 
-<h2 id="what">What?</h2>
-<p>We're interested in building re-useable components for our browsers.
-We want to write the code for these components once, in Rust. We want to easily re-use these components from
-all the different languages and on all the different platforms for which we build browsers, which currently
-includes JavaScript for PCs, Kotlin for Android, and Swift for iOS.</p>
-<p>And of course, we want to do this in a way that's convenient, maintainable, and difficult to mess up.</p>
-<h2 id="how">How?</h2>
-<p>In an aspirational world, we could get this kind of easy cross-language interop for
-free using <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm_bindgen</a> and
-<a href="https://hacks.mozilla.org/2019/08/webassembly-interface-types/">webassembly interface types</a> -
-imagine writing an API in Rust, annotating it with some <code>#[wasm_bindgen]</code> macros,
-compiling it into a webassembly bundle, and being able to import and use that bundle
-from any target language, complete with a rich high-level API!</p>
-<p>That kind of tooling is not available to shipping applications today, but that doesn't
-mean we can't take a small step in that general direction while the Rust and Wasm ecosystem
-continues to evolve.</p>
-<p>Using UniFFI, you can:</p>
+<span class="cp">#[repr(i8)]</span>
+<span class="cp">#[derive(Debug, PartialEq, Eq)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">RustCallStatusCode</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="n">UnexpectedError</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Cancelled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="c1">// Only used for async calls</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>When the foreign code calls the Rust FFI function, it initializes <code>RustCallStatus.code</code> to <code>RustCallStatus::Success</code> and <code>RustCallStatus.error_buf</code> to an empty RustBuffer.  After calling the real Rust function, the generated FFI function writes to this struct:</p>
 <ul>
-<li>Implement your software component as a <code>cdylib</code> crate in Rust; let's say the code is in <code>./src/lib.rs</code>.</li>
-<li>Optionally, describe parts of your component API using proc-macros directly in <code>lib.rs</code>.</li>
-<li>Optionally, describe parts of your component API using an <em>Interface Definition Language</em> in a separate file like <code>./src/lib.udl</code>. UniFFI will generate a bunch of boilerplate Rust code that exposes this API as a C-compatible FFI layer, and include it as part of your crate.</li>
-<li><code>cargo build</code> your crate as normal to produce a shared library.</li>
-<li>Run <code>uniffi-bindgen generate ... -l kotlin</code> (see <a href="tutorial/foreign_language_bindings.html">the bindgen docs</a> for omitted arg details)
-  to generate a Kotlin library that can load your shared library
-  and expose it to Kotlin code using your nice high-level component API!</li>
-<li>Or <code>-l swift</code> or <code>-l python</code> to produce bindings for other languages.</li>
+<li>If the function returns successfully (i.e. it runs normally and returns <code>Ok</code> value for <code>Result</code> return types), then nothing is written.
+  Since the foreign bindings initialize <code>code=RustCallStatus::Success</code>, this will be interpreted as a successful call.</li>
+<li>If a <code>Result::Err</code> value is returned then:</li>
+<li>The generated Rust code sets <code>code</code> to <code>RustCallStatusCode::Error</code></li>
+<li>The generated Rust code serializes the error into a <code>RustBuffer</code> and stores that in <code>error_buf</code>.</li>
+<li>The foreign bindings are responsible for deserializing that error into an exception value and
+    throwing that exception.</li>
+<li>A placeholder value is returned (e.g. <code>0</code> or an empty <code>RustBuffer</code>);</li>
+<li>If an unexpected error happens, for example a failure when lifting the arguments, then:</li>
+<li>The generated Rust code sets <code>code</code> to <code>RustCallStatusCode::InternalError</code></li>
+<li>The generated Rust code tries to serialize the error message to a <code>RustBuffer</code> and store it <code>error_buf</code>.
+    However, it's possible this fails in which case <code>error_buf</code> not be written to.</li>
+<li>A placeholder value is returned</li>
+<li>The foreign bindings are responsible throwing some sort of UniFFI internal exception.
+    If possible, this exception should contain the error message.</li>
 </ul>
-<h2 id="why">Why?</h2>
-<p>There are plenty of potential ways to solve this problem, and the one that's right for us might not
-be right for you. You can read a little more about the considerations and trade-offs
-that lead to the current approach in our <a href="https://github.com/mozilla/uniffi-rs/tree/main/docs/adr/README.md">Architecture Decision Records</a>,
-starting with <a href="https://github.com/mozilla/uniffi-rs/tree/main/docs/adr/0000-whats-the-big-idea.md">this motivational document</a>.</p>
-<h2 id="why-not">Why Not?</h2>
-<p>We hope UniFFI will be useful to you! But if you're considering it for your project then
-here are some tradeoffs you should keep in mind:</p>
+<h2 id="method-calls">Method calls</h2>
+<p>Method calls work the same as function calls, except there's an extra argument for the object handle.
+This means the arguments are:</p>
 <ul>
-<li>UniFFI makes it easy to produce "good enough" bindings into Rust from several different target languages.
-  If you want to call Rust code from just one foreign language, there may be a language-specific
-  bindings tool that provides more features and better performance.</li>
-<li>The project is evolving fast, because it's being developed concurrently with its
-  primary consumers. You should be prepared for frequent releases and non-trivial API churn
-  (but we'll use semantic versioning to signal breaking changes).</li>
-<li>UniFFI doesn't provide an end-to-end packaging solution for your Rust code and its generated bindings.
-  For example, it'll help you generate Kotlin bindings to call into Rust, but it won't help you with
-  compiling the Rust code to run on Android or with packaging the bindings into an <code>.aar</code> bundle
-  (but it might be useful as a building-block for such a tool!).</li>
+<li>The object handle (<code>void *</code>).
+  This is cloned before making the call as described in <a href="object_references.html">object references</a>.</li>
+<li>The lowered type for each Rust argument</li>
+<li>A <code>RustCallStatus</code> out pointer</li>
 </ul>
-<p>We also have a list of <a href="internals/design_principles.html">design principles</a> that might help
-you decide whether this project is a good fit for your needs.</p>
+<h2 id="panic-handling">Panic handling</h2>
+<p>UniFFI uses <code>std::panic::catch_unwind</code> to try to catch any panics in the Rust code.
+The main reason is to prevent them from moving up the call stack into the foreign language's frames, which would almost certainly lead to a crash.
+Panics are treated as unexpected errors as described above.
+UniFFI can't always catch panics, for example when the Rust panic handler is set to <code>abort</code>.</p>
 
 
 
@@ -2251,10 +2278,10 @@ you decide whether this project is a good fit for your needs.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
       
     
   </body>

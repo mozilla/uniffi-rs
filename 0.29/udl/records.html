@@ -1832,6 +1832,75 @@
   
   
     <li class="md-nav__item">
+      <a href="../internals/ffi_converter_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ffi converter traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/rust_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign -&gt; Rust calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/foreign_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rust -&gt; Foreign calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../internals/object_references.html" class="md-nav__link">
         
   
@@ -2029,6 +2098,13 @@ dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
 <div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
 <span class="w">    </span>boolean<span class="w"> </span>done;
 <span class="w">    </span><span class="nb">string</span>?<span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>null;
+};
+</code></pre></div>
+<h3 id="vecs-and-maps">Vecs and maps</h3>
+<p>Empty collections are supported.</p>
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>sequence<span class="o">&lt;</span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>item_list<span class="w"> </span><span class="o">=</span><span class="w"> </span>[];
+<span class="w">    </span>record<span class="o">&lt;</span><span class="nb">string</span>,<span class="w"> </span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>item_map<span class="w"> </span><span class="o">=</span><span class="w"> </span>{};
 };
 </code></pre></div>
 

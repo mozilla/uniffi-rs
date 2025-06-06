@@ -1911,6 +1911,75 @@
   
   
     <li class="md-nav__item">
+      <a href="internals/ffi_converter_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ffi converter traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="internals/rust_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign -&gt; Rust calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="internals/foreign_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rust -&gt; Foreign calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="internals/object_references.html" class="md-nav__link">
         
   
@@ -2124,6 +2193,7 @@
 <h1 id="asyncfuture-support">Async/Future support</h1>
 <p>UniFFI supports exposing async Rust functions over the FFI. It can convert a Rust <code>Future</code>/<code>async fn</code> to and from foreign native futures (<code>async</code>/<code>await</code> in Python/Swift, <code>suspend fun</code> in Kotlin etc.)</p>
 <p>Check out the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/futures">examples</a> or the more terse and thorough <a href="https://github.com/mozilla/uniffi-rs/tree/main/fixtures/futures">fixtures</a>.</p>
+<p>We've also <a href="internals/async-overview.html">documentation on the internals of how this works</a>.</p>
 <h2 id="example">Example</h2>
 <p>This is a short "async sleep()" example:
 <div class="highlight"><pre><span></span><code><span class="k">use</span><span class="w"> </span><span class="n">std</span><span class="p">::</span><span class="n">time</span><span class="p">::</span><span class="n">Duration</span><span class="p">;</span>
@@ -2181,12 +2251,15 @@ See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/async-a
 <p>Python bindings export a function named <code>uniffi_set_event_loop()</code> which handles a corner case when
 integrating async Rust and Python code. <code>uniffi_set_event_loop()</code> is needed when Python async
 functions run outside of the eventloop, for example:</p>
-<div class="highlight"><pre><span></span><code>- Rust code is executing outside of the eventloop.  Some examples:
-    - Rust code spawned its own thread
-    - Python scheduled the Rust code using `EventLoop.run_in_executor`
-- The Rust code calls a Python async callback method, using something like `pollster` to block
-  on the async call.
-</code></pre></div>
+<ul>
+<li>Rust code is executing outside of the eventloop.  Some examples:<ul>
+<li>Rust code spawned its own thread</li>
+<li>Python scheduled the Rust code using <code>EventLoop.run_in_executor</code></li>
+</ul>
+</li>
+<li>The Rust code calls a Python async callback method, using something like <code>pollster</code> to block
+  on the async call.</li>
+</ul>
 <p>In this case, we need an event loop to run the Python async function, but there's no eventloop set for the thread.
 Use <code>uniffi_set_event_loop()</code> to handle this case.
 It should be called before the Rust code makes the async call and passed an eventloop to use.</p>
@@ -2196,7 +2269,7 @@ It should be called before the Rust code makes the async call and passed an even
 You should build your cancellation in a separate, library specific channel; for example, exposing a <code>cancel()</code> method that sets a flag that the library checks periodically.</p>
 <p>Cancellation can then be exposed in the API and be mapped to one of the error variants, or None/empty-vec/whatever makes sense.
 There's no builtin way to cancel a future, nor to cause/raise a platform native async cancellation error (eg, a swift <code>CancellationError</code>).</p>
-<p>See also https://github.com/mozilla/uniffi-rs/pull/1768.</p>
+<p>See also <a href="https://github.com/mozilla/uniffi-rs/pull/1768">this github PR</a>.</p>
 
 
 
