@@ -308,7 +308,7 @@ pub unsafe trait LowerReturn<UT>: Sized {
     fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
         let LiftArgsError { arg_name, error } = error;
         Err(RustCallError::InternalError(format!(
-            "Failed to convert arg '{arg_name}': {error}"
+            "Failed to convert arg '{arg_name}':\n{error:?}"
         )))
     }
 }
