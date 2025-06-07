@@ -10,6 +10,13 @@ class TestCallback(GuidCallback):
         self.saw_guid = guid
         return guid
 
+def get_value_arg_issue(value):
+    return f"""Failed to convert arg 'value':
+Lifting custom type `ext_types_custom::Guid` from FFI type `alloc::string::String` failed at fixtures/ext-types/custom-types/src/lib.rs:101
+
+Caused by:
+    {value}"""
+
 class TestCustomTypes(unittest.TestCase):
     def test_get_guid(self):
         self.assertEqual(get_guid(None), "NewGuid")
@@ -26,10 +33,10 @@ class TestCustomTypes(unittest.TestCase):
         # This is testing `get_guid` which never returns a result, so everything
         # is InternalError representing a panic.
         # The fixture hard-codes some Guid strings to return specific errors.
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': The Guid is too short"):
+        with self.assertRaisesRegex(InternalError, get_value_arg_issue("The Guid is too short")):
             get_guid("")
 
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': Something unexpected went wrong"):
+        with self.assertRaisesRegex(InternalError, get_value_arg_issue("Something unexpected went wrong")):
             get_guid("unexpected")
 
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):
@@ -41,7 +48,7 @@ class TestCustomTypes(unittest.TestCase):
         with self.assertRaises(GuidError.TooShort):
             try_get_guid("")
 
-        with self.assertRaisesRegex(InternalError, "Failed to convert arg 'value': Something unexpected went wrong"):
+        with self.assertRaisesRegex(InternalError, get_value_arg_issue("Something unexpected went wrong")):
             try_get_guid("unexpected")
 
         with self.assertRaisesRegex(InternalError, "guid value caused a panic!"):

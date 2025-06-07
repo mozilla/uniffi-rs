@@ -134,6 +134,16 @@ pub struct LiftArgsError {
     pub error: anyhow::Error,
 }
 
+impl LiftArgsError {
+    pub fn to_internal_error(self) -> RustCallError {
+        let LiftArgsError { arg_name, error } = self;
+
+        RustCallError::InternalError(format!(
+            "Failed to convert arg '{arg_name}':\n{error:?}"
+        ))
+    }
+}
+
 /// Handle a scaffolding calls
 ///
 /// `callback` is responsible for making the actual Rust call and returning a special result type:
@@ -263,7 +273,7 @@ mod test {
         assert_eq!(
             <String as Lift<UniFfiTag>>::try_lift(ManuallyDrop::into_inner(status.error_buf))
                 .unwrap(),
-            "Failed to convert arg 'foo': invalid handle"
+            "Failed to convert arg 'foo':\ninvalid handle"
         );
 
         // Panic inside the call

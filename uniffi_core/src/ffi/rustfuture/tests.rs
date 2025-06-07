@@ -172,7 +172,7 @@ fn test_lift_args_error() {
             call_status.error_buf
         ))
         .unwrap(),
-        "Failed to convert arg 'arg0': Invalid handle",
+        "Failed to convert arg 'arg0':\nInvalid handle",
     )
 }
 

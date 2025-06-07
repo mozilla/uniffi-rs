@@ -306,10 +306,7 @@ pub unsafe trait LowerReturn<UT>: Sized {
     ///   `Err(RustCallError::Error(buf))`. This results in better exception throws on the foreign
     ///   side.
     fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
-        let LiftArgsError { arg_name, error } = error;
-        Err(RustCallError::InternalError(format!(
-            "Failed to convert arg '{arg_name}':\n{error:?}"
-        )))
+        Err(error.to_internal_error())
     }
 }
 
