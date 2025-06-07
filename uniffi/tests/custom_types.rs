@@ -45,7 +45,7 @@ fn test_string_validation_failure() {
     let result: anyhow::Result<RecordWithValidatedStrings> =
         uniffi::Lift::<UniFfiTag>::try_lift(uniffi::Lower::<UniFfiTag>::lower(base));
 
-    let expected = r#"Lifting custom type `custom_types::ValidatedString` from FFI type `alloc::string::String` failed at uniffi/tests/custom_types.rs:39
+    let expected = r#"Lifting custom type `custom_types::ValidatedString` from FFI type `alloc::string::String` failed at uniffi/tests/custom_types.rs:34
 
 Caused by:
     Value cannot contain 'invalid'"#;
