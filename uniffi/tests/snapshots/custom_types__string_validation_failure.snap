@@ -2,7 +2,7 @@
 source: uniffi/tests/custom_types.rs
 expression: "format!(\"{:?}\", result.unwrap_err())"
 ---
-While Converting Custom Type with <alloc::string::String as TryInto<custom_types::ValidatedString>>::try_into(val)
+Lifting custom type `custom_types::ValidatedString` from FFI type `alloc::string::String` failed.
 
 Caused by:
     Value cannot contain 'invalid'
