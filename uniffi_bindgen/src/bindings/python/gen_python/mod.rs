@@ -567,8 +567,6 @@ impl<T: AsType> AsCodeType for T {
 }
 
 pub mod filters {
-    use crate::backend::filters::to_askama_error;
-
     use super::*;
 
     pub(super) fn type_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -607,10 +605,10 @@ pub mod filters {
         literal: &Literal,
         as_ct: &impl AsCodeType,
     ) -> Result<String, askama::Error> {
-        as_ct
+        Ok(as_ct
             .as_codetype()
             .literal(literal)
-            .map_err(|e| to_askama_error(&e))
+            .expect("invalid literal: {literal:?}"))
     }
 
     // Get the idiomatic Python rendering of an individual enum variant's discriminant
@@ -618,11 +616,11 @@ pub mod filters {
         let literal = e
             .variant_discr(*index)
             .context("invalid index")
-            .map_err(|e| to_askama_error(&e))?;
-        Type::UInt64
+            .expect("invalid enum dicriminant literal {e:?}, index {index}");
+        Ok(Type::UInt64
             .as_codetype()
             .literal(&literal)
-            .map_err(|e| to_askama_error(&e))
+            .expect("invalid literal: {literal:?}"))
     }
 
     pub fn ffi_type_name(
