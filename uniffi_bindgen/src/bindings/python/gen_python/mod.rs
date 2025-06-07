@@ -40,8 +40,12 @@ trait CodeType: Debug {
         self.type_label()
     }
 
-    fn literal(&self, _literal: &Literal) -> Result<String> {
-        bail!("Unimplemented for {}", self.type_label())
+    // default for named types is to assume a ctor exists.
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default => Ok(format!("{}()", self.type_label())),
+            DefaultValue::Literal(_) => bail!("Literals for named types are not supported"),
+        }
     }
 
     /// Name of the FfiConverter
@@ -603,13 +607,13 @@ pub mod filters {
         Ok(format!("{}.write", ffi_converter_name(as_ct)?))
     }
 
-    pub(super) fn literal_py(
-        literal: &Literal,
+    pub(super) fn default_py(
+        default: &DefaultValue,
         as_ct: &impl AsCodeType,
     ) -> Result<String, askama::Error> {
         as_ct
             .as_codetype()
-            .literal(literal)
+            .default(default)
             .map_err(|e| to_askama_error(&e))
     }
 
@@ -621,7 +625,7 @@ pub mod filters {
             .map_err(|e| to_askama_error(&e))?;
         Type::UInt64
             .as_codetype()
-            .literal(&literal)
+            .default(&DefaultValue::Literal(literal))
             .map_err(|e| to_askama_error(&e))
     }
 

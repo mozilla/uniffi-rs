@@ -380,16 +380,29 @@ impl Parse for DefaultMap {
 
 pub struct DefaultPair {
     pub name: Ident,
-    pub eq_token: Token![=],
     pub value: DefaultValue,
 }
 
 impl Parse for DefaultPair {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        Ok(Self {
-            name: input.parse()?,
-            eq_token: input.parse()?,
-            value: input.parse()?,
-        })
+        // I'm sure there is a better way here - either want (Ident = Value) or (Ident)
+        let lookahead = input.lookahead1();
+        if lookahead.peek(Ident) {
+            let name: Ident = input.parse()?;
+            if input.is_empty() {
+                return Ok(Self {
+                    name,
+                    value: DefaultValue::Default,
+                });
+            }
+            if !input.peek(Token![=]) {
+                return Err(lookahead.error());
+            };
+            let _eq: Token![=] = input.parse()?;
+            let value: DefaultValue = input.parse()?;
+            Ok(Self { name, value })
+        } else {
+            Err(lookahead.error())
+        }
     }
 }

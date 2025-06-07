@@ -3,10 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::CodeType;
-use crate::backend::Literal;
 use crate::{
     bail,
-    interface::{Radix, Type},
+    interface::{DefaultValue, Literal, Radix, Type},
     Result,
 };
 
@@ -65,7 +64,7 @@ fn render_literal(literal: &Literal) -> Result<String> {
 }
 
 macro_rules! impl_code_type_for_primitive {
-    ($T:ident, $class_name:literal) => {
+    ($T:ident, $class_name:literal, $def:literal) => {
         #[derive(Debug)]
         pub struct $T;
 
@@ -74,23 +73,26 @@ macro_rules! impl_code_type_for_primitive {
                 $class_name.into()
             }
 
-            fn literal(&self, literal: &Literal) -> Result<String> {
-                render_literal(&literal)
+            fn default(&self, default: &DefaultValue) -> Result<String> {
+                match default {
+                    DefaultValue::Default => Ok($def.into()),
+                    DefaultValue::Literal(l) => render_literal(&l),
+                }
             }
         }
     };
 }
 
-impl_code_type_for_primitive!(BooleanCodeType, "Bool");
-impl_code_type_for_primitive!(StringCodeType, "String");
-impl_code_type_for_primitive!(BytesCodeType, "Data");
-impl_code_type_for_primitive!(Int8CodeType, "Int8");
-impl_code_type_for_primitive!(Int16CodeType, "Int16");
-impl_code_type_for_primitive!(Int32CodeType, "Int32");
-impl_code_type_for_primitive!(Int64CodeType, "Int64");
-impl_code_type_for_primitive!(UInt8CodeType, "UInt8");
-impl_code_type_for_primitive!(UInt16CodeType, "UInt16");
-impl_code_type_for_primitive!(UInt32CodeType, "UInt32");
-impl_code_type_for_primitive!(UInt64CodeType, "UInt64");
-impl_code_type_for_primitive!(Float32CodeType, "Float");
-impl_code_type_for_primitive!(Float64CodeType, "Double");
+impl_code_type_for_primitive!(BooleanCodeType, "Bool", "false");
+impl_code_type_for_primitive!(StringCodeType, "String", "\"\"");
+impl_code_type_for_primitive!(BytesCodeType, "Data", "Data([])");
+impl_code_type_for_primitive!(Int8CodeType, "Int8", "Int8(0)");
+impl_code_type_for_primitive!(Int16CodeType, "Int16", "Int16(0)");
+impl_code_type_for_primitive!(Int32CodeType, "Int32", "0");
+impl_code_type_for_primitive!(Int64CodeType, "Int64", "Int64(0)");
+impl_code_type_for_primitive!(UInt8CodeType, "UInt8", "UInt8(0)");
+impl_code_type_for_primitive!(UInt16CodeType, "UInt16", "UInt16(0)");
+impl_code_type_for_primitive!(UInt32CodeType, "UInt32", "UInt32(0)");
+impl_code_type_for_primitive!(UInt64CodeType, "UInt64", "UInt64(0)");
+impl_code_type_for_primitive!(Float32CodeType, "Float", "Float(0)");
+impl_code_type_for_primitive!(Float64CodeType, "Double", "Double(0)");

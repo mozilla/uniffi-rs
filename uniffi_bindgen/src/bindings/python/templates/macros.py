@@ -83,9 +83,9 @@ _uniffi_rust_call(
  #}
 {%- macro setup_args(func) %}
     {%- for arg in func.arguments() %}
-    {%- if let Some(literal) = arg.default_value() %}
+    {%- if let Some(default) = arg.default_value() %}
     if {{ arg.name() }} is _DEFAULT:
-        {{ arg.name() }} = {{ literal|literal_py(arg.as_type().borrow()) }}
+        {{ arg.name() }} = {{ default|default_py(arg.as_type().borrow()) }}
     {%- endif %}
     {{ arg|check_lower_fn }}({{ arg.name() }})
     {% endfor -%}
@@ -97,9 +97,9 @@ _uniffi_rust_call(
  #}
 {%- macro setup_args_extra_indent(func) %}
         {%- for arg in func.arguments() %}
-        {%- if let Some(literal) = arg.default_value() %}
+        {%- if let Some(default) = arg.default_value() %}
         if {{ arg.name() }} is _DEFAULT:
-            {{ arg.name() }} = {{ literal|literal_py(arg.as_type().borrow()) }}
+            {{ arg.name() }} = {{ default|default_py(arg.as_type().borrow()) }}
         {%- endif %}
         {{ arg|check_lower_fn }}({{ arg.name() }})
         {% endfor -%}

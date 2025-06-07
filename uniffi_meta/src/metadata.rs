@@ -64,6 +64,10 @@ pub mod codes {
     pub const LIT_SOME: u8 = 5;
     pub const LIT_EMPTY_SEQ: u8 = 6;
     pub const LIT_EMPTY_MAP: u8 = 7;
+
+    // DefaultValue codes
+    pub const DEFVALUE_DEFAULT: u8 = 0;
+    pub const DEFVALUE_LITERAL: u8 = 1;
 }
 
 // Create a checksum for a MetadataBuffer

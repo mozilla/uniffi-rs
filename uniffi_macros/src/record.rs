@@ -122,8 +122,13 @@ pub struct FieldAttributeArguments {
 impl UniffiAttributeArgs for FieldAttributeArguments {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
         let _: kw::default = input.parse()?;
-        let _: Token![=] = input.parse()?;
-        let default = input.parse()?;
+        let lookahead = input.lookahead1();
+        let default = if lookahead.peek(Token![=]) {
+            let _: Token![=] = input.parse()?;
+            input.parse()?
+        } else {
+            DefaultValue::Default
+        };
         Ok(Self {
             default: Some(default),
         })

@@ -6,6 +6,18 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
+  without a literal) meaning the default value for the type. Named types can also have a default.
+  ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
+
+### ⚠️ Breaking Changes ⚠️
+
+External bindings are impacted:
+
+- `#[uniffi(default)]` changes how defaults are represented.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 
 ## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)

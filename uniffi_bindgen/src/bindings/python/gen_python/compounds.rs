@@ -4,9 +4,9 @@
 
 use super::CodeType;
 use crate::{
-    backend::{Literal, Type},
     bail,
     bindings::python::gen_python::AsCodeType,
+    interface::{DefaultValue, Literal, Type},
     Result,
 };
 
@@ -36,11 +36,13 @@ impl CodeType for OptionalCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal) -> Result<String> {
-        match literal {
-            Literal::None => Ok("None".into()),
-            Literal::Some { inner } => super::PythonCodeOracle.find(&self.inner).literal(inner),
-            _ => bail!("Invalid literal for Optional type: {literal:?}"),
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::None) => Ok("None".into()),
+            DefaultValue::Literal(Literal::Some { inner }) => {
+                super::PythonCodeOracle.find(&self.inner).default(inner)
+            }
+            _ => bail!("Invalid literal for Optional type: {default:?}"),
         }
     }
 }
@@ -72,10 +74,12 @@ impl CodeType for SequenceCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal) -> Result<String> {
-        match literal {
-            Literal::EmptySequence => Ok("[]".into()),
-            _ => bail!("Invalid literal for sequence type: {literal:?}"),
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::EmptySequence) => {
+                Ok("[]".into())
+            }
+            _ => bail!("Invalid literal for sequence type: {default:?}"),
         }
     }
 }
@@ -109,10 +113,10 @@ impl CodeType for MapCodeType {
         )
     }
 
-    fn literal(&self, literal: &Literal) -> Result<String> {
-        match literal {
-            Literal::EmptyMap => Ok("{}".into()),
-            _ => bail!("Invalid literal for map type: {literal:?}"),
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default | DefaultValue::Literal(Literal::EmptyMap) => Ok("{}".into()),
+            _ => bail!("Invalid literal for map type: {default:?}"),
         }
     }
 }
