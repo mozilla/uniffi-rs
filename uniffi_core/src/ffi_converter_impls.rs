@@ -490,7 +490,7 @@ where
 
         let error = match error.downcast::<E>() {
             Ok(user) => RustCallError::Error(<E as LowerError<UT>>::lower_error(user)),
-            Err(error) => crate::LiftArgsError { arg_name, error}.to_internal_error(),
+            Err(error) => crate::LiftArgsError { arg_name, error }.to_internal_error(),
         };
 
         Err(error)

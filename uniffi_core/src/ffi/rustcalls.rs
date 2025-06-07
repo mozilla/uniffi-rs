@@ -138,9 +138,7 @@ impl LiftArgsError {
     pub fn to_internal_error(self) -> RustCallError {
         let LiftArgsError { arg_name, error } = self;
 
-        RustCallError::InternalError(format!(
-            "Failed to convert arg '{arg_name}':\n{error:?}"
-        ))
+        RustCallError::InternalError(format!("Failed to convert arg '{arg_name}':\n{error:?}"))
     }
 }
 
