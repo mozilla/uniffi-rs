@@ -159,6 +159,12 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         options,
     } = args;
 
+    let diagnostic_span = options
+        .try_lift
+        .as_ref()
+        .map(|it| it.closure.span())
+        .unwrap_or_else(|| custom_type.span());
+
     let name = match &custom_type {
         Type::Path(p) => match p.path.get_ident() {
             Some(i) => Ok(ident_to_string(i)),
@@ -198,12 +204,20 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         ),
     };
 
-    let custom_type_context = quote! {
-        ::std::format!(
-            "Lifting custom type `{}` from FFI type `{}` failed.",
-            ::core::any::type_name::<#custom_type>(),
-            ::core::any::type_name::<#uniffi_type>(),
-        )
+    // Note: We are attaching the span of either the provided `try_lift` closure,
+    //   or the custom type identifier if no closure is provided. This ensures that
+    //   the call to `Location::caller()` resolves to the custom type declaration.
+    let build_context = quote::quote_spanned! {diagnostic_span=>
+        || {
+            let location = ::core::panic::Location::caller();
+            ::std::format!(
+                "Lifting custom type `{}` from FFI type `{}` failed at {}:{}",
+                ::core::any::type_name::<#custom_type>(),
+                ::core::any::type_name::<#uniffi_type>(),
+                location.file(),
+                location.line()
+            )
+        }
     };
 
     let docstring = ""; // todo...
@@ -224,7 +238,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
                 let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(v)?;
                 ::uniffi::deps::anyhow::Context::with_context(
                     (move || -> ::uniffi::Result<#custom_type> { #try_lift_expr })(),
-                    || #custom_type_context
+                    #build_context
                 )
             }
 
@@ -236,7 +250,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
                 let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?;
                 ::uniffi::deps::anyhow::Context::with_context(
                     (move || -> ::uniffi::Result<#custom_type> { #try_lift_expr })(),
-                    || #custom_type_context
+                    #build_context
                 )
             }
 
