@@ -1754,6 +1754,7 @@ name = "uniffi-fixture-ext-types-lib-one"
 version = "0.22.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "bytes",
  "thiserror 1.0.47",
  "uniffi",
@@ -1764,6 +1765,7 @@ name = "uniffi-fixture-ext-types-proc-macro"
 version = "0.22.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "bytes",
  "uniffi",
  "uniffi-example-custom-types",
