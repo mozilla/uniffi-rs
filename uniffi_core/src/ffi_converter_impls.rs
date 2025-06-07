@@ -486,13 +486,14 @@ where
     }
 
     fn handle_failed_lift(error: crate::LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
-        match error.error.downcast::<E>() {
-            Ok(downcast) => Err(RustCallError::Error(E::lower_error(downcast))),
-            Err(e) => {
-                let msg = format!("Failed to convert arg '{}': {e}", error.arg_name);
-                Err(RustCallError::InternalError(msg))
-            }
-        }
+        let crate::LiftArgsError { arg_name, error } = error;
+
+        let error = match error.downcast::<E>() {
+            Ok(user) => RustCallError::Error(<E as LowerError<UT>>::lower_error(user)),
+            Err(error) => crate::LiftArgsError { arg_name, error}.to_internal_error(),
+        };
+
+        Err(error)
     }
 }
 

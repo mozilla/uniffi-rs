@@ -27,7 +27,6 @@ clap = { version = "4", default-features = false, features = [ "cargo", "derive"
 
 [dev-dependencies]
 trybuild = "1"
-insta = "1.43.1"
 
 [features]
 default = ["cargo-metadata"]
