@@ -1,7 +1,8 @@
 ---
 source: uniffi/tests/custom_types.rs
-expression: "format!(\"{:?}\", result.unwrap_err())"
+expression: ffi_error
 ---
+Failed to convert arg 'record':
 Lifting custom type `custom_types::ValidatedString` from FFI type `alloc::string::String` failed at uniffi/tests/custom_types.rs:39
 
 Caused by:
