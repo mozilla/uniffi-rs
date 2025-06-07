@@ -193,23 +193,17 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         None => (
             quote! { val },
             quote! {
-                Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?)
+                ::core::result::Result::Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?)
             },
         ),
     };
 
-    let custom_type_context = {
-        let name = try_lift.to_string();
-        let uniffi_type_name = uniffi_type.to_string();
-        let custom_type_name = custom_type.to_string();
-        quote! {
-            format!(
-                "Lifting Custom Type with <{} as TryInto<{}>>::try_into({}) Failed",
-                #uniffi_type_name,
-                #custom_type_name,
-                #name
-            )
-        }
+    let custom_type_context = quote! {
+        ::std::format!(
+            "Lifting custom type `{}` from FFI type `{}` failed.",
+            ::core::any::type_name::<#custom_type>(),
+            ::core::any::type_name::<#uniffi_type>(),
+        )
     };
 
     let docstring = ""; // todo...
@@ -229,7 +223,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
             fn try_lift(v: Self::FfiType) -> ::uniffi::Result<#custom_type> {
                 let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_lift(v)?;
                 ::uniffi::deps::anyhow::Context::with_context(
-                    (move || -> ::uniffi::deps::anyhow::Result<#custom_type> { #try_lift_expr })(),
+                    (move || -> ::uniffi::Result<#custom_type> { #try_lift_expr })(),
                     || #custom_type_context
                 )
             }
@@ -241,7 +235,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<#custom_type> {
                 let #try_lift = <#uniffi_type as ::uniffi::Lift<crate::UniFfiTag>>::try_read(buf)?;
                 ::uniffi::deps::anyhow::Context::with_context(
-                    (move || -> ::uniffi::deps::anyhow::Result<#custom_type> { #try_lift_expr })(),
+                    (move || -> ::uniffi::Result<#custom_type> { #try_lift_expr })(),
                     || #custom_type_context
                 )
             }
