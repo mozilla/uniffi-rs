@@ -192,8 +192,33 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         Some(convert_closure) => convert_closure.token_tuple(),
         None => (
             quote! { val },
-            quote! { Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?) },
+            quote! { ::core::result::Result::Ok(<#uniffi_type as TryInto<#custom_type>>::try_into(val)?) },
         ),
+    };
+
+    let build_context = quote::quote! {
+        || {
+            let location = ::core::panic::Location::caller();
+            ::std::format!(
+                "Lifting custom type `{}` from FFI type `{}` failed at {}:{}",
+                ::core::any::type_name::<#custom_type>(),
+                ::core::any::type_name::<#uniffi_type>(),
+                location.file(),
+                location.line()
+            )
+        }
+    };
+
+    // We allow needless_question_mark here because the error type of `TryInto` only needs conversion
+    // iff it is not a `anyhow::Error` already.
+    let try_lift_expr = quote::quote! {
+        #[allow(clippy::needless_question_mark)]
+        {
+            ::uniffi::deps::anyhow::Context::with_context(
+                (move || -> ::uniffi::Result<#custom_type> { #try_lift_expr })(),
+                #build_context
+            )
+        }
     };
 
     let docstring = ""; // todo...
