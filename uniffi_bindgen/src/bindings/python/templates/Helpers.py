@@ -62,7 +62,7 @@ def _uniffi_check_call_status(error_ffi_converter, call_status):
         # with the message.  But if that code panics, then it just sends back
         # an empty buffer.
         if call_status.error_buf.len > 0:
-            msg = _UniffiConverterString.lift(call_status.error_buf)
+            msg = {{ string_type_node.ffi_converter_name }}.lift(call_status.error_buf)
         else:
             msg = "Unknown rust panic"
         raise InternalError(msg)
@@ -75,7 +75,7 @@ def _uniffi_trait_interface_call(call_status, make_call, write_return_value):
         return write_return_value(make_call())
     except Exception as e:
         call_status.code = _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR
-        call_status.error_buf = {{ Type::String.borrow()|lower_fn }}(repr(e))
+        call_status.error_buf = {{ string_type_node.ffi_converter_name }}.lower(repr(e))
 
 def _uniffi_trait_interface_call_with_error(call_status, make_call, write_return_value, error_type, lower_error):
     try:
@@ -86,4 +86,4 @@ def _uniffi_trait_interface_call_with_error(call_status, make_call, write_return
             call_status.error_buf = lower_error(e)
     except Exception as e:
         call_status.code = _UniffiRustCallStatus.CALL_UNEXPECTED_ERROR
-        call_status.error_buf = {{ Type::String.borrow()|lower_fn }}(repr(e))
+        call_status.error_buf = {{ string_type_node.ffi_converter_name }}.lower(repr(e))

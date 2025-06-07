@@ -5,7 +5,6 @@
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
-mod as_ref;
 mod checksum;
 mod ir;
 
@@ -18,13 +17,6 @@ pub fn checksum_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Node, attributes(node))]
 pub fn node(input: TokenStream) -> TokenStream {
     ir::expand_node(parse_macro_input!(input))
-        .unwrap_or_else(syn::Error::into_compile_error)
-        .into()
-}
-
-#[proc_macro_derive(AsRef, attributes(as_ref))]
-pub fn expand_as_ref(input: TokenStream) -> TokenStream {
-    as_ref::expand_as_ref(parse_macro_input!(input))
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

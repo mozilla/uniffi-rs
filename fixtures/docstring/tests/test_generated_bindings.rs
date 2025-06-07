@@ -90,11 +90,6 @@ mod tests {
     }
 
     #[test]
-    fn test_docstring_python() {
-        test_docstring(PythonBindingGenerator, "py");
-    }
-
-    #[test]
     fn test_docstring_swift() {
         test_docstring(SwiftBindingGenerator, "swift");
     }

@@ -178,46 +178,6 @@ pub fn pass(root: &mut Root) -> Result<()> {
 }
 ```
 
-## AsRef
-
-The `uniffi_pipeline` crate also defines an `AsRef` derive macro to derive [`std::convert::AsRef`](https://doc.rust-lang.org/std/convert/trait.AsRef.html).
-This is somewhat tangential to the IR pipeline, but it's often very helpful for IRs.
-For example:
-
-* Many nodes contain a `TypeNode` field.
-* Language IRs will typically add the `TypeNode::ffi_converter` field which we want to use in the template code.
-* By implementing `AsRef<TypeNode>`, we can implement a filter that works for all nodes that contain a `TypeNode` field.
-
-```rust
-mod filters {
-    fn lift_fn(node: AsRef<TypeNode>) -> Result<String> {
-        let ffi_converter = node.as_ref().ffi_converter;
-        Ok(format!("{ffi_converter}.lift"))
-    }
-}
-```
-
-The `AsRef` derive macro can be used to easily define these AsRef trait impls:
-
-```rust
-#[derive(Node, AsRef)]
-pub struct Argument {
-    pub name: String,
-    // This `#[as_ref]` attribute generates an `AsRef<TypeNode>` impl that returns `&arg.ty`
-    #[as_ref]
-    pub ty: TypeNode,
-}
-
-// You can also use the AsRef macro can implement `AsRef` for the type itself.
-// This impl invocation generates code for `impl AsRef<TypeNode> for TypeNode`.
-#[derive(Node, AsRef)]
-#[as_ref]
-pub struct TypeNode {
-    pub ty: Type,
-    pub ffi_converter: String,
-}
-```
-
 ## Peeking behind the curtains with the `pipeline` CLI
 
 Use the `pipeline` subcommand from any UniFFI CLI to inspect IR data at various stages of the pipeline.
