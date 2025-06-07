@@ -159,12 +159,6 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         options,
     } = args;
 
-    let diagnostic_span = options
-        .try_lift
-        .as_ref()
-        .map(|it| it.closure.span())
-        .unwrap_or_else(|| custom_type.span());
-
     let name = match &custom_type {
         Type::Path(p) => match p.path.get_ident() {
             Some(i) => Ok(ident_to_string(i)),
@@ -204,10 +198,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
         ),
     };
 
-    // Note: We are attaching the span of either the provided `try_lift` closure,
-    //   or the custom type identifier if no closure is provided. This ensures that
-    //   the call to `Location::caller()` resolves to the custom type declaration.
-    let build_context = quote::quote_spanned! {diagnostic_span=>
+    let build_context = quote::quote! {
         || {
             let location = ::core::panic::Location::caller();
             ::std::format!(
