@@ -38,17 +38,15 @@ fn generate_ffi_type(ty: &Type, current_module_name: &str) -> FfiType {
         // Objects are pointers to an Arc<>
         Type::Interface {
             module_name, name, ..
-        } => FfiType::RustArcPtr {
+        } => FfiType::Handle(HandleKind::Interface {
             module_name: module_name.clone(),
-            object_name: name.clone(),
-        },
+            interface_name: name.clone(),
+        }),
         // Callback interfaces are passed as opaque integer handles.
-        Type::CallbackInterface { module_name, name } => {
-            FfiType::Handle(HandleKind::CallbackInterface {
-                module_name: module_name.clone(),
-                interface_name: name.clone(),
-            })
-        }
+        Type::CallbackInterface { module_name, name } => FfiType::Handle(HandleKind::Interface {
+            module_name: module_name.clone(),
+            interface_name: name.clone(),
+        }),
         // Other types are serialized into a bytebuffer and deserialized on the other side.
         Type::Enum { module_name, .. } | Type::Record { module_name, .. } => {
             FfiType::RustBuffer((module_name != current_module_name).then_some(module_name.clone()))

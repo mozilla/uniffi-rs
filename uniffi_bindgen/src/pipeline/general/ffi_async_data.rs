@@ -37,7 +37,7 @@ fn generate_async_data(namespace: &str, ffi_return_type: Option<&FfiTypeNode>) -
         Some(FfiType::Int64) => "i64",
         Some(FfiType::Float32) => "f32",
         Some(FfiType::Float64) => "f64",
-        Some(FfiType::RustArcPtr { .. }) => "pointer",
+        Some(FfiType::Handle(_)) => "u64",
         Some(FfiType::RustBuffer(_)) => "rust_buffer",
         None => "void",
         ty => panic!("Invalid future return type: {ty:?}"),
