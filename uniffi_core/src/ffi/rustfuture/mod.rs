@@ -209,4 +209,5 @@ derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<f32>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<f64>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<*const std::ffi::c_void>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<crate::RustBuffer>);
+derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<Handle>);
 derive_ffi_traits!(impl<UT> HandleAlloc<UT> for dyn RustFutureFfi<()>);

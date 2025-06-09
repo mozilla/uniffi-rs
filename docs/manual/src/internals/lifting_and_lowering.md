@@ -140,7 +140,7 @@ Details:
 | `record<string, T>` | `RustBuffer` struct pointing to serialized bytes |
 | `enum` and `[Enum] interface` | `RustBuffer` struct pointing to serialized bytes |
 | `dictionary` | `RustBuffer` struct pointing to serialized bytes |
-| `interface` | `void*` opaque pointer to object on the heap |
+| `interface` / `callback interface ` / `trait interface` | `u64` See [object references](./object_references.md) |
 
 
 ## Serialization Format

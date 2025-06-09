@@ -482,7 +482,7 @@ impl KotlinCodeOracle {
             FfiType::UInt64 | FfiType::Int64 => "0.toLong()".to_owned(),
             FfiType::Float32 => "0.0f".to_owned(),
             FfiType::Float64 => "0.0".to_owned(),
-            FfiType::RustArcPtr(_) => "Pointer.NULL".to_owned(),
+            FfiType::Handle => "0.toLong()".to_owned(),
             FfiType::RustBuffer(_) => "RustBuffer.ByValue()".to_owned(),
             FfiType::Callback(_) => "null".to_owned(),
             FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue()".to_owned(),
@@ -501,8 +501,8 @@ impl KotlinCodeOracle {
             | FfiType::Int64
             | FfiType::UInt64
             | FfiType::Float32
-            | FfiType::Float64 => format!("{}ByReference", self.ffi_type_label(ffi_type, ci)),
-            FfiType::RustArcPtr(_) => "PointerByReference".to_owned(),
+            | FfiType::Float64
+            | FfiType::Handle => format!("{}ByReference", self.ffi_type_label(ffi_type, ci)),
             // JNA structs default to ByReference
             FfiType::RustBuffer(_) | FfiType::Struct(_) => self.ffi_type_label(ffi_type, ci),
             _ => panic!("{ffi_type:?} by reference is not implemented"),
@@ -521,7 +521,6 @@ impl KotlinCodeOracle {
             FfiType::Float32 => "Float".to_string(),
             FfiType::Float64 => "Double".to_string(),
             FfiType::Handle => "Long".to_string(),
-            FfiType::RustArcPtr(_) => "Pointer".to_string(),
             FfiType::RustBuffer(maybe_external) => match maybe_external {
                 Some(external_meta) if external_meta.module_path != ci.crate_name() => {
                     format!("RustBuffer{}", external_meta.name)

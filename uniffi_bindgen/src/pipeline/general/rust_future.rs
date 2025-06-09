@@ -57,11 +57,11 @@ pub fn pass(module: &mut Module) -> Result<()> {
         (Some(FfiType::Float32), "f32"),
         (Some(FfiType::Float64), "f64"),
         (
-            Some(FfiType::RustArcPtr {
+            Some(FfiType::Handle(HandleKind::Interface {
                 module_name: "".into(),
-                object_name: "".into(),
-            }),
-            "pointer",
+                interface_name: "".into(),
+            })),
+            "u64",
         ),
         (Some(FfiType::RustBuffer(None)), "rust_buffer"),
         (None, "void"),

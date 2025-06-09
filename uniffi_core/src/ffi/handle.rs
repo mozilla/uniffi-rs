@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::{fmt, sync::Arc};
+
 /// Object handle
 ///
 /// Handles opaque `u64` values used to pass objects across the FFI, both for objects implemented in
@@ -15,7 +17,7 @@
 ///   leaked pointer will be aligned to `size_of::<Arc<T>>()` == `size_of::<*const T>()`).
 ///
 /// Rust handles are mainly managed is through the [crate::HandleAlloc] trait.
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct Handle(u64);
 
@@ -44,5 +46,37 @@ impl Handle {
 
     pub fn as_raw(&self) -> u64 {
         self.0
+    }
+
+    /// Create a handle from an Arc
+    pub fn from_arc<T>(arc: Arc<T>) -> Self {
+        Self::from_pointer(Arc::into_raw(arc))
+    }
+
+    /// Re-create an Arc from a handle
+    ///
+    /// # Safety
+    ///
+    /// * The handle must have been created from `Handle::from_arc`.
+    /// * The handle must only be used once
+    pub unsafe fn into_arc<T>(self) -> Arc<T> {
+        Arc::from_raw(self.as_pointer())
+    }
+
+    /// Clone a handle for an Arc
+    ///
+    /// # Safety
+    ///
+    /// The handle must have been created from `Handle::from_arc`.
+    pub unsafe fn clone_arc_handle<T>(&self) -> Self {
+        Arc::increment_strong_count(self.as_pointer::<T>());
+        // This is safe because we just incremented the refcount.
+        Self(self.0)
+    }
+}
+
+impl fmt::Debug for Handle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Handle(0x{:x})", self.0)
     }
 }

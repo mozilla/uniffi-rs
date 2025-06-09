@@ -789,10 +789,10 @@ impl ComponentInterface {
             Some(FfiType::Int64),
             Some(FfiType::Float32),
             Some(FfiType::Float64),
-            // RustBuffer and RustArcPtr have an inner field which we have to fill in with a
-            // placeholder value.
-            Some(FfiType::RustArcPtr("".to_owned())),
+            // RustBuffer has an inner field which we have to fill in with a placeholder value.
             Some(FfiType::RustBuffer(None)),
+            // `FfiType::Handle` is a 64-bit int and uses the same `ForeignFutureResult` type as
+            // `FfiType::UInt64`
             None,
         ]
         .into_iter()

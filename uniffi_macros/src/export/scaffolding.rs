@@ -144,13 +144,12 @@ impl ScaffoldingBits {
             // pointer.
             quote! {
                 {
-                    let boxed_foreign_arc = unsafe {
-                        ::std::boxed::Box::from_raw(
-                            uniffi_self_lowered as *mut ::std::sync::Arc<dyn #self_ident>,
-                        )
+                    use ::std::clone::Clone;
+                    let double_arc: ::std::sync::Arc<::std::sync::Arc<dyn #self_ident>> = unsafe {
+                        uniffi_self_lowered.into_arc()
                     };
-                    // Take a clone for our own use.
-                    ::std::result::Result::Ok(*boxed_foreign_arc)
+                    let arc: ::std::sync::Arc::<dyn #self_ident> = (*double_arc).clone();
+                    ::std::result::Result::Ok(arc)
                 }
             }
         } else {

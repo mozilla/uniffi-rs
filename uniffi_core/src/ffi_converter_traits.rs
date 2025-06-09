@@ -647,15 +647,14 @@ macro_rules! derive_ffi_traits {
 
 unsafe impl<T: Send + Sync, UT> HandleAlloc<UT> for T {
     fn new_handle(value: Arc<Self>) -> Handle {
-        Handle::from_pointer(Arc::into_raw(value))
+        Handle::from_arc(value)
     }
 
     unsafe fn clone_handle(handle: Handle) -> Handle {
-        Arc::increment_strong_count(handle.as_pointer::<T>());
-        handle
+        handle.clone_arc_handle::<T>()
     }
 
     unsafe fn consume_handle(handle: Handle) -> Arc<Self> {
-        Arc::from_raw(handle.as_pointer())
+        handle.into_arc()
     }
 }
