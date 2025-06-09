@@ -2251,9 +2251,8 @@ and providing scaffolding functions so that the foreign bindings can drive the f
 <ol>
 <li>Call the Rust scaffolding function, receiving a <code>RustFuture</code> handle</li>
 <li>Call the <code>rust_future_poll</code> function for the future until the future is ready.</li>
-<li>The <code>rust_future_poll</code> function inputs a callback function and an opaque pointer (AKA a <code>void *</code>) to call the callback with.</li>
-<li>If the future is pending, then the generated code registers a waker that will call the callback function with <code>RUST_FUTURE_MAYBE_READY</code>.
-     When the generated foreign code sees this, it calls poll again, starting the loop over.</li>
+<li>The <code>rust_future_poll</code> function inputs a callback function and a <code>u64</code> callback data value to pass to the callback.</li>
+<li>If the future is pending, then the generated code registers a waker that will call the callback function with <code>RUST_FUTURE_WAKE</code>.</li>
 <li>If the future is ready, then the callback function is immediately called with <code>RUST_FUTURE_READY</code> and we move to the next step.</li>
 <li>Call <code>rust_future_complete</code>, receiving the return value of the future</li>
 <li>Call <code>rust_future_free</code> (ideally in a <code>finally</code> block)</li>
