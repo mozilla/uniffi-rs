@@ -6,6 +6,20 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+
+* Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
+
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+* `FfiType::RustArcPtr` has been removed and the FFI type for objects/interfaces is now a `u64`.
+  Bindings authors will need to update their code to reflect this:
+
+  * Lowering/lifting now uses `u64` values
+  * The free function inputs a `u64` handle rather than a raw pointer
+  * The clone function inputs and returns a `u64` handle rather than a raw pointer
+  
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 
 ## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)

@@ -33,11 +33,6 @@ pub enum FfiType {
     Int64,
     Float32,
     Float64,
-    /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
-    /// If you've got one of these, you must call the appropriate rust function to free it.
-    /// The templates will generate a unique `free` function for each T.
-    /// The inner string references the name of the `T` type.
-    RustArcPtr(String),
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
@@ -89,7 +84,7 @@ impl FfiType {
                 FfiType::Int64 => "i64".to_owned(),
                 FfiType::Float32 => "f32".to_owned(),
                 FfiType::Float64 => "f64".to_owned(),
-                FfiType::RustArcPtr(_) => "pointer".to_owned(),
+                FfiType::Handle => "u64".to_owned(),
                 FfiType::RustBuffer(_) => "rust_buffer".to_owned(),
                 _ => unimplemented!("FFI return type: {t:?}"),
             },
@@ -126,7 +121,7 @@ impl From<&Type> for FfiType {
             // We might add a separate type for borrowed byte strings in future as well.
             Type::Bytes => FfiType::RustBuffer(None),
             // Objects are pointers to an Arc<>
-            Type::Object { name, .. } => FfiType::RustArcPtr(name.to_owned()),
+            Type::Object { .. } => FfiType::Handle,
             // Callback interfaces are passed as opaque integer handles.
             Type::CallbackInterface { .. } => FfiType::UInt64,
             // Other types are serialized into a bytebuffer and deserialized on the other side.

@@ -51,17 +51,17 @@ pub(super) fn gen_trait_scaffolding(
         /// Safety: Only pass pointers returned by a UniFFI call.  Do not pass pointers that were
         /// passed to the free function.
         pub unsafe extern "C" fn #clone_fn_ident(
-            ptr: *const ::std::ffi::c_void,
+            handle: ::std::primitive::u64,
             call_status: &mut ::uniffi::RustCallStatus
-        ) -> *const ::std::ffi::c_void {
-            ::uniffi::deps::trace!("clonining trait: {} ({:?})", #trait_name, ptr);
+        ) -> u64 {
+            ::uniffi::deps::trace!("clonining trait: {} ({:?})", #trait_name, handle);
             ::uniffi::rust_call(call_status, || {
-                let ptr = ptr as *mut ::std::sync::Arc<dyn #self_ident>;
+                let ptr = handle as *mut ::std::sync::Arc<dyn #self_ident>;
                 let arc: ::std::sync::Arc<_> = unsafe { ::std::clone::Clone::clone(&*ptr) };
                 ::std::result::Result::Ok(
                     ::std::boxed::Box::into_raw(
                         ::std::boxed::Box::new(arc),
-                    ) as *const ::std::ffi::c_void
+                    ) as u64
                 )
             })
         }
@@ -76,15 +76,14 @@ pub(super) fn gen_trait_scaffolding(
         /// Note: clippy doesn't complain about this being unsafe, but it definitely is since it
         /// calls `Box::from_raw`.
         pub unsafe extern "C" fn #free_fn_ident(
-            ptr: *const ::std::ffi::c_void,
+            handle: ::std::primitive::u64,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            ::uniffi::deps::trace!("freeing trait: {} ({:?})", #trait_name, ptr);
+            ::uniffi::deps::trace!("freeing trait: {} ({:?})", #trait_name, handle);
             ::uniffi::rust_call(call_status, || {
-                ::std::assert!(!ptr.is_null());
                 ::std::mem::drop(unsafe {
                     ::std::boxed::Box::from_raw(
-                        ptr as *mut ::std::sync::Arc<dyn #self_ident>,
+                        handle as *mut ::std::sync::Arc<dyn #self_ident>,
                     )
                 });
                 ::std::result::Result::Ok(())
@@ -134,7 +133,7 @@ pub(crate) fn ffi_converter(
         let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
         quote! {
             fn try_lift(v: Self::FfiType) -> ::uniffi::deps::anyhow::Result<::std::sync::Arc<Self>> {
-                ::std::result::Result::Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v as u64)))
+                ::std::result::Result::Ok(::std::sync::Arc::new(<#trait_impl_ident>::new(v)))
             }
         }
     } else {
@@ -167,27 +166,30 @@ pub(crate) fn ffi_converter(
             dyn #trait_ident: ::core::marker::Sync, ::core::marker::Send
         );
 
+        // We're going to be casting raw pointers to `u64` values to pass them across the FFI.
+        // Ensure that we're not on some 128-bit machine where this would overflow.
+        ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ()>() <= 8);
+
         unsafe #impl_spec {
-            type FfiType = *const ::std::os::raw::c_void;
+            type FfiType = ::std::primitive::u64;
+
 
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) as *const ::std::os::raw::c_void
+                ::std::boxed::Box::into_raw(::std::boxed::Box::new(obj)) as ::std::primitive::u64
             }
 
             #try_lift
 
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut ::std::vec::Vec<u8>) {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::deps::bytes::BufMut::put_u64(
                     buf,
-                    #lower_self(obj) as ::std::primitive::u64,
+                    #lower_self(obj)
                 );
             }
 
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                #try_lift_self(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                #try_lift_self(::uniffi::deps::bytes::Buf::get_u64(buf))
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)

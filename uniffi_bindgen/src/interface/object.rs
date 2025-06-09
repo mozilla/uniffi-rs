@@ -234,13 +234,13 @@ impl Object {
         assert!(!self.ffi_func_clone.name().is_empty());
         assert!(!self.ffi_func_free.name().is_empty());
         self.ffi_func_clone.arguments = vec![FfiArgument {
-            name: "ptr".to_string(),
-            type_: FfiType::RustArcPtr(self.name.to_string()),
+            name: "handle".to_string(),
+            type_: FfiType::Handle,
         }];
-        self.ffi_func_clone.return_type = Some(FfiType::RustArcPtr(self.name.to_string()));
+        self.ffi_func_clone.return_type = Some(FfiType::Handle);
         self.ffi_func_free.arguments = vec![FfiArgument {
-            name: "ptr".to_string(),
-            type_: FfiType::RustArcPtr(self.name.to_string()),
+            name: "handle".to_string(),
+            type_: FfiType::Handle,
         }];
         self.ffi_func_free.return_type = None;
         self.ffi_func_free.is_object_free_function = true;
@@ -458,10 +458,8 @@ impl Constructor {
 
     fn derive_ffi_func(&mut self) {
         assert!(!self.ffi_func.name().is_empty());
-        self.ffi_func.init(
-            Some(FfiType::RustArcPtr(self.object_name.clone())),
-            self.arguments.iter().map(Into::into),
-        );
+        self.ffi_func
+            .init(Some(FfiType::Handle), self.arguments.iter().map(Into::into));
     }
 }
 

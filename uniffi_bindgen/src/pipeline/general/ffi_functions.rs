@@ -29,10 +29,10 @@ pub fn pass(module: &mut Module) -> Result<()> {
         let receiver_argument = match &callable.kind {
             CallableKind::Method { interface_name } => Some(FfiArgument {
                 name: "uniffi_ptr".to_string(),
-                ty: FfiType::RustArcPtr {
+                ty: FfiType::Handle(HandleKind::Interface {
                     module_name: module_name.clone(),
-                    object_name: interface_name.clone(),
-                }
+                    interface_name: interface_name.clone(),
+                })
                 .into(),
             }),
             _ => None,
