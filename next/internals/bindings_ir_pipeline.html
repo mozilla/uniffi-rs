@@ -2084,15 +2084,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#asref" class="md-nav__link">
-    <span class="md-ellipsis">
-      AsRef
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#peeking-behind-the-curtains-with-the-pipeline-cli" class="md-nav__link">
     <span class="md-ellipsis">
       Peeking behind the curtains with the pipeline CLI
@@ -2273,40 +2264,6 @@ Here's how this works in the <code>callables</code> pass:</p>
 <span class="w">    </span><span class="p">});</span>
 <span class="w">    </span><span class="c1">// ... repeat for methods and constructors</span>
 <span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
-<span class="p">}</span>
-</code></pre></div>
-<h2 id="asref">AsRef</h2>
-<p>The <code>uniffi_pipeline</code> crate also defines an <code>AsRef</code> derive macro to derive <a href="https://doc.rust-lang.org/std/convert/trait.AsRef.html"><code>std::convert::AsRef</code></a>.
-This is somewhat tangential to the IR pipeline, but it's often very helpful for IRs.
-For example:</p>
-<ul>
-<li>Many nodes contain a <code>TypeNode</code> field.</li>
-<li>Language IRs will typically add the <code>TypeNode::ffi_converter</code> field which we want to use in the template code.</li>
-<li>By implementing <code>AsRef&lt;TypeNode&gt;</code>, we can implement a filter that works for all nodes that contain a <code>TypeNode</code> field.</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="k">mod</span><span class="w"> </span><span class="nn">filters</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">lift_fn</span><span class="p">(</span><span class="n">node</span><span class="p">:</span><span class="w"> </span><span class="nb">AsRef</span><span class="o">&lt;</span><span class="n">TypeNode</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi_converter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">node</span><span class="p">.</span><span class="n">as_ref</span><span class="p">().</span><span class="n">ffi_converter</span><span class="p">;</span>
-<span class="w">        </span><span class="nb">Ok</span><span class="p">(</span><span class="fm">format!</span><span class="p">(</span><span class="s">&quot;{ffi_converter}.lift&quot;</span><span class="p">))</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>The <code>AsRef</code> derive macro can be used to easily define these AsRef trait impls:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Node, AsRef)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">Argument</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
-<span class="w">    </span><span class="c1">// This `#[as_ref]` attribute generates an `AsRef&lt;TypeNode&gt;` impl that returns `&amp;arg.ty`</span>
-<span class="w">    </span><span class="cp">#[as_ref]</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">TypeNode</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="c1">// You can also use the AsRef macro can implement `AsRef` for the type itself.</span>
-<span class="c1">// This impl invocation generates code for `impl AsRef&lt;TypeNode&gt; for TypeNode`.</span>
-<span class="cp">#[derive(Node, AsRef)]</span>
-<span class="cp">#[as_ref]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TypeNode</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ty</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">ffi_converter</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="peeking-behind-the-curtains-with-the-pipeline-cli">Peeking behind the curtains with the <code>pipeline</code> CLI</h2>
