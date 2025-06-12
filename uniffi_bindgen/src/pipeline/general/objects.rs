@@ -21,18 +21,18 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 is_async: false,
                 arguments: vec![FfiArgument {
                     name: "ptr".to_string(),
-                    ty: FfiType::RustArcPtr {
+                    ty: FfiType::Handle(HandleKind::Interface {
                         module_name: module_name.clone(),
-                        object_name: int.name.to_string(),
-                    }
+                        interface_name: int.name.to_string(),
+                    })
                     .into(),
                 }],
                 return_type: FfiReturnType {
                     ty: Some(
-                        FfiType::RustArcPtr {
+                        FfiType::Handle(HandleKind::Interface {
                             module_name: module_name.clone(),
-                            object_name: int.name.to_string(),
-                        }
+                            interface_name: int.name.to_string(),
+                        })
                         .into(),
                     ),
                 },
@@ -48,10 +48,10 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 is_async: false,
                 arguments: vec![FfiArgument {
                     name: "ptr".to_string(),
-                    ty: FfiType::RustArcPtr {
+                    ty: FfiType::Handle(HandleKind::Interface {
                         module_name: module_name.clone(),
-                        object_name: int.name.to_string(),
-                    }
+                        interface_name: int.name.to_string(),
+                    })
                     .into(),
                 }],
                 return_type: FfiReturnType { ty: None },

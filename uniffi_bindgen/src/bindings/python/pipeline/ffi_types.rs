@@ -22,7 +22,6 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 | FfiType::Int64
                 | FfiType::Handle(_) => "0".to_string(),
                 FfiType::Float32 | FfiType::Float64 => "0.0".to_string(),
-                FfiType::RustArcPtr { .. } => "ctypes.c_void_p()".to_string(),
                 FfiType::RustBuffer(Some(buf_module_name)) if *buf_module_name != module_name => {
                     format!("{buf_module_name}._UniffiRustBuffer.default()")
                 }
@@ -51,7 +50,6 @@ fn ffi_type_name(module_name: &str, ffi_type: &FfiType) -> String {
         FfiType::Float32 => "ctypes.c_float".to_string(),
         FfiType::Float64 => "ctypes.c_double".to_string(),
         FfiType::Handle(_) => "ctypes.c_uint64".to_string(),
-        FfiType::RustArcPtr { .. } => "ctypes.c_void_p".to_string(),
         FfiType::RustBuffer(Some(buf_module_name)) if buf_module_name != module_name => {
             format!("{buf_module_name}._UniffiRustBuffer")
         }
