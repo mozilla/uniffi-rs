@@ -11,7 +11,10 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, Context, Result};
+use crate::{
+    anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, to_askama_error, Context,
+    Result,
+};
 
 mod callback_interface;
 mod compounds;
@@ -596,7 +599,6 @@ fn can_render_callable(callable: &dyn Callable, ci: &ComponentInterface) -> bool
 
 mod filters {
     use super::*;
-    pub use crate::backend::filters::*;
     use uniffi_meta::LiteralMetadata;
 
     pub(super) fn type_name(
@@ -612,6 +614,10 @@ mod filters {
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
+    }
+
+    pub(super) fn ffi_type(type_: &impl AsType) -> askama::Result<FfiType, askama::Error> {
+        Ok(type_.as_type().into())
     }
 
     pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -660,10 +666,14 @@ mod filters {
             match t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
                 Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Ok(base10 + "u"),
-                _ => Err(to_askama_error("Only ints are supported.")),
+                _ => Err(to_askama_error(&format!(
+                    "Only ints are supported for enum literals: {t:?}"
+                ))),
             }
         } else {
-            Err(to_askama_error("Enum hasn't defined a repr"))
+            Err(to_askama_error(&format!(
+                "Enum hasn't defined a repr: {t:?}"
+            )))
         }
     }
 
@@ -675,7 +685,9 @@ mod filters {
             // so we'll need to make sure we define the type as appropriately
             LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
             LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
-            _ => Err(to_askama_error("Only ints are supported.")),
+            _ => Err(to_askama_error(&format!(
+                "Only ints are supported: {literal:?}"
+            ))),
         }
     }
 
