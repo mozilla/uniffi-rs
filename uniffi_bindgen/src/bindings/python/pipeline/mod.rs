@@ -8,6 +8,7 @@ pub use crate::pipeline::{general, initial};
 use uniffi_pipeline::{Node, Pipeline};
 mod callback_interfaces;
 mod config;
+mod default;
 mod external_types;
 mod ffi_types;
 mod interfaces;
@@ -32,5 +33,6 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
         .pass(callback_interfaces::pass)
         .pass(types::pass)
         .pass(literals::pass)
+        .pass(default::pass)
         .pass(ffi_types::pass)
 }

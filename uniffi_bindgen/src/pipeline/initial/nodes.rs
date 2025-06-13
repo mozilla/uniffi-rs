@@ -90,7 +90,14 @@ pub struct Argument {
     pub name: String,
     pub ty: Type,
     pub optional: bool,
-    pub default: Option<Literal>,
+    pub default: Option<DefaultValue>,
+}
+
+#[derive(Debug, Clone, Node)]
+#[node(from(DefaultValueMetadata))]
+pub enum DefaultValue {
+    Default,
+    Literal(Literal),
 }
 
 #[derive(Debug, Clone, Node)]
@@ -112,7 +119,7 @@ pub enum Literal {
     EmptySequence,
     EmptyMap,
     None,
-    Some { inner: Box<Literal> },
+    Some { inner: Box<DefaultValue> },
 }
 
 // Represent the radix of integer literal values.
@@ -137,7 +144,7 @@ pub struct Record {
 pub struct Field {
     pub name: String,
     pub ty: Type,
-    pub default: Option<Literal>,
+    pub default: Option<DefaultValue>,
     pub docstring: Option<String>,
 }
 

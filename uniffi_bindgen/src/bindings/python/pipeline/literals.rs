@@ -29,7 +29,7 @@ fn render_literal(lit: &Literal) -> Result<String> {
         Literal::EmptySequence => "[]".to_string(),
         Literal::EmptyMap => "{}".to_string(),
         Literal::None => "None".to_string(),
-        Literal::Some { inner } => render_literal(inner)?,
+        Literal::Some { inner } => default::render_default(inner)?,
         Literal::Enum(variant, ty) => match &ty.ty {
             Type::Enum { name, .. } => format!("{name}.{variant}"),
             type_kind => {
