@@ -372,6 +372,7 @@ pub struct TypeNode {
     pub canonical_name: String,
     pub is_used_as_error: bool,
     pub type_name: String,
+    pub type_anno_name: String,
     pub ffi_converter_name: String,
     pub ffi_type: FfiTypeNode,
 }
