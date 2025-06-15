@@ -38,8 +38,12 @@ trait CodeType: Debug {
     /// with this type only.
     fn canonical_name(&self) -> String;
 
-    fn literal(&self, _literal: &Literal, ci: &ComponentInterface) -> Result<String> {
-        unimplemented!("Unimplemented for {}", self.type_label(ci))
+    // default for named types is to assume a ctor exists.
+    fn default(&self, default: &DefaultValue, ci: &ComponentInterface) -> Result<String> {
+        match default {
+            DefaultValue::Default => Ok(format!("{}()", self.type_label(ci))),
+            DefaultValue::Literal(_) => bail!("Literals for named types are not supported"),
+        }
     }
 
     /// Name of the FfiConverter
@@ -649,14 +653,14 @@ mod filters {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
-    pub fn render_literal(
-        literal: &Literal,
+    pub fn render_default(
+        default: &DefaultValue,
         as_ct: &impl AsType,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         as_ct
             .as_codetype()
-            .literal(literal, ci)
+            .default(default, ci)
             .map_err(|e| to_askama_error(&e))
     }
 

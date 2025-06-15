@@ -110,7 +110,7 @@ public convenience init(
     {%- for arg in func.arguments() -%}
         {% if config.omit_argument_labels() %}_ {% endif %}{{ arg.name()|var_name }}: {{ arg|type_name -}}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_swift(arg) }}
+        {%- when Some with(default) %} = {{ default|default_swift(arg) }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}
@@ -130,7 +130,7 @@ public convenience init(
         {%- else -%}
         {{ field.name()|var_name }}: {{ field|type_name -}}
         {%- match field.default_value() %}
-            {%- when Some with(literal) %} = {{ literal|literal_swift(field) }}
+            {%- when Some with(default) %} = {{ default|default_swift(field) }}
             {%- else %}
         {%- endmatch -%}
         {% if !loop.last %}, {% endif %}

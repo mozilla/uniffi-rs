@@ -8,7 +8,15 @@
 
 ### ⚠️ Breaking Changes ⚠️
 
-- External bindings: `uniffi_bindgen::backend` has been removed.
+- External bindings:
+  - `uniffi_bindgen::backend` has been removed.
+  - `#[uniffi(default)]` changes how defaults are represented.
+
+### What's new?
+
+- Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
+  without a literal) meaning the default value for the type. Named types can also have a default.
+  ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 

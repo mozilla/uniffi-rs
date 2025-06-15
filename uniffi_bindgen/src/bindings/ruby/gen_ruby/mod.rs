@@ -145,7 +145,10 @@ mod filters {
         })
     }
 
-    pub fn literal_rb(literal: &Literal) -> Result<String, askama::Error> {
+    pub fn default_rb(default: &DefaultValue) -> Result<String, askama::Error> {
+        let DefaultValue::Literal(literal) = default else {
+            unimplemented!("not supported.");
+        };
         Ok(match literal {
             Literal::Boolean(v) => {
                 if *v {
@@ -157,7 +160,7 @@ mod filters {
             // use the double-quote form to match with the other languages, and quote escapes.
             Literal::String(s) => format!("\"{s}\""),
             Literal::None => "nil".into(),
-            Literal::Some { inner } => literal_rb(inner)?,
+            Literal::Some { inner } => default_rb(inner)?,
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {

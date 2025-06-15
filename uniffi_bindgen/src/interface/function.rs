@@ -36,7 +36,7 @@ use anyhow::Result;
 use uniffi_meta::Checksum;
 
 use super::ffi::{FfiArgument, FfiFunction, FfiType};
-use super::{AsType, ComponentInterface, Literal, ObjectImpl, Type, TypeIterator};
+use super::{AsType, ComponentInterface, DefaultValue, ObjectImpl, Type, TypeIterator};
 
 /// Represents a standalone function.
 ///
@@ -183,7 +183,7 @@ pub struct Argument {
     pub(super) type_: Type,
     pub(super) by_ref: bool,
     pub(super) optional: bool,
-    pub(super) default: Option<Literal>,
+    pub(super) default: Option<DefaultValue>,
 }
 
 impl Argument {
@@ -203,7 +203,7 @@ impl Argument {
         matches!(&self.type_, Type::Object { imp, .. } if *imp == ObjectImpl::Trait)
     }
 
-    pub fn default_value(&self) -> Option<&Literal> {
+    pub fn default_value(&self) -> Option<&DefaultValue> {
         self.default.as_ref()
     }
 
