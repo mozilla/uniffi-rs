@@ -176,14 +176,14 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
             #[doc(hidden)]
             #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: u64) {
-                ::uniffi::ffi::rust_future_poll::<#return_type, crate::UniFfiTag>(handle, callback, data);
+                ::uniffi::ffi::rust_future_poll::<#return_type>(handle, callback, data);
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ffi_rust_future_cancel(handle: ::uniffi::Handle) {
-                ::uniffi::ffi::rust_future_cancel::<#return_type, crate::UniFfiTag>(handle)
+                ::uniffi::ffi::rust_future_cancel::<#return_type>(handle)
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -193,14 +193,14 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
                 handle: ::uniffi::Handle,
                 out_status: &mut ::uniffi::RustCallStatus
             ) -> #return_type {
-                ::uniffi::ffi::rust_future_complete::<#return_type, crate::UniFfiTag>(handle, out_status)
+                ::uniffi::ffi::rust_future_complete::<#return_type>(handle, out_status)
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ffi_rust_future_free(handle: ::uniffi::Handle) {
-                ::uniffi::ffi::rust_future_free::<#return_type, crate::UniFfiTag>(handle)
+                ::uniffi::ffi::rust_future_free::<#return_type>(handle)
             }
         }
     })

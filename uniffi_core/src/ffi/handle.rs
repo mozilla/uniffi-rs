@@ -63,6 +63,23 @@ impl Handle {
         Arc::from_raw(self.as_pointer())
     }
 
+    /// Re-create an Arc from a borrowed handle
+    ///
+    /// "borrowed" means a handle sent from the other side of the FFI without cloning it first.
+    /// Be very careful with using this, since it's easy to introduce races.
+    /// The one scenario this is currently used for is futures, since we can guarantee that the
+    /// foreign side will not drop the future while in the middle of polling/cancelling it.
+    ///
+    /// # Safety
+    ///
+    /// * The handle must have been created from `Handle::from_arc`.
+    /// * There must be no possibility for the handle to be dropped before the function the
+    ///   borrowed handle is passed to returns.
+    pub unsafe fn into_arc_borrowed<T>(self) -> Arc<T> {
+        self.clone_arc_handle::<T>();
+        Arc::from_raw(self.as_pointer())
+    }
+
     /// Clone a handle for an Arc
     ///
     /// # Safety
