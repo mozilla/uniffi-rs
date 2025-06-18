@@ -169,6 +169,28 @@ where
     rust_call_with_out_status(out_status, callback).unwrap_or_else(R::ffi_default)
 }
 
+/// Result of making a Rust call
+///
+/// The `Ok` side stores successful call results
+/// The `Err` side stores error results, both for `Err` returns and for unexpected errors.
+/// Errors are represented by a `RustCallStatus` which is easy to return across the FFI.
+pub type RustCallResult<T> = Result<T, RustCallStatus>;
+
+/// Try making a Rust call
+///
+/// If the call succeeds this returns Ok(v) with the result.
+/// If the call fails (including Err results), this returns Err(RustCallStatus).
+pub(crate) fn try_rust_call<F, R>(callback: F) -> Result<R, RustCallStatus>
+where
+    F: panic::UnwindSafe + FnOnce() -> Result<R, RustCallError>,
+{
+    let mut out_status = RustCallStatus::default();
+    match rust_call_with_out_status(&mut out_status, callback) {
+        Some(r) => Ok(r),
+        None => Err(out_status),
+    }
+}
+
 /// Make a Rust call and update `RustCallStatus` based on the result.
 ///
 /// If the call succeeds this returns Some(v) and doesn't touch out_status

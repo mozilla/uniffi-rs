@@ -73,20 +73,20 @@ impl Future for Receiver {
 }
 
 // Create a sender and rust future that we can use for testing
-fn channel() -> (Sender, Arc<dyn RustFutureFfi<RustBuffer>>) {
+fn channel() -> (Sender, Arc<RustFuture<RustBuffer>>) {
     let channel = Arc::new(Mutex::new(Channel {
         result: None,
         waker: None,
     }));
     let rust_future = RustFuture::new(Box::pin(Receiver(channel.clone())), crate::UniFfiTag);
-    (Sender(channel), rust_future)
+    (Sender(channel), Arc::new(rust_future))
 }
 
 /// Poll a Rust future and get an OnceCell that's set when the continuation is called
-fn poll(rust_future: &Arc<dyn RustFutureFfi<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
+fn poll(rust_future: &Arc<RustFuture<RustBuffer>>) -> Arc<OnceCell<RustFuturePoll>> {
     let cell = Arc::new(OnceCell::new());
     let handle = Arc::into_raw(cell.clone()) as u64;
-    rust_future.clone().ffi_poll(poll_continuation, handle);
+    rust_future.clone().poll(poll_continuation, handle);
     cell
 }
 
@@ -95,9 +95,9 @@ extern "C" fn poll_continuation(data: u64, code: RustFuturePoll) {
     cell.set(code).expect("Error setting OnceCell");
 }
 
-fn complete(rust_future: Arc<dyn RustFutureFfi<RustBuffer>>) -> (RustBuffer, RustCallStatus) {
+fn complete(rust_future: Arc<RustFuture<RustBuffer>>) -> (RustBuffer, RustCallStatus) {
     let mut out_status_code = RustCallStatus::default();
-    let return_value = rust_future.ffi_complete(&mut out_status_code);
+    let return_value = rust_future.complete(&mut out_status_code);
     (return_value, out_status_code)
 }
 
@@ -184,7 +184,7 @@ fn test_cancel() {
 
     let continuation_result = poll(&rust_future);
     assert_eq!(continuation_result.get(), None);
-    rust_future.ffi_cancel();
+    rust_future.cancel();
     // Cancellation should immediately invoke the callback with RustFuturePoll::Ready
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
 
@@ -210,7 +210,7 @@ fn test_release_future() {
     let rust_future2 = rust_future.clone();
 
     // Complete the rust future
-    rust_future.ffi_free();
+    rust_future.free();
     // Even though rust_future is still alive, the channel shouldn't be
     assert!(Arc::strong_count(&rust_future2) > 0);
     assert_eq!(channel_weak.strong_count(), 0);
@@ -225,7 +225,7 @@ fn test_complete_with_stored_continuation() {
     let (_sender, rust_future) = channel();
 
     let continuation_result = poll(&rust_future);
-    rust_future.ffi_free();
+    rust_future.free();
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Ready));
 }
 
@@ -246,8 +246,8 @@ fn test_wake_during_poll() {
             Poll::Ready(Ok("All done".to_owned()))
         }
     });
-    let rust_future: Arc<dyn RustFutureFfi<RustBuffer>> =
-        RustFuture::new(Box::pin(future), crate::UniFfiTag);
+    let rust_future: Arc<RustFuture<RustBuffer>> =
+        Arc::new(RustFuture::new(Box::pin(future), crate::UniFfiTag));
     let continuation_result = poll(&rust_future);
     // The continuation function should called immediately
     assert_eq!(continuation_result.get(), Some(&RustFuturePoll::Wake));
