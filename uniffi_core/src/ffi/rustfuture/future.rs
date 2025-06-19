@@ -78,11 +78,10 @@
 use std::{
     future::Future,
     marker::PhantomData,
-    ops::Deref,
     panic,
     pin::Pin,
     sync::{Arc, Mutex},
-    task::{Context, Poll, Wake},
+    task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
 
 use super::{
@@ -180,10 +179,16 @@ where
     }
 }
 
-// If F and T are Send, then WrappedFuture is too
+// Implement `Send` on WrappedFuture under the correct conditions.
 //
-// Rust will not mark it Send by default when T::ReturnType is a raw pointer.  This is promising
-// that we will treat the raw pointer properly, for example by not returning it twice.
+// FIXME: This is required to make the futures code compile, although it's not entirely correct.
+// If the `wasm-unstable-single-threaded` feature is enabled, then the wrapped future may not be `Send`, and thus `WrappedFuture` is not Send either.
+// This seems okay for now, since if `wasm-unstable-single-threaded` then futures should stay on one thread.
+// However, we should probably fix this in the long-term.
+//
+// In addition, `WrappedFuture::result` can be a raw pointer which is `!Send`.
+// This `!Send` bound is because Rust can't uphold safety guarantees for raw pointers.
+// However, this code does in fact treat the pointers correctly, for example we only return them across the FFI once.
 unsafe impl<T, UT> Send for WrappedFuture<T, UT>
 where
     T: FutureLowerReturn<UT> + 'static,
@@ -223,7 +228,7 @@ where
         let cancelled = self.is_cancelled();
         let ready = cancelled || {
             let mut locked = self.future.lock().unwrap();
-            let waker: std::task::Waker = Arc::clone(&self).into();
+            let waker = Arc::clone(&self).into_waker();
             locked.poll(&mut Context::from_waker(&waker))
         };
         if ready {
@@ -236,11 +241,6 @@ where
 
     pub(super) fn is_cancelled(&self) -> bool {
         self.scheduler.lock().unwrap().is_cancelled()
-    }
-
-    pub(super) fn wake(&self) {
-        trace!("RustFuture::wake called");
-        self.scheduler.lock().unwrap().wake();
     }
 
     pub(super) fn cancel(&self) {
@@ -259,17 +259,73 @@ where
     }
 }
 
-impl<T, UT> Wake for RustFuture<T, UT>
+// `RawWaker` implementation for RustFuture
+impl<T, UT> RustFuture<T, UT>
 where
     T: FutureLowerReturn<UT> + 'static,
     UT: Send + 'static,
+    Scheduler: Send + Sync,
 {
-    fn wake(self: Arc<Self>) {
-        self.deref().wake()
+    unsafe fn waker_clone(ptr: *const ()) -> RawWaker {
+        trace!("RustFuture::waker_clone called ({ptr:?)");
+        Arc::<Self>::increment_strong_count(ptr.cast::<Self>());
+        RawWaker::new(
+            ptr,
+            &RawWakerVTable::new(
+                Self::waker_clone,
+                Self::waker_wake,
+                Self::waker_wake_by_ref,
+                Self::waker_drop,
+            ),
+        )
     }
 
-    fn wake_by_ref(self: &Arc<Self>) {
-        self.deref().wake()
+    unsafe fn waker_wake(ptr: *const ()) {
+        trace!("RustFuture::waker_wake called ({ptr:?)");
+        Self::recreate_arc(ptr).scheduler.lock().unwrap().wake();
+    }
+
+    unsafe fn waker_wake_by_ref(ptr: *const ()) {
+        trace!("RustFuture::waker_wake_by_ref called ({ptr:?)");
+        // For wake_by_ref, we can use the pointer directly, without consuming it to re-create the
+        // arc.
+        let ptr = ptr.cast::<Self>();
+        (*ptr).scheduler.lock().unwrap().wake();
+    }
+
+    unsafe fn waker_drop(ptr: *const ()) {
+        trace!("RustFuture::waker_drop called ({ptr:?)");
+        drop(Self::recreate_arc(ptr));
+    }
+
+    /// Recreate an Arc<Self> from a raw pointer
+    ///
+    /// # Safety
+    /// * ptr must have been created from `Arc::into_raw()`
+    /// * ptr must only be used once to re-create the arc
+    unsafe fn recreate_arc(ptr: *const ()) -> Arc<Self> {
+        let ptr = ptr.cast::<Self>();
+        Arc::<Self>::from_raw(ptr)
+    }
+
+    fn into_waker(self: Arc<Self>) -> Waker {
+        trace!("RustFuture::creating waker ({:?)", self.as_pointer());
+        let raw_waker = RawWaker::new(
+            Arc::into_raw(self).cast::<()>(),
+            &RawWakerVTable::new(
+                Self::waker_clone,
+                Self::waker_wake,
+                Self::waker_wake_by_ref,
+                Self::waker_drop,
+            ),
+        );
+
+        // Safety:
+        //
+        // * The vtable functions are thread-safe, since we only access `Self::scheduler` and that
+        //   has a `Send` + `Sync` bound.
+        // * We manage the raw arc pointers correctly
+        unsafe { Waker::from_raw(raw_waker) }
     }
 }
 
