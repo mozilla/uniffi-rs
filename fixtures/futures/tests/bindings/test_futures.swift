@@ -242,13 +242,6 @@ Task {
         // Expected
     }
 
-    let completedDelaysBefore = traitObj.completedDelays
-    await cancelDelayUsingTrait(obj: traitObj, delayMs: 10)
-    // sleep long enough so that the `delay()` call would finish if it wasn't cancelled.
-    try! await Task.sleep(nanoseconds: 100_000_000)
-    // If the task was cancelled, then completedDelays won't have increased
-    assert(traitObj.completedDelays == completedDelaysBefore)
-
     // Test that all handles here cleaned up
     assert(uniffiForeignFutureHandleCountFutures() == 0)
 

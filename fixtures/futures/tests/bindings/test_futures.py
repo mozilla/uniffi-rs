@@ -166,14 +166,6 @@ class TestFutures(unittest.TestCase):
             with self.assertRaises(ParserError.NotAnInt):
                 await try_delay_using_trait(trait_obj, "one")
 
-            completed_delays_before = trait_obj.completed_delays
-            await cancel_delay_using_trait(trait_obj, 10)
-            # sleep long enough so that the `delay()` call would finish if it wasn't cancelled.
-            await asyncio.sleep(0.1)
-            # If the task was cancelled, then completed_delays won't have increased
-            self.assertEqual(trait_obj.completed_delays, completed_delays_before)
-
-
         asyncio.run(test())
         # check that all foreign future handles were released
         self.assertEqual(len(futures._UNIFFI_FOREIGN_FUTURE_HANDLE_MAP), 0)

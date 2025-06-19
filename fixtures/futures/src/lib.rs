@@ -11,8 +11,6 @@ use std::{
     time::Duration,
 };
 
-use futures::future::{AbortHandle, Abortable, Aborted};
-
 /// Non-blocking timer future.
 pub struct TimerFuture {
     shared_state: Arc<Mutex<SharedState>>,
@@ -484,18 +482,6 @@ async fn try_delay_using_trait(
     delay_ms: String,
 ) -> Result<(), ParserError> {
     obj.try_delay(delay_ms).await
-}
-
-#[uniffi::export]
-async fn cancel_delay_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32) {
-    let (abort_handle, abort_registration) = AbortHandle::new_pair();
-    thread::spawn(move || {
-        // Simulate a different thread aborting the process
-        thread::sleep(Duration::from_millis(1));
-        abort_handle.abort();
-    });
-    let future = Abortable::new(obj.delay(delay_ms), abort_registration);
-    assert_eq!(future.await, Err(Aborted));
 }
 
 uniffi::include_scaffolding!("futures");

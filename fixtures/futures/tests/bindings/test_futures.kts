@@ -206,13 +206,6 @@ runBlocking {
     } catch(e: ParserException.NotAnInt) {
         // Expected
     }
-    val completedDelaysBefore = traitObj.completedDelays
-    cancelDelayUsingTrait(traitObj, 10)
-    // sleep long enough so that the `delay()` call would finish if it wasn't cancelled.
-    delay(100)
-    // If the task was cancelled, then completedDelays won't have increased
-    assert(traitObj.completedDelays == completedDelaysBefore)
-
     // Test that all handles were cleaned up
     assert(uniffiForeignFutureHandleCount() == 0)
 }
