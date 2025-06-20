@@ -2069,6 +2069,18 @@ will fail).</p>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">greeting</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="w">    </span><span class="cp">#[uniffi(default = true)]</span>
 <span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">some_flag</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// As with function args, you can omit the default value if you want the default for the type.</span>
+<span class="w">    </span><span class="cp">#[uniffi(default)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">other_flag</span><span class="p">:</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span><span class="w"> </span><span class="c1">// defaults to `false`</span>
+<span class="w">    </span><span class="c1">// Use other named objects.</span>
+<span class="w">    </span><span class="cp">#[uniffi(default)]</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">optional</span><span class="p">:</span><span class="w"> </span><span class="nc">OptionalRecord</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="cp">#[derive(uniffi::Record)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">OptionalRecord</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cp">#[uniffi(default)]</span>
+<span class="w">    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
 <p>Most types can have default values - all defaults described for <a href="functions.html#default-values">function arguments</a> apply here too.</p>
