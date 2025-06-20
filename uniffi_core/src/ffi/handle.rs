@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use std::sync::Arc;
+
 /// Object handle
 ///
 /// Handles opaque `u64` values used to pass objects across the FFI, both for objects implemented in
@@ -44,5 +46,48 @@ impl Handle {
 
     pub fn as_raw(&self) -> u64 {
         self.0
+    }
+
+    /// Create a handle from an Arc
+    pub fn from_arc<T>(arc: Arc<T>) -> Self {
+        Self::from_pointer(Arc::into_raw(arc))
+    }
+
+    /// Re-create an Arc from a handle
+    ///
+    /// # Safety
+    ///
+    /// * The handle must have been created from `Handle::from_arc`.
+    /// * The handle must only be used once
+    pub unsafe fn into_arc<T>(self) -> Arc<T> {
+        Arc::from_raw(self.as_pointer())
+    }
+
+    /// Re-create an Arc from a borrowed handle
+    ///
+    /// "borrowed" means a handle sent from the other side of the FFI without cloning it first.
+    /// Be very careful with using this, since it's easy to introduce races.
+    /// The one scenario this is currently used for is futures, since we can guarantee that the
+    /// foreign side will not drop the future while in the middle of polling/cancelling it.
+    ///
+    /// # Safety
+    ///
+    /// * The handle must have been created from `Handle::from_arc`.
+    /// * There must be no possibility for the handle to be dropped before the function the
+    ///   borrowed handle is passed to returns.
+    pub unsafe fn into_arc_borrowed<T>(self) -> Arc<T> {
+        self.clone_arc_handle::<T>();
+        Arc::from_raw(self.as_pointer())
+    }
+
+    /// Clone a handle for an Arc
+    ///
+    /// # Safety
+    ///
+    /// The handle must have been created from `Handle::from_arc`.
+    pub unsafe fn clone_arc_handle<T>(&self) -> Self {
+        Arc::increment_strong_count(self.as_pointer::<T>());
+        // This is safe because we just incremented the refcount.
+        Self(self.0)
     }
 }
