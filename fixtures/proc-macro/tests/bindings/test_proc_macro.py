@@ -83,10 +83,31 @@ assert(record_with_defaults.opt_integer == 42)
 
 assert(RecordWithDefaults(no_default_string="", vec=["oops"]) == RecordWithDefaults(no_default_string="", vec=["oops"]))
 
+record_with_implicit_defaults = RecordWithImplicitDefaults()
+assert(record_with_implicit_defaults.boolean == False)
+assert(record_with_implicit_defaults.int8 == 0)
+assert(record_with_implicit_defaults.uint8 == 0)
+assert(record_with_implicit_defaults.int16 == 0)
+assert(record_with_implicit_defaults.uint16 == 0)
+assert(record_with_implicit_defaults.int32 == 0)
+assert(record_with_implicit_defaults.uint32 == 0)
+assert(record_with_implicit_defaults.int64 == 0)
+assert(record_with_implicit_defaults.uint64 == 0)
+assert(record_with_implicit_defaults.afloat == 0.0)
+assert(record_with_implicit_defaults.adouble == 0.0)
+assert(record_with_implicit_defaults.vec == [])
+assert(record_with_implicit_defaults.map == dict())
+assert(record_with_implicit_defaults.some_bytes == b'')
+assert(record_with_implicit_defaults.opt_int32 is None)
+
 assert(double_with_default() == 42)
+assert(sum_with_default(1) == 1)
+assert(sum_with_default(1, 2) == 3)
 
 obj_with_defaults = ObjectWithDefaults()
 assert(obj_with_defaults.add_to_num() == 42)
+assert(obj_with_defaults.add_to_implicit_num() == 30)
+assert(obj_with_defaults.add_to_implicit_num(1) == 31)
 
 # Traits
 class PyTestCallbackInterface(TestCallbackInterface):

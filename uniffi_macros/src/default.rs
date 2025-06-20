@@ -16,13 +16,17 @@ use syn::{
 #[derive(Clone)]
 pub enum DefaultValue {
     Literal(Lit),
+    // ie, explicitly `null`/`None`.
     None(kw::None),
     Some {
         some: kw::Some,
         paren: Paren,
         inner: Box<DefaultValue>,
     },
+    // soft deprecated - maps and seqs should prefer `Default`
     EmptySeq(Bracket),
+    // The default value for the type.
+    Default,
 }
 
 impl ToTokens for DefaultValue {
@@ -32,6 +36,7 @@ impl ToTokens for DefaultValue {
             DefaultValue::None(kw) => kw.to_tokens(tokens),
             DefaultValue::Some { inner, .. } => tokens.extend(quote! { Some(#inner) }),
             DefaultValue::EmptySeq(_) => tokens.extend(quote! { [] }),
+            DefaultValue::Default => tokens.extend(quote! { kw::default }),
         }
     }
 }
@@ -73,12 +78,14 @@ impl DefaultValue {
             ),
 
             DefaultValue::Literal(Lit::Str(s)) => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                 .concat_value(::uniffi::metadata::codes::LIT_STR)
                 .concat_str(#s)
             }),
             DefaultValue::Literal(Lit::Int(i)) => {
                 let digits = i.base10_digits();
                 Ok(quote! {
+                    .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                     .concat_value(::uniffi::metadata::codes::LIT_INT)
                     .concat_str(#digits)
                 })
@@ -86,11 +93,13 @@ impl DefaultValue {
             DefaultValue::Literal(Lit::Float(f)) => {
                 let digits = f.base10_digits();
                 Ok(quote! {
+                    .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                     .concat_value(::uniffi::metadata::codes::LIT_FLOAT)
                     .concat_str(#digits)
                 })
             }
             DefaultValue::Literal(Lit::Bool(b)) => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                 .concat_value(::uniffi::metadata::codes::LIT_BOOL)
                 .concat_bool(#b)
             }),
@@ -101,20 +110,27 @@ impl DefaultValue {
             )),
 
             DefaultValue::EmptySeq(_) => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                 .concat_value(::uniffi::metadata::codes::LIT_EMPTY_SEQ)
             }),
 
             DefaultValue::None(_) => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                 .concat_value(::uniffi::metadata::codes::LIT_NONE)
             }),
 
             DefaultValue::Some { inner, .. } => {
                 let inner_calls = inner.metadata_calls()?;
                 Ok(quote! {
+                    .concat_value(::uniffi::metadata::codes::DEFVALUE_LITERAL)
                     .concat_value(::uniffi::metadata::codes::LIT_SOME)
                     #inner_calls
                 })
             }
+
+            DefaultValue::Default => Ok(quote! {
+                .concat_value(::uniffi::metadata::codes::DEFVALUE_DEFAULT)
+            }),
         }
     }
 }

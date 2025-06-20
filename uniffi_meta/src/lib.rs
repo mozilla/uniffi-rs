@@ -239,7 +239,7 @@ pub struct FnParamMetadata {
     pub ty: Type,
     pub by_ref: bool,
     pub optional: bool,
-    pub default: Option<LiteralMetadata>,
+    pub default: Option<DefaultValueMetadata>,
 }
 
 impl FnParamMetadata {
@@ -272,7 +272,7 @@ pub enum LiteralMetadata {
     EmptySequence,
     EmptyMap,
     None,
-    Some { inner: Box<LiteralMetadata> },
+    Some { inner: Box<DefaultValueMetadata> },
 }
 
 impl LiteralMetadata {
@@ -293,6 +293,14 @@ pub enum Radix {
     Hexadecimal = 16,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Checksum, Node)]
+pub enum DefaultValueMetadata {
+    // unspecified default value
+    Default,
+    // an explicit literal value.
+    Literal(LiteralMetadata),
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Node)]
 pub struct RecordMetadata {
     pub module_path: String,
@@ -306,7 +314,7 @@ pub struct RecordMetadata {
 pub struct FieldMetadata {
     pub name: String,
     pub ty: Type,
-    pub default: Option<LiteralMetadata>,
+    pub default: Option<DefaultValueMetadata>,
     pub docstring: Option<String>,
 }
 

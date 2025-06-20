@@ -54,10 +54,30 @@ assert(recordWithDefaults.vec.isEmpty())
 assert(recordWithDefaults.optVec == null)
 assert(recordWithDefaults.optInteger == 42)
 
+val recordWithImplicitDefaults = RecordWithImplicitDefaults()
+assert(recordWithImplicitDefaults.boolean == false)
+assert(recordWithImplicitDefaults.int8 == 0.toByte())
+assert(recordWithImplicitDefaults.int16 == 0.toShort())
+assert(recordWithImplicitDefaults.int32 == 0)
+assert(recordWithImplicitDefaults.int64 == 0L)
+assert(recordWithImplicitDefaults.uint8 == 0U.toUByte())
+assert(recordWithImplicitDefaults.uint16 == 0U.toUShort())
+assert(recordWithImplicitDefaults.uint32 == 0U)
+assert(recordWithImplicitDefaults.uint64 == 0UL)
+assert(recordWithImplicitDefaults.afloat == 0f)
+assert(recordWithImplicitDefaults.adouble == 0.0)
+assert(recordWithImplicitDefaults.vec.isEmpty())
+assert(recordWithImplicitDefaults.map == emptyMap<String, String>())
+assert(recordWithImplicitDefaults.someBytes.size == 0)
+
 assert(doubleWithDefault() == 42)
+assert(sumWithDefault(2) == 2)
+assert(sumWithDefault(2, 1) == 3)
 
 val objWithDefaults = ObjectWithDefaults()
 assert(objWithDefaults.addToNum() == 42)
+assert(objWithDefaults.addToImplicitNum() == 30)
+assert(objWithDefaults.addToImplicitNum(1) == 31)
 
 // Traits
 

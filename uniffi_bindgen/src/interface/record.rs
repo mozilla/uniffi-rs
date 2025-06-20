@@ -47,7 +47,7 @@
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
-use super::Literal;
+use super::DefaultValue;
 use super::{AsType, Type, TypeIterator};
 
 /// Represents a "data class" style object, for passing around complex values.
@@ -127,7 +127,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
 pub struct Field {
     pub(super) name: String,
     pub(super) type_: Type,
-    pub(super) default: Option<Literal>,
+    pub(super) default: Option<DefaultValue>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
@@ -141,7 +141,7 @@ impl Field {
         self.name = name;
     }
 
-    pub fn default_value(&self) -> Option<&Literal> {
+    pub fn default_value(&self) -> Option<&DefaultValue> {
         self.default.as_ref()
     }
 
@@ -178,8 +178,8 @@ impl TryFrom<uniffi_meta::FieldMetadata> for Field {
 
 #[cfg(test)]
 mod test {
-    use super::super::ComponentInterface;
     use super::*;
+    use crate::interface::{ComponentInterface, Literal};
     use uniffi_meta::Radix;
 
     #[test]
@@ -225,7 +225,11 @@ mod test {
         assert_eq!(record.fields()[1].as_type(), Type::UInt32);
         assert!(matches!(
             record.fields()[1].default_value(),
-            Some(Literal::UInt(0, Radix::Decimal, Type::UInt32))
+            Some(DefaultValue::Literal(Literal::UInt(
+                0,
+                Radix::Decimal,
+                Type::UInt32
+            )))
         ));
         assert_eq!(record.fields()[2].name(), "spin");
         assert_eq!(record.fields()[2].as_type(), Type::Boolean);

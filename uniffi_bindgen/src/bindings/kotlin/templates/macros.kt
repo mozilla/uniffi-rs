@@ -114,7 +114,7 @@
         {{ arg.name()|var_name }}: {{ arg|type_name(ci) }}
 {%-     if is_decl %}
 {%-         match arg.default_value() %}
-{%-             when Some(literal) %} = {{ literal|render_literal(arg, ci) }}
+{%-             when Some(default) %} = {{ default|render_default(arg, ci) }}
 {%-             else %}
 {%-         endmatch %}
 {%-     endif %}
