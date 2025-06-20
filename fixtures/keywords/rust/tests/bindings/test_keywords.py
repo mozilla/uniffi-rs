@@ -9,3 +9,9 @@ from datetime import datetime, timezone
 import keywords_rust
 # but might as well call something.
 keywords_rust._if(0)
+
+# python/mypy tests - not keywords, but type names in strange places.
+tn = keywords_rust.get_type_names()
+assert(tn.bool == False)
+assert(tn.str == "")
+# etc - no need to check all the values, we are just checking mypy is happy.
