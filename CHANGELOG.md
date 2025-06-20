@@ -6,17 +6,22 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-### ⚠️ Breaking Changes ⚠️
-
-- External bindings:
-  - `uniffi_bindgen::backend` has been removed.
-  - `#[uniffi(default)]` changes how defaults are represented.
-
 ### What's new?
 
 - Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
   without a literal) meaning the default value for the type. Named types can also have a default.
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
+- Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
+
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+- `uniffi_bindgen::backend` has been removed.
+- `#[uniffi(default)]` changes how defaults are represented.
+- `FfiType::RustArcPtr` has been removed and the FFI type for objects/interfaces is now a `u64`.
+  Bindings authors will need to update their code to reflect this:
+  - Lowering/lifting now uses `u64` values
+  - The free function inputs a `u64` handle rather than a raw pointer
+  - The clone function inputs and returns a `u64` handle rather than a raw pointer
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 

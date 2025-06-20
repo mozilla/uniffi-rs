@@ -67,29 +67,29 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
         #[doc(hidden)]
         #[unsafe(no_mangle)]
         pub unsafe extern "C" fn #clone_fn_ident(
-            ptr: *const ::std::ffi::c_void,
+            handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
-        ) -> *const ::std::ffi::c_void {
-            ::uniffi::deps::trace!("clone: {} ({:?})", #name, ptr);
+        ) -> ::uniffi::ffi::Handle {
+            ::uniffi::deps::trace!("clone: {} ({:x})", #name, handle);
             ::uniffi::rust_call(call_status, || {
-                unsafe { ::std::sync::Arc::increment_strong_count(ptr) };
-                ::std::result::Result::Ok(ptr)
+                unsafe {
+                    handle.clone_arc_handle::<#ident>()
+                };
+                ::std::result::Result::Ok(handle)
             })
         }
 
         #[doc(hidden)]
         #[unsafe(no_mangle)]
         pub unsafe extern "C" fn #free_fn_ident(
-            ptr: *const ::std::ffi::c_void,
+            handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            ::uniffi::deps::trace!("free: {} ({:?})", #name, ptr);
+            ::uniffi::deps::trace!("free: {} ({:x})", #name, handle);
             ::uniffi::rust_call(call_status, || {
-                assert!(!ptr.is_null());
-                let ptr = ptr.cast::<#ident>();
-                unsafe {
-                    ::std::sync::Arc::decrement_strong_count(ptr);
-                }
+                ::std::mem::drop(unsafe {
+                    handle.into_arc::<#ident>()
+                });
                 ::std::result::Result::Ok(())
             });
         }
@@ -130,6 +130,10 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             #ident: ::core::marker::Sync, ::core::marker::Send
         );
 
+        // We're going to be casting raw pointers to `u64` values to pass them across the FFI.
+        // Ensure that we're not on some 128-bit machine where this would overflow.
+        ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ()>() <= 8);
+
         #[doc(hidden)]
         #[automatically_derived]
         /// Support for passing reference-counted shared objects via the FFI.
@@ -138,8 +142,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
         /// by reference must be encapsulated in an `Arc`, and must be safe to share
         /// across threads.
         unsafe #impl_spec {
-            // Don't use a pointer to <T> as that requires a `pub <T>`
-            type FfiType = *const ::std::os::raw::c_void;
+            type FfiType = ::uniffi::ffi::Handle;
 
             /// When lowering, we have an owned `Arc` and we transfer that ownership
             /// to the foreign-language code, "leaking" it out of Rust's ownership system
@@ -151,16 +154,15 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// call the destructor function specific to the type `T`. Calling the destructor
             /// function for other types may lead to undefined behaviour.
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                let ptr = ::std::sync::Arc::into_raw(obj) as Self::FfiType;
-                ::uniffi::deps::trace!("lower: {} ({:?})", #name, ptr);
-                ptr
+                ::uniffi::deps::trace!("lower: {} {:?}", #name, obj.as_pointer());
+                let handle = ::uniffi::ffi::Handle::from_arc(obj);
+                handle
             }
 
             /// When lifting, we receive an owned `Arc` that the foreign language code cloned.
-            fn try_lift(v: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::trace!("lift: {} ({:?})", #name, v);
-                let v = v as *const #ident;
-                ::std::result::Result::Ok(unsafe { ::std::sync::Arc::<Self>::from_raw(v) })
+            fn try_lift(handle: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
+                ::uniffi::deps::trace!("lift: {} ({:x})", #name, handle);
+                ::std::result::Result::Ok(unsafe { handle.into_arc() })
             }
 
             /// When writing as a field of a complex structure, make a clone and transfer ownership
@@ -172,8 +174,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// call the destructor function specific to the type `T`. Calling the destructor
             /// function for other types may lead to undefined behaviour.
             fn write(obj: ::std::sync::Arc<Self>, buf: &mut ::std::vec::Vec<u8>) {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
-                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower_arc(obj) as ::std::primitive::u64);
+                ::uniffi::deps::bytes::BufMut::put_u64(buf, #lower_arc(obj).as_raw());
             }
 
             /// When reading as a field of a complex structure, we receive a "borrow" of the `Arc`
@@ -182,9 +183,8 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// Safety: the buffer must contain a pointer previously obtained by calling
             /// the `lower()` or `write()` method of this impl.
             fn try_read(buf: &mut &[u8]) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::static_assertions::const_assert!(::std::mem::size_of::<*const ::std::ffi::c_void>() <= 8);
                 ::uniffi::check_remaining(buf, 8)?;
-                #try_lift_arc(::uniffi::deps::bytes::Buf::get_u64(buf) as Self::FfiType)
+                #try_lift_arc(::uniffi::ffi::Handle::from_raw_unchecked(::uniffi::deps::bytes::Buf::get_u64(buf)))
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)

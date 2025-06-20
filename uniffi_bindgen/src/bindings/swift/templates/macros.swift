@@ -12,7 +12,7 @@
         rustCall() {
     {%- endif %}
     {{ func.ffi_func().name() }}(
-        {%- if func.takes_self() %}self.uniffiClonePointer(),{% endif %}
+        {%- if func.takes_self() %}self.uniffiCloneHandle(),{% endif %}
         {%- call arg_list_lowered(func) -%} $0
     )
 }
@@ -36,18 +36,18 @@
 public convenience init(
     {%- call arg_list_decl(callable) -%}) {%- call is_async(callable) %} {%- call throws(callable) %} {
     {%- if callable.is_async() %}
-    let pointer =
+    let handle =
         {%- call call_async(callable) %}
         {# The async mechanism returns an already constructed self.
-           We work around that by cloning the pointer from that object, then
-           assune the old object dies as there are no other references possible.
+           We work around that by cloning the handle from that object, then
+           assume the old object dies as there are no other references possible.
         #}
-        .uniffiClonePointer()
+        .uniffiCloneHandle()
     {%- else %}
-    let pointer =
+    let handle =
         {% call to_ffi_call(callable) %}
     {%- endif %}
-    self.init(unsafeFromRawPointer: pointer)
+    self.init(unsafeFromHandle: handle)
 }
 {%- endmacro %}
 
@@ -70,7 +70,7 @@ public convenience init(
             rustFutureFunc: {
                 {{ callable.ffi_func().name() }}(
                     {%- if callable.takes_self() %}
-                    self.uniffiClonePointer(){% if !callable.arguments().is_empty() %},{% endif %}
+                    self.uniffiCloneHandle(){% if !callable.arguments().is_empty() %},{% endif %}
                     {% endif %}
                     {%- for arg in callable.arguments() -%}
                     {{ arg|lower_fn }}({{ arg.name()|var_name }}){% if !loop.last %},{% endif %}

@@ -183,7 +183,7 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
                 )),
                 arguments: vec![FfiArgument::new(
                     "handle",
-                    FfiType::Handle(HandleKind::CallbackInterface {
+                    FfiType::Handle(HandleKind::Interface {
                         module_name: module_name.to_string(),
                         interface_name: interface_name.to_string(),
                     }),
@@ -248,7 +248,7 @@ fn vtable_method(
         name: FfiFunctionTypeName(method_name),
         arguments: std::iter::once(FfiArgument {
             name: "uniffi_handle".into(),
-            ty: FfiType::Handle(HandleKind::CallbackInterface {
+            ty: FfiType::Handle(HandleKind::Interface {
                 module_name: module_name.to_string(),
                 interface_name: interface_name.to_string(),
             })
@@ -286,7 +286,7 @@ fn vtable_method_async(
         name: FfiFunctionTypeName(method_name),
         arguments: std::iter::once(FfiArgument {
             name: "uniffi_handle".into(),
-            ty: FfiType::Handle(HandleKind::CallbackInterface {
+            ty: FfiType::Handle(HandleKind::Interface {
                 module_name: module_name.to_string(),
                 interface_name: interface_name.to_string(),
             })

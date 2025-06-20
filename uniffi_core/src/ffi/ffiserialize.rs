@@ -299,7 +299,7 @@ mod test {
         <*const std::ffi::c_void as FfiSerialize>::write(&mut buf_writer, void_ptr);
         <RustBuffer as FfiSerialize>::write(&mut buf_writer, rust_buffer);
         <RustCallStatus as FfiSerialize>::write(&mut buf_writer, rust_call_status);
-        <Handle as FfiSerialize>::write(&mut buf_writer, handle);
+        <Handle as FfiSerialize>::write(&mut buf_writer, handle.clone());
         #[allow(clippy::needless_borrows_for_generic_args)]
         <() as FfiSerialize>::write(&mut buf_writer, ());
 

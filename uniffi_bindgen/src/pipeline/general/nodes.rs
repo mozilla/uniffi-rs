@@ -537,14 +537,6 @@ pub enum FfiType {
     Int64,
     Float32,
     Float64,
-    /// A `*const c_void` pointer to a rust-owned `Arc<T>`.
-    /// If you've got one of these, you must call the appropriate rust function to free it.
-    /// The templates will generate a unique `free` function for each T.
-    /// The inner string references the name of the `T` type.
-    RustArcPtr {
-        module_name: String,
-        object_name: String,
-    },
     /// A byte buffer allocated by rust, and owned by whoever currently holds it.
     /// If you've got one of these, you must either call the appropriate rust function to free it
     /// or pass it to someone that will.
@@ -584,12 +576,11 @@ pub enum HandleKind {
     RustFuture,
     ForeignFuture,
     ForeignFutureCallbackData,
-    CallbackInterface {
+    // Interface, trait interface, or callback interface
+    Interface {
         module_name: String,
         interface_name: String,
     },
-    // TODO: dust off https://github.com/mozilla/uniffi-rs/pull/1823 and also use handles for
-    // interfaces and trait interfaces
 }
 
 #[derive(Debug, Clone, Node)]
