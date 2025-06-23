@@ -1948,9 +1948,72 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lowered-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lowered representation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lifetimes" class="md-nav__link">
     <span class="md-ellipsis">
       Lifetimes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloning-handles-and-calling-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloning handles and calling methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#passing-handles-across-the-ffi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Passing handles across the FFI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#freeing-handles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Freeing handles
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Callback interfaces
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trait-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trait interfaces
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trait-interfaces-with-foreign-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trait interfaces with foreign support
     </span>
   </a>
   
@@ -2099,9 +2162,72 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lowered-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lowered representation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lifetimes" class="md-nav__link">
     <span class="md-ellipsis">
       Lifetimes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloning-handles-and-calling-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cloning handles and calling methods
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#passing-handles-across-the-ffi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Passing handles across the FFI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#freeing-handles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Freeing handles
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Callback interfaces
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trait-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trait interfaces
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trait-interfaces-with-foreign-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Trait interfaces with foreign support
     </span>
   </a>
   
@@ -2152,6 +2278,9 @@ the types from <code>std::atomic</code>. The precise details are completely up t
 of the component - as much as possible, UniFFI tries to stay out of your way, simply requiring
 that the object implementation is <code>Send+Sync</code> and letting the Rust compiler ensure that
 this is so.</p>
+<h2 id="lowered-representation">Lowered representation</h2>
+<p>Interfaces are lowered as <code>u64</code> handles.
+<code>0</code> is reserved as an invalid value.</p>
 <h2 id="lifetimes">Lifetimes</h2>
 <p>In order to allow for instances to be used as flexibly as possible from foreign-language code,
 UniFFI wraps all object instances in an <code>Arc</code> and leverages their reference-count based lifetimes,
@@ -2172,28 +2301,67 @@ or as the underlying struct <code>T</code>, as there are different use-cases for
 };
 </code></pre></div>
 <p>On the Rust side of the generated bindings:
- - The instance constructor will create an instance of the corresponding <code>TodoList</code> Rust struct
- - The owned value is wrapped in an <code>Arc&lt;&gt;</code>
- - The <code>Arc&lt;&gt;</code> is lowered into the foreign code using <code>Arc::into_raw</code> and returned as an object pointer.</p>
+* The instance constructor will create an instance of the corresponding <code>TodoList</code> Rust struct
+* The owned value is wrapped in an <code>Arc&lt;&gt;</code>
+* The <code>Arc&lt;&gt;</code> is lowered into the foreign code using <code>Arc::into_raw</code>, casted to a <code>u64</code> and returned</p>
 <p>This is the "arc to pointer" dance. Note that this has "leaked" the <code>Arc&lt;&gt;</code>
 reference out of Rusts ownership system and given it to the foreign-language
 code. The foreign-language code must pass that pointer back into Rust in order
 to free it, or our instance will leak.</p>
-<p>When invoking a method on the instance:
- - The foreign-language code passes the raw pointer back to the Rust code, conceptually passing a "borrow" of the <code>Arc&lt;&gt;</code> to the Rust scaffolding.
- - The Rust side calls <code>Arc::from_raw</code> to convert the pointer into an an <code>Arc&lt;&gt;</code>
- - It wraps the <code>Arc</code> in <code>std::mem::ManuallyDrop&lt;&gt;</code>, which we never actually
-   drop.  This is because the Rust side is borrowing the Arc and shouldn't
-   run the destructor and decrement the reference count.
- - The <code>Arc&lt;&gt;</code> is cloned and passed to the Rust code</p>
-<p>Finally, when the foreign-language code frees the instance, it
-passes the raw pointer a special destructor function so that the Rust code can
-drop that initial reference (and if that happens to be the final reference,
-the Rust object will be dropped.).  This simply calls <code>Arc::from_raw</code>, then
-lets the value drop.</p>
-<p>Passing instances as arguments and returning them as values works similarly, except that
-UniFFI does not automatically wrap/unwrap the containing <code>Arc</code>.</p>
-<p>To see this in action, use <code>cargo expand</code> to see the exact generated code.</p>
+<h2 id="cloning-handles-and-calling-methods">Cloning handles and calling methods</h2>
+<p>The generate Rust code defines a clone function for each interface that will clone the handle.
+This FFI function:</p>
+<ul>
+<li>Inputs a <code>u64</code> value.</li>
+<li>Casts the <code>u64</code> to a <code>*T</code> and calls <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html#method.increment_strong_count">Arc::increment_strong_count</a></li>
+<li>Returns the <code>u64</code> back.</li>
+<li>The foreign side can now treat both <code>u64</code> values as separate handles with their own lifetimes.
+  This is safe, since we've effectively leaked 2 <code>Arc&lt;&gt;</code>s.</li>
+</ul>
+<p>This is used by the foreign-language code to invoke instance methods:</p>
+<ul>
+<li>Clone the handle</li>
+<li>Pass the handle to the Rust FFI function, conceptually transferring ownership of a leaked <code>Arc&lt;&gt;</code> back to Rust.</li>
+<li>The Rust side casts the handle to a <code>*T</code> then calls <code>Arc::from_raw</code> to reconstruct the <code>Arc&lt;&gt;</code></li>
+</ul>
+<h2 id="passing-handles-across-the-ffi">Passing handles across the FFI</h2>
+<p>Passing instances as arguments and returning them as values works similarly to calling methods.
+The foreign language code clones the handle, then returns the cloned value.</p>
+<h2 id="freeing-handles">Freeing handles</h2>
+<p>The Rust code defines a free function for each interface that frees a handle.
+This FFI function:</p>
+<ul>
+<li>Inputs a <code>u64</code> value.</li>
+<li>Casts the <code>u64</code> to a <code>*T</code> and calls <a href="https://doc.rust-lang.org/std/sync/struct.Arc.html#method.increment_strong_count">Arc::decrement_strong_count</a></li>
+</ul>
+<p>When the foreign-language code is ready to destroy an object, calls this free function transferring ownership of the <code>Arc&lt;&gt;</code> back to Rust.
+The generated Rust code simply calls <code>Arc::from_raw</code>, then lets the value drop.</p>
+<h2 id="callback-interfaces">Callback interfaces</h2>
+<p>Callback interfaces are interfaces defined on the foreign side of things.
+Conceptually these work the same as regular interfaces:</p>
+<ul>
+<li>The foreign side defines a free and clone function in the <a href="foreign_calls.html">vtable</a>.</li>
+<li>Passing a callback interface handle across the FFI represents transferring ownership.</li>
+</ul>
+<p>However, the mechanics of managing references differ from Rust.
+Foreign languages are free to implement them however they want, but they usually use a handle map:</p>
+<ul>
+<li>Handle maps map <code>u64</code> values to object instances.</li>
+<li>To create/clone a new handle, insert a new entry and return the key.</li>
+<li>To free a handle, remove the entry for the key.</li>
+</ul>
+<h2 id="trait-interfaces">Trait interfaces</h2>
+<p>Trait interfaces are used to pass <code>Arc&lt;dyn Trait&gt;</code> instances across the FFI.
+This presents an extra difficulty since <code>dyn Trait</code> is unsized and <code>*dyn Trait</code> is a wide pointer that takes 2 words to store.</p>
+<p>To work around this, UniFFI adds an extra Arc creating a <code>Arc&lt;Arc&lt;dyn Trait&gt;&gt;</code> value.
+This effectively converts the wide pointer into a regular pointer, since <code>Arc&lt;dyn Trait&gt;</code> is sized (at 2 words).</p>
+<h2 id="trait-interfaces-with-foreign-support">Trait interfaces with foreign support</h2>
+<p>These are trait interfaces that can also be implemented on the foreign side.
+These are effectively hybrids of callback interfaces and trait interfaces:</p>
+<ul>
+<li>They are passed from the foreign language to Rust as a callback interface</li>
+<li>They are passed from Rust to the foreign language as a trait interface.</li>
+</ul>
 
 
 
