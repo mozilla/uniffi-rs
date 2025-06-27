@@ -12,7 +12,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         "ffi_{}_uniffi_contract_version",
         &module.crate_name
     ));
-    module.ffi_definitions.push(
+    module.ffi_definitions.insert(
         FfiFunction {
             name: RustFfiFunctionName(format!(
                 "ffi_{}_uniffi_contract_version",
@@ -93,7 +93,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         });
         module
             .ffi_definitions
-            .push(FfiDefinition::RustFunction(ffi_func));
+            .insert(FfiDefinition::RustFunction(ffi_func));
     }
     module.correct_contract_version = uniffi_meta::UNIFFI_CONTRACT_VERSION.to_string();
     Ok(())

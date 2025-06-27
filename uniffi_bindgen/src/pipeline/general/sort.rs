@@ -14,7 +14,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         module.ffi_definitions.drain(..),
         FfiDefinitionDependencyLogic,
     );
-    module.ffi_definitions = ffi_dep_sorter.sort();
+    module.ffi_definitions.extend(ffi_dep_sorter.sort());
 
     let type_sorter = DependencySorter::new(
         module.type_definitions.drain(..),

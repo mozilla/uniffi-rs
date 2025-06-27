@@ -6,7 +6,6 @@
 
 use super::*;
 use heck::ToUpperCamelCase;
-use std::collections::HashSet;
 
 pub fn pass(module: &mut Module) -> Result<()> {
     let crate_name = module.crate_name.clone();
@@ -96,7 +95,6 @@ fn vtable(
 
 fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
     let mut ffi_definitions = vec![];
-    let mut seen_return_types = HashSet::new();
     let module_name = module.name.clone();
     module.try_visit(|vtable: &VTable| {
         let interface_name = &vtable.interface_name;
@@ -137,42 +135,40 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
                 .clone()
                 .map(|return_type| return_type.ffi_type);
 
-            if seen_return_types.insert(ffi_return_type.clone()) {
-                ffi_definitions.extend([
-                    FfiStruct {
-                        name: async_info.ffi_foreign_future_result.clone(),
-                        fields: match ffi_return_type {
-                            Some(return_ffi_type) => vec![
-                                FfiField::new("return_value", return_ffi_type.ty),
-                                FfiField::new("call_status", FfiType::RustCallStatus),
-                            ],
-                            None => vec![
-                                // In Rust, `return_value` is `()` -- a ZST.
-                                // ZSTs are not valid in `C`, but they also take up 0 space.
-                                // Skip the `return_value` field to make the layout correct.
-                                FfiField::new("call_status", FfiType::RustCallStatus),
-                            ],
-                        },
-                    }
-                    .into(),
-                    FfiFunctionType {
-                        name: async_info.ffi_foreign_future_complete.clone(),
-                        arguments: vec![
-                            FfiArgument::new(
-                                "callback_data",
-                                FfiType::Handle(HandleKind::ForeignFuture),
-                            ),
-                            FfiArgument::new(
-                                "result",
-                                FfiType::Struct(async_info.ffi_foreign_future_result.clone()),
-                            ),
+            ffi_definitions.extend([
+                FfiStruct {
+                    name: async_info.ffi_foreign_future_result.clone(),
+                    fields: match ffi_return_type {
+                        Some(return_ffi_type) => vec![
+                            FfiField::new("return_value", return_ffi_type.ty),
+                            FfiField::new("call_status", FfiType::RustCallStatus),
                         ],
-                        return_type: FfiReturnType { ty: None },
-                        has_rust_call_status_arg: false,
-                    }
-                    .into(),
-                ]);
-            }
+                        None => vec![
+                            // In Rust, `return_value` is `()` -- a ZST.
+                            // ZSTs are not valid in `C`, but they also take up 0 space.
+                            // Skip the `return_value` field to make the layout correct.
+                            FfiField::new("call_status", FfiType::RustCallStatus),
+                        ],
+                    },
+                }
+                .into(),
+                FfiFunctionType {
+                    name: async_info.ffi_foreign_future_complete.clone(),
+                    arguments: vec![
+                        FfiArgument::new(
+                            "callback_data",
+                            FfiType::Handle(HandleKind::ForeignFuture),
+                        ),
+                        FfiArgument::new(
+                            "result",
+                            FfiType::Struct(async_info.ffi_foreign_future_result.clone()),
+                        ),
+                    ],
+                    return_type: FfiReturnType { ty: None },
+                    has_rust_call_status_arg: false,
+                }
+                .into(),
+            ]);
         }
         // FFIStruct for the VTable
         ffi_definitions.extend([
