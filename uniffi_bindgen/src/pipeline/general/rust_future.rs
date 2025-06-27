@@ -68,20 +68,24 @@ pub fn pass(module: &mut Module) -> Result<()> {
     ];
     for (return_type, return_type_name) in all_async_return_types {
         let poll_name = format!("ffi_{namespace}_rust_future_poll_{return_type_name}");
-        module.ffi_definitions.push(ffi_rust_future_poll(poll_name));
+        module
+            .ffi_definitions
+            .insert(ffi_rust_future_poll(poll_name));
 
         let cancel_name = format!("ffi_{namespace}_rust_future_cancel_{return_type_name}");
         module
             .ffi_definitions
-            .push(ffi_rust_future_cancel(cancel_name));
+            .insert(ffi_rust_future_cancel(cancel_name));
 
         let complete_name = format!("ffi_{namespace}_rust_future_complete_{return_type_name}");
         module
             .ffi_definitions
-            .push(ffi_rust_future_complete(return_type.clone(), complete_name));
+            .insert(ffi_rust_future_complete(return_type.clone(), complete_name));
 
         let free_name = format!("ffi_{namespace}_rust_future_free_{return_type_name}");
-        module.ffi_definitions.push(ffi_rust_future_free(free_name));
+        module
+            .ffi_definitions
+            .insert(ffi_rust_future_free(free_name));
     }
     Ok(())
 }

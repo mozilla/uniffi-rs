@@ -4,7 +4,7 @@
 
 use askama::Template;
 use heck::ToSnakeCase;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use serde::Deserialize;
 
 use crate::bindings::python::filters;
@@ -28,7 +28,7 @@ pub struct Module {
     pub docstring: Option<String>,
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
-    pub ffi_definitions: Vec<FfiDefinition>,
+    pub ffi_definitions: IndexSet<FfiDefinition>,
     pub checksums: Vec<Checksum>,
     pub ffi_rustbuffer_alloc: RustFfiFunctionName,
     pub ffi_rustbuffer_from_bytes: RustFfiFunctionName,
@@ -145,7 +145,7 @@ pub struct ThrowsType {
     pub ty: Option<TypeNode>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct AsyncData {
     // FFI types for async Rust functions
     pub ffi_rust_future_poll: RustFfiFunctionName,
@@ -469,7 +469,7 @@ pub enum ObjectImpl {
     CallbackTrait,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub enum FfiDefinition {
     /// FFI Function exported in the Rust library
     RustFunction(FfiFunction),
@@ -491,7 +491,7 @@ pub struct FfiStructName(pub String);
 #[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiFunctionTypeName(pub String);
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiFunction {
     pub name: RustFfiFunctionName,
     pub is_async: bool,
@@ -502,7 +502,7 @@ pub struct FfiFunction {
     pub kind: FfiFunctionKind,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub enum FfiFunctionKind {
     Scaffolding,
     ObjectClone,
@@ -520,7 +520,7 @@ pub enum FfiFunctionKind {
     Checksum,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiFunctionType {
     pub name: FfiFunctionTypeName,
     pub arguments: Vec<FfiArgument>,
@@ -528,24 +528,24 @@ pub struct FfiFunctionType {
     pub has_rust_call_status_arg: bool,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiReturnType {
     pub ty: Option<FfiTypeNode>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiStruct {
     pub name: FfiStructName,
     pub fields: Vec<FfiField>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiField {
     pub name: String,
     pub ty: FfiTypeNode,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiArgument {
     pub name: String,
     pub ty: FfiTypeNode,

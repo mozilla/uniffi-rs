@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use uniffi_pipeline::Node;
 
 /// Initial IR, this stores the metadata and other data
@@ -22,7 +22,7 @@ pub struct Module {
     pub docstring: Option<String>,
     pub functions: Vec<Function>,
     pub type_definitions: Vec<TypeDefinition>,
-    pub ffi_definitions: Vec<FfiDefinition>,
+    pub ffi_definitions: IndexSet<FfiDefinition>,
     /// Checksum functions
     pub checksums: Vec<Checksum>,
     // FFI functions names for this module
@@ -132,7 +132,7 @@ pub struct ThrowsType {
     pub ty: Option<TypeNode>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct AsyncData {
     // FFI types for async Rust functions
     pub ffi_rust_future_poll: RustFfiFunctionName,
@@ -442,7 +442,7 @@ pub enum ObjectImpl {
     CallbackTrait,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub enum FfiDefinition {
     /// FFI Function exported in the Rust library
     RustFunction(FfiFunction),
@@ -464,7 +464,7 @@ pub struct FfiStructName(pub String);
 #[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiFunctionTypeName(pub String);
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiFunction {
     pub name: RustFfiFunctionName,
     pub is_async: bool,
@@ -475,7 +475,7 @@ pub struct FfiFunction {
     pub kind: FfiFunctionKind,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub enum FfiFunctionKind {
     Scaffolding,
     ObjectClone,
@@ -493,7 +493,7 @@ pub enum FfiFunctionKind {
     Checksum,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiFunctionType {
     pub name: FfiFunctionTypeName,
     pub arguments: Vec<FfiArgument>,
@@ -501,24 +501,24 @@ pub struct FfiFunctionType {
     pub has_rust_call_status_arg: bool,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiReturnType {
     pub ty: Option<FfiTypeNode>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiStruct {
     pub name: FfiStructName,
     pub fields: Vec<FfiField>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiField {
     pub name: String,
     pub ty: FfiTypeNode,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
 pub struct FfiArgument {
     pub name: String,
     pub ty: FfiTypeNode,
