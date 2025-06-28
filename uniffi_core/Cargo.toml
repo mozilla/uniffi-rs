@@ -4,7 +4,7 @@ description = "a multi-language bindings generator for rust (runtime support cod
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
 repository = "https://github.com/mozilla/uniffi-rs"
-version = "0.29.1"
+version = "0.29.3"
 license = "MPL-2.0"
 edition = "2021"
 keywords = ["ffi", "bindgen"]
@@ -30,3 +30,10 @@ tokio = ["dep:async-compat"]
 
 # Enable support for the ffi buffer scaffolding functions
 scaffolding-ffi-buffer-fns = []
+
+# Support for WebAssembly targets in a single-threaded environment.
+# This feature is unstable and may change in the future.
+wasm-unstable-single-threaded = []
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]

@@ -11,7 +11,10 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, Context, Result};
+use crate::{
+    anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, to_askama_error, Context,
+    Result,
+};
 
 mod callback_interface;
 mod compounds;
@@ -35,8 +38,12 @@ trait CodeType: Debug {
     /// with this type only.
     fn canonical_name(&self) -> String;
 
-    fn literal(&self, _literal: &Literal, ci: &ComponentInterface) -> Result<String> {
-        unimplemented!("Unimplemented for {}", self.type_label(ci))
+    // default for named types is to assume a ctor exists.
+    fn default(&self, default: &DefaultValue, ci: &ComponentInterface) -> Result<String> {
+        match default {
+            DefaultValue::Default => Ok(format!("{}()", self.type_label(ci))),
+            DefaultValue::Literal(_) => bail!("Literals for named types are not supported"),
+        }
     }
 
     /// Name of the FfiConverter
@@ -475,7 +482,7 @@ impl KotlinCodeOracle {
             FfiType::UInt64 | FfiType::Int64 => "0.toLong()".to_owned(),
             FfiType::Float32 => "0.0f".to_owned(),
             FfiType::Float64 => "0.0".to_owned(),
-            FfiType::RustArcPtr(_) => "Pointer.NULL".to_owned(),
+            FfiType::Handle => "0.toLong()".to_owned(),
             FfiType::RustBuffer(_) => "RustBuffer.ByValue()".to_owned(),
             FfiType::Callback(_) => "null".to_owned(),
             FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue()".to_owned(),
@@ -494,8 +501,8 @@ impl KotlinCodeOracle {
             | FfiType::Int64
             | FfiType::UInt64
             | FfiType::Float32
-            | FfiType::Float64 => format!("{}ByReference", self.ffi_type_label(ffi_type, ci)),
-            FfiType::RustArcPtr(_) => "PointerByReference".to_owned(),
+            | FfiType::Float64
+            | FfiType::Handle => format!("{}ByReference", self.ffi_type_label(ffi_type, ci)),
             // JNA structs default to ByReference
             FfiType::RustBuffer(_) | FfiType::Struct(_) => self.ffi_type_label(ffi_type, ci),
             _ => panic!("{ffi_type:?} by reference is not implemented"),
@@ -514,7 +521,6 @@ impl KotlinCodeOracle {
             FfiType::Float32 => "Float".to_string(),
             FfiType::Float64 => "Double".to_string(),
             FfiType::Handle => "Long".to_string(),
-            FfiType::RustArcPtr(_) => "Pointer".to_string(),
             FfiType::RustBuffer(maybe_external) => match maybe_external {
                 Some(external_meta) if external_meta.module_path != ci.crate_name() => {
                     format!("RustBuffer{}", external_meta.name)
@@ -596,7 +602,6 @@ fn can_render_callable(callable: &dyn Callable, ci: &ComponentInterface) -> bool
 
 mod filters {
     use super::*;
-    pub use crate::backend::filters::*;
     use uniffi_meta::LiteralMetadata;
 
     pub(super) fn type_name(
@@ -612,6 +617,10 @@ mod filters {
 
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
+    }
+
+    pub(super) fn ffi_type(type_: &impl AsType) -> askama::Result<FfiType, askama::Error> {
+        Ok(type_.as_type().into())
     }
 
     pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
@@ -643,14 +652,14 @@ mod filters {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
-    pub fn render_literal(
-        literal: &Literal,
+    pub fn render_default(
+        default: &DefaultValue,
         as_ct: &impl AsType,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         as_ct
             .as_codetype()
-            .literal(literal, ci)
+            .default(default, ci)
             .map_err(|e| to_askama_error(&e))
     }
 
@@ -660,10 +669,14 @@ mod filters {
             match t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
                 Type::UInt8 | Type::UInt16 | Type::UInt32 | Type::UInt64 => Ok(base10 + "u"),
-                _ => Err(to_askama_error("Only ints are supported.")),
+                _ => Err(to_askama_error(&format!(
+                    "Only ints are supported for enum literals: {t:?}"
+                ))),
             }
         } else {
-            Err(to_askama_error("Enum hasn't defined a repr"))
+            Err(to_askama_error(&format!(
+                "Enum hasn't defined a repr: {t:?}"
+            )))
         }
     }
 
@@ -675,7 +688,9 @@ mod filters {
             // so we'll need to make sure we define the type as appropriately
             LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
             LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
-            _ => Err(to_askama_error("Only ints are supported.")),
+            _ => Err(to_askama_error(&format!(
+                "Only ints are supported: {literal:?}"
+            ))),
         }
     }
 

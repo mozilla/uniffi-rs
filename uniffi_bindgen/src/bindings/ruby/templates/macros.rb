@@ -45,7 +45,7 @@
     {%- for arg in func.arguments() -%}
         {{ arg.name()|var_name_rb }}
         {%- match arg.default_value() %}
-        {%- when Some with(literal) %} = {{ literal|literal_rb }}
+        {%- when Some(default) %} = {{ default|default_rb }}
         {%- else %}
         {%- endmatch %}
         {%- if !loop.last %}, {% endif -%}

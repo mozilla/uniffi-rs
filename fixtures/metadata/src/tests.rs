@@ -13,6 +13,8 @@ mod person {
     pub struct Person {
         #[uniffi(default = "test")]
         name: String,
+        #[uniffi(default)]
+        preferred_name: String,
         age: u16,
     }
 }
@@ -194,7 +196,15 @@ mod test_metadata {
                     FieldMetadata {
                         name: "name".into(),
                         ty: Type::String,
-                        default: Some(LiteralMetadata::String("test".to_owned())),
+                        default: Some(DefaultValueMetadata::Literal(LiteralMetadata::String(
+                            "test".to_owned(),
+                        ))),
+                        docstring: None,
+                    },
+                    FieldMetadata {
+                        name: "preferred_name".into(),
+                        ty: Type::String,
+                        default: Some(DefaultValueMetadata::Default),
                         docstring: None,
                     },
                     FieldMetadata {

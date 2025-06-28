@@ -19,5 +19,20 @@ pub struct MyRecord {
     pub greeting: String,
     #[uniffi(default = true)]
     pub some_flag: bool,
+    // As with function args, you can omit the default value if you want the default for the type.
+    #[uniffi(default)]
+    pub other_flag: bool, // defaults to `false`
+    // Use other named objects.
+    #[uniffi(default)]
+    pub optional: OptionalRecord,
 }
+
+#[derive(uniffi::Record)]
+pub struct OptionalRecord {
+    #[uniffi(default)]
+    name: String,
+}
+
 ```
+
+Most types can have default values - all defaults described for [function arguments](./functions.md#default-values) apply here too.

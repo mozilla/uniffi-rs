@@ -102,7 +102,8 @@ impl Trait for StructWithTrait {
     }
 }
 
-#[derive(uniffi::Object)]
+#[derive(uniffi::Object, Eq, PartialEq)]
+#[uniffi::export(Eq)]
 pub struct Object;
 
 #[cfg_attr(feature = "myfeature", uniffi::export)]
@@ -264,6 +265,12 @@ pub enum BasicError {
     UnexpectedError { reason: String },
 }
 
+#[derive(uniffi::Error, Debug)]
+pub enum SimpleError {
+    A,
+    B,
+}
+
 impl From<uniffi::UnexpectedUniFFICallbackError> for BasicError {
     fn from(e: uniffi::UnexpectedUniFFICallbackError) -> Self {
         Self::UnexpectedError { reason: e.reason }
@@ -376,12 +383,65 @@ pub struct RecordWithDefaults {
     opt_vec: Option<Vec<bool>>,
     #[uniffi(default = Some(42))]
     opt_integer: Option<i32>,
+    #[uniffi(default)]
+    boolean_default: bool,
+    #[uniffi(default)]
+    string_default: String,
+    #[uniffi(default)]
+    opt_default: Option<String>,
+    // named types
+    #[uniffi(default)]
+    sub: RecordWithImplicitDefaults,
+}
+
+/// Test implicit defaults on Records
+#[derive(uniffi::Record)]
+pub struct RecordWithImplicitDefaults {
+    #[uniffi(default)]
+    boolean: bool,
+    #[uniffi(default)]
+    int8: i8,
+    #[uniffi(default)]
+    uint8: u8,
+    #[uniffi(default)]
+    int16: i16,
+    #[uniffi(default)]
+    uint16: u16,
+    #[uniffi(default)]
+    int32: i32,
+    #[uniffi(default)]
+    uint32: u32,
+    #[uniffi(default)]
+    int64: i64,
+    #[uniffi(default)]
+    uint64: u64,
+    #[uniffi(default)]
+    afloat: f32,
+    #[uniffi(default)]
+    adouble: f64,
+    #[uniffi(default)]
+    vec: Vec<bool>,
+    #[uniffi(default)]
+    map: HashMap<String, String>,
+    #[uniffi(default)]
+    some_bytes: Vec<u8>,
+    #[uniffi(default)]
+    opt_int32: Option<i32>,
+    // Object has a ctor which takes no args.
+    #[uniffi(default)]
+    object: Arc<Object>,
 }
 
 /// Test defaults on top-level functions
 #[uniffi::export(default(num = 21))]
 fn double_with_default(num: i32) -> i32 {
     num + num
+}
+
+/// Test defaults on top-level functions
+#[uniffi::export(default(num2))]
+fn sum_with_default(num1: i32, num2: i32) -> i32 {
+    num1 + num2
 }
 
 /// Test defaults on constructors / methods
@@ -399,6 +459,11 @@ impl ObjectWithDefaults {
 
     #[uniffi::method(default(other = 12))]
     fn add_to_num(&self, other: i32) -> i32 {
+        self.num + other
+    }
+
+    #[uniffi::method(default(other))]
+    fn add_to_implicit_num(&self, other: i32) -> i32 {
         self.num + other
     }
 }

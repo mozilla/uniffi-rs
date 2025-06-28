@@ -1,4 +1,4 @@
-class _UniffiConverterUInt64(_UniffiConverterPrimitiveInt):
+class {{ type_node.ffi_converter_name }}(_UniffiConverterPrimitiveInt):
     CLASS_NAME = "u64"
     VALUE_MIN = 0
     VALUE_MAX = 2**64

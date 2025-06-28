@@ -7,7 +7,8 @@ use crate::{
     ffiops,
     fnsig::{FnKind, FnSignature, ReceiverArg},
     util::{
-        create_metadata_items, derive_ffi_traits, ident_to_string, mod_path, tagged_impl_header,
+        async_trait_annotation, create_metadata_items, derive_ffi_traits, ident_to_string,
+        mod_path, tagged_impl_header, wasm_single_threaded_annotation,
     },
 };
 use proc_macro2::{Span, TokenStream};
@@ -64,9 +65,9 @@ pub(super) fn trait_impl(
                 pub #ident: extern "C" fn(
                     uniffi_handle: u64,
                     #(#param_names: #param_types,)*
-                    uniffi_future_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
+                    uniffi_callback: ::uniffi::ForeignFutureCallback<#lift_return_type>,
                     uniffi_callback_data: u64,
-                    uniffi_out_return: &mut ::uniffi::ForeignFuture,
+                    uniffi_out_dropped_callback: &mut ::uniffi::ForeignFutureDroppedCallbackStruct,
                 ),
             }
         }
@@ -77,7 +78,11 @@ pub(super) fn trait_impl(
         .map(|sig| gen_method_impl(sig, &vtable_cell))
         .collect::<syn::Result<Vec<_>>>()?;
     let has_async_method = methods.iter().any(|m| m.is_async);
-    let impl_attributes = has_async_method.then(|| quote! { #[::async_trait::async_trait] });
+
+    // Conditionally apply the async_trait attribute with or without ?Send based on the target
+    let impl_attributes = has_async_method.then(async_trait_annotation);
+
+    let single_threaded_annotation = wasm_single_threaded_annotation();
 
     Ok(quote! {
         #[allow(missing_docs)]
@@ -105,6 +110,7 @@ pub(super) fn trait_impl(
             }
         }
 
+        #single_threaded_annotation
         ::uniffi::deps::static_assertions::assert_impl_all!(#trait_impl_ident: ::core::marker::Send);
 
         #impl_attributes
@@ -235,10 +241,15 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
         Ok(quote! {
             async fn #ident(#self_param, #(#params),*) -> #return_ty {
                 let vtable = #vtable_cell.get();
-                ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(move |uniffi_future_callback, uniffi_future_callback_data| {
-                    let mut uniffi_foreign_future: ::uniffi::ForeignFuture = ::uniffi::FfiDefault::ffi_default();
-                    (vtable.#ident)(self.handle, #(#lower_exprs,)* uniffi_future_callback, uniffi_future_callback_data, &mut uniffi_foreign_future);
-                    uniffi_foreign_future
+                ::uniffi::foreign_async_call::<_, #return_ty, crate::UniFfiTag>(
+                    move |uniffi_future_callback, uniffi_future_callback_data, uniffi_foreign_future_dropped_callback| {
+                        (vtable.#ident)(
+                            self.handle,
+                            #(#lower_exprs,)*
+                            uniffi_future_callback,
+                            uniffi_future_callback_data,
+                            uniffi_foreign_future_dropped_callback
+                        );
                 }).await
             }
         })

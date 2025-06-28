@@ -18,11 +18,12 @@ struct TodoEntry {
 }
 ```
 
-The fields in a record can be of almost any type, including objects or other records.
-The current limitations are:
+The fields in a record can be of any UniFFI supported type, including objects, vecs, maps and other records.
+The limitations are:
 
 * They cannot recursively contain another instance of the *same* record type.
-* They cannot contain references to callback interfaces (which is exactly why callback interfaces should be avoided, use traits)
+* They cannot contain references to callback interfaces (another reason callback interfaces should be avoided, use traits)
+* You must directly use an owned UniFFI supported type directly - no references, no smart-pointers etc.
 
 # Fields holding object references
 
@@ -89,7 +90,7 @@ data class TodoEntry (
 }
 ```
 
-The default for this can be `null/None/etc` generating:
+The default for this can be `None`, which would translate to `null`/`None`/`etc` in the bindings. Kotlin generates:
 
 ```kotlin
 data class TodoEntry (

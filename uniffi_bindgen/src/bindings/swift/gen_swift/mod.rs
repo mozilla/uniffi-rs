@@ -42,8 +42,12 @@ trait CodeType: Debug {
         self.type_label()
     }
 
-    fn literal(&self, _literal: &Literal) -> Result<String> {
-        unimplemented!("Unimplemented for {}", self.type_label())
+    // default for named types is to assume a ctor exists.
+    fn default(&self, default: &DefaultValue) -> Result<String> {
+        match default {
+            DefaultValue::Default => Ok(format!("{}()", self.type_label())),
+            DefaultValue::Literal(_) => crate::bail!("Literals for named types are not supported"),
+        }
     }
 
     /// Name of the FfiConverter
@@ -170,6 +174,7 @@ pub struct Config {
     omit_argument_labels: Option<bool>,
     generate_immutable_records: Option<bool>,
     omit_localized_error_conformance: Option<bool>,
+    generate_case_iterable_conformance: Option<bool>,
     generate_codable_conformance: Option<bool>,
     #[serde(default)]
     custom_types: HashMap<String, CustomTypeConfig>,
@@ -262,6 +267,11 @@ impl Config {
     /// Whether to make generated error types conform to `LocalizedError`. Default: false.
     pub fn omit_localized_error_conformance(&self) -> bool {
         self.omit_localized_error_conformance.unwrap_or(false)
+    }
+
+    /// Whether to make simple generated enum and error types conform to `CaseIterable`. Default: false.
+    pub fn generate_case_iterable_conformance(&self) -> bool {
+        self.generate_case_iterable_conformance.unwrap_or(false)
     }
 
     /// Whether to make generated records, enums and errors conform to `Codable`. Default: false.
@@ -594,7 +604,6 @@ impl SwiftCodeOracle {
             FfiType::Float32 => "Float".into(),
             FfiType::Float64 => "Double".into(),
             FfiType::Handle => "UInt64".into(),
-            FfiType::RustArcPtr(_) => "UnsafeMutableRawPointer".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::RustCallStatus => "RustCallStatus".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),
@@ -628,7 +637,7 @@ impl SwiftCodeOracle {
                 | FfiType::UInt64
                 | FfiType::Int64 => "0".to_owned(),
                 FfiType::Float32 | FfiType::Float64 => "0.0".to_owned(),
-                FfiType::RustArcPtr(_) => "nil".to_owned(),
+                FfiType::Handle => "0".to_owned(),
                 FfiType::RustBuffer(_) => "RustBuffer.empty()".to_owned(),
                 _ => unimplemented!("FFI return type: {t:?}"),
             },
@@ -658,7 +667,6 @@ impl SwiftCodeOracle {
 
 pub mod filters {
     use super::*;
-    pub use crate::backend::filters::*;
     use uniffi_meta::LiteralMetadata;
 
     fn oracle() -> &'static SwiftCodeOracle {
@@ -691,6 +699,10 @@ pub mod filters {
             name.push_str("__as_error")
         }
         Ok(name)
+    }
+
+    pub(super) fn ffi_type(type_: &impl AsType) -> askama::Result<FfiType, askama::Error> {
+        Ok(type_.as_type().into())
     }
 
     // To better support external types, we always call the "public" lift and lower functions for
@@ -727,14 +739,14 @@ pub mod filters {
         Ok(format!("{}.read", ffi_converter_name))
     }
 
-    pub fn literal_swift(
-        literal: &Literal,
+    pub fn default_swift(
+        default: &DefaultValue,
         as_type: &impl AsType,
     ) -> Result<String, askama::Error> {
-        oracle()
+        Ok(oracle()
             .find(&as_type.as_type())
-            .literal(literal)
-            .map_err(|e| to_askama_error(&e))
+            .default(default)
+            .expect("invalid default: {default:?}"))
     }
 
     // Get the idiomatic Swift rendering of an individual enum variant's discriminant
@@ -771,7 +783,6 @@ pub mod filters {
             FfiType::Float32 => "float".into(),
             FfiType::Float64 => "double".into(),
             FfiType::Handle => "uint64_t".into(),
-            FfiType::RustArcPtr(_) => "void*_Nonnull".into(),
             FfiType::RustBuffer(_) => "RustBuffer".into(),
             FfiType::RustCallStatus => "RustCallStatus".into(),
             FfiType::ForeignBytes => "ForeignBytes".into(),

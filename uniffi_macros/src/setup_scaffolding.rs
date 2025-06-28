@@ -108,16 +108,16 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
 
         // Code to re-export the UniFFI scaffolding functions.
         //
-        // Rust won't always re-export the functions from dependencies
-        // ([rust-lang#50007](https://github.com/rust-lang/rust/issues/50007))
+        // Some build environments won't always re-export the functions from dependencies.
+        // Originally attributed to [rust-lang#50007](https://github.com/rust-lang/rust/issues/50007),
+        // it's still needed in mozilla-central with that resolved.
         //
         // A workaround for this is to have the dependent crate reference a function from its dependency in
-        // an extern "C" function. This is clearly hacky and brittle, but at least we have some unittests
-        // that check if this works (fixtures/reexport-scaffolding-macro).
+        // an extern "C" function.
         //
-        // The main way we use this macro is for that contain multiple UniFFI components (libxul,
-        // megazord).  The combined library has a cargo dependency for each component and calls
-        // uniffi_reexport_scaffolding!() for each one.
+        // The main way we use this macro is for libraries which contain multiple UniFFI components (libxul,
+        // megazord).  This library has a cargo dependency for each component and calls
+        // uniffi_reexport_scaffolding!() in each one.
 
         #[allow(missing_docs)]
         #[doc(hidden)]
@@ -161,7 +161,6 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
         (quote! { i64 }, "i64"),
         (quote! { f32 }, "f32"),
         (quote! { f64 }, "f64"),
-        (quote! { *const ::std::ffi::c_void }, "pointer"),
         (quote! { ::uniffi::RustBuffer }, "rust_buffer"),
         (quote! { () }, "void"),
     ];
@@ -177,14 +176,14 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
             #[doc(hidden)]
             #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ffi_rust_future_poll(handle: ::uniffi::Handle, callback: ::uniffi::RustFutureContinuationCallback, data: u64) {
-                ::uniffi::ffi::rust_future_poll::<#return_type, crate::UniFfiTag>(handle, callback, data);
+                ::uniffi::ffi::rust_future_poll::<#return_type>(handle, callback, data);
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ffi_rust_future_cancel(handle: ::uniffi::Handle) {
-                ::uniffi::ffi::rust_future_cancel::<#return_type, crate::UniFfiTag>(handle)
+                ::uniffi::ffi::rust_future_cancel::<#return_type>(handle)
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -194,14 +193,14 @@ fn rust_future_scaffolding_fns(module_path: &str) -> TokenStream {
                 handle: ::uniffi::Handle,
                 out_status: &mut ::uniffi::RustCallStatus
             ) -> #return_type {
-                ::uniffi::ffi::rust_future_complete::<#return_type, crate::UniFfiTag>(handle, out_status)
+                ::uniffi::ffi::rust_future_complete::<#return_type>(handle, out_status)
             }
 
             #[allow(clippy::missing_safety_doc, missing_docs)]
             #[doc(hidden)]
             #[unsafe(no_mangle)]
             pub unsafe extern "C" fn #ffi_rust_future_free(handle: ::uniffi::Handle) {
-                ::uniffi::ffi::rust_future_free::<#return_type, crate::UniFfiTag>(handle)
+                ::uniffi::ffi::rust_future_free::<#return_type>(handle)
             }
         }
     })

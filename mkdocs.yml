@@ -32,6 +32,7 @@ extra:
 plugins:
   # otherwise a no-op docs build ends with a diff to sitemap.xml.gz
   - no-sitemap
+  - search
 
 # This lists all the files that become part of the documentation
 nav:
@@ -93,12 +94,19 @@ nav:
 
   - 'Python': ./python/configuration.md
 
+  - 'WASM':
+    - ./wasm/configuration.md
+
 - Internals:
   - ./internals/design_principles.md
   - ./internals/crates.md
   - ./internals/lifting_and_lowering.md
+  - ./internals/ffi_converter_traits.md
+  - ./internals/rust_calls.md
+  - ./internals/foreign_calls.md
   - ./internals/object_references.md
-  - ./internals/async.md
+  - ./internals/async-overview.md
+  - ./internals/async-ffi.md
   - ./internals/rendering_foreign_bindings.md
 
 - ./Upgrading.md

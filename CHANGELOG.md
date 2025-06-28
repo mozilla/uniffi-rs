@@ -6,13 +6,55 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's new?
+
+- Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
+  without a literal) meaning the default value for the type. Named types can also have a default.
+  ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
+- Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
+
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+- `uniffi_bindgen::backend` has been removed.
+- `#[uniffi(default)]` changes how defaults are represented.
+- `FfiType::RustArcPtr` has been removed and the FFI type for objects/interfaces is now a `u64`.
+  Bindings authors will need to update their code to reflect this:
+  - Lowering/lifting now uses `u64` values
+  - The free function inputs a `u64` handle rather than a raw pointer
+  - The clone function inputs and returns a `u64` handle rather than a raw pointer
+
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
+
+## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)
+
+### What's new?
+
+- HashMaps in UDL now support a default value with an empty map ([#2539](https://github.com/mozilla/uniffi-rs/pull/2539)).
+
+[All changes in v0.29.3](https://github.com/mozilla/uniffi-rs/compare/v0.29.2...v0.29.3).
+
+## v0.29.2 (backend crates: v0.29.2) - (_2025-05-05_)
+
 ### What's fixed?
 
 - Allow `uniffi_reexport_scaffolding!` macro to work in Rust 2024 ([#2476](https://github.com/mozilla/uniffi-rs/issues/2476))
 
 - Python: fix issues with unusual name capitalization, ([#2464](https://github.com/mozilla/uniffi-rs/issues/2464))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...HEAD).
+- Swift bindings can now generate automatic conformance to the `CaseIterable` protocol for simple enums and errors using `generate_case_iterable_conformance = true` in the configuration.
+
+- Swift bindings can now generate automatic conformance to the `Codable` protocol for records, enums and errors using `generate_codable_conformance = true` in the configuration. Be aware that serialization in Swift may lead to different and incompatible results compared to serialization in Rust.
+
+[All changes in v0.29.2](https://github.com/mozilla/uniffi-rs/compare/v0.29.1...v0.29.2).
+
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+
+* Some async-related names have changed.  Bindings authors may need to update their code to reflect
+  the new names.  This is a name-change only -- the FFI and semantics are still the same.
+
+  * `UniffiForeignFutureFree` is now `UniffiForeignFutureDroppedCallback`
+  * `UniffiForeignFuture` is `UniffiForeignFutureDroppedCallbackStruct`.
+  * `RustFuturePoll::MaybeReady` is now `RustFuturePoll::Wake`.
 
 ## v0.29.1 (backend crates: v0.29.1) - (_2025-03-18_)
 

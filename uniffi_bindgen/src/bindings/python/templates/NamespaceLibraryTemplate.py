@@ -31,22 +31,22 @@ def _uniffi_load_indirect():
         # Anything else must be an ELF platform - Linux, *BSD, Solaris/illumos
         libname = "lib{}.so"
 
-    libname = libname.format("{{ config.cdylib_name() }}")
+    libname = libname.format("{{ cdylib_name }}")
     path = os.path.join(os.path.dirname(__file__), libname)
     lib = ctypes.cdll.LoadLibrary(path)
     return lib
 
 def _uniffi_check_contract_api_version(lib):
     # Get the bindings contract version from our ComponentInterface
-    bindings_contract_version = {{ ci.uniffi_contract_version() }}
+    bindings_contract_version = {{ correct_contract_version }}
     # Get the scaffolding contract version by calling the into the dylib
-    scaffolding_contract_version = lib.{{ ci.ffi_uniffi_contract_version().name() }}()
+    scaffolding_contract_version = lib.{{ ffi_uniffi_contract_version.0 }}()
     if bindings_contract_version != scaffolding_contract_version:
         raise InternalError("UniFFI contract version mismatch: try cleaning and rebuilding your project")
 
 def _uniffi_check_api_checksums(lib):
-    {%- for (name, expected_checksum) in ci.iter_checksums() %}
-    if lib.{{ name }}() != {{ expected_checksum }}:
+    {%- for checksum in checksums %}
+    if lib.{{ checksum.fn_name.0 }}() != {{ checksum.checksum }}:
         raise InternalError("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     {%- else %}
     pass
@@ -57,33 +57,38 @@ def _uniffi_check_api_checksums(lib):
 
 _UniffiLib = _uniffi_load_indirect()
 
-{%- for def in ci.ffi_definitions() %}
+{%- for def in ffi_definitions %}
 {%- match def %}
-{%- when FfiDefinition::CallbackFunction(callback) %}
-{{ callback.name()|ffi_callback_name }} = ctypes.CFUNCTYPE(
-    {%- match callback.return_type() %}
-    {%- when Some(return_type) %}{{ return_type|ffi_type_name(ci) }},
+{%- when FfiDefinition::FunctionType(function_type) %}
+{{ function_type.name.0 }} = ctypes.CFUNCTYPE(
+    {%- match function_type.return_type.ty %}
+    {%- when Some(return_type) %}{{ return_type.type_name }},
     {%- when None %}None,
     {%- endmatch %}
-    {%- for arg in callback.arguments() -%}
-    {{ arg.type_().borrow()|ffi_type_name(ci) }},
+    {%- for arg in function_type.arguments -%}
+    {{ arg.ty.type_name }},
     {%- endfor -%}
-    {%- if callback.has_rust_call_status_arg() %}
+    {%- if function_type.has_rust_call_status_arg %}
     ctypes.POINTER(_UniffiRustCallStatus),
     {%- endif %}
 )
 {%- when FfiDefinition::Struct(ffi_struct) %}
-class {{ ffi_struct.name()|ffi_struct_name }}(ctypes.Structure):
+class {{ ffi_struct.name.0 }}(ctypes.Structure):
     _fields_ = [
-        {%- for field in ffi_struct.fields() %}
-        ("{{ field.name() }}", {{ field.type_().borrow()|ffi_type_name(ci) }}),
+        {%- for field in ffi_struct.fields %}
+        ("{{ field.name }}", {{ field.ty.type_name }}),
         {%- endfor %}
     ]
-{%- when FfiDefinition::Function(func) %}
-_UniffiLib.{{ func.name() }}.argtypes = (
-    {%- call py::arg_list_ffi_decl(func) -%}
+{%- when FfiDefinition::RustFunction(func) %}
+_UniffiLib.{{ func.name.0 }}.argtypes = (
+    {%- for arg in func.arguments %}
+    {{ arg.ty.type_name }},
+    {%- endfor %}
+    {%- if func.has_rust_call_status_arg %}
+    ctypes.POINTER(_UniffiRustCallStatus),
+    {%- endif %}
 )
-_UniffiLib.{{ func.name() }}.restype = {% match func.return_type() %}{% when Some(type_) %}{{ type_|ffi_type_name(ci) }}{% when None %}None{% endmatch %}
+_UniffiLib.{{ func.name.0 }}.restype = {% match func.return_type.ty %}{% when Some(ffi_type) %}{{ ffi_type.type_name }}{% when None %}None{% endmatch %}
 {%- endmatch %}
 {%- endfor %}
 

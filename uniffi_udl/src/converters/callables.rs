@@ -11,8 +11,8 @@ use crate::InterfaceCollector;
 use anyhow::{bail, Result};
 
 use uniffi_meta::{
-    ConstructorMetadata, FieldMetadata, FnMetadata, FnParamMetadata, MethodMetadata,
-    TraitMethodMetadata,
+    ConstructorMetadata, DefaultValueMetadata, FieldMetadata, FnMetadata, FnParamMetadata,
+    MethodMetadata, TraitMethodMetadata,
 };
 
 impl APIConverter<FieldMetadata> for weedle::argument::Argument<'_> {
@@ -56,7 +56,9 @@ impl APIConverter<FnParamMetadata> for weedle::argument::SingleArgument<'_> {
         let type_ = ci.resolve_type_expression(&self.type_)?;
         let default = match self.default {
             None => None,
-            Some(v) => Some(convert_default_value(&v.value, &type_)?),
+            Some(v) => Some(DefaultValueMetadata::Literal(convert_default_value(
+                &v.value, &type_,
+            )?)),
         };
         let by_ref = ArgumentAttributes::try_from(self.attributes.as_ref())?.by_ref();
         Ok(FnParamMetadata {

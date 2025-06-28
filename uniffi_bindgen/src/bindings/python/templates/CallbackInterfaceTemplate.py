@@ -1,11 +1,7 @@
-{%- let cbi = ci.get_callback_interface_definition(name).unwrap() %}
-{%- let ffi_init_callback = cbi.ffi_init_callback() %}
-{%- let protocol_name = type_name.clone() %}
-{%- let protocol_base_class = "typing.Protocol" %}
-{%- let protocol_docstring = cbi.docstring() %}
-{%- let vtable = cbi.vtable() %}
-{%- let methods = cbi.methods() %}
-{%- let vtable_methods = cbi.vtable_methods() %}
+{%- let protocol = cbi.protocol %}
+{%- let vtable = cbi.vtable %}
+{%- let trait_impl=format!("_UniffiTraitImpl{}", cbi.name) %}
+{%- let ffi_converter_name = cbi.self_type.ffi_converter_name %}
 
 {% include "Protocol.py" %}
 {% include "CallbackInterfaceImpl.py" %}

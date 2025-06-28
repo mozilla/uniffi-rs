@@ -16,9 +16,7 @@ pub use uniffi_bindgen::cargo_metadata::CrateConfigSupplier as CargoMetadataConf
 pub use uniffi_bindgen::library_mode::generate_bindings as generate_bindings_library_mode;
 #[cfg(feature = "bindgen")]
 pub use uniffi_bindgen::{
-    bindings::{
-        KotlinBindingGenerator, PythonBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator,
-    },
+    bindings::{KotlinBindingGenerator, RubyBindingGenerator, SwiftBindingGenerator},
     generate_bindings, print_repr,
 };
 #[cfg(feature = "build")]

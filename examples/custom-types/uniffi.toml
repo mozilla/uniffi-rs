@@ -50,9 +50,10 @@ lower = "{}.toString()"
 
 [bindings.python.custom_types.Url]
 # We're going to be the urllib.parse.ParseResult class, which is the closest
-# thing Python has to a Url class.  No need to specify `type_name` though,
-# since Python is loosely typed.
-# modules to import
+# thing Python has to a Url class. 
+
+# `type_name` is optional, but it improves Python's optional type-checking
+type_name = "urllib.parse.ParseResult"
 imports = ["urllib.parse"]
 # Function to lift a string from Rust into a Python URL.
 lift = "urllib.parse.urlparse({})"

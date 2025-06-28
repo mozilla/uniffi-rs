@@ -128,7 +128,6 @@ mod filters {
             FfiType::Float32 => ":float".to_string(),
             FfiType::Float64 => ":double".to_string(),
             FfiType::Handle => ":uint64".to_string(),
-            FfiType::RustArcPtr(_) => ":pointer".to_string(),
             FfiType::RustBuffer(_) => "RustBuffer.by_value".to_string(),
             FfiType::RustCallStatus => "RustCallStatus".to_string(),
             FfiType::ForeignBytes => "ForeignBytes".to_string(),
@@ -145,7 +144,10 @@ mod filters {
         })
     }
 
-    pub fn literal_rb(literal: &Literal) -> Result<String, askama::Error> {
+    pub fn default_rb(default: &DefaultValue) -> Result<String, askama::Error> {
+        let DefaultValue::Literal(literal) = default else {
+            unimplemented!("not supported.");
+        };
         Ok(match literal {
             Literal::Boolean(v) => {
                 if *v {
@@ -157,7 +159,7 @@ mod filters {
             // use the double-quote form to match with the other languages, and quote escapes.
             Literal::String(s) => format!("\"{s}\""),
             Literal::None => "nil".into(),
-            Literal::Some { inner } => literal_rb(inner)?,
+            Literal::Some { inner } => default_rb(inner)?,
             Literal::EmptySequence => "[]".into(),
             Literal::EmptyMap => "{}".into(),
             Literal::Enum(v, type_) => match type_ {

@@ -74,10 +74,11 @@ pub use ffi::{
 };
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata,
+    ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata,
     ObjectTraitImplMetadata, TraitMethodMetadata, UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
+pub type DefaultValue = DefaultValueMetadata;
 
 /// The main public interface for this module, representing the complete details of an interface exposed
 /// by a rust component and the details of consuming it via an extern-C FFI layer.
@@ -658,7 +659,7 @@ impl ComponentInterface {
             }
             .into(),
             FfiCallbackFunction {
-                name: "ForeignFutureFree".to_owned(),
+                name: "ForeignFutureDroppedCallback".to_owned(),
                 arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
                 return_type: None,
                 has_rust_call_status_arg: false,
@@ -672,10 +673,13 @@ impl ComponentInterface {
             }
             .into(),
             FfiStruct {
-                name: "ForeignFuture".to_owned(),
+                name: "ForeignFutureDroppedCallbackStruct".to_owned(),
                 fields: vec![
                     FfiField::new("handle", FfiType::UInt64),
-                    FfiField::new("free", FfiType::Callback("ForeignFutureFree".to_owned())),
+                    FfiField::new(
+                        "free",
+                        FfiType::Callback("ForeignFutureDroppedCallback".to_owned()),
+                    ),
                 ],
             }
             .into(),
@@ -785,10 +789,10 @@ impl ComponentInterface {
             Some(FfiType::Int64),
             Some(FfiType::Float32),
             Some(FfiType::Float64),
-            // RustBuffer and RustArcPtr have an inner field which we have to fill in with a
-            // placeholder value.
-            Some(FfiType::RustArcPtr("".to_owned())),
+            // RustBuffer has an inner field which we have to fill in with a placeholder value.
             Some(FfiType::RustBuffer(None)),
+            // `FfiType::Handle` is a 64-bit int and uses the same `ForeignFutureResult` type as
+            // `FfiType::UInt64`
             None,
         ]
         .into_iter()

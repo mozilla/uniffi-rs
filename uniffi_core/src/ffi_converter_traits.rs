@@ -151,7 +151,25 @@ pub unsafe trait FfiConverter<UT>: Sized {
 /// or might not match with the corresponding code in the generated foreign-language bindings.
 /// These traits should not be used directly, only in generated code, and the generated code should
 /// have fixture tests to test that everything works correctly together.
+#[cfg(not(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded")))]
 pub unsafe trait FfiConverterArc<UT>: Send + Sync {
+    type FfiType: FfiDefault;
+
+    fn lower(obj: Arc<Self>) -> Self::FfiType;
+    fn try_lift(v: Self::FfiType) -> Result<Arc<Self>>;
+    fn write(obj: Arc<Self>, buf: &mut Vec<u8>);
+    fn try_read(buf: &mut &[u8]) -> Result<Arc<Self>>;
+
+    const TYPE_ID_META: MetadataBuffer;
+}
+
+/// ## Safety
+///
+/// The Safety notice is the same as for `FfiConverterArc`, but this is only used
+/// for WASM targets that are single-threaded. In this case, Send and Sync aren't
+/// necessary to check.
+#[cfg(all(target_arch = "wasm32", feature = "wasm-unstable-single-threaded"))]
+pub unsafe trait FfiConverterArc<UT> {
     type FfiType: FfiDefault;
 
     fn lower(obj: Arc<Self>) -> Self::FfiType;
@@ -288,10 +306,7 @@ pub unsafe trait LowerReturn<UT>: Sized {
     ///   `Err(RustCallError::Error(buf))`. This results in better exception throws on the foreign
     ///   side.
     fn handle_failed_lift(error: LiftArgsError) -> Result<Self::ReturnType, RustCallError> {
-        let LiftArgsError { arg_name, error } = error;
-        Err(RustCallError::InternalError(format!(
-            "Failed to convert arg '{arg_name}': {error}"
-        )))
+        Err(error.to_internal_error())
     }
 }
 
@@ -632,15 +647,14 @@ macro_rules! derive_ffi_traits {
 
 unsafe impl<T: Send + Sync, UT> HandleAlloc<UT> for T {
     fn new_handle(value: Arc<Self>) -> Handle {
-        Handle::from_pointer(Arc::into_raw(value))
+        Handle::from_arc(value)
     }
 
     unsafe fn clone_handle(handle: Handle) -> Handle {
-        Arc::increment_strong_count(handle.as_pointer::<T>());
-        handle
+        handle.clone_arc_handle::<T>()
     }
 
     unsafe fn consume_handle(handle: Handle) -> Arc<Self> {
-        Arc::from_raw(handle.as_pointer())
+        handle.into_arc()
     }
 }

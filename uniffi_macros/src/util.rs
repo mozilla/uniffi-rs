@@ -302,3 +302,32 @@ pub(crate) fn extract_docstring(attrs: &[Attribute]) -> syn::Result<String> {
         .collect::<syn::Result<Vec<_>>>()
         .map(|lines| lines.join("\n"))
 }
+
+pub(crate) fn wasm_single_threaded_annotation() -> TokenStream {
+    #[cfg(feature = "wasm-unstable-single-threaded")]
+    {
+        quote! {
+            #[cfg(not(target_arch = "wasm32"))]
+        }
+    }
+    #[cfg(not(feature = "wasm-unstable-single-threaded"))]
+    {
+        TokenStream::default()
+    }
+}
+
+pub(crate) fn async_trait_annotation() -> TokenStream {
+    #[cfg(feature = "wasm-unstable-single-threaded")]
+    {
+        quote! {
+            #[cfg_attr(not(target_arch = "wasm32"), ::async_trait::async_trait)]
+            #[cfg_attr(target_arch = "wasm32", ::async_trait::async_trait(?Send))]
+        }
+    }
+    #[cfg(not(feature = "wasm-unstable-single-threaded"))]
+    {
+        quote! {
+            #[::async_trait::async_trait]
+        }
+    }
+}

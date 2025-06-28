@@ -4,13 +4,15 @@
 
 use anyhow::{bail, Context, Result};
 use camino::Utf8PathBuf;
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fmt;
 use uniffi_bindgen::bindings::*;
+use uniffi_bindgen::pipeline::initial;
+use uniffi_pipeline::PrintOptions;
 
 /// Enumeration of all foreign language targets currently supported by our CLI.
 ///
-#[derive(Copy, Clone, Eq, PartialEq, Hash, clap::ValueEnum)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, ValueEnum)]
 enum TargetLanguage {
     Kotlin,
     Swift,
@@ -132,11 +134,53 @@ enum Commands {
         udl_file: Utf8PathBuf,
     },
 
-    /// Print a debug representation of the interface from a dynamic library
-    PrintRepr {
-        /// Path to the library file (.so, .dll, .dylib, or .a)
-        path: Utf8PathBuf,
-    },
+    /// Inspect the bindings render pipeline
+    Pipeline(PipelineArgs),
+}
+
+#[derive(Args)]
+struct PipelineArgs {
+    /// Pass in a cdylib path rather than a UDL file
+    #[clap(long = "library")]
+    library_mode: bool,
+
+    /// Path to the UDL file, or cdylib if `library-mode` is specified
+    source: Utf8PathBuf,
+
+    /// When `--library` is passed, only generate bindings for one crate.
+    /// When `--library` is not passed, use this as the crate name instead of attempting to
+    /// locate and parse Cargo.toml.
+    #[clap(long = "crate")]
+    crate_name: Option<String>,
+
+    /// Whether we should exclude dependencies when running "cargo metadata".
+    /// This will mean external types may not be resolved if they are implemented in crates
+    /// outside of this workspace.
+    /// This can be used in environments when all types are in the namespace and fetching
+    /// all sub-dependencies causes obscure platform specific problems.
+    #[clap(long)]
+    metadata_no_deps: bool,
+
+    /// Bindings Language
+    language: TargetLanguage,
+
+    /// Only show passes that match <PASS>
+    ///
+    /// Use `last` to only show the last pass, this can be useful when you're writing new pipelines
+    #[clap(short, long)]
+    pass: Option<String>,
+
+    /// Don't show diffs for middle passes
+    #[clap(long)]
+    no_diff: bool,
+
+    /// Only show data for types with name <FILTER_TYPE>
+    #[clap(short = 't', long = "type")]
+    filter_type: Option<String>,
+
+    /// Only show data for items with fields that match <FILTER>
+    #[clap(short = 'n', long = "name")]
+    filter_name: Option<String>,
 }
 
 fn config_supplier(
@@ -190,16 +234,7 @@ fn gen_library_mode(
                 fmt,
             )?
             .len(),
-            TargetLanguage::Python => generate_bindings(
-                library_path,
-                crate_name.clone(),
-                &PythonBindingGenerator,
-                &config_supplier,
-                cfo,
-                out_dir,
-                fmt,
-            )?
-            .len(),
+            TargetLanguage::Python => anyhow::bail!("Python uses the new Bindings IR pipeline"),
             TargetLanguage::Ruby => generate_bindings(
                 library_path,
                 crate_name.clone(),
@@ -246,15 +281,7 @@ fn gen_bindings(
                 crate_name,
                 fmt,
             )?,
-            TargetLanguage::Python => generate_bindings(
-                udl_file,
-                cfo,
-                PythonBindingGenerator,
-                odo,
-                library_file,
-                crate_name,
-                fmt,
-            )?,
+            TargetLanguage::Python => anyhow::bail!("Python uses the new Bindings IR pipeline"),
             TargetLanguage::Ruby => generate_bindings(
                 udl_file,
                 cfo,
@@ -292,36 +319,61 @@ pub fn run_main() -> anyhow::Result<()> {
             library_mode,
             metadata_no_deps,
         } => {
-            if library_mode {
-                if lib_file.is_some() {
-                    panic!("--lib-file is not compatible with --library.")
+            if language.is_empty() {
+                panic!("please specify at least one language with --language")
+            }
+            let (pipeline_languages, legacy_languages) = split_languages(language);
+
+            // Handle languages that use the bindings IR pipeline
+            for language in pipeline_languages {
+                let out_dir = out_dir
+                    .as_ref()
+                    .expect("--out-dir is required when generating {language} bindings");
+                let config_supplier = config_supplier(metadata_no_deps)?;
+                let initial_root = if library_mode {
+                    initial::Root::from_library(config_supplier, &source, crate_name.clone())?
+                } else {
+                    initial::Root::from_udl(config_supplier, &source, crate_name.clone())?
+                };
+
+                match language {
+                    TargetLanguage::Python => python::run_pipeline(initial_root, out_dir)?,
+                    language => {
+                        unimplemented!("{language} does not use the bindings IR pipeline yet")
+                    }
+                };
+            }
+
+            // Handle languages on the legacy system
+            if !legacy_languages.is_empty() {
+                if library_mode {
+                    if lib_file.is_some() {
+                        panic!("--lib-file is not compatible with --library.")
+                    }
+                    let out_dir = out_dir.expect("--out-dir is required when using --library");
+                    gen_library_mode(
+                        &source,
+                        crate_name,
+                        legacy_languages,
+                        config.as_deref(),
+                        &out_dir,
+                        !no_format,
+                        metadata_no_deps,
+                    )?;
+                } else {
+                    if metadata_no_deps {
+                        panic!("--metadata-no-deps makes no sense when not in library mode")
+                    }
+                    gen_bindings(
+                        &source,
+                        config.as_deref(),
+                        legacy_languages,
+                        out_dir.as_deref(),
+                        lib_file.as_deref(),
+                        crate_name.as_deref(),
+                        !no_format,
+                    )?;
                 }
-                let out_dir = out_dir.expect("--out-dir is required when using --library");
-                if language.is_empty() {
-                    panic!("please specify at least one language with --language")
-                }
-                gen_library_mode(
-                    &source,
-                    crate_name,
-                    language,
-                    config.as_deref(),
-                    &out_dir,
-                    !no_format,
-                    metadata_no_deps,
-                )?;
-            } else {
-                if metadata_no_deps {
-                    panic!("--metadata-no-deps makes no sense when not in library mode")
-                }
-                gen_bindings(
-                    &source,
-                    config.as_deref(),
-                    language,
-                    out_dir.as_deref(),
-                    lib_file.as_deref(),
-                    crate_name.as_deref(),
-                    !no_format,
-                )?;
             }
         }
         Commands::Scaffolding {
@@ -335,9 +387,39 @@ pub fn run_main() -> anyhow::Result<()> {
                 !no_format,
             )?;
         }
-        Commands::PrintRepr { path } => {
-            uniffi_bindgen::print_repr(&path)?;
+        Commands::Pipeline(args) => {
+            let config_supplier = config_supplier(args.metadata_no_deps)?;
+            let initial_root = if args.library_mode {
+                initial::Root::from_library(config_supplier, &args.source, args.crate_name)?
+            } else {
+                initial::Root::from_udl(config_supplier, &args.source, args.crate_name)?
+            };
+
+            let opts = PrintOptions {
+                pass: args.pass,
+                no_diff: args.no_diff,
+                filter_type: args.filter_type,
+                filter_name: args.filter_name,
+            };
+            match args.language {
+                TargetLanguage::Python => python::pipeline().print_passes(initial_root, opts)?,
+                language => unimplemented!("{language} does not use the bindings IR pipeline yet"),
+            };
         }
     };
     Ok(())
+}
+
+/// Split the language vec into languages that have migrated to the pipeline and those that
+/// haven't.
+fn split_languages(languages: Vec<TargetLanguage>) -> (Vec<TargetLanguage>, Vec<TargetLanguage>) {
+    let mut pipeline = vec![];
+    let mut legacy = vec![];
+    for l in languages {
+        match l {
+            TargetLanguage::Python => pipeline.push(l),
+            _ => legacy.push(l),
+        }
+    }
+    (pipeline, legacy)
 }

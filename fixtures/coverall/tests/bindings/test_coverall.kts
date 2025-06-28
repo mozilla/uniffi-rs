@@ -492,6 +492,8 @@ var d = DictWithDefaults()
 assert(d.name == "default-value")
 assert(d.category == null)
 assert(d.integer == 31UL)
+assert(d.itemList.isEmpty())
+assert(d.itemMap == emptyMap<String, String>())
 
 d = DictWithDefaults(name = "this", category = "that", integer = 42UL)
 assert(d.name == "this")
@@ -505,11 +507,11 @@ Coveralls("test_bytes").use { coveralls ->
 
 // Test fakes using open classes
 
-class FakePatch(private val color: Color): Patch(NoPointer) {
+class FakePatch(private val color: Color): Patch(NoHandle) {
     override fun `getColor`(): Color = color
 }
 
-class FakeCoveralls(private val name: String) : Coveralls(NoPointer) {
+class FakeCoveralls(private val name: String) : Coveralls(NoHandle) {
     private val repairs = mutableListOf<Repair>()
 
     override fun `addPatch`(patch: Patch) {

@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_macros"
-version = "0.29.1"
+version = "0.29.3"
 description = "a multi-language bindings generator for rust (convenience macros)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
@@ -22,8 +22,8 @@ quote = "1.0"
 serde = { version = "1.0.136", features = ["derive"] }
 syn = { version = "2.0", features = ["full", "visit-mut"] }
 toml = "0.5.9"
-uniffi_build = { path = "../uniffi_build", version = "=0.29.1", optional = true }
-uniffi_meta = { path = "../uniffi_meta", version = "=0.29.1" }
+uniffi_build = { path = "../uniffi_build", version = "=0.29.3", optional = true }
+uniffi_meta = { path = "../uniffi_meta", version = "=0.29.3" }
 
 [features]
 default = []
@@ -35,3 +35,9 @@ scaffolding-ffi-buffer-fns = []
 # * Add the full module path of exported items to FFI metadata instead of just the crate name.
 #   This may be used by language backends to generate nested module structures in the future.
 nightly = []
+# Support for WebAssembly targets in a single-threaded environment.
+# This feature is unstable and may change in the future.
+wasm-unstable-single-threaded = []
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--generate-link-to-definition"]

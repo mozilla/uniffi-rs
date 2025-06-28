@@ -6,7 +6,7 @@
 
 {%- macro to_ffi_call(func) -%}
     {%- if func.takes_self() %}
-    callWithPointer {
+    callWithHandle {
         {%- call to_raw_ffi_call(func) %}
     }
     {% else %}
@@ -68,9 +68,9 @@
 {%- macro call_async(callable) -%}
     uniffiRustCallAsync(
 {%- if callable.takes_self() %}
-        callWithPointer { thisPtr ->
+        callWithHandle { uniffiHandle ->
             UniffiLib.INSTANCE.{{ callable.ffi_func().name() }}(
-                thisPtr,
+                uniffiHandle,
                 {% call arg_list_lowered(callable) %}
             )
         },
@@ -114,7 +114,7 @@
         {{ arg.name()|var_name }}: {{ arg|type_name(ci) }}
 {%-     if is_decl %}
 {%-         match arg.default_value() %}
-{%-             when Some(literal) %} = {{ literal|render_literal(arg, ci) }}
+{%-             when Some(default) %} = {{ default|render_default(arg, ci) }}
 {%-             else %}
 {%-         endmatch %}
 {%-     endif %}

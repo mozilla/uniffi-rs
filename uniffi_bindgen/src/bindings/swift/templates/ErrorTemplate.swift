@@ -119,3 +119,7 @@ extension {{ type_name }}: Foundation.LocalizedError {
     }
 }
 {% endif %}
+
+{% if config.generate_case_iterable_conformance() && !e.is_flat() && !e.contains_variant_fields() %}
+extension {{ type_name }}: CaseIterable {}
+{% endif %}

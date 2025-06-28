@@ -1,35 +1,41 @@
-{%- let trait_impl=format!("_UniffiTraitImpl{}", name) %}
-
 # Put all the bits inside a class to keep the top-level namespace clean
 class {{ trait_impl }}:
     # For each method, generate a callback function to pass to Rust
-    {%- for (ffi_callback, meth) in vtable_methods.iter() %}
+    {%- for meth in vtable.methods %}
+    {%- let callable = meth.callable %}
 
-    @{{ ffi_callback.name()|ffi_callback_name }}
-    def {{ meth.name() }}(
-            {%- for arg in ffi_callback.arguments() %}
-            {{ arg.name() }},
+    @{{ meth.ffi_type.type_name }}
+    def {{ callable.name }}(
+            uniffi_handle,
+            {%- for arg in callable.arguments %}
+            {{ arg.name }},
             {%- endfor -%}
-            {%- if ffi_callback.has_rust_call_status_arg() %}
+            {%- if !callable.is_async %}
+            uniffi_out_return,
             uniffi_call_status_ptr,
+            {%- else %}
+            uniffi_future_callback,
+            uniffi_callback_data,
+            uniffi_out_dropped_callback,
             {%- endif %}
         ):
         uniffi_obj = {{ ffi_converter_name }}._handle_map.get(uniffi_handle)
         def make_call():
-            args = ({% for arg in meth.arguments() %}{{ arg|lift_fn }}({{ arg.name() }}), {% endfor %})
-            method = uniffi_obj.{{ meth.name() }}
+            args = ({% for arg in callable.arguments %}{{ arg.ty.ffi_converter_name }}.lift({{ arg.name }}), {% endfor %})
+            method = uniffi_obj.{{ callable.name }}
             return method(*args)
 
-        {% if !meth.is_async() %}
-        {%- match meth.return_type() %}
+        {%- match callable.async_data %}
+        {%- when None %}
+        {%- match callable.return_type.ty %}
         {%- when Some(return_type) %}
         def write_return_value(v):
-            uniffi_out_return[0] = {{ return_type|lower_fn }}(v)
+            uniffi_out_return[0] = {{ return_type.ffi_converter_name }}.lower(v)
         {%- when None %}
         write_return_value = lambda v: None
         {%- endmatch %}
 
-        {%- match meth.throws_type() %}
+        {%- match callable.throws_type.ty %}
         {%- when None %}
         _uniffi_trait_interface_call(
                 uniffi_call_status_ptr.contents,
@@ -41,17 +47,17 @@ class {{ trait_impl }}:
                 uniffi_call_status_ptr.contents,
                 make_call,
                 write_return_value,
-                {{ error|type_name }},
-                {{ error|lower_fn }},
+                {{ error.type_name }},
+                {{ error.ffi_converter_name }}.lower,
         )
         {%- endmatch %}
-        {%- else %}
+        {%- when Some(async_data) %}
         def handle_success(return_value):
             uniffi_future_callback(
                 uniffi_callback_data,
-                {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
-                    {%- if let Some(return_type) = meth.return_type() %}
-                    {{ return_type|lower_fn }}(return_value),
+                {{ async_data.ffi_foreign_future_result.0 }}(
+                    {%- if let Some(return_type) = callable.return_type.ty %}
+                    {{ return_type.ffi_converter_name }}.lower(return_value),
                     {%- endif %}
                     _UniffiRustCallStatus.default()
                 )
@@ -60,36 +66,43 @@ class {{ trait_impl }}:
         def handle_error(status_code, rust_buffer):
             uniffi_future_callback(
                 uniffi_callback_data,
-                {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}(
-                    {%- match meth.return_type() %}
+                {{ async_data.ffi_foreign_future_result.0 }}(
+                    {%- match callable.return_type.ty %}
                     {%- when Some(return_type) %}
-                    {{ meth.return_type().map(FfiType::from)|ffi_default_value }},
+                    {{ meth.ffi_default_value }},
                     {%- when None %}
                     {%- endmatch %}
                     _UniffiRustCallStatus(status_code, rust_buffer),
                 )
             )
 
-        {%- match meth.throws_type() %}
+        {%- match callable.throws_type.ty %}
         {%- when None %}
-        uniffi_out_return[0] = _uniffi_trait_interface_call_async(make_call, handle_success, handle_error)
+        _uniffi_trait_interface_call_async(make_call, uniffi_out_dropped_callback, handle_success, handle_error)
         {%- when Some(error) %}
-        uniffi_out_return[0] = _uniffi_trait_interface_call_async_with_error(make_call, handle_success, handle_error, {{ error|type_name }}, {{ error|lower_fn }})
+        _uniffi_trait_interface_call_async_with_error(
+            make_call,
+            uniffi_out_dropped_callback,
+            handle_success,
+            handle_error,
+            {{ error.type_name }},
+            {{ error.ffi_converter_name }}.lower,
+        )
         {%- endmatch %}
-        {%- endif %}
+        {%- endmatch %}
     {%- endfor %}
 
-    @{{ "CallbackInterfaceFree"|ffi_callback_name }}
+    @{{ vtable.free_fn_type.0 }}
     def _uniffi_free(uniffi_handle):
         {{ ffi_converter_name }}._handle_map.remove(uniffi_handle)
 
     # Generate the FFI VTable.  This has a field for each callback interface method.
-    _uniffi_vtable = {{ vtable|ffi_type_name(ci) }}(
-        {%- for (_, meth) in vtable_methods.iter() %}
-        {{ meth.name() }},
+    _uniffi_vtable = {{ vtable.struct_type.type_name }}(
+        {%- for meth in vtable.methods %}
+        {{ meth.callable.name }},
         {%- endfor %}
         _uniffi_free
     )
     # Send Rust a pointer to the VTable.  Note: this means we need to keep the struct alive forever,
     # or else bad things will happen when Rust tries to access it.
-    _UniffiLib.{{ ffi_init_callback.name() }}(ctypes.byref(_uniffi_vtable))
+    _UniffiLib.{{ vtable.init_fn.0 }}(ctypes.byref(_uniffi_vtable))

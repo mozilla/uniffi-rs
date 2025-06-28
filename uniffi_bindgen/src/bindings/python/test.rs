@@ -2,9 +2,10 @@
 License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use crate::bindings::python::pipeline::initial;
+use crate::bindings::python::run_pipeline;
 use crate::bindings::RunScriptOptions;
 use crate::cargo_metadata::CrateConfigSupplier;
-use crate::library_mode::generate_bindings;
 use anyhow::{Context, Result};
 use camino::Utf8Path;
 use std::env;
@@ -37,16 +38,13 @@ pub fn run_script(
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, &script_path)?;
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
-    generate_bindings(
-        &cdylib_path,
-        None,
-        &super::PythonBindingGenerator,
-        &CrateConfigSupplier::from(test_helper.cargo_metadata()),
-        None,
-        &out_dir,
-        false,
-    )?;
 
+    // Generate bindings
+    let config_supplier = CrateConfigSupplier::from(test_helper.cargo_metadata());
+    let root = initial::Root::from_library(config_supplier, &cdylib_path, None)?;
+    run_pipeline(root, &out_dir)?;
+
+    // Run the python script
     let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));
     let pythonpath = env::join_paths(
         env::split_paths(&pythonpath).chain(vec![out_dir.to_path_buf().into_std_path_buf()]),
