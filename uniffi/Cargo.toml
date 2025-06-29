@@ -67,3 +67,4 @@ rustdoc-args = ["--generate-link-to-definition"]
 name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
 required-features = ["cli"]
+doc = false
