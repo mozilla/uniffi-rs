@@ -113,6 +113,11 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 {%- for t in obj.trait_impls() %}
 , {{ self::trait_interface_name(ci, t.trait_name)? }}
 {% endfor %}
+{%- for tm in obj.uniffi_traits() %}
+{%-     if let UniffiTrait::Ord { cmp } = tm %}
+, Comparable<{{ impl_class_name }}>
+{%-     endif %}
+{%- endfor %}
 {
 {%- endif %}
 
@@ -233,6 +238,10 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {%         when UniffiTrait::Hash { hash } %}
     override fun hashCode(): Int {
         return {{ hash.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(hash) %}).toInt()
+    }
+    {%         when UniffiTrait::Ord { cmp } %}
+    override fun compareTo(other: {{ impl_class_name}}): Int {
+        return {{ cmp.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(cmp) %}).toInt()
     }
     {%-         else %}
     {%-     endmatch %}

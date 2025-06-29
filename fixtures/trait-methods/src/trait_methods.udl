@@ -1,6 +1,6 @@
 namespace trait_methods {};
 
-[Traits=(Display, Debug, Eq, Hash)]
+[Traits=(Display, Debug, Eq, Hash, Ord)]
 interface TraitMethods {
     constructor(string name);
 };

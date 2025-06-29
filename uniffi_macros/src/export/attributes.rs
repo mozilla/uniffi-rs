@@ -197,6 +197,11 @@ impl UniffiAttributeArgs for ExportStructArgs {
             Ok(Self {
                 traits: HashSet::from([UniffiTraitDiscriminants::Eq]),
             })
+        } else if lookahead.peek(kw::Ord) {
+            input.parse::<Option<kw::Ord>>()?;
+            Ok(Self {
+                traits: HashSet::from([UniffiTraitDiscriminants::Ord]),
+            })
         } else {
             Err(syn::Error::new(
                 input.span(),

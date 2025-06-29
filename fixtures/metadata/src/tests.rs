@@ -84,8 +84,8 @@ mod calc {
 }
 
 mod uniffi_traits {
-    #[derive(Debug, PartialEq, Eq, uniffi::Object)]
-    #[uniffi::export(Debug, Eq)]
+    #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, uniffi::Object)]
+    #[uniffi::export(Debug, Eq, Ord)]
     pub struct Special {}
 }
 
@@ -470,6 +470,12 @@ mod test_metadata {
                    && ne.module_path == "uniffi_fixture_metadata"
                    && eq.self_name == "Special"
                    && ne.self_name == "Special"
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_ORD).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
+                if cmp.module_path == "uniffi_fixture_metadata"
+                   && cmp.self_name == "Special"
         ));
     }
 }

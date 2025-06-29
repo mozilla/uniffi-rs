@@ -414,6 +414,9 @@ pub enum UniffiTraitMetadata {
     Hash {
         hash: MethodMetadata,
     },
+    Ord {
+        cmp: MethodMetadata,
+    },
 }
 
 impl UniffiTraitMetadata {
@@ -423,6 +426,7 @@ impl UniffiTraitMetadata {
             UniffiTraitMetadata::Display { fmt } => fmt,
             UniffiTraitMetadata::Eq { eq, .. } => eq,
             UniffiTraitMetadata::Hash { hash } => hash,
+            UniffiTraitMetadata::Ord { cmp } => cmp,
         }
         .module_path
     }
@@ -433,6 +437,7 @@ impl UniffiTraitMetadata {
             UniffiTraitMetadata::Display { fmt } => fmt,
             UniffiTraitMetadata::Eq { eq, .. } => eq,
             UniffiTraitMetadata::Hash { hash } => hash,
+            UniffiTraitMetadata::Ord { cmp } => cmp,
         }
         .self_name
     }
@@ -443,6 +448,7 @@ impl UniffiTraitMetadata {
             UniffiTraitMetadata::Display { fmt } => fmt,
             UniffiTraitMetadata::Eq { eq, .. } => eq,
             UniffiTraitMetadata::Hash { hash } => hash,
+            UniffiTraitMetadata::Ord { cmp } => cmp,
         }
         .name
     }
@@ -455,6 +461,7 @@ pub enum UniffiTraitDiscriminants {
     Display,
     Eq,
     Hash,
+    Ord,
 }
 
 impl UniffiTraitDiscriminants {
@@ -464,6 +471,7 @@ impl UniffiTraitDiscriminants {
             1 => UniffiTraitDiscriminants::Display,
             2 => UniffiTraitDiscriminants::Eq,
             3 => UniffiTraitDiscriminants::Hash,
+            4 => UniffiTraitDiscriminants::Ord,
             _ => anyhow::bail!("invalid trait discriminant {v}"),
         })
     }
