@@ -1,13 +1,13 @@
 class {{ rec.self_type.type_name }}:
     {{ rec.docstring|docstring(4) -}}
     {% for field in rec.fields -%}
-    {{ field.name }}: {{ field.ty.type_name}}
+    {{ field.name }}: {{ field.ty.type_anno_name}}
     {{ rec.docstring|docstring(4) -}}
     {% endfor -%}
 
     {%- if !rec.fields.is_empty() %}
     def __init__(self, *, {% for field in rec.fields %}
-    {{- field.name }}: {{- field.ty.type_name}}
+    {{- field.name }}: {{- field.ty.type_anno_name}}
     {%- if field.default.is_some() %} = _DEFAULT{% endif %}
     {%- if !loop.last %}, {% endif %}
     {%- endfor %}):
