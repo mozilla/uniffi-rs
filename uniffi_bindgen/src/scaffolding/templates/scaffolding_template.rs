@@ -33,7 +33,7 @@ uniffi::deps::static_assertions::assert_impl_all!({{ k|type_rs }}: ::std::cmp::E
 // Top level functions, corresponding to UDL `namespace` functions.
 {%- for func in ci.function_definitions() %}
 {% include "TopLevelFunctionTemplate.rs" %}
-{% endfor -%}
+{% endfor %}
 
 // Object definitions, corresponding to UDL `interface` definitions.
 {% for obj in ci.object_definitions() %}

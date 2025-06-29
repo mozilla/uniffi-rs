@@ -113,6 +113,11 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 {%- for t in obj.trait_impls() %}
 , {{ self::trait_interface_name(ci, t.trait_name)? }}
 {% endfor %}
+{%- for tm in obj.uniffi_traits() %}
+{%-     if let UniffiTrait::Ord { cmp } = tm %}
+, Comparable<{{ impl_class_name }}>
+{%-     endif %}
+{%- endfor %}
 {
 {%- endif %}
 
@@ -219,20 +224,29 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 
     {%- for tm in obj.uniffi_traits() %}
     {%-     match tm %}
+    {%         when UniffiTrait::Debug { .. } %}
+    // The Rust `Debug` implementation isn't used.
     {%         when UniffiTrait::Display { fmt } %}
+    // The local Rust `Display` implementation.
     override fun toString(): String {
         return {{ fmt.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(fmt) %})
     }
     {%         when UniffiTrait::Eq { eq, ne } %}
-    {# only equals used #}
+    // The local Rust `Eq` implementation - only `eq` is used.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is {{ impl_class_name}}) return false
         return {{ eq.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(eq) %})
     }
     {%         when UniffiTrait::Hash { hash } %}
+    // The local Rust `Hash` implementation
     override fun hashCode(): Int {
         return {{ hash.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(hash) %}).toInt()
+    }
+    {%         when UniffiTrait::Ord { cmp } %}
+    // The local Rust `Ord` implementation
+    override fun compareTo(other: {{ impl_class_name}}): Int {
+        return {{ cmp.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(cmp) %}).toInt()
     }
     {%-         else %}
     {%-     endmatch %}

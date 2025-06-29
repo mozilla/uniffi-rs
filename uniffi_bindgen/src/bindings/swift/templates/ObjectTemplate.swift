@@ -94,6 +94,12 @@ open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
         )
         hasher.combine(val)
     }
+    {%-         when UniffiTrait::Ord { cmp } %}
+    public static func < (self: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
+        return {% call swift::is_try(cmp) %} {{ cmp.return_type().unwrap()|lift_fn }}(
+            {% call swift::to_ffi_call(cmp) %}
+        ) < 0
+    }
     {%-         else %}
     {%-    endmatch %}
     {%- endfor %}
@@ -111,14 +117,16 @@ open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
 
 {%- for tm in obj.uniffi_traits() %}
 {%-     match tm %}
-{%-         when UniffiTrait::Display { fmt } %}
+{%-         when UniffiTrait::Display { .. } %}
 extension {{ impl_class_name }}: CustomStringConvertible {}
-{%-         when UniffiTrait::Debug { fmt } %}
+{%-         when UniffiTrait::Debug { .. } %}
 extension {{ impl_class_name }}: CustomDebugStringConvertible {}
-{%-         when UniffiTrait::Eq { eq, ne } %}
+{%-         when UniffiTrait::Eq { .. } %}
 extension {{ impl_class_name }}: Equatable {}
-{%-         when UniffiTrait::Hash { hash } %}
+{%-         when UniffiTrait::Hash { .. } %}
 extension {{ impl_class_name }}: Hashable {}
+{%-         when UniffiTrait::Ord { .. } %}
+extension {{ impl_class_name }}: Comparable {}
 {%-         else %}
 {%-    endmatch %}
 {%- endfor %}

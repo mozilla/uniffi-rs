@@ -29,6 +29,8 @@ pub trait r#{{ obj.name() }} {
 #[uniffi::export(Display)]
 {%          when UniffiTrait::Hash { hash }%}
 #[uniffi::export(Hash)]
+{%          when UniffiTrait::Ord { cmp }%}
+#[uniffi::export(Ord)]
 {%          when UniffiTrait::Eq { eq, ne }%}
 #[uniffi::export(Eq)]
 {%      endmatch %}

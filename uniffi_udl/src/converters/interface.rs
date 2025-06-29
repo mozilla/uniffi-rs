@@ -120,6 +120,23 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                     "Hash" => UniffiTraitMetadata::Hash {
                         hash: make_trait_method("uniffi_trait_hash", vec![], Some(Type::UInt64))?,
                     },
+                    "Ord" => UniffiTraitMetadata::Ord {
+                        cmp: make_trait_method(
+                            "uniffi_trait_ord_cmp",
+                            vec![FnParamMetadata {
+                                name: "other".to_string(),
+                                ty: Type::Object {
+                                    module_path: ci.module_path(),
+                                    name: object_name.to_string(),
+                                    imp: object_impl,
+                                },
+                                by_ref: true,
+                                default: None,
+                                optional: false,
+                            }],
+                            Some(Type::Int8),
+                        )?,
+                    },
                     _ => bail!("Invalid trait name: {}", trait_name),
                 })
             })

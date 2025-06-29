@@ -4,7 +4,7 @@ uniffi_macros::generate_and_include_scaffolding!("../../../../fixtures/trait-met
 fn main() { /* empty main required by `trybuild` */}
 
 // We derive most required traits, just not `Display`, to keep the output smaller.
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TraitMethods {}
 
 impl TraitMethods {

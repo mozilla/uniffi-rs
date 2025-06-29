@@ -99,7 +99,27 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
         {% filter indent(8) -%}
         {% include "CallableBody.py" -%}
         {% endfilter -%}
-{%-     endmatch %}
+
+{%-         when UniffiTrait::Ord { cmp } %}
+{%-         let callable = cmp.callable %}
+    # lol/sob, python3 got rid of the perfect python2 `.__cmp__()` :(
+    def __rust_cmp__(self, other) -> {{ callable.return_type.type_name }}:
+        {% filter indent(8) -%}
+        {% include "CallableBody.py" -%}
+        {% endfilter %}
+
+    def __lt__(self, other) -> bool:
+        return self.__rust_cmp__(other) < 0
+
+    def __le__(self, other) -> bool:
+        return self.__rust_cmp__(other) <= 0
+
+    def __gt__(self, other) -> bool:
+        return self.__rust_cmp__(other) > 0
+
+    def __ge__(self, other) -> bool:
+        return self.__rust_cmp__(other) >= 0
+{%     endmatch %}
 {%- endfor %}
 
 {# callback interfaces #}
