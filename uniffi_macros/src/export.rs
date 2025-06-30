@@ -39,6 +39,9 @@ pub(crate) fn expand_export(
     // new functions outside of the `impl`).
     rewrite_self_type(&mut item);
 
+    // trying to split `udl_mode` into "no meta" and "other"
+    let include_meta = !udl_mode;
+
     let metadata = ExportItem::new(item, all_args)?;
 
     match metadata {
@@ -154,10 +157,12 @@ pub(crate) fn expand_export(
             self_ident,
             uniffi_traits,
             ..
-        } => {
-            let include_meta = !udl_mode;
-            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits, include_meta)
-        }
+        } => utrait::expand_uniffi_trait_export(self_ident, uniffi_traits, include_meta),
+        ExportItem::Enum {
+            self_ident,
+            uniffi_traits,
+            ..
+        } => utrait::expand_uniffi_trait_export(self_ident, uniffi_traits, include_meta),
     }
 }
 

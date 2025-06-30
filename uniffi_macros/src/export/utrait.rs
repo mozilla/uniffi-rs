@@ -178,7 +178,6 @@ fn process_uniffi_trait_method(
     method: &TokenStream,
     self_ident: &Ident,
 ) -> syn::Result<(TokenStream, TokenStream)> {
-    let udl_mode = false; // We don't need the hacky `Result<>` optimization UDL functions get even if we are in UDL.
     let item = syn::parse(method.clone().into())?;
 
     let syn::Item::Fn(item) = item else {
@@ -195,7 +194,7 @@ fn process_uniffi_trait_method(
             docstring.clone(),
         )?,
         None,
-        udl_mode,
+        false, // udl_mode - We don't need the `Result<>` magic UDL functions get even if we are in UDL.
         None,
     )?;
     // metadata for the method, which will be packed inside metadata for the trait.

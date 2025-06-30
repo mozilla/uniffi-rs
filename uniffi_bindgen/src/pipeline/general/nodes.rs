@@ -110,7 +110,7 @@ pub enum CallableKind {
     /// Toplevel function
     Function,
     /// Interface/Trait interface method
-    Method { interface_name: String },
+    Method { self_type: TypeNode },
     /// Interface constructor
     Constructor {
         interface_name: String,
@@ -202,6 +202,8 @@ pub struct Record {
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    pub uniffi_traits: Vec<UniffiTrait>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -242,6 +244,8 @@ pub struct Enum {
     pub discr_type: TypeNode,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    pub uniffi_traits: Vec<UniffiTrait>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -601,23 +605,6 @@ pub struct UniffiTraitMethods {
     pub eq_ne: Option<Method>,
     pub hash_hash: Option<Method>,
     pub ord_cmp: Option<Method>,
-}
-
-impl UniffiTraitMethods {
-    pub fn fill_from(&mut self, uniffi_traits: &[UniffiTrait]) {
-        for t in uniffi_traits {
-            match t.clone() {
-                UniffiTrait::Debug { fmt } => self.debug_fmt = Some(fmt),
-                UniffiTrait::Display { fmt } => self.display_fmt = Some(fmt),
-                UniffiTrait::Eq { eq, ne } => {
-                    self.eq_eq = Some(eq);
-                    self.eq_ne = Some(ne);
-                }
-                UniffiTrait::Hash { hash } => self.hash_hash = Some(hash),
-                UniffiTrait::Ord { cmp } => self.ord_cmp = Some(cmp),
-            }
-        }
-    }
 }
 
 impl FfiDefinition {

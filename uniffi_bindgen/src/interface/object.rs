@@ -488,7 +488,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 pub struct Method {
     pub(super) name: String,
     pub(super) is_async: bool,
-    pub(super) receiver: Type,
+    pub(super) self_type: Type,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
@@ -523,7 +523,7 @@ impl Method {
     }
 
     pub fn object_name(&self) -> &str {
-        self.receiver.name().unwrap()
+        self.self_type.name().unwrap()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -535,7 +535,7 @@ impl Method {
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
             name: "ptr".to_string(),
-            type_: self.receiver.clone(),
+            type_: self.self_type.clone(),
             by_ref: !self.takes_self_by_arc,
             optional: false,
             default: None,
@@ -609,7 +609,7 @@ impl Method {
 
         Self {
             name: meta.name,
-            receiver,
+            self_type: receiver,
             is_async: meta.is_async,
             arguments,
             return_type: meta.return_type,
@@ -699,7 +699,7 @@ pub struct UniffiTraitMethods {
 }
 
 impl UniffiTraitMethods {
-    fn new(uniffi_traits: &[UniffiTrait]) -> Self {
+    pub fn new(uniffi_traits: &[UniffiTrait]) -> Self {
         let mut new = Self::default();
         for t in uniffi_traits {
             match t.clone() {
@@ -769,7 +769,7 @@ impl Callable for Method {
     }
 
     fn self_type(&self) -> Option<Type> {
-        Some(self.receiver.clone())
+        Some(self.self_type.clone())
     }
 }
 
