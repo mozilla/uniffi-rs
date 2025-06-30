@@ -133,6 +133,7 @@ impl UniffiMetaConverter {
                     uniffi_meta::UniffiTraitMetadata::Display { fmt } => fmt,
                     uniffi_meta::UniffiTraitMetadata::Eq { eq, .. } => eq,
                     uniffi_meta::UniffiTraitMetadata::Hash { hash } => hash,
+                    uniffi_meta::UniffiTraitMetadata::Ord { cmp } => cmp,
                 };
 
                 self.uniffi_traits

@@ -11,3 +11,7 @@ assert(m != TraitMethods(name: "foo"))
 // hash
 var set: Set = [TraitMethods(name: "yo")]
 assert(set.contains(TraitMethods(name: "yo")))
+
+// ord
+assert(m < TraitMethods(name: "zo"))
+assert(TraitMethods(name: "zo") > m)

@@ -8,6 +8,7 @@
 
 ### What's new?
 
+- Objects can export the `Ord` trait, allowing such objects to be ordered.
 - Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
   without a literal) meaning the default value for the type. Named types can also have a default.
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))

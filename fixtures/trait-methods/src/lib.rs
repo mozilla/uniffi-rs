@@ -15,6 +15,18 @@ impl TraitMethods {
     }
 }
 
+impl PartialOrd for TraitMethods {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for TraitMethods {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.val.cmp(&other.val)
+    }
+}
+
 impl std::fmt::Display for TraitMethods {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "TraitMethods({})", self.val)
@@ -22,7 +34,7 @@ impl std::fmt::Display for TraitMethods {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, uniffi::Object)]
-#[uniffi::export(Debug, Display, Eq, Hash)]
+#[uniffi::export(Debug, Display, Eq, Ord, Hash)]
 pub struct ProcTraitMethods {
     val: String,
 }
@@ -32,6 +44,18 @@ impl ProcTraitMethods {
     #[uniffi::constructor]
     fn new(val: String) -> Arc<Self> {
         Arc::new(Self { val })
+    }
+}
+
+impl PartialOrd for ProcTraitMethods {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ProcTraitMethods {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.val.cmp(&other.val)
     }
 }
 

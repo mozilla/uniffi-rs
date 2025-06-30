@@ -164,7 +164,7 @@ Not all bindings support generating special methods, so they may be ignored.
 It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.
 
 The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
-is `Debug`, `Display`, `Eq` and `Hash`.
+is `Debug`, `Display`, `Eq`, `Ord` and `Hash`.
 
 ## Managing Shared References
 

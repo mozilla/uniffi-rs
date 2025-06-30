@@ -9,3 +9,7 @@ assert(m != TraitMethods("yoyo"))
 val map = mapOf(m to 1, TraitMethods("yoyo") to 2)
 assert(map[m] == 1)
 assert(map[TraitMethods("yoyo")] == 2)
+
+assert(m < TraitMethods("zo"))
+assert(m <= TraitMethods("zo"))
+assert(TraitMethods("zo") > m)
