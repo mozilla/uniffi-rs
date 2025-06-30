@@ -144,6 +144,7 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
         for ut in uniffi_traits {
             ci.items.insert(ut.into());
         }
+
         Ok(ObjectMetadata {
             module_path: ci.module_path(),
             name: object_name.to_string(),
