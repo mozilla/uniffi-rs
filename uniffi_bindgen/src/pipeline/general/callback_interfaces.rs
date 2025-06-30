@@ -29,8 +29,8 @@ pub fn pass(module: &mut Module) -> Result<()> {
     module.try_visit_mut(|cbi: &mut CallbackInterface| {
         for meth in cbi.methods.iter_mut() {
             meth.callable.kind = match meth.callable.kind.take() {
-                CallableKind::Method { interface_name } => CallableKind::VTableMethod {
-                    trait_name: interface_name,
+                CallableKind::Method { self_type } => CallableKind::VTableMethod {
+                    trait_name: self_type.ty.name().unwrap().to_string(),
                 },
                 kind => bail!("Unexpected callable kind: {kind:?}"),
             };
@@ -40,8 +40,8 @@ pub fn pass(module: &mut Module) -> Result<()> {
     module.try_visit_mut(|vtable: &mut VTable| {
         for meth in vtable.methods.iter_mut() {
             meth.callable.kind = match meth.callable.kind.take() {
-                CallableKind::Method { interface_name } => CallableKind::VTableMethod {
-                    trait_name: interface_name,
+                CallableKind::Method { self_type } => CallableKind::VTableMethod {
+                    trait_name: self_type.ty.name().unwrap().to_string(),
                 },
                 kind => bail!("Unexpected callable kind: {kind:?}"),
             };

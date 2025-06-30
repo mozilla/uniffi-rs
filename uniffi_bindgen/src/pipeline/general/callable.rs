@@ -6,6 +6,29 @@
 
 use super::*;
 
+fn set_method_callable(meth: &mut Method, self_type: TypeNode) {
+    meth.callable = Callable {
+        name: meth.name.clone(),
+        is_async: meth.is_async,
+        kind: CallableKind::Method { self_type },
+        arguments: meth.inputs.clone(),
+        return_type: ReturnType {
+            ty: meth.return_type.clone().map(|ty| TypeNode {
+                ty,
+                ..TypeNode::default()
+            }),
+        },
+        throws_type: ThrowsType {
+            ty: meth.throws.clone().map(|ty| TypeNode {
+                ty,
+                ..TypeNode::default()
+            }),
+        },
+        checksum: meth.checksum,
+        ..Callable::default()
+    }
+}
+
 pub fn pass(root: &mut Root) -> Result<()> {
     root.visit_mut(|func: &mut Function| {
         func.callable = Callable {
@@ -34,6 +57,7 @@ pub fn pass(root: &mut Root) -> Result<()> {
         module.visit_mut(|int: &mut Interface| {
             let interface_name = int.name.clone();
             let interface_imp = int.imp.clone();
+            let self_type = int.self_type.clone();
             int.visit_mut(|cons: &mut Constructor| {
                 cons.callable = Callable {
                     name: cons.name.clone(),
@@ -64,56 +88,29 @@ pub fn pass(root: &mut Root) -> Result<()> {
                 }
             });
             int.visit_mut(|meth: &mut Method| {
-                meth.callable = Callable {
-                    name: meth.name.clone(),
-                    is_async: meth.is_async,
-                    kind: CallableKind::Method {
-                        interface_name: interface_name.clone(),
-                    },
-                    arguments: meth.inputs.clone(),
-                    return_type: ReturnType {
-                        ty: meth.return_type.clone().map(|ty| TypeNode {
-                            ty,
-                            ..TypeNode::default()
-                        }),
-                    },
-                    throws_type: ThrowsType {
-                        ty: meth.throws.clone().map(|ty| TypeNode {
-                            ty,
-                            ..TypeNode::default()
-                        }),
-                    },
-                    checksum: meth.checksum,
-                    ..Callable::default()
-                }
+                set_method_callable(meth, self_type.clone());
             });
         });
     });
     root.visit_mut(|cbi: &mut CallbackInterface| {
-        let interface_name = cbi.name.clone();
-        cbi.visit_mut(|meth: &mut Method| {
-            meth.callable = Callable {
-                name: meth.name.clone(),
-                is_async: meth.is_async,
-                kind: CallableKind::Method {
-                    interface_name: interface_name.clone(),
-                },
-                arguments: meth.inputs.clone(),
-                return_type: ReturnType {
-                    ty: meth.return_type.clone().map(|ty| TypeNode {
-                        ty,
-                        ..TypeNode::default()
-                    }),
-                },
-                throws_type: ThrowsType {
-                    ty: meth.throws.clone().map(|ty| TypeNode {
-                        ty,
-                        ..TypeNode::default()
-                    }),
-                },
-                checksum: meth.checksum,
-                ..Callable::default()
-            }
+        let self_type = cbi.self_type.clone();
+
+        cbi.visit_mut(|m: &mut Method| {
+            set_method_callable(m, self_type.clone());
+        })
+    });
+
+    root.visit_mut(|e: &mut Enum| {
+        let self_type = e.self_type.clone();
+        e.visit_mut(|meth: &mut Method| {
+            set_method_callable(meth, self_type.clone());
+        });
+    });
+
+    root.visit_mut(|r: &mut Record| {
+        let self_type = r.self_type.clone();
+        r.visit_mut(|meth: &mut Method| {
+            set_method_callable(meth, self_type.clone());
         });
     });
     Ok(())

@@ -4,3 +4,9 @@ namespace trait_methods {};
 interface TraitMethods {
     constructor(string name);
 };
+
+[Enum, Traits=(Display, Debug, Eq, Hash, Ord)]
+interface UdlEnum {
+    S(string s);
+    I(i8 i);
+};

@@ -8,15 +8,14 @@ use super::*;
 
 pub fn pass(module: &mut Module) -> Result<()> {
     let crate_name = module.crate_name.clone();
-    let module_name = module.name.clone();
     let mut ffi_definitions = vec![];
 
     module.visit_mut(|callable: &mut Callable| {
         let name = &callable.name;
         let ffi_func_name = match &callable.kind {
             CallableKind::Function => uniffi_meta::fn_symbol_name(&crate_name, name),
-            CallableKind::Method { interface_name } => {
-                uniffi_meta::method_symbol_name(&crate_name, interface_name, name)
+            CallableKind::Method { self_type } => {
+                uniffi_meta::method_symbol_name(&crate_name, self_type.ty.name().unwrap(), name)
             }
             CallableKind::Constructor { interface_name, .. } => {
                 uniffi_meta::constructor_symbol_name(&crate_name, interface_name, name)
@@ -27,13 +26,9 @@ pub fn pass(module: &mut Module) -> Result<()> {
         callable.ffi_func = RustFfiFunctionName(ffi_func_name.clone());
 
         let receiver_argument = match &callable.kind {
-            CallableKind::Method { interface_name } => Some(FfiArgument {
-                name: "uniffi_ptr".to_string(),
-                ty: FfiType::Handle(HandleKind::Interface {
-                    module_name: module_name.clone(),
-                    interface_name: interface_name.clone(),
-                })
-                .into(),
+            CallableKind::Method { self_type } => Some(FfiArgument {
+                name: "self".to_string(),
+                ty: self_type.ffi_type.clone(),
             }),
             _ => None,
         };

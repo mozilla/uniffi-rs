@@ -63,7 +63,7 @@ pub use enum_::{Enum, Variant};
 mod function;
 pub use function::{Argument, Callable, Function, ResultType};
 mod object;
-pub use object::{Constructor, Method, Object, UniffiTrait};
+pub use object::{Constructor, Method, Object, UniffiTrait, UniffiTraitMethods};
 mod record;
 pub use record::{Field, Record};
 
@@ -755,8 +755,9 @@ impl ComponentInterface {
     ///
     /// This includes FFI functions for:
     ///   - Top-level functions
-    ///   - Object methods
+    ///   - Object, Enum and Record data methods
     ///   - Callback interfaces
+    ///   - UniffiTrait methods
     pub fn iter_user_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> + '_ {
         iter::empty()
             .chain(
@@ -768,6 +769,16 @@ impl ComponentInterface {
                 self.callback_interfaces
                     .iter()
                     .map(|cb| cb.ffi_init_callback()),
+            )
+            .chain(
+                self.enums
+                    .iter()
+                    .flat_map(|enum_| enum_.iter_ffi_function_definitions()),
+            )
+            .chain(
+                self.records
+                    .iter()
+                    .flat_map(|r| r.iter_ffi_function_definitions()),
             )
             .chain(self.functions.iter().map(|f| &f.ffi_func))
     }
@@ -954,14 +965,21 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_uniffitrait_meta(&mut self, meta: UniffiTraitMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, meta.self_name())
-            .ok_or_else(|| anyhow!("add_uniffitrait_meta: object not found"))?;
+        let self_name = meta.self_name().to_string();
         let ut: UniffiTrait = meta.into();
         self.types
             .add_known_types(ut.iter_types())
             .with_context(|| format!("adding builtin trait {ut:?}"))?;
 
-        object.uniffi_traits.push(ut);
+        if let Some(object) = get_object(&mut self.objects, &self_name) {
+            object.uniffi_traits.push(ut);
+        } else if let Some(enum_) = self.enums.iter_mut().find(|o| o.name == self_name) {
+            enum_.add_uniffi_trait(ut);
+        } else if let Some(record) = self.records.iter_mut().find(|o| o.name == self_name) {
+            record.add_uniffi_trait(ut);
+        } else {
+            bail!("add_uniffitrait_meta: object not found");
+        }
         Ok(())
     }
 
@@ -1076,6 +1094,12 @@ impl ComponentInterface {
         }
         for obj in self.objects.iter_mut() {
             obj.derive_ffi_funcs()?;
+        }
+        for enum_ in self.enums.iter_mut() {
+            enum_.derive_ffi_funcs()?;
+        }
+        for record in self.records.iter_mut() {
+            record.derive_ffi_funcs()?;
         }
         for callback in self.callback_interfaces.iter_mut() {
             callback.derive_ffi_funcs();
@@ -1269,6 +1293,7 @@ existing definition: Enum {
     ],
     shape: Enum,
     non_exhaustive: false,
+    uniffi_traits: [],
     docstring: None,
 },
 new definition: Enum {
@@ -1294,6 +1319,7 @@ new definition: Enum {
         flat: true,
     },
     non_exhaustive: false,
+    uniffi_traits: [],
     docstring: None,
 }",
         );
