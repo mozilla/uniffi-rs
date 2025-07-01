@@ -58,7 +58,7 @@
 //! ```
 
 use anyhow::Result;
-use uniffi_meta::{Checksum, ObjectTraitImplMetadata};
+use uniffi_meta::{Checksum, MethodReceiver, ObjectTraitImplMetadata};
 
 use super::callbacks;
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
@@ -504,9 +504,9 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 #[derive(Debug, Clone, Checksum)]
 pub struct Method {
     pub(super) name: String,
-    pub(super) object_name: String,
-    pub(super) object_module_path: String,
     pub(super) is_async: bool,
+    pub(super) receiver: MethodReceiver,
+    // this is messy - the "receiver" doesn't tell us enough, if `::Object` we apparently need `ObjectImpl` too :(
     pub(super) object_impl: ObjectImpl,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
@@ -542,7 +542,7 @@ impl Method {
     }
 
     pub fn object_name(&self) -> &str {
-        &self.object_name
+        self.receiver.name()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -554,13 +554,7 @@ impl Method {
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
             name: "ptr".to_string(),
-            // TODO: ideally we'd get this via `ci.resolve_type_expression` so that it
-            // is contained in the proper `TypeUniverse`, but this works for now.
-            type_: Type::Object {
-                name: self.object_name.clone(),
-                module_path: self.object_module_path.clone(),
-                imp: self.object_impl,
-            },
+            type_: self.object_type(),
             by_ref: !self.takes_self_by_arc,
             optional: false,
             default: None,
@@ -568,6 +562,25 @@ impl Method {
         .into_iter()
         .chain(self.arguments.iter().cloned())
         .collect()
+    }
+
+    // not `self_type` - can't mirror a Callable method name!
+    pub fn object_type(&self) -> Type {
+        match &self.receiver {
+            MethodReceiver::Enum { module_path, name } => Type::Enum {
+                module_path: module_path.clone(),
+                name: name.clone(),
+            },
+            MethodReceiver::Record { module_path, name } => Type::Enum {
+                module_path: module_path.clone(),
+                name: name.clone(),
+            },
+            MethodReceiver::Object { module_path, name } => Type::Object {
+                module_path: module_path.clone(),
+                name: name.clone(),
+                imp: self.object_impl,
+            },
+        }
     }
 
     pub fn return_type(&self) -> Option<&Type> {
@@ -637,9 +650,8 @@ impl From<uniffi_meta::MethodMetadata> for Method {
 
         Self {
             name: meta.name,
-            object_name: meta.self_name,
-            object_module_path: meta.module_path,
             is_async,
+            receiver: meta.receiver,
             object_impl: ObjectImpl::Struct, // will be filled in later
             arguments,
             return_type,
@@ -667,9 +679,12 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
         };
         Self {
             name: meta.name,
-            object_name: meta.trait_name,
-            object_module_path: meta.module_path,
             is_async,
+            receiver: MethodReceiver::Object {
+                module_path: meta.module_path,
+                name: meta.trait_name,
+            },
+            object_impl: ObjectImpl::Struct,
             arguments,
             return_type,
             docstring: meta.docstring.clone(),
@@ -678,7 +693,6 @@ impl From<uniffi_meta::TraitMethodMetadata> for Method {
             checksum_fn_name,
             checksum: meta.checksum,
             ffi_func,
-            object_impl: ObjectImpl::Struct,
         }
     }
 }
@@ -772,12 +786,12 @@ impl Callable for Method {
         self.is_async
     }
 
-    fn takes_self(&self) -> bool {
-        true
-    }
-
     fn ffi_func(&self) -> &FfiFunction {
         &self.ffi_func
+    }
+
+    fn self_type(&self) -> Option<Type> {
+        Some(self.object_type())
     }
 }
 

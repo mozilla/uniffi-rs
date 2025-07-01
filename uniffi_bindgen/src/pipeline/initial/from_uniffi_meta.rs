@@ -117,7 +117,10 @@ impl UniffiMetaConverter {
             }
             uniffi_meta::Metadata::Method(meth) => {
                 self.methods
-                    .entry((meth.module_path.clone(), meth.self_name.clone()))
+                    .entry((
+                        meth.receiver.module_path().to_string(),
+                        meth.receiver.name().to_string(),
+                    ))
                     .or_default()
                     .insert(meth.name.clone(), Method::try_from_node(meth)?);
             }
@@ -137,9 +140,12 @@ impl UniffiMetaConverter {
                 };
 
                 self.uniffi_traits
-                    .entry((meth.module_path.clone(), meth.self_name.clone()))
+                    .entry((
+                        meth.receiver.module_path().to_string(),
+                        meth.receiver.name().to_string(),
+                    ))
                     .or_default()
-                    .insert(ut.name().clone(), UniffiTrait::try_from_node(ut)?);
+                    .insert(ut.name().to_string(), UniffiTrait::try_from_node(ut)?);
             }
             uniffi_meta::Metadata::ObjectTraitImpl(imp) => {
                 let (module_path, name) = match &imp.ty {

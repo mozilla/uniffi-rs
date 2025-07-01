@@ -10,6 +10,7 @@ use quote::ToTokens;
 use super::attributes::{
     ExportFnArgs, ExportImplArgs, ExportStructArgs, ExportTraitArgs, ExportedImplFnAttributes,
 };
+use crate::fnsig::MethodReceiverKind;
 use crate::util::extract_docstring;
 use uniffi_meta::UniffiTraitDiscriminants;
 
@@ -113,6 +114,7 @@ impl ExportItem {
                 } else {
                     ImplItem::Method(FnSignature::new_method(
                         self_ident.clone(),
+                        MethodReceiverKind::Object,
                         impl_fn.sig,
                         attrs.args,
                         docstring,

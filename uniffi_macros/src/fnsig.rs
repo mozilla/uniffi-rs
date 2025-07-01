@@ -12,6 +12,8 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
 
+pub use uniffi_meta::MethodReceiverKind;
+
 pub(crate) struct FnSignature {
     pub kind: FnKind,
     pub span: Span,
@@ -43,11 +45,20 @@ impl FnSignature {
 
     pub(crate) fn new_method(
         self_ident: Ident,
+        receiver_kind: MethodReceiverKind,
         sig: syn::Signature,
         args: ExportFnArgs,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(FnKind::Method { self_ident }, sig, args, docstring)
+        Self::new(
+            FnKind::Method {
+                self_ident,
+                receiver_kind,
+            },
+            sig,
+            args,
+            docstring,
+        )
     }
 
     pub(crate) fn new_constructor(
@@ -203,7 +214,7 @@ impl FnSignature {
         let name = &self.name;
         let name = match &self.kind {
             FnKind::Function => uniffi_meta::fn_symbol_name(&self.mod_path, name),
-            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } => {
+            FnKind::Method { self_ident, .. } | FnKind::TraitMethod { self_ident, .. } => {
                 uniffi_meta::method_symbol_name(&self.mod_path, &ident_to_string(self_ident), name)
             }
             FnKind::Constructor { self_ident } => uniffi_meta::constructor_symbol_name(
@@ -263,12 +274,17 @@ impl FnSignature {
                     .concat_long_str(#docstring)
             }),
 
-            FnKind::Method { self_ident } => {
+            FnKind::Method {
+                self_ident,
+                receiver_kind,
+            } => {
                 let object_name = ident_to_string(self_ident);
+                let receiver_kind = (*receiver_kind) as u8;
                 Ok(quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
+                        .concat_value(#receiver_kind)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
@@ -321,7 +337,7 @@ impl FnSignature {
                 Some(self.checksum_symbol_name()),
             )),
 
-            FnKind::Method { self_ident } => {
+            FnKind::Method { self_ident, .. } => {
                 let object_name = ident_to_string(self_ident);
                 Ok(create_metadata_items(
                     "method",
@@ -357,7 +373,7 @@ impl FnSignature {
         let name = &self.name;
         match &self.kind {
             FnKind::Function => uniffi_meta::fn_checksum_symbol_name(&self.mod_path, name),
-            FnKind::Method { self_ident } | FnKind::TraitMethod { self_ident, .. } => {
+            FnKind::Method { self_ident, .. } | FnKind::TraitMethod { self_ident, .. } => {
                 uniffi_meta::method_checksum_symbol_name(
                     &self.mod_path,
                     &ident_to_string(self_ident),
@@ -490,7 +506,15 @@ fn looks_like_result(return_type: &ReturnType) -> bool {
 #[derive(Debug)]
 pub(crate) enum FnKind {
     Function,
-    Constructor { self_ident: Ident },
-    Method { self_ident: Ident },
-    TraitMethod { self_ident: Ident, index: u32 },
+    Constructor {
+        self_ident: Ident,
+    },
+    Method {
+        self_ident: Ident,
+        receiver_kind: MethodReceiverKind,
+    },
+    TraitMethod {
+        self_ident: Ident,
+        index: u32,
+    },
 }

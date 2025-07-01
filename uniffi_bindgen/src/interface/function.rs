@@ -251,9 +251,11 @@ pub trait Callable {
     fn throws_type(&self) -> Option<&Type>;
     fn is_async(&self) -> bool;
     fn docstring(&self) -> Option<&str>;
-    fn takes_self(&self) -> bool {
-        false
+
+    fn self_type(&self) -> Option<Type> {
+        None
     }
+
     fn result_type(&self) -> ResultType<'_> {
         ResultType {
             return_type: self.return_type(),
@@ -354,8 +356,8 @@ impl<T: Callable> Callable for &T {
         (*self).ffi_func()
     }
 
-    fn takes_self(&self) -> bool {
-        (*self).takes_self()
+    fn self_type(&self) -> Option<Type> {
+        (*self).self_type()
     }
 }
 

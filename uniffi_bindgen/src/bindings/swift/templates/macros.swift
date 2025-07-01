@@ -12,7 +12,7 @@
         rustCall() {
     {%- endif %}
     {{ func.ffi_func().name() }}(
-        {%- if func.takes_self() %}self.uniffiCloneHandle(),{% endif %}
+        {%- if func.self_type().is_some() %}self.uniffiCloneHandle(),{% endif %}
         {%- call arg_list_lowered(func) -%} $0
     )
 }
@@ -69,7 +69,7 @@ public convenience init(
         {% call is_try(callable) %} await uniffiRustCallAsync(
             rustFutureFunc: {
                 {{ callable.ffi_func().name() }}(
-                    {%- if callable.takes_self() %}
+                    {%- if callable.self_type().is_some() %}
                     self.uniffiCloneHandle(){% if !callable.arguments().is_empty() %},{% endif %}
                     {% endif %}
                     {%- for arg in callable.arguments() -%}

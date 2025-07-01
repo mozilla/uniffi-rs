@@ -9,7 +9,7 @@ use std::iter;
 use super::attributes::AsyncRuntime;
 use crate::{
     ffiops,
-    fnsig::{FnKind, FnSignature},
+    fnsig::{FnKind, FnSignature, MethodReceiverKind},
 };
 
 pub(super) fn gen_fn_scaffolding(
@@ -127,14 +127,23 @@ impl ScaffoldingBits {
     fn new_for_method(
         sig: &FnSignature,
         self_ident: &Ident,
+        receiver_kind: &MethodReceiverKind,
         is_trait: bool,
         udl_mode: bool,
     ) -> Self {
         let ident = &sig.ident;
-        let self_type = if is_trait {
-            quote! { ::std::sync::Arc<dyn #self_ident> }
-        } else {
-            quote! { ::std::sync::Arc<#self_ident> }
+        let self_type = match receiver_kind {
+            MethodReceiverKind::Object => {
+                if is_trait {
+                    quote! { ::std::sync::Arc<dyn #self_ident> }
+                } else {
+                    quote! { ::std::sync::Arc<#self_ident> }
+                }
+            }
+            MethodReceiverKind::Enum | MethodReceiverKind::Record => {
+                assert!(!is_trait);
+                quote! { #self_ident }
+            }
         };
         let lift_type = ffiops::lift_type(&self_type);
         let try_lift = ffiops::try_lift(&self_type);
@@ -227,12 +236,17 @@ pub(super) fn gen_ffi_function(
         convert_result,
     } = match &sig.kind {
         FnKind::Function => ScaffoldingBits::new_for_function(sig, udl_mode),
-        FnKind::Method { self_ident } => {
-            ScaffoldingBits::new_for_method(sig, self_ident, false, udl_mode)
-        }
-        FnKind::TraitMethod { self_ident, .. } => {
-            ScaffoldingBits::new_for_method(sig, self_ident, true, udl_mode)
-        }
+        FnKind::Method {
+            self_ident,
+            receiver_kind,
+        } => ScaffoldingBits::new_for_method(sig, self_ident, receiver_kind, false, udl_mode),
+        FnKind::TraitMethod { self_ident, .. } => ScaffoldingBits::new_for_method(
+            sig,
+            self_ident,
+            &MethodReceiverKind::Object,
+            true,
+            udl_mode,
+        ),
         FnKind::Constructor { self_ident } => {
             ScaffoldingBits::new_for_constructor(sig, self_ident, udl_mode)
         }

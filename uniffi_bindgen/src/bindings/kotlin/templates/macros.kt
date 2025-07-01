@@ -5,7 +5,7 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- if func.takes_self() %}
+    {%- if func.self_type().is_some() %}
     callWithHandle {
         {%- call to_raw_ffi_call(func) %}
     }
@@ -22,7 +22,7 @@
     uniffiRustCall()
     {%- endmatch %} { _status ->
     UniffiLib.INSTANCE.{{ func.ffi_func().name() }}(
-        {% if func.takes_self() %}it, {% endif -%}
+        {% if func.self_type().is_some() %}it, {% endif -%}
         {% call arg_list_lowered(func) -%}
         _status)
 }
@@ -47,13 +47,13 @@
     {%- if callable.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     {{ func_decl }} suspend fun {{ callable.name()|fn_name }}(
-        {%- call arg_list(callable, !callable.takes_self()) -%}
+        {%- call arg_list(callable, callable.self_type().is_none()) -%}
     ){% match callable.return_type() %}{% when Some(return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
         return {% call call_async(callable) %}
     }
     {%- else -%}
     {{ func_decl }} fun {{ callable.name()|fn_name }}(
-        {%- call arg_list(callable, !callable.takes_self()) -%}
+        {%- call arg_list(callable, callable.self_type().is_none()) -%}
     ){%- match callable.return_type() -%}
     {%-         when Some(return_type) -%}
         : {{ return_type|type_name(ci) }} {
@@ -67,7 +67,7 @@
 
 {%- macro call_async(callable) -%}
     uniffiRustCallAsync(
-{%- if callable.takes_self() %}
+{%- if callable.self_type().is_some() %}
         callWithHandle { uniffiHandle ->
             UniffiLib.INSTANCE.{{ callable.ffi_func().name() }}(
                 uniffiHandle,
