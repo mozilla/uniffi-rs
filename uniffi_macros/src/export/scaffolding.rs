@@ -147,26 +147,9 @@ impl ScaffoldingBits {
         };
         let lift_type = ffiops::lift_type(&self_type);
         let try_lift = ffiops::try_lift(&self_type);
-        let try_lift_self = if is_trait {
-            // For trait interfaces we need to special case this.  Trait interfaces normally lift
-            // foreign trait impl pointers.  However, for a method call, we want to lift a Rust
-            // pointer.
-            quote! {
-                {
-                    use ::std::clone::Clone;
-                    let double_arc: ::std::sync::Arc<::std::sync::Arc<dyn #self_ident>> = unsafe {
-                        uniffi_self_lowered.into_arc()
-                    };
-                    let arc: ::std::sync::Arc::<dyn #self_ident> = (*double_arc).clone();
-                    ::std::result::Result::Ok(arc)
-                }
-            }
-        } else {
-            quote! { #try_lift(uniffi_self_lowered) }
-        };
 
         let lift_closure = sig.lift_closure(Some(quote! {
-            match #try_lift_self {
+            match #try_lift(uniffi_self_lowered) {
                 ::std::result::Result::Ok(v) => v,
                 ::std::result::Result::Err(e) => {
                     return ::std::result::Result::Err(("self", e));

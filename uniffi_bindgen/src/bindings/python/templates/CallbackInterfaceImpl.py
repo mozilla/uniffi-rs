@@ -96,12 +96,17 @@ class {{ trait_impl }}:
     def _uniffi_free(uniffi_handle):
         {{ ffi_converter_name }}._handle_map.remove(uniffi_handle)
 
+    @{{ vtable.clone_fn_type.0 }}
+    def _uniffi_clone(uniffi_handle):
+        return {{ ffi_converter_name }}._handle_map.clone(uniffi_handle)
+
     # Generate the FFI VTable.  This has a field for each callback interface method.
     _uniffi_vtable = {{ vtable.struct_type.type_name }}(
+        _uniffi_free,
+        _uniffi_clone,
         {%- for meth in vtable.methods %}
         {{ meth.callable.name }},
         {%- endfor %}
-        _uniffi_free
     )
     # Send Rust a pointer to the VTable.  Note: this means we need to keep the struct alive forever,
     # or else bad things will happen when Rust tries to access it.

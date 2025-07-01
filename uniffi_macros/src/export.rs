@@ -22,6 +22,7 @@ use self::{
 use crate::util::{create_metadata_items, ident_to_string, mod_path};
 pub use attributes::{AsyncRuntime, DefaultMap, ExportFnArgs};
 pub use callback_interface::ffi_converter_callback_interface_impl;
+pub use trait_interface::alter_trait;
 
 // TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
@@ -124,7 +125,7 @@ pub(crate) fn expand_export(
         } => {
             let trait_name = ident_to_string(&self_ident);
             let trait_impl_ident = callback_interface::trait_impl_ident(&trait_name);
-            let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items)
+            let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items, false)
                 .unwrap_or_else(|e| e.into_compile_error());
             let metadata_items = (!udl_mode).then(|| {
                 let items =
@@ -203,5 +204,13 @@ pub fn rewrite_self_type(item: &mut Item) {
     let mut visitor = RewriteSelfVisitor(&item.self_ty);
     for item in &mut item.items {
         visitor.visit_impl_item_mut(item);
+    }
+}
+
+/// Alter the tokens wrapped with the `[uniffi::export]` if needed
+pub fn alter_input(item: &Item) -> TokenStream {
+    match item {
+        Item::Trait(item_trait) => alter_trait(item_trait),
+        _ => quote! { #item },
     }
 }
