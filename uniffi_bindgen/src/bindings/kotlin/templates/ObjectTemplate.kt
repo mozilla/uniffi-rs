@@ -274,27 +274,15 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {% endif %}
 }
 
-{%- if obj.has_callback_interface() %}
-{%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
-{%- let vtable_methods = obj.vtable_methods() %}
-{%- let ffi_init_callback = obj.ffi_init_callback() %}
-{% include "CallbackInterfaceImpl.kt" %}
-{%- endif %}
+{%- if !obj.has_callback_interface() %}
+{# Simple case: the interface can only be implemented in Rust #}
 
 /**
  * @suppress
  */
 public object {{ ffi_converter_name }}: FfiConverter<{{ type_name }}, Long> {
-    {%- if obj.has_callback_interface() %}
-    internal val handleMap = UniffiHandleMap<{{ type_name }}>()
-    {%- endif %}
-
     override fun lower(value: {{ type_name }}): Long {
-        {%- if obj.has_callback_interface() %}
-        return handleMap.insert(value)
-        {%- else %}
         return value.uniffiCloneHandle()
-        {%- endif %}
     }
 
     override fun lift(value: Long): {{ type_name }} {
@@ -311,3 +299,52 @@ public object {{ ffi_converter_name }}: FfiConverter<{{ type_name }}, Long> {
         buf.putLong(lower(value))
     }
 }
+{%- else %}
+{# 
+ # The interface can be implemented in Rust or Kotlin
+ # * Generate a callback interface implementation to handle the Kotlin side
+ # * In the FfiConverter, check which side a handle came from to know how to handle correctly.
+#}
+{%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
+{%- let vtable_methods = obj.vtable_methods() %}
+{%- let ffi_init_callback = obj.ffi_init_callback() %}
+{% include "CallbackInterfaceImpl.kt" %}
+
+/**
+ * @suppress
+ */
+public object {{ ffi_converter_name }}: FfiConverter<{{ type_name }}, Long> {
+    internal val handleMap = UniffiHandleMap<{{ type_name }}>()
+
+    override fun lower(value: {{ type_name }}): Long {
+        if (value is {{ impl_class_name }}) {
+             // Rust-implemented object.  Clone the handle and return it
+            return value.uniffiCloneHandle()
+         } else {
+            // Kotlin object, generate a new vtable handle and return that.
+            return handleMap.insert(value)
+         }
+    }
+
+    override fun lift(value: Long): {{ type_name }} {
+        if ((value and 1.toLong()) == 0.toLong()) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return {{ impl_class_name }}(UniffiWithHandle, value)
+        } else {
+            // Kotlin-generated handle, get the object from the handle map
+            return handleMap.remove(value)
+        }
+    }
+
+    override fun read(buf: ByteBuffer): {{ type_name }} {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: {{ type_name }}) = 8UL
+
+    override fun write(value: {{ type_name }}, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+{%- endif %}

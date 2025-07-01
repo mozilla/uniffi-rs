@@ -55,37 +55,37 @@ note: required by a bound in `FfiConverterArc`
   = note: this error originates in the attribute macro `::uniffi::export_for_udl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `dyn ProcMacroTrait` cannot be shared between threads safely
-  --> tests/ui/interface_trait_not_sync_and_send.rs:11:1
+  --> tests/ui/interface_trait_not_sync_and_send.rs:12:1
    |
-11 | #[uniffi::export]
+12 | #[uniffi::export]
    | ^^^^^^^^^^^^^^^^^ `dyn ProcMacroTrait` cannot be shared between threads safely
    |
    = help: the trait `Sync` is not implemented for `dyn ProcMacroTrait`
 note: required by a bound in `_::{closure#0}::assert_impl_all`
-  --> tests/ui/interface_trait_not_sync_and_send.rs:11:1
+  --> tests/ui/interface_trait_not_sync_and_send.rs:12:1
    |
-11 | #[uniffi::export]
+12 | #[uniffi::export]
    | ^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `dyn ProcMacroTrait` cannot be sent between threads safely
-  --> tests/ui/interface_trait_not_sync_and_send.rs:11:1
+  --> tests/ui/interface_trait_not_sync_and_send.rs:12:1
    |
-11 | #[uniffi::export]
+12 | #[uniffi::export]
    | ^^^^^^^^^^^^^^^^^ `dyn ProcMacroTrait` cannot be sent between threads safely
    |
    = help: the trait `Send` is not implemented for `dyn ProcMacroTrait`
 note: required by a bound in `_::{closure#0}::assert_impl_all`
-  --> tests/ui/interface_trait_not_sync_and_send.rs:11:1
+  --> tests/ui/interface_trait_not_sync_and_send.rs:12:1
    |
-11 | #[uniffi::export]
+12 | #[uniffi::export]
    | ^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl_all`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `(dyn ProcMacroTrait + 'static)` cannot be shared between threads safely
-  --> tests/ui/interface_trait_not_sync_and_send.rs:11:1
+  --> tests/ui/interface_trait_not_sync_and_send.rs:12:1
    |
-11 | #[uniffi::export]
+12 | #[uniffi::export]
    | ^^^^^^^^^^^^^^^^^ `(dyn ProcMacroTrait + 'static)` cannot be shared between threads safely
    |
    = help: the trait `Sync` is not implemented for `(dyn ProcMacroTrait + 'static)`
@@ -97,9 +97,9 @@ note: required by a bound in `FfiConverterArc`
    = note: this error originates in the attribute macro `uniffi::export` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `(dyn ProcMacroTrait + 'static)` cannot be sent between threads safely
-  --> tests/ui/interface_trait_not_sync_and_send.rs:11:1
+  --> tests/ui/interface_trait_not_sync_and_send.rs:12:1
    |
-11 | #[uniffi::export]
+12 | #[uniffi::export]
    | ^^^^^^^^^^^^^^^^^ `(dyn ProcMacroTrait + 'static)` cannot be sent between threads safely
    |
    = help: the trait `Send` is not implemented for `(dyn ProcMacroTrait + 'static)`

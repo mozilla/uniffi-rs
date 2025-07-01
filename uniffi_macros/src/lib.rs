@@ -83,19 +83,18 @@ fn do_export(
     keep_input: bool,
     udl_mode: bool,
 ) -> TokenStream {
-    let copied_input = keep_input.then(|| proc_macro2::TokenStream::from(input.clone()));
-
     let gen_output = || {
         let item = syn::parse(input)?;
-        expand_export(item, attr_args, udl_mode)
+        let altered_input = keep_input.then(|| export::alter_input(&item));
+        let output = expand_export(item, attr_args, udl_mode)?;
+        Ok(quote! {
+            #altered_input
+            #output
+        })
     };
-    let output = gen_output().unwrap_or_else(syn::Error::into_compile_error);
-
-    quote! {
-        #copied_input
-        #output
-    }
-    .into()
+    gen_output()
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
 }
 
 // Generate export items for UDL mode
@@ -328,4 +327,10 @@ pub fn constructor(_attrs: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn method(_attrs: TokenStream, input: TokenStream) -> TokenStream {
     input
+}
+
+/// Attribute for trait interfaces defined in UDL
+#[proc_macro_attribute]
+pub fn trait_interface(_attr_args: TokenStream, input: TokenStream) -> TokenStream {
+    export::alter_trait(&parse_macro_input!(input)).into()
 }

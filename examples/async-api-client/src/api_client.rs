@@ -6,6 +6,7 @@ use crate::{run_task, ApiError, Result, TaskRunner};
 use std::sync::Arc;
 
 #[async_trait::async_trait]
+#[uniffi::trait_interface]
 pub trait HttpClient: Send + Sync {
     async fn fetch(&self, url: String, credentials: String) -> Result<String>;
 }

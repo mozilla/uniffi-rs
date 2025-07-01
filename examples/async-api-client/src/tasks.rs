@@ -5,10 +5,12 @@
 use std::sync::{Arc, Mutex};
 
 #[async_trait::async_trait]
+#[uniffi::trait_interface]
 pub trait TaskRunner: Send + Sync {
     async fn run_task(&self, task: Arc<dyn RustTask>);
 }
 
+#[uniffi::trait_interface]
 pub trait RustTask: Send + Sync {
     fn execute(&self);
 }

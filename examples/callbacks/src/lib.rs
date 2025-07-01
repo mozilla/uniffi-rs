@@ -21,6 +21,7 @@ impl From<uniffi::UnexpectedUniFFICallbackError> for TelephoneError {
 }
 
 // SIM cards.
+#[uniffi::trait_interface]
 pub trait SimCard: Send + Sync {
     fn name(&self) -> String;
 }

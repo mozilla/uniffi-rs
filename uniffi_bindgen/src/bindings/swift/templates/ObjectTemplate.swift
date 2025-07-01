@@ -106,13 +106,86 @@ open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
 
 }
 
-{%- if obj.has_callback_interface() %}
+{%- if !obj.has_callback_interface() %}
+{# Simple case: the interface can only be implemented in Rust #}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct {{ ffi_converter_name }}: FfiConverter {
+    typealias FfiType = UInt64
+    typealias SwiftType = {{ type_name }}
+
+    public static func lift(_ handle: UInt64) throws -> {{ type_name }} {
+        return {{ impl_class_name }}(unsafeFromHandle: handle)
+    }
+
+    public static func lower(_ value: {{ type_name }}) -> UInt64 {
+        return value.uniffiCloneHandle()
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+{%- else %}
+{# 
+ # The interface can be implemented in Rust or Swift
+ # * Generate a callback interface implementation to handle the Swift side
+ # * In the FfiConverter, check which side a handle came from to know how to handle correctly.
+#}
 {%- let callback_handler = format!("uniffiCallbackInterface{}", name) %}
 {%- let callback_init = format!("uniffiCallbackInit{}", name) %}
 {%- let vtable = obj.vtable().expect("trait interface should have a vtable") %}
 {%- let vtable_methods = obj.vtable_methods() %}
 {%- let ffi_init_callback = obj.ffi_init_callback() %}
 {% include "CallbackInterfaceImpl.swift" %}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct {{ ffi_converter_name }}: FfiConverter {
+    fileprivate static let handleMap = UniffiHandleMap<{{ type_name }}>()
+
+    typealias FfiType = UInt64
+    typealias SwiftType = {{ type_name }}
+
+    public static func lift(_ handle: UInt64) throws -> {{ type_name }} {
+        if ((handle & 1) == 0) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return {{ impl_class_name }}(unsafeFromHandle: handle)
+        } else {
+            // Swift-generated handle, get the object from the handle map
+            return try handleMap.remove(handle: handle)
+        }
+    }
+
+    public static func lower(_ value: {{ type_name }}) -> UInt64 {
+         if let rustImpl = value as? {{ impl_class_name }} {
+             // Rust-implemented object.  Clone the handle and return it
+            return rustImpl.uniffiCloneHandle()
+         } else {
+            // Swift object, generate a new vtable handle and return that.
+            return handleMap.insert(obj: value)
+         }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
+        let handle: UInt64 = try readInt(&buf)
+        return try lift(handle)
+    }
+
+    public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
 {%- endif %}
 
 {%- for tm in obj.uniffi_traits() %}
@@ -139,39 +212,6 @@ extension {{ impl_class_name }}: Swift.Error {}
 extension {{impl_class_name}}: {{ self::trait_protocol_name(ci, t.trait_name)? }} {}
 {% endfor %}
 
-
-#if swift(>=5.8)
-@_documentation(visibility: private)
-#endif
-public struct {{ ffi_converter_name }}: FfiConverter {
-    {%- if obj.has_callback_interface() %}
-    fileprivate static let handleMap = UniffiHandleMap<{{ type_name }}>()
-    {%- endif %}
-
-    typealias FfiType = UInt64
-    typealias SwiftType = {{ type_name }}
-
-    public static func lift(_ handle: UInt64) throws -> {{ type_name }} {
-        return {{ impl_class_name }}(unsafeFromHandle: handle)
-    }
-
-    public static func lower(_ value: {{ type_name }}) -> UInt64 {
-        {%- if obj.has_callback_interface() %}
-        return handleMap.insert(obj: value)
-        {%- else %}
-        return value.uniffiCloneHandle()
-        {%- endif %}
-    }
-
-    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> {{ type_name }} {
-        let handle: UInt64 = try readInt(&buf)
-        return try lift(handle)
-    }
-
-    public static func write(_ value: {{ type_name }}, into buf: inout [UInt8]) {
-        writeInt(&buf, lower(value))
-    }
-}
 
 {#
 We always write these public functions just in case the object is used as

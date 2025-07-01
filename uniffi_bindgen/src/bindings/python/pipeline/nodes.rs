@@ -316,6 +316,7 @@ pub struct VTable {
     ///
     /// Foreign code should call this function, passing it a pointer to the VTable struct.
     pub init_fn: RustFfiFunctionName,
+    pub clone_fn_type: FfiFunctionTypeName,
     pub free_fn_type: FfiFunctionTypeName,
     pub methods: Vec<VTableMethod>,
 }

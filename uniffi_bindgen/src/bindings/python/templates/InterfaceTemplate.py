@@ -130,12 +130,6 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
         return self.__rust_cmp__(other) >= 0
 {%- endif %}
 
-{# callback interfaces #}
-{%- if let Some(vtable) = int.vtable %}
-{%- let trait_impl=format!("_UniffiTraitImpl{}", int.name) %}
-{% include "CallbackInterfaceImpl.py" %}
-{%- endif %}
-
 {# Objects as error #}
 {%- if int.self_type.is_used_as_error %}
 {# Due to some mismatches in the ffi converter mechanisms, errors are forced to be a RustBuffer #}
@@ -160,33 +154,71 @@ class {{ ffi_converter_name }}__as_error(_UniffiConverterRustBuffer):
 
 {%- endif %}
 
+{%- match int.vtable %}
+{%- when None %}
+{# simple case: the interface can only be implemented in Rust #}
 class {{ ffi_converter_name }}:
-    {%- if int.vtable.is_some() %}
-    _handle_map = _UniffiHandleMap()
-    {%- endif %}
-
     @staticmethod
-    def lift(value: int):
+    def lift(value: int) -> {{ int.name }}:
         return {{ int.name }}._uniffi_make_instance(value)
 
     @staticmethod
-    def check_lower(value: {{ int.self_type.type_name }}):
-        {%- if int.vtable.is_some() %}
-        pass
-        {%- else %}
+    def check_lower(value: {{ int.name }}):
         if not isinstance(value, {{ int.name }}):
             raise TypeError("Expected {{ int.name }} instance, {} found".format(type(value).__name__))
-        {%- endif %}
+
+    @staticmethod
+    def lower(value: {{ int.name }}) -> ctypes.c_uint64:
+        return value._uniffi_clone_handle()
+
+    @classmethod
+    def read(cls, buf: _UniffiRustBuffer) -> {{ int.name }}:
+        ptr = buf.read_u64()
+        if ptr == 0:
+            raise InternalError("Raw handle value was null")
+        return cls.lift(ptr)
+
+    @classmethod
+    def write(cls, value: {{ int.name }}, buf: _UniffiRustBuffer):
+        buf.write_u64(cls.lower(value))
+
+{%- when Some(vtable) %}
+{#
+ # The interface can be implemented in Rust or Python
+
+ # * Generate a callback interface implementation to handle the Python side
+ # * In the FfiConverter, check which side a handle came from to know how to handle correctly.
+ #}
+
+{%- let trait_impl=format!("_UniffiTraitImpl{}", int.name) %}
+{%- include "CallbackInterfaceImpl.py" %}
+
+class {{ ffi_converter_name }}:
+    _handle_map = _UniffiHandleMap()
+
+    @staticmethod
+    def lift(value: int):
+        if (value & 1) == 0:
+            # Rust-generated handle, construct a new class that uses the handle to implement the
+            # interface
+            return {{ int.name }}._uniffi_make_instance(value)
+        else:
+            # Python-generated handle, get the object from the handle map
+            return {{ ffi_converter_name }}._handle_map.remove(value)
+
+    @staticmethod
+    def check_lower(value: {{ protocol.name }}):
+        if not isinstance(value, {{ protocol.name }}):
+            raise TypeError("Expected {{ protocol.name }} subclass, {} found".format(type(value).__name__))
 
     @staticmethod
     def lower(value: {{ protocol.name }}):
-        {%- if int.vtable.is_some() %}
-        return {{ ffi_converter_name }}._handle_map.insert(value)
-        {%- else %}
-        if not isinstance(value, {{ int.name }}):
-            raise TypeError("Expected {{ int.name }} instance, {} found".format(type(value).__name__))
-        return value._uniffi_clone_handle()
-        {%- endif %}
+         if isinstance(value, {{ int.name }}):
+            # Rust-implementated object.  Clone the handle and return it
+            return value._uniffi_clone_handle()
+         else:
+            # Python-implementated object, generate a new vtable handle and return that.
+            return {{ ffi_converter_name }}._handle_map.insert(value)
 
     @classmethod
     def read(cls, buf: _UniffiRustBuffer):
@@ -198,3 +230,4 @@ class {{ ffi_converter_name }}:
     @classmethod
     def write(cls, value: {{ protocol.name }}, buf: _UniffiRustBuffer):
         buf.write_u64(cls.lower(value))
+{%- endmatch %}

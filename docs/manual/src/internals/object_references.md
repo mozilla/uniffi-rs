@@ -33,6 +33,7 @@ this is so.
 
 Interfaces are lowered as `u64` handles.
 `0` is reserved as an invalid value.
+Note: the Rust docs state that the null pointer will cast to `0` (https://doc.rust-lang.org/std/ptr/fn.null.html).
 
 ## Lifetimes
 
@@ -122,15 +123,15 @@ Foreign languages are free to implement them however they want, but they usually
 ## Trait interfaces
 
 Trait interfaces are used to pass `Arc<dyn Trait>` instances across the FFI.
-This presents an extra difficulty since `dyn Trait` is unsized and `*dyn Trait` is a wide pointer that takes 2 words to store.
+The are unique in a couple ways.
 
+`dyn Trait` is unsized so `*dyn Trait` is a wide pointer that takes 2 words to store.
 To work around this, UniFFI adds an extra Arc creating a `Arc<Arc<dyn Trait>>` value.
 This effectively converts the wide pointer into a regular pointer, since `Arc<dyn Trait>` is sized (at 2 words).
 
-## Trait interfaces with foreign support
-
-These are trait interfaces that can also be implemented on the foreign side.
-These are effectively hybrids of callback interfaces and trait interfaces:
-
-* They are passed from the foreign language to Rust as a callback interface
-* They are passed from Rust to the foreign language as a trait interface.
+Trait interfaces can also be implemented on the foreign side.
+In order to handle this efficiently, UniFFI must be able to distinguish foreign-generated handles from Rust ones.
+UniFFI handles this by setting the lowest bit on the handle to 1 for foreign handles.
+The Rust code generates lowered arc pointers, which have an alignment > 1 and therefore the lowest bit will never be set.
+Most foreign languages use a handle map to generate handles which makes it fairly simple to achive this: start the handle counter at `1` and always increment by `2`.
+If a foreign language also uses raw pointers, they will also have an alignment > 1 and therefore they can OR the lowest bit to `1` without losing any information.

@@ -124,7 +124,7 @@ class TestFutures(unittest.TestCase):
         asyncio.run(test())
 
     def test_foreign_async_trait_interface_methods(self):
-        class PyAsyncParser:
+        class PyAsyncParser(AsyncParser):
             def __init__(self):
                 self.completed_delays = 0
 

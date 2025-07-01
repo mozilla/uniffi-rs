@@ -34,6 +34,7 @@ pub fn pass(int: &mut Interface) -> Result<()> {
         }
     };
 
+    int.base_classes.push(int.protocol.name.clone());
     if int.self_type.is_used_as_error {
         int.base_classes.push("Exception".to_string());
     }
