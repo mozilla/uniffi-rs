@@ -71,6 +71,10 @@ fn vtable(
             crate_name,
             interface_name,
         )),
+        clone_fn_type: FfiFunctionTypeName(format!(
+            "CallbackInterfaceClone{}_{interface_name}",
+            module_name.to_upper_camel_case(),
+        )),
         free_fn_type: FfiFunctionTypeName(format!(
             "CallbackInterfaceFree{}_{interface_name}",
             module_name.to_upper_camel_case(),
@@ -98,6 +102,10 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
     let module_name = module.name.clone();
     module.try_visit(|vtable: &VTable| {
         let interface_name = &vtable.interface_name;
+        let handle_type = FfiType::Handle(HandleKind::Interface {
+            module_name: module_name.to_string(),
+            interface_name: interface_name.to_string(),
+        });
         // FFI Function Type for each method in the VTable
         for (i, meth) in vtable.methods.iter().enumerate() {
             let method_name = format!(
@@ -174,16 +182,22 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
         ffi_definitions.extend([
             FfiFunctionType {
                 name: FfiFunctionTypeName(format!(
+                    "CallbackInterfaceClone{}_{interface_name}",
+                    module_name.to_upper_camel_case(),
+                )),
+                arguments: vec![FfiArgument::new("handle", handle_type.clone())],
+                return_type: FfiReturnType {
+                    ty: Some(handle_type.clone().into()),
+                },
+                has_rust_call_status_arg: false,
+            }
+            .into(),
+            FfiFunctionType {
+                name: FfiFunctionTypeName(format!(
                     "CallbackInterfaceFree{}_{interface_name}",
                     module_name.to_upper_camel_case(),
                 )),
-                arguments: vec![FfiArgument::new(
-                    "handle",
-                    FfiType::Handle(HandleKind::Interface {
-                        module_name: module_name.to_string(),
-                        interface_name: interface_name.to_string(),
-                    }),
-                )],
+                arguments: vec![FfiArgument::new("handle", handle_type.clone())],
                 return_type: FfiReturnType { ty: None },
                 has_rust_call_status_arg: false,
             }
@@ -194,21 +208,28 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
                     module_name.to_upper_camel_case(),
                     interface_name
                 )),
-                fields: vtable
-                    .methods
-                    .iter()
-                    .map(|vtable_meth| FfiField {
-                        name: vtable_meth.callable.name.clone(),
-                        ty: vtable_meth.ffi_type.clone(),
-                    })
-                    .chain([FfiField::new(
+                fields: [
+                    FfiField::new(
                         "uniffi_free",
                         FfiType::Function(FfiFunctionTypeName(format!(
                             "CallbackInterfaceFree{}_{interface_name}",
                             module_name.to_upper_camel_case(),
                         ))),
-                    )])
-                    .collect(),
+                    ),
+                    FfiField::new(
+                        "uniffi_clone",
+                        FfiType::Function(FfiFunctionTypeName(format!(
+                            "CallbackInterfaceClone{}_{interface_name}",
+                            module_name.to_upper_camel_case(),
+                        ))),
+                    ),
+                ]
+                .into_iter()
+                .chain(vtable.methods.iter().map(|vtable_meth| FfiField {
+                    name: vtable_meth.callable.name.clone(),
+                    ty: vtable_meth.ffi_type.clone(),
+                }))
+                .collect(),
             }
             .into(),
         ]);

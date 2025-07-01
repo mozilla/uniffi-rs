@@ -671,6 +671,13 @@ impl ComponentInterface {
                 has_rust_call_status_arg: false,
             }
             .into(),
+            FfiCallbackFunction {
+                name: "CallbackInterfaceClone".to_owned(),
+                arguments: vec![FfiArgument::new("handle", FfiType::UInt64)],
+                return_type: Some(FfiType::UInt64),
+                has_rust_call_status_arg: false,
+            }
+            .into(),
             FfiStruct {
                 name: "ForeignFutureDroppedCallbackStruct".to_owned(),
                 fields: vec![

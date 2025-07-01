@@ -384,6 +384,7 @@ pub trait SayAfterTrait: Send + Sync {
 }
 
 // Example of async trait defined in the UDL file
+#[uniffi::trait_interface]
 #[async_trait::async_trait]
 pub trait SayAfterUdlTrait: Send + Sync {
     async fn say_after(&self, ms: u16, who: String) -> String;
