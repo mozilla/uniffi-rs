@@ -329,7 +329,7 @@ class TestCoverall(unittest.TestCase):
         with self.assertRaises(InternalError):
             try_input_return_only_dict(ReturnOnlyDict(e=CoverallFlatError.TooManyVariants))
 
-class PyGetters:
+class PyGetters(Getters):
     def get_bool(self, v, arg2):
         return v ^ arg2
 
@@ -368,7 +368,7 @@ class PyGetters:
     def round_trip_object(self, coveralls):
         return coveralls
 
-class PyNode:
+class PyNode(Node):
     def __init__(self):
         self.parent = None
 
@@ -440,9 +440,7 @@ class TraitsTest(unittest.TestCase):
 
         # Let's try connecting them together
         traits[0].set_parent(traits[1])
-        # Note: this doesn't increase the Rust strong count, since we wrap the Rust impl with a
-        # python impl before passing it to `set_parent()`
-        self.assertEqual(traits[1].strong_count(), 2)
+        self.assertEqual(traits[1].strong_count(), 3)
         self.assertEqual(ancestor_names(traits[0]), ["node-2"])
         self.assertEqual(ancestor_names(traits[1]), [])
         self.assertEqual(traits[0].get_parent().name(), "node-2")

@@ -26,6 +26,7 @@ pub(super) fn trait_impl(
     mod_path: &str,
     trait_ident: &Ident,
     items: &[ImplItem],
+    for_trait_interface: bool,
 ) -> syn::Result<TokenStream> {
     let trait_name = ident_to_string(trait_ident);
     let trait_impl_ident = trait_impl_ident(&trait_name);
@@ -45,6 +46,15 @@ pub(super) fn trait_impl(
             ImplItem::Method(sig) => Ok(sig),
         })
         .collect::<syn::Result<Vec<_>>>()?;
+
+    let uniffi_foreign_handle_method = for_trait_interface.then(|| {
+        quote! {
+            fn uniffi_foreign_handle(&self) -> ::std::option::Option<::uniffi::Handle> {
+                let vtable = #vtable_cell.get();
+                ::std::option::Option::Some(::uniffi::Handle::from_raw_unchecked((vtable.uniffi_clone)(self.handle)))
+            }
+        }
+    });
 
     let vtable_fields = methods.iter().map(|sig| {
         let ident = &sig.ident;
@@ -87,8 +97,9 @@ pub(super) fn trait_impl(
     Ok(quote! {
         #[allow(missing_docs)]
         pub struct #vtable_type {
-            #(#vtable_fields)*
             pub uniffi_free: extern "C" fn(handle: u64),
+            pub uniffi_clone: extern "C" fn(handle: u64) -> u64,
+            #(#vtable_fields)*
         }
 
         static #vtable_cell: ::uniffi::UniffiForeignPointerCell::<#vtable_type> = ::uniffi::UniffiForeignPointerCell::<#vtable_type>::new();
@@ -116,6 +127,7 @@ pub(super) fn trait_impl(
         #impl_attributes
         impl #trait_ident for #trait_impl_ident {
             #(#trait_impl_methods)*
+            #uniffi_foreign_handle_method
         }
 
         impl ::std::ops::Drop for #trait_impl_ident {

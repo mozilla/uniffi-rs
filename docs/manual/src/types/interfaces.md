@@ -98,8 +98,6 @@ impl Button for StopButton  {
 }
 ```
 
-Note UDL requires a [`Trait`](../udl/interfaces.md#traits) attribute; proc-macros `#[uniffi::export]` the trait declaration.
-
 [Uniffi enforces all interfaces are `Send + Sync`](../internals/object_references.md#concurrency), meaning exported traits need to be explicitly bound.
 
 References to traits are passed around like normal interface objects - in an `Arc<>`.
@@ -108,6 +106,35 @@ For example, your Rust would have these signatures:
 ```rust
 fn get_buttons() -> Vec<Arc<dyn Button>> { ... }
 fn press(button: Arc<dyn Button>) -> Arc<dyn Button> { ... }
+```
+
+### Proc-macros
+
+Wrap the trait with `#[uniffi::export]
+
+```rust
+#[uniffi::export]
+pub trait Button: Send + Sync {
+    ...
+}
+```
+
+### UDL
+
+Add a `Trait` attribute to the UDL interface and `#[uniffi::trait_interface]` to the Rust trait
+
+```webidl
+[Trait]
+interface Button {
+    ...
+}
+```
+
+```rust
+#[uniffi::trait_interface]
+pub trait Button: Send + Sync {
+    ...
+}
 ```
 
 ### Foreign implementations

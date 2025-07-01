@@ -6,6 +6,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- UDL-based trait interfaces must now be wrapped with the `#[uniffi::trait_interface]` attribute.
+- Python: Trait interface implementations must now inherit from the trait base class.
+  This will look like `class PyTraitName(RustTraitName):`
+
 ### What's new?
 
 - Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
@@ -22,6 +27,15 @@
   - Lowering/lifting now uses `u64` values
   - The free function inputs a `u64` handle rather than a raw pointer
   - The clone function inputs and returns a `u64` handle rather than a raw pointer
+- Trait / Callback interface changes
+    - Added the `clone` function to the VTable
+    - Reordered VTable fields. `free` and `clone` now the first items and second fields, followed by
+      fields for each interface method.
+    - Trait interface changes:
+        - Foreign handles must always have the lowest bit set
+        - Both Rust and foreign handles can now be passed across the FFI.
+          When Lifting/lowering trait interface handles, check if the handle was generated from Rust or the foreign side.
+    - See https://github.com/mozilla/uniffi-rs/pulls/2586 examples of how the builtin bindings here changed.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 
