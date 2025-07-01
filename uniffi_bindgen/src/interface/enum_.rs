@@ -170,7 +170,7 @@ use super::{AsType, Literal, Type, TypeIterator};
 ///
 /// Enums are passed across the FFI by serializing to a bytebuffer, with a
 /// i32 indicating the variant followed by the serialization of each field.
-#[derive(Debug, Clone, PartialEq, Eq, Checksum)]
+#[derive(Debug, Clone, Checksum)]
 pub struct Enum {
     pub(super) name: String,
     pub(super) module_path: String,
@@ -372,7 +372,7 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
-        assert_eq!(ci.enum_definitions().count(), 1);
+        assert_eq!(ci.enum_definitions().len(), 1);
         assert_eq!(
             ci.get_enum_definition("Testing").unwrap().variants().len(),
             3
@@ -405,7 +405,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
-        assert_eq!(ci.enum_definitions().count(), 3);
+        assert_eq!(ci.enum_definitions().len(), 3);
         assert_eq!(ci.function_definitions().len(), 4);
 
         // The "flat" enum with no associated data.
@@ -537,7 +537,7 @@ mod test {
             enum Testing { "one", "two", "three" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
-        assert_eq!(ci.enum_definitions().count(), 1);
+        assert_eq!(ci.enum_definitions().len(), 1);
         let error = ci.get_enum_definition("Testing").unwrap();
         assert_eq!(
             error
@@ -561,7 +561,7 @@ mod test {
             enum Testing { "one", "two", "one" };
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
-        assert_eq!(ci.enum_definitions().count(), 1);
+        assert_eq!(ci.enum_definitions().len(), 1);
         assert_eq!(
             ci.get_enum_definition("Testing").unwrap().variants().len(),
             3
@@ -583,7 +583,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
-        assert_eq!(ci.enum_definitions().count(), 1);
+        assert_eq!(ci.enum_definitions().len(), 1);
         let error: &Enum = ci.get_enum_definition("Testing").unwrap();
         assert_eq!(
             error
@@ -609,7 +609,7 @@ mod test {
             };
         "#;
         let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
-        assert_eq!(ci.enum_definitions().count(), 1);
+        assert_eq!(ci.enum_definitions().len(), 1);
         let testing: &Enum = ci.get_enum_definition("Testing").unwrap();
         assert_eq!(
             testing.variants()[0]

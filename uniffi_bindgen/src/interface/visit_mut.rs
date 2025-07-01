@@ -1,6 +1,10 @@
-use crate::interface::{Enum, FfiDefinition, Record};
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+use crate::interface::FfiDefinition;
 use crate::{ComponentInterface, VisitMut};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use uniffi_meta::Type;
 
 impl ComponentInterface {
@@ -26,10 +30,8 @@ impl ComponentInterface {
 
         self.types.all_known_types = all_known_types_altered;
 
-        let mut updated_enums: BTreeMap<String, Enum> = BTreeMap::new();
         let errors_clone = self.errors.clone();
-        for (enum_name, enum_item) in self.enums.iter_mut() {
-            let updated_key = visitor.visit_enum_key(&mut enum_name.clone());
+        for enum_item in self.enums.iter_mut() {
             let is_error = errors_clone.contains(enum_item.name());
 
             visitor.visit_enum(is_error, enum_item);
@@ -42,11 +44,9 @@ impl ComponentInterface {
                     visitor.visit_type(&mut field.type_);
                 }
             }
-            updated_enums.insert(updated_key, enum_item.clone());
         }
-        self.enums = updated_enums;
 
-        for record_item in self.records.values_mut() {
+        for record_item in self.records.iter_mut() {
             visitor.visit_record(record_item);
 
             for field in &mut record_item.fields {
@@ -54,7 +54,6 @@ impl ComponentInterface {
                 visitor.visit_type(&mut field.type_);
             }
         }
-        self.fix_record_keys_after_rename();
 
         for function in self.functions.iter_mut() {
             visitor.visit_function(function);
@@ -140,15 +139,5 @@ impl ComponentInterface {
                 name
             })
             .collect()
-    }
-
-    fn fix_record_keys_after_rename(&mut self) {
-        let mut new_records: BTreeMap<String, Record> = BTreeMap::new();
-
-        for record in self.records.values() {
-            new_records.insert(record.name().to_string(), record.clone());
-        }
-
-        self.records = new_records;
     }
 }

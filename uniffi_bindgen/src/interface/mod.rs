@@ -46,7 +46,7 @@
 //!   * Error messages and general developer experience leave a lot to be desired.
 
 use std::{
-    collections::{btree_map::Entry, BTreeMap, BTreeSet, HashSet},
+    collections::{BTreeMap, BTreeSet, HashSet},
     iter,
 };
 
@@ -89,8 +89,8 @@ pub struct ComponentInterface {
     // anyway, so it's safe to ignore it.
     pub(super) types: TypeUniverse,
     /// The high-level API provided by the component.
-    enums: BTreeMap<String, Enum>,
-    records: BTreeMap<String, Record>,
+    enums: Vec<Enum>,
+    records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
     callback_interfaces: Vec<CallbackInterface>,
@@ -192,23 +192,23 @@ impl ComponentInterface {
     }
 
     /// Get the definitions for every Enum type in the interface.
-    pub fn enum_definitions(&self) -> impl Iterator<Item = &Enum> {
-        self.enums.values()
+    pub fn enum_definitions(&self) -> &[Enum] {
+        &self.enums
     }
 
     /// Get an Enum definition by name, or None if no such Enum is defined.
     pub fn get_enum_definition(&self, name: &str) -> Option<&Enum> {
-        self.enums.get(name)
+        self.enums.iter().find(|o| o.name == name)
     }
 
     /// Get the definitions for every Record type in the interface.
-    pub fn record_definitions(&self) -> impl Iterator<Item = &Record> {
-        self.records.values()
+    pub fn record_definitions(&self) -> &[Record] {
+        &self.records
     }
 
     /// Get a Record definition by name, or None if no such Record is defined.
     pub fn get_record_definition(&self, name: &str) -> Option<&Record> {
-        self.records.get(name)
+        self.records.iter().find(|o| o.name == name)
     }
 
     /// Get the definitions for every Function in the interface.
@@ -234,7 +234,6 @@ impl ComponentInterface {
 
     /// Get an Object definition by name, or None if no such Object is defined.
     pub fn get_object_definition(&self, name: &str) -> Option<&Object> {
-        // TODO: probably we could store these internally in a HashMap to make this easier?
         self.objects.iter().find(|o| o.name == name)
     }
 
@@ -861,54 +860,34 @@ impl ComponentInterface {
     //
     /// Called by `APIBuilder` impls to add a newly-parsed enum definition to the `ComponentInterface`.
     pub(super) fn add_enum_definition(&mut self, defn: Enum) -> Result<()> {
-        match self.enums.entry(defn.name().to_owned()) {
-            Entry::Vacant(v) => {
-                if matches!(defn.shape, EnumShape::Error { .. }) {
-                    self.errors.insert(defn.name.clone());
-                }
-                self.types
-                    .add_known_types(defn.iter_types())
-                    .with_context(|| format!("adding enum {defn:?}"))?;
-                v.insert(defn);
-            }
-            Entry::Occupied(o) => {
-                let existing_def = o.get();
-                if defn != *existing_def {
-                    bail!(
-                        "Mismatching definition for enum `{}`!\n\
-                        existing definition: {existing_def:#?},\n\
-                        new definition: {defn:#?}",
-                        defn.name(),
-                    );
-                }
-            }
+        if let Some(existing_def) = self.enums.iter().find(|f| f.name == defn.name) {
+            bail!(
+                "Mismatching definition for enum `{}`!\n\
+                existing definition: {existing_def:#?},\n\
+                new definition: {defn:#?}",
+                defn.name(),
+            );
         }
-
+        if matches!(defn.shape, EnumShape::Error { .. }) {
+            self.errors.insert(defn.name.clone());
+        }
+        self.types
+            .add_known_types(defn.iter_types())
+            .with_context(|| format!("adding enum {defn:?}"))?;
+        self.enums.push(defn);
         Ok(())
     }
 
     /// Adds a newly-parsed record definition to the `ComponentInterface`.
     pub(super) fn add_record_definition(&mut self, defn: Record) -> Result<()> {
-        match self.records.entry(defn.name().to_owned()) {
-            Entry::Vacant(v) => {
-                self.types
-                    .add_known_types(defn.iter_types())
-                    .with_context(|| format!("adding record {defn:?}"))?;
-                v.insert(defn);
-            }
-            Entry::Occupied(o) => {
-                let existing_def = o.get();
-                if defn != *existing_def {
-                    bail!(
-                        "Mismatching definition for record `{}`!\n\
-                         existing definition: {existing_def:#?},\n\
-                         new definition: {defn:#?}",
-                        defn.name(),
-                    );
-                }
-            }
+        if self.records.iter().any(|r| r.name == defn.name) {
+            bail!("duplicate record definition: \"{}\"", defn.name);
         }
 
+        self.types
+            .add_known_types(defn.iter_types())
+            .with_context(|| format!("adding record {defn:?}"))?;
+        self.records.push(defn);
         Ok(())
     }
 

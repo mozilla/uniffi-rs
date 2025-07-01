@@ -197,11 +197,6 @@ pub trait VisitMut {
     /// adjust it to language specific naming conventions.
     fn visit_enum(&self, is_error: bool, enum_: &mut Enum);
 
-    /// Change the naming of the key in the [`ComponentInterface`]
-    /// `BTreeMap` where all `Enum`s are stored to reflect the changed
-    /// name of an `Enum`.
-    fn visit_enum_key(&self, key: &mut String) -> String;
-
     /// Go through each `Variant` of an `Enum` and
     /// adjust it to language specific naming conventions.
     fn visit_variant(&self, is_error: bool, variant: &mut Variant);
