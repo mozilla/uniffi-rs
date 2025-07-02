@@ -8,7 +8,7 @@ if {{ arg.name }} is _DEFAULT:
 
  _uniffi_lowered_args = (
     {%- if callable.is_method() %}
-    self._uniffi_clone_pointer(),
+    self._uniffi_clone_handle(),
     {%- endif %}
     {%- for arg in callable.arguments %}
     {{ arg.ty.ffi_converter_name }}.lower({{ arg.name }}),
@@ -46,7 +46,7 @@ _uniffi_ffi_result = _uniffi_rust_call_with_error(
 )
 {%- match callable.kind %}
 {%- when CallableKind::Constructor { primary: true, .. } %}
-self._pointer = _uniffi_ffi_result
+self._handle = _uniffi_ffi_result
 {%- when CallableKind::Constructor { primary: false, .. } %}
 return cls._uniffi_make_instance(_uniffi_ffi_result)
 {%- else %}

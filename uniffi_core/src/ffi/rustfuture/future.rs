@@ -243,7 +243,7 @@ where
     Scheduler: Send + Sync,
 {
     unsafe fn waker_clone(ptr: *const ()) -> RawWaker {
-        trace!("RustFuture::waker_clone called ({ptr:?)");
+        trace!("RustFuture::waker_clone called ({ptr:?})");
         Arc::<Self>::increment_strong_count(ptr.cast::<Self>());
         RawWaker::new(
             ptr,
@@ -257,12 +257,12 @@ where
     }
 
     unsafe fn waker_wake(ptr: *const ()) {
-        trace!("RustFuture::waker_wake called ({ptr:?)");
+        trace!("RustFuture::waker_wake called ({ptr:?})");
         Self::recreate_arc(ptr).scheduler.lock().unwrap().wake();
     }
 
     unsafe fn waker_wake_by_ref(ptr: *const ()) {
-        trace!("RustFuture::waker_wake_by_ref called ({ptr:?)");
+        trace!("RustFuture::waker_wake_by_ref called ({ptr:?})");
         // For wake_by_ref, we can use the pointer directly, without consuming it to re-create the
         // arc.
         let ptr = ptr.cast::<Self>();
@@ -270,7 +270,7 @@ where
     }
 
     unsafe fn waker_drop(ptr: *const ()) {
-        trace!("RustFuture::waker_drop called ({ptr:?)");
+        trace!("RustFuture::waker_drop called ({ptr:?})");
         drop(Self::recreate_arc(ptr));
     }
 
@@ -285,7 +285,7 @@ where
     }
 
     fn into_waker(self: Arc<Self>) -> Waker {
-        trace!("RustFuture::creating waker ({:?)", self.as_pointer());
+        trace!("RustFuture::creating waker ({:?})", Arc::as_ptr(&self));
         let raw_waker = RawWaker::new(
             Arc::into_raw(self).cast::<()>(),
             &RawWakerVTable::new(

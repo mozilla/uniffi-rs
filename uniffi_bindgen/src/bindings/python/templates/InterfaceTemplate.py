@@ -4,7 +4,7 @@
 
 class {{ int.name }}({{ int.base_classes|join(", ") }}):
     {{ int.docstring|docstring(4) }}
-    _pointer: ctypes.c_void_p
+    _handle: ctypes.c_uint64
 
 {%- for cons in int.constructors %}
 {%-     let callable = cons.callable %}
@@ -28,27 +28,27 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 {%- endfor %}
 
 {%- if !int.has_primary_constructor %}
-    {# Define __init__ to prevent construction without a pointer, which can confuse #}
+    {# Define __init__ to prevent construction without a handle, which can confuse #}
     def __init__(self, *args, **kwargs):
         raise ValueError("This class has no default constructor")
 {%- endif %}
 
     def __del__(self):
         # In case of partial initialization of instances.
-        pointer = getattr(self, "_pointer", None)
-        if pointer is not None:
-            _uniffi_rust_call(_UniffiLib.{{ int.ffi_func_free.0 }}, pointer)
+        handle = getattr(self, "_handle", None)
+        if handle is not None:
+            _uniffi_rust_call(_UniffiLib.{{ int.ffi_func_free.0 }}, handle)
 
-    def _uniffi_clone_pointer(self):
-        return _uniffi_rust_call(_UniffiLib.{{ int.ffi_func_clone.0 }}, self._pointer)
+    def _uniffi_clone_handle(self):
+        return _uniffi_rust_call(_UniffiLib.{{ int.ffi_func_clone.0 }}, self._handle)
 
     # Used by alternative constructors or any methods which return this type.
     @classmethod
-    def _uniffi_make_instance(cls, pointer):
+    def _uniffi_make_instance(cls, handle):
         # Lightly yucky way to bypass the usual __init__ logic
-        # and just create a new instance with the required pointer.
+        # and just create a new instance with the required handle.
         inst = cls.__new__(cls)
-        inst._pointer = pointer
+        inst._handle = handle
         return inst
 
 {%- for meth in int.methods -%}
@@ -122,7 +122,7 @@ class {{ ffi_converter_name }}__as_error(_UniffiConverterRustBuffer):
 
     @staticmethod
     def lift(value):
-        # Errors are always a rust buffer holding a pointer - which is a "read"
+        # Errors are always a rust buffer holding a handle - which is a "read"
         with value.consume_with_stream() as stream:
             return {{ ffi_converter_name }}.read(stream)
 
@@ -157,14 +157,14 @@ class {{ ffi_converter_name }}:
         {%- else %}
         if not isinstance(value, {{ int.name }}):
             raise TypeError("Expected {{ int.name }} instance, {} found".format(type(value).__name__))
-        return value._uniffi_clone_pointer()
+        return value._uniffi_clone_handle()
         {%- endif %}
 
     @classmethod
     def read(cls, buf: _UniffiRustBuffer):
         ptr = buf.read_u64()
         if ptr == 0:
-            raise InternalError("Raw pointer value was null")
+            raise InternalError("Raw handle value was null")
         return cls.lift(ptr)
 
     @classmethod
