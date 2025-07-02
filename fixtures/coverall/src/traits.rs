@@ -13,6 +13,7 @@ pub fn get_traits() -> Vec<Arc<dyn NodeTrait>> {
     ]
 }
 
+#[uniffi::trait_interface]
 pub trait NodeTrait: Send + Sync + std::fmt::Debug {
     fn name(&self) -> String;
 
@@ -38,6 +39,7 @@ pub fn ancestor_names(node: Arc<dyn NodeTrait>) -> Vec<String> {
 /// Test trait
 ///
 /// The goal here is to test all possible arg, return, and error types.
+#[uniffi::trait_interface]
 pub trait Getters: Send + Sync {
     fn get_bool(&self, v: bool, arg2: bool) -> bool;
     fn get_string(&self, v: String, arg2: bool) -> Result<String, CoverallError>;
@@ -236,6 +238,7 @@ impl NodeTrait for Node {
     }
 }
 
+#[uniffi::trait_interface]
 pub trait StringUtil: Send + Sync {
     fn concat(&self, a: &str, b: &str) -> String;
 }
