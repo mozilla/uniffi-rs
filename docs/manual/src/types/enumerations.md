@@ -48,3 +48,8 @@ pub enum MyEnum {
 ## Remote, non-exhaustive enums
 
 There are some [special considerations here when using UDL](../udl/enumerations.md#remote-non-exhaustive-enums)
+
+## Exposing methods from standard Rust traits
+
+While less useful for Enums, there are a number of standard Rust traits (`Debug`, `Eq` etc) you can expose, so, eg, Python
+might generate `__repr__()` or `__eq__()` methods - [see the docs for this feature](./uniffi_traits.md).

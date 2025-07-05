@@ -121,7 +121,7 @@ pub enum CallableKind {
     /// Toplevel function
     Function,
     /// Interface/Trait interface method
-    Method { interface_name: String },
+    Method { self_type: TypeNode },
     /// Interface constructor
     Constructor {
         interface_name: String,
@@ -223,6 +223,7 @@ pub struct Record {
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    pub uniffi_trait_methods: UniffiTraitMethods,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -257,6 +258,7 @@ pub struct Enum {
     pub discr_type: TypeNode,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    pub uniffi_trait_methods: UniffiTraitMethods,
 }
 
 #[derive(Debug, Clone, Node)]
@@ -621,6 +623,13 @@ pub struct Checksum {
 impl Callable {
     pub fn is_method(&self) -> bool {
         matches!(self.kind, CallableKind::Method { .. })
+    }
+
+    pub fn self_type(&self) -> Option<TypeNode> {
+        match &self.kind {
+            CallableKind::Method { self_type, .. } => Some(self_type.clone()),
+            _ => None,
+        }
     }
 
     pub fn is_primary_constructor(&self) -> bool {

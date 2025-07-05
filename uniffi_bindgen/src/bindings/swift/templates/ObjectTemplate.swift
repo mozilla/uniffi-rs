@@ -66,44 +66,6 @@ open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
     {% for meth in obj.methods() -%}
     {%- call swift::func_decl("open func", meth, 4) %}
     {% endfor %}
-
-    {%- for tm in obj.uniffi_traits() %}
-    {%-     match tm %}
-    {%-         when UniffiTrait::Display { fmt } %}
-    open var description: String {
-        return {% call swift::is_try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call(fmt) %}
-        )
-    }
-    {%-         when UniffiTrait::Debug { fmt } %}
-    open var debugDescription: String {
-        return {% call swift::is_try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call(fmt) %}
-        )
-    }
-    {%-         when UniffiTrait::Eq { eq, ne } %}
-    public static func == (self: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
-        return {% call swift::is_try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call(eq) %}
-        )
-    }
-    {%-         when UniffiTrait::Hash { hash } %}
-    open func hash(into hasher: inout Hasher) {
-        let val = {% call swift::is_try(hash) %} {{ hash.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call(hash) %}
-        )
-        hasher.combine(val)
-    }
-    {%-         when UniffiTrait::Ord { cmp } %}
-    public static func < (self: {{ impl_class_name }}, other: {{ impl_class_name }}) -> Bool {
-        return {% call swift::is_try(cmp) %} {{ cmp.return_type().unwrap()|lift_fn }}(
-            {% call swift::to_ffi_call(cmp) %}
-        ) < 0
-    }
-    {%-         else %}
-    {%-    endmatch %}
-    {%- endfor %}
-
 }
 
 {%- if !obj.has_callback_interface() %}
@@ -188,21 +150,7 @@ public struct {{ ffi_converter_name }}: FfiConverter {
 
 {%- endif %}
 
-{%- for tm in obj.uniffi_traits() %}
-{%-     match tm %}
-{%-         when UniffiTrait::Display { .. } %}
-extension {{ impl_class_name }}: CustomStringConvertible {}
-{%-         when UniffiTrait::Debug { .. } %}
-extension {{ impl_class_name }}: CustomDebugStringConvertible {}
-{%-         when UniffiTrait::Eq { .. } %}
-extension {{ impl_class_name }}: Equatable {}
-{%-         when UniffiTrait::Hash { .. } %}
-extension {{ impl_class_name }}: Hashable {}
-{%-         when UniffiTrait::Ord { .. } %}
-extension {{ impl_class_name }}: Comparable {}
-{%-         else %}
-{%-    endmatch %}
-{%- endfor %}
+{% call swift::uniffi_trait_impls(obj.uniffi_trait_methods()) %}
 
 {%- if is_error %}
 extension {{ impl_class_name }}: Swift.Error {}

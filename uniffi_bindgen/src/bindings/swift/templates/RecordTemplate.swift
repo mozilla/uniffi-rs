@@ -1,4 +1,5 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
 {%- call swift::docstring(rec, 0) %}
 public struct {{ type_name }} {
     {%- for field in rec.fields() %}
@@ -19,7 +20,10 @@ public struct {{ type_name }} {
 extension {{ type_name }}: Sendable {}
 #endif
 
-{% if !contains_object_references %}
+{% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
+
+{# see comments in EnumTemplate re #2409 and whether we could do better here #}
+{% if !(contains_object_references || uniffi_trait_methods.eq_eq.is_some() || uniffi_trait_methods.hash_hash.is_some()) %}
 extension {{ type_name }}: Equatable, Hashable {
     public static func ==(lhs: {{ type_name }}, rhs: {{ type_name }}) -> Bool {
         {%- for field in rec.fields() %}
