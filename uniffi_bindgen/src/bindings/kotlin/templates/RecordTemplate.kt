@@ -9,7 +9,15 @@ data class {{ type_name }} (
     {%- if let Some(default) = field.default_value() %} = {{ default|render_default(field, ci) }} {% endif %}
     {% if !loop.last %}, {% endif %}
     {%- endfor %}
-) {% if contains_object_references %}: Disposable {% endif %}{
+    {%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
+    {%- let comparable = uniffi_trait_methods.ord_cmp.is_some() %}
+)
+{%- if comparable && contains_object_references %}: Disposable, Comparable<{{ type_name }}>
+{%- elif contains_object_references  %}: Disposable
+{%- elif comparable  %}: Comparable<{{ type_name }}>
+{% endif -%}
+{
+    {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}
     {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here
     override fun destroy() {

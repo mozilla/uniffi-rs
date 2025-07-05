@@ -100,3 +100,8 @@ data class TodoEntry (
     // ...
 }
 ```
+
+## Exposing methods from standard Rust traits
+
+While less useful for Records, there are a number of standard Rust traits (`Debug`, `Eq` etc) you can expose, so, eg, Python
+might generate `__repr__()` or `__eq__()` methods - [see the docs for this feature](./uniffi_traits.md).

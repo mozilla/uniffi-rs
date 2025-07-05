@@ -5,6 +5,8 @@
 # construct when they do.
 #}
 {%- let type_name = e.self_type.type_name %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods %}
+
 {% if e.is_flat %}
 
 class {{ type_name }}(enum.Enum):
@@ -34,13 +36,22 @@ class {{ type_name }}:
         def __getitem__(self, index):
             return self._values[index]
 
+    {% filter indent(8) %}
+    {% include "UniffiTraitImpls.py" %}
+    {% endfilter %}
+
+    {# "builtin" methods not handled by a uniffi_trait #}
+    {%-     if uniffi_trait_methods.display_fmt.is_none() %}
         def __str__(self):
             return f"{{ type_name }}.{{ variant.name }}{self._values!r}"
+    {%-     endif %}
 
+    {%-     if uniffi_trait_methods.eq_eq.is_none() %}
         def __eq__(self, other):
             if not other.is_{{ variant.name }}():
                 return False
             return self._values == other._values
+    {%-     endif %}
 
     {%-  else -%}
         {%- for field in variant.fields %}
@@ -66,9 +77,15 @@ class {{ type_name }}:
         {%- endfor %}
             pass
 
+    {% filter indent(8) %}
+    {%      include "UniffiTraitImpls.py" %}
+    {% endfilter %}
+    {# "builtin" methods not handled by a uniffi_trait #}
+    {%-     if uniffi_trait_methods.display_fmt.is_none() %}
         def __str__(self):
             return "{{ type_name }}.{{ variant.name }}({% for field in variant.fields %}{{ field.name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields %}self.{{ field.name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})
-
+    {%-     endif %}
+    {%-     if uniffi_trait_methods.eq_eq.is_none() %}
         def __eq__(self, other):
             if not other.is_{{ variant.name }}():
                 return False
@@ -77,7 +94,9 @@ class {{ type_name }}:
                 return False
             {%- endfor %}
             return True
-    {%  endif %}
+    {%-     endif %}
+    {%-  endif %}
+
     {% endfor %}
 
     # For each variant, we have `is_NAME` and `is_name` methods for easily checking
