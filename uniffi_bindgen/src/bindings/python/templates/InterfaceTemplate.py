@@ -60,23 +60,27 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
         {%- endfilter %}
 {%- endfor %}
 
-{%- for tm in int.uniffi_traits -%}
-{%-     match tm %}
-{%-         when UniffiTrait::Debug { fmt } %}
-{%-         let callable = fmt.callable %}
+{%- let uniffi_trait_methods = int.uniffi_trait_methods %}
+{%- if let Some(fmt) = uniffi_trait_methods.debug_fmt %}
+{%-    let callable = fmt.callable %}
+    # The Rust `Debug::fmt`` implementation.
     def __repr__(self) -> {{ callable.return_type.type_name }}:
         {% filter indent(8) -%}
         {% include "CallableBody.py" -%}
         {% endfilter -%}
-{%-         when UniffiTrait::Display { fmt } %}
-{%-         let callable = fmt.callable %}
+{%- endif %}
+{%- if let Some(fmt) = uniffi_trait_methods.display_fmt %}
+{%-    let callable = fmt.callable %}
+    # The Rust `Display::fmt`` implementation.
     def __str__(self) -> {{ callable.return_type.type_name }}:
         {% filter indent(8) -%}
         {% include "CallableBody.py" -%}
         {% endfilter -%}
 
-{%-         when UniffiTrait::Eq { eq, ne } %}
-{%-         let callable = eq.callable %}
+{%- endif %}
+{%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
+{%-    let callable = eq.callable %}
+    # The Rust `Eq::eq`` implementation.
     def __eq__(self, other: object) -> {{ callable.return_type.type_name }}:
         if not isinstance(other, {{ int.self_type.type_name }}):
             return NotImplemented
@@ -84,24 +88,29 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
         {% filter indent(8) -%}
         {% include "CallableBody.py" -%}
         {% endfilter -%}
-
-{%-         let callable = ne.callable %}
+{%- endif %}
+{%- if let Some(ne) = uniffi_trait_methods.eq_ne %}
+{%-    let callable = ne.callable %}
+    # The Rust `Eq::ne`` implementation.
     def __ne__(self, other: object) -> {{ callable.return_type.type_name }}:
         if not isinstance(other, {{ int.self_type.type_name }}):
             return NotImplemented
         {% filter indent(8) -%}
         {% include "CallableBody.py" -%}
         {% endfilter -%}
-
-{%-         when UniffiTrait::Hash { hash } %}
-{%-         let callable = hash.callable %}
+{%- endif %}
+{%- if let Some(hash) = uniffi_trait_methods.hash_hash %}
+{%-    let callable = hash.callable %}
+    # The Rust `Hash::hash`` implementation.
     def __hash__(self) -> {{ callable.return_type.type_name }}:
         {% filter indent(8) -%}
         {% include "CallableBody.py" -%}
         {% endfilter -%}
 
-{%-         when UniffiTrait::Ord { cmp } %}
-{%-         let callable = cmp.callable %}
+{%- endif %}
+{%- if let Some(cmp) = uniffi_trait_methods.ord_cmp %}
+{%-    let callable = cmp.callable %}
+    # The Rust `Ord::cmp`` implementation.
     # lol/sob, python3 got rid of the perfect python2 `.__cmp__()` :(
     def __rust_cmp__(self, other) -> {{ callable.return_type.type_name }}:
         {% filter indent(8) -%}
@@ -119,8 +128,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 
     def __ge__(self, other) -> bool:
         return self.__rust_cmp__(other) >= 0
-{%     endmatch %}
-{%- endfor %}
+{%- endif %}
 
 {# callback interfaces #}
 {%- if let Some(vtable) = int.vtable %}

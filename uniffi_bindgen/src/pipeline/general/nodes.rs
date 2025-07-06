@@ -265,6 +265,7 @@ pub struct Interface {
     pub constructors: Vec<Constructor>,
     pub methods: Vec<Method>,
     pub uniffi_traits: Vec<UniffiTrait>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
     pub self_type: TypeNode,
@@ -588,6 +589,34 @@ pub enum HandleKind {
 pub struct Checksum {
     pub fn_name: RustFfiFunctionName,
     pub checksum: u16,
+}
+
+/// flattened uniffi_traits.
+#[derive(Debug, Clone, Node)]
+pub struct UniffiTraitMethods {
+    pub debug_fmt: Option<Method>,
+    pub display_fmt: Option<Method>,
+    pub eq_eq: Option<Method>,
+    pub eq_ne: Option<Method>,
+    pub hash_hash: Option<Method>,
+    pub ord_cmp: Option<Method>,
+}
+
+impl UniffiTraitMethods {
+    pub fn fill_from(&mut self, uniffi_traits: &[UniffiTrait]) {
+        for t in uniffi_traits {
+            match t.clone() {
+                UniffiTrait::Debug { fmt } => self.debug_fmt = Some(fmt),
+                UniffiTrait::Display { fmt } => self.display_fmt = Some(fmt),
+                UniffiTrait::Eq { eq, ne } => {
+                    self.eq_eq = Some(eq);
+                    self.eq_ne = Some(ne);
+                }
+                UniffiTrait::Hash { hash } => self.hash_hash = Some(hash),
+                UniffiTrait::Ord { cmp } => self.ord_cmp = Some(cmp),
+            }
+        }
+    }
 }
 
 impl FfiDefinition {
