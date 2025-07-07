@@ -29,6 +29,16 @@ class TestTraitMethods(unittest.TestCase):
         d[m] = "m"
         self.assertTrue(m in d)
 
+    def test_ord(self):
+        a = TraitMethods("a")
+        b = TraitMethods("b")
+        self.assertLess(a, b)
+        self.assertLessEqual(a, b)
+        self.assertLessEqual(a, a)
+        self.assertGreater(b, a)
+        self.assertGreaterEqual(b, a)
+        self.assertGreaterEqual(b, b)
+
 class TestProcmacroTraitMethods(unittest.TestCase):
     def test_str(self):
         m = ProcTraitMethods("yo")
@@ -52,6 +62,16 @@ class TestProcmacroTraitMethods(unittest.TestCase):
         m = ProcTraitMethods("m")
         d[m] = "m"
         self.assertTrue(m in d)
+
+    def test_ord(self):
+        a = ProcTraitMethods("a")
+        b = ProcTraitMethods("b")
+        self.assertLess(a, b)
+        self.assertLessEqual(a, b)
+        self.assertLessEqual(a, a)
+        self.assertGreater(b, a)
+        self.assertGreaterEqual(b, a)
+        self.assertGreaterEqual(b, b)
 
 if __name__=='__main__':
     unittest.main()

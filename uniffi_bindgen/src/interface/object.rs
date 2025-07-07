@@ -223,7 +223,8 @@ impl Object {
                     .flat_map(|ut| match ut {
                         UniffiTrait::Display { fmt: m }
                         | UniffiTrait::Debug { fmt: m }
-                        | UniffiTrait::Hash { hash: m } => vec![m],
+                        | UniffiTrait::Hash { hash: m }
+                        | UniffiTrait::Ord { cmp: m } => vec![m],
                         UniffiTrait::Eq { eq, ne } => vec![eq, ne],
                     })
                     .map(|m| &m.ffi_func),
@@ -365,6 +366,7 @@ impl From<uniffi_meta::UniffiTraitMetadata> for UniffiTrait {
             uniffi_meta::UniffiTraitMetadata::Hash { hash } => {
                 UniffiTrait::Hash { hash: hash.into() }
             }
+            uniffi_meta::UniffiTraitMetadata::Ord { cmp } => UniffiTrait::Ord { cmp: cmp.into() },
         }
     }
 }
@@ -688,6 +690,7 @@ pub enum UniffiTrait {
     Display { fmt: Method },
     Eq { eq: Method, ne: Method },
     Hash { hash: Method },
+    Ord { cmp: Method },
 }
 
 impl UniffiTrait {
@@ -696,7 +699,8 @@ impl UniffiTrait {
             match self {
                 UniffiTrait::Display { fmt: m }
                 | UniffiTrait::Debug { fmt: m }
-                | UniffiTrait::Hash { hash: m } => vec![m.iter_types()],
+                | UniffiTrait::Hash { hash: m }
+                | UniffiTrait::Ord { cmp: m } => vec![m.iter_types()],
                 UniffiTrait::Eq { eq, ne } => vec![eq.iter_types(), ne.iter_types()],
             }
             .into_iter()
@@ -708,7 +712,8 @@ impl UniffiTrait {
         match self {
             UniffiTrait::Display { fmt: m }
             | UniffiTrait::Debug { fmt: m }
-            | UniffiTrait::Hash { hash: m } => {
+            | UniffiTrait::Hash { hash: m }
+            | UniffiTrait::Ord { cmp: m } => {
                 m.derive_ffi_func()?;
             }
             UniffiTrait::Eq { eq, ne } => {

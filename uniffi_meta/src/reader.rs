@@ -378,6 +378,9 @@ impl<'a> MetadataReader<'a> {
             UniffiTraitDiscriminants::Hash => UniffiTraitMetadata::Hash {
                 hash: read_metadata_method()?,
             },
+            UniffiTraitDiscriminants::Ord => UniffiTraitMetadata::Ord {
+                cmp: read_metadata_method()?,
+            },
         })
     }
 

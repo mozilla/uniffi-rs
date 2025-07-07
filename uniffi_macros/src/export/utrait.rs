@@ -137,6 +137,32 @@ pub(crate) fn expand_uniffi_trait_export(
                 global_items.push(ffi_func_ne);
                 global_items.push(trait_meta);
             }
+            UniffiTraitDiscriminants::Ord => {
+                let method_cmp = quote! {
+                    fn uniffi_trait_ord_cmp(&self, other: &#self_ident) -> i8 {
+                        use ::std::cmp::Ord;
+                        ::uniffi::deps::static_assertions::assert_impl_all!(#self_ident: Ord); // This object has a trait method which requires `Ord` be implemented.
+                        Ord::cmp(self, other) as i8
+                    }
+                };
+                let (ffi_func_cmp, method_meta_cmp) =
+                    process_uniffi_trait_method(&method_cmp, &self_ident, udl_mode)?;
+                // metadata for the trait itself.
+                let discr = UniffiTraitDiscriminants::Ord as u8;
+                let trait_meta = crate::util::create_metadata_items(
+                    "uniffi_trait",
+                    &format!("{}_Ord", self_ident.unraw()),
+                    quote! {
+                        ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::UNIFFI_TRAIT)
+                        .concat_value(#discr)
+                        .concat(#method_meta_cmp)
+                    },
+                    None,
+                );
+                impl_items.push(method_cmp);
+                global_items.push(ffi_func_cmp);
+                global_items.push(trait_meta);
+            }
         }
     }
     Ok(quote! {

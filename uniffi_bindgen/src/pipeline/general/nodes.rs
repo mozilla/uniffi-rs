@@ -311,6 +311,7 @@ pub enum UniffiTrait {
     Display { fmt: Method },
     Eq { eq: Method, ne: Method },
     Hash { hash: Method },
+    Ord { cmp: Method },
 }
 
 #[derive(Debug, Clone, Node)]
