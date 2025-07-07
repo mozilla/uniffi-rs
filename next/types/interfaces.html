@@ -2367,7 +2367,7 @@ and the following Rust code:
 Not all bindings support generating special methods, so they may be ignored.
 It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.</p>
 <p>The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
-is <code>Debug</code>, <code>Display</code>, <code>Eq</code> and <code>Hash</code>.</p>
+is <code>Debug</code>, <code>Display</code>, <code>Eq</code>, <code>Ord</code> and <code>Hash</code>.</p>
 <h2 id="managing-shared-references">Managing Shared References</h2>
 <p>To the foreign-language consumer, UniFFI object instances are designed to behave as much like
 regular language objects as possible. They can be freely passed as arguments or returned as values,
