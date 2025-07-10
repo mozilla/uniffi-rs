@@ -6,6 +6,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- UDL-based trait interfaces must now be wrapped with the `#[uniffi::trait_interface]` attribute.
+- Python: Trait interface implementations must now inherit from the trait base class.
+  This will look like `class PyTraitName(RustTraitName):`
+
 ### What's new?
 
 - Objects can export the `Ord` trait, allowing such objects to be ordered.
@@ -23,6 +28,14 @@
   - Lowering/lifting now uses `u64` values
   - The free function inputs a `u64` handle rather than a raw pointer
   - The clone function inputs and returns a `u64` handle rather than a raw pointer
+- Trait / Callback interface changes
+    - VTable fields are now: `free`, `clone`, followed by a field for each interface method.
+      Note That `free` is now at the start of the vtable rather than the end.
+    - Trait interface changes:
+        - Foreign handles must always have the lowest bit set
+        - Both Rust and foreign handles can now be passed across the FFI.
+          When Lifting/lowering trait interface handles, check if the handle was generated from Rust or the foreign side.
+    - See https://github.com/mozilla/uniffi-rs/pulls/2586 examples of how the builtin bindings here changed.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 

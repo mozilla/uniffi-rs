@@ -238,20 +238,24 @@ pub fn ffi_foreign_future_complete(return_ffi_type: Option<FfiType>) -> FfiCallb
 pub fn vtable_struct(trait_name: &str, methods: &[Method]) -> FfiStruct {
     FfiStruct {
         name: vtable_name(trait_name),
-        fields: methods
-            .iter()
-            .enumerate()
-            .map(|(i, method)| {
-                FfiField::new(
-                    method.name(),
-                    FfiType::Callback(format!("CallbackInterface{trait_name}Method{i}")),
-                )
-            })
-            .chain([FfiField::new(
+        fields: [
+            FfiField::new(
                 "uniffi_free",
                 FfiType::Callback("CallbackInterfaceFree".to_owned()),
-            )])
-            .collect(),
+            ),
+            FfiField::new(
+                "uniffi_clone",
+                FfiType::Callback("CallbackInterfaceClone".to_owned()),
+            ),
+        ]
+        .into_iter()
+        .chain(methods.iter().enumerate().map(|(i, method)| {
+            FfiField::new(
+                method.name(),
+                FfiType::Callback(format!("CallbackInterface{trait_name}Method{i}")),
+            )
+        }))
+        .collect(),
     }
 }
 
