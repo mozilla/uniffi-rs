@@ -23,7 +23,7 @@ mod metadata;
 // `docs/uniffi-versioning.md` for details.
 //
 // Once we get to 1.0, then we'll need to update the scheme to something like 100 + major_version
-pub const UNIFFI_CONTRACT_VERSION: u32 = 29;
+pub const UNIFFI_CONTRACT_VERSION: u32 = 30;
 
 /// Similar to std::hash::Hash.
 ///
@@ -182,10 +182,63 @@ impl ConstructorMetadata {
     }
 }
 
+// A "sub-type" which represents all the "self" receivers we support.
+// It would ideally be `Type`
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Checksum, Node)]
+pub enum MethodReceiver {
+    Object { module_path: String, name: String },
+    Record { module_path: String, name: String },
+    Enum { module_path: String, name: String },
+}
+
+impl MethodReceiver {
+    pub fn module_path(&self) -> &str {
+        match self {
+            Self::Enum { module_path, .. } => module_path,
+            Self::Record { module_path, .. } => module_path,
+            Self::Object { module_path, .. } => module_path,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Enum { name, .. } => name,
+            Self::Record { name, .. } => name,
+            Self::Object { name, .. } => name,
+        }
+    }
+}
+
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Node)]
+pub enum MethodReceiverKind {
+    Object,
+    Record,
+    Enum,
+}
+
+impl MethodReceiverKind {
+    pub fn from(v: u8) -> anyhow::Result<Self> {
+        Ok(match v {
+            0 => MethodReceiverKind::Object,
+            1 => MethodReceiverKind::Record,
+            2 => MethodReceiverKind::Enum,
+            _ => anyhow::bail!("invalid receiver discriminant {v}"),
+        })
+    }
+
+    pub fn to_receiver(&self, module_path: String, name: String) -> MethodReceiver {
+        match self {
+            Self::Object => MethodReceiver::Object { module_path, name },
+            Self::Enum => MethodReceiver::Enum { module_path, name },
+            Self::Record => MethodReceiver::Record { module_path, name },
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Node)]
 pub struct MethodMetadata {
-    pub module_path: String,
-    pub self_name: String,
+    pub receiver: MethodReceiver,
     pub name: String,
     pub is_async: bool,
     pub inputs: Vec<FnParamMetadata>,
@@ -198,11 +251,19 @@ pub struct MethodMetadata {
 
 impl MethodMetadata {
     pub fn ffi_symbol_name(&self) -> String {
-        method_symbol_name(&self.module_path, &self.self_name, &self.name)
+        method_symbol_name(
+            self.receiver.module_path(),
+            self.receiver.name(),
+            &self.name,
+        )
     }
 
     pub fn checksum_symbol_name(&self) -> String {
-        method_checksum_symbol_name(&self.module_path, &self.self_name, &self.name)
+        method_checksum_symbol_name(
+            self.receiver.module_path(),
+            self.receiver.name(),
+            &self.name,
+        )
     }
 }
 
@@ -420,29 +481,31 @@ pub enum UniffiTraitMetadata {
 }
 
 impl UniffiTraitMetadata {
-    fn module_path(&self) -> &String {
-        &match self {
+    fn module_path(&self) -> &str {
+        match self {
             UniffiTraitMetadata::Debug { fmt } => fmt,
             UniffiTraitMetadata::Display { fmt } => fmt,
             UniffiTraitMetadata::Eq { eq, .. } => eq,
             UniffiTraitMetadata::Hash { hash } => hash,
             UniffiTraitMetadata::Ord { cmp } => cmp,
         }
-        .module_path
+        .receiver
+        .module_path()
     }
 
-    pub fn self_name(&self) -> &String {
-        &match self {
+    pub fn self_name(&self) -> &str {
+        match self {
             UniffiTraitMetadata::Debug { fmt } => fmt,
             UniffiTraitMetadata::Display { fmt } => fmt,
             UniffiTraitMetadata::Eq { eq, .. } => eq,
             UniffiTraitMetadata::Hash { hash } => hash,
             UniffiTraitMetadata::Ord { cmp } => cmp,
         }
-        .self_name
+        .receiver
+        .name()
     }
 
-    pub fn name(&self) -> &String {
+    pub fn name(&self) -> &str {
         &match self {
             UniffiTraitMetadata::Debug { fmt } => fmt,
             UniffiTraitMetadata::Display { fmt } => fmt,
@@ -541,7 +604,7 @@ impl Metadata {
             Metadata::UdlFile(meta) => &meta.module_path,
             Metadata::Func(meta) => &meta.module_path,
             Metadata::Constructor(meta) => &meta.module_path,
-            Metadata::Method(meta) => &meta.module_path,
+            Metadata::Method(meta) => meta.receiver.module_path(),
             Metadata::Record(meta) => &meta.module_path,
             Metadata::Enum(meta) => &meta.module_path,
             Metadata::Object(meta) => &meta.module_path,

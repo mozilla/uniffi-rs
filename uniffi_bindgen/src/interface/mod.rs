@@ -928,8 +928,13 @@ impl ComponentInterface {
 
     pub(super) fn add_method_meta(&mut self, meta: impl Into<Method>) -> Result<()> {
         let mut method: Method = meta.into();
-        let object = get_object(&mut self.objects, &method.object_name)
-            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", &method.object_name))?;
+        let object = get_object(&mut self.objects, method.object_name()).ok_or_else(|| {
+            anyhow!(
+                "add_method_meta: object {} not found",
+                &method.object_name()
+            )
+        })?;
+        method.object_impl = *object.imp();
 
         self.types
             .add_known_types(method.iter_types())
@@ -937,7 +942,6 @@ impl ComponentInterface {
         method
             .throws_name()
             .map(|n| self.errors.insert(n.to_string()));
-        method.object_impl = object.imp;
         object.methods.push(method);
         Ok(())
     }

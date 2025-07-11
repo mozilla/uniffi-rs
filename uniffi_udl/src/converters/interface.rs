@@ -8,8 +8,8 @@ use crate::{converters::convert_docstring, InterfaceCollector};
 use anyhow::{bail, Result};
 use std::collections::HashSet;
 use uniffi_meta::{
-    ConstructorMetadata, FnParamMetadata, MethodMetadata, ObjectImpl, ObjectMetadata, Type,
-    UniffiTraitMetadata,
+    ConstructorMetadata, FnParamMetadata, MethodMetadata, MethodReceiver, ObjectImpl,
+    ObjectMetadata, Type, UniffiTraitMetadata,
 };
 
 impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
@@ -48,7 +48,13 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name)
                     }
-                    method.self_name = object_name.to_string();
+                    // a little smelly that we need to fixup the receiver here, but it is what it is...
+                    let new_name = object_name.to_string();
+                    match method.receiver {
+                        MethodReceiver::Enum { ref mut name, .. } => *name = new_name,
+                        MethodReceiver::Record { ref mut name, .. } => *name = new_name,
+                        MethodReceiver::Object { ref mut name, .. } => *name = new_name,
+                    }
                     ci.items.insert(method.into());
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -60,10 +66,11 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                                  return_type: Option<Type>|
          -> Result<MethodMetadata> {
             Ok(MethodMetadata {
-                module_path: ci.module_path(),
-                // The name is used to create the ffi function for the method.
+                receiver: MethodReceiver::Object {
+                    module_path: ci.module_path(),
+                    name: object_name.to_string(),
+                },
                 name: name.to_string(),
-                self_name: object_name.to_string(),
                 is_async: false,
                 inputs,
                 return_type,

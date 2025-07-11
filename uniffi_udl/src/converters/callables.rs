@@ -12,7 +12,7 @@ use anyhow::{bail, Result};
 
 use uniffi_meta::{
     ConstructorMetadata, DefaultValueMetadata, FieldMetadata, FnMetadata, FnParamMetadata,
-    MethodMetadata, TraitMethodMetadata,
+    MethodMetadata, MethodReceiver, TraitMethodMetadata,
 };
 
 impl APIConverter<FieldMetadata> for weedle::argument::Argument<'_> {
@@ -155,7 +155,11 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
 
         let takes_self_by_arc = attributes.get_self_by_arc();
         Ok(MethodMetadata {
-            module_path: ci.module_path(),
+            receiver: MethodReceiver::Object {
+                module_path: ci.module_path(),
+                // We don't know the name of the containing `Object` at this point, fill it in later.
+                name: Default::default(),
+            },
             name: match self.identifier {
                 None => bail!("anonymous methods are not supported {:?}", self),
                 Some(id) => {
@@ -166,8 +170,6 @@ impl APIConverter<MethodMetadata> for weedle::interface::OperationInterfaceMembe
                     name
                 }
             },
-            // We don't know the name of the containing `Object` at this point, fill it in later.
-            self_name: Default::default(),
             is_async,
             inputs: self.args.body.list.convert(ci)?,
             return_type,

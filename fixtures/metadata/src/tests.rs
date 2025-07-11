@@ -456,26 +456,25 @@ mod test_metadata {
     }
 
     #[test]
-    fn test_uniffi_traits() {
+    fn test_uniffi_traits_object() {
+        let expected_receiver = MethodReceiver::Object {
+            module_path: "uniffi_fixture_metadata".to_string(),
+            name: "Special".to_string(),
+        };
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_DEBUG).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
-                if fmt.module_path == "uniffi_fixture_metadata"
-                   && fmt.self_name == "Special"
+                if fmt.receiver == expected_receiver
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_EQ).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
-                if eq.module_path == "uniffi_fixture_metadata"
-                   && ne.module_path == "uniffi_fixture_metadata"
-                   && eq.self_name == "Special"
-                   && ne.self_name == "Special"
+                if eq.receiver == expected_receiver && ne.receiver == expected_receiver
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_ORD).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
-                if cmp.module_path == "uniffi_fixture_metadata"
-                   && cmp.self_name == "Special"
+                if cmp.receiver == expected_receiver
         ));
     }
 }
@@ -652,8 +651,10 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD,
             MethodMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
-                self_name: "Calculator".into(),
+                receiver: MethodReceiver::Object {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "Calculator".into(),
+                },
                 name: "add".into(),
                 is_async: false,
                 inputs: vec![
@@ -736,8 +737,10 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB,
             MethodMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
-                self_name: "Calculator".into(),
+                receiver: MethodReceiver::Object {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "Calculator".into(),
+                },
                 name: "async_sub".into(),
                 is_async: true,
                 inputs: vec![
@@ -795,9 +798,10 @@ mod test_function_metadata {
                     name: "CalculatorDisplay".into(),
                     imp: ObjectImpl::Trait,
                 }),
-                // We might as well test other fields too though
-                module_path: "uniffi_fixture_metadata".into(),
-                self_name: "Calculator".into(),
+                receiver: MethodReceiver::Object {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "Calculator".into(),
+                },
                 name: "get_display".into(),
                 is_async: false,
                 inputs: vec![],

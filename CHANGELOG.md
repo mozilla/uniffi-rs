@@ -23,6 +23,9 @@
   - Lowering/lifting now uses `u64` values
   - The free function inputs a `u64` handle rather than a raw pointer
   - The clone function inputs and returns a `u64` handle rather than a raw pointer
+- Towards `Enums` and `Records` getting methods:
+  - Method metadata now carries a `MethodReceiver` for info about self.
+  - In the templates, for `Callable`, `x.takes_self()` is replaced with `x.self_type().is_some()` etc.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 
