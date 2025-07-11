@@ -66,7 +66,46 @@ impl std::fmt::Display for ProcTraitMethods {
     }
 }
 
-// Enums.
+// Enums and Records.
+// Our bindings will often auto-generate the local equivalent of `Eq` etc, so if we
+// just `#[derive(Eq)` etc here , our tests would see the same results even if our versions weren't hoooked up.
+// So we need to implement a non-obvious implementation to test against.
+// Records
+#[derive(uniffi::Record, Debug)]
+#[uniffi::export_for_record(Debug, Eq, Ord, Hash)]
+pub struct TraitRecord {
+    s: String,
+    i: i8,
+}
+
+// only compare the string, not the int
+impl Ord for TraitRecord {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        Ord::cmp(&self.s, &other.s)
+    }
+}
+
+impl PartialOrd for TraitRecord {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for TraitRecord {
+    fn eq(&self, other: &Self) -> bool {
+        Ord::cmp(self, other) == std::cmp::Ordering::Equal
+    }
+}
+
+impl Eq for TraitRecord {}
+
+impl Hash for TraitRecord {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.s.hash(state)
+    }
+}
+
+// Enums
 #[derive(uniffi::Enum, Debug)]
 #[uniffi::export(Debug, Display, Eq, Ord, Hash)]
 pub enum TraitEnum {

@@ -28,9 +28,15 @@ pub use trait_interface::alter_trait;
 // TODO(jplatte): Ensure no generics, …
 // TODO(jplatte): Aggregate errors instead of short-circuiting, wherever possible
 
+// If the item we are exporting from can't be guessed correctly from the input block.
+pub enum ExportItemQualifier {
+    Record, // a `struct` block sometimes targets a record
+}
+
 pub(crate) fn expand_export(
     mut item: Item,
     all_args: proc_macro::TokenStream,
+    item_qualifier: Option<ExportItemQualifier>,
     udl_mode: bool,
 ) -> syn::Result<TokenStream> {
     let mod_path = mod_path()?;
@@ -153,13 +159,12 @@ pub(crate) fn expand_export(
             uniffi_traits,
             ..
         } => {
-            // XXX - need some way to know if this is Object or Record.
-            utrait::expand_uniffi_trait_export(
-                self_ident,
-                uniffi_traits,
-                include_meta,
-                MethodReceiverKind::Object,
-            )
+            let receiver = if matches!(item_qualifier, Some(ExportItemQualifier::Record)) {
+                MethodReceiverKind::Record
+            } else {
+                MethodReceiverKind::Object
+            };
+            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits, include_meta, receiver)
         }
         ExportItem::Enum {
             self_ident,

@@ -93,6 +93,12 @@ mod uniffi_traits {
     pub enum SpecialEnum {
         A,
     }
+
+    #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, uniffi::Record)]
+    #[uniffi::export_for_record(Debug, Eq, Ord)]
+    pub struct SpecialRecord {
+        a: u8,
+    }
 }
 
 #[uniffi::export(callback_interface)]
@@ -502,6 +508,29 @@ mod test_metadata {
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_ORD).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
+                if cmp.receiver == expected_receiver
+        ));
+    }
+
+    #[test]
+    fn test_uniffi_traits_record() {
+        let expected_receiver = MethodReceiver::Record {
+            module_path: "uniffi_fixture_metadata".to_string(),
+            name: "SpecialRecord".to_string(),
+        };
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_DEBUG).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
+                if fmt.receiver == expected_receiver
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_EQ).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
+                if eq.receiver == expected_receiver && ne.receiver == expected_receiver
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_ORD).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
                 if cmp.receiver == expected_receiver
         ));
