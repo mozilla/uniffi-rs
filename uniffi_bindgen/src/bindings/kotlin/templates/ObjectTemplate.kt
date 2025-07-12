@@ -98,6 +98,7 @@
 {%- let interface_name = self::object_interface_name(ci, obj) %}
 {%- let impl_class_name = self::object_impl_name(ci, obj) %}
 {%- let methods = obj.methods() %}
+{%- let uniffi_trait_methods = obj.uniffi_trait_methods() %}
 {%- let interface_docstring = obj.docstring() %}
 //
 {%- let is_error = ci.is_name_used_as_error(name) %}
@@ -113,11 +114,9 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 {%- for t in obj.trait_impls() %}
 , {{ self::trait_interface_name(ci, t.trait_name)? }}
 {% endfor %}
-{%- for tm in obj.uniffi_traits() %}
-{%-     if let UniffiTrait::Ord { cmp } = tm %}
+{%- if uniffi_trait_methods.ord_cmp.is_some() %}
 , Comparable<{{ impl_class_name }}>
-{%-     endif %}
-{%- endfor %}
+{%- endif %}
 {
 {%- endif %}
 
@@ -222,35 +221,35 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {%- call kt::func_decl("override", meth, 4) %}
     {% endfor %}
 
-    {%- for tm in obj.uniffi_traits() %}
-    {%-     match tm %}
-    {%         when UniffiTrait::Debug { .. } %}
-    // The Rust `Debug` implementation isn't used.
-    {%         when UniffiTrait::Display { fmt } %}
+    {%- if let Some(fmt) = uniffi_trait_methods.debug_fmt %}
+    // This object has a Rust `Debug` implementation but it isn't used.
+    {%- endif %}
+    {%- if let Some(fmt) = uniffi_trait_methods.display_fmt %}
     // The local Rust `Display` implementation.
     override fun toString(): String {
         return {{ fmt.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(fmt) %})
     }
-    {%         when UniffiTrait::Eq { eq, ne } %}
+    {%- endif %}
+    {%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
     // The local Rust `Eq` implementation - only `eq` is used.
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is {{ impl_class_name}}) return false
         return {{ eq.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(eq) %})
     }
-    {%         when UniffiTrait::Hash { hash } %}
+    {%- endif %}
+    {%- if let Some(hash) = uniffi_trait_methods.hash_hash %}
     // The local Rust `Hash` implementation
     override fun hashCode(): Int {
         return {{ hash.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(hash) %}).toInt()
     }
-    {%         when UniffiTrait::Ord { cmp } %}
+    {%- endif %}
+    {%- if let Some(cmp) = uniffi_trait_methods.ord_cmp %}
     // The local Rust `Ord` implementation
     override fun compareTo(other: {{ impl_class_name}}): Int {
         return {{ cmp.return_type().unwrap()|lift_fn }}({%- call kt::to_ffi_call(cmp) %}).toInt()
     }
-    {%-         else %}
-    {%-     endmatch %}
-    {%- endfor %}
+    {%- endif %}
 
     {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {% if !obj.alternate_constructors().is_empty() -%}

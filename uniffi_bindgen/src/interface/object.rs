@@ -184,6 +184,10 @@ impl Object {
         self.uniffi_traits.iter().collect()
     }
 
+    pub fn uniffi_trait_methods(&self) -> UniffiTraitMethods {
+        UniffiTraitMethods::new(&self.uniffi_traits)
+    }
+
     pub fn trait_impls(&self) -> Vec<&ObjectTraitImplMetadata> {
         self.trait_impls.iter().collect()
     }
@@ -736,6 +740,36 @@ impl UniffiTrait {
             }
         }
         Ok(())
+    }
+}
+
+/// flattened uniffi_traits.
+#[derive(Debug, Clone, Default)]
+pub struct UniffiTraitMethods {
+    pub debug_fmt: Option<Method>,
+    pub display_fmt: Option<Method>,
+    pub eq_eq: Option<Method>,
+    pub eq_ne: Option<Method>,
+    pub hash_hash: Option<Method>,
+    pub ord_cmp: Option<Method>,
+}
+
+impl UniffiTraitMethods {
+    fn new(uniffi_traits: &[UniffiTrait]) -> Self {
+        let mut new = Self::default();
+        for t in uniffi_traits {
+            match t.clone() {
+                UniffiTrait::Debug { fmt } => new.debug_fmt = Some(fmt),
+                UniffiTrait::Display { fmt } => new.display_fmt = Some(fmt),
+                UniffiTrait::Eq { eq, ne } => {
+                    new.eq_eq = Some(eq);
+                    new.eq_ne = Some(ne);
+                }
+                UniffiTrait::Hash { hash } => new.hash_hash = Some(hash),
+                UniffiTrait::Ord { cmp } => new.ord_cmp = Some(cmp),
+            }
+        }
+        new
     }
 }
 

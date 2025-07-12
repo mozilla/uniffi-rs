@@ -96,14 +96,14 @@ pub struct Constructor {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct Method {
     pub callable: Callable,
     pub docstring: Option<String>,
 }
 
 /// Common data from Function/Method/Constructor
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct Callable {
     pub name: String,
     pub is_async: bool,
@@ -116,7 +116,7 @@ pub struct Callable {
     pub ffi_func: RustFfiFunctionName,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub enum CallableKind {
     /// Toplevel function
     Function,
@@ -134,18 +134,18 @@ pub enum CallableKind {
     VTableMethod { trait_name: String },
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct ReturnType {
     pub ty: Option<TypeNode>,
     pub type_name: String,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct ThrowsType {
     pub ty: Option<TypeNode>,
 }
 
-#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct AsyncData {
     // FFI types for async Rust functions
     pub ffi_rust_future_poll: RustFfiFunctionName,
@@ -157,7 +157,7 @@ pub struct AsyncData {
     pub ffi_foreign_future_result: FfiStructName,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct Argument {
     pub name: String,
     pub ty: TypeNode,
@@ -165,13 +165,13 @@ pub struct Argument {
     pub default: Option<DefaultValueNode>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub enum DefaultValue {
     Default(TypeNode),
     Literal(LiteralNode),
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct DefaultValueNode {
     #[node(wraps)]
     pub default: DefaultValue,
@@ -179,14 +179,14 @@ pub struct DefaultValueNode {
     pub py_default: String,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct LiteralNode {
     pub lit: Literal,
     /// The literal rendered as a Python string
     pub py_lit: String,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub enum Literal {
     Boolean(bool),
     String(String),
@@ -209,7 +209,7 @@ pub enum Literal {
 
 // Represent the radix of integer literal values.
 // We preserve the radix into the generated bindings for readability reasons.
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub enum Radix {
     Decimal = 10,
     Octal = 8,
@@ -278,7 +278,7 @@ pub struct Interface {
     pub constructors: Vec<Constructor>,
     pub has_primary_constructor: bool,
     pub methods: Vec<Method>,
-    pub uniffi_traits: Vec<UniffiTrait>,
+    pub uniffi_trait_methods: UniffiTraitMethods,
     pub trait_impls: Vec<ObjectTraitImpl>,
     pub imp: ObjectImpl,
     pub self_type: TypeNode,
@@ -330,15 +330,6 @@ pub struct VTableMethod {
 }
 
 #[derive(Debug, Clone, Node)]
-pub enum UniffiTrait {
-    Debug { fmt: Method },
-    Display { fmt: Method },
-    Eq { eq: Method, ne: Method },
-    Hash { hash: Method },
-    Ord { cmp: Method },
-}
-
-#[derive(Debug, Clone, Node)]
 pub struct ObjectTraitImpl {
     pub ty: TypeNode,
     pub trait_name: String,
@@ -381,7 +372,7 @@ pub struct ExternalType {
 }
 
 /// Wrap `Type` so that we can add extra fields that are set for all variants.
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub struct TypeNode {
     pub ty: Type,
     pub canonical_name: String,
@@ -470,7 +461,18 @@ pub enum ObjectImpl {
     CallbackTrait,
 }
 
+/// flattened uniffi_traits.
 #[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
+pub struct UniffiTraitMethods {
+    pub debug_fmt: Option<Method>,
+    pub display_fmt: Option<Method>,
+    pub eq_eq: Option<Method>,
+    pub eq_ne: Option<Method>,
+    pub hash_hash: Option<Method>,
+    pub ord_cmp: Option<Method>,
+}
+
+#[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub enum FfiDefinition {
     /// FFI Function exported in the Rust library
     RustFunction(FfiFunction),
