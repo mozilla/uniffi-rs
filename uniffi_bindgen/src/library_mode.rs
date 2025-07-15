@@ -111,14 +111,7 @@ pub fn find_components(
     for group in metadata_groups.values_mut() {
         let crate_name = group.namespace.crate_name.clone();
         if let Some(udl_group) = load_udl_metadata(group, &crate_name, config_supplier)? {
-            let mut udl_items = udl_group
-                .items
-                .into_iter()
-                // some items are both in UDL and library metadata. For many that's fine but
-                // uniffi-traits aren't trivial to compare meaning we end up with dupes.
-                // We filter out such problematic items here.
-                .filter(|item| !matches!(item, Metadata::UniffiTrait { .. }))
-                .collect();
+            let mut udl_items = udl_group.items.into_iter().collect();
             group.items.append(&mut udl_items);
             if group.namespace_docstring.is_none() {
                 group.namespace_docstring = udl_group.namespace_docstring;

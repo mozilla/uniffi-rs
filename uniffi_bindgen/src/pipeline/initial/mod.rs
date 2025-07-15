@@ -105,12 +105,6 @@ impl Root {
         metadata_converter
             .add_metadata_item(uniffi_meta::Metadata::Namespace(metadata_group.namespace))?;
         for mut meta in metadata_group.items {
-            // some items are both in UDL and library metadata. For many that's fine but
-            // uniffi-traits aren't trivial to compare meaning we end up with dupes.
-            // We filter out such problematic items here.
-            if library_mode && matches!(meta, uniffi_meta::Metadata::UniffiTrait { .. }) {
-                continue;
-            }
             // Make sure metadata checksums are set
             match &mut meta {
                 uniffi_meta::Metadata::Func(func) => {

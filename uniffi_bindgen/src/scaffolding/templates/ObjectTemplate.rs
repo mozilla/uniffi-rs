@@ -22,19 +22,19 @@ pub trait r#{{ obj.name() }} {
 }
 {%- else %}
 {%- for tm in obj.uniffi_traits() %}
-{%      match tm %}
-{%          when UniffiTrait::Debug { fmt }%}
-#[uniffi::export(Debug)]
-{%          when UniffiTrait::Display { fmt }%}
-#[uniffi::export(Display)]
-{%          when UniffiTrait::Hash { hash }%}
-#[uniffi::export(Hash)]
-{%          when UniffiTrait::Ord { cmp }%}
-#[uniffi::export(Ord)]
-{%          when UniffiTrait::Eq { eq, ne }%}
-#[uniffi::export(Eq)]
-{%      endmatch %}
-{% endfor %}
+{%-      match tm %}
+{%-          when UniffiTrait::Debug { fmt } %}
+#[::uniffi::export_for_udl_derive(Debug)]
+{%-          when UniffiTrait::Display { fmt } %}
+#[::uniffi::export_for_udl_derive(Display)]
+{%-          when UniffiTrait::Hash { hash } %}
+#[::uniffi::export_for_udl_derive(Hash)]
+{%-          when UniffiTrait::Ord { cmp } %}
+#[::uniffi::export_for_udl_derive(Ord)]
+{%-          when UniffiTrait::Eq { eq, ne } %}
+#[::uniffi::export_for_udl_derive(Eq)]
+{%-      endmatch %}
+{%- endfor %}
 {%- if obj.remote() %}
 #[::uniffi::udl_remote(Object)]
 {%- else %}

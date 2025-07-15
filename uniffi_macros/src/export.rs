@@ -148,8 +148,8 @@ pub(crate) fn expand_export(
             uniffi_traits,
             ..
         } => {
-            assert!(!udl_mode);
-            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits)
+            let include_meta = !udl_mode;
+            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits, include_meta)
         }
     }
 }
