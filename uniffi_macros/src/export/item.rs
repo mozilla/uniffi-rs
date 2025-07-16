@@ -37,6 +37,10 @@ pub(super) enum ExportItem {
         self_ident: Ident,
         uniffi_traits: Vec<UniffiTraitDiscriminants>,
     },
+    Enum {
+        self_ident: Ident,
+        uniffi_traits: Vec<UniffiTraitDiscriminants>,
+    },
 }
 
 impl ExportItem {
@@ -51,11 +55,11 @@ impl ExportItem {
             syn::Item::Impl(item) => Self::from_impl(item, attr_args),
             syn::Item::Trait(item) => Self::from_trait(item, attr_args),
             syn::Item::Struct(item) => Self::from_struct(item, attr_args),
+            syn::Item::Enum(item) => Self::from_enum(item, attr_args),
             // FIXME: Support const / static?
             _ => Err(syn::Error::new(
                 Span::call_site(),
-                "unsupported item: only functions and impl \
-                 blocks may be annotated with this attribute",
+                "unsupported item: This block doesn't support `uniffi::export`",
             )),
         }
     }
@@ -202,6 +206,21 @@ impl ExportItem {
             ))
         } else {
             Ok(Self::Struct {
+                self_ident: item.ident,
+                uniffi_traits,
+            })
+        }
+    }
+
+    fn from_enum(item: syn::ItemEnum, attr_args: TokenStream) -> syn::Result<Self> {
+        let args: ExportStructArgs = syn::parse(attr_args)?;
+        let uniffi_traits: Vec<UniffiTraitDiscriminants> = args.traits.into_iter().collect();
+        if uniffi_traits.is_empty() {
+            Err(syn::Error::new(Span::call_site(),
+                "uniffi::export on an enum must supply a builtin trait name. Did you mean `#[derive(uniffi::Enum)]`?"
+            ))
+        } else {
+            Ok(Self::Enum {
                 self_ident: item.ident,
                 uniffi_traits,
             })

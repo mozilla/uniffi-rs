@@ -42,10 +42,11 @@ pub fn pass(module: &mut Module) -> Result<()> {
             CallableKind::Function => {
                 uniffi_meta::fn_checksum_symbol_name(&module.crate_name, &callable.name)
             }
-            CallableKind::Method {
-                interface_name: name,
+            CallableKind::Method { self_type } => {
+                let name = self_type.ty.name().unwrap();
+                uniffi_meta::method_checksum_symbol_name(&module.crate_name, name, &callable.name)
             }
-            | CallableKind::VTableMethod { trait_name: name } => {
+            CallableKind::VTableMethod { trait_name: name } => {
                 uniffi_meta::method_checksum_symbol_name(&module.crate_name, name, &callable.name)
             }
             CallableKind::Constructor { interface_name, .. } => {

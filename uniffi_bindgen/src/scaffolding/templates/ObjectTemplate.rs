@@ -21,20 +21,22 @@ pub trait r#{{ obj.name() }} {
     {% endfor %}
 }
 {%- else %}
-{%- for tm in obj.uniffi_traits() %}
-{%-      match tm %}
-{%-          when UniffiTrait::Debug { fmt } %}
-#[::uniffi::export_for_udl_derive(Debug)]
-{%-          when UniffiTrait::Display { fmt } %}
-#[::uniffi::export_for_udl_derive(Display)]
-{%-          when UniffiTrait::Hash { hash } %}
-#[::uniffi::export_for_udl_derive(Hash)]
-{%-          when UniffiTrait::Ord { cmp } %}
-#[::uniffi::export_for_udl_derive(Ord)]
-{%-          when UniffiTrait::Eq { eq, ne } %}
-#[::uniffi::export_for_udl_derive(Eq)]
-{%-      endmatch %}
-{%- endfor %}
+{%- let uniffi_trait_methods = obj.uniffi_trait_methods() %}
+{%- if uniffi_trait_methods.debug_fmt.is_some() %}
+#[uniffi::export_for_udl_derive(Debug)]
+{%- endif %}
+{%- if uniffi_trait_methods.debug_fmt.is_some() %}
+#[uniffi::export_for_udl_derive(Display)]
+{%- endif %}
+{%- if uniffi_trait_methods.hash_hash.is_some() %}
+#[uniffi::export_for_udl_derive(Hash)]
+{%- endif %}
+{%- if uniffi_trait_methods.ord_cmp.is_some() %}
+#[uniffi::export_for_udl_derive(Ord)]
+{%- endif %}
+{%- if uniffi_trait_methods.eq_eq.is_some() %}
+#[uniffi::export_for_udl_derive(Eq)]
+{%- endif %}
 {%- if obj.remote() %}
 #[::uniffi::udl_remote(Object)]
 {%- else %}
