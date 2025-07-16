@@ -706,6 +706,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#proc-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proc-macros
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udl" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#foreign-implementations" class="md-nav__link">
     <span class="md-ellipsis">
       Foreign implementations
@@ -2178,6 +2196,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#proc-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proc-macros
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udl" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#foreign-implementations" class="md-nav__link">
     <span class="md-ellipsis">
       Foreign implementations
@@ -2320,12 +2356,30 @@ for testing.</p>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Note UDL requires a <a href="../udl/interfaces.html#traits"><code>Trait</code></a> attribute; proc-macros <code>#[uniffi::export]</code> the trait declaration.</p>
 <p><a href="../internals/object_references.html#concurrency">Uniffi enforces all interfaces are <code>Send + Sync</code></a>, meaning exported traits need to be explicitly bound.</p>
 <p>References to traits are passed around like normal interface objects - in an <code>Arc&lt;&gt;</code>.
 For example, your Rust would have these signatures:</p>
 <div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">get_buttons</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Button</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 <span class="k">fn</span><span class="w"> </span><span class="nf">press</span><span class="p">(</span><span class="n">button</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Button</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Button</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="proc-macros">Proc-macros</h3>
+<p>Wrap the trait with `#[uniffi::export]</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Button</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="udl">UDL</h3>
+<p>Add a <code>Trait</code> attribute to the UDL interface and <code>#[uniffi::trait_interface]</code> to the Rust trait</p>
+<div class="highlight"><pre><span></span><code><span class="p">[</span><span class="nd">Trait</span><span class="p">]</span>
+<span class="k">interface</span> <span class="nc">Button</span> <span class="p">{</span>
+    <span class="err">...</span>
+<span class="err">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::trait_interface]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Button</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
 </code></pre></div>
 <h3 id="foreign-implementations">Foreign implementations</h3>
 <p>It's possible in both UDL (via a <code>[Foreign]</code> attribute) and proc-macros (via <code>#[uniffi::export(with_foreign)]</code>)

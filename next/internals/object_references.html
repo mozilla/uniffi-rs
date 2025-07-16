@@ -2010,15 +2010,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#trait-interfaces-with-foreign-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      Trait interfaces with foreign support
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -2224,15 +2215,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#trait-interfaces-with-foreign-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      Trait interfaces with foreign support
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -2280,7 +2262,8 @@ that the object implementation is <code>Send+Sync</code> and letting the Rust co
 this is so.</p>
 <h2 id="lowered-representation">Lowered representation</h2>
 <p>Interfaces are lowered as <code>u64</code> handles.
-<code>0</code> is reserved as an invalid value.</p>
+<code>0</code> is reserved as an invalid value.
+Note: the Rust docs state that the null pointer will cast to <code>0</code> (https://doc.rust-lang.org/std/ptr/fn.null.html).</p>
 <h2 id="lifetimes">Lifetimes</h2>
 <p>In order to allow for instances to be used as flexibly as possible from foreign-language code,
 UniFFI wraps all object instances in an <code>Arc</code> and leverages their reference-count based lifetimes,
@@ -2352,16 +2335,16 @@ Foreign languages are free to implement them however they want, but they usually
 </ul>
 <h2 id="trait-interfaces">Trait interfaces</h2>
 <p>Trait interfaces are used to pass <code>Arc&lt;dyn Trait&gt;</code> instances across the FFI.
-This presents an extra difficulty since <code>dyn Trait</code> is unsized and <code>*dyn Trait</code> is a wide pointer that takes 2 words to store.</p>
-<p>To work around this, UniFFI adds an extra Arc creating a <code>Arc&lt;Arc&lt;dyn Trait&gt;&gt;</code> value.
+The are unique in a couple ways.</p>
+<p><code>dyn Trait</code> is unsized so <code>*dyn Trait</code> is a wide pointer that takes 2 words to store.
+To work around this, UniFFI adds an extra Arc creating a <code>Arc&lt;Arc&lt;dyn Trait&gt;&gt;</code> value.
 This effectively converts the wide pointer into a regular pointer, since <code>Arc&lt;dyn Trait&gt;</code> is sized (at 2 words).</p>
-<h2 id="trait-interfaces-with-foreign-support">Trait interfaces with foreign support</h2>
-<p>These are trait interfaces that can also be implemented on the foreign side.
-These are effectively hybrids of callback interfaces and trait interfaces:</p>
-<ul>
-<li>They are passed from the foreign language to Rust as a callback interface</li>
-<li>They are passed from Rust to the foreign language as a trait interface.</li>
-</ul>
+<p>Trait interfaces can also be implemented on the foreign side.
+In order to handle this efficiently, UniFFI must be able to distinguish foreign-generated handles from Rust ones.
+UniFFI handles this by setting the lowest bit on the handle to 1 for foreign handles.
+The Rust code generates lowered arc pointers, which have an alignment &gt; 1 and therefore the lowest bit will never be set.
+Most foreign languages use a handle map to generate handles which makes it fairly simple to achive this: start the handle counter at <code>1</code> and always increment by <code>2</code>.
+If a foreign language also uses raw pointers, they will also have an alignment &gt; 1 and therefore they can OR the lowest bit to <code>1</code> without losing any information.</p>
 
 
 
