@@ -125,6 +125,7 @@ pub fn determine_discriminants(en: &mut Enum) -> Result<()> {
             _ => unreachable!(),
         }
     }
+    UniffiTraitMethods::fill_from(&mut en.uniffi_trait_methods, &en.uniffi_traits);
 
     Ok(())
 }

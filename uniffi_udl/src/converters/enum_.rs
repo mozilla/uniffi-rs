@@ -6,7 +6,7 @@ use super::APIConverter;
 use crate::{attributes::EnumAttributes, converters::convert_docstring, InterfaceCollector};
 use anyhow::{bail, Result};
 
-use uniffi_meta::{EnumMetadata, EnumShape, VariantMetadata};
+use uniffi_meta::{EnumMetadata, EnumShape, MethodReceiver, Type, VariantMetadata};
 
 // Note that we have 2 `APIConverter` impls here - one for the `enum` case
 // (including an enum with `[Error]`), and one for the `[Error] interface` cas
@@ -56,6 +56,22 @@ impl APIConverter<EnumMetadata> for weedle::InterfaceDefinition<'_> {
         } else {
             EnumShape::Enum
         };
+        let other = Type::Enum {
+            module_path: ci.module_path().to_string(),
+            name: self.identifier.0.to_string(),
+        };
+
+        for ut in super::make_uniffi_traits(
+            MethodReceiver::Enum {
+                module_path: ci.module_path().to_string(),
+                name: self.identifier.0.to_string(),
+            },
+            &attributes.get_uniffi_traits(),
+            &other,
+        )? {
+            ci.items.insert(ut.into());
+        }
+
         Ok(EnumMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),

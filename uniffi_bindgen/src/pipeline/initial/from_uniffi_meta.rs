@@ -227,12 +227,32 @@ impl UniffiMetaConverter {
         for (module_path, list) in self.records {
             get_module(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
-                .extend(list.into_values().map(TypeDefinition::Record));
+                .extend(
+                    list.into_values()
+                        .map(|mut r| {
+                            let key = (module_path.clone(), r.name.clone());
+                            if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
+                                r.uniffi_traits.extend(uniffi_traits.into_values())
+                            }
+                            Ok(TypeDefinition::Record(r))
+                        })
+                        .collect::<Result<Vec<_>>>()?,
+                )
         }
         for (module_path, list) in self.enums {
             get_module(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
-                .extend(list.into_values().map(TypeDefinition::Enum));
+                .extend(
+                    list.into_values()
+                        .map(|mut e| {
+                            let key = (module_path.clone(), e.name.clone());
+                            if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
+                                e.uniffi_traits.extend(uniffi_traits.into_values())
+                            }
+                            Ok(TypeDefinition::Enum(e))
+                        })
+                        .collect::<Result<Vec<_>>>()?,
+                )
         }
         for (module_path, list) in self.custom_types {
             get_module(&self.module_path_map, &mut root, &module_path)?

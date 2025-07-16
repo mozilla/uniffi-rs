@@ -14,6 +14,7 @@ pub(crate) fn expand_uniffi_trait_export(
     self_ident: Ident,
     uniffi_traits: Vec<UniffiTraitDiscriminants>,
     include_metadata: bool,
+    receiver_kind: MethodReceiverKind,
 ) -> syn::Result<TokenStream> {
     let mut impl_items = Vec::new();
     let mut global_items = Vec::new();
@@ -26,7 +27,8 @@ pub(crate) fn expand_uniffi_trait_export(
                         format!("{:?}", self)
                     }
                 };
-                let (ffi_func, method_meta) = process_uniffi_trait_method(&method, &self_ident)?;
+                let (ffi_func, method_meta) =
+                    process_uniffi_trait_method(&method, &self_ident, receiver_kind)?;
                 // metadata for the trait - which includes metadata for the method.
                 let discr = UniffiTraitDiscriminants::Debug as u8;
                 impl_items.push(method);
@@ -51,7 +53,8 @@ pub(crate) fn expand_uniffi_trait_export(
                         format!("{}", self)
                     }
                 };
-                let (ffi_func, method_meta) = process_uniffi_trait_method(&method, &self_ident)?;
+                let (ffi_func, method_meta) =
+                    process_uniffi_trait_method(&method, &self_ident, receiver_kind)?;
                 // metadata for the trait - which includes metadata for the method.
                 let discr = UniffiTraitDiscriminants::Display as u8;
                 impl_items.push(method);
@@ -79,7 +82,8 @@ pub(crate) fn expand_uniffi_trait_export(
                         s.finish()
                     }
                 };
-                let (ffi_func, method_meta) = process_uniffi_trait_method(&method, &self_ident)?;
+                let (ffi_func, method_meta) =
+                    process_uniffi_trait_method(&method, &self_ident, receiver_kind)?;
                 // metadata for the trait - which includes metadata for the hash method.
                 let discr = UniffiTraitDiscriminants::Hash as u8;
                 impl_items.push(method);
@@ -113,9 +117,9 @@ pub(crate) fn expand_uniffi_trait_export(
                     }
                 };
                 let (ffi_func_eq, method_meta_eq) =
-                    process_uniffi_trait_method(&method_eq, &self_ident)?;
+                    process_uniffi_trait_method(&method_eq, &self_ident, receiver_kind)?;
                 let (ffi_func_ne, method_meta_ne) =
-                    process_uniffi_trait_method(&method_ne, &self_ident)?;
+                    process_uniffi_trait_method(&method_ne, &self_ident, receiver_kind)?;
                 // metadata for the trait itself.
                 let discr = UniffiTraitDiscriminants::Eq as u8;
                 impl_items.push(method_eq);
@@ -145,7 +149,7 @@ pub(crate) fn expand_uniffi_trait_export(
                     }
                 };
                 let (ffi_func_cmp, method_meta_cmp) =
-                    process_uniffi_trait_method(&method_cmp, &self_ident)?;
+                    process_uniffi_trait_method(&method_cmp, &self_ident, receiver_kind)?;
                 // metadata for the trait itself.
                 let discr = UniffiTraitDiscriminants::Ord as u8;
                 impl_items.push(method_cmp);
@@ -177,8 +181,8 @@ pub(crate) fn expand_uniffi_trait_export(
 fn process_uniffi_trait_method(
     method: &TokenStream,
     self_ident: &Ident,
+    receiver_kind: MethodReceiverKind,
 ) -> syn::Result<(TokenStream, TokenStream)> {
-    let udl_mode = false; // We don't need the hacky `Result<>` optimization UDL functions get even if we are in UDL.
     let item = syn::parse(method.clone().into())?;
 
     let syn::Item::Fn(item) = item else {
@@ -190,18 +194,18 @@ fn process_uniffi_trait_method(
     let ffi_func = gen_ffi_function(
         &FnSignature::new_method(
             self_ident.clone(),
-            MethodReceiverKind::Object,
+            receiver_kind,
             item.sig.clone(),
             ExportFnArgs::default(),
             docstring.clone(),
         )?,
         None,
-        udl_mode,
+        false, // udl_mode - We don't need the `Result<>` magic UDL functions get even if we are in UDL.
     )?;
     // metadata for the method, which will be packed inside metadata for the trait.
     let method_meta = FnSignature::new_method(
         self_ident.clone(),
-        MethodReceiverKind::Object,
+        receiver_kind,
         item.sig,
         ExportFnArgs::default(),
         docstring,

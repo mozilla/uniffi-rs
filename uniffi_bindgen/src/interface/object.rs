@@ -755,7 +755,7 @@ pub struct UniffiTraitMethods {
 }
 
 impl UniffiTraitMethods {
-    fn new(uniffi_traits: &[UniffiTrait]) -> Self {
+    pub fn new(uniffi_traits: &[UniffiTrait]) -> Self {
         let mut new = Self::default();
         for t in uniffi_traits {
             match t.clone() {

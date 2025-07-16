@@ -12,5 +12,6 @@ pub fn pass(rec: &mut Record) -> Result<()> {
     } else {
         FieldsKind::Named
     };
+    UniffiTraitMethods::fill_from(&mut rec.uniffi_trait_methods, &rec.uniffi_traits);
     Ok(())
 }

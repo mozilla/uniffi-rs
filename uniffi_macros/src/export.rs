@@ -19,6 +19,7 @@ use self::{
         gen_constructor_scaffolding, gen_ffi_function, gen_fn_scaffolding, gen_method_scaffolding,
     },
 };
+use crate::fnsig::MethodReceiverKind;
 use crate::util::{create_metadata_items, ident_to_string, mod_path};
 pub use attributes::{AsyncRuntime, DefaultMap, ExportFnArgs};
 pub use callback_interface::ffi_converter_callback_interface_impl;
@@ -38,6 +39,9 @@ pub(crate) fn expand_export(
     // metadata collection or scaffolding code generation (which generates
     // new functions outside of the `impl`).
     rewrite_self_type(&mut item);
+
+    // trying to split `udl_mode` into "no meta" and "other"
+    let include_meta = !udl_mode;
 
     let metadata = ExportItem::new(item, all_args)?;
 
@@ -149,9 +153,24 @@ pub(crate) fn expand_export(
             uniffi_traits,
             ..
         } => {
-            let include_meta = !udl_mode;
-            utrait::expand_uniffi_trait_export(self_ident, uniffi_traits, include_meta)
+            // XXX - need some way to know if this is Object or Record.
+            utrait::expand_uniffi_trait_export(
+                self_ident,
+                uniffi_traits,
+                include_meta,
+                MethodReceiverKind::Object,
+            )
         }
+        ExportItem::Enum {
+            self_ident,
+            uniffi_traits,
+            ..
+        } => utrait::expand_uniffi_trait_export(
+            self_ident,
+            uniffi_traits,
+            include_meta,
+            MethodReceiverKind::Enum,
+        ),
     }
 }
 
