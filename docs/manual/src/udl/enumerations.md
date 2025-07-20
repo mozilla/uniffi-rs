@@ -23,6 +23,9 @@ interface IpAddr {
 };
 ```
 
+These fields do not currently support default values in UDL,
+but defaults are available to proc-macros.
+
 ## Remote, non-exhaustive enums
 
 One corner case is an enum that's defined in another crate and has the [non_exhaustive` attribute](https://doc.rust-lang.org/reference/attributes/type_system.html#the-non_exhaustive-attribute).
