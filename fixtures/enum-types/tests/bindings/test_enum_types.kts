@@ -30,3 +30,8 @@ getAnimalEnum(Animal.DOG).let { a ->
     // markh can't work out how to make this work!?
     // assert(a.v1.getRecord().name == "dog")
 }
+
+assert(NamedEnumWithDefaults.I().d == 0U.toUByte())
+assert(NamedEnumWithDefaults.I().e == 1U.toUByte())
+assert(NamedEnumWithDefaults.I(e=2U).d == 0U.toUByte())
+assert(NamedEnumWithDefaults.I(e=2U).e == 2U.toUByte())
