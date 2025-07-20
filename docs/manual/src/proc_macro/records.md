@@ -35,4 +35,4 @@ pub struct OptionalRecord {
 
 ```
 
-Most types can have default values - all defaults described for [function arguments](./functions.md#default-values) apply here too.
+Most types can have [default values](../types/defaults.md)

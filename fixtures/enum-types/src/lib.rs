@@ -103,6 +103,16 @@ fn get_animal(a: Option<Animal>) -> Animal {
     a.unwrap_or(Animal::Dog)
 }
 
+#[derive(uniffi::Enum)]
+pub(crate) enum NamedEnumWithDefaults {
+    I {
+        #[uniffi(default)]
+        d: u8,
+        #[uniffi(default = 1)]
+        e: u8,
+    },
+}
+
 uniffi::include_scaffolding!("enum_types");
 
 #[cfg(test)]
