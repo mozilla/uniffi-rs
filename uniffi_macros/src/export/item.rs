@@ -161,6 +161,12 @@ impl ExportItem {
                         ));
                     }
                 };
+                if let Some(default) = tim.default {
+                    return Err(syn::Error::new_spanned(
+                        default,
+                        "uniffi::export'd trait methods can't have a default implementation.",
+                    ));
+                }
 
                 let docstring = extract_docstring(&tim.attrs)?;
                 let attrs = ExportedImplFnAttributes::new(&tim.attrs)?;
