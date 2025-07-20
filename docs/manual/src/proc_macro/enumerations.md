@@ -14,11 +14,14 @@ pub enum MyEnum {
     Fieldless,
     WithFields {
         foo: u8,
+        #[uniffi(default)]
         bar: Vec<i32>,
     },
     WithValue = 3,
 }
 ```
+
+Named fields within a variant can have [default values](../types/defaults.md)
 
 ### Variant Discriminants
 

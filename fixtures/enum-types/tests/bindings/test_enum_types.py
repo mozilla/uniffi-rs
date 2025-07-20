@@ -36,5 +36,13 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(get_animal_enum(Animal.CAT), get_animal_enum(Animal.CAT))
         self.assertNotEqual(get_animal_enum(Animal.DOG), get_animal_enum(Animal.CAT))
 
+    def test_defaults(self):
+        e = NamedEnumWithDefaults.I()
+        self.assertEqual(e.d, 0)
+        self.assertEqual(e.e, 1)
+        e = NamedEnumWithDefaults.I(e=2)
+        self.assertEqual(e.d, 0)
+        self.assertEqual(e.e, 2)
+
 if __name__=='__main__':
     unittest.main()

@@ -55,6 +55,7 @@ nav:
   - ./types/callback_interfaces.md
   - ./types/remote_ext_types.md
   - ./types/custom_types.md
+  - ./types/defaults.md
 - Describing the interface:
   - ./describing.md
   - 'UDL Files':

@@ -29,18 +29,7 @@ dictionary TodoEntry {
 
 The Rust struct will have `owner` as an `Arc<>`.
 
-## Default values for fields
-
-Fields can be specified with a default value.
-
-```idl
-dictionary TodoEntry {
-    boolean done = false;
-    string text;
-};
-```
-
-## Optional fields and default values
+## Optional and compound fields.
 
 Fields can be made optional using a `T?` type.
 
@@ -60,23 +49,32 @@ struct TodoEntry {
 }
 ```
 
-### Optional null values
-
-Optional fields can also be set to a default `null` value:
+You can similarly use a `HashMap`, `Vec<>` etc.
 
 ```idl
 dictionary TodoEntry {
-    boolean done;
-    string? text = null;
+    sequence<string> item_list;
+    record<string, string> item_map;
 };
 ```
 
-### Vecs and maps
+## Default values for fields
 
-Empty collections are supported.
+Fields can be specified with a [default literal value](../types/defaults.md#literal-values).
 
 ```idl
 dictionary TodoEntry {
+    boolean done = false;
+    string text = "unnamed";
+};
+```
+
+An `Option<>` can be specified as `null` or an appropriate literal for a `Some` value. `HashMap` and `Vec` have custom syntax.
+
+```idl
+dictionary TodoEntry {
+    string? text = null;
+    string? alt_text = "unnamed"
     sequence<string> item_list = [];
     record<string, string> item_map = {};
 };
