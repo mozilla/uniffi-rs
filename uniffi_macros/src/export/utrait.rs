@@ -8,7 +8,7 @@ use syn::ext::IdentExt;
 
 use super::{gen_ffi_function, ExportFnArgs};
 use crate::{fnsig::FnSignature, util::extract_docstring};
-use uniffi_meta::{MethodReceiverKind, UniffiTraitDiscriminants};
+use uniffi_meta::UniffiTraitDiscriminants;
 
 pub(crate) fn expand_uniffi_trait_export(
     self_ident: Ident,
@@ -190,7 +190,6 @@ fn process_uniffi_trait_method(
     let ffi_func = gen_ffi_function(
         &FnSignature::new_method(
             self_ident.clone(),
-            MethodReceiverKind::Object,
             item.sig.clone(),
             ExportFnArgs::default(),
             docstring.clone(),
@@ -201,7 +200,6 @@ fn process_uniffi_trait_method(
     // metadata for the method, which will be packed inside metadata for the trait.
     let method_meta = FnSignature::new_method(
         self_ident.clone(),
-        MethodReceiverKind::Object,
         item.sig,
         ExportFnArgs::default(),
         docstring,

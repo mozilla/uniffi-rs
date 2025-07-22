@@ -280,17 +280,16 @@ impl<'a> MetadataReader<'a> {
     }
 
     fn read_method(&mut self) -> Result<MethodMetadata> {
-        let module_path = self.read_string()?;
+        let self_module_path = self.read_string()?;
         let self_name = self.read_string()?;
-        let receiver_discr = MethodReceiverKind::from(self.read_u8()?)?;
-        let receiver = receiver_discr.to_receiver(module_path, self_name);
         let name = self.read_string()?;
         let is_async = self.read_bool()?;
         let inputs = self.read_inputs()?;
         let (return_type, throws) = self.read_return_type()?;
         let docstring = self.read_optional_long_string()?;
         Ok(MethodMetadata {
-            receiver,
+            module_path: self_module_path,
+            self_name,
             name,
             is_async,
             inputs,
