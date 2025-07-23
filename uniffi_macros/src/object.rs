@@ -70,7 +70,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) -> ::uniffi::ffi::Handle {
-            ::uniffi::deps::trace!("clone: {} ({:x})", #name, handle);
+            ::uniffi::deps::trace!("clone: {} ({:?})", #name, handle);
             ::uniffi::rust_call(call_status, || {
                 unsafe {
                     handle.clone_arc_handle::<#ident>()
@@ -85,7 +85,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            ::uniffi::deps::trace!("free: {} ({:x})", #name, handle);
+            ::uniffi::deps::trace!("free: {} ({:?})", #name, handle);
             ::uniffi::rust_call(call_status, || {
                 ::std::mem::drop(unsafe {
                     handle.into_arc::<#ident>()
@@ -154,14 +154,14 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             /// call the destructor function specific to the type `T`. Calling the destructor
             /// function for other types may lead to undefined behaviour.
             fn lower(obj: ::std::sync::Arc<Self>) -> Self::FfiType {
-                ::uniffi::deps::trace!("lower: {} {:?}", #name, obj.as_pointer());
+                ::uniffi::deps::trace!("lower: {} {:?}", #name, ::std::sync::Arc::as_ptr(&obj));
                 let handle = ::uniffi::ffi::Handle::from_arc(obj);
                 handle
             }
 
             /// When lifting, we receive an owned `Arc` that the foreign language code cloned.
             fn try_lift(handle: Self::FfiType) -> ::uniffi::Result<::std::sync::Arc<Self>> {
-                ::uniffi::deps::trace!("lift: {} ({:x})", #name, handle);
+                ::uniffi::deps::trace!("lift: {} ({:?})", #name, handle);
                 ::std::result::Result::Ok(unsafe { handle.into_arc() })
             }
 

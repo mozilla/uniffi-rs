@@ -55,7 +55,7 @@ pub(super) fn gen_trait_scaffolding(
             handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) -> ::uniffi::ffi::Handle {
-            ::uniffi::deps::trace!("clonining trait: {} ({:x})", #trait_name, handle);
+            ::uniffi::deps::trace!("clonining trait: {} ({:?})", #trait_name, handle);
             ::uniffi::rust_call(call_status, || {
                 unsafe {
                     ::std::result::Result::Ok(
@@ -78,7 +78,7 @@ pub(super) fn gen_trait_scaffolding(
             handle: ::uniffi::ffi::Handle,
             call_status: &mut ::uniffi::RustCallStatus
         ) {
-            ::uniffi::deps::trace!("freeing trait: {} ({:x})", #trait_name, handle);
+            ::uniffi::deps::trace!("freeing trait: {} ({:?})", #trait_name, handle);
             ::uniffi::rust_call(call_status, || {
                 ::std::mem::drop(unsafe {
                     handle.into_arc::<::std::sync::Arc<dyn #self_ident>>()
