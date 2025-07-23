@@ -37,7 +37,7 @@
 #[macro_export]
 macro_rules! trace {
     ($($tt:tt)*) => {
-        println!($($tt)*);
+        ::std::println!($($tt)*);
     }
 }
 
