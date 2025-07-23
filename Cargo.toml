@@ -39,6 +39,7 @@ members = [
 
   "fixtures/docstring",
   "fixtures/docstring-proc-macro",
+  "fixtures/gh-2600",
   "fixtures/keywords/kotlin",
   "fixtures/keywords/rust",
   "fixtures/keywords/swift",
