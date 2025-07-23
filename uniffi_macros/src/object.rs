@@ -72,7 +72,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
         ) -> *const ::std::ffi::c_void {
             ::uniffi::deps::trace!("clone: {} ({:?})", #name, ptr);
             ::uniffi::rust_call(call_status, || {
-                unsafe { ::std::sync::Arc::increment_strong_count(ptr) };
+                unsafe { ::std::sync::Arc::increment_strong_count(ptr as *const #ident) };
                 ::std::result::Result::Ok(ptr)
             })
         }
@@ -88,7 +88,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
                 assert!(!ptr.is_null());
                 let ptr = ptr.cast::<#ident>();
                 unsafe {
-                    ::std::sync::Arc::decrement_strong_count(ptr);
+                    ::std::sync::Arc::decrement_strong_count(ptr as *const #ident);
                 }
                 ::std::result::Result::Ok(())
             });

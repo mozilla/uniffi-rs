@@ -1,0 +1,22 @@
+[package]
+name = "uniffi-fixture-gh-2600"
+version = "0.22.0"
+edition = "2018"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_fixture_gh_2600"
+crate-type = ["lib", "cdylib"]
+
+[features]
+ffi-trace = ["uniffi/ffi-trace"]
+
+[dependencies]
+uniffi = { workspace = true }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build" ] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }

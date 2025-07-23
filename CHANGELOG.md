@@ -6,6 +6,8 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+- Fixed a bug where objects could be freed to early (https://github.com/mozilla/uniffi-rs/issues/2600)
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
 
 ## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)
