@@ -586,7 +586,9 @@ impl<T: AsType> AsCodeType for T {
                 key_type,
                 value_type,
             } => Box::new(compounds::MapCodeType::new(*key_type, *value_type)),
-            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
+            Type::Custom { name, builtin, .. } => {
+                Box::new(custom::CustomCodeType::new(name, builtin.as_codetype()))
+            }
         }
     }
 }

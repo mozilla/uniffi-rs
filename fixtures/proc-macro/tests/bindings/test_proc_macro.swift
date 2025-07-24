@@ -65,6 +65,7 @@ assert(recordWithDefaults.floatVar == 4.2)
 assert(recordWithDefaults.vec == [])
 assert(recordWithDefaults.optVec == nil)
 assert(recordWithDefaults.optInteger == 42)
+assert(recordWithDefaults.customInteger == 42)
 
 // Implicit defaults
 let recordWithImplicitDefaults = RecordWithImplicitDefaults()
@@ -83,6 +84,7 @@ assert(recordWithImplicitDefaults.vec == [])
 assert(recordWithImplicitDefaults.map == [:])
 assert(recordWithImplicitDefaults.someBytes == Data([]))
 assert(recordWithImplicitDefaults.optInt32 == nil)
+assert(recordWithImplicitDefaults.customInteger == 0)
 
 // defaults in function args
 assert(doubleWithDefault() == 42)

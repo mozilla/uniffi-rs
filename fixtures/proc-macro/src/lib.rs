@@ -367,6 +367,11 @@ fn renamed_rename_test() -> bool {
     true
 }
 
+#[derive(Default)]
+pub struct CustomInteger(i32);
+
+uniffi::custom_newtype!(CustomInteger, i32);
+
 /// Test defaults on Records
 #[derive(uniffi::Record)]
 pub struct RecordWithDefaults {
@@ -383,6 +388,8 @@ pub struct RecordWithDefaults {
     opt_vec: Option<Vec<bool>>,
     #[uniffi(default = Some(42))]
     opt_integer: Option<i32>,
+    #[uniffi(default = 42)]
+    custom_integer: CustomInteger,
     #[uniffi(default)]
     boolean_default: bool,
     #[uniffi(default)]
@@ -430,6 +437,8 @@ pub struct RecordWithImplicitDefaults {
     // Object has a ctor which takes no args.
     #[uniffi(default)]
     object: Arc<Object>,
+    #[uniffi(default)]
+    custom_integer: CustomInteger,
 }
 
 /// Test defaults on top-level functions

@@ -513,6 +513,7 @@ impl SwiftCodeOracle {
     //
     //   - When adding additional types here, make sure to also add a match arm to the `Types.swift` template.
     //   - To keep things manageable, let's try to limit ourselves to these 2 mega-matches
+    #[allow(clippy::only_used_in_recursion)]
     fn create_code_type(&self, type_: Type) -> Box<dyn CodeType> {
         match type_ {
             Type::UInt8 => Box::new(primitives::UInt8CodeType),
@@ -548,7 +549,10 @@ impl SwiftCodeOracle {
                 key_type,
                 value_type,
             } => Box::new(compounds::MapCodeType::new(*key_type, *value_type)),
-            Type::Custom { name, .. } => Box::new(custom::CustomCodeType::new(name)),
+            Type::Custom { name, builtin, .. } => Box::new(custom::CustomCodeType::new(
+                name,
+                self.create_code_type(*builtin),
+            )),
         }
     }
 
