@@ -4,15 +4,15 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.29.4) - (_2025-07-24_)
+## v0.29.4 (backend crates: v0.29.4) - (_2025-07-24_)
 
 - Fixed a bug where objects with alignment >= 32 could be freed to early (https://github.com/mozilla/uniffi-rs/issues/2600)
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
+[All changes in v0.29.4](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...v0.29.4).
 
 ## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)
 
