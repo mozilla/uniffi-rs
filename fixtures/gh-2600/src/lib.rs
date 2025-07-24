@@ -6,8 +6,6 @@ use std::sync::atomic::{AtomicU32, Ordering};
 
 uniffi::setup_scaffolding!("gh_2600");
 
-use std::arch::x86_64::{__m256i, _mm256_set1_epi8};
-
 static DROP_COUNT: AtomicU32 = AtomicU32::new(0);
 
 #[uniffi::export]
@@ -15,9 +13,10 @@ fn drop_count() -> u32 {
     DROP_COUNT.load(Ordering::Relaxed)
 }
 
-#[derive(uniffi::Object)]
+#[derive(Default, uniffi::Object)]
 #[allow(unused)]
-pub struct MyStruct256(__m256i);
+#[repr(align(32))]
+pub struct MyStruct256(u8);
 
 /// This is the problematic struct:
 /// it gets dropped before its end of life...
@@ -28,13 +27,6 @@ impl MyStruct256 {
     #[uniffi::constructor]
     pub fn new() -> Self {
         Self::default()
-    }
-}
-
-// Implement `Default` so clippy doesn't complain
-impl Default for MyStruct256 {
-    fn default() -> Self {
-        Self(unsafe { _mm256_set1_epi8(0) })
     }
 }
 
