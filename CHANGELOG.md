@@ -40,7 +40,13 @@
           When Lifting/lowering trait interface handles, check if the handle was generated from Rust or the foreign side.
     - See https://github.com/mozilla/uniffi-rs/pulls/2586 examples of how the builtin bindings here changed.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...HEAD).
+
+## v0.29.4 (backend crates: v0.29.4) - (_2025-07-24_)
+
+- Fixed a bug where objects with alignment >= 32 could be freed to early (https://github.com/mozilla/uniffi-rs/issues/2600)
+
+[All changes in v0.29.4](https://github.com/mozilla/uniffi-rs/compare/v0.29.3...v0.29.4).
 
 ## v0.29.3 (backend crates: v0.29.3) - (_2025-06-06_)
 
