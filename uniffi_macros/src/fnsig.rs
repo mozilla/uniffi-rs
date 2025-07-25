@@ -12,8 +12,6 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{spanned::Spanned, FnArg, Ident, Pat, Receiver, ReturnType, Type};
 
-pub use uniffi_meta::MethodReceiverKind;
-
 pub(crate) struct FnSignature {
     pub kind: FnKind,
     pub span: Span,
@@ -45,20 +43,11 @@ impl FnSignature {
 
     pub(crate) fn new_method(
         self_ident: Ident,
-        receiver_kind: MethodReceiverKind,
         sig: syn::Signature,
         args: ExportFnArgs,
         docstring: String,
     ) -> syn::Result<Self> {
-        Self::new(
-            FnKind::Method {
-                self_ident,
-                receiver_kind,
-            },
-            sig,
-            args,
-            docstring,
-        )
+        Self::new(FnKind::Method { self_ident }, sig, args, docstring)
     }
 
     pub(crate) fn new_constructor(
@@ -274,17 +263,12 @@ impl FnSignature {
                     .concat_long_str(#docstring)
             }),
 
-            FnKind::Method {
-                self_ident,
-                receiver_kind,
-            } => {
+            FnKind::Method { self_ident } => {
                 let object_name = ident_to_string(self_ident);
-                let receiver_kind = (*receiver_kind) as u8;
                 Ok(quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
-                        .concat_value(#receiver_kind)
                         .concat_str(#name)
                         .concat_bool(#is_async)
                         .concat_value(#args_len)
@@ -506,15 +490,7 @@ fn looks_like_result(return_type: &ReturnType) -> bool {
 #[derive(Debug)]
 pub(crate) enum FnKind {
     Function,
-    Constructor {
-        self_ident: Ident,
-    },
-    Method {
-        self_ident: Ident,
-        receiver_kind: MethodReceiverKind,
-    },
-    TraitMethod {
-        self_ident: Ident,
-        index: u32,
-    },
+    Constructor { self_ident: Ident },
+    Method { self_ident: Ident },
+    TraitMethod { self_ident: Ident, index: u32 },
 }

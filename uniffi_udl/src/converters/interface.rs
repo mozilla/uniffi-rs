@@ -8,8 +8,8 @@ use crate::{converters::convert_docstring, InterfaceCollector};
 use anyhow::{bail, Result};
 use std::collections::HashSet;
 use uniffi_meta::{
-    ConstructorMetadata, FnParamMetadata, MethodMetadata, MethodReceiver, ObjectImpl,
-    ObjectMetadata, Type, UniffiTraitMetadata,
+    ConstructorMetadata, FnParamMetadata, MethodMetadata, ObjectImpl, ObjectMetadata, Type,
+    UniffiTraitMetadata,
 };
 
 impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
@@ -48,13 +48,8 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                     if !member_names.insert(method.name.clone()) {
                         bail!("Duplicate interface member name: \"{}\"", method.name)
                     }
-                    // a little smelly that we need to fixup the receiver here, but it is what it is...
-                    let new_name = object_name.to_string();
-                    match method.receiver {
-                        MethodReceiver::Enum { ref mut name, .. } => *name = new_name,
-                        MethodReceiver::Record { ref mut name, .. } => *name = new_name,
-                        MethodReceiver::Object { ref mut name, .. } => *name = new_name,
-                    }
+                    // a little smelly that we need to fixup `self_name` here, but it is what it is...
+                    method.self_name = object_name.to_string();
                     ci.items.insert(method.into());
                 }
                 _ => bail!("no support for interface member type {:?} yet", member),
@@ -66,10 +61,8 @@ impl APIConverter<ObjectMetadata> for weedle::InterfaceDefinition<'_> {
                                  return_type: Option<Type>|
          -> Result<MethodMetadata> {
             Ok(MethodMetadata {
-                receiver: MethodReceiver::Object {
-                    module_path: ci.module_path(),
-                    name: object_name.to_string(),
-                },
+                module_path: ci.module_path(),
+                self_name: object_name.to_string(),
                 name: name.to_string(),
                 is_async: false,
                 inputs,

@@ -74,8 +74,9 @@ pub use ffi::{
 };
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
-    ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, NamespaceMetadata, ObjectMetadata,
-    ObjectTraitImplMetadata, TraitMethodMetadata, UniffiTraitMetadata, UNIFFI_CONTRACT_VERSION,
+    ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata, NamespaceMetadata,
+    ObjectMetadata, ObjectTraitImplMetadata, TraitMethodMetadata, UniffiTraitMetadata,
+    UNIFFI_CONTRACT_VERSION,
 };
 pub type Literal = LiteralMetadata;
 pub type DefaultValue = DefaultValueMetadata;
@@ -933,15 +934,10 @@ impl ComponentInterface {
         Ok(())
     }
 
-    pub(super) fn add_method_meta(&mut self, meta: impl Into<Method>) -> Result<()> {
-        let mut method: Method = meta.into();
-        let object = get_object(&mut self.objects, method.object_name()).ok_or_else(|| {
-            anyhow!(
-                "add_method_meta: object {} not found",
-                &method.object_name()
-            )
-        })?;
-        method.object_impl = *object.imp();
+    pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
+        let object = get_object(&mut self.objects, &meta.self_name)
+            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", meta.self_name))?;
+        let method = Method::from_metadata(meta, object.as_type());
 
         self.types
             .add_known_types(method.iter_types())
@@ -956,11 +952,11 @@ impl ComponentInterface {
     pub(super) fn add_uniffitrait_meta(&mut self, meta: UniffiTraitMetadata) -> Result<()> {
         let object = get_object(&mut self.objects, meta.self_name())
             .ok_or_else(|| anyhow!("add_uniffitrait_meta: object not found"))?;
-        let ut: UniffiTrait = meta.into();
+        let ut = UniffiTrait::from_metadata(meta, object.as_type());
+
         self.types
             .add_known_types(ut.iter_types())
             .with_context(|| format!("adding builtin trait {ut:?}"))?;
-
         object.uniffi_traits.push(ut);
         Ok(())
     }
@@ -999,7 +995,7 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_trait_method_meta(&mut self, meta: TraitMethodMetadata) -> Result<()> {
-        if let Some(cbi) = get_callback_interface(&mut self.callback_interfaces, &meta.trait_name) {
+        if let Some(cbi) = self.get_callback_interface_definition(&meta.trait_name) {
             // uniffi_meta should ensure that we process callback interface methods in order, double
             // check that here
             if cbi.methods.len() != meta.index as usize {
@@ -1011,7 +1007,8 @@ impl ComponentInterface {
                     meta.index,
                 );
             }
-            let method: Method = meta.into();
+            let method = Method::from_metadata(meta.clone().into(), cbi.as_type());
+
             if let Some(error) = method.throws_type() {
                 self.callback_interface_throws_types.insert(error.clone());
             }
@@ -1021,9 +1018,13 @@ impl ComponentInterface {
             method
                 .throws_name()
                 .map(|n| self.errors.insert(n.to_string()));
+            // finally take a mut ref to the cbi, to avoid taking an early mut ref to self. unwrap as we know it exists
+            let cbi =
+                get_callback_interface(&mut self.callback_interfaces, &meta.trait_name).unwrap();
             cbi.methods.push(method);
         } else {
-            self.add_method_meta(meta)?;
+            // a trait method on a regular object.
+            self.add_method_meta(meta.into())?;
         }
         Ok(())
     }

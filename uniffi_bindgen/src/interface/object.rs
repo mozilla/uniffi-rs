@@ -58,7 +58,7 @@
 //! ```
 
 use anyhow::Result;
-use uniffi_meta::{Checksum, MethodReceiver, ObjectTraitImplMetadata};
+use uniffi_meta::{Checksum, ObjectTraitImplMetadata};
 
 use super::callbacks;
 use super::ffi::{FfiArgument, FfiCallbackFunction, FfiFunction, FfiStruct, FfiType};
@@ -354,27 +354,6 @@ impl From<uniffi_meta::ObjectMetadata> for Object {
     }
 }
 
-impl From<uniffi_meta::UniffiTraitMetadata> for UniffiTrait {
-    fn from(meta: uniffi_meta::UniffiTraitMetadata) -> Self {
-        match meta {
-            uniffi_meta::UniffiTraitMetadata::Debug { fmt } => {
-                UniffiTrait::Debug { fmt: fmt.into() }
-            }
-            uniffi_meta::UniffiTraitMetadata::Display { fmt } => {
-                UniffiTrait::Display { fmt: fmt.into() }
-            }
-            uniffi_meta::UniffiTraitMetadata::Eq { eq, ne } => UniffiTrait::Eq {
-                eq: eq.into(),
-                ne: ne.into(),
-            },
-            uniffi_meta::UniffiTraitMetadata::Hash { hash } => {
-                UniffiTrait::Hash { hash: hash.into() }
-            }
-            uniffi_meta::UniffiTraitMetadata::Ord { cmp } => UniffiTrait::Ord { cmp: cmp.into() },
-        }
-    }
-}
-
 // Represents a constructor for an object type.
 //
 // In the FFI, this will be a function that returns a pointer to an instance
@@ -509,9 +488,7 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 pub struct Method {
     pub(super) name: String,
     pub(super) is_async: bool,
-    pub(super) receiver: MethodReceiver,
-    // this is messy - the "receiver" doesn't tell us enough, if `::Object` we apparently need `ObjectImpl` too :(
-    pub(super) object_impl: ObjectImpl,
+    pub(super) receiver: Type,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
     // We don't include the FFIFunc in the hash calculation, because:
@@ -546,7 +523,7 @@ impl Method {
     }
 
     pub fn object_name(&self) -> &str {
-        self.receiver.name()
+        self.receiver.name().unwrap()
     }
 
     pub fn arguments(&self) -> Vec<&Argument> {
@@ -558,7 +535,7 @@ impl Method {
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
             name: "ptr".to_string(),
-            type_: self.object_type(),
+            type_: self.receiver.clone(),
             by_ref: !self.takes_self_by_arc,
             optional: false,
             default: None,
@@ -566,25 +543,6 @@ impl Method {
         .into_iter()
         .chain(self.arguments.iter().cloned())
         .collect()
-    }
-
-    // not `self_type` - can't mirror a Callable method name!
-    pub fn object_type(&self) -> Type {
-        match &self.receiver {
-            MethodReceiver::Enum { module_path, name } => Type::Enum {
-                module_path: module_path.clone(),
-                name: name.clone(),
-            },
-            MethodReceiver::Record { module_path, name } => Type::Enum {
-                module_path: module_path.clone(),
-                name: name.clone(),
-            },
-            MethodReceiver::Object { module_path, name } => Type::Object {
-                module_path: module_path.clone(),
-                name: name.clone(),
-                imp: self.object_impl,
-            },
-        }
     }
 
     pub fn return_type(&self) -> Option<&Type> {
@@ -636,67 +594,31 @@ impl Method {
     pub fn foreign_future_ffi_result_struct(&self) -> FfiStruct {
         callbacks::foreign_future_ffi_result_struct(self.return_type.as_ref().map(FfiType::from))
     }
-}
 
-impl From<uniffi_meta::MethodMetadata> for Method {
-    fn from(meta: uniffi_meta::MethodMetadata) -> Self {
+    // construct from metadata - like `From<>` but with extra args
+    pub fn from_metadata(meta: uniffi_meta::MethodMetadata, receiver: Type) -> Self {
         let ffi_name = meta.ffi_symbol_name();
         let checksum_fn_name = meta.checksum_symbol_name();
-        let is_async = meta.is_async;
-        let return_type = meta.return_type;
         let arguments = meta.inputs.into_iter().map(Into::into).collect();
 
         let ffi_func = FfiFunction {
             name: ffi_name,
-            is_async,
+            is_async: meta.is_async,
             ..FfiFunction::default()
         };
 
         Self {
             name: meta.name,
-            is_async,
-            receiver: meta.receiver,
-            object_impl: ObjectImpl::Struct, // will be filled in later
+            receiver,
+            is_async: meta.is_async,
             arguments,
-            return_type,
+            return_type: meta.return_type,
             ffi_func,
             docstring: meta.docstring.clone(),
             throws: meta.throws,
             takes_self_by_arc: meta.takes_self_by_arc,
             checksum_fn_name,
             checksum: meta.checksum,
-        }
-    }
-}
-
-impl From<uniffi_meta::TraitMethodMetadata> for Method {
-    fn from(meta: uniffi_meta::TraitMethodMetadata) -> Self {
-        let ffi_name = meta.ffi_symbol_name();
-        let checksum_fn_name = meta.checksum_symbol_name();
-        let is_async = meta.is_async;
-        let return_type = meta.return_type;
-        let arguments = meta.inputs.into_iter().map(Into::into).collect();
-        let ffi_func = FfiFunction {
-            name: ffi_name,
-            is_async,
-            ..FfiFunction::default()
-        };
-        Self {
-            name: meta.name,
-            is_async,
-            receiver: MethodReceiver::Object {
-                module_path: meta.module_path,
-                name: meta.trait_name,
-            },
-            object_impl: ObjectImpl::Struct,
-            arguments,
-            return_type,
-            docstring: meta.docstring.clone(),
-            throws: meta.throws,
-            takes_self_by_arc: meta.takes_self_by_arc,
-            checksum_fn_name,
-            checksum: meta.checksum,
-            ffi_func,
         }
     }
 }
@@ -740,6 +662,28 @@ impl UniffiTrait {
             }
         }
         Ok(())
+    }
+
+    // construct from metadata - like `From<>` but with extra args
+    pub fn from_metadata(meta: uniffi_meta::UniffiTraitMetadata, receiver: Type) -> Self {
+        match meta {
+            uniffi_meta::UniffiTraitMetadata::Debug { fmt } => UniffiTrait::Debug {
+                fmt: Method::from_metadata(fmt, receiver),
+            },
+            uniffi_meta::UniffiTraitMetadata::Display { fmt } => UniffiTrait::Display {
+                fmt: Method::from_metadata(fmt, receiver),
+            },
+            uniffi_meta::UniffiTraitMetadata::Eq { eq, ne } => UniffiTrait::Eq {
+                eq: Method::from_metadata(eq, receiver.clone()),
+                ne: Method::from_metadata(ne, receiver),
+            },
+            uniffi_meta::UniffiTraitMetadata::Hash { hash } => UniffiTrait::Hash {
+                hash: Method::from_metadata(hash, receiver),
+            },
+            uniffi_meta::UniffiTraitMetadata::Ord { cmp } => UniffiTrait::Ord {
+                cmp: Method::from_metadata(cmp, receiver),
+            },
+        }
     }
 }
 
@@ -825,7 +769,7 @@ impl Callable for Method {
     }
 
     fn self_type(&self) -> Option<Type> {
-        Some(self.object_type())
+        Some(self.receiver.clone())
     }
 }
 

@@ -113,9 +113,11 @@ impl Root {
                     )));
                 }
                 uniffi_meta::Metadata::Method(meth) => {
-                    meth.checksum = Some(uniffi_meta::checksum(&interface::Method::from(
-                        meth.clone(),
-                    )));
+                    // making a method is mildly tricky as we need a type for self.
+                    // for the purposes of a checksum we ignore self info from udl.
+                    let method_object =
+                        interface::Method::from_metadata(meth.clone(), uniffi_meta::Type::UInt8);
+                    meth.checksum = Some(uniffi_meta::checksum(&method_object));
                 }
                 uniffi_meta::Metadata::Constructor(cons) => {
                     cons.checksum = Some(uniffi_meta::checksum(&interface::Constructor::from(
