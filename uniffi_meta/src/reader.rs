@@ -528,6 +528,12 @@ impl<'a> MetadataReader<'a> {
     fn read_literal(&mut self, name: &str, ty: &Type) -> Result<LiteralMetadata> {
         let literal_kind = self.read_u8()?;
 
+        let ty = if let Type::Custom { builtin, .. } = ty {
+            builtin
+        } else {
+            ty
+        };
+
         Ok(match literal_kind {
             codes::LIT_STR => {
                 ensure!(

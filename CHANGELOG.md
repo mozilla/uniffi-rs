@@ -17,6 +17,7 @@
 - Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
   without a literal) meaning the default value for the type. Named types can also have a default.
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
+- Custom types support the default value, and specified as its "bridge" type ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
 - Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️

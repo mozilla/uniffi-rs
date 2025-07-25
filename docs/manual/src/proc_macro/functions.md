@@ -75,11 +75,13 @@ Supported defaults without a literal:
 | `bool` | false |
 | Records | Record with all fields set to their default value (only valid if they all have defaults) |
 | Objects | Primary constructor called with 0 arguments |
+| Custom Types | The default value of "bridge" type |
 
 Supported literal values:
 
 - String, integer, float, and boolean literals
 - `Option<T>` allows either `None` or `Some(T)`
+- Custom type, which its "bridge" type listed above
 
 ### Renaming functions, methods and constructors
 

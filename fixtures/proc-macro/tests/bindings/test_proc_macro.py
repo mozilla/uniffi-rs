@@ -80,6 +80,7 @@ assert(record_with_defaults.float_var == 4.2)
 assert(record_with_defaults.vec == [])
 assert(record_with_defaults.opt_vec == None)
 assert(record_with_defaults.opt_integer == 42)
+assert(record_with_defaults.custom_integer == 42)
 
 assert(RecordWithDefaults(no_default_string="", vec=["oops"]) == RecordWithDefaults(no_default_string="", vec=["oops"]))
 
@@ -99,6 +100,7 @@ assert(record_with_implicit_defaults.vec == [])
 assert(record_with_implicit_defaults.map == dict())
 assert(record_with_implicit_defaults.some_bytes == b'')
 assert(record_with_implicit_defaults.opt_int32 is None)
+assert(record_with_implicit_defaults.custom_integer == 0)
 
 assert(double_with_default() == 42)
 assert(sum_with_default(1) == 1)

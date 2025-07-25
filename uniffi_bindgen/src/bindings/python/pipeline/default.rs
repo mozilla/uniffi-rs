@@ -20,7 +20,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
 
 pub(super) fn render_default(default: &DefaultValue) -> Result<String> {
     Ok(match default {
-        DefaultValue::Default(tn) => match tn.ty {
+        DefaultValue::Default(tn) => match &tn.ty {
             Type::UInt8
             | Type::UInt16
             | Type::UInt32
@@ -40,6 +40,13 @@ pub(super) fn render_default(default: &DefaultValue) -> Result<String> {
             Type::Optional { .. } => "None".to_string(),
             Type::Map { .. } => "{}".to_string(),
             Type::Sequence { .. } => "[]".to_string(),
+            Type::Custom { builtin, .. } => {
+                return render_default(&DefaultValue::Default(TypeNode {
+                    ty: *builtin.clone(),
+                    ..tn.clone()
+                }))
+                .map_err(|_err| anyhow::anyhow!("Default values not supported for {:?}", tn.ty))
+            }
             _ => bail!("Default values not supported for {:?}", tn.ty),
         },
         // We assume the Literal pass has already run, so `py_lit` already has a value.
