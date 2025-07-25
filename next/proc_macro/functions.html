@@ -2233,12 +2233,17 @@ or <code>[name]=[value]</code> items (where the default value is specified as a 
 <td>Objects</td>
 <td>Primary constructor called with 0 arguments</td>
 </tr>
+<tr>
+<td>Custom Types</td>
+<td>The default value of "bridge" type</td>
+</tr>
 </tbody>
 </table>
 <p>Supported literal values:</p>
 <ul>
 <li>String, integer, float, and boolean literals</li>
 <li><code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></li>
+<li>Custom type, which its "bridge" type listed above</li>
 </ul>
 <h3 id="renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</h3>
 <p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
