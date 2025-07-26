@@ -1,0 +1,8 @@
+error: uniffi::export'd trait methods can't have a default implementation.
+ --> tests/ui/trait_default_methods.rs:4:33
+  |
+4 |       fn default(&self) -> String {
+  |  _________________________________^
+5 | |         unreachable!()
+6 | |     }
+  | |_____^
