@@ -69,7 +69,9 @@ It's highly recommend to call `AttachCurrentThread` when spawning a rust thread,
 static VM: once_cell::sync::OnceCell<jni::JavaVM> = once_cell::sync::OnceCell::new();
 
 // need call this function in java/kotlin first
-#[export_name = "Java_com_xxx_xxx"]
+// Before Rust 1.85 use #[export_name = "Java_com_xxx_xxx"]
+// Since Rust 1.85 use #[unsafe(export_name = "Java_com_xxx_xxx")]
+#[unsafe(export_name = "Java_com_xxx_xxx")]
 pub extern "system" fn java_init(
     env: jni::JNIEnv,
     _class: jni::objects::JClass,
@@ -84,6 +86,36 @@ tokio::runtime::Builder::new_multi_thread().on_thread_start(|| {
     let vm = VM.get().expect("init java vm");
     vm.attach_current_thread_permanently().unwrap();
 }).build().unwrap();
+```
+
+To call `Java_com_xxx_xxx` you need to replace `_xxx_xxx` with the right package
+name and the right class name from where the function will be called.
+For example:
+
+In Rust:
+
+```rust
+// Rust (see above for before / after Rust 1.85)
+#[unsafe(export_name = "Java_com_my_package_MainActivity")]
+pub extern "system" fn java_init(
+// ...
+```
+
+And then in Kotlin:
+
+```kotlin
+// Kotlin
+package my.package
+
+class MainActivity : ComponentActivity() {
+    external fun javaInit()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // Loads "libmy_library.so" so that it can be called by "external fun" above
+        System.loadLibrary("my_library")
+        // Calls the Java_com_my_package_MainActivity function in Rust
+        javaInit()
+    }
 ```
 
 [JNA]: https://github.com/java-native-access/jna
