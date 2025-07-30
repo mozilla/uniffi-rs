@@ -2234,7 +2234,9 @@ JNA 5.12.0 or greater is required.</p>
 <div class="highlight"><pre><span></span><code><span class="k">static</span><span class="w"> </span><span class="n">VM</span><span class="p">:</span><span class="w"> </span><span class="nc">once_cell</span><span class="p">::</span><span class="n">sync</span><span class="p">::</span><span class="n">OnceCell</span><span class="o">&lt;</span><span class="n">jni</span><span class="p">::</span><span class="n">JavaVM</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">once_cell</span><span class="p">::</span><span class="n">sync</span><span class="p">::</span><span class="n">OnceCell</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
 
 <span class="c1">// need call this function in java/kotlin first</span>
-<span class="cp">#[export_name = </span><span class="s">&quot;Java_com_xxx_xxx&quot;</span><span class="cp">]</span>
+<span class="c1">// Before Rust 1.85 use #[export_name = &quot;Java_com_xxx_xxx&quot;]</span>
+<span class="c1">// Since Rust 1.85 use #[unsafe(export_name = &quot;Java_com_xxx_xxx&quot;)]</span>
+<span class="cp">#[unsafe(export_name = </span><span class="s">&quot;Java_com_xxx_xxx&quot;</span><span class="cp">)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;system&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">java_init</span><span class="p">(</span>
 <span class="w">    </span><span class="n">env</span><span class="p">:</span><span class="w"> </span><span class="nc">jni</span><span class="p">::</span><span class="n">JNIEnv</span><span class="p">,</span>
 <span class="w">    </span><span class="n">_class</span><span class="p">:</span><span class="w"> </span><span class="nc">jni</span><span class="p">::</span><span class="n">objects</span><span class="p">::</span><span class="n">JClass</span><span class="p">,</span>
@@ -2249,6 +2251,29 @@ JNA 5.12.0 or greater is required.</p>
 <span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VM</span><span class="p">.</span><span class="n">get</span><span class="p">().</span><span class="n">expect</span><span class="p">(</span><span class="s">&quot;init java vm&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="n">vm</span><span class="p">.</span><span class="n">attach_current_thread_permanently</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span>
 <span class="p">}).</span><span class="n">build</span><span class="p">().</span><span class="n">unwrap</span><span class="p">();</span>
+</code></pre></div>
+<p>To call <code>Java_com_xxx_xxx</code> you need to replace <code>_xxx_xxx</code> with the right package
+name and the right class name from where the function will be called.
+For example:</p>
+<p>In Rust:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Rust (see above for before / after Rust 1.85)</span>
+<span class="cp">#[unsafe(export_name = </span><span class="s">&quot;Java_com_my_package_MainActivity&quot;</span><span class="cp">)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;system&quot;</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">java_init</span><span class="p">(</span>
+<span class="c1">// ...</span>
+</code></pre></div>
+<p>And then in Kotlin:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Kotlin</span>
+<span class="k">package</span><span class="w"> </span><span class="nn">my.package</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">MainActivity</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">ComponentActivity</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">external</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">javaInit</span><span class="p">()</span>
+
+<span class="w">    </span><span class="kd">override</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">:</span><span class="w"> </span><span class="n">Bundle?)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Loads &quot;libmy_library.so&quot; so that it can be called by &quot;external fun&quot; above</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">loadLibrary</span><span class="p">(</span><span class="s">&quot;my_library&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// Calls the Java_com_my_package_MainActivity function in Rust</span>
+<span class="w">        </span><span class="n">javaInit</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
 </code></pre></div>
 <h2 id="coroutines-dependency">Coroutines dependency</h2>
 <p>UniFFI relies on <a href="https://github.com/Kotlin/kotlinx.coroutines">kotlinx coroutines core</a> for future and async support. Version 1.6 or greater is required.</p>
