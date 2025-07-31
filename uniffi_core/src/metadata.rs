@@ -90,7 +90,7 @@ pub mod codes {
 // For large enums and small items with large docstrings we want this to be
 // large - but not so large the compiler's memory becomes a problem.
 // See eg, #1968, #2041, 2531, fixtures/large-error
-// I guess we keep doubling this until the morale improves :)
+// I guess we keep doubling this until morale improves :)
 const BUF_SIZE: usize = 32768;
 
 // This struct is a kludge around the fact that Rust const generic support doesn't quite handle our
