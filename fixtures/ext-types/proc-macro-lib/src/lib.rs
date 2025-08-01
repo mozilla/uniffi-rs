@@ -2,7 +2,8 @@ use custom_types::Handle;
 use ext_types_custom::{Guid, Ouid2};
 use std::sync::Arc;
 use uniffi_one::{
-    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneTrait, UniffiOneType,
+    UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneRecordContainingInterface,
+    UniffiOneTrait, UniffiOneType,
 };
 use url::Url;
 
@@ -209,6 +210,14 @@ fn get_guid_procmacro(g: Option<Guid>) -> Guid {
 #[uniffi::export]
 fn get_ouid2() -> Ouid2 {
     Ouid2("hello".to_string())
+}
+
+// record with external record with an interface,
+// making sure we walk into types in external crates, #2441
+#[derive(uniffi::Record, Default)]
+pub struct RecordContainingInterface {
+    #[uniffi(default)]
+    pub inner: UniffiOneRecordContainingInterface,
 }
 
 uniffi::setup_scaffolding!("imported_types_lib");
