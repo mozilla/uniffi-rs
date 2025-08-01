@@ -1,4 +1,7 @@
-use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::{
+    atomic::{AtomicI32, Ordering},
+    Arc,
+};
 
 pub struct UniffiOneType {
     pub sval: String,
@@ -84,6 +87,12 @@ fn _just_to_get_error_support() -> Result<(), UniffiOneErrorInterface> {
 #[uniffi::trait_interface]
 pub trait UniffiOneUDLTrait: Send + Sync {
     fn hello(&self) -> String;
+}
+
+#[derive(uniffi::Record, Default)]
+pub struct UniffiOneRecordContainingInterface {
+    #[uniffi(default)]
+    pub inner: Arc<UniffiOneInterface>,
 }
 
 uniffi::include_scaffolding!("uniffi-one");

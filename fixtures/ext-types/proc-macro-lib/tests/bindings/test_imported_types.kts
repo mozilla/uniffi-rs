@@ -52,3 +52,5 @@ assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
 
 val g = getGuidProcmacro(null)
 assert(g == getGuidProcmacro(g))
+
+RecordContainingInterface().destroy() // #2441
