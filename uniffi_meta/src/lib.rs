@@ -495,19 +495,17 @@ impl UniffiTraitDiscriminants {
 }
 
 /// This notes that a type implements a Trait.
-/// eg, an `impl Tr for Ob` block. Not many types will support this.
+/// eg, an `impl Tr for Ob` block.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Node)]
 pub struct ObjectTraitImplMetadata {
     pub ty: Type,
     pub trait_name: String,
-    pub tr_module_path: Option<String>,
 }
 
 impl Checksum for ObjectTraitImplMetadata {
     fn checksum<H: Hasher>(&self, state: &mut H) {
         Checksum::checksum(&self.ty, state);
         Checksum::checksum(&self.trait_name, state);
-        Checksum::checksum(&self.tr_module_path, state);
     }
 }
 

@@ -917,7 +917,6 @@ mod test_function_metadata {
                     imp: ObjectImpl::Struct,
                 },
                 trait_name: "Logger".into(),
-                tr_module_path: None,
             },
         );
     }
