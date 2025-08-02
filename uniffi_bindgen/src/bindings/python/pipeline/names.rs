@@ -80,9 +80,6 @@ pub fn pass(module: &mut Module) -> Result<()> {
     });
     module.visit_mut(|int: &mut Interface| {
         int.name = fixup_keyword(int.name.to_upper_camel_case());
-        for trait_impl in int.trait_impls.iter_mut() {
-            trait_impl.trait_name = fixup_keyword(trait_impl.trait_name.to_upper_camel_case())
-        }
     });
     module.visit_mut(|cbi: &mut CallbackInterface| {
         cbi.name = fixup_keyword(cbi.name.to_upper_camel_case());

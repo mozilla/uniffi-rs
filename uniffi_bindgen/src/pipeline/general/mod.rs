@@ -18,6 +18,7 @@ mod enums;
 mod ffi_async_data;
 mod ffi_functions;
 mod ffi_types;
+mod missing_types;
 mod modules;
 mod objects;
 mod records;
@@ -42,6 +43,7 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
     new_pipeline()
         .convert_ir_pass::<Root>()
         .pass(modules::pass)
+        .pass(missing_types::pass)
         .pass(callable::pass)
         .pass(rust_buffer::pass)
         .pass(rust_future::pass)
