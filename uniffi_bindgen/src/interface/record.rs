@@ -47,8 +47,9 @@
 use anyhow::Result;
 use uniffi_meta::Checksum;
 
-use super::DefaultValue;
-use super::{AsType, Type, TypeIterator};
+use super::{
+    AsType, DefaultValue, FfiFunction, Type, TypeIterator, UniffiTrait, UniffiTraitMethods,
+};
 
 /// Represents a "data class" style object, for passing around complex values.
 ///
@@ -61,6 +62,7 @@ pub struct Record {
     pub(super) module_path: String,
     pub(super) remote: bool,
     pub(super) fields: Vec<Field>,
+    pub uniffi_traits: Vec<UniffiTrait>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
@@ -93,6 +95,35 @@ impl Record {
     pub fn has_fields(&self) -> bool {
         !self.fields.is_empty()
     }
+
+    pub fn uniffi_trait_methods(&self) -> UniffiTraitMethods {
+        UniffiTraitMethods::new(&self.uniffi_traits)
+    }
+
+    pub fn add_uniffi_trait(&mut self, t: UniffiTrait) {
+        self.uniffi_traits.push(t);
+    }
+
+    pub fn derive_ffi_funcs(&mut self) -> Result<()> {
+        for ut in self.uniffi_traits.iter_mut() {
+            ut.derive_ffi_func()?;
+        }
+        Ok(())
+    }
+
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
+        // no "user defined" methods yet, so just uniffi_traits
+        self.uniffi_traits
+            .iter()
+            .flat_map(|ut| match ut {
+                UniffiTrait::Display { fmt: m }
+                | UniffiTrait::Debug { fmt: m }
+                | UniffiTrait::Hash { hash: m }
+                | UniffiTrait::Ord { cmp: m } => vec![m],
+                UniffiTrait::Eq { eq, ne } => vec![eq, ne],
+            })
+            .map(|m| &m.ffi_func)
+    }
 }
 
 impl AsType for Record {
@@ -117,6 +148,7 @@ impl TryFrom<uniffi_meta::RecordMetadata> for Record {
                 .into_iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_>>()?,
+            uniffi_traits: vec![],
             docstring: meta.docstring.clone(),
         })
     }

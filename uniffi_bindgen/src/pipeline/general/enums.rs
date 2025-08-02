@@ -125,6 +125,5 @@ pub fn determine_discriminants(en: &mut Enum) -> Result<()> {
             _ => unreachable!(),
         }
     }
-
     Ok(())
 }
