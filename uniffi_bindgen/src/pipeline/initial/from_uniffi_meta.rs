@@ -18,14 +18,10 @@ use uniffi_pipeline::Node;
 /// * Call [Self::try_into_initial_ir] to construct a `initial::Root` node.
 #[derive(Default)]
 pub struct UniffiMetaConverter {
-    // Map module_path to `Module::name`
-    //
-    // This is needed because UDL and proc-macro code can generate different module paths.  To
-    // normalize things, we find the `NamespaceMetadata::name` that matches the module path.
-    //
-    // Use BTreeMap for each of these so that things stay consistent, regardless of how the
-    // metadata is ordered.
+    // Use BTreeMap for each of these so that things stay consistent, regardless of how the metadata is ordered.
+    // All metadata has a `module_path`, which isn't the namespace/module name - this map converts them.
     module_path_map: BTreeMap<String, String>,
+    // Everyth8ng below here keyed by namespace/module name, not crate_name/module_path.
     // Top level modules
     modules: BTreeMap<String, Module>,
     // Top-level type definitions and functions, keyed by module name
@@ -50,21 +46,12 @@ impl UniffiMetaConverter {
     pub fn add_metadata_item(&mut self, meta: uniffi_meta::Metadata) -> Result<()> {
         match meta {
             uniffi_meta::Metadata::Namespace(namespace) => {
-                // Map both the crate name and module name to the module name.  This simplifies the
-                // code in `get_module`
                 self.module_path_map
                     .insert(namespace.crate_name.clone(), namespace.name.clone());
-                self.module_path_map
-                    .insert(namespace.name.clone(), namespace.name.clone());
                 // Insert a new module
                 self.modules
                     .entry(namespace.name.clone())
                     .or_insert(Module {
-                        // TODO: Is this the correct crate name in all cases?  I'm pretty sure
-                        // it is for proc-macro based generation, since the proc-macro
-                        // namespace is added to the metadata list before the UDL one.
-                        // However, I'm not so sure what happens if we're generating from a UDL
-                        // file.
                         crate_name: namespace.crate_name,
                         docstring: None,
                         config_toml: None,
@@ -207,11 +194,20 @@ impl UniffiMetaConverter {
         };
 
         // Move child items into their parents
-        for (module_path, docstring) in self.module_docstrings {
-            get_module(&self.module_path_map, &mut root, &module_path)?.docstring = Some(docstring);
+        for (module_name, docstring) in self.module_docstrings {
+            // already the namespace/module name, so no need to convert.
+            let module = root.modules.get_mut(&module_name).ok_or_else(|| {
+                anyhow!("module specified in toml doesn't exist: {module_name:?}")
+            })?;
+            module.docstring = Some(docstring);
         }
-        for (module_path, toml) in self.module_toml {
-            get_module(&self.module_path_map, &mut root, &module_path)?.config_toml = Some(toml);
+        for (module_name, toml) in self.module_toml {
+            // already the namespace/module name, so no need to convert.
+            // we should maybe ignore an error here?
+            let module = root.modules.get_mut(&module_name).ok_or_else(|| {
+                anyhow!("module specified in toml doesn't exist: {module_name:?}")
+            })?;
+            module.config_toml = Some(toml);
         }
         for (module_path, funcs) in self.functions {
             get_module(&self.module_path_map, &mut root, &module_path)?
