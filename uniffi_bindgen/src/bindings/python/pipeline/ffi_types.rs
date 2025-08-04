@@ -4,12 +4,12 @@
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    let module_name = module.name.clone();
-    module.visit_mut(|node: &mut FfiTypeNode| {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    let module_name = namespace.name.clone();
+    namespace.visit_mut(|node: &mut FfiTypeNode| {
         node.type_name = ffi_type_name(&module_name, &node.ty);
     });
-    module.try_visit_mut(|meth: &mut VTableMethod| {
+    namespace.try_visit_mut(|meth: &mut VTableMethod| {
         meth.ffi_default_value = match &meth.callable.return_type.ty {
             Some(type_node) => match &type_node.ffi_type.ty {
                 FfiType::UInt8

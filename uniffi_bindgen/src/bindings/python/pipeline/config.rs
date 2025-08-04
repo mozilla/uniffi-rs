@@ -5,16 +5,16 @@
 use super::*;
 use serde::Deserialize;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    let config = match &module.config_toml {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    let config = match &namespace.config_toml {
         Some(toml) => toml::from_str(toml)?,
         None => Config::default(),
     };
     let mut config = config.bindings.python;
-    module.visit_mut(|custom: &mut CustomType| {
+    namespace.visit_mut(|custom: &mut CustomType| {
         custom.config = config.custom_types.shift_remove(&custom.name);
     });
-    module.config = config;
+    namespace.config = config;
     Ok(())
 }
 

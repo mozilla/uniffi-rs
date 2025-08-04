@@ -5,14 +5,14 @@
 use super::*;
 
 /// A pass to handle literals and other default values.
-pub fn pass(module: &mut Module) -> Result<()> {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
     // literals first, because the Default pass might use the value.
-    module.try_visit_mut(|lit: &mut LiteralNode| {
+    namespace.try_visit_mut(|lit: &mut LiteralNode| {
         lit.py_lit = render_literal(&lit.lit)?;
         Ok(())
     })?;
 
-    module.try_visit_mut(|default: &mut DefaultValueNode| {
+    namespace.try_visit_mut(|default: &mut DefaultValueNode| {
         default.py_default = render_default(&default.default)?;
         Ok(())
     })

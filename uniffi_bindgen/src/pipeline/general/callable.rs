@@ -29,9 +29,9 @@ pub fn pass(root: &mut Root) -> Result<()> {
             ..Callable::default()
         }
     });
-    root.visit_mut(|module: &mut Module| {
-        let module_name = module.name.clone();
-        module.visit_mut(|int: &mut Interface| {
+    root.visit_mut(|namespace: &mut Namespace| {
+        let namespace_name = namespace.name.clone();
+        namespace.visit_mut(|int: &mut Interface| {
             let interface_name = int.name.clone();
             let interface_imp = int.imp.clone();
             int.visit_mut(|cons: &mut Constructor| {
@@ -46,7 +46,7 @@ pub fn pass(root: &mut Root) -> Result<()> {
                     return_type: ReturnType {
                         ty: Some(TypeNode {
                             ty: Type::Interface {
-                                module_name: module_name.clone(),
+                                namespace: namespace_name.clone(),
                                 name: interface_name.clone(),
                                 imp: interface_imp.clone(),
                             },

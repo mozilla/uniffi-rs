@@ -8,13 +8,13 @@ use uniffi_pipeline::Node;
 /// Root node of the Initial IR
 #[derive(Debug, Clone, Node)]
 pub struct Root {
-    pub modules: IndexMap<String, Module>,
+    pub namespaces: IndexMap<String, Namespace>,
     /// The library path the user passed to us, if we're in library mode
     pub cdylib: Option<String>,
 }
 
 #[derive(Debug, Clone, Node)]
-pub struct Module {
+pub struct Namespace {
     pub name: String,
     pub crate_name: String,
     /// contents of the `uniffi.toml` file for this module, if present
@@ -250,31 +250,29 @@ pub enum Type {
     // User defined types in the API
     #[node(from(Object))]
     Interface {
-        // Name of the module this is defined in.
-        // Taken from `module_path` and normalized
-        #[node(from(module_path))]
-        module_name: String,
+        module_path: String, // from the metadata
+        namespace: String,   // we'll fix this up.
         name: String,
         imp: ObjectImpl,
     },
     Record {
-        #[node(from(module_path))]
-        module_name: String,
+        module_path: String,
+        namespace: String,
         name: String,
     },
     Enum {
-        #[node(from(module_path))]
-        module_name: String,
+        module_path: String,
+        namespace: String,
         name: String,
     },
     CallbackInterface {
-        #[node(from(module_path))]
-        module_name: String,
+        module_path: String,
+        namespace: String,
         name: String,
     },
     Custom {
-        #[node(from(module_path))]
-        module_name: String,
+        module_path: String,
+        namespace: String,
         name: String,
         builtin: Box<Type>,
     },

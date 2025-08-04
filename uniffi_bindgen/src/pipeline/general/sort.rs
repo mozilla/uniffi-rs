@@ -9,18 +9,18 @@
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
     let ffi_dep_sorter = DependencySorter::new(
-        module.ffi_definitions.drain(..),
+        namespace.ffi_definitions.drain(..),
         FfiDefinitionDependencyLogic,
     );
-    module.ffi_definitions.extend(ffi_dep_sorter.sort());
+    namespace.ffi_definitions.extend(ffi_dep_sorter.sort());
 
     let type_sorter = DependencySorter::new(
-        module.type_definitions.drain(..),
+        namespace.type_definitions.drain(..),
         TypeDefinitionDependencyLogic,
     );
-    module.type_definitions = type_sorter.sort();
+    namespace.type_definitions = type_sorter.sort();
     Ok(())
 }
 

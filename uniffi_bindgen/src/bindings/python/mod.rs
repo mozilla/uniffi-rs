@@ -20,7 +20,7 @@ pub fn run_pipeline(initial_root: pipeline::initial::Root, out_dir: &Utf8Path) -
     if !out_dir.exists() {
         fs::create_dir_all(out_dir)?;
     }
-    for module in python_root.modules.values() {
+    for module in python_root.namespaces.values() {
         let path = out_dir.join(format!("{}.py", module.name));
         let content = module.render()?;
         println!("writing {path}");

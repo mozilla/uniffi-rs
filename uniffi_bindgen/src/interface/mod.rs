@@ -371,7 +371,10 @@ impl ComponentInterface {
     pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
         self.crate_to_namespace
             .get(module_path)
-            .map(|n| n.name.as_ref())
+            .map(|n| {
+                assert!(n.crate_name == module_path); // an invariant redundancy worth dieing for.
+                n.name.as_ref()
+            })
             // incase not library mode and we've not been told
             .or_else(|| (module_path == self.crate_name()).then(|| self.namespace()))
             .ok_or_else(|| anyhow!("unresolved module path {module_path}"))
