@@ -62,6 +62,13 @@ pub fn generate_bindings<T: BindingGenerator>(
     };
     binding_generator.update_component_configs(&settings, &mut components)?;
 
+    // give every CI a cloned copy of every CI - including itself for simplicity.
+    // we end up taking n^2 copies of all ci's, but it works.
+    let all_cis = components.iter().map(|c| c.ci.clone()).collect::<Vec<_>>();
+    components
+        .iter_mut()
+        .for_each(|c| c.ci.set_all_component_interfaces(all_cis.clone()));
+
     fs::create_dir_all(out_dir)?;
     if let Some(crate_name) = &crate_name {
         let old_elements = components.drain(..);

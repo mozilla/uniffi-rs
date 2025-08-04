@@ -101,6 +101,8 @@ pub struct ComponentInterface {
     callback_interface_throws_types: BTreeSet<Type>,
     // A mapping from an external module path to the external namespace.
     crate_to_namespace: BTreeMap<String, NamespaceMetadata>,
+    // A clone of every CI we know about, including ourself, to help get external type info for bindings.
+    all_component_interfaces: Vec<ComponentInterface>,
 }
 
 impl ComponentInterface {
@@ -425,6 +427,14 @@ impl ComponentInterface {
         self.types
             .iter_local_types()
             .any(|t| matches!(t, Type::Object { .. }))
+    }
+
+    pub fn set_all_component_interfaces(&mut self, all: Vec<ComponentInterface>) {
+        self.all_component_interfaces = all;
+    }
+
+    pub fn all_component_interfaces(&self) -> &[ComponentInterface] {
+        &self.all_component_interfaces
     }
 
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
@@ -1118,7 +1128,7 @@ struct RecursiveTypeIterator<'a> {
     /// The currently-active iterator from which we're yielding.
     current: TypeIterator<'a>,
     /// A set of names of user-defined types that we have already seen.
-    seen: HashSet<&'a str>,
+    seen: HashSet<(&'a str, &'a str)>,
     /// A queue of user-defined types that we need to recurse into.
     pending: Vec<&'a Type>,
 }
@@ -1138,17 +1148,34 @@ impl<'a> RecursiveTypeIterator<'a> {
     /// Add a new type to the queue of pending types, if not previously seen.
     fn add_pending_type(&mut self, type_: &'a Type) {
         match type_ {
-            Type::Record { name, .. }
-            | Type::Enum { name, .. }
-            | Type::Object { name, .. }
-            | Type::CallbackInterface { name, .. } => {
-                if !self.seen.contains(name.as_str()) {
+            Type::Record {
+                module_path, name, ..
+            }
+            | Type::Enum {
+                module_path, name, ..
+            }
+            | Type::Object {
+                module_path, name, ..
+            }
+            | Type::CallbackInterface {
+                module_path, name, ..
+            } => {
+                if !self.seen.contains(&(module_path.as_str(), name.as_str())) {
                     self.pending.push(type_);
-                    self.seen.insert(name.as_str());
+                    self.seen.insert((module_path.as_str(), name.as_str()));
                 }
             }
             _ => (),
         }
+    }
+
+    /// Find the component interface with the type definitions for the given module.
+    fn find_ci_for(&self, module_path: &str) -> &'a ComponentInterface {
+        self.ci
+            .all_component_interfaces
+            .iter()
+            .find(|ci| ci.crate_name() == module_path)
+            .unwrap_or(self.ci)
     }
 
     /// Advance the iterator to recurse into the next pending type, if any.
@@ -1162,16 +1189,30 @@ impl<'a> RecursiveTypeIterator<'a> {
             // In the unlikely event that one of them returns `None` then, rather than trying to advance
             // to a non-existent type, we just leave the existing iterator in place and allow the recursive
             // call to `next()` to try again with the next pending type.
+            // (This is fragile - not finding a type for a name will cause difficult to diagnose bugs!)
             let next_iter = match next_type {
-                Type::Record { name, .. } => {
-                    self.ci.get_record_definition(name).map(Record::iter_types)
-                }
-                Type::Enum { name, .. } => self.ci.get_enum_definition(name).map(Enum::iter_types),
-                Type::Object { name, .. } => {
-                    self.ci.get_object_definition(name).map(Object::iter_types)
-                }
-                Type::CallbackInterface { name, .. } => self
-                    .ci
+                Type::Record {
+                    module_path, name, ..
+                } => self
+                    .find_ci_for(module_path)
+                    .get_record_definition(name)
+                    .map(Record::iter_types),
+                Type::Enum {
+                    module_path, name, ..
+                } => self
+                    .find_ci_for(module_path)
+                    .get_enum_definition(name)
+                    .map(Enum::iter_types),
+                Type::Object {
+                    module_path, name, ..
+                } => self
+                    .find_ci_for(module_path)
+                    .get_object_definition(name)
+                    .map(Object::iter_types),
+                Type::CallbackInterface {
+                    module_path, name, ..
+                } => self
+                    .find_ci_for(module_path)
                     .get_callback_interface_definition(name)
                     .map(CallbackInterface::iter_types),
                 _ => None,
