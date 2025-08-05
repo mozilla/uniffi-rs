@@ -12,3 +12,15 @@ impl TraitMethods {
         unreachable!();
     }
 }
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum UdlEnum {
+    S { s: String },
+    I { i: i8 },
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct UdlRecord {
+    s: String,
+    i: i8,
+}
