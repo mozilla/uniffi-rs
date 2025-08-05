@@ -36,6 +36,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
             ty.ffi_converter_name = format!("_UniffiFfiConverter{}", ty.canonical_name);
         }
         ty.type_name = type_name(&ty.ty);
+        ty.type_anno_name = type_anno_name(&ty.ty);
     });
     module.visit_mut(|return_ty: &mut ReturnType| {
         return_ty.type_name = match &return_ty.ty {
@@ -100,5 +101,44 @@ fn type_name(ty: &Type) -> String {
             key_type,
             value_type,
         } => format!("dict[{}, {}]", type_name(key_type), type_name(value_type)),
+    }
+}
+
+// The name for the type we should use in type annotations.
+// We prefer `builtins.name` for builtin types, otherwise things
+// like:
+// > class Foo:
+// >     bool: bool
+// get upset.
+// Note:
+// * We actually use `__python_builtins`, which we arrange to import, to avoid name clashes
+//   should someone try to use `builtins` as a name)
+// * In theory we could do this in `type_name` (and remove this), but some odd things fail in that case.
+fn type_anno_name(ty: &Type) -> String {
+    match ty {
+        Type::Boolean => "__python_builtins.bool".to_string(),
+        Type::String => "__python_builtins.str".to_string(),
+        Type::Bytes => "__python_builtins.bytes".to_string(),
+        Type::Int8 => "__python_builtins.int".to_string(),
+        Type::Int16
+        | Type::Int32
+        | Type::Int64
+        | Type::UInt8
+        | Type::UInt16
+        | Type::UInt32
+        | Type::UInt64 => "__python_builtins.int".to_string(),
+        Type::Float32 | Type::Float64 => "__python_builtins.float".to_string(),
+        Type::Sequence { inner_type } => {
+            format!("typing.List[{}]", type_anno_name(inner_type))
+        }
+        Type::Map {
+            key_type,
+            value_type,
+        } => format!(
+            "__python_builtins.dict[{}, {}]",
+            type_anno_name(key_type),
+            type_anno_name(value_type)
+        ),
+        _ => type_name(ty),
     }
 }
