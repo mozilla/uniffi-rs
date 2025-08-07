@@ -163,19 +163,7 @@ impl UniffiMetaConverter {
                 self.trait_impls
                     .entry((module_path.to_string(), name.to_string()))
                     .or_default()
-                    .insert(
-                        imp.trait_name.clone(),
-                        ObjectTraitImpl {
-                            tr_module_name: match &imp.tr_module_path {
-                                None => None,
-                                Some(module_path) => Some(
-                                    get_module_name(&self.module_path_map, module_path)?
-                                        .to_string(),
-                                ),
-                            },
-                            ..ObjectTraitImpl::try_from_node(imp)?
-                        },
-                    );
+                    .insert(imp.trait_name.clone(), ObjectTraitImpl::try_from_node(imp)?);
             }
             uniffi_meta::Metadata::UdlFile(_) => (),
         }

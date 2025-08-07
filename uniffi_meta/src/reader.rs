@@ -119,10 +119,6 @@ impl<'a> MetadataReader<'a> {
         String::from_utf8(slice.into()).context("Invalid string data")
     }
 
-    fn read_optional_string(&mut self) -> Result<Option<String>> {
-        Ok(Some(self.read_string()?).filter(|str| !str.is_empty()))
-    }
-
     fn read_long_string(&mut self) -> Result<String> {
         let size = self.read_u16()? as usize;
         let slice;
@@ -420,7 +416,6 @@ impl<'a> MetadataReader<'a> {
         Ok(ObjectTraitImplMetadata {
             ty: self.read_type()?,
             trait_name: self.read_string()?,
-            tr_module_path: self.read_optional_string()?,
         })
     }
 

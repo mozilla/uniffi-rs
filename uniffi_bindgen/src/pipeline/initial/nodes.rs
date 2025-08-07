@@ -208,7 +208,6 @@ pub enum UniffiTrait {
 pub struct ObjectTraitImpl {
     pub ty: Type,
     pub trait_name: String,
-    pub tr_module_name: Option<String>,
 }
 
 #[derive(Debug, Clone, Node)]

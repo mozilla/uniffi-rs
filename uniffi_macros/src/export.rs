@@ -80,16 +80,13 @@ pub(crate) fn expand_export(
                 .collect::<syn::Result<_>>()?;
             let trait_impl_tokens = trait_.map(|t| {
                 let object_name = ident_to_string(&self_ident);
-                // TODO: parse trait path?
                 let trait_name = ident_to_string(t.get_ident().expect("not a simple trait path"));
-                let trait_path = "";
                 let metadata_expr = quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::OBJECT_TRAIT_IMPL)
                         .concat(::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE))
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
                         .concat_str(#trait_name)
-                        .concat_str(#trait_path)
                 };
                 create_metadata_items(
                     "object_trait_impl",
