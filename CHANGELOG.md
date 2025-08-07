@@ -14,10 +14,10 @@
 ### What's new?
 
 - Objects can export the `Ord` trait, allowing such objects to be ordered.
-- Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
-  without a literal) meaning the default value for the type. Named types can also have a default.
-  ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
-- Custom types support the default value, and specified as its "bridge" type ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
+- `#[uniffi(default)]` literals are now optional - eg, `#[uniffi(default)]` and `#[uniffi(default = 0)]` are equivalent.
+  When no literal is specifed, named types (objects, records, etc) can be used as long as they have suitable default values.
+  ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543)).
+  Custom types too ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
 - Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️

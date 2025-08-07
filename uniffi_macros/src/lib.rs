@@ -121,7 +121,7 @@ pub fn derive_record(input: TokenStream) -> TokenStream {
         .into()
 }
 
-#[proc_macro_derive(Enum)]
+#[proc_macro_derive(Enum, attributes(uniffi))]
 pub fn derive_enum(input: TokenStream) -> TokenStream {
     expand_enum(parse_macro_input!(input), DeriveOptions::default())
         .unwrap_or_else(syn::Error::into_compile_error)

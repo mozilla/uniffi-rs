@@ -32,3 +32,15 @@ do {
             assert(false)
     }
 }
+
+switch NamedEnumWithDefaults.i() {
+    case .i(let d, let e):
+        assert(d == 0)
+        assert(e == 1)
+}
+
+switch NamedEnumWithDefaults.i(d: 2) {
+    case .i(let d, let e):
+        assert(d == 2)
+        assert(e == 1)
+}
