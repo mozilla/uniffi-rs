@@ -25,6 +25,7 @@ mod rust_buffer;
 mod rust_future;
 mod self_types;
 mod sort;
+mod trait_types;
 mod type_definitions_from_api;
 mod type_nodes;
 
@@ -42,6 +43,7 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
     new_pipeline()
         .convert_ir_pass::<Root>()
         .pass(modules::pass)
+        .pass(trait_types::pass)
         .pass(callable::pass)
         .pass(rust_buffer::pass)
         .pass(rust_future::pass)

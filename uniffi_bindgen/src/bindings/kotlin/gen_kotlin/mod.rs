@@ -367,21 +367,25 @@ fn object_interface_name(ci: &ComponentInterface, obj: &Object) -> String {
 // *sigh* - same thing for a trait, which might be either Object or CallbackInterface.
 // (we should either fold it into object or kill it!)
 fn trait_interface_name(ci: &ComponentInterface, name: &str) -> Result<String> {
-    let (obj_name, has_callback_interface) = match ci.get_object_definition(name) {
-        Some(obj) => (obj.name(), obj.has_callback_interface()),
-        None => (
-            ci.get_callback_interface_definition(name)
-                .ok_or_else(|| anyhow!("no interface {}", name))?
-                .name(),
-            true,
-        ),
-    };
-    let class_name = KotlinCodeOracle.class_name(ci, obj_name);
-    if has_callback_interface {
-        Ok(class_name)
-    } else {
-        Ok(format!("{class_name}Interface"))
+    for ci_look in ci.all_component_interfaces() {
+        let (obj_name, has_callback_interface) = match ci_look.get_object_definition(name) {
+            Some(obj) => (obj.name(), obj.has_callback_interface()),
+            None => {
+                let obj_name = match ci_look.get_callback_interface_definition(name) {
+                    Some(cbi) => cbi.name(),
+                    None => continue,
+                };
+                (obj_name, true)
+            }
+        };
+        let class_name = KotlinCodeOracle.class_name(ci_look, obj_name);
+        return if has_callback_interface {
+            Ok(class_name)
+        } else {
+            Ok(format!("{class_name}Interface"))
+        };
     }
+    anyhow::bail!("no interface {}", name);
 }
 
 // The name of the object exposing a Rust implementation.

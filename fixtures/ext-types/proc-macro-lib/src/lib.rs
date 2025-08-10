@@ -158,6 +158,17 @@ fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn Un
     t
 }
 
+// local impl of a remote trait.
+#[derive(uniffi::Object)]
+pub struct UniffiOneTraitObject;
+
+#[uniffi::export]
+impl UniffiOneTrait for UniffiOneTraitObject {
+    fn hello(&self) -> String {
+        "uniffi-one-trait-object".to_string()
+    }
+}
+
 // Some custom types via macros.
 // Another guid - here we use a regular struct.
 pub struct Uuid {
