@@ -2288,8 +2288,8 @@ Here's how this works in the <code>callables</code> pass:</p>
 </ul>
 <p>Alternatively, if you want to see the full IR for each pass, you can use <code>--no-diff</code> to print it out.
 Piping to a pager like <code>less</code> is highly recommended in this case.</p>
-<p>You can test this out yourself by running the following command to follow the <code>add</code> function as it moves throw the IR pipeline:</p>
-<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add</code></p>
+<p>You can test this out yourself by running the following command to follow the <code>add</code> function as it moves through the IR pipeline:</p>
+<p><code>cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python -t Function -n add | less</code></p>
 
 
 
