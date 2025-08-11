@@ -39,13 +39,18 @@ pub fn pass(int: &mut Interface) -> Result<()> {
         int.base_classes.push("Exception".to_string());
     }
     for t in int.trait_impls.iter() {
-        let Type::Interface {
-            ref name,
-            ref external_package_name,
-            ..
-        } = t.trait_ty.ty
-        else {
-            bail!("Trait {:?} isn't a trait", t);
+        let (name, external_package_name) = match &t.trait_ty.ty {
+            Type::Interface {
+                name,
+                external_package_name,
+                ..
+            } => (name, external_package_name),
+            Type::CallbackInterface {
+                name,
+                external_package_name,
+                ..
+            } => (name, external_package_name),
+            _ => bail!("trait_ty {:?} isn't a trait", t),
         };
         let fq = match external_package_name {
             None => name.clone(),

@@ -40,7 +40,7 @@ pub struct UniffiMetaConverter {
     methods: BTreeMap<(String, String), BTreeMap<String, Method>>,
     trait_methods: BTreeMap<(String, String), BTreeMap<String, TraitMethod>>,
     uniffi_traits: BTreeMap<(String, String), BTreeMap<String, UniffiTrait>>,
-    trait_impls: BTreeMap<(String, String), BTreeMap<String, ObjectTraitImpl>>,
+    trait_impls: BTreeMap<(String, String), BTreeMap<uniffi_meta::Type, ObjectTraitImpl>>,
 }
 
 impl UniffiMetaConverter {
@@ -152,7 +152,7 @@ impl UniffiMetaConverter {
                 self.trait_impls
                     .entry((module_path.to_string(), name.to_string()))
                     .or_default()
-                    .insert(imp.trait_name.clone(), ObjectTraitImpl::try_from_node(imp)?);
+                    .insert(imp.trait_ty.clone(), ObjectTraitImpl::try_from_node(imp)?);
             }
             uniffi_meta::Metadata::UdlFile(_) => (),
         }

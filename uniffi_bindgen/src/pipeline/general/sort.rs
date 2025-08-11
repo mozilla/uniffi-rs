@@ -174,7 +174,7 @@ impl DependencyLogic for TypeDefinitionDependencyLogic {
             TypeDefinition::Interface(i) => {
                 i.trait_impls
                     .iter()
-                    .map(|i| format!("Type{}", i.trait_name))
+                    .map(|i| i.trait_ty.canonical_name.clone())
                     .chain(
                         i.methods
                             .iter()

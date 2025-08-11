@@ -499,13 +499,13 @@ impl UniffiTraitDiscriminants {
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Node)]
 pub struct ObjectTraitImplMetadata {
     pub ty: Type,
-    pub trait_name: String,
+    pub trait_ty: Type,
 }
 
 impl Checksum for ObjectTraitImplMetadata {
     fn checksum<H: Hasher>(&self, state: &mut H) {
         Checksum::checksum(&self.ty, state);
-        Checksum::checksum(&self.trait_name, state);
+        Checksum::checksum(&self.trait_ty, state);
     }
 }
 

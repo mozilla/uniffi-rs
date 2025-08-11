@@ -209,7 +209,7 @@ extension {{ impl_class_name }}: Swift.Error {}
 {% endif %}
 
 {%- for t in obj.trait_impls() %}
-extension {{impl_class_name}}: {{ self::trait_protocol_name(ci, t.trait_name)? }} {}
+extension {{impl_class_name}}: {{ self::trait_protocol_name(ci, t.trait_ty)? }} {}
 {% endfor %}
 
 

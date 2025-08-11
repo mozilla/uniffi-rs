@@ -196,6 +196,7 @@ fn process_uniffi_trait_method(
         )?,
         None,
         udl_mode,
+        None,
     )?;
     // metadata for the method, which will be packed inside metadata for the trait.
     let method_meta = FnSignature::new_method(

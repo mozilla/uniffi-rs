@@ -366,26 +366,33 @@ fn object_interface_name(ci: &ComponentInterface, obj: &Object) -> String {
 
 // *sigh* - same thing for a trait, which might be either Object or CallbackInterface.
 // (we should either fold it into object or kill it!)
-fn trait_interface_name(ci: &ComponentInterface, name: &str) -> Result<String> {
-    for ci_look in ci.all_component_interfaces() {
-        let (obj_name, has_callback_interface) = match ci_look.get_object_definition(name) {
-            Some(obj) => (obj.name(), obj.has_callback_interface()),
-            None => {
-                let obj_name = match ci_look.get_callback_interface_definition(name) {
-                    Some(cbi) => cbi.name(),
-                    None => continue,
-                };
-                (obj_name, true)
-            }
-        };
-        let class_name = KotlinCodeOracle.class_name(ci_look, obj_name);
-        return if has_callback_interface {
-            Ok(class_name)
-        } else {
-            Ok(format!("{class_name}Interface"))
-        };
+fn trait_interface_name(ci: &ComponentInterface, trait_ty: &Type) -> Result<String> {
+    let Some(module_path) = trait_ty.module_path() else {
+        bail!("Invalid trait_type: {trait_ty:?}");
+    };
+    let Some(ci_look) = ci.find_component_interface(module_path) else {
+        anyhow::bail!("no interface with module_path: {}", module_path);
+    };
+
+    let (obj_name, has_callback_interface) = match trait_ty {
+        Type::Object { name, .. } => {
+            let Some(obj) = ci_look.get_object_definition(name) else {
+                bail!("trait interface not found: {}", name);
+            };
+            (name, obj.has_callback_interface())
+        }
+        Type::CallbackInterface { name, .. } => (name, true),
+        _ => {
+            bail!("Invalid trait_type: {trait_ty:?}")
+        }
+    };
+
+    let class_name = KotlinCodeOracle.class_name(ci_look, obj_name);
+    if has_callback_interface {
+        Ok(class_name)
+    } else {
+        Ok(format!("{class_name}Interface"))
     }
-    anyhow::bail!("no interface {}", name);
 }
 
 // The name of the object exposing a Rust implementation.
