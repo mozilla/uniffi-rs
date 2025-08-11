@@ -6,11 +6,11 @@ use uniffi_meta;
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    let crate_name = module.crate_name.clone();
-    let module_name = module.name.clone();
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    let crate_name = namespace.crate_name.clone();
+    let namespace_name = namespace.name.clone();
     let mut ffi_definitions = vec![];
-    module.visit_mut(|int: &mut Interface| {
+    namespace.visit_mut(|int: &mut Interface| {
         int.ffi_func_clone =
             RustFfiFunctionName(uniffi_meta::clone_fn_symbol_name(&crate_name, &int.name));
         int.ffi_func_free =
@@ -22,7 +22,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 arguments: vec![FfiArgument {
                     name: "ptr".to_string(),
                     ty: FfiType::Handle(HandleKind::Interface {
-                        module_name: module_name.clone(),
+                        namespace: namespace_name.clone(),
                         interface_name: int.name.to_string(),
                     })
                     .into(),
@@ -30,7 +30,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 return_type: FfiReturnType {
                     ty: Some(
                         FfiType::Handle(HandleKind::Interface {
-                            module_name: module_name.clone(),
+                            namespace: namespace_name.clone(),
                             interface_name: int.name.to_string(),
                         })
                         .into(),
@@ -49,7 +49,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
                 arguments: vec![FfiArgument {
                     name: "ptr".to_string(),
                     ty: FfiType::Handle(HandleKind::Interface {
-                        module_name: module_name.clone(),
+                        namespace: namespace_name.clone(),
                         interface_name: int.name.to_string(),
                     })
                     .into(),
@@ -63,6 +63,6 @@ pub fn pass(module: &mut Module) -> Result<()> {
         );
         UniffiTraitMethods::fill_from(&mut int.uniffi_trait_methods, &int.uniffi_traits);
     });
-    module.ffi_definitions.extend(ffi_definitions);
+    namespace.ffi_definitions.extend(ffi_definitions);
     Ok(())
 }

@@ -7,14 +7,14 @@
 use super::*;
 use heck::ToUpperCamelCase;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    let crate_name = module.crate_name.clone();
-    let module_name = module.name.clone();
-    module.try_visit_mut(|cbi: &mut CallbackInterface| {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    let crate_name = namespace.crate_name.clone();
+    let module_name = namespace.name.clone();
+    namespace.try_visit_mut(|cbi: &mut CallbackInterface| {
         cbi.vtable = vtable(&module_name, &crate_name, &cbi.name, cbi.methods.clone())?;
         Ok(())
     })?;
-    module.try_visit_mut(|int: &mut Interface| {
+    namespace.try_visit_mut(|int: &mut Interface| {
         if int.imp.has_callback_interface() {
             int.vtable = Some(vtable(
                 &module_name,
@@ -26,7 +26,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         Ok(())
     })?;
     // Convert CallableKind:Method to CallableKind:VTableMethod
-    module.try_visit_mut(|cbi: &mut CallbackInterface| {
+    namespace.try_visit_mut(|cbi: &mut CallbackInterface| {
         for meth in cbi.methods.iter_mut() {
             meth.callable.kind = match meth.callable.kind.take() {
                 CallableKind::Method { interface_name } => CallableKind::VTableMethod {
@@ -37,7 +37,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         }
         Ok(())
     })?;
-    module.try_visit_mut(|vtable: &mut VTable| {
+    namespace.try_visit_mut(|vtable: &mut VTable| {
         for meth in vtable.methods.iter_mut() {
             meth.callable.kind = match meth.callable.kind.take() {
                 CallableKind::Method { interface_name } => CallableKind::VTableMethod {
@@ -49,7 +49,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         Ok(())
     })?;
 
-    add_vtable_ffi_definitions(module)?;
+    add_vtable_ffi_definitions(namespace)?;
     Ok(())
 }
 
@@ -97,13 +97,13 @@ fn vtable(
     })
 }
 
-fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
+fn add_vtable_ffi_definitions(namespace: &mut Namespace) -> Result<()> {
     let mut ffi_definitions = vec![];
-    let module_name = module.name.clone();
-    module.try_visit(|vtable: &VTable| {
+    let module_name = namespace.name.clone();
+    namespace.try_visit(|vtable: &VTable| {
         let interface_name = &vtable.interface_name;
         let handle_type = FfiType::Handle(HandleKind::Interface {
-            module_name: module_name.to_string(),
+            namespace: module_name.to_string(),
             interface_name: interface_name.to_string(),
         });
         // FFI Function Type for each method in the VTable
@@ -251,7 +251,7 @@ fn add_vtable_ffi_definitions(module: &mut Module) -> Result<()> {
         );
         Ok(())
     })?;
-    module.ffi_definitions.extend(ffi_definitions);
+    namespace.ffi_definitions.extend(ffi_definitions);
     Ok(())
 }
 
@@ -266,7 +266,7 @@ fn vtable_method(
         arguments: std::iter::once(FfiArgument {
             name: "uniffi_handle".into(),
             ty: FfiType::Handle(HandleKind::Interface {
-                module_name: module_name.to_string(),
+                namespace: module_name.to_string(),
                 interface_name: interface_name.to_string(),
             })
             .into(),
@@ -304,7 +304,7 @@ fn vtable_method_async(
         arguments: std::iter::once(FfiArgument {
             name: "uniffi_handle".into(),
             ty: FfiType::Handle(HandleKind::Interface {
-                module_name: module_name.to_string(),
+                namespace: module_name.to_string(),
                 interface_name: interface_name.to_string(),
             })
             .into(),

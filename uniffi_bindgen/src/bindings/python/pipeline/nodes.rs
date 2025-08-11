@@ -15,12 +15,12 @@ use uniffi_pipeline::Node;
 pub struct Root {
     /// In library mode, the library path the user passed to us
     pub cdylib: Option<String>,
-    pub modules: IndexMap<String, Module>,
+    pub namespaces: IndexMap<String, Namespace>,
 }
 
 #[derive(Debug, Clone, Node, Template)]
 #[template(syntax = "py", escape = "none", path = "Module.py")]
-pub struct Module {
+pub struct Namespace {
     pub name: String,
     pub crate_name: String,
     pub config_toml: Option<String>,
@@ -366,7 +366,7 @@ pub struct MapType {
 
 #[derive(Debug, Clone, Node)]
 pub struct ExternalType {
-    pub module_name: String,
+    pub namespace: String,
     pub name: String,
     pub self_type: TypeNode,
 }
@@ -422,29 +422,29 @@ pub enum Type {
     },
     // User defined types in the API
     Interface {
-        module_name: String,
+        namespace: String,
         /// Python package name for external types
         external_package_name: Option<String>,
         name: String,
         imp: ObjectImpl,
     },
     Record {
-        module_name: String,
+        namespace: String,
         external_package_name: Option<String>,
         name: String,
     },
     Enum {
-        module_name: String,
+        namespace: String,
         external_package_name: Option<String>,
         name: String,
     },
     CallbackInterface {
-        module_name: String,
+        namespace: String,
         external_package_name: Option<String>,
         name: String,
     },
     Custom {
-        module_name: String,
+        namespace: String,
         external_package_name: Option<String>,
         name: String,
         builtin: Box<Type>,

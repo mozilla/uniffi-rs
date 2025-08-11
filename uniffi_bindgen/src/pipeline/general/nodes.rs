@@ -10,14 +10,15 @@ use uniffi_pipeline::Node;
 pub struct Root {
     /// In library mode, the library path the user passed to us
     pub cdylib: Option<String>,
-    pub modules: IndexMap<String, Module>,
+    pub namespaces: IndexMap<String, Namespace>,
 }
 
+/// A Namespace is a crate which exposes a uniffi api.
 #[derive(Debug, Clone, Node)]
-pub struct Module {
+pub struct Namespace {
     pub name: String,
     pub crate_name: String,
-    /// contents of the `uniffi.toml` file for this module, if present
+    /// contents of the `uniffi.toml` file for this namespace, if present
     pub config_toml: Option<String>,
     pub docstring: Option<String>,
     pub functions: Vec<Function>,
@@ -25,7 +26,7 @@ pub struct Module {
     pub ffi_definitions: IndexSet<FfiDefinition>,
     /// Checksum functions
     pub checksums: Vec<Checksum>,
-    // FFI functions names for this module
+    // FFI functions names in this namespace
     pub ffi_rustbuffer_alloc: RustFfiFunctionName,
     pub ffi_rustbuffer_from_bytes: RustFfiFunctionName,
     pub ffi_rustbuffer_free: RustFfiFunctionName,
@@ -352,7 +353,7 @@ pub struct MapType {
 
 #[derive(Debug, Clone, Node)]
 pub struct ExternalType {
-    pub module_name: String,
+    pub namespace: String,
     pub name: String,
     pub self_type: TypeNode,
 }
@@ -412,24 +413,24 @@ pub enum Type {
     },
     // User defined types in the API
     Interface {
-        module_name: String,
+        namespace: String,
         name: String,
         imp: ObjectImpl,
     },
     Record {
-        module_name: String,
+        namespace: String,
         name: String,
     },
     Enum {
-        module_name: String,
+        namespace: String,
         name: String,
     },
     CallbackInterface {
-        module_name: String,
+        namespace: String,
         name: String,
     },
     Custom {
-        module_name: String,
+        namespace: String,
         name: String,
         builtin: Box<Type>,
     },
@@ -545,7 +546,7 @@ pub enum FfiType {
     /// or pass it to someone that will.
     ///
     /// For user-defined types like Record, Enum, CustomType, etc., the inner value will be the
-    /// module name for that type.  This is needed for some languages, because each module
+    /// namespace name for that type.  This is needed for some languages, because each module
     /// defines a different RustBuffer type and using the wrong one will result in a type
     /// error.
     ///
@@ -581,7 +582,7 @@ pub enum HandleKind {
     ForeignFutureCallbackData,
     // Interface, trait interface, or callback interface
     Interface {
-        module_name: String,
+        namespace: String,
         interface_name: String,
     },
 }

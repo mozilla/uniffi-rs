@@ -4,8 +4,8 @@
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    module.visit_mut(|ty: &mut TypeNode| {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    namespace.visit_mut(|ty: &mut TypeNode| {
         let package_name = match &ty.ty {
             Type::Enum {
                 external_package_name,
@@ -37,7 +37,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
         }
         ty.type_name = type_name(&ty.ty);
     });
-    module.visit_mut(|return_ty: &mut ReturnType| {
+    namespace.visit_mut(|return_ty: &mut ReturnType| {
         return_ty.type_name = match &return_ty.ty {
             Some(type_node) => type_node.type_name.clone(),
             None => "None".to_string(),

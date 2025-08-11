@@ -4,14 +4,14 @@
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
     // fields and arguments need `DefaultValue` conversion.
-    module.visit_mut(|arg: &mut Argument| {
+    namespace.visit_mut(|arg: &mut Argument| {
         if let Some(DefaultValue::Default(ref mut type_node)) = arg.default {
             *type_node = arg.ty.clone();
         }
     });
-    module.visit_mut(|field: &mut Field| {
+    namespace.visit_mut(|field: &mut Field| {
         if let Some(DefaultValue::Default(ref mut type_node)) = field.default {
             *type_node = field.ty.clone();
         }

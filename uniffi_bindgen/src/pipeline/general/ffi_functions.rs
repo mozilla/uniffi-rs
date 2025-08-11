@@ -6,12 +6,12 @@
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    let crate_name = module.crate_name.clone();
-    let module_name = module.name.clone();
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    let crate_name = namespace.crate_name.clone();
+    let namespace_name = namespace.name.clone();
     let mut ffi_definitions = vec![];
 
-    module.visit_mut(|callable: &mut Callable| {
+    namespace.visit_mut(|callable: &mut Callable| {
         let name = &callable.name;
         let ffi_func_name = match &callable.kind {
             CallableKind::Function => uniffi_meta::fn_symbol_name(&crate_name, name),
@@ -30,7 +30,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
             CallableKind::Method { interface_name } => Some(FfiArgument {
                 name: "uniffi_ptr".to_string(),
                 ty: FfiType::Handle(HandleKind::Interface {
-                    module_name: module_name.clone(),
+                    namespace: namespace_name.clone(),
                     interface_name: interface_name.clone(),
                 })
                 .into(),
@@ -81,6 +81,6 @@ pub fn pass(module: &mut Module) -> Result<()> {
         });
     });
 
-    module.ffi_definitions.extend(ffi_definitions);
+    namespace.ffi_definitions.extend(ffi_definitions);
     Ok(())
 }

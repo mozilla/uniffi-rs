@@ -202,6 +202,6 @@ This is a lot of data.  Use CLI flags to reduce it to a reasonable amount:
 Alternatively, if you want to see the full IR for each pass, you can use `--no-diff` to print it out.
 Piping to a pager like `less` is highly recommended in this case.
 
-You can test this out yourself by running the following command to follow the `add` function as it moves throw the IR pipeline:
+You can test this out yourself by running the following command to follow the `add` function as it moves through the IR pipeline:
 
-`cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so  python -t Function -n add`
+`cargo run -p uniffi-bindgen-cli -- pipeline --library target/debug/libarithmetical.so python -t Function -n add | less`

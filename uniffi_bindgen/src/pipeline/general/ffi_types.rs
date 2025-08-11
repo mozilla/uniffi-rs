@@ -6,15 +6,15 @@
 
 use super::*;
 
-pub fn pass(module: &mut Module) -> Result<()> {
-    let module_name = module.name.clone();
-    module.visit_mut(|node: &mut TypeNode| {
-        node.ffi_type = FfiTypeNode::from(generate_ffi_type(&node.ty, &module_name));
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    let namespace_name = namespace.name.clone();
+    namespace.visit_mut(|node: &mut TypeNode| {
+        node.ffi_type = FfiTypeNode::from(generate_ffi_type(&node.ty, &namespace_name));
     });
     Ok(())
 }
 
-fn generate_ffi_type(ty: &Type, current_module_name: &str) -> FfiType {
+fn generate_ffi_type(ty: &Type, current_namespace: &str) -> FfiType {
     match ty {
         // Types that are the same map to themselves, naturally.
         Type::UInt8 => FfiType::UInt8,
@@ -37,19 +37,19 @@ fn generate_ffi_type(ty: &Type, current_module_name: &str) -> FfiType {
         Type::Bytes => FfiType::RustBuffer(None),
         // Objects are pointers to an Arc<>
         Type::Interface {
-            module_name, name, ..
+            namespace, name, ..
         } => FfiType::Handle(HandleKind::Interface {
-            module_name: module_name.clone(),
+            namespace: namespace.clone(),
             interface_name: name.clone(),
         }),
         // Callback interfaces are passed as opaque integer handles.
-        Type::CallbackInterface { module_name, name } => FfiType::Handle(HandleKind::Interface {
-            module_name: module_name.clone(),
+        Type::CallbackInterface { namespace, name } => FfiType::Handle(HandleKind::Interface {
+            namespace: namespace.clone(),
             interface_name: name.clone(),
         }),
         // Other types are serialized into a bytebuffer and deserialized on the other side.
-        Type::Enum { module_name, .. } | Type::Record { module_name, .. } => {
-            FfiType::RustBuffer((module_name != current_module_name).then_some(module_name.clone()))
+        Type::Enum { namespace, .. } | Type::Record { namespace, .. } => {
+            FfiType::RustBuffer((namespace != current_namespace).then_some(namespace.clone()))
         }
         Type::Optional { .. }
         | Type::Sequence { .. }
@@ -57,17 +57,15 @@ fn generate_ffi_type(ty: &Type, current_module_name: &str) -> FfiType {
         | Type::Timestamp
         | Type::Duration => FfiType::RustBuffer(None),
         Type::Custom {
-            module_name,
-            builtin,
-            ..
+            namespace, builtin, ..
         } => {
-            match generate_ffi_type(builtin, current_module_name) {
+            match generate_ffi_type(builtin, current_namespace) {
                 // Fixup `module_name` for primitive types that lower to `RustBuffer`.
                 //
                 // This is needed to handle external custom types, where the builtin type is
                 // something like `String`.
-                FfiType::RustBuffer(None) if module_name != current_module_name => {
-                    FfiType::RustBuffer(Some(module_name.clone()))
+                FfiType::RustBuffer(None) if namespace != current_namespace => {
+                    FfiType::RustBuffer(Some(namespace.clone()))
                 }
                 ffi_type => ffi_type,
             }

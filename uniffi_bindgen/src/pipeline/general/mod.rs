@@ -2,10 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! Initial IR, this is the Metadata from uniffi_meta with some slight changes:
-//!
-//! * The Type/Literal enums are wrapped in TypeNode/LiteralNode structs. This allows for future pipeline passes to add fields.
-//! * module_path is normalized to module_name (UDL and proc-macros determine module_path differently).
+//! General IR - a useful starting point for language-specific IRs.
 
 #[macro_use]
 pub mod nodes;

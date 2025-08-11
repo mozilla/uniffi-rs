@@ -18,16 +18,14 @@ use uniffi_pipeline::Node;
 /// * Call [Self::try_into_initial_ir] to construct a `initial::Root` node.
 #[derive(Default)]
 pub struct UniffiMetaConverter {
-    // Map module_path to `Module::name`
-    //
-    // This is needed because UDL and proc-macro code can generate different module paths.  To
-    // normalize things, we find the `NamespaceMetadata::name` that matches the module path.
-    //
-    // Use BTreeMap for each of these so that things stay consistent, regardless of how the
-    // metadata is ordered.
+    // Use BTreeMap for each of these so that things stay consistent, regardless of how the metadata is ordered.
+    // There are 2 important names here we must not mix up. The namespace name and the rust crate name.
+    // Our metadata usually carries "module_path" reflecting the crate name.
+    // This maps module_paths to namespace names.
     module_path_map: BTreeMap<String, String>,
+    // Everything below here keyed by namespace name, not the module_path.
     // Top level modules
-    modules: BTreeMap<String, Module>,
+    namespaces: BTreeMap<String, Namespace>,
     // Top-level type definitions and functions, keyed by module name
     module_docstrings: BTreeMap<String, String>,
     module_toml: BTreeMap<String, String>,
@@ -50,21 +48,12 @@ impl UniffiMetaConverter {
     pub fn add_metadata_item(&mut self, meta: uniffi_meta::Metadata) -> Result<()> {
         match meta {
             uniffi_meta::Metadata::Namespace(namespace) => {
-                // Map both the crate name and module name to the module name.  This simplifies the
-                // code in `get_module`
                 self.module_path_map
                     .insert(namespace.crate_name.clone(), namespace.name.clone());
-                self.module_path_map
-                    .insert(namespace.name.clone(), namespace.name.clone());
                 // Insert a new module
-                self.modules
+                self.namespaces
                     .entry(namespace.name.clone())
-                    .or_insert(Module {
-                        // TODO: Is this the correct crate name in all cases?  I'm pretty sure
-                        // it is for proc-macro based generation, since the proc-macro
-                        // namespace is added to the metadata list before the UDL one.
-                        // However, I'm not so sure what happens if we're generating from a UDL
-                        // file.
+                    .or_insert(Namespace {
                         crate_name: namespace.crate_name,
                         docstring: None,
                         config_toml: None,
@@ -184,46 +173,55 @@ impl UniffiMetaConverter {
     ///
     /// This is currently UDL-specific.  Eventually, we should probably make this another metadata
     /// items
-    pub fn add_module_docstring(&mut self, module_name: String, docstring: String) {
-        self.module_docstrings.insert(module_name, docstring);
+    pub fn add_module_docstring(&mut self, namespace: String, docstring: String) {
+        self.module_docstrings.insert(namespace, docstring);
     }
 
     pub fn try_into_initial_ir(mut self) -> Result<Root> {
         let mut root = Root {
-            modules: self.modules.into_iter().collect(),
+            namespaces: self.namespaces.into_iter().collect(),
             cdylib: None,
         };
 
         // Move child items into their parents
-        for (module_path, docstring) in self.module_docstrings {
-            get_module(&self.module_path_map, &mut root, &module_path)?.docstring = Some(docstring);
+        for (namespace_name, docstring) in self.module_docstrings {
+            // already the namespace name, so no need to convert.
+            let namespace = root.namespaces.get_mut(&namespace_name).ok_or_else(|| {
+                anyhow!("namespace specified in toml doesn't exist: {namespace_name:?}")
+            })?;
+            namespace.docstring = Some(docstring);
         }
-        for (module_path, toml) in self.module_toml {
-            get_module(&self.module_path_map, &mut root, &module_path)?.config_toml = Some(toml);
+        for (namespace_name, toml) in self.module_toml {
+            // already the namespace name, so no need to convert.
+            // we should maybe ignore an error here?
+            let namespace = root.namespaces.get_mut(&namespace_name).ok_or_else(|| {
+                anyhow!("namespace specified in toml doesn't exist: {namespace_name:?}")
+            })?;
+            namespace.config_toml = Some(toml);
         }
         for (module_path, funcs) in self.functions {
-            get_module(&self.module_path_map, &mut root, &module_path)?
+            get_namespace(&self.module_path_map, &mut root, &module_path)?
                 .functions
                 .extend(funcs.into_values());
         }
         for (module_path, list) in self.records {
-            get_module(&self.module_path_map, &mut root, &module_path)?
+            get_namespace(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
                 .extend(list.into_values().map(TypeDefinition::Record));
         }
         for (module_path, list) in self.enums {
-            get_module(&self.module_path_map, &mut root, &module_path)?
+            get_namespace(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
                 .extend(list.into_values().map(TypeDefinition::Enum));
         }
         for (module_path, list) in self.custom_types {
-            get_module(&self.module_path_map, &mut root, &module_path)?
+            get_namespace(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
                 .extend(list.into_values().map(TypeDefinition::Custom));
         }
         // Collect child items for interfaces and callback interfaces
         for (module_path, list) in self.interfaces {
-            get_module(&self.module_path_map, &mut root, &module_path)?
+            get_namespace(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
                 .extend(
                     list.into_values()
@@ -256,7 +254,7 @@ impl UniffiMetaConverter {
                 )
         }
         for (module_path, list) in self.callback_interfaces {
-            get_module(&self.module_path_map, &mut root, &module_path)?
+            get_namespace(&self.module_path_map, &mut root, &module_path)?
                 .type_definitions
                 .extend(list.into_values().map(|mut cbi| {
                     let key = (module_path.clone(), cbi.name.clone());
@@ -283,14 +281,34 @@ impl UniffiMetaConverter {
         if !self.trait_impls.is_empty() {
             bail!("Leftover trait_impls: {:?}", self.trait_impls)
         }
-        // normalize type module names
+        // set the namespace names
         root.try_visit_mut(|ty: &mut Type| match ty {
-            Type::Interface { module_name, .. }
-            | Type::Record { module_name, .. }
-            | Type::Enum { module_name, .. }
-            | Type::CallbackInterface { module_name, .. }
-            | Type::Custom { module_name, .. } => {
-                *module_name = get_module_name(&self.module_path_map, module_name)?.to_string();
+            Type::Interface {
+                module_path,
+                namespace,
+                ..
+            }
+            | Type::Record {
+                module_path,
+                namespace,
+                ..
+            }
+            | Type::Enum {
+                module_path,
+                namespace,
+                ..
+            }
+            | Type::CallbackInterface {
+                module_path,
+                namespace,
+                ..
+            }
+            | Type::Custom {
+                module_path,
+                namespace,
+                ..
+            } => {
+                *namespace = get_namespace_name(&self.module_path_map, module_path)?.to_string();
                 Ok(())
             }
             _ => Ok(()),
@@ -316,7 +334,7 @@ impl UniffiMetaConverter {
     }
 }
 
-fn get_module_name<'a>(
+fn get_namespace_name<'a>(
     module_path_map: &'a BTreeMap<String, String>,
     module_path: &str,
 ) -> Result<&'a str> {
@@ -326,13 +344,13 @@ fn get_module_name<'a>(
         .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))
 }
 
-fn get_module<'a>(
+fn get_namespace<'a>(
     module_path_map: &BTreeMap<String, String>,
     root: &'a mut Root,
     module_path: &str,
-) -> Result<&'a mut Module> {
-    let module_name = get_module_name(module_path_map, module_path)?;
-    root.modules
-        .get_mut(module_name)
+) -> Result<&'a mut Namespace> {
+    let name = get_namespace_name(module_path_map, module_path)?;
+    root.namespaces
+        .get_mut(name)
         .ok_or_else(|| anyhow!("root module lookup failed: {module_path:?}"))
 }

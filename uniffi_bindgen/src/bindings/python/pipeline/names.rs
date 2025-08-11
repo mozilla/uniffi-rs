@@ -53,17 +53,17 @@ static KEYWORDS: Lazy<HashSet<String>> = Lazy::new(|| {
 });
 
 /// Convert strings to follow Python naming guidelines
-pub fn pass(module: &mut Module) -> Result<()> {
-    module.visit_mut(|struct_name: &mut FfiStructName| {
+pub fn pass(namespace: &mut Namespace) -> Result<()> {
+    namespace.visit_mut(|struct_name: &mut FfiStructName| {
         struct_name.0 = format!("_Uniffi{}", struct_name.0.to_upper_camel_case())
     });
-    module.visit_mut(|function_type: &mut FfiFunctionTypeName| {
+    namespace.visit_mut(|function_type: &mut FfiFunctionTypeName| {
         function_type.0 = format!("_UNIFFI_{}", function_type.0.to_shouty_snake_case())
     });
-    module.visit_mut(|rec: &mut Record| {
+    namespace.visit_mut(|rec: &mut Record| {
         rec.name = fixup_keyword(rec.name.to_upper_camel_case());
     });
-    module.visit_mut(|e: &mut Enum| {
+    namespace.visit_mut(|e: &mut Enum| {
         e.name = fixup_keyword(e.name.to_upper_camel_case());
         match &e.shape {
             EnumShape::Error { .. } => {
@@ -78,29 +78,29 @@ pub fn pass(module: &mut Module) -> Result<()> {
             }
         }
     });
-    module.visit_mut(|int: &mut Interface| {
+    namespace.visit_mut(|int: &mut Interface| {
         int.name = fixup_keyword(int.name.to_upper_camel_case());
     });
-    module.visit_mut(|cbi: &mut CallbackInterface| {
+    namespace.visit_mut(|cbi: &mut CallbackInterface| {
         cbi.name = fixup_keyword(cbi.name.to_upper_camel_case());
     });
-    module.visit_mut(|custom: &mut CustomType| {
+    namespace.visit_mut(|custom: &mut CustomType| {
         custom.name = fixup_keyword(custom.name.to_upper_camel_case());
     });
-    module.visit_mut(|arg: &mut Argument| {
+    namespace.visit_mut(|arg: &mut Argument| {
         arg.name = fixup_keyword(arg.name.to_snake_case());
     });
-    module.visit_mut(|field: &mut Field| {
+    namespace.visit_mut(|field: &mut Field| {
         field.name = fixup_keyword(field.name.to_snake_case());
     });
-    module.visit_mut(|callable: &mut Callable| {
+    namespace.visit_mut(|callable: &mut Callable| {
         if callable.is_primary_constructor() {
             callable.name = "__init__".to_string()
         } else {
             callable.name = fixup_keyword(callable.name.to_snake_case());
         }
     });
-    module.visit_mut(|ty: &mut Type| {
+    namespace.visit_mut(|ty: &mut Type| {
         match ty {
             Type::Enum { name, .. }
             | Type::Record { name, .. }
@@ -112,7 +112,7 @@ pub fn pass(module: &mut Module) -> Result<()> {
             _ => (),
         };
     });
-    module.try_visit_mut(|lit: &mut Literal| {
+    namespace.try_visit_mut(|lit: &mut Literal| {
         if let Literal::Enum(variant, ty) = lit {
             match &mut ty.ty {
                 Type::Enum { name, .. } => {
