@@ -74,19 +74,28 @@ pub(crate) fn expand_export(
                     ImplItem::Method(sig) => {
                         let async_runtime =
                             sig.async_runtime.clone().or(args.async_runtime.clone());
-                        gen_method_scaffolding(sig, async_runtime.as_ref(), udl_mode)
+                        gen_method_scaffolding(
+                            sig,
+                            async_runtime.as_ref(),
+                            udl_mode,
+                            trait_.as_ref(),
+                        )
                     }
                 })
                 .collect::<syn::Result<_>>()?;
             let trait_impl_tokens = trait_.map(|t| {
                 let object_name = ident_to_string(&self_ident);
-                let trait_name = ident_to_string(t.get_ident().expect("not a simple trait path"));
+                let trait_ident = t.segments
+                    .last()
+                    .map(|s| &s.ident)
+                    .expect("no ident in trait");
+                let trait_name = ident_to_string(trait_ident);
                 let metadata_expr = quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::OBJECT_TRAIT_IMPL)
                         .concat(::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE))
                         .concat_str(#mod_path)
                         .concat_str(#object_name)
-                        .concat_str(#trait_name)
+                        .concat(<dyn #t as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
                 };
                 create_metadata_items(
                     "object_trait_impl",

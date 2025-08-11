@@ -91,7 +91,7 @@ pub(super) fn gen_trait_scaffolding(
     let impl_tokens: TokenStream = items
         .into_iter()
         .map(|item| match item {
-            ImplItem::Method(sig) => gen_method_scaffolding(sig, None, udl_mode),
+            ImplItem::Method(sig) => gen_method_scaffolding(sig, None, udl_mode, None),
             _ => unreachable!("traits have no constructors"),
         })
         .collect::<syn::Result<_>>()?;
@@ -125,6 +125,9 @@ pub(crate) fn ffi_converter(
     let remote = false;
     let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, remote);
     let lift_ref_impl_spec = tagged_impl_header("LiftRef", &quote! { dyn #trait_ident }, remote);
+    // Implement `TypeId` for `dyn Trait` directly.  This is what we use to lookup the type ID for
+    // objects that implement the trait.
+    let type_id_impl_spec = tagged_impl_header("TypeId", &quote! { dyn #trait_ident }, remote);
     let trait_name = ident_to_string(trait_ident);
     let try_lift = if with_foreign {
         // The trait can be implemented by both Rust and the foreign side.
@@ -221,6 +224,14 @@ pub(crate) fn ffi_converter(
                 #try_lift_self(::uniffi::ffi::Handle::from_raw_unchecked(::uniffi::deps::bytes::Buf::get_u64(buf)))
             }
 
+            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)
+                .concat_str(#mod_path)
+                .concat_str(#trait_name);
+        }
+
+        #[doc(hidden)]
+        #[automatically_derived]
+        #type_id_impl_spec {
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)
                 .concat_str(#mod_path)
                 .concat_str(#trait_name);

@@ -3,7 +3,7 @@ use ext_types_custom::{Guid, Ouid2};
 use std::sync::Arc;
 use uniffi_one::{
     UniffiOneEnum, UniffiOneInterface, UniffiOneProcMacroType, UniffiOneRecordContainingInterface,
-    UniffiOneTrait, UniffiOneType,
+    UniffiOneType,
 };
 use url::Url;
 
@@ -62,7 +62,7 @@ fn get_combined_type(value: Option<CombinedType>) -> CombinedType {
 // Not part of CombinedType as object refs prevent equality testing.
 #[derive(uniffi::Record)]
 pub struct ObjectsType {
-    pub maybe_trait: Option<Arc<dyn UniffiOneTrait>>,
+    pub maybe_trait: Option<Arc<dyn uniffi_one::UniffiOneTrait>>,
     pub maybe_interface: Option<Arc<UniffiOneInterface>>,
 }
 
@@ -154,7 +154,9 @@ fn get_uniffi_one_interface() -> Arc<UniffiOneInterface> {
 }
 
 #[uniffi::export]
-fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn UniffiOneTrait>> {
+fn get_uniffi_one_trait(
+    t: Option<Arc<dyn uniffi_one::UniffiOneTrait>>,
+) -> Option<Arc<dyn uniffi_one::UniffiOneTrait>> {
     t
 }
 
@@ -163,7 +165,7 @@ fn get_uniffi_one_trait(t: Option<Arc<dyn UniffiOneTrait>>) -> Option<Arc<dyn Un
 pub struct UniffiOneTraitObject;
 
 #[uniffi::export]
-impl UniffiOneTrait for UniffiOneTraitObject {
+impl uniffi_one::UniffiOneTrait for UniffiOneTraitObject {
     fn hello(&self) -> String {
         "uniffi-one-trait-object".to_string()
     }
@@ -230,5 +232,13 @@ pub struct RecordContainingInterface {
     #[uniffi(default)]
     pub inner: UniffiOneRecordContainingInterface,
 }
+
+// Try to confuse UniFFI by defining a second trait named `UniffiOneTrait`
+//
+// Unfortunately, this is only supported by pipeline-binding generators, which is currently just Python.
+// To work around this, comment the following out before checking in the code and only uncomment it when testing pipeline-based generators.
+// Once we've moved all languages to using the pipeline, we can unconditionally uncomment this.
+// #[uniffi::export]
+// pub trait UniffiOneTrait: Send + Sync {}
 
 uniffi::setup_scaffolding!("imported_types_lib");

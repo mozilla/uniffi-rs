@@ -415,7 +415,7 @@ impl<'a> MetadataReader<'a> {
     fn read_object_trait_impl(&mut self) -> Result<ObjectTraitImplMetadata> {
         Ok(ObjectTraitImplMetadata {
             ty: self.read_type()?,
-            trait_name: self.read_string()?,
+            trait_ty: self.read_type()?,
         })
     }
 

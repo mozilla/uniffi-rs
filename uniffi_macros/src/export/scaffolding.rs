@@ -35,7 +35,7 @@ pub(super) fn gen_fn_scaffolding(
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let scaffolding_func = gen_ffi_function(&sig, ar, udl_mode)?;
+    let scaffolding_func = gen_ffi_function(&sig, ar, udl_mode, None)?;
     Ok(quote! {
         #scaffolding_func
         #metadata_items
@@ -57,7 +57,7 @@ pub(super) fn gen_constructor_scaffolding(
         sig.metadata_items()
             .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let scaffolding_func = gen_ffi_function(&sig, ar, udl_mode)?;
+    let scaffolding_func = gen_ffi_function(&sig, ar, udl_mode, None)?;
     Ok(quote! {
         #scaffolding_func
         #metadata_items
@@ -68,6 +68,7 @@ pub(super) fn gen_method_scaffolding(
     sig: FnSignature,
     ar: Option<&AsyncRuntime>,
     udl_mode: bool,
+    use_trait: Option<&syn::Path>,
 ) -> syn::Result<TokenStream> {
     let scaffolding_func = if sig.receiver.is_none() {
         return Err(syn::Error::new(
@@ -75,7 +76,7 @@ pub(super) fn gen_method_scaffolding(
             "associated functions are not currently supported",
         ));
     } else {
-        gen_ffi_function(&sig, ar, udl_mode)?
+        gen_ffi_function(&sig, ar, udl_mode, use_trait)?
     };
 
     let metadata_items = (!udl_mode).then(|| {
@@ -203,6 +204,7 @@ pub(super) fn gen_ffi_function(
     sig: &FnSignature,
     ar: Option<&AsyncRuntime>,
     udl_mode: bool,
+    use_trait: Option<&syn::Path>,
 ) -> syn::Result<TokenStream> {
     let ScaffoldingBits {
         param_names,
@@ -230,6 +232,7 @@ pub(super) fn gen_ffi_function(
     let ffi_return_ty = ffiops::lower_return_type(return_ty);
     let lower_return = ffiops::lower_return(return_ty);
     let handle_failed_lift = ffiops::lower_return_handle_failed_lift(return_ty);
+    let use_trait = use_trait.map(|tr| quote! { use #tr; });
 
     Ok(if !sig.is_async {
         let scaffolding_fn_ffi_buffer_version =
@@ -241,6 +244,7 @@ pub(super) fn gen_ffi_function(
                 #(#param_names: #param_types,)*
                 call_status: &mut ::uniffi::RustCallStatus,
             ) -> #ffi_return_ty {
+                #use_trait
                 ::uniffi::deps::trace!("calling: {}", #ffi_fn_name);
                 let uniffi_lift_args = #lift_closure;
                 ::uniffi::rust_call(call_status, || {

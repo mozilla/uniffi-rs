@@ -207,7 +207,7 @@ pub enum UniffiTrait {
 #[node(from(ObjectTraitImplMetadata))]
 pub struct ObjectTraitImpl {
     pub ty: Type,
-    pub trait_name: String,
+    pub trait_ty: Type,
 }
 
 #[derive(Debug, Clone, Node)]

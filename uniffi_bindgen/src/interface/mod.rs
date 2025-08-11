@@ -440,6 +440,12 @@ impl ComponentInterface {
         &self.all_component_interfaces
     }
 
+    pub fn find_component_interface(&self, module_path: &str) -> Option<&ComponentInterface> {
+        self.all_component_interfaces
+            .iter()
+            .find(|ci| ci.crate_name() == module_path)
+    }
+
     // The namespace to use in crate-level FFI function definitions. Not used as the ffi
     // namespace for types - each type has its own `module_path` which is used for them.
     fn ffi_namespace(&self) -> &str {
@@ -1175,9 +1181,7 @@ impl<'a> RecursiveTypeIterator<'a> {
     /// Find the component interface with the type definitions for the given module.
     fn find_ci_for(&self, module_path: &str) -> &'a ComponentInterface {
         self.ci
-            .all_component_interfaces
-            .iter()
-            .find(|ci| ci.crate_name() == module_path)
+            .find_component_interface(module_path)
             .unwrap_or(self.ci)
     }
 

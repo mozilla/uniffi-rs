@@ -156,7 +156,11 @@ pub fn ffi_converter_callback_interface_impl(
     let dyn_trait = quote! { dyn #trait_ident };
     let box_dyn_trait = quote! { ::std::boxed::Box<#dyn_trait> };
     let lift_impl_spec = tagged_impl_header("Lift", &box_dyn_trait, remote);
-    let type_id_impl_spec = tagged_impl_header("TypeId", &box_dyn_trait, remote);
+    let type_id_impl_specs = [
+        tagged_impl_header("TypeId", &box_dyn_trait, remote),
+        tagged_impl_header("TypeId", &dyn_trait, remote),
+    ]
+    .into_iter();
     let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, remote, &["LiftRef", "LiftReturn"]);
     let mod_path = match mod_path() {
         Ok(p) => p,
@@ -181,15 +185,17 @@ pub fn ffi_converter_callback_interface_impl(
             }
         }
 
-        #[doc(hidden)]
-        #[automatically_derived]
-        #type_id_impl_spec {
-            const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
-                ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
-            )
-            .concat_str(#mod_path)
-            .concat_str(#trait_name);
-        }
+        #(
+            #[doc(hidden)]
+            #[automatically_derived]
+            #type_id_impl_specs {
+                const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
+                    ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
+                )
+                .concat_str(#mod_path)
+                .concat_str(#trait_name);
+            }
+        )*
 
         #derive_ffi_traits
     }

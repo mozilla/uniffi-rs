@@ -916,7 +916,10 @@ mod test_function_metadata {
                     name: "RealLogger".into(),
                     imp: ObjectImpl::Struct,
                 },
-                trait_name: "Logger".into(),
+                trait_ty: Type::CallbackInterface {
+                    module_path: "uniffi_fixture_metadata".into(),
+                    name: "Logger".into(),
+                },
             },
         );
     }
