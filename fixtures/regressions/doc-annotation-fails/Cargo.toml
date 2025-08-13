@@ -1,0 +1,20 @@
+[package]
+name = "uniffi-fixture-regression-doc-annotation-fails"
+version = "0.22.0"
+authors = ["Firefox Sync Team <sync-team@mozilla.com>"]
+edition = "2018"
+license = "MPL-2.0"
+publish = false
+
+[lib]
+name = "uniffi_regression_test_doc_annotation_fails"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+uniffi = { workspace = true }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[dev-dependencies]
+uniffi = { workspace = true, features = ["bindgen-tests"] }
