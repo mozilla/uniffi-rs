@@ -6,7 +6,9 @@ use syn::{
 };
 
 use crate::{
+    default::default_value_metadata_calls,
     ffiops,
+    record::FieldAttributeArguments,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
         mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
@@ -367,8 +369,19 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                 .map(|f| f.ident.as_ref().map(ident_to_string).unwrap_or_default())
                 .collect::<Vec<_>>();
 
+            let field_defaults = v
+                .fields
+                .iter()
+                .map(|f| {
+                    let attrs = f
+                        .attrs
+                        .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
+                    default_value_metadata_calls(&attrs.default)
+                })
+                .collect::<syn::Result<Vec<_>>>()?;
             let name = ident_to_string(&v.ident);
             let value_tokens = variant_value(v)?;
+
             let docstring = extract_docstring(&v.attrs)?;
             let field_docstrings = v
                 .fields
@@ -384,8 +397,7 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                     #(
                         .concat_str(#field_names)
                         .concat(#field_type_id_metas)
-                        // field defaults not yet supported for enums
-                        .concat_bool(false)
+                        #field_defaults
                         .concat_long_str(#field_docstrings)
                     )*
                 .concat_long_str(#docstring)

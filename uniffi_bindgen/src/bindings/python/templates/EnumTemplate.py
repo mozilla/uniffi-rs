@@ -48,14 +48,23 @@ class {{ type_name }}:
         {{ field.docstring|docstring(8) -}}
         {%- endfor %}
 
-        def __init__(self,{% for field in variant.fields %}{{ field.name }}: {{- field.ty.type_name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %}):
-            {%- if !variant.fields.is_empty() %}
-            {%- for field in variant.fields %}
+        def __init__(self, {% for field in variant.fields %}
+        {{- field.name }}: {{- field.ty.type_name}}
+        {%- if field.default.is_some() %} = _DEFAULT{% endif %}
+        {%- if !loop.last %}, {% endif %}
+        {%- endfor %}):
+        {%- for field in variant.fields %}
+            {%- match field.default %}
+            {%- when None %}
             self.{{ field.name }} = {{ field.name }}
-            {%- endfor %}
-            {%- else %}
+            {%- when Some(default) %}
+            if {{ field.name }} is _DEFAULT:
+                self.{{ field.name }} = {{ default.py_default }}
+            else:
+                self.{{ field.name }} = {{ field.name }}
+            {%- endmatch %}
+        {%- endfor %}
             pass
-            {%- endif %}
 
         def __str__(self):
             return "{{ type_name }}.{{ variant.name }}({% for field in variant.fields %}{{ field.name }}={}{% if loop.last %}{% else %}, {% endif %}{% endfor %})".format({% for field in variant.fields %}self.{{ field.name }}{% if loop.last %}{% else %}, {% endif %}{% endfor %})

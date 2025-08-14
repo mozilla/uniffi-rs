@@ -38,22 +38,26 @@ pub fn split(
 ) -> Vec<String> {
   ...
 }
+```
 
+The proc-macro has specified we want a literal value as the default for `text`, and the "natural" default for `max_splits`
+
+It works the same for methods:
+
+```rust
 #[derive(uniffi::Object)]
 pub struct TextSplitter { ... }
 
 #[uniffi::export]
 impl TextSplitter {
-    #[uniffi::constructor(default(ignore_unicode_errors = false))]
-    // Because we want the default value for the bool to be `false` it's not necessary to specify it, so
-    // we could have written this as:
-    // #[uniffi::constructor(default(ignore_unicode_errors))]
+    #[uniffi::constructor(default(ignore_unicode_errors))]
     fn new(ignore_unicode_errors: boolean) -> Self {
         ...
     }
 
     #[uniffi::method(default(text = " ", max_splits))]
     fn split(
+        &self,
         text: String,
         sep: String,
         max_splits: Option<u32>,
@@ -63,25 +67,7 @@ impl TextSplitter {
 }
 ```
 
-Supported defaults without a literal:
-
-| Type | Default value |
-|---------|----------------------|
-| `Option` | `None` |
-| `String` | Empty string |
-| `Vec<T>` | Empty list |
-| `HashMap<T>` | Empty map |
-| Builtin numeric types | 0 |
-| `bool` | false |
-| Records | Record with all fields set to their default value (only valid if they all have defaults) |
-| Objects | Primary constructor called with 0 arguments |
-| Custom Types | The default value of "bridge" type |
-
-Supported literal values:
-
-- String, integer, float, and boolean literals
-- `Option<T>` allows either `None` or `Some(T)`
-- Custom type, which its "bridge" type listed above
+See the [default values docs for more](../types/defaults.md)
 
 ### Renaming functions, methods and constructors
 
