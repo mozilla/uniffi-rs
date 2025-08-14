@@ -24,6 +24,7 @@ mod self_types;
 mod sort;
 mod type_definitions_from_api;
 mod type_nodes;
+mod uniffi_traits;
 
 use crate::pipeline::initial;
 use anyhow::{bail, Result};
@@ -43,6 +44,7 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
         .pass(rust_buffer::pass)
         .pass(rust_future::pass)
         .pass(self_types::pass)
+        .pass(callable::pass)
         .pass(type_definitions_from_api::pass)
         .pass(enums::pass)
         .pass(records::pass)
@@ -55,4 +57,5 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
         .pass(checksums::pass)
         .pass(sort::pass)
         .pass(default::pass)
+        .pass(uniffi_traits::pass)
 }

@@ -87,6 +87,18 @@ mod uniffi_traits {
     #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, uniffi::Object)]
     #[uniffi::export(Debug, Eq, Ord)]
     pub struct Special {}
+
+    #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, uniffi::Enum)]
+    #[uniffi::export(Debug, Eq, Ord)]
+    pub enum SpecialEnum {
+        A,
+    }
+
+    #[derive(Debug, PartialEq, Eq, Ord, PartialOrd, uniffi::Record)]
+    #[uniffi::export(Debug, Eq, Ord)]
+    pub struct SpecialRecord {
+        a: u8,
+    }
 }
 
 #[uniffi::export(callback_interface)]
@@ -476,6 +488,54 @@ mod test_metadata {
             Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
                 if cmp.module_path == "uniffi_fixture_metadata" &&
                    cmp.self_name == "Special"
+        ));
+    }
+
+    #[test]
+    fn test_uniffi_traits_enum() {
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_DEBUG).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
+                if fmt.module_path == "uniffi_fixture_metadata" &&
+                   fmt.self_name == "SpecialEnum"
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_EQ).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
+                if eq.module_path == "uniffi_fixture_metadata" &&
+                   eq.self_name == "SpecialEnum" &&
+                   ne.module_path == "uniffi_fixture_metadata" &&
+                   ne.self_name == "SpecialEnum"
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_ORD).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
+                if cmp.module_path == "uniffi_fixture_metadata" &&
+                   cmp.self_name == "SpecialEnum"
+        ));
+    }
+
+    #[test]
+    fn test_uniffi_traits_record() {
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_DEBUG).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
+                if fmt.module_path == "uniffi_fixture_metadata" &&
+                   fmt.self_name == "SpecialRecord"
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_EQ).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
+                if eq.module_path == "uniffi_fixture_metadata" &&
+                   eq.self_name == "SpecialRecord" &&
+                   ne.module_path == "uniffi_fixture_metadata" &&
+                   ne.self_name == "SpecialRecord"
+        ));
+        assert!(matches!(
+            uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_ORD).unwrap(),
+            Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
+                if cmp.module_path == "uniffi_fixture_metadata" &&
+                   cmp.self_name == "SpecialRecord"
         ));
     }
 }

@@ -6,8 +6,9 @@ use crate::{attributes::DictionaryAttributes, literal::convert_default_value, In
 use anyhow::{bail, Result};
 
 use uniffi_meta::{
-    CallbackInterfaceMetadata, DefaultValueMetadata, FieldMetadata, RecordMetadata,
-    TraitMethodMetadata, VariantMetadata,
+    CallbackInterfaceMetadata, DefaultValueMetadata, FieldMetadata, FnParamMetadata,
+    MethodMetadata, RecordMetadata, TraitMethodMetadata, Type, UniffiTraitMetadata,
+    VariantMetadata,
 };
 
 mod callables;
@@ -96,6 +97,19 @@ impl APIConverter<RecordMetadata> for weedle::DictionaryDefinition<'_> {
         if self.inheritance.is_some() {
             bail!("dictionary inheritance is not supported");
         }
+        let other = Type::Record {
+            module_path: ci.module_path().to_string(),
+            name: self.identifier.0.to_string(),
+        };
+        for ut in make_uniffi_traits(
+            &ci.module_path(),
+            self.identifier.0,
+            &attributes.get_uniffi_traits(),
+            &other,
+        )? {
+            ci.items.insert(ut.into());
+        }
+
         Ok(RecordMetadata {
             module_path: ci.module_path(),
             name: self.identifier.0.to_string(),
@@ -163,6 +177,87 @@ impl APIConverter<CallbackInterfaceMetadata> for weedle::CallbackInterfaceDefini
             docstring: self.docstring.as_ref().map(|v| convert_docstring(&v.0)),
         })
     }
+}
+
+fn make_uniffi_traits(
+    module_path: &str,
+    self_name: &str,
+    names: &[String],
+    other: &Type,
+) -> Result<Vec<UniffiTraitMetadata>> {
+    // A helper for our trait methods
+    let make_trait_method = |name: &str,
+                             inputs: Vec<FnParamMetadata>,
+                             return_type: Option<Type>|
+     -> Result<MethodMetadata> {
+        Ok(MethodMetadata {
+            module_path: module_path.to_string(),
+            self_name: self_name.to_string(),
+            name: name.to_string(),
+            is_async: false,
+            inputs,
+            return_type,
+            throws: None,
+            takes_self_by_arc: false,
+            checksum: None,
+            docstring: None,
+        })
+    };
+
+    names
+        .iter()
+        .map(|trait_name| {
+            Ok(match trait_name.as_str() {
+                "Debug" => UniffiTraitMetadata::Debug {
+                    fmt: make_trait_method("uniffi_trait_debug", vec![], Some(Type::String))?,
+                },
+                "Display" => UniffiTraitMetadata::Display {
+                    fmt: make_trait_method("uniffi_trait_display", vec![], Some(Type::String))?,
+                },
+                "Eq" => UniffiTraitMetadata::Eq {
+                    eq: make_trait_method(
+                        "uniffi_trait_eq_eq",
+                        vec![FnParamMetadata {
+                            name: "other".to_string(),
+                            ty: other.clone(),
+                            by_ref: true,
+                            default: None,
+                            optional: false,
+                        }],
+                        Some(Type::Boolean),
+                    )?,
+                    ne: make_trait_method(
+                        "uniffi_trait_eq_ne",
+                        vec![FnParamMetadata {
+                            name: "other".to_string(),
+                            ty: other.clone(),
+                            by_ref: true,
+                            default: None,
+                            optional: false,
+                        }],
+                        Some(Type::Boolean),
+                    )?,
+                },
+                "Hash" => UniffiTraitMetadata::Hash {
+                    hash: make_trait_method("uniffi_trait_hash", vec![], Some(Type::UInt64))?,
+                },
+                "Ord" => UniffiTraitMetadata::Ord {
+                    cmp: make_trait_method(
+                        "uniffi_trait_ord_cmp",
+                        vec![FnParamMetadata {
+                            name: "other".to_string(),
+                            ty: other.clone(),
+                            by_ref: true,
+                            default: None,
+                            optional: false,
+                        }],
+                        Some(Type::Int8),
+                    )?,
+                },
+                _ => bail!("Invalid trait name: {}", trait_name),
+            })
+        })
+        .collect::<Result<Vec<_>>>()
 }
 
 #[cfg(test)]
