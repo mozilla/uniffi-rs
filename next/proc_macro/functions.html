@@ -711,6 +711,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/defaults.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2168,22 +2191,22 @@ or <code>[name]=[value]</code> items (where the default value is specified as a 
 <span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="o">..</span><span class="p">.</span>
 <span class="p">}</span>
-
-<span class="cp">#[derive(uniffi::Object)]</span>
+</code></pre></div>
+<p>The proc-macro has specified we want a literal value as the default for <code>text</code>, and the "natural" default for <code>max_splits</code></p>
+<p>It works the same for methods:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Object)]</span>
 <span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TextSplitter</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
 
 <span class="cp">#[uniffi::export]</span>
 <span class="k">impl</span><span class="w"> </span><span class="n">TextSplitter</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="cp">#[uniffi::constructor(default(ignore_unicode_errors = false))]</span>
-<span class="w">    </span><span class="c1">// Because we want the default value for the bool to be `false` it&#39;s not necessary to specify it, so</span>
-<span class="w">    </span><span class="c1">// we could have written this as:</span>
-<span class="w">    </span><span class="c1">// #[uniffi::constructor(default(ignore_unicode_errors))]</span>
+<span class="w">    </span><span class="cp">#[uniffi::constructor(default(ignore_unicode_errors))]</span>
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="n">ignore_unicode_errors</span><span class="p">:</span><span class="w"> </span><span class="nc">boolean</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="o">..</span><span class="p">.</span>
 <span class="w">    </span><span class="p">}</span>
 
 <span class="w">    </span><span class="cp">#[uniffi::method(default(text = </span><span class="s">&quot; &quot;</span><span class="cp">, max_splits))]</span>
 <span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
+<span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
 <span class="w">        </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="w">        </span><span class="n">sep</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span>
 <span class="w">        </span><span class="n">max_splits</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="p">,</span>
@@ -2192,59 +2215,7 @@ or <code>[name]=[value]</code> items (where the default value is specified as a 
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Supported defaults without a literal:</p>
-<table>
-<thead>
-<tr>
-<th>Type</th>
-<th>Default value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Option</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>String</code></td>
-<td>Empty string</td>
-</tr>
-<tr>
-<td><code>Vec&lt;T&gt;</code></td>
-<td>Empty list</td>
-</tr>
-<tr>
-<td><code>HashMap&lt;T&gt;</code></td>
-<td>Empty map</td>
-</tr>
-<tr>
-<td>Builtin numeric types</td>
-<td>0</td>
-</tr>
-<tr>
-<td><code>bool</code></td>
-<td>false</td>
-</tr>
-<tr>
-<td>Records</td>
-<td>Record with all fields set to their default value (only valid if they all have defaults)</td>
-</tr>
-<tr>
-<td>Objects</td>
-<td>Primary constructor called with 0 arguments</td>
-</tr>
-<tr>
-<td>Custom Types</td>
-<td>The default value of "bridge" type</td>
-</tr>
-</tbody>
-</table>
-<p>Supported literal values:</p>
-<ul>
-<li>String, integer, float, and boolean literals</li>
-<li><code>Option&lt;T&gt;</code> allows either <code>None</code> or <code>Some(T)</code></li>
-<li>Custom type, which its "bridge" type listed above</li>
-</ul>
+<p>See the <a href="../types/defaults.html">default values docs for more</a></p>
 <h3 id="renaming-functions-methods-and-constructors">Renaming functions, methods and constructors</h3>
 <p>A single exported function can specify an alternate name to be used by the bindings by specifying a <code>name</code> attribute.</p>
 <p><div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(name = </span><span class="s">&quot;something&quot;</span><span class="cp">)]</span>

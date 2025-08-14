@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="Prerequisites.html">
+        <link rel="prev" href="custom_types.html">
       
       
-        <link rel="next" href="Rust_scaffolding.html">
+        <link rel="next" href="../describing.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Describing the interface - The UniFFI user guide</title>
+        <title>Default values - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#describing-the-interface" class="md-skip">
+        <a href="#default-values" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Describing the interface
+              Default values
             
           </span>
         </div>
@@ -241,20 +241,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -270,7 +268,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Tutorial
@@ -307,7 +305,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Prerequisites.html" class="md-nav__link">
+      <a href="../tutorial/Prerequisites.html" class="md-nav__link">
         
   
   
@@ -327,32 +325,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Describing the interface
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="udl_file.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../tutorial/udl_file.html" class="md-nav__link">
         
   
   
@@ -363,44 +339,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#proc-macros" class="md-nav__link">
-    <span class="md-ellipsis">
-      Proc macros
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#a-udl-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      A UDL File
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -413,7 +351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Rust_scaffolding.html" class="md-nav__link">
+      <a href="../tutorial/Rust_scaffolding.html" class="md-nav__link">
         
   
   
@@ -436,7 +374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="foreign_language_bindings.html" class="md-nav__link">
+      <a href="../tutorial/foreign_language_bindings.html" class="md-nav__link">
         
   
   
@@ -463,18 +401,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -490,7 +430,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             UniFFI type model
@@ -504,7 +444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/namespace.html" class="md-nav__link">
+      <a href="namespace.html" class="md-nav__link">
         
   
   
@@ -527,7 +467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/builtin_types.html" class="md-nav__link">
+      <a href="builtin_types.html" class="md-nav__link">
         
   
   
@@ -550,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/enumerations.html" class="md-nav__link">
+      <a href="enumerations.html" class="md-nav__link">
         
   
   
@@ -573,7 +513,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/records.html" class="md-nav__link">
+      <a href="records.html" class="md-nav__link">
         
   
   
@@ -634,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/functions.html" class="md-nav__link">
+      <a href="functions.html" class="md-nav__link">
         
   
   
@@ -657,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/errors.html" class="md-nav__link">
+      <a href="errors.html" class="md-nav__link">
         
   
   
@@ -688,7 +628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/interfaces.html" class="md-nav__link">
+      <a href="interfaces.html" class="md-nav__link">
         
   
   
@@ -711,7 +651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/callback_interfaces.html" class="md-nav__link">
+      <a href="callback_interfaces.html" class="md-nav__link">
         
   
   
@@ -734,7 +674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/remote_ext_types.html" class="md-nav__link">
+      <a href="remote_ext_types.html" class="md-nav__link">
         
   
   
@@ -757,7 +697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/custom_types.html" class="md-nav__link">
+      <a href="custom_types.html" class="md-nav__link">
         
   
   
@@ -777,10 +717,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../types/defaults.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="defaults.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -791,6 +753,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#natural-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      Natural Default
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#literal-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Literal values
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integer-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integer literals
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2113,18 +2122,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#proc-macros" class="md-nav__link">
+  <a href="#natural-default" class="md-nav__link">
     <span class="md-ellipsis">
-      Proc macros
+      Natural Default
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-udl-file" class="md-nav__link">
+  <a href="#literal-values" class="md-nav__link">
     <span class="md-ellipsis">
-      A UDL File
+      Literal values
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integer-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integer literals
     </span>
   </a>
   
@@ -2149,29 +2167,133 @@
   
 
 
-<h1 id="describing-the-interface">Describing the interface</h1>
-<p>There are two ways of describing your interface:</p>
-<h2 id="proc-macros">Proc macros</h2>
-<p><a href="../proc_macro/index.html">Rust proc macros</a> can describe your interface - you'd define the function as:</p>
-<div class="highlight"><pre><span></span><code>#[uniffi::export]
-fn add(a: u32, b: u32) -&gt; u32 { a + b }
+<h1 id="default-values">Default values</h1>
+<p>You can specify a default value to be used for function arguments, and on fields in <code>Record</code>s and <code>Enum</code>s.
+Exactly how they are specified depends on the context, but all use the same mechanism described here.</p>
+<p>You can optionally specify a literal value. If not specified the "natural" default for the type will be used.</p>
+<p>For example, an <code>Enum</code> might specify in Rust:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">MyVariant</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cp">#[uniffi(default)]</span>
+<span class="w">        </span><span class="n">d</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span>
+<span class="w">        </span><span class="cp">#[uniffi(default = 1)]</span>
+<span class="w">        </span><span class="n">e</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>You need to <a href="Rust_scaffolding.html">set up the scaffolding</a> with <code>uniffi::setup_scaffolding!()</code> - but that's it.</p>
-<h2 id="a-udl-file">A UDL File</h2>
-<p>We describe in a UDL (a type of IDL, Interface Definition Language) file <em>what</em> is exposed and available to foreign-language bindings. In this case, we are only playing with primitive types (<code>u32</code>) and not custom data structures but we still want to expose the <code>add</code> method.</p>
-<p>Let's create a <code>math.udl</code> file in the <code>math</code> crate's <code>src/</code> folder:</p>
-<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>math<span class="w"> </span>{
-<span class="w">  </span>u32<span class="w"> </span>add(u32<span class="w"> </span>a,<span class="w"> </span>u32<span class="w"> </span>b);
-};
-</code></pre></div>
-<p>Here you can note multiple things:</p>
-<ul>
-<li>The <code>namespace</code> directive: it will be the name of your Kotlin/Swift package. It <strong>must</strong> be present in any udl file, even if there aren't any exposed functions (e.g. <code>namespace foo {}</code>).
-It will typically be your crate name.</li>
-<li>The <code>add</code> function is in the <code>namespace</code> block. That's because on the Rust side it is a top-level <em>function</em>, we will see later how to to handle <em>methods</em>.</li>
-<li>Rust's <code>u32</code> is also UDL's <code>u32</code>, but it is not always true! See the <a href="../types/builtin_types.html">Built-in Types</a> chapter for more information on mapping types between Rust and UDL.</li>
-</ul>
-<p><strong>Note:</strong> If any of the things you expose in the <code>udl</code> file do not have an equivalent in your Rust crate, you will get a hard error. Try changing the <code>u32</code> result type to <code>u64</code> and see what happens!</p>
+<p><code>d</code> has no literal, so wll use <code>0</code>, while <code>e</code> specifies a literal.</p>
+<p>These args can be omitted when creating the <code>Enum</code> in the foreign bindings. <code>Record</code> fields use the same mechanism.</p>
+<p>Similarly for, eg, methods:
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="cp">#[uniffi::method(default(name = </span><span class="s">&quot;default&quot;</span><span class="cp">, size))]</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">my_method</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">:</span><span class="w"> </span><span class="kt">u32</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div></p>
+<p>and the foreign bindings will not need to specify those arguments.</p>
+<p>UDL supports default values (eg, <a href="../udl/records.html#default-values-for-fields"><code>Record</code>s</a>, <a href="../udl/functions.html#default-values">functions</a>) and that literal values are required - there's no support for a type's "natural" default.</p>
+<h2 id="natural-default">Natural Default</h2>
+<p>The types you can use a natural default with are below.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Option</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>String</code></td>
+<td>Empty string</td>
+</tr>
+<tr>
+<td><code>Vec&lt;T&gt;</code></td>
+<td>Empty list</td>
+</tr>
+<tr>
+<td><code>HashMap&lt;T&gt;</code></td>
+<td>Empty map</td>
+</tr>
+<tr>
+<td>Builtin numeric types</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td>false</td>
+</tr>
+<tr>
+<td>Records</td>
+<td>Record with all fields set to their default value (only valid if they all have defaults)</td>
+</tr>
+<tr>
+<td>Objects</td>
+<td>Primary constructor called with 0 arguments</td>
+</tr>
+<tr>
+<td>Custom Types</td>
+<td>The default value of the "bridge" type</td>
+</tr>
+</tbody>
+</table>
+<h2 id="literal-values">Literal values</h2>
+<p>In UDL, default values are specified in-line when describing a type.
+For example, a function might declare an optional arg as <code>void hello(optional string name = "world");</code>. Enum variant fields can't be expressed in UDL.</p>
+<p>In proc-macros, default values are typically described like our example above, or slightly differently for function args. The proc-macros support the literals we describe here.</p>
+<p>Most of the <a href="builtin_types.html">builtin types</a> support obvious values:</p>
+<table>
+<thead>
+<tr>
+<th>Rust type</th>
+<th>Supported defaults</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bool</code></td>
+<td><code>true</code> or <code>false</code></td>
+</tr>
+<tr>
+<td><code>u8/i8..u64/i64</code></td>
+<td>See below</td>
+</tr>
+<tr>
+<td><code>f32</code>/<code>f64</code></td>
+<td>A numeric value with optional decimal - eg, <code>0.1</code> or <code>0</code>.</td>
+</tr>
+<tr>
+<td><code>String</code></td>
+<td>A "quoted literal"</td>
+</tr>
+<tr>
+<td><code>Option&lt;T&gt;</code></td>
+<td><code>null</code> in UDL, <code>None</code> in proc-macros</td>
+</tr>
+<tr>
+<td><code>Vec&lt;&gt;</code></td>
+<td><code>[]</code>.</td>
+</tr>
+<tr>
+<td><code>HashMap</code></td>
+<td><code>{}</code> in UDL only.</td>
+</tr>
+</tbody>
+</table>
+<p>Custom types support the literal of their "bridge" type.</p>
+<p>Note that <code>HashMap</code> and other types do support "natural defaults" described above.</p>
+<h2 id="integer-literals">Integer literals</h2>
+<p>UDL has a sophisticated scheme which carries the nominal representation and radix etc.
+In turn, bindings can mimic this closely, generating hex or octal literals which best
+represent the value. Much of this comes "for free" from weedle.</p>
+<p>For example, <code>0</code>, <code>0x0</code> and <code>00</code> are all supported and would be reflected
+in the bindings as decimal, hex or octal numbers accordingly.</p>
+<p>Proc macros however have only simple integer literal support - all literals will
+be represented as signed or unsigned integers with radix 10 - so only decimal numbers
+are supported as literals in the Rust or UDL code, and the bindings will
+treat them as "normal" decimal numbers. There's no reason the proc-macros couldn't learn to do more here.</p>
+<p>For example, <code>123</code> and <code>-1</code> are valid integer literals in proc-macros.</p>
 
 
 

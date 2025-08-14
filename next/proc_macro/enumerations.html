@@ -711,6 +711,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/defaults.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2148,11 +2171,13 @@ types inside variants are UniFFI builtin types; user-defined types might be allo
 <span class="w">    </span><span class="n">Fieldless</span><span class="p">,</span>
 <span class="w">    </span><span class="n">WithFields</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">foo</span><span class="p">:</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span>
+<span class="w">        </span><span class="cp">#[uniffi(default)]</span>
 <span class="w">        </span><span class="n">bar</span><span class="p">:</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">i32</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="n">WithValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>Named fields within a variant can have <a href="../types/defaults.html">default values</a></p>
 <h3 id="variant-discriminants">Variant Discriminants</h3>
 <p>Variant discriminants are accepted by the macro but how they are used depends on the bindings.</p>
 <p>For example this enum:</p>

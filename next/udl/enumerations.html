@@ -711,6 +711,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/defaults.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2145,6 +2168,8 @@ interface<span class="w"> </span>IpAddr<span class="w"> </span>{
 <span class="w">  </span>V6(<span class="nb">string</span><span class="w"> </span>addr);
 };
 </code></pre></div>
+<p>These fields do not currently support default values in UDL,
+but defaults are available to proc-macros.</p>
 <h2 id="remote-non-exhaustive-enums">Remote, non-exhaustive enums</h2>
 <p>One corner case is an enum that's defined in another crate and has the <a href="https://doc.rust-lang.org/reference/attributes/type_system.html#the-non_exhaustive-attribute">non_exhaustive` attribute</a>.</p>
 <p>In this case, UniFFI needs to generate a default arm when matching against the enum variants, or else a compile error will be generated.

@@ -711,6 +711,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/defaults.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2073,14 +2096,7 @@ dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
 }
 </code></pre></div>
 <p>The Rust struct will have <code>owner</code> as an <code>Arc&lt;&gt;</code>.</p>
-<h2 id="default-values-for-fields">Default values for fields</h2>
-<p>Fields can be specified with a default value.</p>
-<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
-<span class="w">    </span>boolean<span class="w"> </span>done<span class="w"> </span><span class="o">=</span><span class="w"> </span>false;
-<span class="w">    </span><span class="nb">string</span><span class="w"> </span><span class="nb">text</span>;
-};
-</code></pre></div>
-<h2 id="optional-fields-and-default-values">Optional fields and default values</h2>
+<h2 id="optional-and-compound-fields">Optional and compound fields.</h2>
 <p>Fields can be made optional using a <code>T?</code> type.</p>
 <div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
 <span class="w">    </span>boolean<span class="w"> </span>done;
@@ -2093,16 +2109,23 @@ dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
 <span class="w">    </span><span class="n">text</span><span class="p">:</span><span class="w"> </span><span class="nb">Option</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
-<h3 id="optional-null-values">Optional null values</h3>
-<p>Optional fields can also be set to a default <code>null</code> value:</p>
+<p>You can similarly use a <code>HashMap</code>, <code>Vec&lt;&gt;</code> etc.</p>
 <div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
-<span class="w">    </span>boolean<span class="w"> </span>done;
-<span class="w">    </span><span class="nb">string</span>?<span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>null;
+<span class="w">    </span>sequence<span class="o">&lt;</span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>item_list;
+<span class="w">    </span>record<span class="o">&lt;</span><span class="nb">string</span>,<span class="w"> </span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>item_map;
 };
 </code></pre></div>
-<h3 id="vecs-and-maps">Vecs and maps</h3>
-<p>Empty collections are supported.</p>
+<h2 id="default-values-for-fields">Default values for fields</h2>
+<p>Fields can be specified with a <a href="../types/defaults.html#literal-values">default literal value</a>.</p>
 <div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span>boolean<span class="w"> </span>done<span class="w"> </span><span class="o">=</span><span class="w"> </span>false;
+<span class="w">    </span><span class="nb">string</span><span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;unnamed&quot;</span>;
+};
+</code></pre></div>
+<p>An <code>Option&lt;&gt;</code> can be specified as <code>null</code> or an appropriate literal for a <code>Some</code> value. <code>HashMap</code> and <code>Vec</code> have custom syntax.</p>
+<div class="highlight"><pre><span></span><code>dictionary<span class="w"> </span>TodoEntry<span class="w"> </span>{
+<span class="w">    </span><span class="nb">string</span>?<span class="w"> </span><span class="nb">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>null;
+<span class="w">    </span><span class="nb">string</span>?<span class="w"> </span>alt_text<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;unnamed&quot;</span>
 <span class="w">    </span>sequence<span class="o">&lt;</span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>item_list<span class="w"> </span><span class="o">=</span><span class="w"> </span>[];
 <span class="w">    </span>record<span class="o">&lt;</span><span class="nb">string</span>,<span class="w"> </span><span class="nb">string</span><span class="o">&gt;</span><span class="w"> </span>item_map<span class="w"> </span><span class="o">=</span><span class="w"> </span>{};
 };
