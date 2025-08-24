@@ -18,7 +18,7 @@ class {{ trait_impl }}:
             uniffi_callback_data,
             uniffi_out_dropped_callback,
             {%- endif %}
-        ):
+        ) -> {{ callable.return_type.type_name }}:
         uniffi_obj = {{ ffi_converter_name }}._handle_map.get(uniffi_handle)
         def make_call():
             args = ({% for arg in callable.arguments %}{{ arg.ty.ffi_converter_name }}.lift({{ arg.name }}), {% endfor %})

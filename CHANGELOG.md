@@ -24,6 +24,7 @@
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543)).
   Custom types too ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
 - Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
+- Python: methods now have typing annotations for return values ([#2625](https://github.com/mozilla/uniffi-rs/issues/2625))
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 

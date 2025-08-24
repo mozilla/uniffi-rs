@@ -506,5 +506,17 @@ class TraitsTest(unittest.TestCase):
         with self.assertRaises(HtmlError):
             validate_html("test")
 
+class Annotations(unittest.TestCase):
+    def test_annotations(self):
+        from typing import get_type_hints, Optional
+        from coverall import NodeTraitImpl
+
+        self.assertEqual(get_type_hints(get_num_alive) , {"return": int})
+        self.assertEqual(get_type_hints(println), {"text": str, "return": type(None)})
+        self.assertEqual(get_type_hints(Coveralls.maybe_throw_into), {"should_throw": bool, "return": bool})
+        self.assertEqual(get_type_hints(Coveralls.panicking_new), {"message": str, "return": Coveralls})
+        self.assertEqual(get_type_hints(NodeTrait.get_parent), {"return": Optional[NodeTrait]})
+        self.assertEqual(get_type_hints(NodeTraitImpl.get_parent), {"return":  Optional[NodeTrait]})
+
 if __name__=='__main__':
     unittest.main()

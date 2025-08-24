@@ -19,7 +19,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
         {%- endfilter %}
 {%-     else %}
     @classmethod
-    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(cls, {% include "CallableArgs.py" %}):
+    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(cls, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
         {{ cons.docstring|docstring(8) -}}
         {%- filter indent(8) %}
         {%- include "CallableBody.py" %}
@@ -53,7 +53,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 
 {%- for meth in int.methods -%}
 {%-     let callable = meth.callable %}
-    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}):
+    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
         {{ meth.docstring|docstring(8) -}}
         {%- filter indent(8) %}
         {%- include "CallableBody.py" %}
