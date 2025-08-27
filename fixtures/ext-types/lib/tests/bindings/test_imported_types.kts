@@ -63,5 +63,21 @@ assert(getMaybeUniffiOneEnum(null) == null)
 assert(getUniffiOneEnums(listOf(uoe)) == listOf(uoe))
 assert(getMaybeUniffiOneEnums(listOf(uoe, null)) == listOf(uoe, null))
 
+try {
+    throwUniffiOneError()
+    throw RuntimeException("Should have thrown a UniffiOne exception!")
+} catch (e: UniffiOneException) {
+    assert(e is UniffiOneException.Oops)
+    e as UniffiOneException.Oops
+    assert(e.v1 == "oh no")
+}
+
+try {
+    throwUniffiOneErrorInterface()
+    throw RuntimeException("Should have thrown a UniffiOneErrorInterface exception!")
+} catch (e: UniffiOneErrorInterface) {
+    assert(e.message() == "interface oops")
+}
+
 assert(ct.ecd.sval == "ecd")
 assert(getExternalCrateInterface("foo").value() == "foo")
