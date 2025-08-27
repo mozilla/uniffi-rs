@@ -604,15 +604,6 @@ impl<T: AsType> AsCodeType for T {
     }
 }
 
-// A work around for #2392 - we can't handle functions with external errors.
-fn can_render_callable(callable: &dyn Callable, ci: &ComponentInterface) -> bool {
-    // can't handle external errors.
-    callable
-        .throws_type()
-        .map(|t| !ci.is_external(t))
-        .unwrap_or(true)
-}
-
 mod filters {
     use super::*;
     use uniffi_meta::LiteralMetadata;
