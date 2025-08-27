@@ -17,7 +17,11 @@
 {%- macro to_raw_ffi_call(func) -%}
     {%- match func.throws_type() %}
     {%- when Some(e) %}
+    {%- if ci.is_external(e) %}
+    uniffiRustCallWithError({{ e|type_name(ci) }}ExternalErrorHandler)
+    {%- else %}
     uniffiRustCallWithError({{ e|type_name(ci) }})
+    {%- endif %}
     {%- else %}
     uniffiRustCall()
     {%- endmatch %} { _status ->
@@ -29,14 +33,6 @@
 {%- endmacro -%}
 
 {%- macro func_decl(func_decl, callable, indent) %}
-    {%- if self::can_render_callable(callable, ci) %}
-        {%- call render_func_decl(func_decl, callable, indent) %}
-    {%- else %}
-// Sorry, the callable "{{ callable.name() }}" isn't supported.
-    {%- endif %}
-{%- endmacro %}
-
-{%- macro render_func_decl(func_decl, callable, indent) %}
     {%- call docstring(callable, indent) %}
 
     {%- match callable.throws_type() -%}
@@ -90,7 +86,11 @@
         // Error FFI converter
         {%- match callable.throws_type() %}
         {%- when Some(e) %}
+        {%- if ci.is_external(e) %}
+        {{ e|type_name(ci) }}ExternalErrorHandler,
+        {%- else %}
         {{ e|type_name(ci) }}.ErrorHandler,
+        {%- endif %}
         {%- when None %}
         UniffiNullRustCallStatusErrorHandler,
         {%- endmatch %}
