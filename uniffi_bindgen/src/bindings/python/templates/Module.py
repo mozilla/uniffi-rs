@@ -34,6 +34,8 @@ import platform
 {%- for import in imports %}
 import {{ import }}
 {%- endfor %}
+{# avoid name-clashes for 'builtins' - maybe we should do this for the other modules? #}
+import builtins as __python_builtins
 
 
 # Used for default argument values
