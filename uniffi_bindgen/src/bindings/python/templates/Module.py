@@ -28,6 +28,7 @@ import traceback
 import typing
 {%- if has_async_fns %}
 import asyncio
+from collections.abc import Awaitable
 {%- endif %}
 import platform
 {%- for import in imports %}

@@ -655,4 +655,9 @@ pub fn validate_html(_source: String) -> Result<(), HTMLError> {
     Err(HTMLError::InvalidHTML)
 }
 
+#[uniffi::export]
+pub async fn async_bool(b: bool) -> bool {
+    b
+}
+
 uniffi::include_scaffolding!("coverall");
