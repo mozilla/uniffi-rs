@@ -163,7 +163,7 @@ use anyhow::Result;
 use uniffi_meta::{Checksum, EnumShape};
 
 use super::record::Field;
-use super::{AsType, Literal, Type, TypeIterator};
+use super::{AsType, FfiFunction, Literal, Type, TypeIterator, UniffiTrait, UniffiTraitMethods};
 
 /// Represents an enum with named variants, each of which may have named
 /// and typed fields.
@@ -179,6 +179,8 @@ pub struct Enum {
     pub(super) variants: Vec<Variant>,
     pub(super) shape: EnumShape,
     pub(super) non_exhaustive: bool,
+    // The "uniffi trait" methods - eg, `Eq`, `Display` etc.
+    uniffi_traits: Vec<UniffiTrait>,
     #[checksum_ignore]
     pub(super) docstring: Option<String>,
 }
@@ -267,6 +269,35 @@ impl Enum {
     pub fn contains_variant_fields(&self) -> bool {
         self.variants().iter().any(|v| v.has_fields())
     }
+
+    pub fn uniffi_trait_methods(&self) -> UniffiTraitMethods {
+        UniffiTraitMethods::new(&self.uniffi_traits)
+    }
+
+    pub fn add_uniffi_trait(&mut self, t: UniffiTrait) {
+        self.uniffi_traits.push(t);
+    }
+
+    pub fn derive_ffi_funcs(&mut self) -> Result<()> {
+        for ut in self.uniffi_traits.iter_mut() {
+            ut.derive_ffi_func()?;
+        }
+        Ok(())
+    }
+
+    pub fn iter_ffi_function_definitions(&self) -> impl Iterator<Item = &FfiFunction> {
+        // no "user defined" methods yet, so just uniffi_traits
+        self.uniffi_traits
+            .iter()
+            .flat_map(|ut| match ut {
+                UniffiTrait::Display { fmt: m }
+                | UniffiTrait::Debug { fmt: m }
+                | UniffiTrait::Hash { hash: m }
+                | UniffiTrait::Ord { cmp: m } => vec![m],
+                UniffiTrait::Eq { eq, ne } => vec![eq, ne],
+            })
+            .map(|m| &m.ffi_func)
+    }
 }
 
 impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
@@ -285,6 +316,7 @@ impl TryFrom<uniffi_meta::EnumMetadata> for Enum {
                 .collect::<Result<_>>()?,
             shape: meta.shape,
             non_exhaustive: meta.non_exhaustive,
+            uniffi_traits: vec![],
             docstring: meta.docstring.clone(),
         })
     }
@@ -683,6 +715,7 @@ mod test {
             variants: vec![],
             shape: EnumShape::Enum,
             non_exhaustive: false,
+            uniffi_traits: vec![],
             docstring: None,
         };
 

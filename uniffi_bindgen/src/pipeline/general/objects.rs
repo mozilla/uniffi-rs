@@ -61,7 +61,6 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
             }
             .into(),
         );
-        UniffiTraitMethods::fill_from(&mut int.uniffi_trait_methods, &int.uniffi_traits);
     });
     namespace.ffi_definitions.extend(ffi_definitions);
     Ok(())
