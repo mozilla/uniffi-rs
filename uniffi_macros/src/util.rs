@@ -46,9 +46,9 @@ pub fn mod_path() -> syn::Result<String> {
 
     static LIB_CRATE_MOD_PATH: Lazy<Result<String, String>> = Lazy::new(|| {
         let file = manifest_path()?;
-        let cargo_toml_bytes = fs::read(file).map_err(|e| e.to_string())?;
+        let cargo_toml_str = fs::read_to_string(file).map_err(|e| e.to_string())?;
 
-        let cargo_toml = toml::from_slice::<CargoToml>(&cargo_toml_bytes)
+        let cargo_toml = toml::from_str::<CargoToml>(&cargo_toml_str)
             .map_err(|e| format!("Failed to parse `Cargo.toml`: {e}"))?;
 
         let lib_crate_name = cargo_toml
