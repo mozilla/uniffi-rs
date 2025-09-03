@@ -427,10 +427,10 @@ fn crate_name_from_cargo_toml(udl_file: &Utf8Path) -> Result<String> {
     }
 
     let file = guess_crate_root(udl_file)?.join("Cargo.toml");
-    let cargo_toml_bytes =
-        fs::read(file).context("Can't find Cargo.toml to determine the crate name")?;
+    let cargo_toml_str =
+        fs::read_to_string(file).context("Can't find Cargo.toml to determine the crate name")?;
 
-    let cargo_toml = toml::from_slice::<CargoToml>(&cargo_toml_bytes)?;
+    let cargo_toml = toml::from_str::<CargoToml>(&cargo_toml_str)?;
 
     let lib_crate_name = cargo_toml
         .lib
