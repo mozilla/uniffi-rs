@@ -80,6 +80,11 @@ Constructors:
 
 The foreign bindings will typically generate destructors, but regardless of the foreign semantics, they always hold an `Arc<>` to the Rust object, so these destructors will only drop their reference and may not drop the Rust object.
 
+## Exposing methods from standard Rust traits
+
+There are a number of standard Rust traits (`Debug`, `Eq` etc) you can expose; eg, Python
+might generate `__repr__()` or `__eq__()` - [see the docs for this feature](./uniffi_traits.md).
+
 ## Exposing Traits as interfaces
 
 It's possible to have UniFFI expose a Rust trait as an interface.
@@ -155,43 +160,6 @@ Note: This is currently only supported on Python, Kotlin, and Swift.
 ### Traits example
 
 See the ["traits" example](https://github.com/mozilla/uniffi-rs/tree/main/examples/traits) for more.
-
-## Exposing methods from standard Rust traits
-
-Rust has a number of general purpose traits which add functionality to objects, such
-as `Debug`, `Display`, etc. It's possible to tell UniFFI that your object implements these
-traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
-generate special methods on the object.
-
-For example, consider the following example:
-```
-[Traits=(Debug)]
-interface TodoList {
-    ...
-};
-```
-and the following Rust code:
-```rust
-#[derive(Debug)]
-struct TodoList {
-   ...
-}
-```
-(or using proc-macros)
-```rust
-#[derive(Debug, uniffi::Object)]
-#[uniffi::export(Debug)]
-struct TodoList {
-   ...
-}
-```
-
-This will cause the Python bindings to generate a `__repr__` method that returns the value implemented by the `Debug` trait.
-Not all bindings support generating special methods, so they may be ignored.
-It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.
-
-The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
-is `Debug`, `Display`, `Eq`, `Ord` and `Hash`.
 
 ## Managing Shared References
 

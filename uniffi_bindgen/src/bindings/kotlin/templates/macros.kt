@@ -5,13 +5,14 @@
 #}
 
 {%- macro to_ffi_call(func) -%}
-    {%- if func.self_type().is_some() %}
+    {%- match func.self_type() %}
+    {%- when Some(Type::Object { .. }) %}
     callWithHandle {
         {%- call to_raw_ffi_call(func) %}
     }
     {% else %}
         {%- call to_raw_ffi_call(func) %}
-    {% endif %}
+    {% endmatch %}
 {%- endmacro %}
 
 {%- macro to_raw_ffi_call(func) -%}
@@ -26,7 +27,13 @@
     uniffiRustCall()
     {%- endmatch %} { _status ->
     UniffiLib.INSTANCE.{{ func.ffi_func().name() }}(
-        {% if func.self_type().is_some() %}it, {% endif -%}
+    {%- match func.self_type() %}
+    {%- when Some(Type::Object { .. }) %}
+        it,
+    {%- when Some(t) %}
+        {{- t|lower_fn }}(this),
+    {%- when None %}
+    {% endmatch %}
         {% call arg_list_lowered(func) -%}
         _status)
 }
@@ -168,4 +175,34 @@ v{{- field_num -}}
 
 {%- macro docstring(defn, indent_spaces) %}
 {%- call docstring_value(defn.docstring(), indent_spaces) %}
+{%- endmacro %}
+
+// macro for uniffi_trait implementations.
+{% macro uniffi_trait_impls(uniffi_trait_methods) %}
+{# We have 2 display traits, kotlin has 1. Prefer `Display` but use `Debug` otherwise #}
+{%- if let Some(fmt) = uniffi_trait_methods.display_fmt.or(uniffi_trait_methods.debug_fmt.clone()) %}
+    // The local Rust `Display`/`Debug` implementation.
+    override fun toString(): String {
+        return {{ fmt.return_type().unwrap()|lift_fn }}({% call to_ffi_call(fmt) %})
+    }
+{%- endif %}
+{%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
+    // The local Rust `Eq` implementation - only `eq` is used.
+    override fun equals(other: Any?): Boolean {
+        if (other !is {{ eq.object_name() }}) return false
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call to_ffi_call(eq) %})
+    }
+{%- endif %}
+{%- if let Some(hash) = uniffi_trait_methods.hash_hash %}
+    // The local Rust `Hash` implementation
+    override fun hashCode(): Int {
+        return {{ hash.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(hash) %}).toInt()
+    }
+{%- endif %}
+{%- if let Some(cmp) = uniffi_trait_methods.ord_cmp %}
+    // The local Rust `Ord` implementation
+    override fun compareTo(other: {{ cmp.object_name() }}): Int {
+        return {{ cmp.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(cmp) %}).toInt()
+    }
+{%- endif %}
 {%- endmacro %}

@@ -56,6 +56,7 @@ nav:
   - ./types/remote_ext_types.md
   - ./types/custom_types.md
   - ./types/defaults.md
+  - ./types/uniffi_traits.md
 - Describing the interface:
   - ./describing.md
   - 'UDL Files':
