@@ -116,8 +116,6 @@ jobs:
     resource_class: large
     steps:
       - run: cat ~/.profile >> $BASH_ENV
-      - run: |
-          echo 'export CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git' >> $BASH_ENV
       - checkout
       - prepare-rust-min-version
       - run:
