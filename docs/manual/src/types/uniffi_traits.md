@@ -1,7 +1,7 @@
 # Exposing standard Rust traits
 
-Rust has a number of general purpose traits which add functionality to objects, such
-as `Debug`, `Display`, etc. It's possible to tell UniFFI that your object implements these
+Rust has a number of general purpose traits which add functionality to types, such
+as `Debug`, `Display`, etc. It's possible to tell UniFFI that your type implements these
 traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
 generate special methods on the object.
 
