@@ -120,13 +120,49 @@ pub trait Person {
 
 ## Conditional compilation
 
-`uniffi::constructor|method]` will work if wrapped with `cfg_attr` attribute:
+In many cases you can use Rust's `#[cfg()]` for conditional compilation.
+For example, with the `export` macro:
+
 ```rust
-#[cfg_attr(feature = "foo", uniffi::constructor)]
+#[cfg(target_os = "android")]
+#[uniffi::export]
+impl MyObject {
+    fn android_method(&self) -> String { ... }
+}
+
+#[cfg(target_os = "ios")]
+#[uniffi::export]
+impl MyObject {
+    fn ios_method(&self) -> String { ... }
+}
 ```
-Other attributes are not currently supported, see [#2000](https://github.com/mozilla/uniffi-rs/issues/2000) for more details.
+
+This works well when you want to gate the Rust implementation entirely.
+
+Note however that `#[cfg()]` does not work correctly inside `uniffi::export` blocks -
+uniffi scaffolding will always be generated even when not configured, resulting in compile errors.
+This can usually be worked around by using multiple `uniffi::export` blocks and placing the `#[cfg()]` attributes before `#[uniffi::export]`, as shown above.
+
+### `cfg_attr`
+
+In some use-cases, you unconditionally want your Rust impl and want the UniFFI scaffolding to be optional;
+eg., behind a "uniffi" feature you might add to your crate.
+
+```rust
+#[cfg_attr(feature = "uniffi", uniffi::export)]
+impl Object {
+    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+    fn new() -> Arc<Self> { ... }
+    #[cfg_attr(feature = "uniffi", uniffi::method)]
+    fn method() { ... }
+}
+```
+allows the the methods to always be compiled into the Rust library but the UniFFI scaffolding generation
+is behind the feature.
+
+There's a lot of related discussion in [#2000](https://github.com/mozilla/uniffi-rs/issues/2000)
 
 ## Mixing UDL and proc-macros
 
 If you use both UDL and proc-macro generation, then your crate name must match the namespace in your
-UDL file. This restriction will be lifted in the future.
+UDL file.
