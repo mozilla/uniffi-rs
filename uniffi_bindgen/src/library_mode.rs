@@ -89,7 +89,7 @@ pub fn generate_bindings<T: BindingGenerator>(
 
 // If `library_path` is a C dynamic library, return its name
 pub fn calc_cdylib_name(library_path: &Utf8Path) -> Option<&str> {
-    let cdylib_extensions = [".so", ".dll", ".dylib"];
+    let cdylib_extensions = [".so", ".dll", ".dylib", ".wasm"];
     let filename = library_path.file_name()?;
     let filename = filename.strip_prefix("lib").unwrap_or(filename);
     for ext in cdylib_extensions {
