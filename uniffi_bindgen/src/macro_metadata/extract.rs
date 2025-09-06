@@ -14,6 +14,7 @@ use goblin::{
 };
 use std::collections::HashSet;
 use uniffi_meta::Metadata;
+use walrus::{ir::Value, ConstExpr, DataKind, ExportItem, GlobalId, GlobalKind, Module};
 
 /// Extract metadata written by the `uniffi::export` macro from a library file
 ///
@@ -31,7 +32,10 @@ fn extract_from_bytes(file_data: &[u8]) -> anyhow::Result<Vec<Metadata>> {
         Object::Mach(mach) => extract_from_mach(mach, file_data),
         Object::Archive(archive) => extract_from_archive(archive, file_data),
         Object::COFF(coff) => extract_from_coff(coff, file_data),
-        _ => bail!("Unknown library format"),
+        _ => match Module::from_buffer(file_data) {
+            Ok(module) => extract_from_wasm(&module),
+            Err(_) => bail!("Unknown library format"),
+        },
     }
 }
 
@@ -227,6 +231,74 @@ pub fn extract_from_coff(coff: Coff<'_>, file_data: &[u8]) -> anyhow::Result<Vec
                 .checked_add(symbol.value as usize)
                 .context("Error getting symbol offset")?,
         )?;
+    }
+
+    Ok(extracted.into_metadata())
+}
+
+pub fn extract_from_wasm(module: &Module) -> anyhow::Result<Vec<Metadata>> {
+    fn get_global_positive_usize(module: &Module, global_id: GlobalId) -> Option<usize> {
+        let global = module.globals.get(global_id);
+        let GlobalKind::Local(const_expr) = &global.kind else {
+            return None;
+        };
+        get_const_expr_positive_usize(module, const_expr)
+    }
+
+    fn get_const_expr_positive_usize(module: &Module, const_expr: &ConstExpr) -> Option<usize> {
+        match const_expr {
+            ConstExpr::Value(value) => match value {
+                Value::I32(i32) => usize::try_from(*i32).ok(),
+                Value::I64(i64) => usize::try_from(*i64).ok(),
+                _ => None,
+            },
+            ConstExpr::Global(id) => get_global_positive_usize(module, *id),
+            _ => None,
+        }
+    }
+
+    let mut extracted = ExtractedItems::new();
+
+    for export in module.exports.iter() {
+        if !is_metadata_symbol(&export.name) {
+            continue;
+        }
+        let ExportItem::Global(global_id) = &export.item else {
+            continue;
+        };
+        // The exported global contains a pointer value to the data in memory 0.
+        let Some(address) = get_global_positive_usize(module, *global_id) else {
+            continue;
+        };
+        // An active data segment contains a memory ID (0 if not specified) and a byte array.
+        // When the WASM module is initialized, the designated range of the memory is initialized
+        // with this byte array data.
+        for data in module.data.iter() {
+            // A WASM module built with Rust usually stores global variable data in memory 0;
+            // i.e., given a Rust module, `memory` should be 0 here.
+            let DataKind::Active {
+                offset: data_offset,
+                // memory,
+                ..
+            } = &data.kind
+            else {
+                continue;
+            };
+            let Some(data_offset) = get_const_expr_positive_usize(module, data_offset) else {
+                continue;
+            };
+            if !(data_offset..data_offset + data.value.len()).contains(&address) {
+                continue;
+            }
+            // We have found the data segment that contains the UniFFI metadata.
+            extracted.extract_item(
+                &export.name,
+                &data.value,
+                address
+                    .checked_sub(data_offset)
+                    .context("Error getting global data offset")?,
+            )?;
+        }
     }
 
     Ok(extracted.into_metadata())
