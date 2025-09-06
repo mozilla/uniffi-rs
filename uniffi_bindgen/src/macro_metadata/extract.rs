@@ -298,6 +298,7 @@ pub fn extract_from_wasm(module: &Module) -> anyhow::Result<Vec<Metadata>> {
                     .checked_sub(data_offset)
                     .context("Error getting global data offset")?,
             )?;
+            break;
         }
     }
 
