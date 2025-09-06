@@ -1020,9 +1020,11 @@ impl ComponentInterface {
     }
 
     pub fn is_name_used_as_error(&self, name: &str) -> bool {
-        self.all_component_interfaces
-            .iter()
-            .any(|ci| ci.errors.contains(name))
+        self.errors.contains(name)
+            || self
+                .all_component_interfaces
+                .iter()
+                .any(|ci| ci.errors.contains(name))
     }
 
     /// Called by `APIBuilder` impls to add a newly-parsed callback interface definition to the `ComponentInterface`.
