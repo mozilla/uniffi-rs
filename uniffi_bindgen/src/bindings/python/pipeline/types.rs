@@ -37,16 +37,11 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
         }
         ty.type_name = type_name(&ty.ty);
     });
-    namespace.visit_mut(|callable: &mut Callable| {
-        let type_name = match &callable.return_type.ty {
+    namespace.visit_mut(|return_ty: &mut ReturnType| {
+        return_ty.type_name = match &return_ty.ty {
             Some(type_node) => type_node.type_name.clone(),
             None => "None".to_string(),
-        };
-        callable.return_type.type_name = if callable.is_async {
-            format!("Awaitable[{type_name}]")
-        } else {
-            type_name
-        };
+        }
     });
     Ok(())
 }
