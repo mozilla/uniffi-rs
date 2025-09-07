@@ -12,7 +12,7 @@ name = "uniffi_error_types"
 [dependencies]
 uniffi = {path = "../../uniffi"}
 anyhow = "1"
-thiserror = "1.0"
+thiserror = "2"
 
 [build-dependencies]
 uniffi = {path = "../../uniffi", features = ["build"] }

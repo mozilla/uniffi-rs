@@ -9,7 +9,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_keywords_rust"
 
 [dependencies]
-thiserror = "1.0"
+thiserror = "2"
 uniffi = { workspace = true }
 
 [build-dependencies]

@@ -11,7 +11,7 @@ name = "large_error"
 
 [dependencies]
 uniffi = { workspace = true }
-thiserror = "1.0"
+thiserror = "2"
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

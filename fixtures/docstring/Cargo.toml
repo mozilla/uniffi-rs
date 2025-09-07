@@ -10,7 +10,7 @@ name = "uniffi_fixture_docstring"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-thiserror = "1.0"
+thiserror = "2"
 uniffi = { path = "../../uniffi" }
 
 [build-dependencies]

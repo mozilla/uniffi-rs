@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 cargo_metadata = { version = "0.19" }
-thiserror = "1.0"
+thiserror = "2"
 uniffi = { path = "../../uniffi" }
 
 [build-dependencies]
