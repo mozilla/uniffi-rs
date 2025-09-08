@@ -13,7 +13,8 @@
 
 ### What's new?
 
-- Objects can export the `Ord` trait, allowing such objects to be ordered.
+- Objects can export the `Ord` trait, allowing such objects to be ordered ([#2583](https://github.com/mozilla/uniffi-rs/pull/2583)).
+- Objects can implement external traits ([#2430](https://github.com/mozilla/uniffi-rs/issues/2430))
 - Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
   without a literal) meaning the default value for the type. Named types can also have a default.
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
@@ -35,9 +36,8 @@
   - Lowering/lifting now uses `u64` values
   - The free function inputs a `u64` handle rather than a raw pointer
   - The clone function inputs and returns a `u64` handle rather than a raw pointer
-- Towards `Enums` and `Records` getting methods:
-  - Method metadata now carries a `MethodReceiver` for info about self.
-  - In the templates, for `Callable`, `x.takes_self()` is replaced with `x.self_type().is_some()` etc.
+-  `Enums` and `Records` can have methods, so the `Method` now carries `self_type` instead of the object name.
+   In the templates, for `Callable.takes_self()` is replaced with `Callable.self_type()`.
 - Trait / Callback interface changes
     - VTable fields are now: `free`, `clone`, followed by a field for each interface method.
       Note That `free` is now at the start of the vtable rather than the end.

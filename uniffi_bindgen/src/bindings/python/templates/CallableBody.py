@@ -7,8 +7,13 @@ if {{ arg.name }} is _DEFAULT:
 {% endfor -%}
 
  _uniffi_lowered_args = (
-    {%- if callable.is_method() %}
+    {%- if let Some(self_type) = callable.self_type() %}
+    {%-     match self_type.ty %}
+    {%-         when Type::Interface { .. } %}
     self._uniffi_clone_handle(),
+    {%-         else %}
+    {{ self_type.ffi_converter_name }}.lower(self),
+    {%-     endmatch %}
     {%- endif %}
     {%- for arg in callable.arguments %}
     {{ arg.ty.ffi_converter_name }}.lower({{ arg.name }}),
