@@ -696,6 +696,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing methods from standard Rust traits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exposing-traits-as-interfaces" class="md-nav__link">
     <span class="md-ellipsis">
       Exposing Traits as interfaces
@@ -743,15 +752,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
-    <span class="md-ellipsis">
-      Exposing methods from standard Rust traits
-    </span>
-  </a>
   
 </li>
       
@@ -864,6 +864,29 @@
   
   <span class="md-ellipsis">
     Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="uniffi_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exposing standard Rust traits
     
   </span>
   
@@ -2209,6 +2232,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing methods from standard Rust traits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exposing-traits-as-interfaces" class="md-nav__link">
     <span class="md-ellipsis">
       Exposing Traits as interfaces
@@ -2256,15 +2288,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
-    <span class="md-ellipsis">
-      Exposing methods from standard Rust traits
-    </span>
-  </a>
   
 </li>
       
@@ -2365,6 +2388,9 @@ for testing.</p>
 * can be async, although foreign language constraints means support for async primary constructors is patchy.</p>
 <h2 id="destructors">Destructors</h2>
 <p>The foreign bindings will typically generate destructors, but regardless of the foreign semantics, they always hold an <code>Arc&lt;&gt;</code> to the Rust object, so these destructors will only drop their reference and may not drop the Rust object.</p>
+<h2 id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</h2>
+<p>There are a number of standard Rust traits (<code>Debug</code>, <code>Eq</code> etc) you can expose; eg, Python
+might generate <code>__repr__()</code> or <code>__eq__()</code> - <a href="uniffi_traits.html">see the docs for this feature</a>.</p>
 <h2 id="exposing-traits-as-interfaces">Exposing Traits as interfaces</h2>
 <p>It's possible to have UniFFI expose a Rust trait as an interface.</p>
 <div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Button</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
@@ -2416,35 +2442,6 @@ to declare the trait can also be implemented on the foreign side passed into Rus
 <p>Note: This is currently only supported on Python, Kotlin, and Swift.</p>
 <h3 id="traits-example">Traits example</h3>
 <p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/traits">"traits" example</a> for more.</p>
-<h2 id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</h2>
-<p>Rust has a number of general purpose traits which add functionality to objects, such
-as <code>Debug</code>, <code>Display</code>, etc. It's possible to tell UniFFI that your object implements these
-traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
-generate special methods on the object.</p>
-<p>For example, consider the following example:
-<div class="highlight"><pre><span></span><code>[Traits=(Debug)]
-interface TodoList {
-    ...
-};
-</code></pre></div>
-and the following Rust code:
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug)]</span>
-<span class="k">struct</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">{</span>
-<span class="w">   </span><span class="o">..</span><span class="p">.</span>
-<span class="p">}</span>
-</code></pre></div>
-(or using proc-macros)
-<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, uniffi::Object)]</span>
-<span class="cp">#[uniffi::export(Debug)]</span>
-<span class="k">struct</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">{</span>
-<span class="w">   </span><span class="o">..</span><span class="p">.</span>
-<span class="p">}</span>
-</code></pre></div></p>
-<p>This will cause the Python bindings to generate a <code>__repr__</code> method that returns the value implemented by the <code>Debug</code> trait.
-Not all bindings support generating special methods, so they may be ignored.
-It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.</p>
-<p>The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
-is <code>Debug</code>, <code>Display</code>, <code>Eq</code>, <code>Ord</code> and <code>Hash</code>.</p>
 <h2 id="managing-shared-references">Managing Shared References</h2>
 <p>To the foreign-language consumer, UniFFI object instances are designed to behave as much like
 regular language objects as possible. They can be freely passed as arguments or returned as values,

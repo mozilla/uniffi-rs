@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="crates.html">
+        <link rel="prev" href="defaults.html">
       
       
-        <link rel="next" href="ffi_converter_traits.html">
+        <link rel="next" href="../describing.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Lifting, Lowering and Serialization - The UniFFI user guide</title>
+        <title>Exposing standard Rust traits - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lifting-lowering-and-serialization" class="md-skip">
+        <a href="#exposing-standard-rust-traits" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Lifting, Lowering and Serialization
+              Exposing standard Rust traits
             
           </span>
         </div>
@@ -401,18 +401,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -428,7 +430,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             UniFFI type model
@@ -442,7 +444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/namespace.html" class="md-nav__link">
+      <a href="namespace.html" class="md-nav__link">
         
   
   
@@ -465,7 +467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/builtin_types.html" class="md-nav__link">
+      <a href="builtin_types.html" class="md-nav__link">
         
   
   
@@ -488,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/enumerations.html" class="md-nav__link">
+      <a href="enumerations.html" class="md-nav__link">
         
   
   
@@ -511,7 +513,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/records.html" class="md-nav__link">
+      <a href="records.html" class="md-nav__link">
         
   
   
@@ -572,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/functions.html" class="md-nav__link">
+      <a href="functions.html" class="md-nav__link">
         
   
   
@@ -595,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/errors.html" class="md-nav__link">
+      <a href="errors.html" class="md-nav__link">
         
   
   
@@ -626,7 +628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/interfaces.html" class="md-nav__link">
+      <a href="interfaces.html" class="md-nav__link">
         
   
   
@@ -649,7 +651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/callback_interfaces.html" class="md-nav__link">
+      <a href="callback_interfaces.html" class="md-nav__link">
         
   
   
@@ -672,7 +674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/remote_ext_types.html" class="md-nav__link">
+      <a href="remote_ext_types.html" class="md-nav__link">
         
   
   
@@ -695,7 +697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/custom_types.html" class="md-nav__link">
+      <a href="custom_types.html" class="md-nav__link">
         
   
   
@@ -718,7 +720,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/defaults.html" class="md-nav__link">
+      <a href="defaults.html" class="md-nav__link">
         
   
   
@@ -738,10 +740,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../types/uniffi_traits.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="uniffi_traits.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -752,6 +763,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -1754,20 +1766,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1783,7 +1793,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Internals
@@ -1797,7 +1807,7 @@
   
   
     <li class="md-nav__item">
-      <a href="design_principles.html" class="md-nav__link">
+      <a href="../internals/design_principles.html" class="md-nav__link">
         
   
   
@@ -1820,7 +1830,7 @@
   
   
     <li class="md-nav__item">
-      <a href="crates.html" class="md-nav__link">
+      <a href="../internals/crates.html" class="md-nav__link">
         
   
   
@@ -1840,32 +1850,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Lifting, Lowering and Serialization
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="lifting_and_lowering.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
         
   
   
@@ -1876,53 +1864,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#lifting-and-lowering-when-calling-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Lifting and Lowering when calling functions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#lowered-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Lowered Types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#serialization-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      Serialization Format
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1935,7 +1876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ffi_converter_traits.html" class="md-nav__link">
+      <a href="../internals/ffi_converter_traits.html" class="md-nav__link">
         
   
   
@@ -1958,7 +1899,7 @@
   
   
     <li class="md-nav__item">
-      <a href="rust_calls.html" class="md-nav__link">
+      <a href="../internals/rust_calls.html" class="md-nav__link">
         
   
   
@@ -1981,7 +1922,7 @@
   
   
     <li class="md-nav__item">
-      <a href="foreign_calls.html" class="md-nav__link">
+      <a href="../internals/foreign_calls.html" class="md-nav__link">
         
   
   
@@ -2004,7 +1945,7 @@
   
   
     <li class="md-nav__item">
-      <a href="object_references.html" class="md-nav__link">
+      <a href="../internals/object_references.html" class="md-nav__link">
         
   
   
@@ -2027,7 +1968,7 @@
   
   
     <li class="md-nav__item">
-      <a href="async-overview.html" class="md-nav__link">
+      <a href="../internals/async-overview.html" class="md-nav__link">
         
   
   
@@ -2050,7 +1991,7 @@
   
   
     <li class="md-nav__item">
-      <a href="async-ffi.html" class="md-nav__link">
+      <a href="../internals/async-ffi.html" class="md-nav__link">
         
   
   
@@ -2073,7 +2014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
         
   
   
@@ -2138,41 +2079,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#lifting-and-lowering-when-calling-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Lifting and Lowering when calling functions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#lowered-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Lowered Types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#serialization-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      Serialization Format
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -2190,251 +2096,64 @@
   
 
 
-<h1 id="lifting-lowering-and-serialization">Lifting, Lowering and Serialization</h1>
-<p>UniFFI is able to transfer rich data types back-and-forth between the Rust
-code and the foreign-language code via a process we refer to as "lowering"
-and "lifting".</p>
-<p>Recall that UniFFI interoperates between different languages by defining
-a C-style FFI layer which operates in terms of primitive data types and
-plain functions. To transfer data from one side of this layer to the other,
-the sending side "<strong><em>lowers</em></strong>" the data from a language-specific data type
-into one of the primitive types supported by the FFI-layer functions, and the
-receiving side "<strong><em>lifts</em></strong>" that primitive type into its own language-specific
-data type.</p>
-<p>Lifting and lowering simple types such as integers is done by directly casting the
-value to and from an appropriate type. Non-trivial types such as Strings, Optionals and
-Records, etc. are lowered to a byte buffer called a <code>RustBuffer</code> internally.</p>
-<p>For example, a Python <code>str</code> is passed to Rust by lowering it to a <code>RustBuffer</code>, which is then
-lifted to a Rust <code>String</code></p>
-<pre class="mermaid"><code>block-beta
-  columns 2
-  block:PythonLayer
-    columns 1
-    PythonTitle["Python"]
-    PythonStr["str"]
-  end
-  block:RustLayer
-    columns 1
-    RustTitle["Rust"]
-    RustString["String"]
-  end
-  block:FFILayer:2
-    columns 3
-    space:2
-    FfiTitle["FFI"]
-    space
-    RustBuffer["RustBuffer"]
-    space
-  end
-
-  PythonStr --"Lower"--&gt; RustBuffer
-  RustBuffer --"Lift"--&gt; RustString
-
-classDef default stroke:transparent,fill:#fff
-classDef layer stroke:#c0c0c0,fill:#cae9ff
-classDef title stroke:transparent,fill:transparent,color:#f72585
-classDef invisible stroke:transparent,fill:transparent
-class RustLayer layer
-class PythonLayer layer
-class FFILayer layer
-class RustTitle title
-class PythonTitle title
-class FfiTitle title</code></pre>
-<h2 id="lifting-and-lowering-when-calling-functions">Lifting and Lowering when calling functions</h2>
-<p>As a concrete example, consider this interface for accumulating a list of integers:</p>
-<div class="highlight"><pre><span></span><code>namespace<span class="w"> </span>example<span class="w"> </span>{
-<span class="w">  </span>sequence<span class="o">&lt;</span>i32<span class="o">&gt;</span><span class="w"> </span>add_to_list(i32<span class="w"> </span>item);
-}
+<h1 id="exposing-standard-rust-traits">Exposing standard Rust traits</h1>
+<p>Rust has a number of general purpose traits which add functionality to types, such
+as <code>Debug</code>, <code>Display</code>, etc. It's possible to tell UniFFI that your type implements these
+traits and to generate FFI functions to expose them to consumers. Bindings may then optionally
+generate special methods on the object.</p>
+<p>The list of supported traits is hard-coded in UniFFI's internals, and at time of writing
+is <code>Debug</code>, <code>Display</code>, <code>Eq</code>, <code>Ord</code> and <code>Hash</code>.</p>
+<p>This is supported primarily for Interfaces - it's also supported for Records and Enums, but it has fewer use-cases there - see <a href="#data-classes">data-classes</a> below.</p>
+<p>For example, in proc-macros:
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug, uniffi::Object)]</span>
+<span class="cp">#[uniffi::export(Debug)]</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>Calling this function from foreign language code involves lowering the arguments, calling an FFI
-function, lifting the arguments, then calling the original function.</p>
-<pre class="mermaid"><code>block-beta
-  columns 2
-  block:PythonUserLayer
-    columns 1
-    PythonTitle["Generated Python function"]
-    PythonFunc["add_to_list(int) -&gt; [int]"]
-  end
-  block:RustUserLayer
-    columns 1
-    RustTitle["User-defined Rust Function"]
-    RustFunc["add_to_list(i32) -&gt; Vec&lt;i32&gt;"]
-  end
-  space:2
-  block:ScaffoldingLayer:2
-    columns 1
-    ScaffoldingFunc["uniffi_fn_add_to_list(int32_t) -&gt; RustBuffer"]
-    ScaffoldingTitle["Generated Rust scaffolding function"]
-  end
-
-  PythonFunc -- "Lower" --&gt; ScaffoldingFunc
-  ScaffoldingFunc -- "Lift" --&gt; RustFunc
-
-classDef default stroke:transparent,fill:#fff
-classDef layer stroke:#c0c0c0,fill:#cae9ff
-classDef title stroke:transparent,fill:transparent,color:#f72585
-classDef invisible stroke:transparent,fill:transparent
-
-class PythonUserLayer layer
-class RustUserLayer layer
-class ScaffoldingLayer layer
-
-class RustTitle title
-class PythonTitle title
-class ScaffoldingTitle title</code></pre>
-<p>Details:</p>
-<ol>
-<li>UniFFI generates an <code>add_to_list</code> function in the foreign language (Python in the example
-   diagram).  In this function the <code>item</code> argument and the return type are language-native types.</li>
-<li>The generated function <strong><em>lowers</em></strong> each argument.  Since the <code>item</code> argument is a plain integer,
-   it is lowered by casting to an <code>int32_t</code>.</li>
-<li>The generated Python function passes the lowered arguments to the Rust scaffolding function.
-   This is a <code>repr(C)</code> FFI function in Rust library and named <code>uniffi_fn_add_to_list</code> in this example.</li>
-<li>The Rust scaffolding function <strong><em>lifts</em></strong> each argument received over the FFI into a native Rust type.
-   Since <code>item</code> is a plain integer no conversion is needed.</li>
-<li>The Rust scaffolding passes the lifted arguments to the user-defined Rust <code>add_to_list</code> function, which then executes normally.</li>
-<li>The Rust scaffolding function receives the return value and now needs to <strong><em>lower</em></strong> the it to pass it back across the FFI.
-   Since this type's <code>::FfiType</code> is a <code>RustBuffer</code>, it's lowered by serializing the values into a byte buffer (<code>RustBuffer</code>), which is then returned.</li>
-<li>The generated Python function receives the return value, and then <strong><em>lifts</em></strong> it to a native data type.
-   Since this type's <code>::FfiType</code> is a <code>RustBuffer</code>, it's lifted by deserializing a language-native list of integers from the RustBuffer.</li>
-</ol>
-<h2 id="lowered-types">Lowered Types</h2>
-<table>
-<thead>
-<tr>
-<th>UDL Type</th>
-<th>Representation in the C FFI</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td>
-<td><code>int8_t</code>/<code>int16_t</code>/<code>int32_t</code>/<code>int64_t</code></td>
-</tr>
-<tr>
-<td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td>
-<td><code>uint8_t</code>/<code>uint16_t</code>/<code>uint32_t</code>/<code>uint64_t</code></td>
-</tr>
-<tr>
-<td><code>f32</code>/<code>float</code></td>
-<td><code>float</code></td>
-</tr>
-<tr>
-<td><code>f64</code>/<code>double</code></td>
-<td><code>double</code></td>
-</tr>
-<tr>
-<td><code>boolean</code></td>
-<td><code>int8_t</code>, either <code>0</code> or <code>1</code></td>
-</tr>
-<tr>
-<td><code>string</code></td>
-<td><code>RustBuffer</code> struct pointing to utf8 bytes</td>
-</tr>
-<tr>
-<td><code>bytes</code></td>
-<td>Same as <code>sequence&lt;u8&gt;</code></td>
-</tr>
-<tr>
-<td><code>timestamp</code></td>
-<td><code>RustBuffer</code> struct pointing to a i64 representing seconds and a u32 representing nanoseconds</td>
-</tr>
-<tr>
-<td><code>duration</code></td>
-<td><code>RustBuffer</code> struct pointing to a u64 representing seconds and a u32 representing nanoseconds</td>
-</tr>
-<tr>
-<td><code>T?</code></td>
-<td><code>RustBuffer</code> struct pointing to serialized bytes</td>
-</tr>
-<tr>
-<td><code>sequence&lt;T&gt;</code></td>
-<td><code>RustBuffer</code> struct pointing to serialized bytes</td>
-</tr>
-<tr>
-<td><code>record&lt;string, T&gt;</code></td>
-<td><code>RustBuffer</code> struct pointing to serialized bytes</td>
-</tr>
-<tr>
-<td><code>enum</code> and <code>[Enum] interface</code></td>
-<td><code>RustBuffer</code> struct pointing to serialized bytes</td>
-</tr>
-<tr>
-<td><code>dictionary</code></td>
-<td><code>RustBuffer</code> struct pointing to serialized bytes</td>
-</tr>
-<tr>
-<td><code>interface</code> / <code>callback interface</code> / <code>trait interface</code></td>
-<td><code>u64</code> See <a href="object_references.html">object references</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="serialization-format">Serialization Format</h2>
-<p>When serializing complex data types into a byte buffer, UniFFI uses an
-ad-hoc fixed-width format which is designed mainly for simplicity.
-The details of this format are internal only and may change between versions of UniFFI.</p>
-<table>
-<thead>
-<tr>
-<th>UDL Type</th>
-<th>Representation in serialized bytes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>i8</code>/<code>i16</code>/<code>i32</code>/<code>i64</code></td>
-<td>Fixed-width 1/2/4/8-byte signed integer, big-endian</td>
-</tr>
-<tr>
-<td><code>u8</code>/<code>u16</code>/<code>u32</code>/<code>u64</code></td>
-<td>Fixed-width 1/2/4/8-byte unsigned integer, big-endian</td>
-</tr>
-<tr>
-<td><code>f32</code>/<code>float</code></td>
-<td>Fixed-width 4-byte float, big-endian</td>
-</tr>
-<tr>
-<td><code>f64</code>/<code>double</code></td>
-<td>Fixed-width 8-byte double, big-endian</td>
-</tr>
-<tr>
-<td><code>boolean</code></td>
-<td>Fixed-width 1-byte signed integer, either <code>0</code> or <code>1</code></td>
-</tr>
-<tr>
-<td><code>string</code></td>
-<td>Serialized <code>i32</code> length followed by utf-8 string bytes; no trailing null</td>
-</tr>
-<tr>
-<td><code>T?</code></td>
-<td>If null, serialized <code>boolean</code> false; if non-null, serialized <code>boolean</code> true followed by serialized <code>T</code></td>
-</tr>
-<tr>
-<td><code>sequence&lt;T&gt;</code></td>
-<td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>T</code></td>
-</tr>
-<tr>
-<td><code>record&lt;string, T&gt;</code></td>
-<td>Serialized <code>i32</code> item count followed by serialized items; each item is a serialized <code>string</code> followed by a serialized <code>T</code></td>
-</tr>
-<tr>
-<td><code>enum</code> and <code>[Enum] interface</code></td>
-<td>Serialized <code>i32</code> indicating variant, numbered in declaration order starting from 1, followed by the serialized values of the variant's fields in declaration order</td>
-</tr>
-<tr>
-<td><code>dictionary</code></td>
-<td>The serialized value of each field, in declaration order</td>
-</tr>
-<tr>
-<td><code>interface</code></td>
-<td>Fixed-width 8-byte unsigned integer encoding a pointer to the object on the heap</td>
-</tr>
-</tbody>
-</table>
-<p>Note that length fields in this format are serialized as <em>signed</em> integers
-despite the fact that they will always be non-negative. This is to help
-ease compatibility with JVM-based languages since the JVM uses signed 32-bit
-integers for its size fields internally.</p>
+or in UDL
+<div class="highlight"><pre><span></span><code>[Traits=(Debug)]
+interface TodoList {
+    ...
+};
+</code></pre></div>
+with the matching Rust:
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(Debug)]</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>The bindings will generate:</p>
+<ul>
+<li>Python: The object will have a <code>__repr__</code> method that returns the value implemented by the <code>Debug</code> trait.</li>
+<li>Swift: Will generate a <code>public var debugDescription: String {..}</code> method on the object, allowing, eg, <code>String(reflecting: ob)</code> to be used.</li>
+<li>Kotlin: Will generate <code>override fun toString(): String {..}</code> (although will prefer the <code>Display</code> implementation if it exists).</li>
+</ul>
+<p>Whereas <code>Eq</code> would generate:</p>
+<ul>
+<li>Python: The object will have <code>__eq__(self, other)</code> and <code>__ne__(self, other)</code> methods.</li>
+<li>Swift: Will generate <code>public static func == (self: .., other: ..)</code></li>
+<li>Kotlin: Will generate <code>override fun equals(other: Any?): Boolean</code> and have the object extend <code>Comparable&lt;&gt;</code>.</li>
+</ul>
+<p>etc.</p>
+<p>External bindings may not support these, so they might be ignored.</p>
+<p>It is your responsibility to implement the trait on your objects; UniFFI will attempt to generate a meaningful error if you do not.</p>
+<h1 id="data-classes">Data-classes</h1>
+<p>This is supported for <code>Record</code>s and <code>Enum</code>s - but take care - every time one of the generated methods is called,
+the entire <code>Record</code> or <code>Enum</code> will be copied by-value across the FFI.
+This isn't a problem for <code>Interface</code>s because exactly one pointer is copied, but data classes serialize and deserialize the entire object, which is expensive for large objects.</p>
+<p>Further, UniFFI will automatically generate some of this support when these traits are not specified.
+For example, all bindings will automatically generate simple equality check and hash functions for records which compare/hash each element in the record.
+However, if you explicitly export the <code>Eq</code> trait, these builtin implementations will not be generated and instead will be replaced with a significantly more expensive copy and call into Rust code.
+So if your <code>Eq</code> implementation is <code>#[derive()]</code>d, you are probably just providing the same semantics with a much slower implementation.</p>
+<p>It is expected this support will prove most useful for the <code>Debug</code> and <code>Display</code> traits and used primarily for debugging,
+but it's there if you need it for obscure cases where you really do need custom functionality and the cost is ok.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record, Debug)]</span>
+<span class="cp">#[uniffi::export(Debug, Eq)]</span>
+<span class="c1">// Your `Eq` impl - there&#39;s no advantage exposing a derived `Eq`</span>
+<span class="k">impl</span><span class="w"> </span><span class="nb">Eq</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">TraitRecord</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="p">}</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">TraitRecord</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
 
 
 

@@ -557,6 +557,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing methods from standard Rust traits
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -786,6 +795,29 @@
   
   <span class="md-ellipsis">
     Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="uniffi_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exposing standard Rust traits
     
   </span>
   
@@ -2130,6 +2162,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing methods from standard Rust traits
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2182,6 +2223,9 @@
 </code></pre></div>
 <h2 id="remote-non-exhaustive-enums">Remote, non-exhaustive enums</h2>
 <p>There are some <a href="../udl/enumerations.html#remote-non-exhaustive-enums">special considerations here when using UDL</a></p>
+<h2 id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</h2>
+<p>While less useful for Enums, there are a number of standard Rust traits (<code>Debug</code>, <code>Eq</code> etc) you can expose, so, eg, Python
+might generate <code>__repr__()</code> or <code>__eq__()</code> methods - <a href="uniffi_traits.html">see the docs for this feature</a>.</p>
 
 
 
