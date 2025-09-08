@@ -15,49 +15,49 @@
 {%- match type_node.ty %}
 
 {%- when Type::Boolean %}
-{%- include "BooleanHelper.py" %}
+{%- include "builtins/Boolean.py" %}
 
 {%- when Type::Int8 %}
-{%- include "Int8Helper.py" %}
+{%- include "builtins/Int8.py" %}
 
 {%- when Type::Int16 %}
-{%- include "Int16Helper.py" %}
+{%- include "builtins/Int16.py" %}
 
 {%- when Type::Int32 %}
-{%- include "Int32Helper.py" %}
+{%- include "builtins/Int32.py" %}
 
 {%- when Type::Int64 %}
-{%- include "Int64Helper.py" %}
+{%- include "builtins/Int64.py" %}
 
 {%- when Type::UInt8 %}
-{%- include "UInt8Helper.py" %}
+{%- include "builtins/UInt8.py" %}
 
 {%- when Type::UInt16 %}
-{%- include "UInt16Helper.py" %}
+{%- include "builtins/UInt16.py" %}
 
 {%- when Type::UInt32 %}
-{%- include "UInt32Helper.py" %}
+{%- include "builtins/UInt32.py" %}
 
 {%- when Type::UInt64 %}
-{%- include "UInt64Helper.py" %}
+{%- include "builtins/UInt64.py" %}
 
 {%- when Type::Float32 %}
-{%- include "Float32Helper.py" %}
+{%- include "builtins/Float32.py" %}
 
 {%- when Type::Float64 %}
-{%- include "Float64Helper.py" %}
+{%- include "builtins/Float64.py" %}
 
 {%- when Type::String %}
-{%- include "StringHelper.py" %}
+{%- include "builtins/String.py" %}
 
 {%- when Type::Bytes %}
-{%- include "BytesHelper.py" %}
+{%- include "builtins/Bytes.py" %}
 
 {%- when Type::Timestamp %}
-{%- include "TimestampHelper.py" %}
+{%- include "builtins/Timestamp.py" %}
 
 {%- when Type::Duration %}
-{%- include "DurationHelper.py" %}
+{%- include "builtins/Duration.py" %}
 
 {%- else %}
 {# Type::Simple shouldn't hold any other Type variants #}
