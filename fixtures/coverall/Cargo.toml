@@ -13,7 +13,7 @@ name = "uniffi_coverall"
 # Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
 uniffi = { workspace = true, features=["scaffolding-ffi-buffer-fns"]}
 once_cell = "1.12"
-thiserror = "1.0"
+thiserror = "2"
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

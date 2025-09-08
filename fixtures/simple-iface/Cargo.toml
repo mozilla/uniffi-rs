@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 uniffi = { workspace = true }
-thiserror = "1.0"
+thiserror = "2"
 lazy_static = "1.4"
 
 [build-dependencies]

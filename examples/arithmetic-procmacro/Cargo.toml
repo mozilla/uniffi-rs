@@ -11,7 +11,7 @@ name = "arithmeticpm"
 
 [dependencies]
 uniffi = { workspace = true }
-thiserror = "1.0"
+thiserror = "2"
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

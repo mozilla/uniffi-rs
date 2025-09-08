@@ -17,7 +17,7 @@ myfeature = []
 [dependencies]
 # Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
 uniffi = { workspace = true, features = ["scaffolding-ffi-buffer-fns"] }
-thiserror = "1.0"
+thiserror = "2"
 lazy_static = "1.4"
 
 [build-dependencies]
