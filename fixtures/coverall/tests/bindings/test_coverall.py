@@ -518,7 +518,7 @@ class Annotations(unittest.TestCase):
         self.assertEqual(get_type_hints(Coveralls.panicking_new), {"message": str, "return": Coveralls})
         self.assertEqual(get_type_hints(NodeTrait.get_parent), {"return": Optional[NodeTrait]})
         self.assertEqual(get_type_hints(NodeTraitImpl.get_parent), {"return":  Optional[NodeTrait]})
-        self.assertEqual(get_type_hints(async_bool), {"return":  Awaitable[bool], "b": bool})
+        self.assertEqual(get_type_hints(async_bool), {"return":  bool, "b": bool})
 
 if __name__=='__main__':
     unittest.main()
