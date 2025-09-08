@@ -36,6 +36,7 @@ plugins:
 
 # This lists all the files that become part of the documentation
 nav:
+- ./index.md
 - ./Motivation.md
 - 'Tutorial':
   - ./Getting_started.md
