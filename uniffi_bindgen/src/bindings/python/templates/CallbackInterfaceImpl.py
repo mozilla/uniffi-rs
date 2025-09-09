@@ -21,9 +21,9 @@ class {{ trait_impl }}:
         ):
         uniffi_obj = {{ ffi_converter_name }}._handle_map.get(uniffi_handle)
         def make_call():
-            args = ({% for arg in callable.arguments %}{{ arg.ty.ffi_converter_name }}.lift({{ arg.name }}), {% endfor %})
-            method = uniffi_obj.{{ callable.name }}
-            return method(*args)
+            uniffi_args = ({% for arg in callable.arguments %}{{ arg.ty.ffi_converter_name }}.lift({{ arg.name }}), {% endfor %})
+            uniffi_method = uniffi_obj.{{ callable.name }}
+            return uniffi_method(*uniffi_args)
 
         {%- match callable.async_data %}
         {%- when None %}
