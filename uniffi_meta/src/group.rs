@@ -7,7 +7,7 @@ use std::collections::{BTreeSet, HashMap};
 use crate::*;
 use anyhow::{bail, Result};
 
-type MetadataGroupMap = HashMap<String, MetadataGroup>;
+pub type MetadataGroupMap = HashMap<String, MetadataGroup>;
 
 // Create empty metadata groups based on the metadata items.
 pub fn create_metadata_groups(items: &[Metadata]) -> MetadataGroupMap {

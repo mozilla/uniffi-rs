@@ -104,6 +104,7 @@ use std::process::Command;
 pub mod bindings;
 pub mod interface;
 pub mod library_mode;
+mod loader;
 pub mod macro_metadata;
 pub mod pipeline;
 pub mod scaffolding;
@@ -119,6 +120,8 @@ pub use interface::ComponentInterface;
 pub use library_mode::find_components;
 use scaffolding::RustScaffolding;
 use uniffi_meta::Type;
+
+pub use loader::BindgenLoader;
 
 /// The options used when creating bindings. Named such
 /// it doesn't cause confusion that it's settings specific to
