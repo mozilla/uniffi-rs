@@ -29,8 +29,8 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use crate::{BindingGenerator, Component, GenerationSettings};
-use anyhow::{Context, Result};
+use crate::{BindgenLoader, BindingGenerator, Component, ComponentInterface, GenerationSettings};
+use anyhow::Result;
 use camino::Utf8PathBuf;
 use fs_err as fs;
 use std::process::Command;
@@ -147,6 +147,7 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     #[cfg(feature = "cargo-metadata")]
     let config_supplier = {
         use crate::cargo_metadata::CrateConfigSupplier;
+        use anyhow::Context;
         let mut cmd = cargo_metadata::MetadataCommand::new();
         if options.metadata_no_deps {
             cmd.no_deps();
@@ -159,17 +160,10 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
 
     fs::create_dir_all(&options.out_dir)?;
 
-    let mut components =
-        crate::library_mode::find_components(&options.library_path, &config_supplier)?
-            // map the TOML configs into a our Config struct
-            .into_iter()
-            .map(|Component { ci, config }| {
-                let config = SwiftBindingGenerator.new_config(&config.into())?;
-                Ok(Component { ci, config })
-            })
-            .collect::<Result<Vec<_>>>()?;
-    SwiftBindingGenerator
-        .update_component_configs(&GenerationSettings::default(), &mut components)?;
+    let loader = BindgenLoader::new(&config_supplier);
+    let metadata = loader.load_metadata(&options.source)?;
+    let cis = loader.load_cis(metadata)?;
+    let components = loader.load_components(cis, parse_config)?;
 
     for Component { ci, config } in &components {
         if options.generate_swift_sources {
@@ -185,24 +179,15 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
         }
     }
 
-    // find the library name by stripping the extension and leading `lib` from the library path
-    let library_name = {
-        let stem = options
-            .library_path
-            .file_stem()
-            .with_context(|| format!("Invalid library path {}", options.library_path))?;
-        match stem.strip_prefix("lib") {
-            Some(name) => name,
-            None => stem,
-        }
-    };
+    // Derive the default module_name/modulemap_filename from the source filename.
+    let source_basename = loader.source_basename(&options.source);
 
     let module_name = options
         .module_name
-        .unwrap_or_else(|| library_name.to_string());
+        .unwrap_or_else(|| source_basename.to_string());
     let modulemap_filename = options
         .modulemap_filename
-        .unwrap_or_else(|| format!("{library_name}.modulemap"));
+        .unwrap_or_else(|| format!("{source_basename}.modulemap"));
 
     if options.generate_modulemap {
         let mut header_filenames: Vec<_> = components
@@ -223,12 +208,23 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     Ok(())
 }
 
+fn parse_config(ci: &ComponentInterface, root_toml: toml::Value) -> Result<Config> {
+    let mut config: Config = match root_toml.get("bindings").and_then(|b| b.get("swift")) {
+        Some(v) => v.clone().try_into()?,
+        None => Default::default(),
+    };
+    config
+        .module_name
+        .get_or_insert_with(|| ci.namespace().into());
+    Ok(config)
+}
+
 #[derive(Debug, Default)]
 pub struct SwiftBindingsOptions {
     pub generate_swift_sources: bool,
     pub generate_headers: bool,
     pub generate_modulemap: bool,
-    pub library_path: Utf8PathBuf,
+    pub source: Utf8PathBuf,
     pub out_dir: Utf8PathBuf,
     pub xcframework: bool,
     pub module_name: Option<String>,

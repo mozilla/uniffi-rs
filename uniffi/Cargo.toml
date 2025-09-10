@@ -68,3 +68,9 @@ name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
 required-features = ["cli"]
 doc = false
+
+[[bin]]
+name = "uniffi-bindgen-swift"
+path = "uniffi-bindgen-swift.rs"
+required-features = ["cli"]
+doc = false
