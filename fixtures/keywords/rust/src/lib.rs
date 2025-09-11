@@ -94,4 +94,22 @@ pub fn get_else(e: r#else) -> r#else {
     e
 }
 
+// python/mypy - not keywords, but type names in strange places.
+#[derive(uniffi::Record, Default)]
+pub struct RecordWithTypeNames {
+    bool: bool,
+    int: i32,
+    float: f32,
+    double: f64,
+    str: String,
+    bytes: Vec<u8>,
+    dict: HashMap<String, bool>,
+    list: Vec<bool>,
+}
+
+#[uniffi::export]
+fn get_type_names() -> RecordWithTypeNames {
+    RecordWithTypeNames::default()
+}
+
 uniffi::include_scaffolding!("keywords");
