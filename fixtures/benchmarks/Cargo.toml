@@ -15,9 +15,6 @@ uniffi = { workspace = true }
 clap = { version = "4", features = ["cargo", "std", "derive"] }
 criterion = "0.5.1"
 
-[build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
-
 [dev-dependencies]
 uniffi_bindgen = {path = "../../uniffi_bindgen", features = ["bindgen-tests"]}
 
