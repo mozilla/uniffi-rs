@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, Token};
+use syn::{parse::ParseStream, Data, DataStruct, DeriveInput, Field, LitStr, Token};
 
 use crate::{
     default::{default_value_metadata_calls, DefaultValue},
@@ -13,11 +13,41 @@ use crate::{
     DeriveOptions,
 };
 
+/// Handle #[uniffi(...)] attributes for records
+#[derive(Clone, Default)]
+pub struct RecordAttr {
+    pub name: Option<String>,
+}
+
+impl UniffiAttributeArgs for RecordAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self { name })
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                format!("attribute `{input}` is not supported here."),
+            ))
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            name: either_attribute_arg(self.name, other.name)?,
+        })
+    }
+}
+
 /// Stores parsed data from the Derive Input for the struct.
 struct RecordItem {
     ident: Ident,
     record: DataStruct,
     docstring: String,
+    attr: RecordAttr,
 }
 
 impl RecordItem {
@@ -31,10 +61,12 @@ impl RecordItem {
                 ));
             }
         };
+        let attr = input.attrs.parse_uniffi_attr_args::<RecordAttr>()?;
         Ok(Self {
             ident: input.ident,
             record,
             docstring: extract_docstring(&input.attrs)?,
+            attr,
         })
     }
 
@@ -42,8 +74,11 @@ impl RecordItem {
         &self.ident
     }
 
-    fn name(&self) -> String {
-        ident_to_string(&self.ident)
+    fn foreign_name(&self) -> String {
+        match &self.attr.name {
+            Some(name) => name.clone(),
+            None => ident_to_string(&self.ident),
+        }
     }
 
     fn struct_(&self) -> &DataStruct {
@@ -56,9 +91,6 @@ impl RecordItem {
 }
 
 pub fn expand_record(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
-    if let Some(e) = input.attrs.uniffi_attr_args_not_allowed_here() {
-        return Err(e);
-    }
     let record = RecordItem::new(input)?;
     let ffi_converter =
         record_ffi_converter_impl(&record, &options).unwrap_or_else(syn::Error::into_compile_error);
@@ -79,7 +111,7 @@ fn record_ffi_converter_impl(
     let ident = record.ident();
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
-    let name = ident_to_string(ident);
+    let name = &record.foreign_name();
     let mod_path = mod_path()?;
     let write_impl: TokenStream = record.struct_().fields.iter().map(write_field).collect();
     let try_read_fields: TokenStream = record.struct_().fields.iter().map(try_read_field).collect();
@@ -142,7 +174,7 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
 }
 
 fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
-    let name = record.name();
+    let name = &record.foreign_name();
     let docstring = record.docstring();
     let module_path = mod_path()?;
     let fields_len = try_metadata_value_from_usize(
@@ -177,7 +209,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
 
     Ok(create_metadata_items(
         "record",
-        &name,
+        name,
         quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
                 .concat_str(#module_path)
