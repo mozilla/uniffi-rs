@@ -246,6 +246,7 @@ pub struct Enum {
     pub self_type: TypeNode,
     pub uniffi_traits: Vec<UniffiTrait>,
     pub uniffi_trait_methods: UniffiTraitMethods,
+    pub union_capable: bool,
 }
 
 #[derive(Debug, Clone, Node)]

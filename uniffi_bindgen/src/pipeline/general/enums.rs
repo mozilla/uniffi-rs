@@ -3,7 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use super::*;
-use std::cmp::{max, min};
+use std::{
+    cmp::{max, min},
+    collections::HashSet,
+};
 
 pub fn pass(en: &mut Enum) -> Result<()> {
     en.is_flat = match en.shape {
@@ -19,6 +22,29 @@ pub fn pass(en: &mut Enum) -> Result<()> {
             FieldsKind::Named
         };
     }
+
+    // Set union_capable to true for flat enums or when a all variants have different types
+    let mut seen = HashSet::new();
+    en.union_capable = en.is_flat
+        || en.variants.iter().all(|v| {
+            if v.fields.is_empty() {
+                return false;
+            }
+
+            let types = v
+                .fields
+                .iter()
+                .map(|f| f.ty.canonical_name.clone())
+                .collect::<Vec<_>>();
+
+            if seen.contains(&types) {
+                false
+            } else {
+                seen.insert(types);
+                true
+            }
+        });
+
     determine_discriminants(en)?;
     Ok(())
 }
