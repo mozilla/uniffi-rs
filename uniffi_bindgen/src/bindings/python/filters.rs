@@ -19,7 +19,11 @@ use askama::Result;
 ///
 /// This makes it so the template code can use something like
 /// `{{ item.docstring|docstring(4) -}}` to render the correct docstring in both cases.
-pub fn docstring(docstring: &Option<String>, indent: usize) -> Result<String> {
+pub fn docstring(
+    docstring: &Option<String>,
+    _: &dyn askama::Values,
+    indent: usize,
+) -> Result<String> {
     let Some(docstring) = docstring.as_deref() else {
         return Ok("".to_string());
     };

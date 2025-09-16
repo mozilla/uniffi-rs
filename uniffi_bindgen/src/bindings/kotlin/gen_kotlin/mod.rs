@@ -610,54 +610,80 @@ mod filters {
 
     pub(super) fn type_name(
         as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().type_label(ci))
     }
 
-    pub(super) fn canonical_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn canonical_name(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
-    pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn ffi_converter_name(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
     }
 
-    pub(super) fn ffi_type(type_: &impl AsType) -> askama::Result<FfiType, askama::Error> {
+    pub(super) fn ffi_type(
+        type_: &impl AsType,
+        _: &dyn askama::Values,
+    ) -> askama::Result<FfiType, askama::Error> {
         Ok(type_.as_type().into())
     }
 
-    pub(super) fn lower_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn lower_fn(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.lower",
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    pub(super) fn allocation_size_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn allocation_size_fn(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.allocationSize",
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    pub(super) fn write_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn write_fn(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(format!(
             "{}.write",
             as_ct.as_codetype().ffi_converter_name()
         ))
     }
 
-    pub(super) fn lift_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn lift_fn(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(format!("{}.lift", as_ct.as_codetype().ffi_converter_name()))
     }
 
-    pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
+    pub(super) fn read_fn(
+        as_ct: &impl AsCodeType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
     pub fn render_default(
         default: &DefaultValue,
+        _: &dyn askama::Values,
         as_ct: &impl AsType,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
@@ -668,7 +694,11 @@ mod filters {
     }
 
     // Get the idiomatic Kotlin rendering of an integer.
-    fn int_literal(t: &Option<Type>, base10: String) -> Result<String, askama::Error> {
+    fn int_literal(
+        t: &Option<Type>,
+        _: &dyn askama::Values,
+        base10: String,
+    ) -> Result<String, askama::Error> {
         if let Some(t) = t {
             match t {
                 Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 => Ok(base10),
@@ -685,13 +715,21 @@ mod filters {
     }
 
     // Get the idiomatic Kotlin rendering of an individual enum variant's discriminant
-    pub fn variant_discr_literal(e: &Enum, index: &usize) -> Result<String, askama::Error> {
+    pub fn variant_discr_literal(
+        e: &Enum,
+        values: &dyn askama::Values,
+        index: &usize,
+    ) -> Result<String, askama::Error> {
         let literal = e.variant_discr(*index).expect("invalid index");
         match literal {
             // Kotlin doesn't convert between signed and unsigned by default
             // so we'll need to make sure we define the type as appropriately
-            LiteralMetadata::UInt(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
-            LiteralMetadata::Int(v, _, _) => int_literal(e.variant_discr_type(), v.to_string()),
+            LiteralMetadata::UInt(v, _, _) => {
+                int_literal(e.variant_discr_type(), values, v.to_string())
+            }
+            LiteralMetadata::Int(v, _, _) => {
+                int_literal(e.variant_discr_type(), values, v.to_string())
+            }
             _ => Err(to_askama_error(&format!(
                 "Only ints are supported: {literal:?}"
             ))),
@@ -700,6 +738,7 @@ mod filters {
 
     pub fn ffi_type_name_by_value(
         type_: &FfiType,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
@@ -707,60 +746,78 @@ mod filters {
 
     pub fn ffi_type_name_for_ffi_struct(
         type_: &FfiType,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_, ci))
     }
 
-    pub fn ffi_default_value(type_: FfiType) -> Result<String, askama::Error> {
+    pub fn ffi_default_value(
+        type_: FfiType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_default_value(&type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
     pub fn class_name<S: AsRef<str>>(
         nm: S,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.class_name(ci, nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
-    pub fn fn_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
+    pub fn fn_name<S: AsRef<str>>(nm: S, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.fn_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
+    pub fn var_name<S: AsRef<str>>(nm: S, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of a variable name.
-    pub fn var_name_raw<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
+    pub fn var_name_raw<S: AsRef<str>>(
+        nm: S,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name_raw(nm.as_ref()))
     }
 
     /// Get a String representing the name used for an individual enum variant.
-    pub fn variant_name(v: &Variant) -> Result<String, askama::Error> {
+    pub fn variant_name(v: &Variant, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
     }
 
-    pub fn error_variant_name(v: &Variant) -> Result<String, askama::Error> {
+    pub fn error_variant_name(
+        v: &Variant,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         let name = v.name().to_string().to_upper_camel_case();
         Ok(KotlinCodeOracle.convert_error_suffix(&name))
     }
 
     /// Get the idiomatic Kotlin rendering of an FFI callback function name
-    pub fn ffi_callback_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
+    pub fn ffi_callback_name<S: AsRef<str>>(
+        nm: S,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_callback_name(nm.as_ref()))
     }
 
     /// Get the idiomatic Kotlin rendering of an FFI struct name
-    pub fn ffi_struct_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
+    pub fn ffi_struct_name<S: AsRef<str>>(
+        nm: S,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
     }
 
     pub fn async_poll(
         callable: impl Callable,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_poll(ci);
@@ -771,6 +828,7 @@ mod filters {
 
     pub fn async_complete(
         callable: impl Callable,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_complete(ci);
@@ -794,6 +852,7 @@ mod filters {
 
     pub fn async_free(
         callable: impl Callable,
+        _: &dyn askama::Values,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_free(ci);
@@ -807,12 +866,16 @@ mod filters {
     /// These are used to avoid name clashes with kotlin identifiers, but sometimes you want to
     /// render the name unquoted.  One example is the message property for errors where we want to
     /// display the name for the user.
-    pub fn unquote<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
+    pub fn unquote<S: AsRef<str>>(nm: S, _: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(nm.as_ref().trim_matches('`').to_string())
     }
 
     /// Get the idiomatic Kotlin rendering of docstring
-    pub fn docstring<S: AsRef<str>>(docstring: S, spaces: &i32) -> Result<String, askama::Error> {
+    pub fn docstring<S: AsRef<str>>(
+        docstring: S,
+        _: &dyn askama::Values,
+        spaces: &i32,
+    ) -> Result<String, askama::Error> {
         let middle = textwrap::indent(&textwrap::dedent(docstring.as_ref()), " * ");
         let wrapped = format!("/**\n{middle}\n */");
 
