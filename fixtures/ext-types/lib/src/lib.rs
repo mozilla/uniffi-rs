@@ -8,7 +8,7 @@ use uniffi_one::{
     UniffiOneEnum, UniffiOneError, UniffiOneErrorInterface, UniffiOneInterface,
     UniffiOneProcMacroType, UniffiOneTLA, UniffiOneTrait, UniffiOneType, UniffiOneUDLTrait,
 };
-use uniffi_sublib::SubLibType;
+use uniffi_sublib::{NotToThrowError, SubLibType};
 use url::Url;
 
 // Remote types require a macro call in the Rust source
@@ -227,5 +227,18 @@ fn get_uniffi_one_udl_trait(
 ) -> Option<Arc<dyn UniffiOneUDLTrait>> {
     t
 }
+
+#[derive(uniffi::Error)]
+pub enum ContainsExternalError {
+    ExternalError(NotToThrowError),
+}
+
+#[derive(uniffi::Record)]
+pub struct ContainsExternalError2 {
+    error: NotToThrowError,
+}
+
+#[uniffi::export]
+fn takes_external_error(_error: NotToThrowError) {}
 
 uniffi::include_scaffolding!("ext-types-lib");

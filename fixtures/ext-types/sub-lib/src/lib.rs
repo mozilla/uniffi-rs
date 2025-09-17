@@ -26,4 +26,19 @@ fn get_trait_impl() -> Arc<dyn UniffiOneTrait> {
     Arc::new(OneImpl {})
 }
 
+#[derive(uniffi::Error, Debug)]
+pub enum NotToThrowError {
+    Variant(u64),
+}
+
+impl std::fmt::Display for NotToThrowError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NotToThrowError::Variant(code) => {
+                write!(f, "NotToThrowError with code {code}")
+            }
+        }
+    }
+}
+
 uniffi::setup_scaffolding!("imported_types_sublib");
