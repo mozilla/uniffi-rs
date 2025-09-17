@@ -1900,6 +1900,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-regression-doc-annotation-fails"
+version = "0.22.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-regression-i1015-fully-qualified-types"
 version = "0.22.0"
 dependencies = [
