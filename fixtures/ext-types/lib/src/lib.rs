@@ -233,4 +233,12 @@ pub enum ContainsExternalError {
     ExternalError(NotToThrowError),
 }
 
+#[derive(uniffi::Record)]
+pub struct ContainsExternalError2 {
+    error: NotToThrowError,
+}
+
+#[uniffi::export]
+fn takes_external_error(_error: NotToThrowError) {}
+
 uniffi::include_scaffolding!("ext-types-lib");
