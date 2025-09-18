@@ -30,3 +30,16 @@ pub fn docstring(docstring: &Option<String>, indent: usize) -> Result<String> {
     let indented = textwrap::indent(&escaped, &indent);
     Ok(format!("\"\"\"\n{indented}\n\"\"\"\n{indent}"))
 }
+
+/// Get the idiomatic Python import statement for a module
+pub fn import_statement(module: &str) -> Result<String> {
+    Ok(if module.starts_with('.') {
+        let Some((from, name)) = module.rsplit_once('.') else {
+            unreachable!()
+        };
+        let from = if from.is_empty() { "." } else { from };
+        format!("from {from} import {name}")
+    } else {
+        format!("import {module}")
+    })
+}
