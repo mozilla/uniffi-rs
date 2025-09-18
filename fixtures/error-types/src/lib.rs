@@ -241,6 +241,32 @@ fn oops_tuple(i: u16) -> Result<(), TupleError> {
     }
 }
 
+#[derive(Debug)]
+struct CustomError(u16);
+
+impl std::fmt::Display for CustomError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+uniffi::custom_type!(CustomError, TupleError, {
+    try_lift: |val| {
+        let TupleError::Value(v) = val else {
+            return Err(anyhow::anyhow!("not a Value variant"));
+        };
+        Ok(CustomError(v))
+    },
+    lower: |val| {
+        TupleError::Value(val.0)
+    }
+});
+
+#[uniffi::export]
+fn oops_custom(i: u16) -> Result<(), CustomError> {
+    Err(CustomError(i))
+}
+
 #[uniffi::export(default(t = None))]
 fn get_tuple(t: Option<TupleError>) -> TupleError {
     t.unwrap_or_else(|| TupleError::Oops("oops".to_string()))
