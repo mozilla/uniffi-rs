@@ -656,6 +656,16 @@ impl CustomTypeConfig {
     }
 }
 
+impl Type {
+    pub fn canonical(&self) -> &Self {
+        if let Type::Custom { builtin, .. } = self {
+            builtin
+        } else {
+            self
+        }
+    }
+}
+
 impl Variant {
     fn has_unnamed_fields(&self) -> bool {
         matches!(self.fields_kind, FieldsKind::Unnamed)

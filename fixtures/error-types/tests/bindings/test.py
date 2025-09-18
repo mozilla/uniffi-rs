@@ -130,5 +130,9 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(str(cm.exception), "1")
         self.assertEqual(repr(cm.exception), "TupleError.Value(1)")
 
+        # custom error type
+        with self.assertRaises(TupleError) as cm:
+            oops_custom(1)
+
 if __name__=='__main__':
     unittest.main()

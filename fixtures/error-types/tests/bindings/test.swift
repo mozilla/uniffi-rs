@@ -95,6 +95,12 @@ do {
 }
 
 do {
+    try oopsCustom(i: 1)
+    fatalError("Should have thrown")
+} catch {
+}
+
+do {
     try oopsNowrap()
     fatalError("Should have thrown")
 } catch let e as ErrorInterface {

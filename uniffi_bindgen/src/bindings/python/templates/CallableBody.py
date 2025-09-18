@@ -29,7 +29,7 @@ _uniffi_lift_return = lambda val: None
 
 {%- match callable.throws_type.ty %}
 {%- when Some(e) %}
-{%-    match e.ty %}
+{%-    match e.ty.canonical() %}
 {%-    when Type::Enum { .. } %}
 _uniffi_error_converter = {{ e.ffi_converter_name }}
 {%-    when Type::Interface { .. } %}
