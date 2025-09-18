@@ -31,7 +31,7 @@ import asyncio
 {%- endif %}
 import platform
 {%- for import in imports %}
-import {{ import }}
+{{ import|import_statement }}
 {%- endfor %}
 
 
