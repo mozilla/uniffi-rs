@@ -26,6 +26,8 @@
   Custom types too ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
 - Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
 - Python: methods now have typing annotations for return values ([#2625](https://github.com/mozilla/uniffi-rs/issues/2625))
+- Swift: initialization functions now have a stable ordering when using external types.
+  This makes the generated source files more deterministic.
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
