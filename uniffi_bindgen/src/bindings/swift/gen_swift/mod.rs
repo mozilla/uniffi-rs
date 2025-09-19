@@ -506,8 +506,8 @@ impl<'a> SwiftWrapper<'a> {
                     module_path.to_upper_camel_case()
                 )
             })
-            // Collect into a hash set to de-dup
-            .collect::<HashSet<_>>();
+            // Collect into a btree set to de-dup and order
+            .collect::<BTreeSet<_>>();
 
         init_fns.chain(extern_module_init_fns).collect()
     }
