@@ -36,3 +36,17 @@ pub struct OptionalRecord {
 ```
 
 Most types can have [default values](../types/defaults.md)
+
+## Renaming records
+
+Records can be renamed in foreign language bindings using the `name` parameter:
+
+```rust
+#[derive(uniffi::Record)]
+#[uniffi(name = "RenamedRecord")]
+pub struct MyRecord {
+    // ...
+}
+```
+
+See [Renaming](./renaming.md) for more details on all renaming capabilites.

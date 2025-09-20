@@ -76,6 +76,7 @@ nav:
     - ./proc_macro/functions.md
     - ./proc_macro/interfaces.md
     - ./proc_macro/records.md
+    - ./proc_macro/renaming.md
     - ./proc_macro/docstrings.md
 - ./futures.md
 

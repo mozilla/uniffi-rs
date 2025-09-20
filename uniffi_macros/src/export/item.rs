@@ -107,9 +107,17 @@ impl ExportItem {
 
                 let docstring = extract_docstring(&impl_fn.attrs)?;
                 let attrs = ExportedImplFnAttributes::new(&impl_fn.attrs)?;
+
+                let foreign_self_ident = if let Some(name) = &args.name {
+                    Ident::new(name, self_ident.span())
+                } else {
+                    self_ident.clone()
+                };
+
                 let item = if attrs.constructor {
                     ImplItem::Constructor(FnSignature::new_constructor(
                         self_ident.clone(),
+                        foreign_self_ident,
                         impl_fn.sig,
                         attrs.args,
                         docstring,
@@ -117,6 +125,7 @@ impl ExportItem {
                 } else {
                     ImplItem::Method(FnSignature::new_method(
                         self_ident.clone(),
+                        foreign_self_ident,
                         impl_fn.sig,
                         attrs.args,
                         docstring,
@@ -181,7 +190,7 @@ impl ExportItem {
                     ImplItem::Method(FnSignature::new_trait_method(
                         self_ident.clone(),
                         tim.sig,
-                        ExportFnArgs::default(),
+                        attrs.args,
                         i as u32,
                         docstring,
                     )?)

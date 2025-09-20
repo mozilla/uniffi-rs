@@ -5,24 +5,57 @@ use syn::DeriveInput;
 use crate::{
     ffiops,
     util::{
-        create_metadata_items, extract_docstring, ident_to_string, mod_path,
-        wasm_single_threaded_annotation,
+        create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
+        mod_path, wasm_single_threaded_annotation, AttributeSliceExt, UniffiAttributeArgs,
     },
     DeriveOptions,
 };
+use syn::{parse::ParseStream, LitStr, Token};
 use uniffi_meta::ObjectImpl;
+
+/// Handle #[uniffi(...)] attributes for objects
+#[derive(Clone, Default)]
+pub struct ObjectAttr {
+    pub name: Option<String>,
+}
+
+impl UniffiAttributeArgs for ObjectAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self { name })
+        } else {
+            Err(syn::Error::new(
+                input.span(),
+                format!("attribute `{input}` is not supported here."),
+            ))
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
+            name: either_attribute_arg(self.name, other.name)?,
+        })
+    }
+}
 
 /// Stores parsed data from the Derive Input for the struct/enum.
 struct ObjectItem {
     ident: Ident,
     docstring: String,
+    attr: ObjectAttr,
 }
 
 impl ObjectItem {
     fn new(input: DeriveInput) -> syn::Result<Self> {
+        let attr = input.attrs.parse_uniffi_attr_args::<ObjectAttr>()?;
         Ok(Self {
             ident: input.ident,
             docstring: extract_docstring(&input.attrs)?,
+            attr,
         })
     }
 
@@ -34,6 +67,13 @@ impl ObjectItem {
         ident_to_string(&self.ident)
     }
 
+    fn foreign_name(&self) -> String {
+        match &self.attr.name {
+            Some(name) => name.clone(),
+            None => self.name(),
+        }
+    }
+
     fn docstring(&self) -> &str {
         self.docstring.as_str()
     }
@@ -42,24 +82,19 @@ impl ObjectItem {
 pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<TokenStream> {
     let module_path = mod_path()?;
     let object = ObjectItem::new(input)?;
-    let name = object.name();
+    let name = &object.foreign_name();
     let ident = object.ident();
     let clone_fn_ident = Ident::new(
-        &uniffi_meta::clone_fn_symbol_name(&module_path, &name),
+        &uniffi_meta::clone_fn_symbol_name(&module_path, name),
         Span::call_site(),
     );
     let free_fn_ident = Ident::new(
-        &uniffi_meta::free_fn_symbol_name(&module_path, &name),
+        &uniffi_meta::free_fn_symbol_name(&module_path, name),
         Span::call_site(),
     );
     let meta_static_var = options.generate_metadata.then(|| {
-        interface_meta_static_var(
-            object.ident(),
-            ObjectImpl::Struct,
-            &module_path,
-            object.docstring(),
-        )
-        .unwrap_or_else(syn::Error::into_compile_error)
+        interface_meta_static_var(name, ObjectImpl::Struct, &module_path, object.docstring())
+            .unwrap_or_else(syn::Error::into_compile_error)
     });
     let interface_impl = interface_impl(&object, &options);
 
@@ -100,7 +135,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
 }
 
 fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
-    let name = object.name();
+    let name = object.foreign_name();
     let ident = object.ident();
     let impl_spec = options.ffi_impl_header("FfiConverterArc", ident);
     let lower_return_impl_spec = options.ffi_impl_header("LowerReturn", ident);
@@ -217,12 +252,11 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
 }
 
 pub(crate) fn interface_meta_static_var(
-    ident: &Ident,
+    name: &str,
     imp: ObjectImpl,
     module_path: &str,
     docstring: &str,
 ) -> syn::Result<TokenStream> {
-    let name = ident_to_string(ident);
     let code = match imp {
         ObjectImpl::Struct => quote! { ::uniffi::metadata::codes::INTERFACE },
         ObjectImpl::Trait => quote! { ::uniffi::metadata::codes::TRAIT_INTERFACE },
@@ -231,7 +265,7 @@ pub(crate) fn interface_meta_static_var(
 
     Ok(create_metadata_items(
         "interface",
-        &name,
+        name,
         quote! {
             ::uniffi::MetadataBuffer::from_code(#code)
                 .concat_str(#module_path)

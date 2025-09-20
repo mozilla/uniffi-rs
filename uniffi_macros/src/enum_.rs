@@ -2,7 +2,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
     parse::ParseStream, spanned::Spanned, Attribute, Data, DataEnum, DeriveInput, Expr, Index, Lit,
-    Variant,
+    LitStr, Token, Variant,
 };
 
 use crate::{
@@ -113,8 +113,11 @@ impl EnumItem {
         self.discr_type.as_ref()
     }
 
-    pub fn name(&self) -> String {
-        ident_to_string(&self.ident)
+    pub fn foreign_name(&self) -> String {
+        match &self.attr.name {
+            Some(name) => name.clone(),
+            None => ident_to_string(&self.ident),
+        }
     }
 
     pub fn is_flat_error(&self) -> bool {
@@ -165,7 +168,7 @@ fn enum_or_error_ffi_converter_impl(
     options: &DeriveOptions,
     metadata_type_code: TokenStream,
 ) -> TokenStream {
-    let name = item.name();
+    let name = &item.foreign_name();
     let ident = item.ident();
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
@@ -269,7 +272,7 @@ fn enum_or_error_ffi_converter_impl(
 }
 
 pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
-    let name = item.name();
+    let name = &item.foreign_name();
     let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
@@ -293,7 +296,7 @@ pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> 
         .concat_bool(#non_exhaustive)
         .concat_long_str(#docstring)
     });
-    Ok(create_metadata_items("enum", &name, metadata_expr, None))
+    Ok(create_metadata_items("enum", name, metadata_expr, None))
 }
 
 fn variant_value(v: &Variant) -> syn::Result<TokenStream> {
@@ -413,6 +416,7 @@ pub struct EnumAttr {
     // can reuse EnumItem for errors.
     pub flat_error: Option<kw::flat_error>,
     pub with_try_read: Option<kw::with_try_read>,
+    pub name: Option<String>,
 }
 
 impl UniffiAttributeArgs for EnumAttr {
@@ -431,6 +435,14 @@ impl UniffiAttributeArgs for EnumAttr {
         } else if lookahead.peek(kw::handle_unknown_callback_error) {
             // Not used anymore, but still allowed
             Ok(Self::default())
+        } else if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self {
+                name,
+                ..Self::default()
+            })
         } else {
             Err(lookahead.error())
         }
@@ -440,6 +452,7 @@ impl UniffiAttributeArgs for EnumAttr {
         Ok(Self {
             flat_error: either_attribute_arg(self.flat_error, other.flat_error)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
+            name: either_attribute_arg(self.name, other.name)?,
         })
     }
 }

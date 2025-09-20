@@ -189,6 +189,7 @@ fn process_uniffi_trait_method(
     let ffi_func = gen_ffi_function(
         &FnSignature::new_method(
             self_ident.clone(),
+            self_ident.clone(),
             item.sig.clone(),
             ExportFnArgs::default(),
             docstring.clone(),
@@ -199,6 +200,7 @@ fn process_uniffi_trait_method(
     )?;
     // metadata for the method, which will be packed inside metadata for the trait.
     let method_meta = FnSignature::new_method(
+        self_ident.clone(),
         self_ident.clone(),
         item.sig,
         ExportFnArgs::default(),

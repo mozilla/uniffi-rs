@@ -83,3 +83,17 @@ public enum MyEnum : UInt8 {
     case bar = 4
 }
 ```
+
+## Renaming enums
+
+Enums can be renamed in foreign language bindings using the `name` parameter:
+
+```rust
+#[derive(uniffi::Enum)]
+#[uniffi(name = "RenamedEnum")]
+pub enum MyEnum {
+    // ...
+}
+```
+
+See [Renaming](./renaming.md) for more details on renaming functionality.

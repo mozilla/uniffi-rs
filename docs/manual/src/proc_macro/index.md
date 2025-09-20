@@ -52,6 +52,7 @@ For more details:
 * [Interfaces](./interfaces.md)
 * [Functions, constructors, methods](./functions.md)
 * [Errors](./errors.md)
+* [Renaming](./renaming.md)
 
 ## The `uniffi::Object` derive to extend interfaces defined in UDL
 

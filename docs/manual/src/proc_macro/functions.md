@@ -93,3 +93,5 @@ impl Something {
     fn do_something(&self) { }
 }
 ```
+
+See [Renaming](./renaming.md) for more details on all renaming capabilites.
