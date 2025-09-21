@@ -68,4 +68,83 @@ pub fn create_trait_impl(multiplier: i32) -> std::sync::Arc<dyn Trait> {
     std::sync::Arc::new(TraitImpl { multiplier })
 }
 
+/// BINDINGS TESTS
+///
+/// The way our tests are setup makes it inconvenient to reuse the above,
+/// so we duplicate much of the above for testing renaming tests in bindings.
+///
+/// All types have a "bindings" prefix, the actual bindings will replace with, eg, "python"
+#[uniffi::export]
+pub fn binding_function(record: Option<BindingRecord>) -> Result<BindingEnum, BindingError> {
+    match record {
+        Some(r) => Ok(BindingEnum::Record(r)),
+        None => Err(BindingError::Simple),
+    }
+}
+
+#[derive(uniffi::Record)]
+pub struct BindingRecord {
+    item: i32,
+}
+
+#[derive(uniffi::Enum)]
+pub enum BindingEnum {
+    VariantA,
+    Record(BindingRecord),
+}
+
+#[derive(uniffi::Enum)]
+pub enum BindingEnumWithFields {
+    VariantA {
+        binding_int: u32,
+    },
+    Record {
+        binding_record: BindingRecord,
+        binding_int: u32,
+    },
+}
+
+#[derive(thiserror::Error, uniffi::Error, Debug)]
+pub enum BindingError {
+    #[error("Simple error")]
+    Simple,
+}
+
+#[derive(uniffi::Object)]
+pub struct BindingObject {
+    value: i32,
+}
+
+#[uniffi::export]
+impl BindingObject {
+    #[uniffi::constructor]
+    pub fn new(value: i32) -> Self {
+        BindingObject { value }
+    }
+
+    pub fn method(&self, arg: i32) -> Result<i32, BindingError> {
+        Ok(self.value + arg)
+    }
+}
+
+#[uniffi::export]
+pub trait BindingTrait: Send + Sync {
+    fn trait_method(&self, value: i32) -> i32;
+}
+
+struct BindingTraitImpl {
+    multiplier: i32,
+}
+
+impl BindingTrait for BindingTraitImpl {
+    fn trait_method(&self, value: i32) -> i32 {
+        value * self.multiplier
+    }
+}
+
+#[uniffi::export]
+pub fn create_binding_trait_impl(multiplier: i32) -> std::sync::Arc<dyn BindingTrait> {
+    std::sync::Arc::new(BindingTraitImpl { multiplier })
+}
+
 uniffi::setup_scaffolding!();

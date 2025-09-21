@@ -30,7 +30,7 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
         for meth in cbi.methods.iter_mut() {
             meth.callable.kind = match meth.callable.kind.take() {
                 CallableKind::Method { self_type } => CallableKind::VTableMethod {
-                    trait_name: self_type.ty.name().unwrap().to_string(),
+                    self_type: self_type.clone(),
                 },
                 kind => bail!("Unexpected callable kind: {kind:?}"),
             };
@@ -41,7 +41,7 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
         for meth in vtable.methods.iter_mut() {
             meth.callable.kind = match meth.callable.kind.take() {
                 CallableKind::Method { self_type } => CallableKind::VTableMethod {
-                    trait_name: self_type.ty.name().unwrap().to_string(),
+                    self_type: self_type.clone(),
                 },
                 kind => bail!("Unexpected callable kind: {kind:?}"),
             };

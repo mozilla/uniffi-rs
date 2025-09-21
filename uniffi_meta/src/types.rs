@@ -166,6 +166,7 @@ impl Type {
             Type::Record { name, .. } => *name = new_name,
             Type::Enum { name, .. } => *name = new_name,
             Type::Custom { name, .. } => *name = new_name,
+            Type::CallbackInterface { name, .. } => *name = new_name,
             _ => {}
         }
     }

@@ -17,6 +17,11 @@ pub struct UniffiOneProcMacroType {
     pub sval: String,
 }
 
+#[derive(uniffi::Record)]
+pub struct BindingRenamedType {
+    pub value: String,
+}
+
 #[derive(Default)]
 pub struct UniffiOneInterface {
     current: AtomicI32,

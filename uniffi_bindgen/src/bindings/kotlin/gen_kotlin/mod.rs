@@ -84,6 +84,8 @@ pub struct Config {
     kotlin_target_version: Option<String>,
     #[serde(default)]
     disable_java_cleaner: bool,
+    #[serde(default)]
+    pub(super) rename: toml::Table,
 }
 
 impl Config {

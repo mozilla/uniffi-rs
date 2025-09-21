@@ -63,7 +63,7 @@ pub fn pass(root: &mut Root) -> Result<()> {
                     name: cons.name.clone(),
                     is_async: cons.is_async,
                     kind: CallableKind::Constructor {
-                        interface_name: interface_name.clone(),
+                        self_type: self_type.clone(),
                         primary: cons.name == "new",
                     },
                     arguments: cons.inputs.clone(),
@@ -94,7 +94,6 @@ pub fn pass(root: &mut Root) -> Result<()> {
     });
     root.visit_mut(|cbi: &mut CallbackInterface| {
         let self_type = cbi.self_type.clone();
-
         cbi.visit_mut(|m: &mut Method| {
             m.callable = new_callable_method(m, self_type.clone());
         })

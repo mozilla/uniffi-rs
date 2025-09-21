@@ -50,17 +50,15 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
                     &callable.name,
                 )
             }
-            CallableKind::VTableMethod { trait_name: name } => {
-                uniffi_meta::method_checksum_symbol_name(
-                    &namespace.crate_name,
-                    name,
-                    &callable.name,
-                )
-            }
-            CallableKind::Constructor { interface_name, .. } => {
+            CallableKind::VTableMethod { self_type } => uniffi_meta::method_checksum_symbol_name(
+                &namespace.crate_name,
+                self_type.ty.name().unwrap(),
+                &callable.name,
+            ),
+            CallableKind::Constructor { self_type, .. } => {
                 uniffi_meta::constructor_checksum_symbol_name(
                     &namespace.crate_name,
-                    interface_name,
+                    self_type.ty.name().unwrap(),
                     &callable.name,
                 )
             }

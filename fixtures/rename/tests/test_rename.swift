@@ -26,3 +26,52 @@ assert(methodResult == 123)
 // Test trait method renaming (trait itself keeps original name)
 let traitImpl = createTraitImpl(multiplier: 5)
 assert(traitImpl.renamedTraitMethod(value: 10) == 50) // 10 * 5
+
+// Test TOML-based renaming for Swift
+// These use the Swift-specific renames from uniffi.toml
+
+// Test renamed record via TOML
+let swiftRecord = SwiftRecord(swiftItem: 100)
+assert(swiftRecord.swiftItem == 100)
+
+// Test renamed enum via TOML
+let swiftEnum1 = SwiftEnum.swiftVariantA
+let swiftEnum2 = SwiftEnum.swiftRecord(swiftRecord)
+let swiftEnum3 = SwiftEnumWithFields.swiftVariantA(swiftInt: 1)
+
+// Test renamed function with renamed argument via TOML
+do {
+    let swiftResult = try swiftFunction(swiftRecord: swiftRecord)
+    if case .swiftRecord(let recordResult) = swiftResult {
+        assert(recordResult.swiftItem == 100)
+    }
+} catch let error as SwiftError {
+    if case .SwiftSimple = error {
+        // Expected for nil input
+    }
+}
+
+// Test that we can also get an error from the function
+do {
+    let _ = try swiftFunction(swiftRecord: nil)
+    fatalError("Should have thrown an error")
+} catch let error as SwiftError {
+    if case .SwiftSimple = error {
+        // Expected
+    } else {
+        fatalError("Wrong error type")
+    }
+}
+
+// Test renamed object with renamed method and argument via TOML
+let swiftObj = SwiftObject(value: 200)
+do {
+    let swiftMethodResult = try swiftObj.swiftMethod(swiftArg: 50)
+    assert(swiftMethodResult == 250) // 200 + 50
+} catch {
+    fatalError("Should not have thrown an error")
+}
+
+// Test renamed trait with renamed method via TOML
+let swiftTraitImpl = createBindingTraitImpl(multiplier: 3)
+assert(swiftTraitImpl.swiftTraitMethod(value: 7) == 21) // 7 * 3

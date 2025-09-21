@@ -64,6 +64,12 @@ impl ComponentInterface {
                 function.return_type = Some(return_type);
             }
 
+            if let Some(error_type) = function.throws_type() {
+                let mut error_type = error_type.clone();
+                visitor.visit_type(&mut error_type);
+                function.throws = Some(error_type);
+            }
+
             for argument in function.arguments.iter_mut() {
                 visitor.visit_argument(argument);
                 visitor.visit_type(&mut argument.type_);
@@ -71,10 +77,13 @@ impl ComponentInterface {
         }
 
         for object in self.objects.iter_mut() {
+            // Capture original object name before any renaming
+            let object_name = object.name().to_string();
+
             visitor.visit_object(object);
 
             for method in object.methods.iter_mut() {
-                visitor.visit_method(method);
+                visitor.visit_method(&object_name, method);
 
                 for argument in method.arguments.iter_mut() {
                     visitor.visit_argument(argument);
@@ -86,10 +95,16 @@ impl ComponentInterface {
                     visitor.visit_type(&mut return_type);
                     method.return_type = Some(return_type);
                 }
+
+                if let Some(error_type) = method.throws_type() {
+                    let mut error_type = error_type.clone();
+                    visitor.visit_type(&mut error_type);
+                    method.throws = Some(error_type);
+                }
             }
 
             for constructor in object.constructors.iter_mut() {
-                visitor.visit_constructor(constructor);
+                visitor.visit_constructor(&object_name, constructor);
 
                 for argument in constructor.arguments.iter_mut() {
                     visitor.visit_argument(argument);
@@ -99,8 +114,9 @@ impl ComponentInterface {
         }
 
         for callback_interface in self.callback_interfaces.iter_mut() {
+            visitor.visit_callback_interface(callback_interface);
             for method in callback_interface.methods.iter_mut() {
-                visitor.visit_method(method);
+                visitor.visit_method(&callback_interface.name, method);
 
                 for argument in method.arguments.iter_mut() {
                     visitor.visit_argument(argument);

@@ -62,6 +62,14 @@ pub fn generate_bindings<T: BindingGenerator>(
     };
     binding_generator.update_component_configs(&settings, &mut components)?;
 
+    // need to derive ffi after the bindings have had a chance to update any names etc.
+    for component in &mut components {
+        component
+            .ci
+            .derive_ffi_funcs()
+            .context("Failed to derive FFI functions")?;
+    }
+
     // give every CI a cloned copy of every CI - including itself for simplicity.
     // we end up taking n^2 copies of all ci's, but it works.
     let all_cis = components.iter().map(|c| c.ci.clone()).collect::<Vec<_>>();

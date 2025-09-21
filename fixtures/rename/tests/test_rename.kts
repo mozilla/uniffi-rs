@@ -25,3 +25,39 @@ assert(methodResult == 123)
 // Test trait method renaming (trait itself keeps original name)
 val traitImpl = createTraitImpl(5)
 assert(traitImpl.renamedTraitMethod(10) == 50) // 10 * 5 = 50
+
+//
+// Test TOML-based renaming with dot notation
+//
+val ktRecord = KtRecord(kotlinItem = 123)  // Field renamed: item -> kotlinItem
+assert(ktRecord.kotlinItem == 123)
+
+// Function binding_function -> ktFunction, arg record -> kotlinRecord
+val ktResult = ktFunction(kotlinRecord = ktRecord)
+assert(ktResult is KtEnum.KotlinRecord)
+
+val withFields = KtEnumWithFields.KotlinVariantA(kotlinInt = 1U)
+
+// throwing renamed exception.
+try {
+    ktFunction(null)
+    assert(false) // Should have thrown
+} catch (e: KtException.KotlinSimple) {
+}
+
+val ktObj = KtObject(100)
+ktObj.kotlinMethod(kotlinArg = 10)  // method -> kotlinMethod, arg -> kotlinArg
+
+// Test enum renaming with dot notation for variants
+val ktEnum1 = KtEnum.KotlinVariantA  // Variant renamed: VariantA -> KotlinVariantA
+val ktEnum2 = KtEnum.KotlinRecord(ktRecord)  // Variant renamed: Record -> KotlinRecord
+assert(ktEnum1 is KtEnum.KotlinVariantA)
+assert(ktEnum2 is KtEnum.KotlinRecord)
+
+// Test error renaming - verify the error class exists with renamed variants
+// Note: In Kotlin, errors become exception classes with "Exception" suffix
+// So BindingError -> KtError becomes KtException with KotlinSimple variant
+
+// Test callback interface (trait) renaming.
+val ktTraitImpl = createBindingTraitImpl(3)
+assert(ktTraitImpl.kotlinTraitMethod(4) == 12)

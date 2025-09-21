@@ -180,6 +180,8 @@ pub struct Config {
     custom_types: HashMap<String, CustomTypeConfig>,
     #[serde(default)]
     link_frameworks: Vec<String>,
+    #[serde(default)]
+    pub(super) rename: toml::Table,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

@@ -105,6 +105,11 @@ class TestIt(unittest.TestCase):
         with self.assertRaises(UniffiOneErrorInterface) as cm:
             throw_uniffi_one_error_interface()
 
+    def test_rename(self):
+        t = get_binding_renamed_type("external_rename_test")
+        self.assertIsInstance(t, PythonRenamedType)
+        self.assertEqual(t.python_value, "external_rename_test")
+
 if __name__=='__main__':
     test_external_callback_interface_impl()
     unittest.main()

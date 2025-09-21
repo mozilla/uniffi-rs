@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::{BindingGenerator, Component, GenerationSettings, Result};
+use crate::{interface::rename, BindingGenerator, Component, GenerationSettings, Result};
 use camino::{Utf8Path, Utf8PathBuf};
 use fs_err as fs;
 use std::collections::HashMap;
@@ -41,6 +41,22 @@ impl BindingGenerator for KotlinBindingGenerator {
                     .clone()
                     .unwrap_or_else(|| format!("uniffi_{}", c.ci.namespace()))
             });
+        }
+
+        // Collect all rename configurations from all components, keyed by module_path
+        let mut module_renames = HashMap::new();
+        for c in components.iter() {
+            if !c.config.rename.is_empty() {
+                let module_path = c.ci.crate_name().to_string();
+                module_renames.insert(module_path, c.config.rename.clone());
+            }
+        }
+
+        // Apply rename configurations to all components
+        if !module_renames.is_empty() {
+            for c in &mut *components {
+                rename(&mut c.ci, &module_renames);
+            }
         }
         // We need to update package names
         let packages = HashMap::<String, String>::from_iter(

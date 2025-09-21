@@ -29,10 +29,14 @@
 //!  * How to read from and write into a byte buffer.
 //!
 
-use crate::{BindgenLoader, BindingGenerator, Component, ComponentInterface, GenerationSettings};
+use crate::{
+    interface::rename, BindgenLoader, BindingGenerator, Component, ComponentInterface,
+    GenerationSettings,
+};
 use anyhow::Result;
 use camino::Utf8PathBuf;
 use fs_err as fs;
+use std::collections::HashMap;
 use std::process::Command;
 
 mod gen_swift;
@@ -75,6 +79,7 @@ impl BindingGenerator for SwiftBindingGenerator {
                 .module_name
                 .get_or_insert_with(|| c.ci.namespace().into());
         }
+        apply_renames(components);
         Ok(())
     }
 
@@ -163,7 +168,8 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     let loader = BindgenLoader::new(&config_supplier);
     let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
-    let components = loader.load_components(cis, parse_config)?;
+    let mut components = loader.load_components(cis, parse_config)?;
+    apply_renames(&mut components);
 
     for Component { ci, config } in &components {
         if options.generate_swift_sources {
@@ -231,4 +237,23 @@ pub struct SwiftBindingsOptions {
     pub modulemap_filename: Option<String>,
     pub metadata_no_deps: bool,
     pub link_frameworks: Vec<String>,
+}
+
+// A helper for renaming items.
+fn apply_renames(components: &mut Vec<Component<Config>>) {
+    let mut module_renames = HashMap::new();
+    // Collect all rename configurations from all components, keyed by module_path
+    for c in components.iter() {
+        if !c.config.rename.is_empty() {
+            let module_path = c.ci.crate_name().to_string();
+            module_renames.insert(module_path, c.config.rename.clone());
+        }
+    }
+
+    // Apply rename configurations to all components
+    if !module_renames.is_empty() {
+        for c in &mut *components {
+            rename(&mut c.ci, &module_renames);
+        }
+    }
 }

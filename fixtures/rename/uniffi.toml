@@ -1,0 +1,101 @@
+# Rename support is via a single flat table usimg a dot notation/convention.
+
+#
+# Kotlin
+#
+[bindings.kotlin.rename]
+# Rename a function and its args.
+binding_function = "ktFunction"
+"binding_function.record" = "kotlinRecord"
+
+# Rename a record and its items.
+BindingRecord = "KtRecord"
+"BindingRecord.item" = "kotlinItem"
+
+# Enum
+BindingEnum = "KtEnum"
+"BindingEnum.VariantA" = "KotlinVariantA"
+"BindingEnum.Record" = "KotlinRecord"
+
+BindingEnumWithFields = "KtEnumWithFields"
+"BindingEnumWithFields.VariantA" = "KotlinVariantA"
+"BindingEnumWithFields.VariantA.binding_int" = "kotlin_int"
+
+# New error name still gets passed through normal Error->Exception processing.
+BindingError = "KtError"
+"BindingError.Simple" = "KotlinSimple"
+
+BindingTrait = "KtTrait"
+"BindingTrait.trait_method" = "kotlinTraitMethod"
+
+BindingObject = "KtObject"
+# Note "kotlin_method" vs "kotlinTraitMethod" above - equiv as we always do the case-change thing.
+# Is this good or bad? :) Either way, is what actually happens
+"BindingObject.method" = "kotlin_method"
+"BindingObject.method.arg" = "kotlinArg"
+
+#
+# Python
+#
+[bindings.python.rename]
+binding_function = "py_function"
+"binding_function.record" = "python_record"
+
+BindingRecord = "PyRecord"
+"BindingRecord.item" = "python_item"
+
+BindingEnum = "PyEnum"
+"BindingEnum.VariantA" = "PythonVariantA"
+"BindingEnum.Record" = "PythonRecord"
+
+BindingEnumWithFields = "PyEnumWithFields"
+"BindingEnumWithFields.VariantA" = "PythonVariantA"
+"BindingEnumWithFields.VariantA.binding_int" = "python_int"
+"BindingEnumWithFields.Record" = "PythonRecord"
+"BindingEnumWithFields.Record.binding_record" = "python_record"
+"BindingEnumWithFields.Record.binding_int" = "python_int"
+
+BindingError = "PyError"
+"BindingError.Simple" = "PythonSimple"
+
+BindingTrait = "PyTrait"
+"BindingTrait.trait_method" = "python_trait_method"
+
+BindingObject = "PyObject"
+"BindingObject.new.value" = "python_value"
+
+"BindingObject.method" = "python_method"
+"BindingObject.method.arg" = "python_arg"
+
+#
+# Swift
+#
+[bindings.swift.rename]
+# Rename a function and its args.
+binding_function = "swiftFunction"
+"binding_function.record" = "swiftRecord"
+
+# Rename a record and its items.
+BindingRecord = "SwiftRecord"
+"BindingRecord.item" = "swiftItem"
+
+# Enum
+BindingEnum = "SwiftEnum"
+"BindingEnum.VariantA" = "SwiftVariantA"
+"BindingEnum.Record" = "SwiftRecord"
+
+BindingEnumWithFields = "SwiftEnumWithFields"
+"BindingEnumWithFields.VariantA" = "SwiftVariantA"
+"BindingEnumWithFields.VariantA.binding_int" = "swift_int"
+
+# New error name still gets passed through normal Error->Exception processing.
+BindingError = "SwiftError"
+"BindingError.Simple" = "SwiftSimple"
+
+BindingTrait = "SwiftTrait"
+"BindingTrait.trait_method" = "swiftTraitMethod"
+
+BindingObject = "SwiftObject"
+# Swift method and arg renaming
+"BindingObject.method" = "swift_method"
+"BindingObject.method.arg" = "swiftArg"

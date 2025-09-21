@@ -18,6 +18,7 @@ mod ffi_types;
 mod modules;
 mod objects;
 mod records;
+mod rename;
 mod rust_buffer;
 mod rust_future;
 mod self_types;
@@ -36,7 +37,8 @@ use uniffi_pipeline::{new_pipeline, Node, Pipeline};
 ///
 /// This is the shared beginning for all bindings pipelines.
 /// Bindings generators will add language-specific passes to this.
-pub fn pipeline() -> Pipeline<initial::Root, Root> {
+pub fn pipeline(bindings_toml_key: &str) -> Pipeline<initial::Root, Root> {
+    let bindings_toml_key = bindings_toml_key.to_string();
     new_pipeline()
         .convert_ir_pass::<Root>()
         .pass(modules::pass)
@@ -45,15 +47,16 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
         .pass(self_types::pass)
         .pass(callable::pass)
         .pass(type_definitions_from_api::pass)
-        .pass(enums::pass)
-        .pass(records::pass)
-        .pass(type_nodes::pass)
         .pass(ffi_types::pass)
         .pass(ffi_async_data::pass)
+        .pass(type_nodes::pass)
+        .pass(enums::pass)
+        .pass(records::pass)
         .pass(objects::pass)
         .pass(callback_interfaces::pass)
         .pass(ffi_functions::pass)
         .pass(checksums::pass)
+        .pass(move |root: &mut Root| rename::pass(root, &bindings_toml_key))
         .pass(sort::pass)
         .pass(default::pass)
         .pass(uniffi_traits::pass)
