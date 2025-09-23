@@ -121,12 +121,17 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
 {%- endif %}
 
     @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
     constructor(withHandle: UniffiWithHandle, handle: Long) {
         this.handle = handle
         this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
     }
 
     /**
+     * @suppress
+     *
      * This constructor can be used to instantiate a fake object. Only used for tests. Any
      * attempt to actually use an object constructed this way will fail as there is no
      * connected Rust object.
@@ -208,6 +213,9 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         }
     }
 
+    /**
+     * @suppress
+     */
     fun uniffiCloneHandle(): Long {
         if (handle == 0.toLong()) {
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
@@ -242,6 +250,9 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         }
     }
     {% else %}
+    /**
+     * @suppress
+     */
     companion object
     {% endif %}
 }
