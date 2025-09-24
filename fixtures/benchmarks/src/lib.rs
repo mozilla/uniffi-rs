@@ -2,37 +2,57 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use std::env;
+use std::sync::Arc;
 use std::time::Duration;
 
 mod cli;
 pub use cli::Args;
 
+#[derive(uniffi::Record)]
 pub struct TestData {
     foo: String,
     bar: String,
 }
 
+#[derive(uniffi::Enum)]
 pub enum TestCase {
     Function,
     VoidReturn,
     NoArgsVoidReturn,
 }
 
-pub trait TestCallbackInterface {
+/// Test callback methods.
+///
+/// These are intended to test the overhead of callback interface calls
+/// including: popping arguments from the stack, unpacking RustBuffers,
+/// pushing return values back to the stack, etc.
+#[uniffi::export(with_foreign)]
+pub trait TestCallbackInterface: Send + Sync {
     fn method(&self, a: i32, b: i32, data: TestData) -> String;
     fn method_with_void_return(&self, a: i32, b: i32, data: TestData);
     fn method_with_no_args_and_void_return(&self);
+    /// Run a performance test N times and return the elapsed time in nanoseconds
     fn run_test(&self, test_case: TestCase, count: u64) -> u64;
 }
 
+/// Test functions
+///
+/// These are intended to test the overhead of Rust function calls including:
+/// popping arguments from the stack, unpacking RustBuffers, pushing return
+/// values back to the stack, etc.
+#[uniffi::export]
 pub fn test_function(_a: i32, _b: i32, data: TestData) -> String {
     data.bar
 }
+
+#[uniffi::export]
 pub fn test_void_return(_a: i32, _b: i32, _data: TestData) {}
+#[uniffi::export]
 pub fn test_no_args_void_return() {}
 
-pub fn run_benchmarks(language: String, cb: Box<dyn TestCallbackInterface>) {
+/// Run all benchmarks and print the results to stdout
+#[uniffi::export]
+pub fn run_benchmarks(language: String, cb: Arc<dyn TestCallbackInterface>) {
     let args = Args::parse_for_run_benchmarks();
     let mut c = args.build_criterion();
 
@@ -90,4 +110,4 @@ pub fn run_benchmarks(language: String, cb: Box<dyn TestCallbackInterface>) {
     c.final_summary();
 }
 
-uniffi::include_scaffolding!("benchmarks");
+uniffi::setup_scaffolding!("benchmarks");

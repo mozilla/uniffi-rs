@@ -5,7 +5,7 @@
 from benchmarks import *
 import time
 
-class TestCallbackObj:
+class TestCallbackObj(TestCallbackInterface):
     def method(self, a, b, data):
         return data.bar
 
@@ -16,7 +16,7 @@ class TestCallbackObj:
         pass
 
     def run_test(self, test_case, count):
-        data = TestData("StringOne", "StringTwo")
+        data = TestData(foo="StringOne", bar="StringTwo")
         if test_case == TestCase.FUNCTION:
             start = time.perf_counter_ns()
             for i in range(count):
