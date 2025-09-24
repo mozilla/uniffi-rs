@@ -51,7 +51,7 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
 
 }
 {%- when FfiDefinition::Function(_) %}
-{# functions are handled below #}
+{#- functions are handled below #}
 {%- endmatch %}
 {%- endfor %}
 
