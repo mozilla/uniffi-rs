@@ -1289,6 +1289,11 @@ fn throws_name(throws: &Option<Type>) -> Option<&str> {
     match throws {
         None => None,
         Some(Type::Enum { name, .. }) | Some(Type::Object { name, .. }) => Some(name),
+        Some(Type::Custom { name, builtin, .. })
+            if matches!(&**builtin, Type::Enum { .. } | Type::Object { .. }) =>
+        {
+            Some(name)
+        }
         _ => panic!("unknown throw type: {throws:?}"),
     }
 }

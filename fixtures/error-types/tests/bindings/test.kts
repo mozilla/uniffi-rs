@@ -103,6 +103,12 @@ try {
     assert(e.toString() == "uniffi.error_types.TupleException${'$'}Value: v1=1")
 }
 
+try {
+    oopsCustom(1u)
+    throw RuntimeException("Should have failed")
+} catch (e: TupleException) {
+}
+
 runBlocking {
     try {
         aoops()

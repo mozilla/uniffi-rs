@@ -20,6 +20,7 @@
   without a literal) meaning the default value for the type. Named types can also have a default.
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
 - Custom types support the default value, and specified as its "bridge" type ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
+- Custom `enum` and `object` types can be used as error type ([#2658](https://github.com/mozilla/uniffi-rs/pull/2658))
 - Objects can implement external traits ([#2430](https://github.com/mozilla/uniffi-rs/issues/2430))
 - `#[uniffi(default)]` literals are now optional - eg, `#[uniffi(default)]` and `#[uniffi(default = 0)]` are equivalent.
   When no literal is specifed, named types (objects, records, etc) can be used as long as they have suitable default values.

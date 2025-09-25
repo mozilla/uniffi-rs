@@ -9,6 +9,7 @@ use uniffi_pipeline::{Node, Pipeline};
 mod callback_interfaces;
 mod config;
 mod default;
+mod error;
 mod external_types;
 mod ffi_types;
 mod interfaces;
@@ -33,4 +34,5 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
         .pass(types::pass)
         .pass(default::pass)
         .pass(ffi_types::pass)
+        .pass(error::pass)
 }
