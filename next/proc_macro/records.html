@@ -12,7 +12,7 @@
         <link rel="prev" href="interfaces.html">
       
       
-        <link rel="next" href="docstrings.html">
+        <link rel="next" href="renaming.html">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -1250,6 +1250,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Record derive
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="records.html" class="md-nav__link md-nav__link--active">
         
   
@@ -1262,6 +1275,57 @@
 
       </a>
       
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#renaming-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming records
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -2103,6 +2167,23 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#renaming-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming records
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2152,6 +2233,15 @@ will fail).</p>
 <span class="p">}</span>
 </code></pre></div>
 <p>Most types can have <a href="../types/defaults.html">default values</a></p>
+<h2 id="renaming-records">Renaming records</h2>
+<p>Records can be renamed in foreign language bindings using the <code>name</code> parameter:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
+<span class="cp">#[uniffi(name = </span><span class="s">&quot;RenamedRecord&quot;</span><span class="cp">)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">MyRecord</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>See <a href="renaming.html">Renaming</a> for more details on all renaming capabilites.</p>
 
 
 

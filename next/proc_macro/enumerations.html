@@ -1218,6 +1218,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#renaming-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming enums
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1309,6 +1318,29 @@
   
   <span class="md-ellipsis">
     The uniffi::Record derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming
     
   </span>
   
@@ -2183,6 +2215,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#renaming-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Renaming enums
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2269,6 +2310,15 @@ types inside variants are UniFFI builtin types; user-defined types might be allo
     <span class="k">case</span> <span class="n">bar</span> <span class="p">=</span> <span class="mi">4</span>
 <span class="p">}</span>
 </code></pre></div>
+<h2 id="renaming-enums">Renaming enums</h2>
+<p>Enums can be renamed in foreign language bindings using the <code>name</code> parameter:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Enum)]</span>
+<span class="cp">#[uniffi(name = </span><span class="s">&quot;RenamedEnum&quot;</span><span class="cp">)]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="nc">MyEnum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>See <a href="renaming.html">Renaming</a> for more details on renaming functionality.</p>
 
 
 
