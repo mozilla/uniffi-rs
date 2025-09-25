@@ -13,6 +13,7 @@
 
 ### What's new?
 
+- All user-defined types can now be renamed with the proc-macro `name = "NewName"` attribute (like already supported for methods and constructors) ([#2661](https://github.com/mozilla/uniffi-rs/pull/2661))
 - Objects can export the `Ord` trait, allowing such objects to be ordered ([#2583](https://github.com/mozilla/uniffi-rs/pull/2583)).
 - Objects can implement external traits ([#2430](https://github.com/mozilla/uniffi-rs/issues/2430))
 - Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,

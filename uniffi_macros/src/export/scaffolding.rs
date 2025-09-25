@@ -214,13 +214,13 @@ pub(super) fn gen_ffi_function(
         convert_result,
     } = match &sig.kind {
         FnKind::Function => ScaffoldingBits::new_for_function(sig, udl_mode),
-        FnKind::Method { self_ident } => {
+        FnKind::Method { self_ident, .. } => {
             ScaffoldingBits::new_for_method(sig, self_ident, false, udl_mode)
         }
         FnKind::TraitMethod { self_ident, .. } => {
             ScaffoldingBits::new_for_method(sig, self_ident, true, udl_mode)
         }
-        FnKind::Constructor { self_ident } => {
+        FnKind::Constructor { self_ident, .. } => {
             ScaffoldingBits::new_for_constructor(sig, self_ident, udl_mode)
         }
     };

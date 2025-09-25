@@ -1942,6 +1942,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-rename"
+version = "0.22.0"
+dependencies = [
+ "thiserror",
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-simple-fns"
 version = "0.22.0"
 dependencies = [

@@ -123,3 +123,8 @@ but also be able to be used when a `MyTrait` is required.
 
 Not all bindings support this.
 
+## Renaming objects
+
+Objects can be renamed in foreign language bindings using the `name` parameter on the export attribute;
+See [Renaming](./renaming.md) for details.
+

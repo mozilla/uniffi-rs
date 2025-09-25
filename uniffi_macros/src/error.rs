@@ -56,7 +56,7 @@ fn error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> syn::Re
 // These are errors where we only lower the to_string() value, rather than any associated data.
 // We lower the to_string() value unconditionally, whether the enum has associated data or not.
 fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> TokenStream {
-    let name = item.name();
+    let name = &item.foreign_name();
     let ident = item.ident();
     let lower_impl_spec = options.ffi_impl_header("Lower", ident);
     let lift_impl_spec = options.ffi_impl_header("Lift", ident);
@@ -178,7 +178,7 @@ fn flat_error_ffi_converter_impl(item: &EnumItem, options: &DeriveOptions) -> To
 }
 
 pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
-    let name = item.name();
+    let name = &item.foreign_name();
     let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
@@ -200,7 +200,7 @@ pub(crate) fn error_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream>
         .concat_bool(#non_exhaustive)
         .concat_long_str(#docstring)
     });
-    Ok(create_metadata_items("error", &name, metadata_expr, None))
+    Ok(create_metadata_items("error", name, metadata_expr, None))
 }
 
 pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
