@@ -319,7 +319,7 @@ impl<'a> KotlinWrapper<'a> {
             .iter_local_types()
             .map(|t| KotlinCodeOracle.find(t))
             .filter_map(|ct| ct.initialization_fn())
-            .map(|fn_name| format!("{fn_name}(lib)"));
+            .map(|fn_name| format!("{fn_name}(this)"));
 
         // Also call global initialization function for any external type we use.
         // For example, we need to make sure that all callback interface vtables are registered
@@ -765,7 +765,7 @@ mod filters {
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_poll(ci);
         Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.INSTANCE.{ffi_func}(future, callback, continuation) }}"
+            "{{ future, callback, continuation -> UniffiLib.{ffi_func}(future, callback, continuation) }}"
         ))
     }
 
@@ -774,7 +774,7 @@ mod filters {
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_complete(ci);
-        let call = format!("UniffiLib.INSTANCE.{ffi_func}(future, continuation)");
+        let call = format!("UniffiLib.{ffi_func}(future, continuation)");
         // May need to convert the RustBuffer from our package to the RustBuffer of the external package
         let call = match callable.return_type() {
             Some(return_type) if ci.is_external(return_type) => {
@@ -797,9 +797,7 @@ mod filters {
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         let ffi_func = callable.ffi_rust_future_free(ci);
-        Ok(format!(
-            "{{ future -> UniffiLib.INSTANCE.{ffi_func}(future) }}"
-        ))
+        Ok(format!("{{ future -> UniffiLib.{ffi_func}(future) }}"))
     }
 
     /// Remove the "`" chars we put around function/variable names

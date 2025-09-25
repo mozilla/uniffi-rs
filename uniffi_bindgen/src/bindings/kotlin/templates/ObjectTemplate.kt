@@ -208,7 +208,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
                 return;
             }
             uniffiRustCall { status ->
-                UniffiLib.INSTANCE.{{ obj.ffi_object_free().name() }}(handle, status)
+                UniffiLib.{{ obj.ffi_object_free().name() }}(handle, status)
             }
         }
     }
@@ -221,7 +221,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
         }
         return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.{{ obj.ffi_object_clone().name() }}(handle, status)
+            UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status)
         }
     }
 
