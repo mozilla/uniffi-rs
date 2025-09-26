@@ -12,6 +12,7 @@ use std::{
 };
 
 use futures::future::{AbortHandle, Abortable, Aborted};
+use uniffi_one::UniffiOneType;
 
 /// Non-blocking timer future.
 pub struct TimerFuture {
@@ -497,6 +498,20 @@ async fn cancel_delay_using_trait(obj: Arc<dyn AsyncParser>, delay_ms: i32) {
     });
     let future = Abortable::new(obj.delay(delay_ms), abort_registration);
     assert_eq!(future.await, Err(Aborted));
+}
+
+// Reproduction of https://github.com/mozilla/uniffi-rs/issues/2659
+//
+// Just the mere existance of this trait causes the following error when runnig the python binding tests:
+//
+// TypeError: incompatible types, _UniffiRustBuffer instance instead of _UniffiRustBuffer instance
+//
+// If you comment this trait out and run the python binding tests, the test will work again without
+// making any changes to the python test file
+#[uniffi::export(with_foreign)]
+#[async_trait::async_trait]
+pub trait ReturnExtTypeTrait: Send + Sync {
+    async fn one_type(&self) -> Result<UniffiOneType, AsyncError>;
 }
 
 uniffi::include_scaffolding!("futures");
