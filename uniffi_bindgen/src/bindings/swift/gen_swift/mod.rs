@@ -284,6 +284,132 @@ impl Config {
     pub fn link_frameworks(&self) -> Vec<String> {
         self.link_frameworks.clone()
     }
+
+    /// Programmatically generate the conformances for Record
+    pub fn conformance_list_for_record(
+        &self,
+        rec: &Record,
+        contains_object_references: &bool,
+    ) -> String {
+        let mut conformances = vec!["Sendable"];
+
+        let uniffi_trait_methods = rec.uniffi_trait_methods();
+
+        if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
+            conformances.push("Equatable");
+        }
+
+        if !contains_object_references || uniffi_trait_methods.hash_hash.is_some() {
+            conformances.push("Hashable");
+        }
+
+        if uniffi_trait_methods.ord_cmp.is_some() {
+            conformances.push("Comparable");
+        }
+
+        if uniffi_trait_methods.debug_fmt.is_some() {
+            conformances.push("CustomDebugStringConvertible");
+        }
+
+        if uniffi_trait_methods.display_fmt.is_some() {
+            conformances.push("CustomStringConvertible");
+        }
+
+        // Objects can't be Codable at the moment, so we can't derive `Codable` conformance if this Record references one
+        if !contains_object_references && self.generate_codable_conformance() {
+            conformances.push("Codable");
+        }
+
+        conformances.join(", ")
+    }
+
+    /// Programmatically generate the conformances for an Enum
+    pub fn conformance_list_for_enum(&self, e: &Enum, contains_object_references: &bool) -> String {
+        let uniffi_trait_methods = e.uniffi_trait_methods();
+
+        let mut conformances = vec!["Sendable"];
+
+        // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
+        if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
+            conformances.push("Equatable");
+        }
+
+        if !contains_object_references || uniffi_trait_methods.hash_hash.is_some() {
+            conformances.push("Hashable");
+        }
+
+        if uniffi_trait_methods.ord_cmp.is_some() {
+            conformances.push("Comparable");
+        }
+
+        if uniffi_trait_methods.debug_fmt.is_some() {
+            conformances.push("CustomDebugStringConvertible");
+        }
+
+        if uniffi_trait_methods.display_fmt.is_some() {
+            conformances.push("CustomStringConvertible");
+        }
+
+        // Objects can't be Codable at the moment, so we can't derive `Codable` conformance if this Enum references one
+        if !contains_object_references && self.generate_codable_conformance() {
+            conformances.push("Codable");
+        }
+
+        if self.generate_case_iterable_conformance() && e.is_flat() && !e.contains_variant_fields()
+        {
+            conformances.push("CaseIterable");
+        }
+
+        conformances.join(", ")
+    }
+
+    pub fn conformance_list_for_error(
+        &self,
+        e: &Enum,
+        contains_object_references: &bool,
+    ) -> String {
+        let uniffi_trait_methods = e.uniffi_trait_methods();
+
+        let mut conformances = vec!["Sendable"];
+
+        if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
+            conformances.push("Equatable");
+        }
+
+        if !contains_object_references || uniffi_trait_methods.hash_hash.is_some() {
+            conformances.push("Hashable");
+        }
+
+        // Objects can't be Codable at the moment, so we can't derive `Codable` conformance if this Error references one
+        if !contains_object_references && self.generate_codable_conformance() {
+            conformances.push("Codable");
+        }
+
+        if !self.omit_localized_error_conformance() {
+            conformances.push("Foundation.LocalizedError");
+        }
+
+        if self.generate_case_iterable_conformance() && e.is_flat() && !e.contains_variant_fields()
+        {
+            conformances.push("CaseIterable");
+        }
+
+        conformances.join(", ")
+    }
+
+    pub fn conformance_list_for_object(&self, _o: &Object, is_error: &bool) -> String {
+        let mut conformances = vec!["@unchecked Sendable"];
+
+        if *is_error {
+            conformances.push("Swift.Error");
+
+            if !self.omit_localized_error_conformance() {
+                conformances.push("Foundation.LocalizedError");
+            }
+        }
+
+        conformances.join(", ")
+    }
 }
 
 // Given a trait, work out what the protocol name we generate for it.
