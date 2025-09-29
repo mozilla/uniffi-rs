@@ -59,6 +59,18 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
             _ => (),
         };
     });
+    // Transform RustBuffer namespaces to concrete Python module names
+    namespace.visit_mut(|ffi_type: &mut FfiType| {
+        if let FfiType::RustBuffer(Some(ref mut namespace)) = ffi_type {
+            match namespace_config.external_packages.get(namespace) {
+                Some(package_name) if !package_name.is_empty() => {
+                    *namespace = package_name.clone();
+                }
+                _ => (),
+            }
+        }
+    });
+
     namespace.imports.extend(module_imports);
     Ok(())
 }
