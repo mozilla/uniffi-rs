@@ -374,8 +374,7 @@ impl Config {
             conformances.push("Codable");
         }
 
-        if self.generate_case_iterable_conformance() && e.is_flat() && !e.contains_variant_fields()
-        {
+        if self.generate_case_iterable_conformance() && !e.contains_variant_fields() {
             conformances.push("CaseIterable");
         }
 
@@ -414,6 +413,10 @@ impl Config {
             conformances.push("Hashable");
         }
 
+        if uniffi_trait_methods.ord_cmp.is_some() {
+            conformances.push("Comparable");
+        }
+
         // Objects can't be Codable at the moment, so we can't derive `Codable` conformance if this Error references one
         if !contains_object_references && self.generate_codable_conformance() {
             conformances.push("Codable");
@@ -423,7 +426,7 @@ impl Config {
             conformances.push("Foundation.LocalizedError");
         }
 
-        if self.generate_case_iterable_conformance() && e.is_flat() && !e.contains_variant_fields()
+        if self.generate_case_iterable_conformance() && !e.is_flat() && !e.contains_variant_fields()
         {
             conformances.push("CaseIterable");
         }
@@ -443,6 +446,18 @@ impl Config {
             if !self.omit_localized_error_conformance() {
                 conformances.push("Foundation.LocalizedError");
             }
+        }
+
+        if uniffi_trait_methods.eq_eq.is_some() {
+            conformances.push("Equatable");
+        }
+
+        if uniffi_trait_methods.hash_hash.is_some() {
+            conformances.push("Hashable");
+        }
+
+        if uniffi_trait_methods.ord_cmp.is_some() {
+            conformances.push("Comparable");
         }
 
         if uniffi_trait_methods.debug_fmt.is_some() {

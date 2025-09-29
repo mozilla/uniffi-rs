@@ -198,7 +198,7 @@ public var debugDescription: String {
 public var description: String {
     return {% call is_try(fmt) %} {{ fmt.return_type().unwrap()|lift_fn }}(
         {% call to_ffi_call(fmt) %}
-    }
+    )
 }
 {%- endif %}
 {%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
