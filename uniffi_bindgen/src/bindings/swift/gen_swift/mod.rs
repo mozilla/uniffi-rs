@@ -432,7 +432,9 @@ impl Config {
     }
 
     /// Programmatically generate the conformances for an Object
-    pub fn conformance_list_for_object(&self, _o: &Object, is_error: &bool) -> String {
+    pub fn conformance_list_for_object(&self, o: &Object, is_error: &bool) -> String {
+        let uniffi_trait_methods = o.uniffi_trait_methods();
+
         let mut conformances = vec!["@unchecked Sendable"];
 
         if *is_error {
@@ -441,6 +443,14 @@ impl Config {
             if !self.omit_localized_error_conformance() {
                 conformances.push("Foundation.LocalizedError");
             }
+        }
+
+        if uniffi_trait_methods.debug_fmt.is_some() {
+            conformances.push("CustomDebugStringConvertible");
+        }
+
+        if uniffi_trait_methods.display_fmt.is_some() {
+            conformances.push("CustomStringConvertible");
         }
 
         conformances.join(", ")
