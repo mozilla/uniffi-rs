@@ -17,16 +17,16 @@ class TestCallbackObj : TestCallbackInterface {
     }
 
     override fun runTest(testCase: TestCase, count: ULong): ULong {
-        val data = TestData("StringOne", "StringTwo")
         return when (testCase) {
             TestCase.FUNCTION -> measureNanoTime {
+                val data = TestData("StringOne", "StringTwo")
                 for (i in 0UL..count) {
                     testFunction(10, 20, data)
                 }
             }
             TestCase.VOID_RETURN -> measureNanoTime {
                 for (i in 0UL..count) {
-                    testVoidReturn(10, 20, data)
+                    testVoidReturn(10, 20)
                 }
             }
             TestCase.NO_ARGS_VOID_RETURN -> measureNanoTime {

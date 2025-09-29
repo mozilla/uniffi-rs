@@ -46,7 +46,8 @@ pub fn test_function(_a: i32, _b: i32, data: TestData) -> String {
 }
 
 #[uniffi::export]
-pub fn test_void_return(_a: i32, _b: i32, _data: TestData) {}
+pub fn test_void_return(_a: i32, _b: i32) {}
+
 #[uniffi::export]
 pub fn test_no_args_void_return() {}
 
