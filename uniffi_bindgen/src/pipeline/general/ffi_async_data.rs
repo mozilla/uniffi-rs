@@ -42,6 +42,11 @@ fn generate_async_data(crate_name: &str, ffi_return_type: Option<&FfiTypeNode>) 
         None => "void",
         ty => panic!("Invalid future return type: {ty:?}"),
     };
+    let struct_crate_name = match &ffi_return_type.map(|ffi_type| &ffi_type.ty) {
+        Some(FfiType::RustBuffer(Some(rust_buffer_crate))) => rust_buffer_crate,
+        _ => "",
+    };
+
     AsyncData {
         ffi_rust_future_poll: RustFfiFunctionName(format!(
             "ffi_{crate_name}_rust_future_poll_{return_type_name}"
@@ -56,11 +61,11 @@ fn generate_async_data(crate_name: &str, ffi_return_type: Option<&FfiTypeNode>) 
             "ffi_{crate_name}_rust_future_free_{return_type_name}"
         )),
         ffi_foreign_future_result: FfiStructName(format!(
-            "ForeignFutureResult{}",
+            "ForeignFutureResult{struct_crate_name}{}",
             return_type_name.to_upper_camel_case()
         )),
         ffi_foreign_future_complete: FfiFunctionTypeName(format!(
-            "ForeignFutureComplete{return_type_name}"
+            "ForeignFutureComplete{struct_crate_name}{return_type_name}"
         )),
     }
 }
