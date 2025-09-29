@@ -285,13 +285,22 @@ impl Config {
         self.link_frameworks.clone()
     }
 
+    /// Does the given Record have protocol conformances to list?
+    ///
+    /// This isn't the most efficient way to do this, but it should be fast enough.
+    pub fn record_has_conformances(&self, rec: &Record, contains_object_references: &bool) -> bool {
+        !self
+            .conformance_list_for_record(rec, contains_object_references)
+            .is_empty()
+    }
+
     /// Programmatically generate the conformances for Record
     pub fn conformance_list_for_record(
         &self,
         rec: &Record,
         contains_object_references: &bool,
     ) -> String {
-        let mut conformances = vec!["Sendable"];
+        let mut conformances = vec![];
 
         let uniffi_trait_methods = rec.uniffi_trait_methods();
 
@@ -324,11 +333,20 @@ impl Config {
         conformances.join(", ")
     }
 
+    /// Does the given Enum have protocol conformances to list?
+    ///
+    /// This isn't the most efficient way to do this, but it should be fast enough.
+    pub fn enum_has_conformances(&self, e: &Enum, contains_object_references: &bool) -> bool {
+        !self
+            .conformance_list_for_enum(e, contains_object_references)
+            .is_empty()
+    }
+
     /// Programmatically generate the conformances for an Enum
     pub fn conformance_list_for_enum(&self, e: &Enum, contains_object_references: &bool) -> String {
         let uniffi_trait_methods = e.uniffi_trait_methods();
 
-        let mut conformances = vec!["Sendable"];
+        let mut conformances = vec![];
 
         // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
         if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
@@ -364,14 +382,28 @@ impl Config {
         conformances.join(", ")
     }
 
-    pub fn conformance_list_for_error(
+    /// Does the given Error have protocol conformances to list? (aside from the default `Swift.Error`)
+    ///
+    /// This isn't the most efficient way to do this, but it should be fast enough.
+    pub fn error_has_additional_conformances(
+        &self,
+        e: &Enum,
+        contains_object_references: &bool,
+    ) -> bool {
+        !self
+            .additional_conformance_list_for_error(e, contains_object_references)
+            .is_empty()
+    }
+
+    /// Programmatically generate the additional conformances for an Error (aside from the default `Swift.Error`)
+    pub fn additional_conformance_list_for_error(
         &self,
         e: &Enum,
         contains_object_references: &bool,
     ) -> String {
         let uniffi_trait_methods = e.uniffi_trait_methods();
 
-        let mut conformances = vec!["Sendable"];
+        let mut conformances = vec![];
 
         // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
         if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
@@ -399,6 +431,7 @@ impl Config {
         conformances.join(", ")
     }
 
+    /// Programmatically generate the conformances for an Object
     pub fn conformance_list_for_object(&self, _o: &Object, is_error: &bool) -> String {
         let mut conformances = vec!["@unchecked Sendable"];
 

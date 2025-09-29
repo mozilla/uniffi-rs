@@ -1,7 +1,11 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
 {%- let uniffi_trait_methods = rec.uniffi_trait_methods() %}
 {%- call swift::docstring(rec, 0) %}
+{%- if config.record_has_conformances(rec, contains_object_references) %}
 public struct {{ type_name }}: {{ config.conformance_list_for_record(rec, contains_object_references) }} {
+{%- else %}
+public struct {{ type_name }} {
+{%- endif %}
     {%- for field in rec.fields() %}
     {%- call swift::docstring(field, 4) %}
     public {% if config.generate_immutable_records() %}let{% else %}var{% endif %} {{ field.name()|var_name }}: {{ field|type_name }}
@@ -17,6 +21,10 @@ public struct {{ type_name }}: {{ config.conformance_list_for_record(rec, contai
 
     {% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
 }
+
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)

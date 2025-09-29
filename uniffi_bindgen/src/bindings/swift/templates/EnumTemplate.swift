@@ -4,7 +4,11 @@
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
 {% match e.variant_discr_type() %}
 {% when None %}
+{%- if config.enum_has_conformances(e, contains_object_references) %}
 public enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_references) }} {
+{%- else %}
+public enum {{ type_name }} {
+{%- endif %}
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
@@ -23,6 +27,10 @@ public enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.confo
 
 {% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
 }
+
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
