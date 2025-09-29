@@ -295,6 +295,7 @@ impl Config {
 
         let uniffi_trait_methods = rec.uniffi_trait_methods();
 
+        // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
         if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
             conformances.push("Equatable");
         }
@@ -372,6 +373,7 @@ impl Config {
 
         let mut conformances = vec!["Sendable"];
 
+        // We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409
         if !contains_object_references || uniffi_trait_methods.eq_eq.is_some() {
             conformances.push("Equatable");
         }
