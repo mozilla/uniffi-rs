@@ -29,6 +29,7 @@
   * Support throwing external error ([#2629](https://github.com/mozilla/uniffi-rs/pull/2629))
   * The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
 - Python:
+  * Improved how default values are handled in function signatures etc and more canonical use of Python dataclasses, all towards making mypy happier ([#2552](https://github.com/mozilla/uniffi-rs/pull/2552))
   * Methods now have typing annotations for return values ([#2625](https://github.com/mozilla/uniffi-rs/issues/2625))
   * Fix relative imports ([#2657](https://github.com/mozilla/uniffi-rs/pull/2657))
   * Fix shadowing param names with internal variables in Python (#2628/#2645)

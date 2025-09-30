@@ -1,14 +1,10 @@
+@dataclass
 class {{ rec.self_type.type_name }}:
     {{ rec.docstring|docstring(4) -}}
-    {% for field in rec.fields -%}
-    {{ field.name }}: {{ field.ty.type_name}}
-    {{ rec.docstring|docstring(4) -}}
-    {% endfor -%}
-
-    {%- if !rec.fields.is_empty() %}
+    {%- if !rec.fields.is_empty() -%}
     def __init__(self, *, {% for field in rec.fields %}
     {{- field.name }}: {{- field.ty.type_name}}
-    {%- if field.default.is_some() %} = _DEFAULT{% endif %}
+    {%- if let Some(default) = field.default %} = {{ default.arg_literal }}{% endif %}
     {%- if !loop.last %}, {% endif %}
     {%- endfor %}):
         {%- for field in rec.fields %}
@@ -16,15 +12,19 @@ class {{ rec.self_type.type_name }}:
         {%- when None %}
         self.{{ field.name }} = {{ field.name }}
         {%- when Some(default) %}
-        if {{ field.name }} is _DEFAULT:
+        {%- if default.is_arg_literal %}
+        self.{{ field.name }} = {{ field.name }}
+        {%- else %}
+        if {{ field.name }} is {{ default.arg_literal }}:
             self.{{ field.name }} = {{ default.py_default }}
         else:
             self.{{ field.name }} = {{ field.name }}
+        {%- endif %}
         {%- endmatch %}
         {%- endfor %}
-    {%- endif %}
+    {%- endif -%}
 
-    {%- let uniffi_trait_methods = rec.uniffi_trait_methods %}
+    {%- let uniffi_trait_methods = rec.uniffi_trait_methods -%}
 
     {% filter indent(4) %}
     {% include "UniffiTraitImpls.py" %}
