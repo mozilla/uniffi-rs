@@ -16,15 +16,15 @@ class TestCallbackObj(TestCallbackInterface):
         pass
 
     def run_test(self, test_case, count):
-        data = TestData(foo="StringOne", bar="StringTwo")
         if test_case == TestCase.FUNCTION:
+            data = TestData(foo="StringOne", bar="StringTwo")
             start = time.perf_counter_ns()
             for i in range(count):
                 test_function(10, 20, data)
         elif test_case == TestCase.VOID_RETURN:
             start = time.perf_counter_ns()
             for i in range(count):
-                test_void_return(10, 20, data)
+                test_void_return(10, 20)
         elif test_case == TestCase.NO_ARGS_VOID_RETURN:
             start = time.perf_counter_ns()
             for i in range(count):

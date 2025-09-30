@@ -24,10 +24,10 @@ class TestCallbackObj: TestCallbackInterface {
     }
 
     func runTest(testCase: TestCase, count: UInt64) -> UInt64 {
-        let data = TestData(foo: "StringOne", bar: "StringTwo")
         let start: clock_t
         switch testCase {
         case TestCase.function:
+            let data = TestData(foo: "StringOne", bar: "StringTwo")
             start = clock()
             for _ in 0...count {
                 testFunction(a: 10, b: 20, data: data)
@@ -35,7 +35,7 @@ class TestCallbackObj: TestCallbackInterface {
         case TestCase.voidReturn:
             start = clock()
             for _ in 0...count {
-                testVoidReturn(a: 10, b: 20, data: data)
+                testVoidReturn(a: 10, b: 20)
             }
 
         case TestCase.noArgsVoidReturn:
