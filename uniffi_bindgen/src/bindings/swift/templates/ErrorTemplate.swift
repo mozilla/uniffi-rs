@@ -1,5 +1,9 @@
 {%- call swift::docstring(e, 0) %}
+{%- if config.error_has_additional_conformances(e, contains_object_references) %}
+public enum {{ type_name }}: Swift.Error, {{ config.additional_conformance_list_for_error(e, contains_object_references) }} {
+{%- else %}
 public enum {{ type_name }}: Swift.Error {
+{%- endif %}
 
     {% if e.is_flat() %}
     {% for variant in e.variants() %}
@@ -16,8 +20,19 @@ public enum {{ type_name }}: Swift.Error {
     {% endfor %}
 
     {%- endif %}
+
+    {% call swift::uniffi_trait_impls(e.uniffi_trait_methods()) %}
+
+    {% if !config.omit_localized_error_conformance() %}
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    {% endif %}
 }
 
+#if compiler(>=6)
+extension {{ type_name }}: Sendable {}
+#endif
 
 #if swift(>=5.8)
 @_documentation(visibility: private)
@@ -104,22 +119,3 @@ public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_n
 public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
     return {{ ffi_converter_name }}.lower(value)
 }
-
-{% if !contains_object_references %}
-extension {{ type_name }}: Equatable, Hashable {}
-{% if config.generate_codable_conformance() %}
-extension {{ type_name }}: Codable {}
-{% endif %}
-{% endif %}
-
-{% if !config.omit_localized_error_conformance() %}
-extension {{ type_name }}: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-{% endif %}
-
-{% if config.generate_case_iterable_conformance() && !e.is_flat() && !e.contains_variant_fields() %}
-extension {{ type_name }}: CaseIterable {}
-{% endif %}

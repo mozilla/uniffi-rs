@@ -8,7 +8,7 @@
 {% include "Protocol.swift" %}
 
 {%- call swift::docstring(obj, 0) %}
-open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
+open class {{ impl_class_name }}: {{ protocol_name }}, {{ config.conformance_list_for_object(obj, is_error) }} {
     fileprivate let handle: UInt64
 
     /// Used to instantiate a [FFIObject] without an actual handle, for fakes in tests, mostly.
@@ -66,6 +66,16 @@ open class {{ impl_class_name }}: {{ protocol_name }}, @unchecked Sendable {
     {% for meth in obj.methods() -%}
     {%- call swift::func_decl("open func", meth, 4) %}
     {% endfor %}
+
+    {% call swift::uniffi_trait_impls(obj.uniffi_trait_methods()) %}
+
+    {%- if is_error %}
+    {% if !config.omit_localized_error_conformance() %}
+    public var errorDescription: String? {
+        String(reflecting: self)
+    }
+    {% endif %}
+    {% endif %}
 }
 
 {%- if !obj.has_callback_interface() %}
@@ -150,16 +160,9 @@ public struct {{ ffi_converter_name }}: FfiConverter {
 
 {%- endif %}
 
-{% call swift::uniffi_trait_impls(obj.uniffi_trait_methods()) %}
-
-{%- if is_error %}
-extension {{ impl_class_name }}: Swift.Error {}
-{% endif %}
-
 {%- for t in obj.trait_impls() %}
 extension {{impl_class_name}}: {{ self::trait_protocol_name(ci, t.trait_ty)? }} {}
 {% endfor %}
-
 
 {#
 We always write these public functions just in case the object is used as
@@ -181,14 +184,6 @@ public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> UInt64 {
 
 {# Objects as error #}
 {%- if is_error %}
-
-{% if !config.omit_localized_error_conformance() %}
-extension {{ type_name }}: Foundation.LocalizedError {
-    public var errorDescription: String? {
-        String(reflecting: self)
-    }
-}
-{% endif %}
 
 {# Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer storing a handle #}
 #if swift(>=5.8)

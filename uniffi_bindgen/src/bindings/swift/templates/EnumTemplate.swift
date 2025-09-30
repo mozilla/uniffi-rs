@@ -4,7 +4,11 @@
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
 {% match e.variant_discr_type() %}
 {% when None %}
+{%- if config.enum_has_conformances(e, contains_object_references) %}
+public enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_references) }} {
+{%- else %}
 public enum {{ type_name }} {
+{%- endif %}
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
@@ -12,7 +16,7 @@ public enum {{ type_name }} {
     ){% endif -%}
     {% endfor %}
 {% when Some(variant_discr_type) %}
-public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
+public enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, contains_object_references) }} {
     {% for variant in e.variants() %}
     {%- call swift::docstring(variant, 4) %}
     case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
@@ -20,7 +24,10 @@ public enum {{ type_name }} : {{ variant_discr_type|type_name }} {
     ){% endif -%}
     {% endfor %}
 {% endmatch %}
+
+{% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
 }
+
 #if compiler(>=6)
 extension {{ type_name }}: Sendable {}
 #endif
@@ -85,21 +92,3 @@ public func {{ ffi_converter_name }}_lift(_ buf: RustBuffer) throws -> {{ type_n
 public func {{ ffi_converter_name }}_lower(_ value: {{ type_name }}) -> RustBuffer {
     return {{ ffi_converter_name }}.lower(value)
 }
-
-{% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
-
-{%- if !contains_object_references %}
-{# We auto-generate `Equatable, Hashable`, but only if we have no objects. We could do better - see #2409 #}
-{% if !(contains_object_references || uniffi_trait_methods.eq_eq.is_some() || uniffi_trait_methods.hash_hash.is_some()) %}
-extension {{ type_name }}: Equatable, Hashable {}
-{% endif %}
-
-{# Not clear if `generate_codable_conformance` actually needs to avoid objects too? #}
-{%-     if config.generate_codable_conformance() %}
-extension {{ type_name }}: Codable {}
-{%-     endif %}
-{% endif %}
-
-{% if config.generate_case_iterable_conformance() && !e.contains_variant_fields() %}
-extension {{ type_name }}: CaseIterable {}
-{% endif %}
