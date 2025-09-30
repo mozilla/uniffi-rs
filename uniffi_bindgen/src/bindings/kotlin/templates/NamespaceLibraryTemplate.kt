@@ -75,7 +75,7 @@ external fun {{ func.name() }}(
 // We now use JNA's "direct mapping" - unclear if same considerations apply exactly.
 internal object IntegrityCheckingUniffiLib {
     init {
-        Native.register(findLibraryName(componentName = "{{ ci.namespace() }}"))
+        Native.register(IntegrityCheckingUniffiLib::class.java, findLibraryName(componentName = "{{ ci.namespace() }}"))
         uniffiCheckContractApiVersion(this)
 {%- if !config.omit_checksums %}
         uniffiCheckApiChecksums(this)
@@ -95,7 +95,7 @@ internal object UniffiLib {
     {% endif %}
 
     init {
-        Native.register(findLibraryName(componentName = "{{ ci.namespace() }}"))
+        Native.register(UniffiLib::class.java, findLibraryName(componentName = "{{ ci.namespace() }}"))
         {% for fn_item in self.initialization_fns(ci) -%}
         {{ fn_item }}
         {% endfor %}
