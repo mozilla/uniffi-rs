@@ -14,22 +14,28 @@
 ### What's new?
 
 - All user-defined types can now be renamed with the proc-macro `name = "NewName"` attribute (like already supported for methods and constructors) ([#2661](https://github.com/mozilla/uniffi-rs/pull/2661))
-- Objects can export the `Ord` trait, allowing such objects to be ordered ([#2583](https://github.com/mozilla/uniffi-rs/pull/2583)).
-- Objects can implement external traits ([#2430](https://github.com/mozilla/uniffi-rs/issues/2430))
-- Procmacros support `#[uniffi(default)]` on a field or `#[uniffi::export(default(arg_name))]` (ie,
-  without a literal) meaning the default value for the type. Named types can also have a default.
-  ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543))
-- Custom types support the default value, and specified as its "bridge" type ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
-- Custom `enum` and `object` types can be used as error type ([#2658](https://github.com/mozilla/uniffi-rs/pull/2658))
-- Objects can implement external traits ([#2430](https://github.com/mozilla/uniffi-rs/issues/2430))
+- Enums and Records support exporting uniffi traits (ie, `Display`, `Hash`, `Eq` etc) ([#2555](https://github.com/mozilla/uniffi-rs/issues/2555))
+- Support for exporting the `Ord` trait, allowing objects to be ordered by Rust ([#2583](https://github.com/mozilla/uniffi-rs/pull/2583)).
 - `#[uniffi(default)]` literals are now optional - eg, `#[uniffi(default)]` and `#[uniffi(default = 0)]` are equivalent.
+  Similarly for args; `#[uniffi::export(default(arg_name))]`.
   When no literal is specifed, named types (objects, records, etc) can be used as long as they have suitable default values.
   ([#2543](https://github.com/mozilla/uniffi-rs/pull/2543)).
   Custom types too ([#2603](https://github.com/mozilla/uniffi-rs/pull/2603))
-- Kotlin: The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
-- Python: methods now have typing annotations for return values ([#2625](https://github.com/mozilla/uniffi-rs/issues/2625))
-- Swift: initialization functions now have a stable ordering when using external types.
-  This makes the generated source files more deterministic.
+- Custom `enum` and `object` types can be used as error type ([#2658](https://github.com/mozilla/uniffi-rs/pull/2658))
+- Objects can implement external traits ([#2430](https://github.com/mozilla/uniffi-rs/issues/2430))
+- Fix for external errors when error only used externally ([#2641](https://github.com/mozilla/uniffi-rs/pull/2641))
+- Kotlin:
+  * Switch to JNA direct mapping ([#2229](https://github.com/mozilla/uniffi-rs/pull/2229))
+  * Support throwing external error ([#2629](https://github.com/mozilla/uniffi-rs/pull/2629))
+  * The `NoPointer` placeholder object used to create fake interface instances has been renamed to `NoHandle`
+- Python:
+  * Methods now have typing annotations for return values ([#2625](https://github.com/mozilla/uniffi-rs/issues/2625))
+  * Fix relative imports ([#2657](https://github.com/mozilla/uniffi-rs/pull/2657))
+  * Fix shadowing param names with internal variables in Python (#2628/#2645)
+- Swift:
+  * All object protocol conformances are public ([#2671](https://github.com/mozilla/uniffi-rs/pull/2671))
+  * Initialization functions now have a stable ordering when using external types.
+    This makes the generated source files deterministic.
 
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 
