@@ -24,6 +24,7 @@ class {{ type_name }}:
 
     # Each enum variant is a nested class of the enum itself.
     {% for variant in e.variants -%}
+    @dataclass
     class {{ variant.name }}:
         {{ variant.docstring|docstring(8) -}}
 
@@ -53,15 +54,10 @@ class {{ type_name }}:
             return self._values == other._values
     {%-     endif %}
 
-    {%-  else -%}
-        {%- for field in variant.fields %}
-        {{ field.name }}: {{ field.ty.type_name }}
-        {{ field.docstring|docstring(8) -}}
-        {%- endfor %}
-
+    {%-  else %}
         def __init__(self, {% for field in variant.fields %}
         {{- field.name }}: {{- field.ty.type_name}}
-        {%- if field.default.is_some() %} = _DEFAULT{% endif %}
+        {%- if let Some(default) = field.default %} = {{ default.arg_literal }}{% endif %}
         {%- if !loop.last %}, {% endif %}
         {%- endfor %}):
         {%- for field in variant.fields %}
@@ -69,11 +65,17 @@ class {{ type_name }}:
             {%- when None %}
             self.{{ field.name }} = {{ field.name }}
             {%- when Some(default) %}
-            if {{ field.name }} is _DEFAULT:
+            {%- if default.is_arg_literal %}
+            self.{{ field.name }} = {{ field.name }}
+            {%- else %}
+            if {{ field.name }} is {{ default.arg_literal }}:
                 self.{{ field.name }} = {{ default.py_default }}
             else:
                 self.{{ field.name }} = {{ field.name }}
+            {%- endif %}
             {%- endmatch %}
+            {# not sure what to do with docstrings - see #2552, suggests putting them after the field init #}
+            {{ field.docstring|docstring(8) -}}
         {%- endfor %}
             pass
 

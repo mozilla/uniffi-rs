@@ -18,6 +18,7 @@ from __future__ import annotations
 import os
 import sys
 import ctypes
+from dataclasses import dataclass
 import enum
 import struct
 import contextlib

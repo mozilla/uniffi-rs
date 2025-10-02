@@ -177,6 +177,10 @@ pub struct DefaultValueNode {
     pub default: DefaultValue,
     /// The default value rendered as a Python string
     pub py_default: String,
+    /// The default value as specified as a literal in function args.
+    pub arg_literal: String,
+    /// Convenience - whether the arg literal is our literal.
+    pub is_arg_literal: bool,
 }
 
 #[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]

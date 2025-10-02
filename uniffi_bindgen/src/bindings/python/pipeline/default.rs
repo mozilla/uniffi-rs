@@ -14,10 +14,53 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
 
     namespace.try_visit_mut(|default: &mut DefaultValueNode| {
         default.py_default = render_default(&default.default)?;
+        // Many types can use the appropriate literal directly.
+        default.arg_literal = match &default.default {
+            DefaultValue::Default(tn) => match &tn.ty {
+                Type::UInt8
+                | Type::UInt16
+                | Type::UInt32
+                | Type::UInt64
+                | Type::Int8
+                | Type::Int16
+                | Type::Int32
+                | Type::Int64
+                | Type::Float32
+                | Type::Float64
+                | Type::Boolean
+                | Type::Bytes
+                | Type::String
+                | Type::Optional { .. } => default.py_default.clone(),
+                _ => "_DEFAULT".to_string(),
+            },
+            DefaultValue::Literal(ln) => {
+                if can_use_literal(&ln.lit) {
+                    default.py_default.clone()
+                } else {
+                    "_DEFAULT".to_string()
+                }
+            }
+        };
+        default.is_arg_literal = default.py_default == default.arg_literal;
         Ok(())
     })
 }
 
+pub fn can_use_literal(literal: &Literal) -> bool {
+    match literal {
+        Literal::Boolean(_)
+        | Literal::String(_)
+        | Literal::UInt(_, _, _)
+        | Literal::Int(_, _, _)
+        | Literal::Float(_, _)
+        | Literal::Enum(_, _) => true,
+        Literal::Some { inner } => match &**inner {
+            DefaultValue::Literal(inner_lit) => can_use_literal(&inner_lit.lit),
+            _ => false,
+        },
+        _ => false,
+    }
+}
 pub(super) fn render_default(default: &DefaultValue) -> Result<String> {
     Ok(match default {
         DefaultValue::Default(tn) => match &tn.ty {
