@@ -154,7 +154,9 @@ class TestFutures(unittest.TestCase):
 
         async def test():
             trait_obj = PyAsyncParser()
+            print("DEBUGPRINT[82]: test_futures.py:159 (before self.assertEqual(await as_string_using_t…)")
             self.assertEqual(await as_string_using_trait(trait_obj, 1, 42), "42")
+            print("DEBUGPRINT[83]: test_futures.py:160 (after self.assertEqual(await as_string_using_t…)")
             self.assertEqual(await try_from_string_using_trait(trait_obj, 1, "42"), 42)
             with self.assertRaises(ParserError.NotAnInt):
                 await try_from_string_using_trait(trait_obj, 1, "fourty-two")

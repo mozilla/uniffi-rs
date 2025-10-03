@@ -1813,6 +1813,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "uniffi",
+ "uniffi-fixture-ext-types-lib-one",
 ]
 
 [[package]]

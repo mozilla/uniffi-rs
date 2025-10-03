@@ -19,7 +19,7 @@ pub fn run_test(tmp_dir: &str, fixture_name: &str, script_file: &str) -> Result<
         tmp_dir,
         fixture_name,
         script_file,
-        vec![],
+        vec!["-v".to_string()],
         &RunScriptOptions::default(),
     )
 }
