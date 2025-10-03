@@ -33,7 +33,10 @@ pub fn pass(root: &mut Root) -> Result<()> {
         namespace.visit(|e: &Enum| exported_names.push(e.name.clone()));
         namespace.visit(|r: &Record| exported_names.push(r.name.clone()));
         namespace.visit(|f: &Function| exported_names.push(f.callable.name.clone()));
-        namespace.visit(|i: &Interface| exported_names.push(i.name.clone()));
+        namespace.visit(|i: &Interface| {
+            exported_names.push(i.name.clone());
+            exported_names.push(i.protocol.name.clone());
+        });
         namespace.visit(|c: &CallbackInterface| exported_names.push(c.name.clone()));
         namespace.exported_names = exported_names;
 

@@ -43,13 +43,25 @@ pub fn pass(int: &mut Interface) -> Result<()> {
             Type::Interface {
                 name,
                 external_package_name,
+                imp,
                 ..
-            } => (name, external_package_name),
+            } => {
+                // For trait interfaces implement in Rust-only, the protocol has `Protocol` appended.
+                // Trait interfaces with foreign implementations don't have that
+                match imp {
+                    ObjectImpl::Trait => (format!("{name}Protocol"), external_package_name),
+                    ObjectImpl::CallbackTrait => (name.to_string(), external_package_name),
+                    ObjectImpl::Struct => {
+                        bail!("Objects can only inherit from traits, not other objects")
+                    }
+                }
+            }
+
             Type::CallbackInterface {
                 name,
                 external_package_name,
                 ..
-            } => (name, external_package_name),
+            } => (name.to_string(), external_package_name),
             _ => bail!("trait_ty {:?} isn't a trait", t),
         };
         let fq = match external_package_name {
