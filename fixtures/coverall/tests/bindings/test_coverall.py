@@ -502,6 +502,17 @@ class TraitsTest(unittest.TestCase):
         self.assertEqual(traits[0].concat("cow", "boy"), "cowboy")
         self.assertEqual(traits[1].concat("cow", "boy"), "cowboy")
 
+    def test_pass_object_to_function_that_input_trait(self):
+        string_util_obj = StringUtilObject("--")
+
+        # StringUtilObject implements StringUtil.
+        # We currently don't support passing a `StringUtilObject` to a function that inputs a `dyn
+        # StringUtil`.
+        # This test checks that the result is a TypeError rather than a segfault (#2649)
+
+        with self.assertRaises(TypeError):
+            concat_with_string_util(string_util_obj, "cow", "boy"),
+
     def test_html_error(self):
         with self.assertRaises(HtmlError):
             validate_html("test")

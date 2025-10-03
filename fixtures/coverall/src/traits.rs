@@ -261,3 +261,33 @@ impl StringUtil for StringUtilImpl2 {
         format!("{a}{b}")
     }
 }
+
+/// Object that implements `StringUtil`
+/// This lets us test what happens if foreign bindings pass in `StringUtilImpl` when `StringUtil` was expected.
+/// Ideally, languages should coerce the object to it's trait, however that's not supported at this time.
+/// The current test is simply that this doesn't cause a segfault (#2649)
+#[derive(uniffi::Object)]
+pub struct StringUtilObject {
+    separator: String,
+}
+
+#[uniffi::export]
+impl StringUtilObject {
+    #[uniffi::constructor]
+    pub fn new(separator: String) -> Self {
+        Self { separator }
+    }
+}
+
+#[uniffi::export]
+impl StringUtil for StringUtilObject {
+    fn concat(&self, a: &str, b: &str) -> String {
+        let separator = &self.separator;
+        format!("{a}{separator}{b}")
+    }
+}
+
+#[uniffi::export]
+pub fn concat_with_string_util(string_util: Arc<dyn StringUtil>, a: &str, b: &str) -> String {
+    string_util.concat(a, b)
+}
