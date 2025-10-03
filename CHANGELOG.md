@@ -32,6 +32,7 @@
   * Methods now have typing annotations for return values ([#2625](https://github.com/mozilla/uniffi-rs/issues/2625))
   * Fix relative imports ([#2657](https://github.com/mozilla/uniffi-rs/pull/2657))
   * Fix shadowing param names with internal variables in Python (#2628/#2645)
+  * Don't allow objects to be passed as arguments when traits are expected (#2649)
 - Swift:
   * All object protocol conformances are public ([#2671](https://github.com/mozilla/uniffi-rs/pull/2671))
   * Initialization functions now have a stable ordering when using external types.
