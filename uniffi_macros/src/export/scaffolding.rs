@@ -250,12 +250,15 @@ pub(super) fn gen_ffi_function(
                 ::uniffi::rust_call(call_status, || {
                     let result = match uniffi_lift_args() {
                         ::std::result::Result::Ok(uniffi_args) => {
-                            ::uniffi::deps::trace!("success: {}", #ffi_fn_name);
+                            ::uniffi::deps::trace!("lift_args success: {}", #ffi_fn_name);
                             let uniffi_result = #rust_fn_call;
-                            #lower_return(#convert_result)
+                            ::uniffi::deps::trace!("call success: {}", #ffi_fn_name);
+                            let uniffi_lowered_return = #lower_return(#convert_result);
+                            ::uniffi::deps::trace!("lower_return success: {}", #ffi_fn_name);
+                            uniffi_lowered_return
                         }
                         ::std::result::Result::Err((arg_name, error)) => {
-                            ::uniffi::deps::trace!("error: {}", #ffi_fn_name);
+                            ::uniffi::deps::trace!("lift_args error: {}", #ffi_fn_name);
                             #handle_failed_lift(::uniffi::LiftArgsError { arg_name, error} )
                         },
                     };
