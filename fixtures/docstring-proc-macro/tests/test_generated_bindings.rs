@@ -52,10 +52,7 @@ mod tests {
 
         let config_supplier = {
             use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
-            let metadata = cargo_metadata::MetadataCommand::new()
-                .exec()
-                .expect("error running cargo metadata");
-            CrateConfigSupplier::from(metadata)
+            CrateConfigSupplier::from_cargo_metadata_command(false).unwrap()
         };
 
         uniffi_bindgen::library_mode::generate_bindings(
