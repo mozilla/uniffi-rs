@@ -40,7 +40,6 @@ pub fn pipeline() -> Pipeline<initial::Root, Root> {
     new_pipeline()
         .convert_ir_pass::<Root>()
         .pass(modules::pass)
-        .pass(callable::pass)
         .pass(rust_buffer::pass)
         .pass(rust_future::pass)
         .pass(self_types::pass)
