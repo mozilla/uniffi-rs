@@ -15,8 +15,8 @@ use uniffi_meta::{
 };
 
 use crate::{
-    crate_name_from_cargo_toml, macro_metadata, BindgenCrateConfigSupplier, Component,
-    ComponentInterface, Result,
+    crate_name_from_cargo_toml, interface, macro_metadata, pipeline, BindgenCrateConfigSupplier,
+    Component, ComponentInterface, Result,
 };
 
 /// Load metadata, component interfaces, configuration, etc. for binding generators.
@@ -61,7 +61,9 @@ impl<'config> BindgenLoader<'config> {
         match source_path.extension() {
             Some(ext) if ext.to_lowercase() == "udl" => {
                 let crate_name = crate_name_from_cargo_toml(source_path)?;
-                let group = uniffi_udl::parse_udl(&fs::read_to_string(source_path)?, &crate_name)?;
+                let mut group =
+                    uniffi_udl::parse_udl(&fs::read_to_string(source_path)?, &crate_name)?;
+                Self::add_checksums(&mut group);
                 Ok(HashMap::from([(crate_name, group)]))
             }
             _ => {
@@ -85,6 +87,39 @@ impl<'config> BindgenLoader<'config> {
                 }
                 Ok(metadata_groups)
             }
+        }
+    }
+
+    /// Add checksums for metadata parsed from UDL
+    fn add_checksums(metadata_group: &mut MetadataGroup) {
+        // Need to temporarily take items BTree set, since we're technically mutating it's contents
+        // Each item will be added back at the bottom of the for loop.
+        let items = std::mem::take(&mut metadata_group.items);
+        for mut meta in items {
+            // Make sure metadata checksums are set
+            match &mut meta {
+                Metadata::Func(func) => {
+                    func.checksum = Some(uniffi_meta::checksum(&interface::Function::from(
+                        func.clone(),
+                    )));
+                }
+                Metadata::Method(meth) => {
+                    // making a method is mildly tricky as we need a type for self.
+                    // for the purposes of a checksum we ignore self info from udl.
+                    let method_object =
+                        interface::Method::from_metadata(meth.clone(), uniffi_meta::Type::UInt8);
+                    meth.checksum = Some(uniffi_meta::checksum(&method_object));
+                }
+                Metadata::Constructor(cons) => {
+                    cons.checksum = Some(uniffi_meta::checksum(&interface::Constructor::from(
+                        cons.clone(),
+                    )));
+                }
+                // Note: UDL-based callbacks don't have checksum functions, don't set the
+                // checksum for those.
+                _ => (),
+            }
+            metadata_group.items.insert(meta);
         }
     }
 
@@ -182,6 +217,25 @@ impl<'config> BindgenLoader<'config> {
             .collect()
     }
 
+    /// Load a [pipeline::initial::Root] value from the metadata
+    pub fn load_pipeline_initial_root(
+        &self,
+        metadata: MetadataGroupMap,
+    ) -> Result<pipeline::initial::Root> {
+        let mut metadata_converter = pipeline::initial::UniffiMetaConverter::default();
+        for metadata_group in metadata.into_values() {
+            if let Some(docstring) = metadata_group.namespace_docstring {
+                metadata_converter
+                    .add_module_docstring(metadata_group.namespace.name.clone(), docstring);
+            }
+            metadata_converter.add_metadata_item(Metadata::Namespace(metadata_group.namespace))?;
+            for meta in metadata_group.items {
+                metadata_converter.add_metadata_item(meta)?;
+            }
+        }
+        metadata_converter.try_into_initial_ir()
+    }
+
     /// Get the basename for a source file
     ///
     /// This will remove any file extension.
@@ -205,5 +259,9 @@ impl<'config> BindgenLoader<'config> {
             source_path.extension(),
             Some(ext) if ext.to_lowercase() == "udl"
         )
+    }
+
+    pub fn filter_metadata_by_crate_name(&self, metadata: &mut MetadataGroupMap, crate_name: &str) {
+        metadata.retain(|_, metadata_group| metadata_group.namespace.crate_name == crate_name)
     }
 }
