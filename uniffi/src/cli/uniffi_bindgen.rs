@@ -2,12 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use camino::Utf8PathBuf;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fmt;
 use uniffi_bindgen::bindings::*;
 use uniffi_bindgen::pipeline::initial;
+use uniffi_bindgen::BindgenLoader;
 use uniffi_pipeline::PrintOptions;
 
 /// Enumeration of all foreign language targets currently supported by our CLI.
@@ -187,15 +188,10 @@ fn config_supplier(
     metadata_no_deps: bool,
 ) -> Result<impl uniffi_bindgen::BindgenCrateConfigSupplier> {
     #[cfg(feature = "cargo-metadata")]
-    {
-        use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
-        let mut cmd = cargo_metadata::MetadataCommand::new();
-        if metadata_no_deps {
-            cmd.no_deps();
-        }
-        let metadata = cmd.exec().context("error running cargo metadata")?;
-        Ok(CrateConfigSupplier::from(metadata))
-    }
+    return uniffi_bindgen::cargo_metadata::CrateConfigSupplier::from_cargo_metadata_command(
+        metadata_no_deps,
+    );
+
     #[cfg(not(feature = "cargo-metadata"))]
     Ok(uniffi_bindgen::EmptyCrateConfigSupplier)
 }
@@ -330,11 +326,14 @@ pub fn run_main() -> anyhow::Result<()> {
                     .as_ref()
                     .expect("--out-dir is required when generating {language} bindings");
                 let config_supplier = config_supplier(metadata_no_deps)?;
-                let initial_root = if library_mode {
-                    initial::Root::from_library(config_supplier, &source, crate_name.clone())?
-                } else {
-                    initial::Root::from_udl(config_supplier, &source, crate_name.clone())?
-                };
+                let loader = BindgenLoader::new(&config_supplier);
+                // Note: we ignore `library_mode` in this case, `BindgenLoader` is smart enough to
+                // auto-detect the source type
+                let mut metadata = loader.load_metadata(&source)?;
+                if let Some(crate_name) = &crate_name {
+                    loader.filter_metadata_by_crate_name(&mut metadata, crate_name);
+                }
+                let initial_root = loader.load_pipeline_initial_root(&source, metadata)?;
 
                 match language {
                     TargetLanguage::Python => python::run_pipeline(initial_root, out_dir)?,

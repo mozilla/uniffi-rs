@@ -151,14 +151,9 @@ impl BindingGenerator for SwiftBindingGenerator {
 pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     #[cfg(feature = "cargo-metadata")]
     let config_supplier = {
-        use crate::cargo_metadata::CrateConfigSupplier;
-        use anyhow::Context;
-        let mut cmd = cargo_metadata::MetadataCommand::new();
-        if options.metadata_no_deps {
-            cmd.no_deps();
-        }
-        let metadata = cmd.exec().context("error running cargo metadata")?;
-        CrateConfigSupplier::from(metadata)
+        crate::cargo_metadata::CrateConfigSupplier::from_cargo_metadata_command(
+            options.metadata_no_deps,
+        )?
     };
     #[cfg(not(feature = "cargo-metadata"))]
     let config_supplier = crate::EmptyCrateConfigSupplier;
