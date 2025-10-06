@@ -9,3 +9,6 @@ from datetime import datetime, timezone
 import keywords_rust
 # but might as well call something.
 keywords_rust._if(0)
+
+# python/mypy tests - not keywords, but type names in strange places.
+assert(keywords_rust.Return().bool == False)
