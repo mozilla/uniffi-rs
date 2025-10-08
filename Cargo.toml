@@ -80,4 +80,4 @@ members = [
 resolver = "2"
 
 [workspace.dependencies]
-uniffi = { path = "./uniffi", version = "0.29" }
+uniffi = { path = "./uniffi", version = "0.30" }

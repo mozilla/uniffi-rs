@@ -4,11 +4,11 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.30.0) - (_2025-10-08_)
+## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 
 ### ⚠️ Breaking Changes ⚠️
 - UDL-based trait interfaces must now be wrapped with the `#[uniffi::trait_interface]` attribute.
@@ -63,7 +63,7 @@
           When Lifting/lowering trait interface handles, check if the handle was generated from Rust or the foreign side.
     - See https://github.com/mozilla/uniffi-rs/pulls/2586 examples of how the builtin bindings here changed.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...HEAD).
+[All changes in v0.30.0](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...v0.30.0).
 
 ## v0.29.4 (backend crates: v0.29.4) - (_2025-07-24_)
 
