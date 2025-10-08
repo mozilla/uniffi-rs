@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_internal_macros"
-version = "0.29.4"
+version = "0.30.0"
 description = "a multi-language bindings generator for rust (interal macro crate)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
