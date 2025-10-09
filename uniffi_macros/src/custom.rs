@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use crate::util::{
-    create_metadata_items, either_attribute_arg, ident_to_string, kw, mod_path,
-    parse_comma_separated, UniffiAttributeArgs,
+    create_metadata_items, either_attribute_arg, ident_to_string, kw, parse_comma_separated,
+    UniffiAttributeArgs,
 };
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
@@ -168,7 +168,6 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
     }
     .map_err(|msg| syn::Error::new(custom_type.span(), msg))?;
 
-    let mod_path = mod_path()?;
     let (impl_spec, derive_ffi_traits) = if options.is_remote() {
         (
             quote! { unsafe impl ::uniffi::FfiConverter<crate::UniFfiTag> for #custom_type },
@@ -250,7 +249,7 @@ pub(crate) fn expand_custom_type(args: CustomTypeArgs) -> syn::Result<TokenStrea
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_CUSTOM)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat(<#uniffi_type as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META);
         }
@@ -292,11 +291,10 @@ pub(crate) fn custom_type_meta_static_var(
     builtin: &Type,
     docstring: &str,
 ) -> syn::Result<TokenStream> {
-    let module_path = mod_path()?;
     let builtin = crate::ffiops::type_id_meta(builtin);
     let metadata_expr = quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CUSTOM_TYPE)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat(#builtin)
                 .concat_long_str(#docstring)

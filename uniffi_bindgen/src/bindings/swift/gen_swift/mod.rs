@@ -476,7 +476,7 @@ impl Config {
 // This differs based on whether the trait supports foreign impls (ie,
 // whether is has a "callback interface".
 fn trait_protocol_name(ci: &ComponentInterface, trait_ty: &Type) -> Result<String> {
-    let Some(module_path) = &trait_ty.module_path() else {
+    let Some(module_path) = &trait_ty.crate_name() else {
         anyhow::bail!("Invalid trait_type: {trait_ty:?}");
     };
     let Some(ci_look) = ci.find_component_interface(module_path) else {
@@ -685,7 +685,7 @@ impl<'a> SwiftWrapper<'a> {
         let extern_module_init_fns = self
             .ci
             .iter_external_types()
-            .filter_map(|t| t.module_path())
+            .filter_map(|t| t.crate_name())
             .map(|module_path| {
                 format!(
                     "uniffiEnsure{}Initialized",

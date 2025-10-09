@@ -156,15 +156,15 @@ mod test_type_ids {
     #[test]
     fn test_user_types() {
         check_type_id::<Person>(Type::Record {
-            module_path: "uniffi_fixture_metadata".into(),
+            module_path: "uniffi_fixture_metadata::tests::person".into(),
             name: "Person".into(),
         });
         check_type_id::<Weapon>(Type::Enum {
-            module_path: "uniffi_fixture_metadata".into(),
+            module_path: "uniffi_fixture_metadata::tests::weapon".into(),
             name: "Weapon".into(),
         });
         check_type_id::<Arc<Calculator>>(Type::Object {
-            module_path: "uniffi_fixture_metadata".into(),
+            module_path: "uniffi_fixture_metadata::tests::calc".into(),
             name: "Calculator".into(),
             imp: ObjectImpl::Struct,
         });
@@ -201,7 +201,7 @@ mod test_metadata {
         check_metadata(
             &person::UNIFFI_META_UNIFFI_FIXTURE_METADATA_RECORD_PERSON,
             RecordMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::person".into(),
                 name: "Person".into(),
                 remote: false,
                 fields: vec![
@@ -236,7 +236,7 @@ mod test_metadata {
         check_metadata(
             &weapon::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_WEAPON,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::weapon".into(),
                 name: "Weapon".into(),
                 shape: EnumShape::Enum,
                 remote: false,
@@ -272,7 +272,7 @@ mod test_metadata {
         check_metadata(
             &state::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_STATE,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::state".into(),
                 name: "State".into(),
                 shape: EnumShape::Enum,
                 remote: false,
@@ -301,7 +301,7 @@ mod test_metadata {
                         fields: vec![FieldMetadata {
                             name: "result".into(),
                             ty: Type::Record {
-                                module_path: "uniffi_fixture_metadata".into(),
+                                module_path: "uniffi_fixture_metadata::tests::person".into(),
                                 name: "Person".into(),
                             },
                             default: None,
@@ -321,7 +321,7 @@ mod test_metadata {
         check_metadata(
             &enum_repr::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_REPRU8,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::enum_repr".into(),
                 name: "ReprU8".into(),
                 shape: EnumShape::Enum,
                 remote: false,
@@ -357,7 +357,7 @@ mod test_metadata {
         check_metadata(
             &enum_repr::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ENUM_NOREPR,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::enum_repr".into(),
                 name: "NoRepr".into(),
                 shape: EnumShape::Enum,
                 remote: false,
@@ -379,7 +379,7 @@ mod test_metadata {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_FLATERROR,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::error".into(),
                 name: "FlatError".into(),
                 shape: EnumShape::Error { flat: true },
                 remote: false,
@@ -409,7 +409,7 @@ mod test_metadata {
         check_metadata(
             &error::UNIFFI_META_UNIFFI_FIXTURE_METADATA_ERROR_COMPLEXERROR,
             EnumMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::error".into(),
                 name: "ComplexError".into(),
                 shape: EnumShape::Error { flat: false },
                 remote: false,
@@ -438,7 +438,7 @@ mod test_metadata {
                         fields: vec![FieldMetadata {
                             name: "weapon".into(),
                             ty: Type::Enum {
-                                module_path: "uniffi_fixture_metadata".into(),
+                                module_path: "uniffi_fixture_metadata::tests::weapon".into(),
                                 name: "Weapon".into(),
                             },
                             default: None,
@@ -458,7 +458,7 @@ mod test_metadata {
         check_metadata(
             &calc::UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_CALCULATOR,
             ObjectMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::calc".into(),
                 name: "Calculator".into(),
                 remote: false,
                 imp: ObjectImpl::Struct,
@@ -472,21 +472,21 @@ mod test_metadata {
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_DEBUG).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
-                if fmt.module_path == "uniffi_fixture_metadata" &&
+                if fmt.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    fmt.self_name == "Special"
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_EQ).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
-                if eq.module_path == "uniffi_fixture_metadata" &&
+                if eq.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    eq.self_name == "Special" &&
-                   ne.module_path == "uniffi_fixture_metadata" &&
+                   ne.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    ne.self_name == "Special"
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIAL_ORD).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
-                if cmp.module_path == "uniffi_fixture_metadata" &&
+                if cmp.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    cmp.self_name == "Special"
         ));
     }
@@ -496,21 +496,21 @@ mod test_metadata {
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_DEBUG).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
-                if fmt.module_path == "uniffi_fixture_metadata" &&
+                if fmt.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    fmt.self_name == "SpecialEnum"
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_EQ).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
-                if eq.module_path == "uniffi_fixture_metadata" &&
+                if eq.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    eq.self_name == "SpecialEnum" &&
-                   ne.module_path == "uniffi_fixture_metadata" &&
+                   ne.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    ne.self_name == "SpecialEnum"
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALENUM_ORD).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
-                if cmp.module_path == "uniffi_fixture_metadata" &&
+                if cmp.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    cmp.self_name == "SpecialEnum"
         ));
     }
@@ -520,21 +520,21 @@ mod test_metadata {
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_DEBUG).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Debug { fmt })
-                if fmt.module_path == "uniffi_fixture_metadata" &&
+                if fmt.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    fmt.self_name == "SpecialRecord"
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_EQ).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Eq { eq, ne })
-                if eq.module_path == "uniffi_fixture_metadata" &&
+                if eq.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    eq.self_name == "SpecialRecord" &&
-                   ne.module_path == "uniffi_fixture_metadata" &&
+                   ne.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    ne.self_name == "SpecialRecord"
         ));
         assert!(matches!(
             uniffi_meta::read_metadata(&uniffi_traits::UNIFFI_META_UNIFFI_FIXTURE_METADATA_UNIFFI_TRAIT_SPECIALRECORD_ORD).unwrap(),
             Metadata::UniffiTrait(UniffiTraitMetadata::Ord { cmp })
-                if cmp.module_path == "uniffi_fixture_metadata" &&
+                if cmp.module_path == "uniffi_fixture_metadata::tests::uniffi_traits" &&
                    cmp.self_name == "SpecialRecord"
         ));
     }
@@ -613,21 +613,21 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func".into(),
                 is_async: false,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
                         Type::Record {
-                            module_path: "uniffi_fixture_metadata".into(),
+                            module_path: "uniffi_fixture_metadata::tests::person".into(),
                             name: "Person".into(),
                         },
                     ),
                     FnParamMetadata::simple(
                         "weapon",
                         Type::Enum {
-                            module_path: "uniffi_fixture_metadata".into(),
+                            module_path: "uniffi_fixture_metadata::tests::weapon".into(),
                             name: "Weapon".into(),
                         },
                     ),
@@ -645,7 +645,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_no_return".into(),
                 is_async: false,
                 inputs: vec![],
@@ -664,16 +664,16 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_THAT_THROWS,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_that_throws".into(),
                 is_async: false,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::state".into(),
                     name: "State".into(),
                 }),
                 throws: Some(Type::Enum {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::error".into(),
                     name: "FlatError".into(),
                 }),
                 checksum: Some(
@@ -689,13 +689,13 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_FUNC_NO_RETURN_THAT_THROWS,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_func_no_return_that_throws".into(),
                 is_async: false,
                 inputs: vec![],
                 return_type: None,
                 throws: Some(Type::Enum {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::error".into(),
                     name: "FlatError".into(),
                 }),
                 checksum: Some(
@@ -712,7 +712,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ADD,
             MethodMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 self_name: "Calculator".into(),
                 name: "add".into(),
                 is_async: false,
@@ -736,21 +736,21 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_async_func".into(),
                 is_async: true,
                 inputs: vec![
                     FnParamMetadata::simple(
                         "person",
                         Type::Record {
-                            module_path: "uniffi_fixture_metadata".into(),
+                            module_path: "uniffi_fixture_metadata::tests::person".into(),
                             name: "Person".into(),
                         },
                     ),
                     FnParamMetadata::simple(
                         "weapon",
                         Type::Enum {
-                            module_path: "uniffi_fixture_metadata".into(),
+                            module_path: "uniffi_fixture_metadata::tests::weapon".into(),
                             name: "Weapon".into(),
                         },
                     ),
@@ -770,16 +770,16 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_FUNC_TEST_ASYNC_FUNC_THAT_THROWS,
             FnMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "test_async_func_that_throws".into(),
                 is_async: true,
                 inputs: vec![],
                 return_type: Some(Type::Enum {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::state".into(),
                     name: "State".into(),
                 }),
                 throws: Some(Type::Enum {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::error".into(),
                     name: "FlatError".into(),
                 }),
                 checksum: Some(
@@ -796,7 +796,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATOR_ASYNC_SUB,
             MethodMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 self_name: "Calculator".into(),
                 name: "async_sub".into(),
                 is_async: true,
@@ -821,7 +821,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_CALCULATORDISPLAY,
             ObjectMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "CalculatorDisplay".into(),
                 remote: false,
                 imp: ObjectImpl::Trait,
@@ -835,7 +835,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_TRAITWITHFOREIGN,
             ObjectMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "TraitWithForeign".into(),
                 remote: false,
                 imp: ObjectImpl::CallbackTrait,
@@ -851,11 +851,11 @@ mod test_function_metadata {
             MethodMetadata {
                 // The main point of this test is to check the `Type` value for a trait interface
                 return_type: Some(Type::Object {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                     name: "CalculatorDisplay".into(),
                     imp: ObjectImpl::Trait,
                 }),
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 self_name: "Calculator".into(),
                 name: "get_display".into(),
                 is_async: false,
@@ -876,7 +876,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_CALCULATORDISPLAY_DISPLAY_RESULT,
             TraitMethodMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 trait_name: "CalculatorDisplay".into(),
                 index: 0,
                 name: "display_result".into(),
@@ -904,7 +904,8 @@ mod test_function_metadata {
                     FnParamMetadata::simple(
                         "val",
                         Type::Object {
-                            module_path: "uniffi_fixture_metadata".into(),
+                            module_path: "uniffi_fixture_metadata::tests::test_function_metadata"
+                                .into(),
                             name: "TraitWithForeign".into(),
                             imp: ObjectImpl::CallbackTrait,
                         },
@@ -912,7 +913,7 @@ mod test_function_metadata {
                 ],
                 // We might as well test other fields too though
                 return_type: None,
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_function_metadata".into(),
                 name: "input_trait_with_foreign".into(),
                 is_async: false,
                 throws: None,
@@ -930,7 +931,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CALLBACK_INTERFACE_LOGGER,
             CallbackInterfaceMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests".into(),
                 name: "Logger".into(),
                 docstring: None,
             },
@@ -938,7 +939,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_LOGGER_LOG,
             TraitMethodMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests".into(),
                 trait_name: "Logger".into(),
                 index: 0,
                 name: "log".into(),
@@ -960,7 +961,7 @@ mod test_function_metadata {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_INTERFACE_REALLOGGER,
             ObjectMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests".into(),
                 name: "RealLogger".into(),
                 imp: ObjectImpl::Struct,
                 remote: false,
@@ -972,12 +973,12 @@ mod test_function_metadata {
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_OBJECT_TRAIT_IMPL_REALLOGGER_LOGGER,
             ObjectTraitImplMetadata {
                 ty: Type::Object {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests".into(),
                     name: "RealLogger".into(),
                     imp: ObjectImpl::Struct,
                 },
                 trait_ty: Type::CallbackInterface {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests".into(),
                     name: "Logger".into(),
                 },
             },
@@ -999,7 +1000,7 @@ mod test_custom_types {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CUSTOM_TYPE_CUSTOMSTRING,
             CustomTypeMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_custom_types".into(),
                 name: "CustomString".into(),
                 builtin: Type::String,
                 docstring: None,
@@ -1009,10 +1010,10 @@ mod test_custom_types {
         check_metadata(
             &UNIFFI_META_UNIFFI_FIXTURE_METADATA_CUSTOM_TYPE_CUSTOMPERSON,
             CustomTypeMetadata {
-                module_path: "uniffi_fixture_metadata".into(),
+                module_path: "uniffi_fixture_metadata::tests::test_custom_types".into(),
                 name: "CustomPerson".into(),
                 builtin: Type::Record {
-                    module_path: "uniffi_fixture_metadata".into(),
+                    module_path: "uniffi_fixture_metadata::tests::person".into(),
                     name: "Person".into(),
                 },
                 docstring: None,

@@ -6,6 +6,11 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes for external bindings authors ⚠️
+- The `module_path` field now stores full module paths rather than crate names only.
+  External bindings authors will probably need to make some minor changes to work with this.
+  See https://github.com/mozilla/uniffi-rs/pull/2695/ for examples.
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...HEAD).
 
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)

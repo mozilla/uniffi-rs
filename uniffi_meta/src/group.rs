@@ -47,7 +47,7 @@ pub fn group_metadata(group_map: &mut MetadataGroupMap, items: Vec<Metadata>) ->
             continue;
         }
 
-        let crate_name = calc_crate_name(item.module_path()).to_owned();
+        let crate_name = crate_name(item.module_path()).to_owned();
         let group = match group_map.get_mut(&crate_name) {
             Some(ns) => ns,
             None => bail!("Unknown namespace for {item:?} ({crate_name})"),
@@ -71,8 +71,4 @@ impl MetadataGroup {
     pub fn add_item(&mut self, item: Metadata) {
         self.items.insert(item);
     }
-}
-
-fn calc_crate_name(module_path: &str) -> &str {
-    module_path.split("::").next().unwrap()
 }

@@ -96,7 +96,7 @@ pub(crate) fn expand_export(
                 let metadata_expr = quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::OBJECT_TRAIT_IMPL)
                         .concat(::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE))
-                        .concat_str(#mod_path)
+                        .concat_str(module_path!())
                         .concat_str(#object_name)
                         .concat(<dyn #t as ::uniffi::TypeId<crate::UniFfiTag>>::TYPE_ID_META)
                 };
@@ -137,9 +137,8 @@ pub(crate) fn expand_export(
             let trait_impl = callback_interface::trait_impl(&mod_path, &self_ident, &items, false)
                 .unwrap_or_else(|e| e.into_compile_error());
             let metadata_items = (!udl_mode).then(|| {
-                let items =
-                    callback_interface::metadata_items(&self_ident, &items, &mod_path, docstring)
-                        .unwrap_or_else(|e| vec![e.into_compile_error()]);
+                let items = callback_interface::metadata_items(&self_ident, &items, docstring)
+                    .unwrap_or_else(|e| vec![e.into_compile_error()]);
                 quote! { #(#items)* }
             });
             let ffi_converter_tokens =

@@ -93,7 +93,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
         Span::call_site(),
     );
     let meta_static_var = options.generate_metadata.then(|| {
-        interface_meta_static_var(name, ObjectImpl::Struct, &module_path, object.docstring())
+        interface_meta_static_var(name, ObjectImpl::Struct, object.docstring())
             .unwrap_or_else(syn::Error::into_compile_error)
     });
     let interface_impl = interface_impl(&object, &options);
@@ -142,10 +142,6 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
     let lower_error_impl_spec = options.ffi_impl_header("LowerError", ident);
     let type_id_impl_spec = options.ffi_impl_header("TypeId", ident);
     let lift_ref_impl_spec = options.ffi_impl_header("LiftRef", ident);
-    let mod_path = match mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error(),
-    };
     let arc_self_type = quote! { ::std::sync::Arc<Self> };
     let lower_arc = ffiops::lower(&arc_self_type);
     let type_id_meta_arc = ffiops::type_id_meta(&arc_self_type);
@@ -223,7 +219,7 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_INTERFACE)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name);
         }
 
@@ -254,7 +250,6 @@ fn interface_impl(object: &ObjectItem, options: &DeriveOptions) -> TokenStream {
 pub(crate) fn interface_meta_static_var(
     name: &str,
     imp: ObjectImpl,
-    module_path: &str,
     docstring: &str,
 ) -> syn::Result<TokenStream> {
     let code = match imp {
@@ -268,7 +263,7 @@ pub(crate) fn interface_meta_static_var(
         name,
         quote! {
             ::uniffi::MetadataBuffer::from_code(#code)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat_long_str(#docstring)
         },
