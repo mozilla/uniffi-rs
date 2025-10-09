@@ -7,8 +7,7 @@ use crate::{
     ffiops,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
-        UniffiAttributeArgs,
+        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -112,7 +111,6 @@ fn record_ffi_converter_impl(
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
     let name = &record.foreign_name();
-    let mod_path = mod_path()?;
     let write_impl: TokenStream = record.struct_().fields.iter().map(write_field).collect();
     let try_read_fields: TokenStream = record.struct_().fields.iter().map(try_read_field).collect();
 
@@ -130,7 +128,7 @@ fn record_ffi_converter_impl(
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TYPE_RECORD)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name);
         }
 
@@ -176,7 +174,6 @@ impl UniffiAttributeArgs for FieldAttributeArguments {
 fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
     let name = &record.foreign_name();
     let docstring = record.docstring();
-    let module_path = mod_path()?;
     let fields_len = try_metadata_value_from_usize(
         record.struct_().fields.len(),
         "UniFFI limits structs to 256 fields",
@@ -212,7 +209,7 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
         name,
         quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::RECORD)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#name)
                 .concat_value(#fields_len)
                 #concat_fields

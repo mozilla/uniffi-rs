@@ -564,7 +564,7 @@ impl Metadata {
             Metadata::TraitMethod(meta) => &meta.module_path,
             Metadata::CustomType(meta) => &meta.module_path,
             Metadata::UniffiTrait(meta) => meta.module_path(),
-            Metadata::ObjectTraitImpl(t) => t.ty.module_path().expect("type has no module"),
+            Metadata::ObjectTraitImpl(t) => t.ty.crate_name().expect("type has no crate name"),
         }
     }
 }
@@ -645,4 +645,8 @@ impl From<ObjectTraitImplMetadata> for Metadata {
     fn from(t: ObjectTraitImplMetadata) -> Self {
         Self::ObjectTraitImpl(t)
     }
+}
+
+pub fn crate_name(module_path: &str) -> &str {
+    module_path.split("::").next().unwrap()
 }
