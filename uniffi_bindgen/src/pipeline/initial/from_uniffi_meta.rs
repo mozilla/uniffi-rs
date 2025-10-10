@@ -358,8 +358,9 @@ fn get_namespace_name<'a>(
     module_path_map: &'a BTreeMap<String, String>,
     module_path: &str,
 ) -> Result<&'a str> {
+    let crate_name = module_path.split("::").next().unwrap();
     module_path_map
-        .get(module_path)
+        .get(crate_name)
         .map(String::as_str)
         .ok_or_else(|| anyhow!("module lookup failed: {module_path:?}"))
 }

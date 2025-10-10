@@ -164,6 +164,12 @@ pub struct ExternalFfiMetadata {
     pub module_path: String,
 }
 
+impl ExternalFfiMetadata {
+    pub fn crate_name(&self) -> &str {
+        self.module_path.split("::").next().unwrap()
+    }
+}
+
 // Needed for rust scaffolding askama template
 impl From<Type> for FfiType {
     fn from(ty: Type) -> Self {

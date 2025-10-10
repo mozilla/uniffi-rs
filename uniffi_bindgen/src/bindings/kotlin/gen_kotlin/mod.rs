@@ -327,12 +327,12 @@ impl<'a> KotlinWrapper<'a> {
         let extern_module_init_fns = self
             .ci
             .iter_external_types()
-            .filter_map(|ty| ty.module_path())
-            .map(|module_path| {
-                let namespace = ci.namespace_for_module_path(module_path).unwrap();
+            .filter_map(|ty| ty.crate_name())
+            .map(|crate_name| {
+                let namespace = ci.namespace_for_module_path(crate_name).unwrap();
                 let package_name = self
                     .config
-                    .external_package_name(module_path, Some(namespace));
+                    .external_package_name(crate_name, Some(namespace));
                 format!("{package_name}.uniffiEnsureInitialized()")
             })
             .collect::<HashSet<_>>();
@@ -367,11 +367,11 @@ fn object_interface_name(ci: &ComponentInterface, obj: &Object) -> String {
 // *sigh* - same thing for a trait, which might be either Object or CallbackInterface.
 // (we should either fold it into object or kill it!)
 fn trait_interface_name(ci: &ComponentInterface, trait_ty: &Type) -> Result<String> {
-    let Some(module_path) = trait_ty.module_path() else {
+    let Some(crate_name) = trait_ty.crate_name() else {
         bail!("Invalid trait_type: {trait_ty:?}");
     };
-    let Some(ci_look) = ci.find_component_interface(module_path) else {
-        anyhow::bail!("no interface with module_path: {}", module_path);
+    let Some(ci_look) = ci.find_component_interface(crate_name) else {
+        anyhow::bail!("no interface with crate_name: {}", crate_name);
     };
 
     let (obj_name, has_callback_interface) = match trait_ty {
@@ -533,7 +533,7 @@ impl KotlinCodeOracle {
             FfiType::Float64 => "Double".to_string(),
             FfiType::Handle => "Long".to_string(),
             FfiType::RustBuffer(maybe_external) => match maybe_external {
-                Some(external_meta) if external_meta.module_path != ci.crate_name() => {
+                Some(external_meta) if external_meta.crate_name() != ci.crate_name() => {
                     format!("RustBuffer{}", external_meta.name)
                 }
                 _ => "RustBuffer".to_string(),

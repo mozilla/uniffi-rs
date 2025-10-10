@@ -92,7 +92,7 @@ impl TypeUniverse {
     }
 
     pub fn is_external(&self, t: &Type) -> bool {
-        t.module_path()
+        t.crate_name()
             .map(|p| p != self.namespace.crate_name)
             .unwrap_or(false)
     }

@@ -102,15 +102,10 @@ pub(super) fn gen_trait_scaffolding(
         } else {
             ObjectImpl::Trait
         };
-        interface_meta_static_var(
-            &ident_to_string(&self_ident),
-            imp,
-            mod_path,
-            docstring.as_str(),
-        )
-        .unwrap_or_else(syn::Error::into_compile_error)
+        interface_meta_static_var(&ident_to_string(&self_ident), imp, docstring.as_str())
+            .unwrap_or_else(syn::Error::into_compile_error)
     });
-    let ffi_converter_tokens = ffi_converter(mod_path, &self_ident, with_foreign);
+    let ffi_converter_tokens = ffi_converter(&self_ident, with_foreign);
 
     Ok(quote_spanned! { self_ident.span() =>
         #meta_static_var
@@ -121,11 +116,7 @@ pub(super) fn gen_trait_scaffolding(
     })
 }
 
-pub(crate) fn ffi_converter(
-    mod_path: &str,
-    trait_ident: &Ident,
-    with_foreign: bool,
-) -> TokenStream {
+pub(crate) fn ffi_converter(trait_ident: &Ident, with_foreign: bool) -> TokenStream {
     // TODO: support defining remote trait interfaces
     let remote = false;
     let impl_spec = tagged_impl_header("FfiConverterArc", &quote! { dyn #trait_ident }, remote);
@@ -230,7 +221,7 @@ pub(crate) fn ffi_converter(
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#trait_name);
         }
 
@@ -238,7 +229,7 @@ pub(crate) fn ffi_converter(
         #[automatically_derived]
         #type_id_impl_spec {
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_code)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#trait_name);
         }
 

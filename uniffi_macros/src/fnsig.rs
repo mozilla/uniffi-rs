@@ -258,7 +258,6 @@ impl FnSignature {
             name,
             return_ty,
             is_async,
-            mod_path,
             docstring,
             ..
         } = &self;
@@ -279,7 +278,7 @@ impl FnSignature {
         match &self.kind {
             FnKind::Function => Ok(quote! {
                 ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::FUNC)
-                    .concat_str(#mod_path)
+                    .concat_str(module_path!())
                     .concat_str(#name)
                     .concat_bool(#is_async)
                     .concat_value(#args_len)
@@ -294,7 +293,7 @@ impl FnSignature {
                 let object_name = ident_to_string(foreign_self_ident);
                 Ok(quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::METHOD)
-                        .concat_str(#mod_path)
+                        .concat_str(module_path!())
                         .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)
@@ -309,7 +308,7 @@ impl FnSignature {
                 let object_name = ident_to_string(self_ident);
                 Ok(quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::TRAIT_METHOD)
-                        .concat_str(#mod_path)
+                        .concat_str(module_path!())
                         .concat_str(#object_name)
                         .concat_u32(#index)
                         .concat_str(#name)
@@ -327,7 +326,7 @@ impl FnSignature {
                 let object_name = ident_to_string(foreign_self_ident);
                 Ok(quote! {
                     ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CONSTRUCTOR)
-                        .concat_str(#mod_path)
+                        .concat_str(module_path!())
                         .concat_str(#object_name)
                         .concat_str(#name)
                         .concat_bool(#is_async)

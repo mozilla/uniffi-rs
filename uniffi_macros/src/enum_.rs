@@ -11,8 +11,7 @@ use crate::{
     record::FieldAttributeArguments,
     util::{
         create_metadata_items, either_attribute_arg, extract_docstring, ident_to_string, kw,
-        mod_path, try_metadata_value_from_usize, try_read_field, AttributeSliceExt,
-        UniffiAttributeArgs,
+        try_metadata_value_from_usize, try_read_field, AttributeSliceExt, UniffiAttributeArgs,
     },
     DeriveOptions,
 };
@@ -172,10 +171,6 @@ fn enum_or_error_ffi_converter_impl(
     let ident = item.ident();
     let impl_spec = options.ffi_impl_header("FfiConverter", ident);
     let derive_ffi_traits = options.derive_all_ffi_traits(ident);
-    let mod_path = match mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error(),
-    };
     let mut write_match_arms: Vec<_> = item
         .enum_()
         .variants
@@ -263,7 +258,7 @@ fn enum_or_error_ffi_converter_impl(
             }
 
             const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(#metadata_type_code)
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#name);
         }
 
@@ -273,14 +268,13 @@ fn enum_or_error_ffi_converter_impl(
 
 pub(crate) fn enum_meta_static_var(item: &EnumItem) -> syn::Result<TokenStream> {
     let name = &item.foreign_name();
-    let module_path = mod_path()?;
     let non_exhaustive = item.is_non_exhaustive();
     let docstring = item.docstring();
     let shape = EnumShape::Enum.as_u8();
 
     let mut metadata_expr = quote! {
         ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::ENUM)
-            .concat_str(#module_path)
+            .concat_str(module_path!())
             .concat_str(#name)
             .concat_value(#shape)
     };

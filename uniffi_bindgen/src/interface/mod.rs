@@ -363,7 +363,7 @@ impl ComponentInterface {
 
     pub fn namespace_for_type(&self, ty: &Type) -> Result<&str> {
         let mod_path = ty
-            .module_path()
+            .crate_name()
             .ok_or_else(|| anyhow!("type {ty:?} has no module path"))?;
         self.namespace_for_module_path(mod_path)
     }

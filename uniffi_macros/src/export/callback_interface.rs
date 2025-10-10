@@ -8,7 +8,7 @@ use crate::{
     fnsig::{FnKind, FnSignature, ReceiverArg},
     util::{
         async_trait_annotation, create_metadata_items, derive_ffi_traits, ident_to_string,
-        mod_path, tagged_impl_header, wasm_single_threaded_annotation,
+        tagged_impl_header, wasm_single_threaded_annotation,
     },
 };
 use proc_macro2::{Span, TokenStream};
@@ -162,10 +162,6 @@ pub fn ffi_converter_callback_interface_impl(
     ]
     .into_iter();
     let derive_ffi_traits = derive_ffi_traits(&box_dyn_trait, remote, &["LiftRef", "LiftReturn"]);
-    let mod_path = match mod_path() {
-        Ok(p) => p,
-        Err(e) => return e.into_compile_error(),
-    };
     let try_lift_self = ffiops::try_lift(quote! { Self });
 
     quote! {
@@ -192,7 +188,7 @@ pub fn ffi_converter_callback_interface_impl(
                 const TYPE_ID_META: ::uniffi::MetadataBuffer = ::uniffi::MetadataBuffer::from_code(
                     ::uniffi::metadata::codes::TYPE_CALLBACK_INTERFACE,
                 )
-                .concat_str(#mod_path)
+                .concat_str(module_path!())
                 .concat_str(#trait_name);
             }
         )*
@@ -277,7 +273,6 @@ fn gen_method_impl(sig: &FnSignature, vtable_cell: &Ident) -> syn::Result<TokenS
 pub(super) fn metadata_items(
     self_ident: &Ident,
     items: &[ImplItem],
-    module_path: &str,
     docstring: String,
 ) -> syn::Result<Vec<TokenStream>> {
     let trait_name = ident_to_string(self_ident);
@@ -286,7 +281,7 @@ pub(super) fn metadata_items(
         &trait_name,
         quote! {
             ::uniffi::MetadataBuffer::from_code(::uniffi::metadata::codes::CALLBACK_INTERFACE)
-                .concat_str(#module_path)
+                .concat_str(module_path!())
                 .concat_str(#trait_name)
                 .concat_long_str(#docstring)
         },
