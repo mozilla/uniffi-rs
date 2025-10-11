@@ -1,0 +1,13 @@
+namespace regression_kotlin_enum_payload_clash {
+  AmountOrMax get_value();
+};
+
+dictionary Amount {
+  u64 value;
+};
+
+[Enum]
+interface AmountOrMax {
+  Amount(Amount amount);
+  Max();
+};

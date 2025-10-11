@@ -49,6 +49,7 @@ members = [
   "fixtures/regressions/enum-without-i32-helpers",
   "fixtures/regressions/fully-qualified-types",
   "fixtures/regressions/kotlin-experimental-unsigned-types",
+  "fixtures/regressions/kotlin-enum-payload-clash",
   "fixtures/regressions/cdylib-crate-type-dependency/ffi-crate",
   "fixtures/regressions/cdylib-crate-type-dependency/cdylib-dependency",
   "fixtures/regressions/logging-callback-interface",

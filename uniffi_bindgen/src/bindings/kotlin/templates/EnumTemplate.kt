@@ -60,7 +60,7 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
     data class {{ variant|type_name(ci) }}(
         {%- for field in variant.fields() -%}
         {%- call kt::docstring(field, 8) %}
-        val {% call kt::field_name(field, loop.index) %}: {{ field|type_name(ci) }}
+        val {% call kt::field_name(field, loop.index) %}: {{ field|qualified_type_name(ci, config) }}
         {%- if let Some(default) = field.default_value() %} = {{ default|render_default(field, ci) }} {% endif %}
         {%- if loop.last %}{% else %}, {% endif %}
         {%- endfor -%}

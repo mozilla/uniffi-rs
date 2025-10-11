@@ -619,6 +619,18 @@ mod filters {
         Ok(as_ct.as_codetype().canonical_name())
     }
 
+    pub(super) fn qualified_type_name<T>(
+        as_type: &T,
+        ci: &ComponentInterface,
+        config: &Config,
+    ) -> Result<String, askama::Error>
+    where
+        T: AsCodeType + AsType,
+    {
+        fully_qualified_type_label(&as_type.as_type(), ci, config)
+            .map_err(|err| to_askama_error(&err))
+    }
+
     pub(super) fn ffi_converter_name(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(as_ct.as_codetype().ffi_converter_name())
     }
@@ -654,6 +666,56 @@ mod filters {
 
     pub(super) fn read_fn(as_ct: &impl AsCodeType) -> Result<String, askama::Error> {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
+    }
+
+    fn fully_qualified_type_label(
+        ty: &Type,
+        ci: &ComponentInterface,
+        config: &Config,
+    ) -> Result<String> {
+        match ty {
+            Type::Optional { inner_type } => Ok(format!(
+                "{}?",
+                fully_qualified_type_label(inner_type, ci, config)?
+            )),
+            Type::Sequence { inner_type } => Ok(format!(
+                "List<{}>",
+                fully_qualified_type_label(inner_type, ci, config)?
+            )),
+            Type::Map {
+                key_type,
+                value_type,
+            } => Ok(format!(
+                "Map<{}, {}>",
+                fully_qualified_type_label(key_type, ci, config)?,
+                fully_qualified_type_label(value_type, ci, config)?
+            )),
+            Type::Enum { .. }
+            | Type::Record { .. }
+            | Type::Object { .. }
+            | Type::CallbackInterface { .. }
+            | Type::Custom { .. } => {
+                let class_name = ty
+                    .name()
+                    .map(|nm| KotlinCodeOracle.class_name(ci, nm))
+                    .ok_or_else(|| anyhow::anyhow!("type {:?} has no name", ty))?;
+                let package_name = package_for_type(ty, ci, config)?;
+                Ok(format!("{package_name}.{class_name}"))
+            }
+            _ => Ok(KotlinCodeOracle.find(ty).type_label(ci)),
+        }
+    }
+
+    fn package_for_type(ty: &Type, ci: &ComponentInterface, config: &Config) -> Result<String> {
+        if ci.is_external(ty) {
+            let module_path = ty
+                .module_path()
+                .ok_or_else(|| anyhow::anyhow!("external type {:?} missing module path", ty))?;
+            let namespace = ci.namespace_for_module_path(module_path)?;
+            Ok(config.external_package_name(module_path, Some(namespace)))
+        } else {
+            Ok(config.package_name())
+        }
     }
 
     pub fn render_default(
