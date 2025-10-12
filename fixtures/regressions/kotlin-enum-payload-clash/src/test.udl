@@ -1,5 +1,6 @@
 namespace regression_kotlin_enum_payload_clash {
   AmountOrMax get_value();
+  ComplexValue get_complex_value();
 };
 
 dictionary Amount {
@@ -10,4 +11,18 @@ dictionary Amount {
 interface AmountOrMax {
   Amount(Amount amount);
   Max();
+};
+
+// Test nested types to cover fully_qualified_type_label code paths
+[Enum]
+interface ComplexValue {
+  // Test Optional nested type
+  OptionalAmount(Amount? maybe_amount);
+  // Test Sequence nested type
+  Amounts(sequence<Amount> amounts);
+  // Test Map nested type
+  AmountMap(record<string, Amount> amount_map);
+  // Test deeply nested types
+  NestedOptional(sequence<Amount>? maybe_amounts);
+  NestedMap(record<string, sequence<Amount>> nested_map);
 };
