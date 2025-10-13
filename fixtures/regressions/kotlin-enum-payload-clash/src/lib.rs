@@ -4,18 +4,18 @@
 
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Record)]
 pub struct Amount {
     pub value: u64,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Enum)]
 pub enum AmountOrMax {
     Amount { amount: Amount },
     Max,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, uniffi::Enum)]
 pub enum ComplexValue {
     OptionalAmount {
         maybe_amount: Option<Amount>,
@@ -34,16 +34,18 @@ pub enum ComplexValue {
     },
 }
 
+#[uniffi::export]
 pub fn get_value() -> AmountOrMax {
     AmountOrMax::Amount {
         amount: Amount { value: 100 },
     }
 }
 
+#[uniffi::export]
 pub fn get_complex_value() -> ComplexValue {
     ComplexValue::Amounts {
         amounts: vec![Amount { value: 1 }, Amount { value: 2 }],
     }
 }
 
-uniffi::include_scaffolding!("test");
+uniffi::setup_scaffolding!("regression_kotlin_enum_payload_clash");

@@ -12,9 +12,6 @@ name = "uniffi_regression_kotlin_enum_payload_clash"
 [dependencies]
 uniffi = { workspace = true }
 
-[build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
-
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
 
