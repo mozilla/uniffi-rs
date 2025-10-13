@@ -19,6 +19,11 @@
   name, avoiding naming conflicts and allowing payloads to reuse the variant name ([#2698](https://
   github.com/mozilla/uniffi-rs/pull/2698)).
 
+### What's Fixed
+
+- Kotlin: Enums and errors now support exporting trait methods (Display, Debug, Eq, Hash, Ord) via `toString()`,
+  `equals()`, `hashCode()`, and `compareTo()` implementations ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
+
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 
 ### ⚠️ Breaking Changes ⚠️
