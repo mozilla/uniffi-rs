@@ -191,31 +191,6 @@ impl Hash for TraitEnum {
     }
 }
 
-#[cfg(test)]
-// make sure the semantics are what we expect locally.
-#[test]
-fn test_traitenum_traits() {
-    let s1 = TraitEnum::S("s1".to_string());
-    assert_eq!(format!("{s1:?}"), "S(\"s1\")");
-    assert_eq!(format!("{s1}"), "TraitEnum::S(\"s1\")");
-
-    // ord/eq etc
-    assert_eq!(Ord::cmp(&s1, &s1), std::cmp::Ordering::Equal);
-    assert_eq!(s1, s1);
-    // compare equal with different data.
-    assert_eq!(
-        Ord::cmp(&s1, &TraitEnum::S("s2".to_string())),
-        std::cmp::Ordering::Equal
-    );
-    assert_eq!(
-        Ord::cmp(&TraitEnum::I(0), &TraitEnum::I(1)),
-        std::cmp::Ordering::Equal
-    );
-    assert_eq!(TraitEnum::I(0), TraitEnum::I(1));
-    assert_ne!(s1, TraitEnum::I(0));
-    assert!(s1 < TraitEnum::I(0));
-}
-
 #[derive(Debug)]
 pub enum UdlEnum {
     S { s: String },
@@ -265,6 +240,138 @@ impl Hash for UdlEnum {
     fn hash<H: Hasher>(&self, state: &mut H) {
         std::mem::discriminant(self).hash(state)
     }
+}
+
+// flat enum with Display
+#[derive(uniffi::Enum, Debug, Clone)]
+#[uniffi::export(Display)]
+pub enum EnumWithDisplayExport {
+    One,
+    Two,
+    Three,
+}
+
+impl std::fmt::Display for EnumWithDisplayExport {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::One => write!(f, "display: One"),
+            Self::Two => write!(f, "display: Two"),
+            Self::Three => write!(f, "display: Three"),
+        }
+    }
+}
+
+#[uniffi::export]
+fn get_enum_with_display_export(i: u8) -> EnumWithDisplayExport {
+    match i {
+        0 => EnumWithDisplayExport::One,
+        1 => EnumWithDisplayExport::Two,
+        _ => EnumWithDisplayExport::Three,
+    }
+}
+
+// nested enum with another enum that implements Display as a payload
+#[derive(uniffi::Enum, Debug, Clone)]
+#[uniffi::export(Display)]
+pub enum NestedEnumWithDisplay {
+    Simple(EnumWithDisplayExport),
+    Complex {
+        inner: EnumWithDisplayExport,
+        tag: String,
+    },
+}
+
+impl std::fmt::Display for NestedEnumWithDisplay {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Simple(e) => write!(f, "nested simple: {}", e),
+            Self::Complex { inner, tag } => write!(f, "nested complex [{}]: {}", tag, inner),
+        }
+    }
+}
+
+#[uniffi::export]
+fn get_nested_enum_with_display(i: u8) -> NestedEnumWithDisplay {
+    match i {
+        0 => NestedEnumWithDisplay::Simple(EnumWithDisplayExport::One),
+        1 => NestedEnumWithDisplay::Complex {
+            inner: EnumWithDisplayExport::Two,
+            tag: "test".to_string(),
+        },
+        _ => NestedEnumWithDisplay::Simple(EnumWithDisplayExport::Three),
+    }
+}
+
+// flat error with Display
+#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
+#[uniffi::export(Display)]
+pub enum FlatErrorWithDisplayExport {
+    #[error("display: too many items: {count}")]
+    TooMany { count: u32 },
+    #[error("display: too few items: {count}")]
+    TooFew { count: u32 },
+}
+
+#[uniffi::export]
+fn throw_trait_error(i: u8) -> Result<(), FlatErrorWithDisplayExport> {
+    match i {
+        0 => Err(FlatErrorWithDisplayExport::TooMany { count: 100 }),
+        _ => Err(FlatErrorWithDisplayExport::TooFew { count: 0 }),
+    }
+}
+
+// nested error with another error that implements Display as a payload
+#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
+#[uniffi::export(Display)]
+pub enum NestedErrorWithDisplay {
+    #[error("nested simple error: {0}")]
+    Simple(FlatErrorWithDisplayExport),
+    #[error("nested complex error [{tag}]: {inner}")]
+    Complex {
+        inner: FlatErrorWithDisplayExport,
+        tag: String,
+    },
+}
+
+#[uniffi::export]
+fn throw_nested_error(i: u8) -> Result<(), NestedErrorWithDisplay> {
+    match i {
+        0 => Err(NestedErrorWithDisplay::Simple(
+            FlatErrorWithDisplayExport::TooMany { count: 42 },
+        )),
+        1 => Err(NestedErrorWithDisplay::Complex {
+            inner: FlatErrorWithDisplayExport::TooFew { count: 7 },
+            tag: "nested".to_string(),
+        }),
+        _ => Err(NestedErrorWithDisplay::Simple(
+            FlatErrorWithDisplayExport::TooFew { count: 0 },
+        )),
+    }
+}
+
+#[cfg(test)]
+// make sure the semantics are what we expect locally.
+#[test]
+fn test_traitenum_traits() {
+    let s1 = TraitEnum::S("s1".to_string());
+    assert_eq!(format!("{s1:?}"), "S(\"s1\")");
+    assert_eq!(format!("{s1}"), "TraitEnum::S(\"s1\")");
+
+    // ord/eq etc
+    assert_eq!(Ord::cmp(&s1, &s1), std::cmp::Ordering::Equal);
+    assert_eq!(s1, s1);
+    // compare equal with different data.
+    assert_eq!(
+        Ord::cmp(&s1, &TraitEnum::S("s2".to_string())),
+        std::cmp::Ordering::Equal
+    );
+    assert_eq!(
+        Ord::cmp(&TraitEnum::I(0), &TraitEnum::I(1)),
+        std::cmp::Ordering::Equal
+    );
+    assert_eq!(TraitEnum::I(0), TraitEnum::I(1));
+    assert_ne!(s1, TraitEnum::I(0));
+    assert!(s1 < TraitEnum::I(0));
 }
 
 uniffi::include_scaffolding!("trait_methods");

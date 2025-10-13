@@ -15,6 +15,10 @@ enum class {{ type_name }} {
     {%- call kt::docstring(variant, 4) %}
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+
+    {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+
     companion object
 }
 {% when Some(variant_discr_type) %}
@@ -23,6 +27,10 @@ enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
     {%- call kt::docstring(variant, 4) %}
     {{ variant|variant_name }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+
+    {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+
     companion object
 }
 {% endmatch %}
@@ -51,7 +59,11 @@ public object {{ e|ffi_converter_name }}: FfiConverterRustBuffer<{{ type_name }}
 {% else %}
 
 {%- call kt::docstring(e, 0) %}
-sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %} {
+sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% endif %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
+{%- if uniffi_trait_methods.ord_cmp.is_some() -%}
+{% if contains_object_references %}, {% else %} : {% endif %}Comparable<{{ type_name }}>
+{%- endif %} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
     {% if !variant.has_fields() -%}
@@ -93,6 +105,9 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+
     companion object
 }
 

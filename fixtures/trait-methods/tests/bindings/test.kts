@@ -28,9 +28,6 @@ assert(TraitRecord(s="hi", i=2) != TraitRecord(s="yo", i=3))
 assert(TraitRecord(s="a", i=2) < TraitRecord(s="yo", i=1))
 
 // Enums
-assert((TraitEnum::S)("hello").toString() == "TraitEnum::S(\"hello\")")
-assert((TraitEnum::I)(1).toString() == "TraitEnum::I(1)")
-assert((UdlEnum::S)("hello").toString() == "S { s: \"hello\" }")
 
 assert((UdlEnum::S)("hello") == (UdlEnum::S)("hello"))
 assert((UdlEnum::S)("hello") == (UdlEnum::S)("other"))
@@ -38,3 +35,58 @@ assert((UdlEnum::S)("hello") < (UdlEnum::I)(0))
 assert((TraitEnum::I)(1) == (TraitEnum::I)(1))
 assert((TraitEnum::I)(1) == (TraitEnum::I)(2))
 assert((TraitEnum::S)("hello") < (TraitEnum::I)(0))
+
+// nested enums with payloads and Display trait
+assert((TraitEnum::S)("hello").toString() == "TraitEnum::S(\"hello\")")
+assert((TraitEnum::I)(1).toString() == "TraitEnum::I(1)")
+assert((UdlEnum::S)("hello").toString() == "S { s: \"hello\" }")
+
+// flat enum (no payload) with Display
+assert(getEnumWithDisplayExport(0u).toString() == "display: One")
+assert(getEnumWithDisplayExport(1u).toString() == "display: Two")
+assert(getEnumWithDisplayExport(2u).toString() == "display: Three")
+
+// nested enum with another enum (that has Display) as payload
+assert(getNestedEnumWithDisplay(0u).toString() == "nested simple: display: One")
+assert(getNestedEnumWithDisplay(1u).toString() == "nested complex [test]: display: Two")
+assert(getNestedEnumWithDisplay(2u).toString() == "nested simple: display: Three")
+
+
+// Errors
+
+// flat error with Display
+try {
+    throwTraitError(0u)
+    throw AssertionError("should have thrown")
+} catch (e: FlatErrorWithDisplayExport.TooMany) {
+    assert(e.toString() == "display: too many items: 100")
+}
+
+try {
+    throwTraitError(1u)
+    throw AssertionError("should have thrown")
+} catch (e: FlatErrorWithDisplayExport.TooFew) {
+    assert(e.toString() == "display: too few items: 0")
+}
+
+// nested error with another error (that has Display) as payload
+try {
+    throwNestedError(0u)
+    throw AssertionError("should have thrown")
+} catch (e: NestedErrorWithDisplay.Simple) {
+    assert(e.toString() == "nested simple error: display: too many items: 42")
+}
+
+try {
+    throwNestedError(1u)
+    throw AssertionError("should have thrown")
+} catch (e: NestedErrorWithDisplay.Complex) {
+    assert(e.toString() == "nested complex error [nested]: display: too few items: 7")
+}
+
+try {
+    throwNestedError(2u)
+    throw AssertionError("should have thrown")
+} catch (e: NestedErrorWithDisplay.Simple) {
+    assert(e.toString() == "nested simple error: display: too few items: 0")
+}
