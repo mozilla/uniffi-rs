@@ -331,6 +331,36 @@ fn get_flat_trait_enum(index: u8) -> FlatTraitEnum {
     }
 }
 
+// flat enum with explicit numeric discriminant and Display
+#[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq)]
+#[uniffi::export(Display)]
+#[repr(u16)]
+pub enum NumericEnum {
+    Red = 100,
+    Green = 200,
+    Blue = 300,
+}
+
+impl std::fmt::Display for NumericEnum {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let label = match self {
+            NumericEnum::Red => "color-red",
+            NumericEnum::Green => "color-green",
+            NumericEnum::Blue => "color-blue",
+        };
+        write!(f, "NumericEnum::{label}")
+    }
+}
+
+#[uniffi::export]
+fn get_numeric_enum(value: u16) -> NumericEnum {
+    match value {
+        100 => NumericEnum::Red,
+        200 => NumericEnum::Green,
+        _ => NumericEnum::Blue,
+    }
+}
+
 // flat error with Display
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
 #[uniffi::export(Display)]
