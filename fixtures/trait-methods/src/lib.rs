@@ -302,6 +302,35 @@ fn get_nested_enum_with_display(i: u8) -> NestedEnumWithDisplay {
     }
 }
 
+// flat enum exporting Eq/Ord/Hash - Kotlin enum class provides these natively
+#[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[uniffi::export(Debug, Display, Eq, Ord, Hash)]
+pub enum FlatTraitEnum {
+    Alpha,
+    Beta,
+    Gamma,
+}
+
+impl std::fmt::Display for FlatTraitEnum {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let label = match self {
+            FlatTraitEnum::Alpha => "flat-alpha",
+            FlatTraitEnum::Beta => "flat-beta",
+            FlatTraitEnum::Gamma => "flat-gamma",
+        };
+        write!(f, "FlatTraitEnum::{label}")
+    }
+}
+
+#[uniffi::export]
+fn get_flat_trait_enum(index: u8) -> FlatTraitEnum {
+    match index {
+        0 => FlatTraitEnum::Alpha,
+        1 => FlatTraitEnum::Beta,
+        _ => FlatTraitEnum::Gamma,
+    }
+}
+
 // flat error with Display
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
 #[uniffi::export(Display)]

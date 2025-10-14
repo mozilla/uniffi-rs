@@ -51,6 +51,16 @@ assert(getNestedEnumWithDisplay(0u).toString() == "nested simple: display: One")
 assert(getNestedEnumWithDisplay(1u).toString() == "nested complex [test]: display: Two")
 assert(getNestedEnumWithDisplay(2u).toString() == "nested simple: display: Three")
 
+// flat enum with Eq/Ord/Hash - uses Kotlin enum class's built-in support
+val flatAlpha = getFlatTraitEnum(0u)
+assert(flatAlpha == FlatTraitEnum.ALPHA)
+assert(getFlatTraitEnum(1u) > flatAlpha)
+assert(flatAlpha.toString() == "FlatTraitEnum::flat-alpha")
+assert(getFlatTraitEnum(2u).toString() == "FlatTraitEnum::flat-gamma")
+val flatSet = setOf(flatAlpha)
+assert(flatSet.contains(FlatTraitEnum.ALPHA))
+assert(!flatSet.contains(FlatTraitEnum.BETA))
+
 
 // Errors
 
