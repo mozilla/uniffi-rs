@@ -1914,6 +1914,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "uniffi-fixture-regression-kotlin-enum-payload-clash"
+version = "0.22.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
 name = "uniffi-fixture-regression-kotlin-experimental-unsigned-types"
 version = "0.22.0"
 dependencies = [

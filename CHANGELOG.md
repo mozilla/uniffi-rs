@@ -13,6 +13,12 @@
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...HEAD).
 
+### What's New?
+
+- Kotlin: Rust enums with nested payload types are generated using the inner type’s fully qualified
+  name, avoiding naming conflicts and allowing payloads to reuse the variant name ([#2698](https://
+  github.com/mozilla/uniffi-rs/pull/2698)).
+
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 
 ### ⚠️ Breaking Changes ⚠️
