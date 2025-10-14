@@ -61,6 +61,14 @@ val flatSet = setOf(flatAlpha)
 assert(flatSet.contains(FlatTraitEnum.ALPHA))
 assert(!flatSet.contains(FlatTraitEnum.BETA))
 
+// flat enum with explicit numeric discriminant and Display
+val numericRed = getNumericEnum(100u)
+assert(numericRed == NumericEnum.RED)
+assert(numericRed.value == 100u.toUShort())
+assert(numericRed.toString() == "NumericEnum::color-red")
+assert(getNumericEnum(200u).toString() == "NumericEnum::color-green")
+assert(getNumericEnum(300u).toString() == "NumericEnum::color-blue")
+assert(getNumericEnum(999u).value == 300u.toUShort())  // defaults to Blue
 
 // Errors
 
