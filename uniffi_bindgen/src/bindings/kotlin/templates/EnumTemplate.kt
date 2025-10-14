@@ -17,7 +17,11 @@ enum class {{ type_name }} {
     {%- endfor %}
 
     {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
-    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+    {%- if let Some(fmt) = uniffi_trait_methods.display_fmt.or(uniffi_trait_methods.debug_fmt.clone()) %}
+    override fun toString(): String {
+        return {{ fmt.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(fmt) %})
+    }
+    {%- endif %}
 
     companion object
 }
@@ -29,7 +33,11 @@ enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
     {%- endfor %}
 
     {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
-    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+    {%- if let Some(fmt) = uniffi_trait_methods.display_fmt.or(uniffi_trait_methods.debug_fmt.clone()) %}
+    override fun toString(): String {
+        return {{ fmt.return_type().unwrap()|lift_fn }}({% call kt::to_ffi_call(fmt) %})
+    }
+    {%- endif %}
 
     companion object
 }
