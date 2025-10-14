@@ -369,12 +369,15 @@ impl ComponentInterface {
     }
 
     pub fn namespace_for_module_path(&self, module_path: &str) -> Result<&str> {
+        // try the full module path first, then fall back to just the crate name
         self.crate_to_namespace
             .get(module_path)
-            .map(|n| {
-                assert!(n.crate_name == module_path); // an invariant redundancy worth dieing for.
-                n.name.as_ref()
+            .or_else(|| {
+                // extract just the crate name (first component before ::)
+                let crate_name = module_path.split("::").next().unwrap_or(module_path);
+                self.crate_to_namespace.get(crate_name)
             })
+            .map(|n| n.name.as_ref())
             // incase not library mode and we've not been told
             .or_else(|| (module_path == self.crate_name()).then(|| self.namespace()))
             .ok_or_else(|| anyhow!("unresolved module path {module_path}"))
