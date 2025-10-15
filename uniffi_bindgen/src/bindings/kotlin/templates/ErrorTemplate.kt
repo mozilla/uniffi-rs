@@ -14,7 +14,6 @@ sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if co
         class {{ variant|error_variant_name }}(message: String) : {{ type_name }}(message)
         {% endfor %}
 
-    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
         override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
