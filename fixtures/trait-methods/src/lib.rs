@@ -524,6 +524,157 @@ fn throw_mixed_field_error(i: u8) -> Result<(), MixedFieldError> {
     }
 }
 
+// mixed error with all possible exported traits
+// tests that flat variants inherit all trait implementations from parent
+#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
+#[uniffi::export(Debug, Display, Eq, Ord, Hash)]
+pub enum MultipleTraitError {
+    #[error("MultipleTraitError::NoData")]
+    NoData,
+    #[error("MultipleTraitError::WithCode({code})")]
+    WithCode { code: i32 },
+    #[error("MultipleTraitError::AnotherFlat")]
+    AnotherFlat,
+    #[error("MultipleTraitError::WithMessage({msg})")]
+    WithMessage { msg: String },
+}
+
+// error that doesn't end in "Error" suffix to test class_name filter doesn't break this case
+// mixed error with flat and field variants
+#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
+#[uniffi::export(Debug, Display, Eq, Ord, Hash)]
+pub enum ApiFailure {
+    #[error("api network issue")]
+    NetworkIssue,
+    #[error("api timeout after {duration_ms}ms")]
+    Timeout { duration_ms: u32 },
+    #[error("api server down")]
+    ServerDown,
+    #[error("api rate limited: {retry_after}s")]
+    RateLimited { retry_after: u32 },
+}
+
+impl Ord for ApiFailure {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (ApiFailure::NetworkIssue, ApiFailure::NetworkIssue) => std::cmp::Ordering::Equal,
+            (ApiFailure::NetworkIssue, _) => std::cmp::Ordering::Less,
+            (ApiFailure::Timeout { .. }, ApiFailure::NetworkIssue) => std::cmp::Ordering::Greater,
+            (ApiFailure::Timeout { duration_ms: d1 }, ApiFailure::Timeout { duration_ms: d2 }) => {
+                d1.cmp(d2)
+            }
+            (ApiFailure::Timeout { .. }, _) => std::cmp::Ordering::Less,
+            (ApiFailure::ServerDown, ApiFailure::RateLimited { .. }) => std::cmp::Ordering::Less,
+            (ApiFailure::ServerDown, ApiFailure::ServerDown) => std::cmp::Ordering::Equal,
+            (ApiFailure::ServerDown, _) => std::cmp::Ordering::Greater,
+            (
+                ApiFailure::RateLimited { retry_after: r1 },
+                ApiFailure::RateLimited { retry_after: r2 },
+            ) => r1.cmp(r2),
+            (ApiFailure::RateLimited { .. }, _) => std::cmp::Ordering::Greater,
+        }
+    }
+}
+
+impl PartialOrd for ApiFailure {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for ApiFailure {
+    fn eq(&self, other: &Self) -> bool {
+        Ord::cmp(self, other) == std::cmp::Ordering::Equal
+    }
+}
+
+impl Eq for ApiFailure {}
+
+impl Hash for ApiFailure {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        std::mem::discriminant(self).hash(state)
+    }
+}
+
+#[uniffi::export]
+fn throw_api_failure(i: u8) -> Result<(), ApiFailure> {
+    match i {
+        0 => Err(ApiFailure::NetworkIssue),
+        1 => Err(ApiFailure::Timeout { duration_ms: 5000 }),
+        2 => Err(ApiFailure::ServerDown),
+        _ => Err(ApiFailure::RateLimited { retry_after: 60 }),
+    }
+}
+
+#[uniffi::export]
+fn throw_api_failure_timeout(duration_ms: u32) -> Result<(), ApiFailure> {
+    Err(ApiFailure::Timeout { duration_ms })
+}
+
+#[uniffi::export]
+fn throw_api_failure_rate_limited(retry_after: u32) -> Result<(), ApiFailure> {
+    Err(ApiFailure::RateLimited { retry_after })
+}
+
+impl Ord for MultipleTraitError {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (MultipleTraitError::NoData, MultipleTraitError::NoData) => std::cmp::Ordering::Equal,
+            (MultipleTraitError::NoData, _) => std::cmp::Ordering::Less,
+            (MultipleTraitError::WithCode { .. }, MultipleTraitError::NoData) => {
+                std::cmp::Ordering::Greater
+            }
+            (MultipleTraitError::WithCode { .. }, MultipleTraitError::WithCode { .. }) => {
+                std::cmp::Ordering::Equal
+            }
+            (MultipleTraitError::WithCode { .. }, _) => std::cmp::Ordering::Less,
+            (MultipleTraitError::AnotherFlat, MultipleTraitError::WithMessage { .. }) => {
+                std::cmp::Ordering::Less
+            }
+            (MultipleTraitError::AnotherFlat, MultipleTraitError::AnotherFlat) => {
+                std::cmp::Ordering::Equal
+            }
+            (MultipleTraitError::AnotherFlat, _) => std::cmp::Ordering::Greater,
+            (MultipleTraitError::WithMessage { .. }, MultipleTraitError::WithMessage { .. }) => {
+                std::cmp::Ordering::Equal
+            }
+            (MultipleTraitError::WithMessage { .. }, _) => std::cmp::Ordering::Greater,
+        }
+    }
+}
+
+impl PartialOrd for MultipleTraitError {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for MultipleTraitError {
+    fn eq(&self, other: &Self) -> bool {
+        Ord::cmp(self, other) == std::cmp::Ordering::Equal
+    }
+}
+
+impl Eq for MultipleTraitError {}
+
+impl Hash for MultipleTraitError {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        std::mem::discriminant(self).hash(state)
+    }
+}
+
+#[uniffi::export]
+fn throw_multiple_trait_error(i: u8) -> Result<(), MultipleTraitError> {
+    match i {
+        0 => Err(MultipleTraitError::NoData),
+        1 => Err(MultipleTraitError::WithCode { code: 42 }),
+        2 => Err(MultipleTraitError::AnotherFlat),
+        _ => Err(MultipleTraitError::WithMessage {
+            msg: "test".to_string(),
+        }),
+    }
+}
+
 #[cfg(test)]
 // make sure the semantics are what we expect locally.
 #[test]
