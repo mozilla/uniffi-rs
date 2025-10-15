@@ -167,3 +167,32 @@ try {
 } catch (e: NestedWithDisplayException.Simple) {
     assert(e.toString() == "nested simple error: display: too few items: 0")
 }
+
+// mixed error with flat variants (no fields) and field variants
+try {
+    throwMixedFieldError(0u)
+    throw AssertionError("should have thrown")
+} catch (e: MixedFieldException.SimpleFailure) {
+    assert(e.toString() == "error: simple failure")
+}
+
+try {
+    throwMixedFieldError(1u)
+    throw AssertionError("should have thrown")
+} catch (e: MixedFieldException.ValidationFailed) {
+    assert(e.toString() == "error: validation failed with 5 errors")
+}
+
+try {
+    throwMixedFieldError(2u)
+    throw AssertionError("should have thrown")
+} catch (e: MixedFieldException.Timeout) {
+    assert(e.toString() == "error: timeout")
+}
+
+try {
+    throwMixedFieldError(3u)
+    throw AssertionError("should have thrown")
+} catch (e: MixedFieldException.InvalidInput) {
+    assert(e.toString() == "error: invalid input: bad data")
+}

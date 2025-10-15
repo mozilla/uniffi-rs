@@ -498,6 +498,32 @@ fn get_mixed_enum(i: u8) -> MixedEnum {
     }
 }
 
+// mixed error with flat variants (no fields) and field variants
+#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
+#[uniffi::export(Display)]
+pub enum MixedFieldError {
+    #[error("error: simple failure")]
+    SimpleFailure,
+    #[error("error: validation failed with {count} errors")]
+    ValidationFailed { count: u32 },
+    #[error("error: timeout")]
+    Timeout,
+    #[error("error: invalid input: {reason}")]
+    InvalidInput { reason: String },
+}
+
+#[uniffi::export]
+fn throw_mixed_field_error(i: u8) -> Result<(), MixedFieldError> {
+    match i {
+        0 => Err(MixedFieldError::SimpleFailure),
+        1 => Err(MixedFieldError::ValidationFailed { count: 5 }),
+        2 => Err(MixedFieldError::Timeout),
+        _ => Err(MixedFieldError::InvalidInput {
+            reason: "bad data".to_string(),
+        }),
+    }
+}
+
 #[cfg(test)]
 // make sure the semantics are what we expect locally.
 #[test]
