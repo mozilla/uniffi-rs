@@ -109,39 +109,61 @@ assert(sortedMixed[3] is MixedEnum.WithNumber) // data variant last
 
 // Errors
 
-// flat error with Display
+// flat error - only toString() is generated (like flat enums)
 try {
-    throwTraitError(0u)
+    throwFlatError(0u)
     throw AssertionError("should have thrown")
-} catch (e: FlatErrorWithDisplayExport.TooMany) {
+} catch (e: FlatException.NotFound) {
+    assert(e.toString() == "error: not found")
+}
+
+try {
+    throwFlatError(1u)
+    throw AssertionError("should have thrown")
+} catch (e: FlatException.Unauthorized) {
+    assert(e.toString() == "error: unauthorized")
+}
+
+try {
+    throwFlatError(2u)
+    throw AssertionError("should have thrown")
+} catch (e: FlatException.InternalException) {
+    assert(e.toString() == "error: internal error")
+}
+
+// error with fields
+try {
+    throwWithFieldsError(0u)
+    throw AssertionError("should have thrown")
+} catch (e: WithFieldsException.TooMany) {
     assert(e.toString() == "display: too many items: 100")
 }
 
 try {
-    throwTraitError(1u)
+    throwWithFieldsError(1u)
     throw AssertionError("should have thrown")
-} catch (e: FlatErrorWithDisplayExport.TooFew) {
+} catch (e: WithFieldsException.TooFew) {
     assert(e.toString() == "display: too few items: 0")
 }
 
 // nested error with another error (that has Display) as payload
 try {
-    throwNestedError(0u)
+    throwNestedWithDisplayError(0u)
     throw AssertionError("should have thrown")
-} catch (e: NestedErrorWithDisplay.Simple) {
+} catch (e: NestedWithDisplayException.Simple) {
     assert(e.toString() == "nested simple error: display: too many items: 42")
 }
 
 try {
-    throwNestedError(1u)
+    throwNestedWithDisplayError(1u)
     throw AssertionError("should have thrown")
-} catch (e: NestedErrorWithDisplay.Complex) {
+} catch (e: NestedWithDisplayException.Complex) {
     assert(e.toString() == "nested complex error [nested]: display: too few items: 7")
 }
 
 try {
-    throwNestedError(2u)
+    throwNestedWithDisplayError(2u)
     throw AssertionError("should have thrown")
-} catch (e: NestedErrorWithDisplay.Simple) {
+} catch (e: NestedWithDisplayException.Simple) {
     assert(e.toString() == "nested simple error: display: too few items: 0")
 }
