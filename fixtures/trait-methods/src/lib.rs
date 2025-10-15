@@ -142,6 +142,7 @@ impl Hash for UdlRecord {
 #[derive(uniffi::Enum, Debug)]
 #[uniffi::export(Debug, Display, Eq, Ord, Hash)]
 pub enum TraitEnum {
+    N,
     S(String),
     I(i8),
 }
@@ -149,6 +150,7 @@ pub enum TraitEnum {
 impl std::fmt::Display for TraitEnum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::N => write!(f, "TraitEnum::N"),
             Self::S(s) => write!(f, "TraitEnum::S({s:?})"),
             Self::I(i) => write!(f, "TraitEnum::I({i})"),
         }
@@ -162,11 +164,16 @@ impl Ord for TraitEnum {
         match self {
             TraitEnum::S { .. } => match other {
                 TraitEnum::S(_) => std::cmp::Ordering::Equal,
-                TraitEnum::I(_) => std::cmp::Ordering::Less,
+                TraitEnum::I(_) | TraitEnum::N => std::cmp::Ordering::Less,
             },
             TraitEnum::I(_) => match other {
                 TraitEnum::S(_) => std::cmp::Ordering::Greater,
                 TraitEnum::I(_) => std::cmp::Ordering::Equal,
+                TraitEnum::N => std::cmp::Ordering::Less,
+            },
+            TraitEnum::N => match other {
+                TraitEnum::N => std::cmp::Ordering::Equal,
+                _ => std::cmp::Ordering::Greater,
             },
         }
     }
@@ -423,78 +430,6 @@ fn throw_nested_with_display_error(i: u8) -> Result<(), NestedWithDisplayError> 
         _ => Err(NestedWithDisplayError::Simple(WithFieldsError::TooFew {
             count: 0,
         })),
-    }
-}
-
-// mixed enum with object variants (no fields) and data class variants (with fields)
-// this tests that parent-level trait implementations work for object variants
-#[derive(uniffi::Enum, Debug, Clone)]
-#[uniffi::export(Debug, Display, Eq, Ord, Hash)]
-pub enum MixedEnum {
-    NoFields,                  // object variant - needs parent-level trait impls
-    WithString(String),        // data class variant - has its own trait impls
-    AnotherNoFields,           // object variant - needs parent-level trait impls
-    WithNumber { value: i32 }, // data class variant - has its own trait impls
-}
-
-impl std::fmt::Display for MixedEnum {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::NoFields => write!(f, "MixedEnum::NoFields"),
-            Self::WithString(s) => write!(f, "MixedEnum::WithString({s})"),
-            Self::AnotherNoFields => write!(f, "MixedEnum::AnotherNoFields"),
-            Self::WithNumber { value } => write!(f, "MixedEnum::WithNumber({value})"),
-        }
-    }
-}
-
-// only compare by discriminant, ignore payloads
-impl Ord for MixedEnum {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        match (self, other) {
-            (MixedEnum::NoFields, MixedEnum::NoFields) => std::cmp::Ordering::Equal,
-            (MixedEnum::NoFields, _) => std::cmp::Ordering::Less,
-            (MixedEnum::WithString(_), MixedEnum::NoFields) => std::cmp::Ordering::Greater,
-            (MixedEnum::WithString(_), MixedEnum::WithString(_)) => std::cmp::Ordering::Equal,
-            (MixedEnum::WithString(_), _) => std::cmp::Ordering::Less,
-            (MixedEnum::AnotherNoFields, MixedEnum::WithNumber { .. }) => std::cmp::Ordering::Less,
-            (MixedEnum::AnotherNoFields, MixedEnum::AnotherNoFields) => std::cmp::Ordering::Equal,
-            (MixedEnum::AnotherNoFields, _) => std::cmp::Ordering::Greater,
-            (MixedEnum::WithNumber { .. }, MixedEnum::WithNumber { .. }) => {
-                std::cmp::Ordering::Equal
-            }
-            (MixedEnum::WithNumber { .. }, _) => std::cmp::Ordering::Greater,
-        }
-    }
-}
-
-impl PartialOrd for MixedEnum {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for MixedEnum {
-    fn eq(&self, other: &Self) -> bool {
-        Ord::cmp(self, other) == std::cmp::Ordering::Equal
-    }
-}
-
-impl Eq for MixedEnum {}
-
-impl Hash for MixedEnum {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        std::mem::discriminant(self).hash(state)
-    }
-}
-
-#[uniffi::export]
-fn get_mixed_enum(i: u8) -> MixedEnum {
-    match i {
-        0 => MixedEnum::NoFields,
-        1 => MixedEnum::WithString("test".to_string()),
-        2 => MixedEnum::AnotherNoFields,
-        _ => MixedEnum::WithNumber { value: 42 },
     }
 }
 

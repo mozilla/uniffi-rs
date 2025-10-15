@@ -70,43 +70,6 @@ assert(getNumericEnum(200u).toString() == "NumericEnum::color-green")
 assert(getNumericEnum(300u).toString() == "NumericEnum::color-blue")
 assert(getNumericEnum(999u).value == 300u.toUShort())  // defaults to Blue
 
-// mixed enum with object variants (requires parent-level trait impls - line 117)
-// object variants have no fields, so they can't have their own trait impl bodies
-// they MUST inherit from the sealed parent's implementations
-val objectVariant1 = getMixedEnum(0u) // NoFields - object variant
-val objectVariant2 = getMixedEnum(2u) // AnotherNoFields - object variant
-val dataVariant1 = getMixedEnum(1u)   // WithString - data class variant
-val dataVariant2 = getMixedEnum(3u)   // WithNumber - data class variant
-
-// test toString on object variants - will fail without line 117
-assert(objectVariant1.toString() == "MixedEnum::NoFields")
-assert(objectVariant2.toString() == "MixedEnum::AnotherNoFields")
-
-// test equals on object variants - will fail without line 117
-assert(objectVariant1 == getMixedEnum(0u))
-assert(objectVariant2 == getMixedEnum(2u))
-
-// test hashCode on object variants - will fail without line 117
-assert(objectVariant1.hashCode() == getMixedEnum(0u).hashCode())
-val mixedSet = setOf(objectVariant1, objectVariant2)
-assert(mixedSet.contains(getMixedEnum(0u)))
-
-// test compareTo on object variants - will fail without line 117
-assert(objectVariant1 < objectVariant2)
-assert(objectVariant1 < dataVariant1)
-assert(objectVariant2 < dataVariant2)
-
-// test mixed list with object variants - will fail without line 117
-val mixedList: List<MixedEnum> = listOf(
-    dataVariant2,
-    objectVariant2,
-    dataVariant1,
-    objectVariant1
-)
-val sortedMixed = mixedList.sorted()
-assert(sortedMixed[0] is MixedEnum.NoFields) // object variant first
-assert(sortedMixed[3] is MixedEnum.WithNumber) // data variant last
-
 // Errors
 
 // flat error - only toString() is generated (like flat enums)
