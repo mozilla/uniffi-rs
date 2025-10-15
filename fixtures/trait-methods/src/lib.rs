@@ -361,10 +361,31 @@ fn get_numeric_enum(value: u16) -> NumericEnum {
     }
 }
 
-// flat error with Display
+// flat error - variants have no fields
+#[derive(Debug, uniffi::Error, thiserror::Error, Clone, PartialEq, Eq, Hash)]
+#[uniffi::export(Display)]
+pub enum FlatError {
+    #[error("error: not found")]
+    NotFound,
+    #[error("error: unauthorized")]
+    Unauthorized,
+    #[error("error: internal error")]
+    InternalError,
+}
+
+#[uniffi::export]
+fn throw_flat_error(i: u8) -> Result<(), FlatError> {
+    match i {
+        0 => Err(FlatError::NotFound),
+        1 => Err(FlatError::Unauthorized),
+        _ => Err(FlatError::InternalError),
+    }
+}
+
+// error with fields
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
 #[uniffi::export(Display)]
-pub enum FlatErrorWithDisplayExport {
+pub enum WithFieldsError {
     #[error("display: too many items: {count}")]
     TooMany { count: u32 },
     #[error("display: too few items: {count}")]
@@ -372,39 +393,36 @@ pub enum FlatErrorWithDisplayExport {
 }
 
 #[uniffi::export]
-fn throw_trait_error(i: u8) -> Result<(), FlatErrorWithDisplayExport> {
+fn throw_with_fields_error(i: u8) -> Result<(), WithFieldsError> {
     match i {
-        0 => Err(FlatErrorWithDisplayExport::TooMany { count: 100 }),
-        _ => Err(FlatErrorWithDisplayExport::TooFew { count: 0 }),
+        0 => Err(WithFieldsError::TooMany { count: 100 }),
+        _ => Err(WithFieldsError::TooFew { count: 0 }),
     }
 }
 
 // nested error with another error that implements Display as a payload
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
 #[uniffi::export(Display)]
-pub enum NestedErrorWithDisplay {
+pub enum NestedWithDisplayError {
     #[error("nested simple error: {0}")]
-    Simple(FlatErrorWithDisplayExport),
+    Simple(WithFieldsError),
     #[error("nested complex error [{tag}]: {inner}")]
-    Complex {
-        inner: FlatErrorWithDisplayExport,
-        tag: String,
-    },
+    Complex { inner: WithFieldsError, tag: String },
 }
 
 #[uniffi::export]
-fn throw_nested_error(i: u8) -> Result<(), NestedErrorWithDisplay> {
+fn throw_nested_with_display_error(i: u8) -> Result<(), NestedWithDisplayError> {
     match i {
-        0 => Err(NestedErrorWithDisplay::Simple(
-            FlatErrorWithDisplayExport::TooMany { count: 42 },
-        )),
-        1 => Err(NestedErrorWithDisplay::Complex {
-            inner: FlatErrorWithDisplayExport::TooFew { count: 7 },
+        0 => Err(NestedWithDisplayError::Simple(WithFieldsError::TooMany {
+            count: 42,
+        })),
+        1 => Err(NestedWithDisplayError::Complex {
+            inner: WithFieldsError::TooFew { count: 7 },
             tag: "nested".to_string(),
         }),
-        _ => Err(NestedErrorWithDisplay::Simple(
-            FlatErrorWithDisplayExport::TooFew { count: 0 },
-        )),
+        _ => Err(NestedWithDisplayError::Simple(WithFieldsError::TooFew {
+            count: 0,
+        })),
     }
 }
 
