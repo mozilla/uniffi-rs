@@ -209,10 +209,31 @@ impl Config {
 
 // Generate kotlin bindings for the given ComponentInterface, as a string.
 pub fn generate_bindings(config: &Config, ci: &ComponentInterface) -> Result<String> {
+    ensure_flat_enum_trait_methods_supported(ci)?;
     KotlinWrapper::new(config.clone(), ci)
         .context("failed to create a binding generator")?
         .render()
         .context("failed to render kotlin bindings")
+}
+
+fn ensure_flat_enum_trait_methods_supported(ci: &ComponentInterface) -> Result<()> {
+    for enum_def in ci.enum_definitions() {
+        if ci.is_name_used_as_error(enum_def.name()) || !enum_def.is_flat() {
+            continue;
+        }
+
+        let trait_methods = enum_def.uniffi_trait_methods();
+        if trait_methods.eq_eq.is_some()
+            || trait_methods.hash_hash.is_some()
+            || trait_methods.ord_cmp.is_some()
+        {
+            anyhow::bail!(
+                "Kotlin bindings do not support exporting Eq/Ord/Hash for flat enum `{}`",
+                enum_def.name()
+            );
+        }
+    }
+    Ok(())
 }
 
 /// A struct to record a Kotlin import statement.

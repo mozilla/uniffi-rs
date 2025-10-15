@@ -302,9 +302,9 @@ fn get_nested_enum_with_display(i: u8) -> NestedEnumWithDisplay {
     }
 }
 
-// flat enum exporting Eq/Ord/Hash - Kotlin enum class provides these natively
+// flat enum with Display only - Kotlin doesn't support Eq/Ord/Hash exports for flat enums
 #[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[uniffi::export(Debug, Display, Eq, Ord, Hash)]
+#[uniffi::export(Debug, Display)]
 pub enum FlatTraitEnum {
     Alpha,
     Beta,
