@@ -7,7 +7,7 @@
 sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if contains_object_references %}, Disposable {% endif %}
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
 {%- if uniffi_trait_methods.ord_cmp.is_some() -%}
-, Comparable<{{ type_name }}>
+{% if contains_object_references %}, {% else %}, {% endif %}Comparable<{{ type_name }}>
 {%- endif %} {
         {% for variant in e.variants() -%}
         {%- call kt::docstring(variant, 4) %}
@@ -24,7 +24,7 @@ sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if co
 sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references %}, Disposable {% endif %}
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
 {%- if uniffi_trait_methods.ord_cmp.is_some() -%}
-, Comparable<{{ type_name }}>
+{% if contains_object_references %}, {% else %}, {% endif %}Comparable<{{ type_name }}>
 {%- endif %} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
