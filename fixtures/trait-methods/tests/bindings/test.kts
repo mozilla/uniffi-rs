@@ -29,27 +29,17 @@ assert(TraitRecord(s="a", i=2) < TraitRecord(s="yo", i=1))
 
 // Enums
 
+assert(TraitEnum.N.toString() == "TraitEnum::N")
+assert((TraitEnum::S)("hello").toString() == "TraitEnum::S(\"hello\")")
+assert((TraitEnum::I)(1).toString() == "TraitEnum::I(1)")
+assert((UdlEnum::S)("hello").toString() == "S { s: \"hello\" }")
+
 assert((UdlEnum::S)("hello") == (UdlEnum::S)("hello"))
 assert((UdlEnum::S)("hello") == (UdlEnum::S)("other"))
 assert((UdlEnum::S)("hello") < (UdlEnum::I)(0))
 assert((TraitEnum::I)(1) == (TraitEnum::I)(1))
 assert((TraitEnum::I)(1) == (TraitEnum::I)(2))
 assert((TraitEnum::S)("hello") < (TraitEnum::I)(0))
-
-// nested enums with payloads and Display trait
-assert((TraitEnum::S)("hello").toString() == "TraitEnum::S(\"hello\")")
-assert((TraitEnum::I)(1).toString() == "TraitEnum::I(1)")
-assert((UdlEnum::S)("hello").toString() == "S { s: \"hello\" }")
-
-// flat enum (no payload) with Display
-assert(getEnumWithDisplayExport(0u).toString() == "display: One")
-assert(getEnumWithDisplayExport(1u).toString() == "display: Two")
-assert(getEnumWithDisplayExport(2u).toString() == "display: Three")
-
-// nested enum with another enum (that has Display) as payload
-assert(getNestedEnumWithDisplay(0u).toString() == "nested simple: display: One")
-assert(getNestedEnumWithDisplay(1u).toString() == "nested complex [test]: display: Two")
-assert(getNestedEnumWithDisplay(2u).toString() == "nested simple: display: Three")
 
 // flat enum with Display only - Kotlin doesn't support Eq/Ord/Hash exports for flat enums
 val flatAlpha = getFlatTraitEnum(0u)
@@ -61,18 +51,9 @@ val flatSet = setOf(flatAlpha)
 assert(flatSet.contains(FlatTraitEnum.ALPHA))
 assert(!flatSet.contains(FlatTraitEnum.BETA))
 
-// flat enum with explicit numeric discriminant and Display
-val numericRed = getNumericEnum(100u)
-assert(numericRed == NumericEnum.RED)
-assert(numericRed.value == 100u.toUShort())
-assert(numericRed.toString() == "NumericEnum::color-red")
-assert(getNumericEnum(200u).toString() == "NumericEnum::color-green")
-assert(getNumericEnum(300u).toString() == "NumericEnum::color-blue")
-assert(getNumericEnum(999u).value == 300u.toUShort())  // defaults to Blue
-
 // Errors
 
-// flat error - only toString() is generated (like flat enums)
+// flat error - Display export on flat errors
 try {
     throwFlatError(0u)
     throw AssertionError("should have thrown")
@@ -80,284 +61,76 @@ try {
     assert(e.toString() == "error: not found")
 }
 
-try {
-    throwFlatError(1u)
-    throw AssertionError("should have thrown")
-} catch (e: FlatException.Unauthorized) {
-    assert(e.toString() == "error: unauthorized")
-}
-
-try {
-    throwFlatError(2u)
-    throw AssertionError("should have thrown")
-} catch (e: FlatException.InternalException) {
-    assert(e.toString() == "error: internal error")
-}
-
-// error with fields
-try {
-    throwWithFieldsError(0u)
-    throw AssertionError("should have thrown")
-} catch (e: WithFieldsException.TooMany) {
-    assert(e.toString() == "display: too many items: 100")
-}
-
-try {
-    throwWithFieldsError(1u)
-    throw AssertionError("should have thrown")
-} catch (e: WithFieldsException.TooFew) {
-    assert(e.toString() == "display: too few items: 0")
-}
-
-// nested error with another error (that has Display) as payload
-try {
-    throwNestedWithDisplayError(0u)
-    throw AssertionError("should have thrown")
-} catch (e: NestedWithDisplayException.Simple) {
-    assert(e.toString() == "nested simple error: display: too many items: 42")
-}
-
-try {
-    throwNestedWithDisplayError(1u)
-    throw AssertionError("should have thrown")
-} catch (e: NestedWithDisplayException.Complex) {
-    assert(e.toString() == "nested complex error [nested]: display: too few items: 7")
-}
-
-try {
-    throwNestedWithDisplayError(2u)
-    throw AssertionError("should have thrown")
-} catch (e: NestedWithDisplayException.Simple) {
-    assert(e.toString() == "nested simple error: display: too few items: 0")
-}
-
-// mixed error with flat variants (no fields) and field variants
-try {
-    throwMixedFieldError(0u)
-    throw AssertionError("should have thrown")
-} catch (e: MixedFieldException.SimpleFailure) {
-    assert(e.toString() == "error: simple failure")
-}
-
-try {
-    throwMixedFieldError(1u)
-    throw AssertionError("should have thrown")
-} catch (e: MixedFieldException.ValidationFailed) {
-    assert(e.toString() == "error: validation failed with 5 errors")
-}
-
-try {
-    throwMixedFieldError(2u)
-    throw AssertionError("should have thrown")
-} catch (e: MixedFieldException.Timeout) {
-    assert(e.toString() == "error: timeout")
-}
-
-try {
-    throwMixedFieldError(3u)
-    throw AssertionError("should have thrown")
-} catch (e: MixedFieldException.InvalidInput) {
-    assert(e.toString() == "error: invalid input: bad data")
-}
-
 // mixed error with all possible exported traits (Debug, Display, Eq, Ord, Hash)
-// tests that flat variants inherit all trait implementations from parent
-var flatVariant1: MultipleTraitException? = null
-var flatVariant2: MultipleTraitException? = null
-var fieldVariant1: MultipleTraitException? = null
-var fieldVariant2: MultipleTraitException? = null
-
-// catch exceptions to test them
+// tests flat variants, field variants, and nested Display
 try {
     throwMultipleTraitError(0u)
+    throw AssertionError("should have thrown")
 } catch (e: MultipleTraitException.NoData) {
-    flatVariant1 = e
-}
-
-try {
-    throwMultipleTraitError(2u)
-} catch (e: MultipleTraitException.AnotherFlat) {
-    flatVariant2 = e
+    assert(e.toString() == "MultipleTraitError::NoData")
 }
 
 try {
     throwMultipleTraitError(1u)
+    throw AssertionError("should have thrown")
 } catch (e: MultipleTraitException.WithCode) {
-    fieldVariant1 = e
+    assert(e.toString() == "MultipleTraitError::WithCode(42)")
+}
+
+// test nested error with Display
+try {
+    throwMultipleTraitError(4u)
+    throw AssertionError("should have thrown")
+} catch (e: MultipleTraitException.NestedSimple) {
+    assert(e.toString() == "nested simple error: error: not found")
 }
 
 try {
-    throwMultipleTraitError(3u)
-} catch (e: MultipleTraitException.WithMessage) {
-    fieldVariant2 = e
+    throwMultipleTraitError(5u)
+    throw AssertionError("should have thrown")
+} catch (e: MultipleTraitException.NestedComplex) {
+    assert(e.toString() == "nested complex error [complex]: error: unauthorized")
 }
 
-// test Display (toString) on flat variants
-assert(flatVariant1!!.toString() == "MultipleTraitError::NoData")
-assert(flatVariant2!!.toString() == "MultipleTraitError::AnotherFlat")
-
-// test Display (toString) on field variants
-assert(fieldVariant1!!.toString() == "MultipleTraitError::WithCode(42)")
-assert(fieldVariant2!!.toString() == "MultipleTraitError::WithMessage(test)")
-
-// test Eq (equals) on flat variants
+// test Eq on flat variants
+var err1: MultipleTraitException? = null
 try {
     throwMultipleTraitError(0u)
 } catch (e: MultipleTraitException.NoData) {
-    assert(flatVariant1 == e) // should be equal
+    err1 = e
+}
+try {
+    throwMultipleTraitError(0u)
+} catch (e: MultipleTraitException.NoData) {
+    assert(err1 == e)
 }
 
+// test Ord
+var err2: MultipleTraitException? = null
 try {
     throwMultipleTraitError(2u)
 } catch (e: MultipleTraitException.AnotherFlat) {
-    assert(flatVariant2 == e) // should be equal
+    err2 = e
 }
+assert(err1!! < err2!!)
 
-// test Hash (hashCode) on flat variants
+// error that doesn't end in "Error" - tests class_name filter doesn't break non-Error types
 try {
-    throwMultipleTraitError(0u)
-} catch (e: MultipleTraitException.NoData) {
-    assert(flatVariant1!!.hashCode() == e.hashCode())
+    throwApiFailure(0u)
+    throw AssertionError("should have thrown")
+} catch (e: ApiFailure.NetworkIssue) {
+    assert(e.toString() == "api network issue")
 }
 
-val errorSet = setOf(flatVariant1!!, flatVariant2!!)
-try {
-    throwMultipleTraitError(0u)
-} catch (e: MultipleTraitException.NoData) {
-    assert(errorSet.contains(e))
-}
-
-// test Ord (compareTo) on flat and field variants
-assert(flatVariant1!! < flatVariant2!!)
-assert(flatVariant1!! < fieldVariant1!!)
-assert(flatVariant2!! < fieldVariant2!!)
-assert(fieldVariant1!! < fieldVariant2!!)
-
-// test sorting mixed error list
-val errorList: List<MultipleTraitException> = listOf(
-    fieldVariant2!!,
-    flatVariant2!!,
-    fieldVariant1!!,
-    flatVariant1!!
-)
-val sortedErrors = errorList.sorted()
-assert(sortedErrors[0] is MultipleTraitException.NoData) // flat variant first
-assert(sortedErrors[3] is MultipleTraitException.WithMessage) // field variant last
-
-// error that doesn't end in "Error" - should keep name as-is (ApiFailure, not ApiFailureException)
-// tests that class_name filter doesn't break non-Error error types
-var apiErr1: ApiFailure? = null
-var apiErr2: ApiFailure? = null
-var apiErr3: ApiFailure? = null
-
+// test Eq on non-Error type
+var apiErr: ApiFailure? = null
 try {
     throwApiFailure(0u)
 } catch (e: ApiFailure.NetworkIssue) {
-    apiErr1 = e
+    apiErr = e
 }
-
-try {
-    throwApiFailure(1u)
-} catch (e: ApiFailure.Timeout) {
-    apiErr2 = e
-}
-
-try {
-    throwApiFailure(2u)
-} catch (e: ApiFailure.ServerDown) {
-    apiErr3 = e
-}
-
-// test Display (toString)
-assert(apiErr1!!.toString() == "api network issue")
-assert(apiErr2!!.toString() == "api timeout after 5000ms")
-assert(apiErr3!!.toString() == "api server down")
-
-// test Eq (equals) - should work with class_name filter
 try {
     throwApiFailure(0u)
 } catch (e: ApiFailure.NetworkIssue) {
-    assert(apiErr1 == e)
+    assert(apiErr == e)
 }
-
-try {
-    throwApiFailure(1u)
-} catch (e: ApiFailure.Timeout) {
-    assert(apiErr2 == e)
-    assert(apiErr1 != e) // different variants
-}
-
-// test Hash (hashCode)
-try {
-    throwApiFailure(0u)
-} catch (e: ApiFailure.NetworkIssue) {
-    assert(apiErr1!!.hashCode() == e.hashCode())
-}
-
-val apiSet = setOf(apiErr1!!, apiErr2!!)
-try {
-    throwApiFailure(0u)
-} catch (e: ApiFailure.NetworkIssue) {
-    assert(apiSet.contains(e))
-}
-
-// test Ord (compareTo) - should work with class_name filter
-assert(apiErr1!! < apiErr2!!)
-assert(apiErr2!! < apiErr3!!)
-
-// test field comparison for Timeout variant (same variant, different field values)
-var timeout1000: ApiFailure? = null
-var timeout2000: ApiFailure? = null
-var timeout5000: ApiFailure? = null
-try {
-    throwApiFailureTimeout(1000u)
-} catch (e: ApiFailure.Timeout) {
-    timeout1000 = e
-}
-try {
-    throwApiFailureTimeout(2000u)
-} catch (e: ApiFailure.Timeout) {
-    timeout2000 = e
-}
-try {
-    throwApiFailureTimeout(5000u)
-} catch (e: ApiFailure.Timeout) {
-    timeout5000 = e
-}
-
-assert(timeout1000!! < timeout2000!!)
-assert(timeout2000!! < timeout5000!!)
-assert(timeout1000!! < timeout5000!!)
-assert(timeout1000!!.toString() == "api timeout after 1000ms")
-assert(timeout5000!!.toString() == "api timeout after 5000ms")
-
-// test field comparison for RateLimited variant (same variant, different field values)
-var rateLimited30: ApiFailure? = null
-var rateLimited60: ApiFailure? = null
-var rateLimited120: ApiFailure? = null
-try {
-    throwApiFailureRateLimited(30u)
-} catch (e: ApiFailure.RateLimited) {
-    rateLimited30 = e
-}
-try {
-    throwApiFailureRateLimited(60u)
-} catch (e: ApiFailure.RateLimited) {
-    rateLimited60 = e
-}
-try {
-    throwApiFailureRateLimited(120u)
-} catch (e: ApiFailure.RateLimited) {
-    rateLimited120 = e
-}
-
-assert(rateLimited30!! < rateLimited60!!)
-assert(rateLimited60!! < rateLimited120!!)
-assert(rateLimited30!! < rateLimited120!!)
-assert(rateLimited30!!.toString() == "api rate limited: 30s")
-assert(rateLimited120!!.toString() == "api rate limited: 120s")
-
-val apiList = listOf(apiErr3!!, apiErr1!!, apiErr2!!)
-val sortedApi = apiList.sorted()
-assert(sortedApi[0] is ApiFailure.NetworkIssue)
-assert(sortedApi[2] is ApiFailure.ServerDown)

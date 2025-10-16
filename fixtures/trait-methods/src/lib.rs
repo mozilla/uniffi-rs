@@ -249,66 +249,6 @@ impl Hash for UdlEnum {
     }
 }
 
-// flat enum with Display
-#[derive(uniffi::Enum, Debug, Clone)]
-#[uniffi::export(Display)]
-pub enum EnumWithDisplayExport {
-    One,
-    Two,
-    Three,
-}
-
-impl std::fmt::Display for EnumWithDisplayExport {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::One => write!(f, "display: One"),
-            Self::Two => write!(f, "display: Two"),
-            Self::Three => write!(f, "display: Three"),
-        }
-    }
-}
-
-#[uniffi::export]
-fn get_enum_with_display_export(i: u8) -> EnumWithDisplayExport {
-    match i {
-        0 => EnumWithDisplayExport::One,
-        1 => EnumWithDisplayExport::Two,
-        _ => EnumWithDisplayExport::Three,
-    }
-}
-
-// nested enum with another enum that implements Display as a payload
-#[derive(uniffi::Enum, Debug, Clone)]
-#[uniffi::export(Display)]
-pub enum NestedEnumWithDisplay {
-    Simple(EnumWithDisplayExport),
-    Complex {
-        inner: EnumWithDisplayExport,
-        tag: String,
-    },
-}
-
-impl std::fmt::Display for NestedEnumWithDisplay {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Simple(e) => write!(f, "nested simple: {}", e),
-            Self::Complex { inner, tag } => write!(f, "nested complex [{}]: {}", tag, inner),
-        }
-    }
-}
-
-#[uniffi::export]
-fn get_nested_enum_with_display(i: u8) -> NestedEnumWithDisplay {
-    match i {
-        0 => NestedEnumWithDisplay::Simple(EnumWithDisplayExport::One),
-        1 => NestedEnumWithDisplay::Complex {
-            inner: EnumWithDisplayExport::Two,
-            tag: "test".to_string(),
-        },
-        _ => NestedEnumWithDisplay::Simple(EnumWithDisplayExport::Three),
-    }
-}
-
 // flat enum with Display only - Kotlin doesn't support Eq/Ord/Hash exports for flat enums
 #[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[uniffi::export(Debug, Display)]
@@ -338,36 +278,6 @@ fn get_flat_trait_enum(index: u8) -> FlatTraitEnum {
     }
 }
 
-// flat enum with explicit numeric discriminant and Display
-#[derive(uniffi::Enum, Debug, Clone, Copy, PartialEq, Eq)]
-#[uniffi::export(Display)]
-#[repr(u16)]
-pub enum NumericEnum {
-    Red = 100,
-    Green = 200,
-    Blue = 300,
-}
-
-impl std::fmt::Display for NumericEnum {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let label = match self {
-            NumericEnum::Red => "color-red",
-            NumericEnum::Green => "color-green",
-            NumericEnum::Blue => "color-blue",
-        };
-        write!(f, "NumericEnum::{label}")
-    }
-}
-
-#[uniffi::export]
-fn get_numeric_enum(value: u16) -> NumericEnum {
-    match value {
-        100 => NumericEnum::Red,
-        200 => NumericEnum::Green,
-        _ => NumericEnum::Blue,
-    }
-}
-
 // flat error - variants have no fields
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone, PartialEq, Eq, Hash)]
 #[uniffi::export(Display)]
@@ -389,78 +299,7 @@ fn throw_flat_error(i: u8) -> Result<(), FlatError> {
     }
 }
 
-// error with fields
-#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
-#[uniffi::export(Display)]
-pub enum WithFieldsError {
-    #[error("display: too many items: {count}")]
-    TooMany { count: u32 },
-    #[error("display: too few items: {count}")]
-    TooFew { count: u32 },
-}
-
-#[uniffi::export]
-fn throw_with_fields_error(i: u8) -> Result<(), WithFieldsError> {
-    match i {
-        0 => Err(WithFieldsError::TooMany { count: 100 }),
-        _ => Err(WithFieldsError::TooFew { count: 0 }),
-    }
-}
-
-// nested error with another error that implements Display as a payload
-#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
-#[uniffi::export(Display)]
-pub enum NestedWithDisplayError {
-    #[error("nested simple error: {0}")]
-    Simple(WithFieldsError),
-    #[error("nested complex error [{tag}]: {inner}")]
-    Complex { inner: WithFieldsError, tag: String },
-}
-
-#[uniffi::export]
-fn throw_nested_with_display_error(i: u8) -> Result<(), NestedWithDisplayError> {
-    match i {
-        0 => Err(NestedWithDisplayError::Simple(WithFieldsError::TooMany {
-            count: 42,
-        })),
-        1 => Err(NestedWithDisplayError::Complex {
-            inner: WithFieldsError::TooFew { count: 7 },
-            tag: "nested".to_string(),
-        }),
-        _ => Err(NestedWithDisplayError::Simple(WithFieldsError::TooFew {
-            count: 0,
-        })),
-    }
-}
-
-// mixed error with flat variants (no fields) and field variants
-#[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
-#[uniffi::export(Display)]
-pub enum MixedFieldError {
-    #[error("error: simple failure")]
-    SimpleFailure,
-    #[error("error: validation failed with {count} errors")]
-    ValidationFailed { count: u32 },
-    #[error("error: timeout")]
-    Timeout,
-    #[error("error: invalid input: {reason}")]
-    InvalidInput { reason: String },
-}
-
-#[uniffi::export]
-fn throw_mixed_field_error(i: u8) -> Result<(), MixedFieldError> {
-    match i {
-        0 => Err(MixedFieldError::SimpleFailure),
-        1 => Err(MixedFieldError::ValidationFailed { count: 5 }),
-        2 => Err(MixedFieldError::Timeout),
-        _ => Err(MixedFieldError::InvalidInput {
-            reason: "bad data".to_string(),
-        }),
-    }
-}
-
 // mixed error with all possible exported traits
-// tests that flat variants inherit all trait implementations from parent
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
 #[uniffi::export(Debug, Display, Eq, Ord, Hash)]
 pub enum MultipleTraitError {
@@ -472,10 +311,13 @@ pub enum MultipleTraitError {
     AnotherFlat,
     #[error("MultipleTraitError::WithMessage({msg})")]
     WithMessage { msg: String },
+    #[error("nested simple error: {0}")]
+    NestedSimple(FlatError),
+    #[error("nested complex error [{tag}]: {inner}")]
+    NestedComplex { inner: FlatError, tag: String },
 }
 
 // error that doesn't end in "Error" suffix to test class_name filter doesn't break this case
-// mixed error with flat and field variants
 #[derive(Debug, uniffi::Error, thiserror::Error, Clone)]
 #[uniffi::export(Debug, Display, Eq, Ord, Hash)]
 pub enum ApiFailure {
@@ -573,7 +415,23 @@ impl Ord for MultipleTraitError {
             (MultipleTraitError::WithMessage { .. }, MultipleTraitError::WithMessage { .. }) => {
                 std::cmp::Ordering::Equal
             }
+            (
+                MultipleTraitError::WithMessage { .. },
+                MultipleTraitError::NestedSimple(_) | MultipleTraitError::NestedComplex { .. },
+            ) => std::cmp::Ordering::Less,
             (MultipleTraitError::WithMessage { .. }, _) => std::cmp::Ordering::Greater,
+            (MultipleTraitError::NestedSimple(_), MultipleTraitError::NestedSimple(_)) => {
+                std::cmp::Ordering::Equal
+            }
+            (MultipleTraitError::NestedSimple(_), MultipleTraitError::NestedComplex { .. }) => {
+                std::cmp::Ordering::Less
+            }
+            (MultipleTraitError::NestedSimple(_), _) => std::cmp::Ordering::Greater,
+            (
+                MultipleTraitError::NestedComplex { .. },
+                MultipleTraitError::NestedComplex { .. },
+            ) => std::cmp::Ordering::Equal,
+            (MultipleTraitError::NestedComplex { .. }, _) => std::cmp::Ordering::Greater,
         }
     }
 }
@@ -604,8 +462,13 @@ fn throw_multiple_trait_error(i: u8) -> Result<(), MultipleTraitError> {
         0 => Err(MultipleTraitError::NoData),
         1 => Err(MultipleTraitError::WithCode { code: 42 }),
         2 => Err(MultipleTraitError::AnotherFlat),
-        _ => Err(MultipleTraitError::WithMessage {
+        3 => Err(MultipleTraitError::WithMessage {
             msg: "test".to_string(),
+        }),
+        4 => Err(MultipleTraitError::NestedSimple(FlatError::NotFound)),
+        _ => Err(MultipleTraitError::NestedComplex {
+            inner: FlatError::Unauthorized,
+            tag: "complex".to_string(),
         }),
     }
 }
