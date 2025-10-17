@@ -28,6 +28,8 @@ assert(TraitRecord(s="hi", i=2) != TraitRecord(s="yo", i=3))
 assert(TraitRecord(s="a", i=2) < TraitRecord(s="yo", i=1))
 
 // Enums
+
+assert(TraitEnum.N.toString() == "TraitEnum::N")
 assert((TraitEnum::S)("hello").toString() == "TraitEnum::S(\"hello\")")
 assert((TraitEnum::I)(1).toString() == "TraitEnum::I(1)")
 assert((UdlEnum::S)("hello").toString() == "S { s: \"hello\" }")
@@ -38,3 +40,97 @@ assert((UdlEnum::S)("hello") < (UdlEnum::I)(0))
 assert((TraitEnum::I)(1) == (TraitEnum::I)(1))
 assert((TraitEnum::I)(1) == (TraitEnum::I)(2))
 assert((TraitEnum::S)("hello") < (TraitEnum::I)(0))
+
+// flat enum with Display only - Kotlin doesn't support Eq/Ord/Hash exports for flat enums
+val flatAlpha = getFlatTraitEnum(0u)
+assert(flatAlpha == FlatTraitEnum.ALPHA)
+assert(getFlatTraitEnum(1u) > flatAlpha)
+assert(flatAlpha.toString() == "FlatTraitEnum::flat-alpha")
+assert(getFlatTraitEnum(2u).toString() == "FlatTraitEnum::flat-gamma")
+val flatSet = setOf(flatAlpha)
+assert(flatSet.contains(FlatTraitEnum.ALPHA))
+assert(!flatSet.contains(FlatTraitEnum.BETA))
+
+// Errors
+
+// flat error - Display export on flat errors
+try {
+    throwFlatError(0u)
+    throw AssertionError("should have thrown")
+} catch (e: FlatException.NotFound) {
+    assert(e.toString() == "error: not found")
+}
+
+// mixed error with all possible exported traits (Debug, Display, Eq, Ord, Hash)
+// tests flat variants, field variants, and nested Display
+try {
+    throwMultipleTraitError(0u)
+    throw AssertionError("should have thrown")
+} catch (e: MultipleTraitException.NoData) {
+    assert(e.toString() == "MultipleTraitError::NoData")
+}
+
+try {
+    throwMultipleTraitError(1u)
+    throw AssertionError("should have thrown")
+} catch (e: MultipleTraitException.WithCode) {
+    assert(e.toString() == "MultipleTraitError::WithCode(42)")
+}
+
+// test nested error with Display
+try {
+    throwMultipleTraitError(4u)
+    throw AssertionError("should have thrown")
+} catch (e: MultipleTraitException.NestedSimple) {
+    assert(e.toString() == "nested simple error: error: not found")
+}
+
+try {
+    throwMultipleTraitError(5u)
+    throw AssertionError("should have thrown")
+} catch (e: MultipleTraitException.NestedComplex) {
+    assert(e.toString() == "nested complex error [complex]: error: unauthorized")
+}
+
+// test Eq on flat variants
+var err1: MultipleTraitException? = null
+try {
+    throwMultipleTraitError(0u)
+} catch (e: MultipleTraitException.NoData) {
+    err1 = e
+}
+try {
+    throwMultipleTraitError(0u)
+} catch (e: MultipleTraitException.NoData) {
+    assert(err1 == e)
+}
+
+// test Ord
+var err2: MultipleTraitException? = null
+try {
+    throwMultipleTraitError(2u)
+} catch (e: MultipleTraitException.AnotherFlat) {
+    err2 = e
+}
+assert(err1!! < err2!!)
+
+// error that doesn't end in "Error" - tests class_name filter doesn't break non-Error types
+try {
+    throwApiFailure(0u)
+    throw AssertionError("should have thrown")
+} catch (e: ApiFailure.NetworkIssue) {
+    assert(e.toString() == "api network issue")
+}
+
+// test Eq on non-Error type
+var apiErr: ApiFailure? = null
+try {
+    throwApiFailure(0u)
+} catch (e: ApiFailure.NetworkIssue) {
+    apiErr = e
+}
+try {
+    throwApiFailure(0u)
+} catch (e: ApiFailure.NetworkIssue) {
+    assert(apiErr == e)
+}

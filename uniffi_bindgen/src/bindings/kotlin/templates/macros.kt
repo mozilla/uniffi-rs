@@ -189,7 +189,7 @@ v{{- field_num -}}
 {%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
     // The local Rust `Eq` implementation - only `eq` is used.
     override fun equals(other: Any?): Boolean {
-        if (other !is {{ eq.object_name() }}) return false
+        if (other !is {{ eq.object_name()|class_name(ci) }}) return false
         return {{ eq.return_type().unwrap()|lift_fn }}({% call to_ffi_call(eq) %})
     }
 {%- endif %}
@@ -201,7 +201,7 @@ v{{- field_num -}}
 {%- endif %}
 {%- if let Some(cmp) = uniffi_trait_methods.ord_cmp %}
     // The local Rust `Ord` implementation
-    override fun compareTo(other: {{ cmp.object_name() }}): Int {
+    override fun compareTo(other: {{ cmp.object_name()|class_name(ci) }}): Int {
         return {{ cmp.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(cmp) %}).toInt()
     }
 {%- endif %}
