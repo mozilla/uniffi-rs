@@ -28,11 +28,62 @@ pub enum TestCase {
 /// pushing return values back to the stack, etc.
 #[uniffi::export(with_foreign)]
 pub trait TestCallbackInterface: Send + Sync {
-    fn method(&self, a: i32, b: i32, data: TestData) -> String;
-    fn method_with_void_return(&self, a: i32, b: i32, data: TestData);
     fn method_with_no_args_and_void_return(&self);
+    fn method_with_void_return(&self, a: i32, b: i32, data: TestData);
+    fn method(&self, a: i32, b: i32, data: TestData) -> String;
     /// Run a performance test N times and return the elapsed time in nanoseconds
     fn run_test(&self, test_case: TestCase, count: u64) -> u64;
+}
+
+#[derive(uniffi::Enum)]
+pub enum CallbackTestCase {
+    NoArgsVoidReturn,
+    VoidReturn,
+    ArgsAndReturn,
+}
+
+/// Call a callback method N times
+///
+/// This is used by the Android app to run callback benchmarks
+#[uniffi::export]
+pub fn run_callback_test(
+    cb: Arc<dyn TestCallbackInterface>,
+    case: CallbackTestCase,
+    n: u64,
+) {
+    std::hint::black_box({
+        match case {
+            CallbackTestCase::NoArgsVoidReturn => {
+                for _ in 0..n {
+                    cb.method_with_no_args_and_void_return();
+                }
+            }
+            CallbackTestCase::VoidReturn => {
+                for _ in 0..n {
+                    cb.method_with_void_return(
+                        10,
+                        100,
+                        TestData {
+                            foo: String::from("SomeStringData"),
+                            bar: String::from("SomeMoreStringData"),
+                        },
+                    );
+                }
+            }
+            CallbackTestCase::ArgsAndReturn => {
+                for _ in 0..n {
+                    let _ = cb.method(
+                        10,
+                        100,
+                        TestData {
+                            foo: String::from("SomeStringData"),
+                            bar: String::from("SomeMoreStringData"),
+                        },
+                    );
+                }
+            }
+        }
+    });
 }
 
 /// Test functions
