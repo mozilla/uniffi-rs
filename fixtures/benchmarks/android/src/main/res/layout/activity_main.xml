@@ -2,81 +2,187 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="16dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Iteration Count:"
-        android:textSize="14sp"
-        android:paddingTop="8dp" />
-
-    <EditText
-        android:id="@+id/editIterationCount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:text="50000"
-        android:hint="Enter iteration count"
-        android:paddingBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnFunctionCallNoArgsVoidReturn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Function call: No args, void return" />
-
-    <Button
-        android:id="@+id/btnFunctionCallVoidReturn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Function call: void Return" />
-
-    <Button
-        android:id="@+id/btnFunctionCallArgsAndReturn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Function Call: args and return" />
-
-
-    <Button
-        android:id="@+id/btnCallbackNoArgsVoidReturn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Callback: No args, void return" />
-
-    <Button
-        android:id="@+id/btnCallbackVoidReturn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Callback: void return" />
-    <Button
-        android:id="@+id/btnCallbackArgsAndReturn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Callback: args and return" />
-
-    <Button
-        android:id="@+id/btnClear"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Clear Results"
-        android:layout_marginTop="8dp" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+    <!-- Left Column: Controls -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:layout_marginTop="16dp">
+        android:orientation="vertical"
+        android:paddingEnd="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="UniFFI Benchmarks"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Iteration Count:"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editIterationCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:text="10000"
+            android:hint="Enter iteration count"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Call Type:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingTop="8dp" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupCallType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/radioFunction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Function call"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/radioCallback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Callback method" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Case:"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingBottom="16dp">
+
+            <RadioGroup
+                android:id="@+id/radioGroupTestCase"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radioCallOnly"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Call Only"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/radioPrimitives"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Primitives" />
+
+                <RadioButton
+                    android:id="@+id/radioStrings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Strings" />
+
+                <RadioButton
+                    android:id="@+id/radioRecords"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Records" />
+
+                <RadioButton
+                    android:id="@+id/radioEnums"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enums" />
+
+                <RadioButton
+                    android:id="@+id/radioVecs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Vecs" />
+
+                <RadioButton
+                    android:id="@+id/radioHashmaps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Hashmaps" />
+
+                <RadioButton
+                    android:id="@+id/radioInterfaces"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Interfaces" />
+
+                <RadioButton
+                    android:id="@+id/radioTraitInterfaces"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Trait Interfaces" />
+
+                <RadioButton
+                    android:id="@+id/radioNestedData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Nested Data" />
+
+                <RadioButton
+                    android:id="@+id/radioErrors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Errors" />
+            </RadioGroup>
+        </ScrollView>
+
+        <Button
+            android:id="@+id/btnRun"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Run Benchmark"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear Results" />
+    </LinearLayout>
+
+    <!-- Right Column: Results -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:paddingStart="8dp"
+        android:background="#F5F5F5">
 
         <TextView
             android:id="@+id/resultTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:fontFamily="monospace"
-            android:text="Click a button to run benchmarks..." />
+            android:padding="8dp"
+            android:text="Select options and click Run Benchmark..." />
 
     </ScrollView>
 

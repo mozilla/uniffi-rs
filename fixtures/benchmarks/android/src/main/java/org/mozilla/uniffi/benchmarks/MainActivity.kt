@@ -7,12 +7,12 @@ package org.mozilla.uniffi.benchmarks
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.system.measureNanoTime
 
 class MainActivity : AppCompatActivity() {
-
     companion object {
         init {
             System.loadLibrary("uniffi_benchmarks")
@@ -21,6 +21,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var resultTextView: TextView
     private lateinit var editIterationCount: EditText
+    private lateinit var radioGroupCallType: RadioGroup
+    private lateinit var radioGroupTestCase: RadioGroup
     private val testCallback = TestCallbackImpl()
     private val results = StringBuilder()
 
@@ -30,29 +32,11 @@ class MainActivity : AppCompatActivity() {
 
         resultTextView = findViewById(R.id.resultTextView)
         editIterationCount = findViewById(R.id.editIterationCount)
+        radioGroupCallType = findViewById(R.id.radioGroupCallType)
+        radioGroupTestCase = findViewById(R.id.radioGroupTestCase)
 
-        findViewById<Button>(R.id.btnFunctionCallNoArgsVoidReturn).setOnClickListener {
-            runBenchmark { runTestCase("Function Call: no args void return", TestCase.NO_ARGS_VOID_RETURN) }
-        }
-
-        findViewById<Button>(R.id.btnFunctionCallVoidReturn).setOnClickListener {
-            runBenchmark { runTestCase("Function Call: void return", TestCase.VOID_RETURN) }
-        }
-
-        findViewById<Button>(R.id.btnFunctionCallArgsAndReturn).setOnClickListener {
-            runBenchmark { runTestCase("Function Call: args and return", TestCase.FUNCTION) }
-        }
-
-        findViewById<Button>(R.id.btnCallbackNoArgsVoidReturn).setOnClickListener {
-            runBenchmark { runCallbackTestCase("Callback method: no args void return", CallbackTestCase.NO_ARGS_VOID_RETURN) }
-        }
-
-        findViewById<Button>(R.id.btnCallbackVoidReturn).setOnClickListener {
-            runBenchmark { runCallbackTestCase("Callback method: void return", CallbackTestCase.VOID_RETURN) }
-        }
-
-        findViewById<Button>(R.id.btnCallbackArgsAndReturn).setOnClickListener {
-            runBenchmark { runCallbackTestCase("Callback method: args and return", CallbackTestCase.ARGS_AND_RETURN) }
+        findViewById<Button>(R.id.btnRun).setOnClickListener {
+            runBenchmark { runSelectedBenchmark() }
         }
 
         findViewById<Button>(R.id.btnClear).setOnClickListener {
@@ -61,11 +45,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getIterationCount(): Int {
-        return editIterationCount.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 50000
+        return editIterationCount.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 10000
+    }
+
+    private fun isCallbackSelected(): Boolean {
+        return radioGroupCallType.checkedRadioButtonId == R.id.radioCallback
+    }
+
+    private fun getSelectedTestCase(): TestCase? {
+        return when (radioGroupTestCase.checkedRadioButtonId) {
+            R.id.radioCallOnly -> TestCase.CALL_ONLY
+            R.id.radioPrimitives -> TestCase.PRIMITIVES
+            R.id.radioStrings -> TestCase.STRINGS
+            R.id.radioRecords -> TestCase.RECORDS
+            R.id.radioEnums -> TestCase.ENUMS
+            R.id.radioVecs -> TestCase.VECS
+            R.id.radioHashmaps -> TestCase.HASHMAPS
+            R.id.radioInterfaces -> TestCase.INTERFACES
+            R.id.radioTraitInterfaces -> TestCase.TRAIT_INTERFACES
+            R.id.radioNestedData -> TestCase.NESTED_DATA
+            R.id.radioErrors -> TestCase.ERRORS
+            else -> null
+        }
     }
 
     private fun runBenchmark(benchmark: () -> String) {
-        // Disable all buttons during benchmark
+        // Disable buttons during benchmark
         setButtonsEnabled(false)
 
         Thread {
@@ -88,39 +93,55 @@ class MainActivity : AppCompatActivity() {
         }
         val perCall = timeNanos.toDouble() / iterations.toDouble()
         val time = timeNanos.toDouble() / 1000000000.0
-        return "$name Benchmark\n" +
+        return "$name\n" +
                "Iterations: $iterations\n" +
-               "Time: ${"%.3f".format(time)}s (${"%.3f".format(perCall)}ns per call)\n\n"
+               "Total: ${"%.3f".format(time)}s\n" +
+               "Avg: ${"%.3f".format(perCall)}ns"
     }
 
-    private fun runTestCase(name: String, testCase: TestCase): String {
-        // Warm up with 1000 iterations before measuring.
-        testCallback.runTest(testCase, 1000.toULong())
+    private fun runSelectedBenchmark(): String {
+        val isCallback = isCallbackSelected()
+        val testCase = getSelectedTestCase()
+
+        if (testCase == null) {
+            return "No test case selected"
+        }
 
         val iterations = getIterationCount()
+
+        val callTypeStr = if (isCallback) "Callback" else "Function"
+        val testCaseStr = when (testCase) {
+            TestCase.CALL_ONLY -> "Call Only"
+            TestCase.PRIMITIVES -> "Primitives"
+            TestCase.STRINGS -> "Strings"
+            TestCase.RECORDS -> "Records"
+            TestCase.ENUMS -> "Enums"
+            TestCase.VECS -> "Vecs"
+            TestCase.HASHMAPS -> "Hashmaps"
+            TestCase.INTERFACES -> "Interfaces"
+            TestCase.TRAIT_INTERFACES -> "Trait Interfaces"
+            TestCase.NESTED_DATA -> "Nested Data"
+            TestCase.ERRORS -> "Errors"
+        }
+        val benchmarkName = "$callTypeStr - $testCaseStr"
+
+        return if (isCallback) {
+            runCallbackBenchmark(testCase, iterations, benchmarkName)
+        } else {
+            runFunctionBenchmark(testCase, iterations, benchmarkName)
+        }
+    }
+
+    private fun runFunctionBenchmark(testCase: TestCase, iterations: Int, name: String): String {
         val time = testCallback.runTest(testCase, iterations.toULong())
         return formatBenchmarkResult(name, iterations, time)
     }
 
-    private fun runCallbackTestCase(name: String, testCase: CallbackTestCase): String {
-        // Warm up with 1000 iterations before measuring.
-        runCallbackTest(testCallback, testCase, 1000.toULong())
-
-        val iterations = getIterationCount()
+    private fun runCallbackBenchmark(testCase: TestCase, iterations: Int, name: String): String {
         val time = measureNanoTime {
             runCallbackTest(testCallback, testCase, iterations.toULong())
         }
         return formatBenchmarkResult(name, iterations, time.toULong())
-    }
-
-    private fun runCallbackBenchmark(): String {
-        val iterations = getIterationCount()
-        val time = measureNanoTime {
-            for (i in 0 until iterations) {
-                testCallback.method(10, 20, TestData("foo", "bar"))
-            }
-        }
-        return formatBenchmarkResult("Callback", iterations, time.toULong())
     }
 
     private fun appendResult(result: String) {
@@ -130,51 +151,200 @@ class MainActivity : AppCompatActivity() {
 
     private fun clearResults() {
         results.clear()
-        resultTextView.text = "Click a button to run benchmarks..."
+        resultTextView.text = "Select options and click Run Benchmark..."
     }
 
     private fun setButtonsEnabled(enabled: Boolean) {
-        findViewById<Button>(R.id.btnFunctionCallNoArgsVoidReturn).isEnabled = enabled
-        findViewById<Button>(R.id.btnFunctionCallVoidReturn).isEnabled = enabled
-        findViewById<Button>(R.id.btnFunctionCallArgsAndReturn).isEnabled = enabled
-        findViewById<Button>(R.id.btnCallbackNoArgsVoidReturn).isEnabled = enabled
-        findViewById<Button>(R.id.btnCallbackVoidReturn).isEnabled = enabled
-        findViewById<Button>(R.id.btnCallbackArgsAndReturn).isEnabled = enabled
+        findViewById<Button>(R.id.btnRun).isEnabled = enabled
         findViewById<Button>(R.id.btnClear).isEnabled = enabled
+        radioGroupCallType.isEnabled = enabled
+        radioGroupTestCase.isEnabled = enabled
+        editIterationCount.isEnabled = enabled
     }
 
     private class TestCallbackImpl : TestCallbackInterface {
-        override fun method(a: Int, b: Int, data: TestData): String {
-            return data.bar
+        override fun callOnly() {
         }
 
-        override fun methodWithVoidReturn(a: Int, b: Int, data: TestData) {
-            // No-op
+        override fun primitives(a: UByte, b: Int): Double {
+            return a.toDouble() + b.toDouble()
         }
 
-        override fun methodWithNoArgsAndVoidReturn() {
-            // No-op
+        override fun strings(a: String, b: String): String {
+            return a + b
+        }
+
+        override fun records(a: TestRecord, b: TestRecord): TestRecord {
+            return TestRecord(a=a.a + b.a, b=a.b + b.b, c=a.c + b.c)
+        }
+
+        override fun enums(a: TestEnum, b: TestEnum): TestEnum {
+            val aSum = when (a) {
+                is TestEnum.One -> a.a.toDouble() + a.b.toDouble()
+                is TestEnum.Two -> a.c
+            }
+            val bSum = when (b) {
+                is TestEnum.One -> b.a.toDouble() + b.b.toDouble()
+                is TestEnum.Two -> b.c
+            }
+            return TestEnum.Two(aSum + bSum)
+        }
+
+        override fun vecs(a: List<UInt>, b: List<UInt>): List<UInt> {
+            return a + b
+        }
+
+        override fun hashMaps(
+            a: Map<UInt, UInt>,
+            b: Map<UInt, UInt>
+        ): Map<UInt, UInt> {
+            return a + b
+        }
+
+        override fun interfaces(a: TestInterface, b: TestInterface): TestInterface {
+            // Perform some silliness to make sure Kotlin needs to access both `a` and `b`
+            return if (a == b) {
+                a
+            } else {
+                b
+            }
+        }
+
+        override fun traitInterfaces(
+            a: TestTraitInterface,
+            b: TestTraitInterface
+        ): TestTraitInterface {
+            // Perform some silliness to make sure Kotlin needs to access both `a` and `b`
+            return if (a == b) {
+                a
+            } else {
+                b
+            }
+        }
+
+        override fun nestedData(a: NestedData, b: NestedData): NestedData {
+            // Perform some silliness to make sure Kotlin need to access both `a` and `b`
+            return if (a == b) {
+                a
+            } else {
+                b
+            }
+
+            return NestedData(
+                a = a.a + b.a,
+                b = a.b + b.b,
+                c = a.c + b.c,
+            )
+        }
+
+        override fun errors(): UInt {
+            throw TestException.Two()
         }
 
         override fun runTest(testCase: TestCase, count: ULong): ULong {
             return when (testCase) {
-                TestCase.FUNCTION -> measureNanoTime {
-                    val data = TestData("StringOne", "StringTwo")
+                TestCase.CALL_ONLY -> measureNanoTime {
                     for (i in 0UL..count) {
-                        testFunction(10, 20, data)
+                        testCaseCallOnly()
                     }
-                }.toULong()
-                TestCase.VOID_RETURN -> measureNanoTime {
+                }
+
+                TestCase.PRIMITIVES -> measureNanoTime {
                     for (i in 0UL..count) {
-                        testVoidReturn(10, 20)
+                        testCasePrimitives(0.toUByte(), 1)
                     }
-                }.toULong()
-                TestCase.NO_ARGS_VOID_RETURN -> measureNanoTime {
+                }
+
+                TestCase.STRINGS -> measureNanoTime {
                     for (i in 0UL..count) {
-                        testNoArgsVoidReturn()
+                        testCaseStrings("a", "b")
                     }
-                }.toULong()
-            }
+                }
+
+                TestCase.RECORDS -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseRecords(TestData.testRec1, TestData.testRec2)
+                    }
+                }
+
+                TestCase.ENUMS -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseEnums(TestData.testEnum1, TestData.testEnum2)
+                    }
+                }
+
+                TestCase.VECS -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseVecs(TestData.testVec1, TestData.testVec2)
+                    }
+                }
+
+                TestCase.HASHMAPS -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseHashmaps(TestData.testMap1, TestData.testMap2)
+                    }
+                }
+
+                TestCase.INTERFACES -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseInterfaces(TestData.testInterface, TestData.testInterface2)
+                    }
+                }
+
+                TestCase.TRAIT_INTERFACES -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseTraitInterfaces(TestData.testTraitInterface, TestData.testTraitInterface2)
+                    }
+                }
+
+                TestCase.NESTED_DATA -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseNestedData(TestData.testNestedData1, TestData.testNestedData2)
+                    }
+                }
+
+                TestCase.ERRORS -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        try {
+                            testCaseErrors()
+                        } catch (e: Exception) {
+                            // ignore errors, they're expected
+                        }
+                    }
+                }
+            }.toULong()
         }
     }
+}
+
+// Create objects to use in the tests.  This way the benchmarks don't include the time needed to
+// construct these objects.
+object TestData {
+    val testRec1 = TestRecord(a = -1, b = 1.toULong(), c = 1.5)
+    val testRec2 = TestRecord(a = -2, b = 2.toULong(), c = 4.5)
+    val testEnum1 = TestEnum.One(a = -1, b = 0.toULong())
+    val testEnum2 = TestEnum.Two(c = 1.5)
+    val testVec1 = listOf(0.toUInt(), 1.toUInt())
+    val testVec2 = listOf(2.toUInt(), 4.toUInt(), 6.toUInt())
+    val testMap1 = mapOf(0.toUInt() to 1.toUInt(), 1.toUInt() to 2.toUInt())
+    val testMap2 = mapOf(2.toUInt() to 4.toUInt())
+    val testInterface = TestInterface()
+    val testInterface2 = TestInterface()
+    val testTraitInterface = makeTestTraitInterface()
+    val testTraitInterface2 = makeTestTraitInterface()
+    val testNestedData1 = NestedData(
+        a = listOf(TestRecord(a = -1, b = 1.toULong(), c = 1.5)),
+        b = listOf(listOf("one", "two"), listOf("three")),
+        c = mapOf(
+            "one" to TestEnum.One(a = -1, b = 1.toULong()),
+            "two" to TestEnum.Two(c = 0.5),
+        )
+    )
+    val testNestedData2 = NestedData(
+        a = listOf(TestRecord(a = -2, b = 2.toULong(), c = 4.5)),
+        b = listOf(listOf("four", "five")),
+        c = mapOf(
+            "two" to TestEnum.Two(c = -0.5),
+        )
+    )
 }

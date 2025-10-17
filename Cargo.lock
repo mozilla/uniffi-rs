@@ -1668,6 +1668,8 @@ version = "0.22.0"
 dependencies = [
  "clap",
  "criterion",
+ "regex",
+ "thiserror",
  "uniffi",
  "uniffi_bindgen",
 ]
