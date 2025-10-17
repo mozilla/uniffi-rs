@@ -1,0 +1,95 @@
+plugins {
+    id 'com.android.application' version '8.13.0'
+    id 'org.jetbrains.kotlin.android' version '2.2.20'
+    id "org.mozilla.rust-android-gradle.rust-android" version "0.9.6"
+}
+
+android {
+    namespace 'org.mozilla.uniffi.benchmarks'
+    ndkVersion "29.0.14206865"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "org.mozilla.uniffi.benchmarks"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs += layout.buildDirectory.dir("generated/source/uniffi/java")
+        }
+    }
+}
+
+apply plugin: 'org.mozilla.rust-android-gradle.rust-android'
+
+cargo {
+    module  = "../"
+    libname = "uniffi_benchmarks"
+    targets = ["arm", "arm64", "x86", "x86_64"]
+    profile = "release"
+    targetDirectory = '../../../target'
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'net.java.dev.jna:jna:5.18.1@aar'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
+}
+
+tasks.register('generateUniFFIBindings', Exec) {
+    dependsOn 'cargoBuild'
+
+    // x86_64 is arbitrary, we can generate the bindings from any of the library files 
+    def libFile = layout.buildDirectory.file("rustJniLibs/android/x86_64/libuniffi_benchmarks.so").get()
+    def outputDir = layout.buildDirectory.dir("generated/source/uniffi/java").get()
+
+    workingDir project.projectDir.parent
+    commandLine 'cargo', 'run', '-p', 'uniffi', '--features=cli', '--bin', 'uniffi-bindgen', '--',
+        'generate',
+        '--library', libFile,
+        '--language', 'kotlin',
+        '--no-format',
+        '--out-dir', outputDir
+}
+
+// For some reason we need to clear out the library files in this directory.  For some reason merge*JniLibFolders
+// won't overwrite them, even when `cargoBuild` generates newer versions.
+tasks.register('deleteJniLibraryFiles', Delete) {
+    delete layout.buildDirectory.file("intermediates/merged_jni_libs").get()
+}
+
+// Run cargoBuild javaPreCompileDebug/javaPreCompileRelease so that it finds the build libraries
+tasks.whenTaskAdded { task ->
+    if ((task.name == 'mergeDebugJniLibFolders' || task.name == 'mergeReleaseJniLibFolders')) {
+        task.dependsOn 'cargoBuild', 'deleteJniLibraryFiles'
+    }
+}
+
+// Make sure bindings are generated and native libs are copied before compiling
+tasks.named('preBuild') {
+    dependsOn 'cargoBuild', 'generateUniFFIBindings'
+}

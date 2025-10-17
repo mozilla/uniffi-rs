@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Iteration Count:"
+        android:textSize="14sp"
+        android:paddingTop="8dp" />
+
+    <EditText
+        android:id="@+id/editIterationCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:text="50000"
+        android:hint="Enter iteration count"
+        android:paddingBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnFunctionCallNoArgsVoidReturn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Function call: No args, void return" />
+
+    <Button
+        android:id="@+id/btnFunctionCallVoidReturn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Function call: void Return" />
+
+    <Button
+        android:id="@+id/btnFunctionCallArgsAndReturn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Function Call: args and return" />
+
+
+    <Button
+        android:id="@+id/btnCallbackNoArgsVoidReturn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Callback: No args, void return" />
+
+    <Button
+        android:id="@+id/btnCallbackVoidReturn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Callback: void return" />
+    <Button
+        android:id="@+id/btnCallbackArgsAndReturn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Callback: args and return" />
+
+    <Button
+        android:id="@+id/btnClear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear Results"
+        android:layout_marginTop="8dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/resultTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:fontFamily="monospace"
+            android:text="Click a button to run benchmarks..." />
+
+    </ScrollView>
+
+</LinearLayout>
