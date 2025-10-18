@@ -5,7 +5,7 @@
 //! Helpers for data returned by cargo_metadata. Note that this doesn't
 //! execute cargo_metadata, just parses its output.
 
-use anyhow::{bail, Context};
+use anyhow::{bail, Context, Result};
 use camino::Utf8PathBuf;
 use cargo_metadata::Metadata;
 use std::{collections::HashMap, fs};
@@ -17,8 +17,19 @@ pub struct CrateConfigSupplier {
     paths: HashMap<String, Utf8PathBuf>,
 }
 
+impl CrateConfigSupplier {
+    pub fn from_cargo_metadata_command(no_deps: bool) -> Result<Self> {
+        let mut cmd = cargo_metadata::MetadataCommand::new();
+        if no_deps {
+            cmd.no_deps();
+        }
+        let metadata = cmd.exec().context("error running cargo metadata")?;
+        Ok(Self::from(metadata))
+    }
+}
+
 impl BindgenCrateConfigSupplier for CrateConfigSupplier {
-    fn get_toml(&self, crate_name: &str) -> anyhow::Result<Option<toml::value::Table>> {
+    fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
         crate::load_toml_file(self.get_toml_path(crate_name).as_deref())
     }
 
@@ -26,7 +37,7 @@ impl BindgenCrateConfigSupplier for CrateConfigSupplier {
         self.paths.get(crate_name).map(|p| p.join("uniffi.toml"))
     }
 
-    fn get_udl(&self, crate_name: &str, udl_name: &str) -> anyhow::Result<String> {
+    fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
         let path = self
             .paths
             .get(crate_name)

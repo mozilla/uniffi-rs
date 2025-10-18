@@ -17,7 +17,7 @@ use anyhow::Result;
 use camino::Utf8Path;
 
 use crate::{crate_name_from_cargo_toml, interface, macro_metadata, BindgenCrateConfigSupplier};
-use from_uniffi_meta::UniffiMetaConverter;
+pub use from_uniffi_meta::UniffiMetaConverter;
 
 impl Root {
     pub fn from_library(
