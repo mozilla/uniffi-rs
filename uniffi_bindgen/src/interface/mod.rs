@@ -948,32 +948,72 @@ impl ComponentInterface {
     }
 
     pub(super) fn add_constructor_meta(&mut self, meta: ConstructorMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, &meta.self_name)
-            .ok_or_else(|| anyhow!("add_constructor_meta: object {} not found", &meta.self_name))?;
-        let defn: Constructor = meta.into();
+        let self_name = &meta.self_name;
 
-        self.types
-            .add_known_types(defn.iter_types())
-            .with_context(|| format!("adding constructor {defn:?}"))?;
-        defn.throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
-        object.constructors.push(defn);
+        if let Some(object) = get_object(&mut self.objects, self_name) {
+            let defn: Constructor = meta.into();
+            self.types
+                .add_known_types(defn.iter_types())
+                .with_context(|| format!("adding constructor {defn:?}"))?;
+            defn.throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            object.constructors.push(defn);
+        } else if let Some(record) = self.records.iter_mut().find(|r| &r.name == self_name) {
+            let defn: Constructor = meta.into();
+            self.types
+                .add_known_types(defn.iter_types())
+                .with_context(|| format!("adding constructor {defn:?}"))?;
+            defn.throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            record.constructors.push(defn);
+        } else if let Some(enum_) = self.enums.iter_mut().find(|e| &e.name == self_name) {
+            let defn: Constructor = meta.into();
+            self.types
+                .add_known_types(defn.iter_types())
+                .with_context(|| format!("adding constructor {defn:?}"))?;
+            defn.throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            enum_.constructors.push(defn);
+        } else {
+            bail!("add_constructor_meta: type {} not found", self_name);
+        }
 
         Ok(())
     }
 
     pub(super) fn add_method_meta(&mut self, meta: MethodMetadata) -> Result<()> {
-        let object = get_object(&mut self.objects, &meta.self_name)
-            .ok_or_else(|| anyhow!("add_method_meta: object {} not found", meta.self_name))?;
-        let method = Method::from_metadata(meta, object.as_type());
+        let self_name = &meta.self_name;
 
-        self.types
-            .add_known_types(method.iter_types())
-            .with_context(|| format!("adding method {method:?}"))?;
-        method
-            .throws_name()
-            .map(|n| self.errors.insert(n.to_string()));
-        object.methods.push(method);
+        if let Some(object) = get_object(&mut self.objects, self_name) {
+            let method = Method::from_metadata(meta, object.as_type());
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding method {method:?}"))?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            object.methods.push(method);
+        } else if let Some(record) = self.records.iter_mut().find(|r| &r.name == self_name) {
+            let method = Method::from_metadata(meta, record.as_type());
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding method {method:?}"))?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            record.methods.push(method);
+        } else if let Some(enum_) = self.enums.iter_mut().find(|e| &e.name == self_name) {
+            let method = Method::from_metadata(meta, enum_.as_type());
+            self.types
+                .add_known_types(method.iter_types())
+                .with_context(|| format!("adding method {method:?}"))?;
+            method
+                .throws_name()
+                .map(|n| self.errors.insert(n.to_string()));
+            enum_.methods.push(method);
+        } else {
+            bail!("add_method_meta: type {} not found", self_name);
+        }
         Ok(())
     }
 
@@ -1355,6 +1395,8 @@ existing definition: Enum {
     ],
     shape: Enum,
     non_exhaustive: false,
+    constructors: [],
+    methods: [],
     uniffi_traits: [],
     docstring: None,
 },
@@ -1381,6 +1423,8 @@ new definition: Enum {
         flat: true,
     },
     non_exhaustive: false,
+    constructors: [],
+    methods: [],
     uniffi_traits: [],
     docstring: None,
 }",

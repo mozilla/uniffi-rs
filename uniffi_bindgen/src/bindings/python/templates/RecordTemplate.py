@@ -30,6 +30,15 @@ class {{ rec.self_type.type_name }}:
     {% include "UniffiTraitImpls.py" %}
     {% endfilter %}
 
+{%- for meth in rec.methods -%}
+{%-     let callable = meth.callable %}
+    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+        {{ meth.docstring|docstring(8) -}}
+        {%- filter indent(8) %}
+        {%- include "CallableBody.py" %}
+        {%- endfilter %}
+{%- endfor %}
+
     {# "builtin" methods not handled by a uniffi_trait #}
     {%- if uniffi_trait_methods.display_fmt.is_none() %}
     def __str__(self):

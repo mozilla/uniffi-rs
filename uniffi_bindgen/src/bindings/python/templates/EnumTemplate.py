@@ -114,6 +114,15 @@ class {{ type_name }}:
     {%- endif %}
     {% endfor %}
 
+    {%- for meth in e.methods -%}
+    {%- let callable = meth.callable %}
+    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+        {{ meth.docstring|docstring(8) -}}
+        {%- filter indent(8) %}
+        {%- include "CallableBody.py" %}
+        {%- endfilter %}
+    {%- endfor %}
+
 # Now, a little trick - we make each nested variant class be a subclass of the main
 # enum class, so that method calls and instance checks etc will work intuitively.
 # We might be able to do this a little more neatly with a metaclass, but this'll do.

@@ -15,6 +15,8 @@
 
 ### What's New?
 
+- Some support for methods and constructors on dataclasses for Python. ([#2706](https://
+  github.com/mozilla/uniffi-rs/pull/2706)).
 - Kotlin: Rust enums with nested payload types are generated using the inner type’s fully qualified
   name, avoiding naming conflicts and allowing payloads to reuse the variant name ([#2698](https://
   github.com/mozilla/uniffi-rs/pull/2698)).
