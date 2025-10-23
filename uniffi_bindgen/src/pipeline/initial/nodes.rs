@@ -136,6 +136,8 @@ pub enum Radix {
 pub struct Record {
     pub name: String,
     pub fields: Vec<Field>,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
     pub uniffi_traits: Vec<UniffiTrait>,
     pub docstring: Option<String>,
 }
@@ -162,6 +164,8 @@ pub struct Enum {
     pub shape: EnumShape,
     pub variants: Vec<Variant>,
     pub discr_type: Option<Type>,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
     pub uniffi_traits: Vec<UniffiTrait>,
     pub docstring: Option<String>,
 }

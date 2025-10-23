@@ -8,6 +8,7 @@ from proc_macro import TraitWithForeignImpl
 one = make_one(123)
 assert one.inner == 123
 assert one_inner_by_ref(one) == 123
+assert one.get_inner() == 123
 
 two = Two(a="a")
 assert take_two(two) == "a"
@@ -175,6 +176,8 @@ assert(MixedEnum.BOTH("hello", 1)[1] == 1)
 assert(MixedEnum.BOTH("hello", 1)[:] == ('hello', 1))
 assert(MixedEnum.BOTH("hello", 1)[-1] == 1)
 assert(str(MixedEnum.BOTH("hello", 2)) == "MixedEnum.BOTH('hello', 2)")
+assert(MixedEnum.STRING("").is_not_none())
+assert(not MixedEnum.NONE().is_not_none())
 
 # In #2270 we realized confusion about whether we generated our
 # variant checker as, eg, `is_ALL()` vs `is_all()` so decided to do both.

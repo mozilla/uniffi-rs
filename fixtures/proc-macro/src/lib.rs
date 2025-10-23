@@ -14,6 +14,13 @@ pub struct One {
 }
 
 #[uniffi::export]
+impl One {
+    fn get_inner(&self) -> i32 {
+        self.inner
+    }
+}
+
+#[uniffi::export]
 pub fn one_inner_by_ref(one: &One) -> i32 {
     one.inner
 }
@@ -228,6 +235,17 @@ pub enum MaybeBool {
     Uncertain,
 }
 
+#[uniffi::export]
+impl MaybeBool {
+    fn next(&self) -> Self {
+        match self {
+            MaybeBool::True => MaybeBool::False,
+            MaybeBool::False => MaybeBool::Uncertain,
+            MaybeBool::Uncertain => MaybeBool::True,
+        }
+    }
+}
+
 #[derive(uniffi::Enum)]
 pub enum MixedEnum {
     None,
@@ -236,6 +254,13 @@ pub enum MixedEnum {
     Both(String, i64),
     All { s: String, i: i64 },
     Vec(Vec<String>),
+}
+
+#[uniffi::export]
+impl MixedEnum {
+    fn is_not_none(&self) -> bool {
+        !matches!(self, Self::None)
+    }
 }
 
 #[uniffi::export]

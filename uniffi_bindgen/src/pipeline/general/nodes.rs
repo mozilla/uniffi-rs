@@ -200,6 +200,8 @@ pub struct Record {
     pub name: String,
     pub fields_kind: FieldsKind,
     pub fields: Vec<Field>,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
     pub uniffi_traits: Vec<UniffiTrait>,
@@ -242,6 +244,8 @@ pub struct Enum {
     /// values. We try to mimic what `rustc` does, but there's no guarantee that this will be
     /// exactly the same type.
     pub discr_type: TypeNode,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
     pub uniffi_traits: Vec<UniffiTrait>,

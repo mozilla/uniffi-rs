@@ -227,6 +227,8 @@ pub struct Record {
     pub fields: Vec<Field>,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
 }
 
@@ -262,6 +264,8 @@ pub struct Enum {
     pub discr_type: TypeNode,
     pub docstring: Option<String>,
     pub self_type: TypeNode,
+    pub constructors: Vec<Constructor>,
+    pub methods: Vec<Method>,
     pub uniffi_trait_methods: UniffiTraitMethods,
 }
 

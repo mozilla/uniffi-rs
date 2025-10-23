@@ -37,6 +37,11 @@ mod state {
         Initialized { data: String },
         Complete { result: Person },
     }
+
+    #[uniffi::export]
+    impl State {
+        fn state_method(&self) {}
+    }
 }
 
 mod enum_repr {
@@ -369,6 +374,27 @@ mod test_metadata {
                     docstring: None,
                 }],
                 non_exhaustive: false,
+                docstring: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_enum_method() {
+        check_metadata(
+            &state::UNIFFI_META_UNIFFI_FIXTURE_METADATA_METHOD_STATE_STATE_METHOD,
+            MethodMetadata {
+                module_path: "uniffi_fixture_metadata::tests::state".into(),
+                self_name: "State".into(),
+                name: "state_method".into(),
+                is_async: false,
+                inputs: vec![],
+                return_type: None,
+                throws: None,
+                takes_self_by_arc: false,
+                checksum: Some(
+                    state::uniffi_uniffi_fixture_metadata_checksum_method_state_state_method(),
+                ),
                 docstring: None,
             },
         );

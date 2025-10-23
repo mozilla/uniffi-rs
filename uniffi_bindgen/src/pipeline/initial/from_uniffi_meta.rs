@@ -211,6 +211,12 @@ impl UniffiMetaConverter {
                     list.into_values()
                         .map(|mut r| {
                             let key = (module_path.clone(), r.name.clone());
+                            if let Some(methods) = self.methods.remove(&key) {
+                                r.methods.extend(methods.into_values());
+                            }
+                            if let Some(constructors) = self.constructors.remove(&key) {
+                                r.constructors.extend(constructors.into_values())
+                            }
                             if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
                                 r.uniffi_traits.extend(uniffi_traits.into_values())
                             }
@@ -226,6 +232,12 @@ impl UniffiMetaConverter {
                     list.into_values()
                         .map(|mut e| {
                             let key = (module_path.clone(), e.name.clone());
+                            if let Some(methods) = self.methods.remove(&key) {
+                                e.methods.extend(methods.into_values());
+                            }
+                            if let Some(constructors) = self.constructors.remove(&key) {
+                                e.constructors.extend(constructors.into_values())
+                            }
                             if let Some(uniffi_traits) = self.uniffi_traits.remove(&key) {
                                 e.uniffi_traits.extend(uniffi_traits.into_values())
                             }
