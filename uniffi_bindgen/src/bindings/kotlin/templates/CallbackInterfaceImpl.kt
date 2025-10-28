@@ -56,15 +56,14 @@ internal object {{ trait_impl }} {
                 uniffiFutureCallback.callback(uniffiCallbackData, uniffiResult)
             }
             val uniffiHandleError = { callStatus: UniffiRustCallStatus.ByValue ->
-                uniffiFutureCallback.callback(
-                    uniffiCallbackData,
-                    {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
-                        {%- if let Some(return_type) = meth.return_type() %}
-                        {{ return_type.into()|ffi_default_value }},
-                        {%- endif %}
-                        callStatus,
-                    ),
-                )
+                val uniffiResult = {{ meth.foreign_future_ffi_result_struct().name()|ffi_struct_name }}.UniffiByValue(
+                    {%- if let Some(return_type) = meth.return_type() %}
+                    {{ return_type.into()|ffi_default_value }},
+                    {%- endif %}
+                    callStatus,
+                );
+                uniffiResult.write()
+                uniffiFutureCallback.callback(uniffiCallbackData, uniffiResult)
             }
 
             {%- match meth.throws_type() %}
