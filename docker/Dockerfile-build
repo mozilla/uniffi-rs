@@ -5,53 +5,73 @@
 # This builds a docker image containing all the tools we need to run our
 # test suite in CI, including rust, kotlin, and swift.
 
-FROM cimg/rust:1.69.0
+FROM swift:6.3-noble
 
-MAINTAINER Ryan Kelly "rfkelly@mozilla.com"
+SHELL ["/bin/bash", "-exo", "pipefail", "-c"]
 
-ENV \
-    # Some APT packages like 'tzdata' wait for user input on install by default.
-    # https://stackoverflow.com/questions/44331836/apt-get-install-tzdata-noninteractive
-    DEBIAN_FRONTEND=noninteractive
+# via https://github.com/CircleCI-Public/cimg-base/blob/28e038550d165a5e421a1ffada523ebe11ad525f/24.04/Dockerfile
+ENV DEBIAN_FRONTEND=noninteractive \
+    TERM=dumb \
+    PAGER=cat
 
-SHELL ["/bin/bash", "-c"]
+# Configure environment
+RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci && \
+	echo 'DPkg::Options "--force-confnew";' >> /etc/apt/apt.conf.d/90circleci && \
+	apt-get update && apt-get install -y \
+		curl \
+		locales \
+		sudo \
+		openjdk-21-jdk-headless \
+		ruby \
+		ruby-dev \
+		unzip \
+		zip \
+		git \
+		build-essential \
+		clang \
+	&& \
+	locale-gen en_US.UTF-8 && \
+	rm -rf /var/lib/apt/lists/* && \
+	\
+	groupadd --gid=1002 circleci && \
+	useradd --uid=1001 --gid=circleci --create-home circleci && \
+	echo 'circleci ALL=NOPASSWD: ALL' >> /etc/sudoers.d/50-circleci && \
+	echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep && \
+	sudo -u circleci mkdir /home/circleci/project && \
+	sudo -u circleci mkdir /home/circleci/bin && \
+	sudo -u circleci mkdir -p /home/circleci/.local/bin && \
+	\
+	dockerizeArch=arm64 && \
+	if uname -p | grep "x86_64"; then \
+		dockerizeArch=x86_64; \
+	fi && \
+	curl -sSL --fail --retry 3 --output /usr/local/bin/dockerize "https://github.com/powerman/dockerize/releases/download/v0.8.0/dockerize-linux-${dockerizeArch}" && \
+	chmod +x /usr/local/bin/dockerize && \
+	dockerize --version
 
-# already installed in cimg: libcurl4, python3, git, curl, unzip, g++
-RUN sudo apt-get update -qq \
-    && sudo apt-get install -qy --no-install-recommends \
-        clang \
-        openjdk-11-jdk-headless \
-        ruby \
-        ruby-dev \
-        # Swift dependencies
-        libtinfo5 \
-        libncurses5 \
-        python3-pip \
-    && sudo apt-get clean
+ENV PATH=/home/circleci/bin:/home/circleci/.local/bin:$PATH \
+	LANG=en_US.UTF-8 \
+	LANGUAGE=en_US:en \
+	LC_ALL=en_US.UTF-8
 
-# Use Cargo's sparse protocol
-ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+USER circleci
+# opt-out of the new security feature, not needed in a CI environment
+RUN git config --global --add safe.directory '*'
+
+# Match the default CircleCI working directory
+WORKDIR /home/circleci/project
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s && \
+  /home/circleci/.local/bin/uv python install 3.14 && \
+  ln -s python3.14 /home/circleci/.local/bin/python3
+RUN curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+ENV PATH="/home/circleci/.cargo/bin:/home/circleci/.local/bin:${PATH}"
+
 # This should automatically install the version specified in rust-toolchain.toml
 ADD rust-toolchain.toml rust-toolchain.toml
-RUN rustup self update \
-  && rustup update \
+RUN rustup update \
   && rustup show \
   && rm rust-toolchain.toml
-
-ARG SWIFT_VERSION=6.0.3
-ARG SWIFT_UBUNTU_VERSION=20.04
-ARG SWIFT_CHECKSUM=012abe32cd1a9251d80ff1eeefcb3ff3fe2c02b569e5c755058b947f7afc9f56
-
-RUN mkdir -p /tmp/setup-swift \
-    && cd /tmp/setup-swift \
-    && curl -o swift.tar.gz https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu${SWIFT_UBUNTU_VERSION}/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE-ubuntu${SWIFT_UBUNTU_VERSION}.tar.gz \
-    && echo "${SWIFT_CHECKSUM} swift.tar.gz" | sha256sum -c - \
-    && tar -xzf swift.tar.gz \
-    && sudo mv swift-${SWIFT_VERSION}-RELEASE-ubuntu${SWIFT_UBUNTU_VERSION} /opt/swift \
-    && echo "export PATH=\"\$PATH:/opt/swift/usr/bin\"" >> /home/circleci/.bashrc \
-    && echo "export PATH=\"\$PATH:/opt/swift/usr/bin\"" >> /home/circleci/.profile \
-    && cd ../ \
-    && rm -rf ./setup-swift
 
 RUN mkdir -p /tmp/setup-kotlin \
     && cd /tmp/setup-kotlin \

@@ -4,9 +4,5 @@ in CI. To build a new version of this docker image, run
 the following from the root of the repository:
 
 ```
-docker build -t rfkelly/uniffi-ci -f docker/Dockerfile-build .
-docker push rfkelly/uniffi-ci
+docker build -t uniffi-ci -f docker/Dockerfile-build .
 ```
-
-That only works if you're `rfkelly`; we need to figure out
-a better strategy for maintainership of said docker image.
