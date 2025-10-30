@@ -61,8 +61,7 @@ try {
     assert(e.toString() == "error: not found")
 }
 
-// mixed error with all possible exported traits (Debug, Display, Eq, Ord, Hash)
-// tests flat variants, field variants, and nested Display
+// error with multiple exported traits (Debug, Display, Eq, Ord, Hash)
 try {
     throwMultipleTraitError(0u)
     throw AssertionError("should have thrown")
@@ -70,26 +69,12 @@ try {
     assert(e.toString() == "MultipleTraitError::NoData")
 }
 
+// test nested error with Display
 try {
     throwMultipleTraitError(1u)
     throw AssertionError("should have thrown")
-} catch (e: MultipleTraitException.WithCode) {
-    assert(e.toString() == "MultipleTraitError::WithCode(42)")
-}
-
-// test nested error with Display
-try {
-    throwMultipleTraitError(4u)
-    throw AssertionError("should have thrown")
-} catch (e: MultipleTraitException.NestedSimple) {
-    assert(e.toString() == "nested simple error: error: not found")
-}
-
-try {
-    throwMultipleTraitError(5u)
-    throw AssertionError("should have thrown")
-} catch (e: MultipleTraitException.NestedComplex) {
-    assert(e.toString() == "nested complex error [complex]: error: unauthorized")
+} catch (e: MultipleTraitException.Nested) {
+    assert(e.toString() == "nested error: error: not found")
 }
 
 // test Eq on flat variants
@@ -108,8 +93,8 @@ try {
 // test Ord
 var err2: MultipleTraitException? = null
 try {
-    throwMultipleTraitError(2u)
-} catch (e: MultipleTraitException.AnotherFlat) {
+    throwMultipleTraitError(1u)
+} catch (e: MultipleTraitException.Nested) {
     err2 = e
 }
 assert(err1!! < err2!!)
@@ -134,3 +119,12 @@ try {
 } catch (e: ApiFailure.NetworkIssue) {
     assert(apiErr == e)
 }
+
+// test Ord on non-Error type
+var apiErr2: ApiFailure? = null
+try {
+    throwApiFailure(1u)
+} catch (e: ApiFailure.ServerDown) {
+    apiErr2 = e
+}
+assert(apiErr!! < apiErr2!!)
