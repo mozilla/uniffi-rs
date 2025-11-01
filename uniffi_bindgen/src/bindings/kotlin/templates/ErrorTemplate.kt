@@ -4,7 +4,11 @@
 
 {% if e.is_flat() %}
 {%- call kt::docstring(e, 0) %}
-sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if contains_object_references %}, Disposable {% endif %} {
+sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if contains_object_references %}, Disposable {% endif %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
+{%- if uniffi_trait_methods.ord_cmp.is_some() -%}
+{% if contains_object_references %}, {% else %}, {% endif %}Comparable<{{ type_name }}>
+{%- endif %} {
         {% for variant in e.variants() -%}
         {%- call kt::docstring(variant, 4) %}
         class {{ variant|error_variant_name }}(message: String) : {{ type_name }}(message)
@@ -16,7 +20,11 @@ sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if co
 }
 {%- else %}
 {%- call kt::docstring(e, 0) %}
-sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references %}, Disposable {% endif %} {
+sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references %}, Disposable {% endif %}
+{%- let uniffi_trait_methods = e.uniffi_trait_methods() -%}
+{%- if uniffi_trait_methods.ord_cmp.is_some() -%}
+{% if contains_object_references %}, {% else %}, {% endif %}Comparable<{{ type_name }}>
+{%- endif %} {
     {% for variant in e.variants() -%}
     {%- call kt::docstring(variant, 4) %}
     {%- let variant_name = variant|error_variant_name %}
@@ -30,6 +38,8 @@ sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references
             get() = "{%- for field in variant.fields() %}{% call kt::field_name_unquoted(field, loop.index) %}=${ {% call kt::field_name(field, loop.index) %} }{% if !loop.last %}, {% endif %}{% endfor %}"
     }
     {% endfor %}
+
+    {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
         override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
