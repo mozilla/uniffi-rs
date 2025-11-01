@@ -139,7 +139,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     @Suppress("UNUSED_PARAMETER")
     constructor(noHandle: NoHandle) {
         this.handle = 0
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+        this.cleanable = null
     }
 
     {%- match obj.primary_constructor() %}
@@ -155,7 +155,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     {%- endmatch %}
 
     protected val handle: Long
-    protected val cleanable: UniffiCleaner.Cleanable
+    protected val cleanable: UniffiCleaner.Cleanable?
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)
@@ -166,7 +166,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         if (this.wasDestroyed.compareAndSet(false, true)) {
             // This decrement always matches the initial count of 1 given at creation time.
             if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
+                cleanable?.clean()
             }
         }
     }
@@ -194,7 +194,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
+                cleanable?.clean()
             }
         }
     }
