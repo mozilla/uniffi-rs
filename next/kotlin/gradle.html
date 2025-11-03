@@ -1571,7 +1571,7 @@
         <li class="md-nav__item">
   <a href="#advise-on-rust-java-interop" class="md-nav__link">
     <span class="md-ellipsis">
-      Advise on rust-&gt;java interop
+      Advise on Rust -&gt; Java interop
     </span>
   </a>
   
@@ -2239,7 +2239,7 @@
         <li class="md-nav__item">
   <a href="#advise-on-rust-java-interop" class="md-nav__link">
     <span class="md-ellipsis">
-      Advise on rust-&gt;java interop
+      Advise on Rust -&gt; Java interop
     </span>
   </a>
   
@@ -2320,8 +2320,8 @@ JNA 5.12.0 or greater is required.</p>
 <span class="w">    </span><span class="n">implementation</span><span class="w"> </span><span class="s2">&quot;net.java.dev.jna:jna:5.12.0@aar&quot;</span>
 <span class="o">}</span>
 </code></pre></div>
-<h2 id="advise-on-rust-java-interop">Advise on rust-&gt;java interop</h2>
-<p>It's highly recommend to call <code>AttachCurrentThread</code> when spawning a rust thread, and in that thread we need to call java functions, maybe through uniffi's foreign interface. Otherwise, <a href="https://github.com/java-native-access/jna">JNA</a> has to attach and detach a java thread into the native thread in every function call, which is a heavy operation.</p>
+<h2 id="advise-on-rust-java-interop">Advise on Rust -&gt; Java interop</h2>
+<p>It's highly recommend to call <code>AttachCurrentThread</code> when spawning a Rust thread, and in that thread we need to call Java functions, maybe through UniFFI's foreign interface. Otherwise, <a href="https://github.com/java-native-access/jna">JNA</a> has to attach and detach a Java thread into the native thread in every function call, which is a heavy operation.</p>
 <div class="highlight"><pre><span></span><code><span class="k">static</span><span class="w"> </span><span class="n">VM</span><span class="p">:</span><span class="w"> </span><span class="nc">once_cell</span><span class="p">::</span><span class="n">sync</span><span class="p">::</span><span class="n">OnceCell</span><span class="o">&lt;</span><span class="n">jni</span><span class="p">::</span><span class="n">JavaVM</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">once_cell</span><span class="p">::</span><span class="n">sync</span><span class="p">::</span><span class="n">OnceCell</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
 
 <span class="c1">// need call this function in java/kotlin first</span>
