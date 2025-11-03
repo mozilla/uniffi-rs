@@ -25,6 +25,7 @@
 
 - Kotlin: Enums and errors now support exporting trait methods (Display, Debug, Eq, Hash, Ord) via `toString()`,
   `equals()`, `hashCode()`, and `compareTo()` implementations. Flat enums only support exporting `Display`. ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
+- Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
 
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 
