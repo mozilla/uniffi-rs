@@ -67,6 +67,7 @@ members = [
   "fixtures/simple-iface",
   "fixtures/struct-default-values",
   "fixtures/swift-codable",
+  "fixtures/swift-mock-objects",
   "fixtures/swift-omit-labels",
   "fixtures/futures",
   "fixtures/swift-bridging-header-compile",

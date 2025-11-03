@@ -56,6 +56,11 @@ open class {{ impl_class_name }}: {{ protocol_name }}, {{ config.conformance_lis
     {%- endmatch %}
 
     deinit {
+        if handle == 0 {
+            // Mock objects have handle=0 don't try to free them
+            return
+        }
+
         try! rustCall { {{ obj.ffi_object_free().name() }}(handle, $0) }
     }
 
