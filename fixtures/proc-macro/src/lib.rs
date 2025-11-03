@@ -17,7 +17,7 @@ mod one {
 
     #[uniffi::export]
     impl One {
-        fn get_inner(&self) -> i32 {
+        fn get_inner_value(&self) -> i32 {
             self.inner
         }
     }

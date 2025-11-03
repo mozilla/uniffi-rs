@@ -8,7 +8,7 @@ from proc_macro import TraitWithForeignImpl
 one = make_one(123)
 assert one.inner == 123
 assert one_inner_by_ref(one) == 123
-assert one.get_inner() == 123
+assert one.get_inner_value() == 123
 
 two = Two(a="a")
 assert take_two(two) == "a"

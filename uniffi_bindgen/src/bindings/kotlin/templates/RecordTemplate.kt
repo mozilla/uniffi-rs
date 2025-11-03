@@ -17,6 +17,10 @@ data class {{ type_name }} (
 {%- elif comparable  %}: Comparable<{{ type_name }}>
 {% endif -%}
 {
+    {% for meth in rec.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}
+    {% endfor %}
+
     {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}
     {% if contains_object_references %}
     @Suppress("UNNECESSARY_SAFE_CALL") // codegen is much simpler if we unconditionally emit safe calls here

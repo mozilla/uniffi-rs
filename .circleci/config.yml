@@ -52,7 +52,7 @@ jobs:
   Lint Rust with clippy:
     docker:
       - image: cimg/rust:1.77.1
-    resource_class: small
+    resource_class: large
     steps:
       - checkout
       - prepare-rust-target-version

@@ -101,6 +101,13 @@ data class TodoEntry (
 }
 ```
 
+## Methods on Records.
+
+proc-macros allow you to use `#[uniffi::export]` on an `impl` block for a record,
+and the bindings will generate a method which calls into the Rust method.
+But take care - every time one of the methods is called, the entire record will be copied by-value across the FFI.
+You probably want to avoid this for large records or in performance sensitive areas.
+
 ## Exposing methods from standard Rust traits
 
 While less useful for Records, there are a number of standard Rust traits (`Debug`, `Eq` etc) you can expose, so, eg, Python
