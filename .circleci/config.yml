@@ -101,7 +101,7 @@ jobs:
                 --target wasm32-unknown-unknown \
                 --manifest-path "$manifest_path"
             done
-      - run: cargo test --features=uniffi/ffi-trace
+      - run: cargo test --features=uniffi/ffi-trace -p uniffi-fixture-coverall -p uniffi-fixture-futures
       - run:
           name: mypy Python typechecks
           command: |
