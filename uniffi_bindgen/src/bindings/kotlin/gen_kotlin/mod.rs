@@ -4,7 +4,7 @@
 
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
 
 use askama::Template;
@@ -356,7 +356,8 @@ impl<'a> KotlinWrapper<'a> {
                     .external_package_name(crate_name, Some(namespace));
                 format!("{package_name}.uniffiEnsureInitialized()")
             })
-            .collect::<HashSet<_>>();
+            // Collect into a btree set to de-dup and order
+            .collect::<BTreeSet<_>>();
 
         init_fns.chain(extern_module_init_fns).collect()
     }
