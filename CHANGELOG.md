@@ -6,26 +6,27 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's New?
+
+- All builtin bindings support renaming almost all of the interface (types, args, items, variants, etc) via TOML definitions -
+  [see the docs](https://mozilla.github.io/uniffi-rs/next/renaming.html).
+  ([#2715](https://github.com/mozilla/uniffi-rs/pull/2715))
+- Support for methods on dataclasses for Python. ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706)).
+
+### What's Fixed
+
+- Kotlin: Rust enums with nested payload types are generated using the inner type’s fully qualified
+  name, avoiding naming conflicts and allowing payloads to reuse the variant name ([#2698](https://github.com/mozilla/uniffi-rs/pull/2698)).
+- Kotlin: Enums and errors now support exporting trait methods (Display, Debug, Eq, Hash, Ord) via `toString()`,
+  `equals()`, `hashCode()`, and `compareTo()` implementations. Flat enums only support exporting `Display`. ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
+- Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
+
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 - The `module_path` field now stores full module paths rather than crate names only.
   External bindings authors will probably need to make some minor changes to work with this.
   See https://github.com/mozilla/uniffi-rs/pull/2695/ for examples.
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...HEAD).
-
-### What's New?
-
-- Some support for methods and constructors on dataclasses for Python. ([#2706](https://
-  github.com/mozilla/uniffi-rs/pull/2706)).
-- Kotlin: Rust enums with nested payload types are generated using the inner type’s fully qualified
-  name, avoiding naming conflicts and allowing payloads to reuse the variant name ([#2698](https://
-  github.com/mozilla/uniffi-rs/pull/2698)).
-
-### What's Fixed
-
-- Kotlin: Enums and errors now support exporting trait methods (Display, Debug, Eq, Hash, Ord) via `toString()`,
-  `equals()`, `hashCode()`, and `compareTo()` implementations. Flat enums only support exporting `Display`. ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
-- Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
 
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 

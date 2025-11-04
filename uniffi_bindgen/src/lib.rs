@@ -112,6 +112,7 @@ pub mod scaffolding;
 #[cfg(feature = "cargo-metadata")]
 pub mod cargo_metadata;
 
+use crate::interface::CallbackInterface;
 use crate::interface::{
     Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
     Variant,
@@ -180,21 +181,29 @@ pub trait VisitMut {
     /// adjust it to language specific naming conventions.
     fn visit_record(&self, record: &mut Record);
 
-    /// Change the name of an `Object` of a [`ComponentInterface`
+    /// Change the name of an `Object` of a [`ComponentInterface`]
     /// to language specific naming conventions.
     fn visit_object(&self, object: &mut Object);
 
+    /// Change the name of an `Object` of a [`ComponentInterface`]
+    /// to language specific naming conventions.
+    fn visit_callback_interface(&self, _iface: &mut CallbackInterface) {}
+
     /// Change the name of a `Field` of an `Enum` `Variant`
     /// to language specific naming conventions.
-    fn visit_field(&self, field: &mut Field);
+    fn visit_field(&self, _field: &mut Field) {}
 
     /// Change the name of a `FfiField` inside a `FfiStruct`
     /// to language specific naming conventions.
-    fn visit_ffi_field(&self, ffi_field: &mut FfiField);
+    fn visit_ffi_field(&self, _ffi_field: &mut FfiField) {}
 
     /// Change the `Arugment` of a `FfiFunction` in the [`ComponentInterface`]
     /// to language specific naming conventions.
-    fn visit_ffi_argument(&self, ffi_argument: &mut FfiArgument);
+    fn visit_ffi_argument(&self, _ffi_argument: &mut FfiArgument) {}
+
+    /// Change the `FfiType` objects in the [`ComponentInterface`]
+    /// to language specific naming conventions.
+    fn visit_ffi_type(&self, _ffi_type: &mut interface::FfiType) {}
 
     /// Go through each `Enum` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
@@ -202,7 +211,7 @@ pub trait VisitMut {
 
     /// Go through each `Variant` of an `Enum` and
     /// adjust it to language specific naming conventions.
-    fn visit_variant(&self, is_error: bool, variant: &mut Variant);
+    fn visit_variant(&self, _is_error: bool, _variant: &mut Variant) {}
 
     /// Go through each `Type` in the `TypeUniverse` of
     /// a [`ComponentInterface`] and adjust it to language specific
@@ -214,17 +223,17 @@ pub trait VisitMut {
     /// visited.
     fn visit_error_name(&self, name: &mut String);
 
-    /// Go through each `Method` of an `Object` and
+    /// Go through each `Method` of an `Object` or `CallbackInterface` and
     /// adjust it to language specific naming conventions.
-    fn visit_method(&self, method: &mut Method);
+    fn visit_method(&self, object_name: &str, method: &mut Method);
 
     /// Go through each `Argument` of a `Function` and
     /// adjust it to language specific naming conventions.
-    fn visit_argument(&self, argument: &mut Argument);
+    fn visit_argument(&self, _argument: &mut Argument) {}
 
     /// Go through each `Constructor` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
-    fn visit_constructor(&self, constructor: &mut Constructor);
+    fn visit_constructor(&self, object_name: &str, constructor: &mut Constructor);
 
     /// Go through each `Function` of a [`ComponentInterface`] and
     /// adjust it to language specific naming conventions.
@@ -272,13 +281,10 @@ pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
     library_mode::calc_cdylib_name(library_file.as_ref()).is_some()
 }
 
-/// Generate bindings for an external binding generator
-/// Ideally, this should replace the [`generate_bindings`] function below
+/// Generate bindings for single crate via a UDL file.
 ///
-/// Implements an entry point for external binding generators.
-/// The function does the following:
-/// - It parses the `udl` in a [`ComponentInterface`]
-/// - Creates an instance of [`BindingGenerator`], based on type argument `B`, and run [`BindingGenerator::write_bindings`] on it
+/// This only works if you have exactly 1 crate and no shared types.
+/// It should be considered deprecated, you should use the multi-crate options instead.
 ///
 /// # Arguments
 /// - `binding_generator`: Type that implements BindingGenerator
@@ -331,6 +337,13 @@ pub fn generate_external_bindings<T: BindingGenerator>(
 
     let mut components = vec![Component { ci, config }];
     binding_generator.update_component_configs(&settings, &mut components)?;
+
+    // need to derive ffi after the bindings have had a chance to update any types.
+    components[0]
+        .ci
+        .derive_ffi_funcs()
+        .context("Failed to derive FFI functions")?;
+
     binding_generator.write_bindings(&settings, &components)
 }
 

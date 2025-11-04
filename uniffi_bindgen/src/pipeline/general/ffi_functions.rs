@@ -17,16 +17,18 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
             CallableKind::Method { self_type } => {
                 uniffi_meta::method_symbol_name(&crate_name, self_type.ty.name().unwrap(), name)
             }
-            CallableKind::Constructor { interface_name, .. } => {
-                uniffi_meta::constructor_symbol_name(&crate_name, interface_name, name)
-            }
+            CallableKind::Constructor { self_type, .. } => uniffi_meta::constructor_symbol_name(
+                &crate_name,
+                self_type.ty.name().unwrap(),
+                name,
+            ),
             // VTable methods for callback interfaces don't have FFI functions for them
             CallableKind::VTableMethod { .. } => return,
         };
         callable.ffi_func = RustFfiFunctionName(ffi_func_name.clone());
 
         let receiver_argument = match &callable.kind {
-            CallableKind::Method { self_type } => Some(FfiArgument {
+            CallableKind::Method { self_type, .. } => Some(FfiArgument {
                 name: "uniffi_self".to_string(),
                 ty: self_type.ffi_type.clone(),
             }),

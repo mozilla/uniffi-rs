@@ -23,7 +23,7 @@ pub use nodes::*;
 // For now, this is just the general pipeline.
 // Defining this allows us to use the pipeline CLI to inspect the general pipeline.
 pub fn pipeline() -> Pipeline<initial::Root, Root> {
-    general::pipeline()
+    general::pipeline("python")
         .convert_ir_pass::<Root>()
         .pass(config::pass)
         .pass(external_types::pass)

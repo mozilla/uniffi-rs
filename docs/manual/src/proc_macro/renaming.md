@@ -1,6 +1,9 @@
-# Renaming
+# Renaming via proc-macros
 
 UniFFI allows you to rename all callables and user-defined types in the foreign bindings using the `name` attribute.
+
+Renaming via proc-macros impacts all language bindings.
+For language-specific renaming, which offers renaming enum varients, record members, args, etc, see [TOML-based renaming](../renaming.md).
 
 ## Examples
 

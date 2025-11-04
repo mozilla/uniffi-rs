@@ -67,6 +67,9 @@ pub use object::{Constructor, Method, Object, UniffiTrait, UniffiTraitMethods};
 mod record;
 pub use record::{Field, Record};
 
+mod rename;
+pub use rename::rename;
+
 pub mod ffi;
 mod visit_mut;
 pub use ffi::{
@@ -94,7 +97,7 @@ pub struct ComponentInterface {
     records: Vec<Record>,
     functions: Vec<Function>,
     objects: Vec<Object>,
-    callback_interfaces: Vec<CallbackInterface>,
+    pub(crate) callback_interfaces: Vec<CallbackInterface>,
     // Type names which were seen used as an error.
     errors: HashSet<String>,
     // Types which were seen used as callback interface error.

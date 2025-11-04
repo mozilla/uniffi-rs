@@ -112,15 +112,12 @@ pub enum CallableKind {
     /// Interface/Trait interface method
     Method { self_type: TypeNode },
     /// Interface constructor
-    Constructor {
-        interface_name: String,
-        primary: bool,
-    },
+    Constructor { self_type: TypeNode, primary: bool },
     /// Method inside a VTable or a CallbackInterface
     ///
     /// For trait interfaces this only applies to the Callables inside the `vtable.methods` field.
     /// Callables inside `Interface::methods` will still be `Callable::Method`.
-    VTableMethod { trait_name: String },
+    VTableMethod { self_type: TypeNode },
 }
 
 #[derive(Debug, Clone, Node)]

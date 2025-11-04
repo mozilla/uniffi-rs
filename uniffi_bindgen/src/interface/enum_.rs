@@ -463,7 +463,8 @@ mod test {
                 Two();
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        let mut ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        ci.derive_ffi_funcs().unwrap();
         assert_eq!(ci.enum_definitions().len(), 3);
         assert_eq!(ci.function_definitions().len(), 4);
 

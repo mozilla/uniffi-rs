@@ -818,7 +818,8 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        let mut ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        ci.derive_ffi_funcs().unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
@@ -848,7 +849,8 @@ mod test {
                 constructor(u32 v);
             };
         "#;
-        let ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        let mut ci = ComponentInterface::from_webidl(UDL, "crate_name").unwrap();
+        ci.derive_ffi_funcs().unwrap();
         assert_eq!(ci.object_definitions().len(), 1);
 
         let obj = ci.get_object_definition("Testing").unwrap();
