@@ -9,22 +9,22 @@
       
       
       
-        <link rel="prev" href="udl_file.html">
+        <link rel="prev" href="proc_macro/docstrings.html">
       
       
-        <link rel="next" href="foreign_language_bindings.html">
+        <link rel="next" href="futures.html">
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
-        <title>Rust scaffolding - The UniFFI user guide</title>
+        <title>Renaming - The UniFFI user guide</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.2afb09e1.min.css">
       
       
 
@@ -43,7 +43,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#rust-scaffolding" class="md-skip">
+        <a href="#renaming" class="md-skip">
           Skip to content
         </a>
       
@@ -82,7 +82,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../index.html" title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+    <a href="index.html" title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Rust scaffolding
+              Renaming
             
           </span>
         </div>
@@ -192,7 +192,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../index.html" title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+    <a href="index.html" title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -222,7 +222,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../index.html" class="md-nav__link">
+      <a href="index.html" class="md-nav__link">
         
   
   
@@ -244,7 +244,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../Motivation.html" class="md-nav__link">
+      <a href="Motivation.html" class="md-nav__link">
         
   
   
@@ -263,20 +263,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -292,7 +290,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Tutorial
@@ -306,7 +304,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../Getting_started.html" class="md-nav__link">
+      <a href="Getting_started.html" class="md-nav__link">
         
   
   
@@ -329,7 +327,7 @@
   
   
     <li class="md-nav__item">
-      <a href="Prerequisites.html" class="md-nav__link">
+      <a href="tutorial/Prerequisites.html" class="md-nav__link">
         
   
   
@@ -352,7 +350,7 @@
   
   
     <li class="md-nav__item">
-      <a href="udl_file.html" class="md-nav__link">
+      <a href="tutorial/udl_file.html" class="md-nav__link">
         
   
   
@@ -372,32 +370,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Rust scaffolding
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="Rust_scaffolding.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="tutorial/Rust_scaffolding.html" class="md-nav__link">
         
   
   
@@ -408,59 +384,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#rust-scaffolding-code-for-udl" class="md-nav__link">
-    <span class="md-ellipsis">
-      Rust scaffolding code for UDL
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#setup-for-crates-using-only-proc-macros" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setup for crates using only proc macros
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Setup for crates using only proc macros">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#libraries-that-depend-on-uniffi-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      Libraries that depend on UniFFI components
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -473,7 +396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="foreign_language_bindings.html" class="md-nav__link">
+      <a href="tutorial/foreign_language_bindings.html" class="md-nav__link">
         
   
   
@@ -541,7 +464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/namespace.html" class="md-nav__link">
+      <a href="types/namespace.html" class="md-nav__link">
         
   
   
@@ -564,7 +487,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/builtin_types.html" class="md-nav__link">
+      <a href="types/builtin_types.html" class="md-nav__link">
         
   
   
@@ -587,7 +510,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/enumerations.html" class="md-nav__link">
+      <a href="types/enumerations.html" class="md-nav__link">
         
   
   
@@ -610,7 +533,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/records.html" class="md-nav__link">
+      <a href="types/records.html" class="md-nav__link">
         
   
   
@@ -671,7 +594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/functions.html" class="md-nav__link">
+      <a href="types/functions.html" class="md-nav__link">
         
   
   
@@ -694,7 +617,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/errors.html" class="md-nav__link">
+      <a href="types/errors.html" class="md-nav__link">
         
   
   
@@ -725,7 +648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/interfaces.html" class="md-nav__link">
+      <a href="types/interfaces.html" class="md-nav__link">
         
   
   
@@ -748,7 +671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/callback_interfaces.html" class="md-nav__link">
+      <a href="types/callback_interfaces.html" class="md-nav__link">
         
   
   
@@ -771,7 +694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/remote_ext_types.html" class="md-nav__link">
+      <a href="types/remote_ext_types.html" class="md-nav__link">
         
   
   
@@ -794,7 +717,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/custom_types.html" class="md-nav__link">
+      <a href="types/custom_types.html" class="md-nav__link">
         
   
   
@@ -817,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/defaults.html" class="md-nav__link">
+      <a href="types/defaults.html" class="md-nav__link">
         
   
   
@@ -840,7 +763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../types/uniffi_traits.html" class="md-nav__link">
+      <a href="types/uniffi_traits.html" class="md-nav__link">
         
   
   
@@ -867,18 +790,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
@@ -894,7 +819,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Describing the interface
@@ -908,7 +833,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../describing.html" class="md-nav__link">
+      <a href="describing.html" class="md-nav__link">
         
   
   
@@ -969,7 +894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/index.html" class="md-nav__link">
+      <a href="udl/index.html" class="md-nav__link">
         
   
   
@@ -992,7 +917,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/enumerations.html" class="md-nav__link">
+      <a href="udl/enumerations.html" class="md-nav__link">
         
   
   
@@ -1015,7 +940,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/errors.html" class="md-nav__link">
+      <a href="udl/errors.html" class="md-nav__link">
         
   
   
@@ -1038,7 +963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/functions.html" class="md-nav__link">
+      <a href="udl/functions.html" class="md-nav__link">
         
   
   
@@ -1061,7 +986,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/interfaces.html" class="md-nav__link">
+      <a href="udl/interfaces.html" class="md-nav__link">
         
   
   
@@ -1084,7 +1009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/records.html" class="md-nav__link">
+      <a href="udl/records.html" class="md-nav__link">
         
   
   
@@ -1107,7 +1032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/external_types.html" class="md-nav__link">
+      <a href="udl/external_types.html" class="md-nav__link">
         
   
   
@@ -1130,7 +1055,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../udl/docstrings.html" class="md-nav__link">
+      <a href="udl/docstrings.html" class="md-nav__link">
         
   
   
@@ -1199,7 +1124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/index.html" class="md-nav__link">
+      <a href="proc_macro/index.html" class="md-nav__link">
         
   
   
@@ -1222,7 +1147,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/enumerations.html" class="md-nav__link">
+      <a href="proc_macro/enumerations.html" class="md-nav__link">
         
   
   
@@ -1245,7 +1170,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/errors.html" class="md-nav__link">
+      <a href="proc_macro/errors.html" class="md-nav__link">
         
   
   
@@ -1268,7 +1193,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/functions.html" class="md-nav__link">
+      <a href="proc_macro/functions.html" class="md-nav__link">
         
   
   
@@ -1291,7 +1216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/interfaces.html" class="md-nav__link">
+      <a href="proc_macro/interfaces.html" class="md-nav__link">
         
   
   
@@ -1314,7 +1239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/records.html" class="md-nav__link">
+      <a href="proc_macro/records.html" class="md-nav__link">
         
   
   
@@ -1337,7 +1262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/renaming.html" class="md-nav__link">
+      <a href="proc_macro/renaming.html" class="md-nav__link">
         
   
   
@@ -1360,7 +1285,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proc_macro/docstrings.html" class="md-nav__link">
+      <a href="proc_macro/docstrings.html" class="md-nav__link">
         
   
   
@@ -1388,10 +1313,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../renaming.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Renaming
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="renaming.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1402,6 +1349,50 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#toml-based-renaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      TOML-based Renaming
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TOML-based Renaming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1421,7 +1412,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../futures.html" class="md-nav__link">
+      <a href="futures.html" class="md-nav__link">
         
   
   
@@ -1481,7 +1472,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../bindings.html" class="md-nav__link">
+      <a href="bindings.html" class="md-nav__link">
         
   
   
@@ -1504,7 +1495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../foreign_traits.html" class="md-nav__link">
+      <a href="foreign_traits.html" class="md-nav__link">
         
   
   
@@ -1565,7 +1556,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kotlin/configuration.html" class="md-nav__link">
+      <a href="kotlin/configuration.html" class="md-nav__link">
         
   
   
@@ -1588,7 +1579,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kotlin/gradle.html" class="md-nav__link">
+      <a href="kotlin/gradle.html" class="md-nav__link">
         
   
   
@@ -1611,7 +1602,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kotlin/lifetimes.html" class="md-nav__link">
+      <a href="kotlin/lifetimes.html" class="md-nav__link">
         
   
   
@@ -1680,7 +1671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../swift/overview.html" class="md-nav__link">
+      <a href="swift/overview.html" class="md-nav__link">
         
   
   
@@ -1703,7 +1694,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../swift/uniffi-bindgen-swift.html" class="md-nav__link">
+      <a href="swift/uniffi-bindgen-swift.html" class="md-nav__link">
         
   
   
@@ -1726,7 +1717,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../swift/configuration.html" class="md-nav__link">
+      <a href="swift/configuration.html" class="md-nav__link">
         
   
   
@@ -1749,7 +1740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../swift/module.html" class="md-nav__link">
+      <a href="swift/module.html" class="md-nav__link">
         
   
   
@@ -1772,7 +1763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../swift/xcode.html" class="md-nav__link">
+      <a href="swift/xcode.html" class="md-nav__link">
         
   
   
@@ -1803,7 +1794,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python/configuration.html" class="md-nav__link">
+      <a href="python/configuration.html" class="md-nav__link">
         
   
   
@@ -1864,7 +1855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../wasm/configuration.html" class="md-nav__link">
+      <a href="wasm/configuration.html" class="md-nav__link">
         
   
   
@@ -1940,7 +1931,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/design_principles.html" class="md-nav__link">
+      <a href="internals/design_principles.html" class="md-nav__link">
         
   
   
@@ -1963,7 +1954,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/crates.html" class="md-nav__link">
+      <a href="internals/crates.html" class="md-nav__link">
         
   
   
@@ -1986,7 +1977,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../glossary.html" class="md-nav__link">
+      <a href="glossary.html" class="md-nav__link">
         
   
   
@@ -2009,7 +2000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
+      <a href="internals/lifting_and_lowering.html" class="md-nav__link">
         
   
   
@@ -2032,7 +2023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/ffi_converter_traits.html" class="md-nav__link">
+      <a href="internals/ffi_converter_traits.html" class="md-nav__link">
         
   
   
@@ -2055,7 +2046,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/rust_calls.html" class="md-nav__link">
+      <a href="internals/rust_calls.html" class="md-nav__link">
         
   
   
@@ -2078,7 +2069,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/foreign_calls.html" class="md-nav__link">
+      <a href="internals/foreign_calls.html" class="md-nav__link">
         
   
   
@@ -2101,7 +2092,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/object_references.html" class="md-nav__link">
+      <a href="internals/object_references.html" class="md-nav__link">
         
   
   
@@ -2124,7 +2115,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/async-overview.html" class="md-nav__link">
+      <a href="internals/async-overview.html" class="md-nav__link">
         
   
   
@@ -2147,7 +2138,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/async-ffi.html" class="md-nav__link">
+      <a href="internals/async-ffi.html" class="md-nav__link">
         
   
   
@@ -2170,7 +2161,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
+      <a href="internals/rendering_foreign_bindings.html" class="md-nav__link">
         
   
   
@@ -2193,7 +2184,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/bindings_ir.html" class="md-nav__link">
+      <a href="internals/bindings_ir.html" class="md-nav__link">
         
   
   
@@ -2216,7 +2207,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../internals/bindings_ir_pipeline.html" class="md-nav__link">
+      <a href="internals/bindings_ir_pipeline.html" class="md-nav__link">
         
   
   
@@ -2246,7 +2237,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../Upgrading.html" class="md-nav__link">
+      <a href="Upgrading.html" class="md-nav__link">
         
   
   
@@ -2288,28 +2279,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#rust-scaffolding-code-for-udl" class="md-nav__link">
+  <a href="#toml-based-renaming" class="md-nav__link">
     <span class="md-ellipsis">
-      Rust scaffolding code for UDL
+      TOML-based Renaming
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#setup-for-crates-using-only-proc-macros" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setup for crates using only proc macros
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Setup for crates using only proc macros">
+    <nav class="md-nav" aria-label="TOML-based Renaming">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#libraries-that-depend-on-uniffi-components" class="md-nav__link">
+  <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
-      Libraries that depend on UniFFI components
+      Notes
     </span>
   </a>
   
@@ -2339,38 +2321,42 @@
   
 
 
-<h1 id="rust-scaffolding">Rust scaffolding</h1>
-<p>UniFFI requires that our generated Rust "scaffolding" code is included in your project. For proc macros, most of this is conveniently generated by the macros.</p>
-<p>If you use UDL files, you need to generate this "scaffolding" then include the generated .rs in your project.</p>
-<h2 id="rust-scaffolding-code-for-udl">Rust scaffolding code for UDL</h2>
-<p>Crates using UDL need a <code>build.rs</code> file next to <code>Cargo.toml</code>. This uses <code>uniffi</code> to generate the Rust scaffolding code.</p>
-<div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">uniffi</span><span class="p">::</span><span class="n">generate_scaffolding</span><span class="p">(</span><span class="s">&quot;src/math.udl&quot;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>It will generate <code>&lt;namespace&gt;.uniffi.rs</code> under your <code>target</code> directory.</p>
-<p>Lastly, we include the generated scaffolding code in our <code>lib.rs</code> using this handy macro:</p>
-<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">include_scaffolding</span><span class="o">!</span><span class="p">(</span><span class="s">&quot;math&quot;</span><span class="p">);</span>
-</code></pre></div>
-<h2 id="setup-for-crates-using-only-proc-macros">Setup for crates using only proc macros</h2>
-<p>If you are only using proc macros, you can skip <code>build.rs</code> entirely!
-All you need to do is add this to the top of <code>lib.rs</code></p>
-<div class="highlight"><pre><span></span><code><span class="n">uniffi</span><span class="p">::</span><span class="n">setup_scaffolding</span><span class="o">!</span><span class="p">();</span>
-</code></pre></div>
-<p>Don't use <code>uniffi::setup_scaffolding!()</code> in a crate which uses <code>uniffi::include_scaffolding!()</code>.</p>
-<p>If you don't specify a <a href="../types/namespace.html"><code>namespace</code></a> the crate name is used.</p>
-<h3 id="libraries-that-depend-on-uniffi-components">Libraries that depend on UniFFI components</h3>
-<p>Suppose you want to create a shared library that includes one or more
-components using UniFFI. The typical way to achieve this is to create a new
-crate that depends on the component crates.  However, this can run into issues
-where public symbols from the dependent crates aren't re-exported, resulting
-in these symbols not being available at runtime.</p>
-<p>If you encounter this, you can use the <code>uniffi_reexport_scaffolding!()</code> macro as a work around.
-For example, <code>foo_component::uniffi_reexport_scaffolding!();</code> in your library's <code>lib.rs</code> will have
-UniFFI generate workaround code that forces <code>foo_component</code>s functions to be exported from the library.</p>
-<p>Each scaffolding function contains a hash that's derived from the namespace.
-This avoids name collisions when combining multiple UniFFI components into
-one library.</p>
+<h1 id="renaming">Renaming</h1>
+<p>UniFFI provides two ways to customize names in generated bindings:</p>
+<ol>
+<li><strong>Proc-macro attributes</strong> - Use variants of <code>#[uniffi(name = "...")]</code> to rename items directly in Rust code. See <a href="proc_macro/renaming.html">proc-macro renaming</a>.</li>
+<li><strong>TOML configuration</strong> - Define language-specific renames in <code>uniffi.toml</code>.</li>
+</ol>
+<h2 id="toml-based-renaming">TOML-based Renaming</h2>
+<p>You can rename types, functions, methods, constructors, and their members (fields, variants, arguments) on a per-language basis using <code>uniffi.toml</code>.
+The intended use-case here is for when a name could be made more idiomatic in one specific binding - you can rename many things unconditionally for all bindings using proc macros.</p>
+<p>An example <code>uniffi.toml</code> which is renaming Python:
+<div class="highlight"><pre><span></span><code><span class="k">[bindings.python.rename]</span>
+<span class="c1"># Rename types</span>
+<span class="c1"># `struct MyRecord { .. }` -&gt; `PythonRecord`</span>
+<span class="n">MyRecord</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;PythonRecord&quot;</span>
+
+<span class="c1"># Rename nested items using dot notation</span>
+<span class="c1"># `struct MyRecord { field: u32  }` -&gt; `PythonRecord(python_field ...)`</span>
+<span class="s2">&quot;MyRecord.field&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_field&quot;</span>
+<span class="s2">&quot;MyEnum.VariantA&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;PythonVariantA&quot;</span>
+<span class="s2">&quot;MyEnum.VariantA.int_field&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_field&quot;</span>
+
+<span class="c1"># `fn my_function(first_arg: u8)` -&gt; `def python_function(python_arg)`</span>
+<span class="s2">&quot;my_function&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_function&quot;</span>
+<span class="s2">&quot;my_function.first_arg&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_arg&quot;</span>
+<span class="s2">&quot;MyObject.method&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_method&quot;</span>
+<span class="s2">&quot;MyObject.method.foo&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python_foo&quot;</span>
+</code></pre></div></p>
+<p>The same pattern applies to all renameable items: records, record fields, enums, enum variants, enum variant fields, objects/callback interfaces/traits, and all "callables" and arguments.</p>
+<h3 id="notes">Notes</h3>
+<ul>
+<li>Each crate defines its own rename configuration, you cannot rename types from external crates</li>
+<li>uniffi normalizes names for each language (eg, <code>my_func</code> becomes <code>myFunc</code> in some languages) after the renaming is applied.
+  For example, renaming <code>my_func</code> to <code>renamed_func</code> would cause the final name to be <code>renamedFunc</code> in those languages.</li>
+<li>All builtin bindings support this but external bindings may not.</li>
+<li>Renaming the primary constructor "works", but will have no impact in bindings as the name isn't used.</li>
+</ul>
 
 
 
@@ -2419,10 +2405,10 @@ one library.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="assets/javascripts/bundle.c8b220af.min.js"></script>
       
     
   </body>

@@ -20,7 +20,7 @@
     
     
       
-        <title>Renaming - The UniFFI user guide</title>
+        <title>Renaming via proc-macros - The UniFFI user guide</title>
       
     
     
@@ -62,7 +62,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#renaming" class="md-skip">
+        <a href="#renaming-via-proc-macros" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Renaming
+              Renaming via proc-macros
             
           </span>
         </div>
@@ -1278,7 +1278,7 @@
   
   
   <span class="md-ellipsis">
-    Renaming
+    Renaming via proc-macros
     
   </span>
   
@@ -1291,7 +1291,7 @@
   
   
   <span class="md-ellipsis">
-    Renaming
+    Renaming via proc-macros
     
   </span>
   
@@ -1399,6 +1399,29 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1983,6 +2006,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../glossary.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Glossary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
         
   
@@ -2160,6 +2206,52 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/bindings_ir.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The UniFFI Bindings IR
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/bindings_ir_pipeline.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bindings IR Pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2285,8 +2377,10 @@
   
 
 
-<h1 id="renaming">Renaming</h1>
+<h1 id="renaming-via-proc-macros">Renaming via proc-macros</h1>
 <p>UniFFI allows you to rename all callables and user-defined types in the foreign bindings using the <code>name</code> attribute.</p>
+<p>Renaming via proc-macros impacts all language bindings.
+For language-specific renaming, which offers renaming enum varients, record members, args, etc, see <a href="../renaming.html">TOML-based renaming</a>.</p>
 <h2 id="examples">Examples</h2>
 <h3 id="functions">Functions:</h3>
 <div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(name = </span><span class="s">&quot;renamed_function&quot;</span><span class="cp">)]</span>

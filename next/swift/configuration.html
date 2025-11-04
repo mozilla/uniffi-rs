@@ -1265,7 +1265,7 @@
   
   
   <span class="md-ellipsis">
-    Renaming
+    Renaming via proc-macros
     
   </span>
   
@@ -1302,6 +1302,29 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1950,6 +1973,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../glossary.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Glossary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
         
   
@@ -2127,6 +2173,52 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/bindings_ir.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The UniFFI Bindings IR
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/bindings_ir_pipeline.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bindings IR Pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2272,6 +2364,11 @@ more likely to change than other configurations.</p>
 <td><code>custom_types</code></td>
 <td></td>
 <td>A map which controls how custom types are exposed to Swift. See the <a href="../types/custom_types.html#custom-types-in-the-bindings-code">custom types section of the manual</a></td>
+</tr>
+<tr>
+<td><code>rename</code></td>
+<td></td>
+<td>A map to rename types, functions, methods, and their members in the generated Swift bindings. See the <a href="../renaming.html">renaming section</a>.</td>
 </tr>
 <tr>
 <td><code>omit_localized_error_conformance</code></td>
