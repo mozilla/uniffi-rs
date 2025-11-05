@@ -34,6 +34,9 @@ use uniffi_meta::{
 /// interface and allows for more flexibility in how the external bindings are generated.
 ///
 /// Returns the list of sources used to generate the bindings, in no particular order.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub fn generate_bindings<T: BindingGenerator>(
     library_path: &Utf8Path,
     crate_name: Option<String>,

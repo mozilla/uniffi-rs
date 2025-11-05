@@ -6,8 +6,18 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### ⚠️ Breaking Changes ⚠️
+- The `uniffi-bindgen` command no longer accepts the `--lib-file` argument.  Instead, pass the
+  library directly without a UDL file.
+- Removed the `[Swift|Kotlin|Python|Ruby]BindingGenerator` types.  Use `uniffi::generate` instead
+  to generate these bindings.
+
 ### What's New?
 
+- Added the `uniffi::generate` function.  This implements the `uniffi-bindgen generate` command and
+  allows it to be run programmatically.
+- The `--library` argument of `uniffi-bindgen` is deprecated and no longer has an effect.
+ `uniffi-bindgen` will now auto-detect when the source path is a library rather than a UDL file.
 - All builtin bindings support renaming almost all of the interface (types, args, items, variants, etc) via TOML definitions -
   [see the docs](https://mozilla.github.io/uniffi-rs/next/renaming.html).
   ([#2715](https://github.com/mozilla/uniffi-rs/pull/2715))

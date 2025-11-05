@@ -7,13 +7,17 @@
 //! This module contains all the code for generating foreign language bindings,
 //! along with some helpers for executing foreign language scripts or tests.
 
+use std::fs;
+
+use anyhow::Result;
+use camino::Utf8PathBuf;
+
+use crate::BindgenLoader;
 mod kotlin;
-pub use kotlin::KotlinBindingGenerator;
 pub mod python;
 mod ruby;
-pub use ruby::RubyBindingGenerator;
 mod swift;
-pub use swift::{generate_swift_bindings, SwiftBindingGenerator, SwiftBindingsOptions};
+pub use swift::{generate_swift_bindings, SwiftBindingsOptions};
 
 #[cfg(feature = "bindgen-tests")]
 pub use self::{
@@ -35,4 +39,69 @@ impl Default for RunScriptOptions {
             show_compiler_messages: true,
         }
     }
+}
+
+/// Generate bindings
+///
+/// This implements the uniffi-bindgen command
+pub fn generate(options: GenerateOptions) -> Result<()> {
+    #[cfg(feature = "cargo-metadata")]
+    let config_supplier = crate::cargo_metadata::CrateConfigSupplier::from_cargo_metadata_command(
+        options.metadata_no_deps,
+    )?;
+
+    #[cfg(not(feature = "cargo-metadata"))]
+    let config_supplier = crate::EmptyCrateConfigSupplier;
+
+    fs::create_dir_all(&options.out_dir)?;
+
+    let loader = BindgenLoader::new(&config_supplier);
+    for language in options.languages.iter() {
+        match language {
+            TargetLanguage::Swift => {
+                swift::generate(&loader, options.clone())?;
+            }
+            TargetLanguage::Kotlin => {
+                kotlin::generate(&loader, options.clone())?;
+            }
+            TargetLanguage::Python => {
+                python::generate(&loader, options.clone())?;
+            }
+            TargetLanguage::Ruby => {
+                ruby::generate(&loader, options.clone())?;
+            }
+        }
+    }
+    Ok(())
+}
+
+#[derive(Clone, Default)]
+pub struct GenerateOptions {
+    /// Languages to generate bindings for
+    pub languages: Vec<TargetLanguage>,
+    /// Path to the UDL or library file
+    pub source: Utf8PathBuf,
+    /// Directory to write generated files.
+    pub out_dir: Utf8PathBuf,
+    /// Path to the config file to use, if None bindings generators will load
+    /// `[crate-root]/uniffi.toml`
+    pub config_override: Option<Utf8PathBuf>,
+    /// Run the generated code through a source code formatter
+    pub format: bool,
+    /// Limit binding generate to a single crate
+    pub crate_filter: Option<String>,
+    /// Exclude dependencies when running "cargo metadata".
+    /// This will mean external types may not be resolved if they are implemented in crates
+    /// outside of this workspace.
+    /// This can be used in environments when all types are in the namespace and fetching
+    /// all sub-dependencies causes obscure platform specific problems.
+    pub metadata_no_deps: bool,
+}
+
+#[derive(Clone, Debug)]
+pub enum TargetLanguage {
+    Kotlin,
+    Python,
+    Ruby,
+    Swift,
 }

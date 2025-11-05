@@ -140,6 +140,9 @@ pub struct GenerationSettings {
 ///
 /// External crates that implement binding generators, should implement this type
 /// and call the [`generate_external_bindings`] using a type that implements this trait.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub trait BindingGenerator: Sized {
     /// Handles configuring the bindings
     type Config;
@@ -275,6 +278,20 @@ pub trait BindgenCrateConfigSupplier {
 pub struct EmptyCrateConfigSupplier;
 impl BindgenCrateConfigSupplier for EmptyCrateConfigSupplier {}
 
+impl BindgenCrateConfigSupplier for &&dyn BindgenCrateConfigSupplier {
+    fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
+        (**self).get_toml(crate_name)
+    }
+
+    fn get_toml_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        (**self).get_toml_path(crate_name)
+    }
+
+    fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
+        (**self).get_udl(crate_name, udl_name)
+    }
+}
+
 /// A convenience function for the CLI to help avoid using static libs
 /// in places cdylibs are required.
 pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
@@ -293,6 +310,9 @@ pub fn is_cdylib(library_file: impl AsRef<Utf8Path>) -> bool {
 /// - `out_dir_override`: The path to write the bindings to. If [`None`], it will be the path to the parent directory of the `udl_file`
 /// - `library_file`: The path to a dynamic library to attempt to extract the definitions from and extend the component interface with. No extensions to component interface occur if it's [`None`]
 /// - `crate_name`: Override the default crate name that is guessed from UDL file path.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub fn generate_external_bindings<T: BindingGenerator>(
     binding_generator: &T,
     udl_file: impl AsRef<Utf8Path>,
@@ -394,6 +414,9 @@ fn generate_component_scaffolding_inner(
 
 // Generate the bindings in the target languages that call the scaffolding
 // Rust code.
+///
+/// Deprecated: External crates are encouraged to use the `BindgenLoader` type instead, which lets
+/// you control the binding generation process more directly.
 pub fn generate_bindings<T: BindingGenerator>(
     udl_file: &Utf8Path,
     config_file_override: Option<&Utf8Path>,
