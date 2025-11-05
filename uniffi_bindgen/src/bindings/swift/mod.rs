@@ -30,8 +30,7 @@
 //!
 
 use crate::{
-    interface::rename, BindgenLoader, BindingGenerator, Component, ComponentInterface,
-    GenerationSettings,
+    bindings::GenerateOptions, interface::rename, BindgenLoader, Component, ComponentInterface,
 };
 use anyhow::Result;
 use camino::Utf8PathBuf;
@@ -56,93 +55,72 @@ struct Bindings {
     modulemap: Option<String>,
 }
 
-pub struct SwiftBindingGenerator;
-impl BindingGenerator for SwiftBindingGenerator {
-    type Config = Config;
-
-    fn new_config(&self, root_toml: &toml::Value) -> Result<Self::Config> {
-        Ok(
-            match root_toml.get("bindings").and_then(|b| b.get("swift")) {
-                Some(v) => v.clone().try_into()?,
-                None => Default::default(),
-            },
-        )
+/// Generate Swift bindings
+///
+/// Returns the components generated
+pub fn generate(
+    loader: &BindgenLoader<'_>,
+    options: GenerateOptions,
+) -> Result<Vec<Component<Config>>> {
+    let metadata = loader.load_metadata(&options.source)?;
+    let cis = loader.load_cis(metadata)?;
+    let mut components = loader.load_components(cis, parse_config)?;
+    apply_renames(&mut components);
+    for c in components.iter_mut() {
+        // Call derive_ffi_functions after `apply_renames`
+        c.ci.derive_ffi_funcs()?;
     }
 
-    fn update_component_configs(
-        &self,
-        _settings: &GenerationSettings,
-        components: &mut Vec<Component<Self::Config>>,
-    ) -> Result<()> {
-        for c in &mut *components {
-            c.config
-                .module_name
-                .get_or_insert_with(|| c.ci.namespace().into());
-        }
-        apply_renames(components);
-        Ok(())
-    }
+    for Component { ci, config, .. } in components.iter_mut() {
+        let Bindings {
+            header,
+            library,
+            modulemap,
+        } = generate_bindings(config, ci)?;
 
-    /// Unlike other target languages, binding to Rust code from Swift involves more than just
-    /// generating a `.swift` file. We also need to produce a `.h` file with the C-level API
-    /// declarations, and a `.modulemap` file to tell Swift how to use it.
-    fn write_bindings(
-        &self,
-        settings: &GenerationSettings,
-        components: &[Component<Self::Config>],
-    ) -> Result<()> {
-        for Component { ci, config, .. } in components {
-            let Bindings {
-                header,
-                library,
-                modulemap,
-            } = generate_bindings(config, ci)?;
+        let source_file = options
+            .out_dir
+            .join(format!("{}.swift", config.module_name()));
+        fs::write(&source_file, library)?;
 
-            let source_file = settings
-                .out_dir
-                .join(format!("{}.swift", config.module_name()));
-            fs::write(&source_file, library)?;
+        let header_file = options.out_dir.join(config.header_filename());
+        fs::write(header_file, header)?;
 
-            let header_file = settings.out_dir.join(config.header_filename());
-            fs::write(header_file, header)?;
-
-            if let Some(modulemap) = modulemap {
-                let modulemap_file = settings.out_dir.join(config.modulemap_filename());
-                fs::write(modulemap_file, modulemap)?;
-            }
-
-            if settings.try_format_code {
-                let commands_to_try = [
-                    // Available in Xcode 16.
-                    vec!["xcrun", "swift-format"],
-                    // The official swift-format command name.
-                    vec!["swift-format"],
-                    // Shortcut for the swift-format command.
-                    vec!["swift", "format"],
-                    vec!["swiftformat"],
-                ];
-
-                let successful_output = commands_to_try.into_iter().find_map(|command| {
-                    Command::new(command[0])
-                        .args(&command[1..])
-                        .arg(source_file.as_str())
-                        .output()
-                        .ok()
-                });
-                if successful_output.is_none() {
-                    println!(
-                        "Warning: Unable to auto-format {} using swift-format. Please make sure it is installed.",
-                        source_file.as_str()
-                    );
-                }
-            }
+        if let Some(modulemap) = modulemap {
+            let modulemap_file = options.out_dir.join(config.modulemap_filename());
+            fs::write(modulemap_file, modulemap)?;
         }
 
-        Ok(())
+        if options.format {
+            let commands_to_try = [
+                // Available in Xcode 16.
+                vec!["xcrun", "swift-format"],
+                // The official swift-format command name.
+                vec!["swift-format"],
+                // Shortcut for the swift-format command.
+                vec!["swift", "format"],
+                vec!["swiftformat"],
+            ];
+
+            let successful_output = commands_to_try.into_iter().find_map(|command| {
+                Command::new(command[0])
+                    .args(&command[1..])
+                    .arg(source_file.as_str())
+                    .output()
+                    .ok()
+            });
+            if successful_output.is_none() {
+                println!(
+                    "Warning: Unable to auto-format {} using swift-format. Please make sure it is installed.",
+                    source_file.as_str()
+                );
+            }
+        }
     }
+    Ok(components)
 }
 
-/// Generate Swift bindings
+/// Generate Swift bindings (specialized version)
 ///
 /// This is used by the uniffi-bindgen-swift command, which supports Swift-specific options.
 ///

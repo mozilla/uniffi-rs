@@ -1,6 +1,6 @@
 use camino::Utf8PathBuf;
 use std::process::Command;
-use uniffi::SwiftBindingGenerator;
+use uniffi::{generate, GenerateOptions, TargetLanguage};
 use uniffi_testing::UniFFITestHelper;
 
 #[test]
@@ -11,15 +11,12 @@ fn clang() -> Result<(), anyhow::Error> {
     let test_helper = UniFFITestHelper::new(crate_name)?;
     let out_dir = test_helper.create_out_dir(tmp_dir, "clang.rs")?;
 
-    uniffi::generate_bindings(
-        &Utf8PathBuf::from("src/swift-bridging-header-compile.udl"),
-        None,
-        SwiftBindingGenerator,
-        Some(&out_dir),
-        None,
-        None,
-        false,
-    )?;
+    generate(GenerateOptions {
+        languages: vec![TargetLanguage::Swift],
+        source: Utf8PathBuf::from("src/swift-bridging-header-compile.udl"),
+        out_dir: out_dir.clone(),
+        ..GenerateOptions::default()
+    })?;
 
     let bridging_h = out_dir.join("swift_bridging_header_compileFFI.h");
 

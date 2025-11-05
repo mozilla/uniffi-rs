@@ -7,12 +7,23 @@ use askama::Template;
 use camino::Utf8Path;
 use fs_err as fs;
 
+use crate::{bindings::GenerateOptions, BindgenLoader};
+
 pub mod filters;
 mod pipeline;
 pub use pipeline::pipeline;
 
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
+
+/// Generate Python bindings
+pub fn generate(loader: &BindgenLoader<'_>, options: GenerateOptions) -> Result<()> {
+    let metadata = loader.load_metadata(&options.source)?;
+    let root = loader.load_pipeline_initial_root(&options.source, metadata)?;
+    run_pipeline(root, &options.out_dir)?;
+
+    Ok(())
+}
 
 pub fn run_pipeline(initial_root: pipeline::initial::Root, out_dir: &Utf8Path) -> Result<()> {
     let python_root = pipeline().execute(initial_root)?;

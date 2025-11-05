@@ -6,7 +6,7 @@ uniffi::build_foreign_language_testcases!(
 
 #[cfg(test)]
 mod tests {
-    use uniffi_bindgen::{bindings::*, BindingGenerator};
+    use uniffi_bindgen::bindings::*;
     use uniffi_testing::UniFFITestHelper;
 
     const DOCSTRINGS: &[&str] = &[
@@ -35,9 +35,9 @@ mod tests {
         "<docstring-variant-field>",
     ];
 
-    fn test_docstring<T: BindingGenerator>(gen: T, file_extension: &str) {
+    fn test_docstring(language: TargetLanguage, file_extension: &str) {
+        // Generate bindings
         let test_helper = UniFFITestHelper::new(std::env!("CARGO_PKG_NAME")).unwrap();
-
         let out_dir = test_helper
             .create_out_dir(
                 std::env!("CARGO_TARGET_TMPDIR"),
@@ -49,22 +49,16 @@ mod tests {
             .unwrap();
 
         let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir).unwrap();
+        generate(GenerateOptions {
+            languages: vec![language],
+            source: cdylib_path,
+            out_dir: out_dir.clone(),
+            format: false,
+            ..GenerateOptions::default()
+        })
+        .expect("error generating bindings");
 
-        let config_supplier = {
-            use uniffi_bindgen::cargo_metadata::CrateConfigSupplier;
-            CrateConfigSupplier::from_cargo_metadata_command(false).unwrap()
-        };
-
-        uniffi_bindgen::library_mode::generate_bindings(
-            &cdylib_path,
-            None,
-            &gen,
-            &config_supplier,
-            None,
-            &out_dir,
-            false,
-        )
-        .unwrap();
+        // Check that the generated code contains the correct docstrings,
 
         let glob_pattern = out_dir.join(format!("**/*.{}", file_extension));
 
@@ -93,11 +87,11 @@ mod tests {
 
     #[test]
     fn test_docstring_kotlin() {
-        test_docstring(KotlinBindingGenerator, "kt");
+        test_docstring(TargetLanguage::Kotlin, "kt");
     }
 
     #[test]
     fn test_docstring_swift() {
-        test_docstring(SwiftBindingGenerator, "swift");
+        test_docstring(TargetLanguage::Swift, "swift");
     }
 }

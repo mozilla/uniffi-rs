@@ -18,6 +18,7 @@ pub struct CrateConfigSupplier {
 }
 
 impl CrateConfigSupplier {
+    /// Create a new `CrateConfigSupplier` by running `cargo metadata`
     pub fn from_cargo_metadata_command(no_deps: bool) -> Result<Self> {
         let mut cmd = cargo_metadata::MetadataCommand::new();
         if no_deps {
