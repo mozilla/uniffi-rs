@@ -104,6 +104,12 @@
                     android:text="Strings" />
 
                 <RadioButton
+                    android:id="@+id/radioLargeStrings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Large Strings" />
+
+                <RadioButton
                     android:id="@+id/radioRecords"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
