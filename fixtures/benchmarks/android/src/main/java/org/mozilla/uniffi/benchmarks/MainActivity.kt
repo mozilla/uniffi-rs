@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             R.id.radioCallOnly -> TestCase.CALL_ONLY
             R.id.radioPrimitives -> TestCase.PRIMITIVES
             R.id.radioStrings -> TestCase.STRINGS
+            R.id.radioLargeStrings -> TestCase.LARGE_STRINGS
             R.id.radioRecords -> TestCase.RECORDS
             R.id.radioEnums -> TestCase.ENUMS
             R.id.radioVecs -> TestCase.VECS
@@ -96,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         return "$name\n" +
                "Iterations: $iterations\n" +
                "Total: ${"%.3f".format(time)}s\n" +
-               "Avg: ${"%.3f".format(perCall)}ns"
+               "Avg: ${"%.3f".format(perCall)}ns\n"
     }
 
     private fun runSelectedBenchmark(): String {
@@ -114,6 +115,7 @@ class MainActivity : AppCompatActivity() {
             TestCase.CALL_ONLY -> "Call Only"
             TestCase.PRIMITIVES -> "Primitives"
             TestCase.STRINGS -> "Strings"
+            TestCase.LARGE_STRINGS -> "Large Strings"
             TestCase.RECORDS -> "Records"
             TestCase.ENUMS -> "Enums"
             TestCase.VECS -> "Vecs"
@@ -171,6 +173,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun strings(a: String, b: String): String {
+            return a + b
+        }
+
+        override fun largeStrings(a: String, b: String): String {
             return a + b
         }
 
@@ -258,6 +264,12 @@ class MainActivity : AppCompatActivity() {
                 TestCase.STRINGS -> measureNanoTime {
                     for (i in 0UL..count) {
                         testCaseStrings("a", "b")
+                    }
+                }
+
+                TestCase.LARGE_STRINGS -> measureNanoTime {
+                    for (i in 0UL..count) {
+                        testCaseLargeStrings("a".repeat(2048), "b".repeat(2048))
                     }
                 }
 
