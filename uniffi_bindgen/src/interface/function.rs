@@ -131,6 +131,10 @@ impl Function {
     pub fn docstring(&self) -> Option<&str> {
         self.docstring.as_deref()
     }
+
+    pub fn checksum_from_metadata(meta: uniffi_meta::FnMetadata) -> u16 {
+        uniffi_meta::checksum(&Self::from(meta))
+    }
 }
 
 impl From<uniffi_meta::FnParamMetadata> for Argument {

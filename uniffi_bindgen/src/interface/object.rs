@@ -446,6 +446,10 @@ impl Constructor {
         self.ffi_func
             .init(Some(FfiType::Handle), self.arguments.iter().map(Into::into));
     }
+
+    pub fn checksum_from_metadata(meta: uniffi_meta::ConstructorMetadata) -> u16 {
+        uniffi_meta::checksum(&Self::from(meta))
+    }
 }
 
 impl From<uniffi_meta::ConstructorMetadata> for Constructor {
@@ -488,6 +492,9 @@ impl From<uniffi_meta::ConstructorMetadata> for Constructor {
 pub struct Method {
     pub(super) name: String,
     pub(super) is_async: bool,
+    // Ignore `self_type` for the checksum, we never compare the method checksums for methods from
+    // different objects.
+    #[checksum_ignore]
     pub(super) self_type: Type,
     pub(super) arguments: Vec<Argument>,
     pub(super) return_type: Option<Type>,
@@ -620,6 +627,11 @@ impl Method {
             checksum_fn_name,
             checksum: meta.checksum,
         }
+    }
+
+    pub fn checksum_from_metadata(meta: uniffi_meta::MethodMetadata) -> u16 {
+        // We can use an arbitrary `self_type` for this, since it's ignored for the checksum
+        uniffi_meta::checksum(&Self::from_metadata(meta, Type::UInt8))
     }
 }
 

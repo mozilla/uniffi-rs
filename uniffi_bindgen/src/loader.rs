@@ -74,16 +74,9 @@ impl<'config> BindgenLoader<'config> {
 
             for group in metadata_groups.values_mut() {
                 let crate_name = group.namespace.crate_name.clone();
-                if let Some(udl_group) = self.load_udl_metadata(group, &crate_name)? {
-                    let mut udl_items = udl_group
-                        .items
-                        .into_iter()
-                        .map(|mut meta| {
-                            Self::add_checksum_to_metadata_item(&mut meta);
-                            meta
-                        })
-                        .collect();
-                    group.items.append(&mut udl_items);
+                if let Some(mut udl_group) = self.load_udl_metadata(group, &crate_name)? {
+                    Self::add_checksums_to_udl_group(&mut udl_group);
+                    group.items.append(&mut udl_group.items);
                     if group.namespace_docstring.is_none() {
                         group.namespace_docstring = udl_group.namespace_docstring;
                     }
@@ -99,33 +92,22 @@ impl<'config> BindgenLoader<'config> {
         // Each item will be added back at the bottom of the for loop.
         let items = std::mem::take(&mut metadata_group.items);
         for mut meta in items {
-            Self::add_checksum_to_metadata_item(&mut meta);
+            match &mut meta {
+                Metadata::Func(func) if func.checksum.is_none() => {
+                    func.checksum = Some(interface::Function::checksum_from_metadata(func.clone()))
+                }
+                Metadata::Method(meth) if meth.checksum.is_none() => {
+                    meth.checksum = Some(interface::Method::checksum_from_metadata(meth.clone()))
+                }
+                Metadata::Constructor(cons) if cons.checksum.is_none() => {
+                    cons.checksum =
+                        Some(interface::Constructor::checksum_from_metadata(cons.clone()))
+                }
+                // Note: UDL-based callbacks don't have checksum functions, don't set the
+                // checksum for those.
+                _ => (),
+            }
             metadata_group.items.insert(meta);
-        }
-    }
-
-    fn add_checksum_to_metadata_item(meta: &mut Metadata) {
-        match meta {
-            Metadata::Func(func) if func.checksum.is_none() => {
-                func.checksum = Some(uniffi_meta::checksum(&interface::Function::from(
-                    func.clone(),
-                )));
-            }
-            Metadata::Method(meth) if meth.checksum.is_none() => {
-                // making a method is mildly tricky as we need a type for self.
-                // for the purposes of a checksum we ignore self info from udl.
-                let method_object =
-                    interface::Method::from_metadata(meth.clone(), uniffi_meta::Type::UInt8);
-                meth.checksum = Some(uniffi_meta::checksum(&method_object));
-            }
-            Metadata::Constructor(cons) if cons.checksum.is_none() => {
-                cons.checksum = Some(uniffi_meta::checksum(&interface::Constructor::from(
-                    cons.clone(),
-                )));
-            }
-            // Note: UDL-based callbacks don't have checksum functions, don't set the
-            // checksum for those.
-            _ => (),
         }
     }
 
