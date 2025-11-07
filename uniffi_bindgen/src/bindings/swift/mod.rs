@@ -165,6 +165,10 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
     let cis = loader.load_cis(metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);
+    // Call derive_ffi_funcs after apply_renames()
+    for Component { ci, .. } in components.iter_mut() {
+        ci.derive_ffi_funcs()?;
+    }
 
     for Component { ci, config } in &components {
         if options.generate_swift_sources {
