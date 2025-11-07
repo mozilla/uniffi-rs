@@ -21,6 +21,11 @@
   `equals()`, `hashCode()`, and `compareTo()` implementations. Flat enums only support exporting `Display`. ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
 - Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
 
+### ⚠️ Breaking Changes ⚠️
+- Method checksums no longer include the self type.  This shouldn't affect normal use.  However
+  checksum comparisons will fail if bindings built with `0.30.x` and the Rust code is built with
+  `0.31.x`, or vice-versa.
+
 ### ⚠️ Breaking Changes for external bindings authors ⚠️
 - The `module_path` field now stores full module paths rather than crate names only.
   External bindings authors will probably need to make some minor changes to work with this.
