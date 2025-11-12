@@ -5,7 +5,9 @@ edition = "2021"
 publish = false
 
 [[bin]]
-name = "uniffi-bindgen"
+# Note: in the real-world you probably want this to be named `uniffi-bindgen`, but we can't do that
+# in the UniFFI repository since we have a different binary named `uniffi-bindgen`
+name = "uniffi-bindgen-cli"
 path = "uniffi-bindgen.rs"
 
 [dependencies]

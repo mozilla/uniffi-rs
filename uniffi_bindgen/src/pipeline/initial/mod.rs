@@ -33,7 +33,7 @@ impl Root {
 
         let mut udl_to_load = vec![];
 
-        for meta in macro_metadata::extract_from_library(path)? {
+        for meta in all_metadata {
             match meta {
                 uniffi_meta::Metadata::UdlFile(udl) => {
                     udl_to_load.push((
