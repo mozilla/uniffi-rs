@@ -6,14 +6,14 @@ use indexmap::IndexMap;
 use uniffi_pipeline::Node;
 
 /// Root node of the Initial IR
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub struct Root {
     pub namespaces: IndexMap<String, Namespace>,
     /// The library path the user passed to us, if we're in library mode
     pub cdylib: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub struct Namespace {
     pub name: String,
     pub crate_name: String,
@@ -24,7 +24,7 @@ pub struct Namespace {
     pub type_definitions: Vec<TypeDefinition>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(FnMetadata))]
 pub struct Function {
     pub name: String,
@@ -36,7 +36,7 @@ pub struct Function {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub enum TypeDefinition {
     Interface(Interface),
     CallbackInterface(CallbackInterface),
@@ -45,7 +45,7 @@ pub enum TypeDefinition {
     Custom(CustomType),
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(ConstructorMetadata))]
 pub struct Constructor {
     pub name: String,
@@ -56,7 +56,7 @@ pub struct Constructor {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(MethodMetadata))]
 pub struct Method {
     pub name: String,
@@ -68,7 +68,7 @@ pub struct Method {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(TraitMethodMetadata))]
 pub struct TraitMethod {
     pub trait_name: String,
@@ -84,7 +84,7 @@ pub struct TraitMethod {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(FnParamMetadata))]
 pub struct Argument {
     pub name: String,
@@ -93,14 +93,14 @@ pub struct Argument {
     pub default: Option<DefaultValue>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(DefaultValueMetadata))]
 pub enum DefaultValue {
     Default,
     Literal(Literal),
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(LiteralMetadata))]
 pub enum Literal {
     Boolean(bool),
@@ -124,14 +124,14 @@ pub enum Literal {
 
 // Represent the radix of integer literal values.
 // We preserve the radix into the generated bindings for readability reasons.
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub enum Radix {
     Decimal = 10,
     Octal = 8,
     Hexadecimal = 16,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(RecordMetadata))]
 pub struct Record {
     pub name: String,
@@ -142,7 +142,7 @@ pub struct Record {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(FieldMetadata))]
 pub struct Field {
     pub name: String,
@@ -151,13 +151,13 @@ pub struct Field {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub enum EnumShape {
     Enum,
     Error { flat: bool },
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(EnumMetadata))]
 pub struct Enum {
     pub name: String,
@@ -170,7 +170,7 @@ pub struct Enum {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(VariantMetadata))]
 pub struct Variant {
     pub name: String,
@@ -179,7 +179,7 @@ pub struct Variant {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(ObjectMetadata))]
 pub struct Interface {
     pub name: String,
@@ -191,7 +191,7 @@ pub struct Interface {
     pub imp: ObjectImpl,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(CallbackInterfaceMetadata))]
 pub struct CallbackInterface {
     pub name: String,
@@ -199,7 +199,7 @@ pub struct CallbackInterface {
     pub methods: Vec<Method>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(UniffiTraitMetadata))]
 pub enum UniffiTrait {
     Debug { fmt: Method },
@@ -209,14 +209,14 @@ pub enum UniffiTrait {
     Ord { cmp: Method },
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(ObjectTraitImplMetadata))]
 pub struct ObjectTraitImpl {
     pub ty: Type,
     pub trait_ty: Type,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(CustomTypeMetadata))]
 pub struct CustomType {
     pub name: String,
@@ -224,7 +224,7 @@ pub struct CustomType {
     pub docstring: Option<String>,
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub enum Type {
     // Primitive types.
     UInt8,
@@ -284,7 +284,7 @@ pub enum Type {
     },
 }
 
-#[derive(Debug, Clone, Node)]
+#[derive(Debug, Clone, Node, PartialEq, Eq)]
 pub enum ObjectImpl {
     // A single Rust type
     Struct,

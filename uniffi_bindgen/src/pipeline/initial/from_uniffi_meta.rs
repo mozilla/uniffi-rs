@@ -6,7 +6,10 @@
 
 use anyhow::{anyhow, bail, Context, Result};
 use camino::Utf8Path;
-use std::{collections::BTreeMap, fs};
+use std::{
+    collections::{btree_map::Entry, BTreeMap},
+    fs,
+};
 
 use super::nodes::*;
 use uniffi_pipeline::Node;
@@ -43,6 +46,35 @@ pub struct UniffiMetaConverter {
     trait_impls: BTreeMap<(String, String), BTreeMap<uniffi_meta::Type, ObjectTraitImpl>>,
 }
 
+/// Utility trait used to insert metadata items into a BTreeMap, but bail on duplicates
+trait InsertUnique<K, V> {
+    fn insert_unique(&mut self, k: K, v: V) -> Result<()>;
+}
+
+impl<K, V> InsertUnique<K, V> for BTreeMap<K, V>
+where
+    K: std::fmt::Debug + Ord,
+    V: std::fmt::Debug + PartialEq,
+{
+    fn insert_unique(&mut self, k: K, v: V) -> Result<()> {
+        match self.entry(k) {
+            Entry::Vacant(e) => {
+                e.insert(v);
+                Ok(())
+            }
+            Entry::Occupied(e) => {
+                if e.get() != &v {
+                    bail!(
+                        "Conflicting metadata types:\nold: {:?}\nnew: {v:?}",
+                        e.get()
+                    );
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
 impl UniffiMetaConverter {
     /// Add a [uniffi_meta::Metadata] item to be converted
     pub fn add_metadata_item(&mut self, meta: uniffi_meta::Metadata) -> Result<()> {
@@ -51,70 +83,80 @@ impl UniffiMetaConverter {
                 self.module_path_map
                     .insert(namespace.crate_name.clone(), namespace.name.clone());
                 // Insert a new module
-                self.namespaces
-                    .entry(namespace.name.clone())
-                    .or_insert(Namespace {
+                self.namespaces.insert_unique(
+                    namespace.name.clone(),
+                    Namespace {
                         crate_name: namespace.crate_name,
                         docstring: None,
                         config_toml: None,
                         name: namespace.name,
                         functions: vec![],
                         type_definitions: vec![],
-                    });
+                    },
+                )?;
             }
             uniffi_meta::Metadata::Func(func) => {
                 self.functions
-                    .entry(func.module_path.clone())
+                    .entry(module_path_to_namespace(&func.module_path))
                     .or_default()
-                    .insert(func.name.clone(), Function::try_from_node(func)?);
+                    .insert_unique(func.name.clone(), Function::try_from_node(func)?)?;
             }
             uniffi_meta::Metadata::Record(rec) => {
                 self.records
-                    .entry(rec.module_path.clone())
+                    .entry(module_path_to_namespace(&rec.module_path))
                     .or_default()
-                    .insert(rec.name.clone(), Record::try_from_node(rec)?);
+                    .insert_unique(rec.name.clone(), Record::try_from_node(rec)?)?;
             }
             uniffi_meta::Metadata::Enum(en) => {
                 self.enums
-                    .entry(en.module_path.clone())
+                    .entry(module_path_to_namespace(&en.module_path))
                     .or_default()
-                    .insert(en.name.clone(), Enum::try_from_node(en)?);
+                    .insert_unique(en.name.clone(), Enum::try_from_node(en)?)?;
             }
             uniffi_meta::Metadata::Object(int) => {
                 self.interfaces
-                    .entry(int.module_path.clone())
+                    .entry(module_path_to_namespace(&int.module_path))
                     .or_default()
-                    .insert(int.name.clone(), Interface::try_from_node(int)?);
+                    .insert_unique(int.name.clone(), Interface::try_from_node(int)?)?;
             }
             uniffi_meta::Metadata::CallbackInterface(cbi) => {
                 self.callback_interfaces
-                    .entry(cbi.module_path.clone())
+                    .entry(module_path_to_namespace(&cbi.module_path))
                     .or_default()
-                    .insert(cbi.name.clone(), CallbackInterface::try_from_node(cbi)?);
+                    .insert_unique(cbi.name.clone(), CallbackInterface::try_from_node(cbi)?)?;
             }
             uniffi_meta::Metadata::CustomType(custom) => {
                 self.custom_types
-                    .entry(custom.module_path.clone())
+                    .entry(module_path_to_namespace(&custom.module_path))
                     .or_default()
-                    .insert(custom.name.clone(), CustomType::try_from_node(custom)?);
+                    .insert_unique(custom.name.clone(), CustomType::try_from_node(custom)?)?;
             }
             uniffi_meta::Metadata::Constructor(cons) => {
                 self.constructors
-                    .entry((cons.module_path.clone(), cons.self_name.clone()))
+                    .entry((
+                        module_path_to_namespace(&cons.module_path),
+                        cons.self_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(cons.name.clone(), Constructor::try_from_node(cons)?);
+                    .insert_unique(cons.name.clone(), Constructor::try_from_node(cons)?)?;
             }
             uniffi_meta::Metadata::Method(meth) => {
                 self.methods
-                    .entry((meth.module_path.to_string(), meth.self_name.to_string()))
+                    .entry((
+                        module_path_to_namespace(&meth.module_path),
+                        meth.self_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(meth.name.clone(), Method::try_from_node(meth)?);
+                    .insert_unique(meth.name.clone(), Method::try_from_node(meth)?)?;
             }
             uniffi_meta::Metadata::TraitMethod(meth) => {
                 self.trait_methods
-                    .entry((meth.module_path.clone(), meth.trait_name.clone()))
+                    .entry((
+                        module_path_to_namespace(&meth.module_path),
+                        meth.trait_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(meth.name.clone(), TraitMethod::try_from_node(meth)?);
+                    .insert_unique(meth.name.clone(), TraitMethod::try_from_node(meth)?)?;
             }
             uniffi_meta::Metadata::UniffiTrait(ut) => {
                 let meth = match &ut {
@@ -126,9 +168,12 @@ impl UniffiMetaConverter {
                 };
 
                 self.uniffi_traits
-                    .entry((meth.module_path.to_string(), meth.self_name.to_string()))
+                    .entry((
+                        module_path_to_namespace(&meth.module_path),
+                        meth.self_name.to_string(),
+                    ))
                     .or_default()
-                    .insert(ut.name().to_string(), UniffiTrait::try_from_node(ut)?);
+                    .insert_unique(ut.name().to_string(), UniffiTrait::try_from_node(ut)?)?;
             }
             uniffi_meta::Metadata::ObjectTraitImpl(imp) => {
                 let (module_path, name) = match &imp.ty {
@@ -150,9 +195,9 @@ impl UniffiMetaConverter {
                     _ => bail!("Invalid ObjectTraitImpl type: {:?}", imp.ty),
                 };
                 self.trait_impls
-                    .entry((module_path.to_string(), name.to_string()))
+                    .entry((module_path_to_namespace(module_path), name.to_string()))
                     .or_default()
-                    .insert(imp.trait_ty.clone(), ObjectTraitImpl::try_from_node(imp)?);
+                    .insert_unique(imp.trait_ty.clone(), ObjectTraitImpl::try_from_node(imp)?)?;
             }
             uniffi_meta::Metadata::UdlFile(_) => (),
         }
@@ -165,7 +210,7 @@ impl UniffiMetaConverter {
         }
         let contents =
             fs::read_to_string(path).with_context(|| format!("read file: {:?}", path))?;
-        self.module_toml.insert(module_name, contents);
+        self.module_toml.insert_unique(module_name, contents)?;
         Ok(())
     }
 
@@ -173,8 +218,8 @@ impl UniffiMetaConverter {
     ///
     /// This is currently UDL-specific.  Eventually, we should probably make this another metadata
     /// items
-    pub fn add_module_docstring(&mut self, namespace: String, docstring: String) {
-        self.module_docstrings.insert(namespace, docstring);
+    pub fn add_module_docstring(&mut self, namespace: String, docstring: String) -> Result<()> {
+        self.module_docstrings.insert_unique(namespace, docstring)
     }
 
     pub fn try_into_initial_ir(mut self) -> Result<Root> {
@@ -364,6 +409,10 @@ impl UniffiMetaConverter {
             docstring: trait_method.docstring,
         }
     }
+}
+
+fn module_path_to_namespace(module_path: &str) -> String {
+    module_path.split("::").next().unwrap().to_string()
 }
 
 fn get_namespace_name<'a>(
