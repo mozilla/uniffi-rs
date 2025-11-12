@@ -215,7 +215,7 @@ impl<'config> BindgenLoader<'config> {
         for metadata_group in metadata.into_values() {
             if let Some(docstring) = metadata_group.namespace_docstring {
                 metadata_converter
-                    .add_module_docstring(metadata_group.namespace.name.clone(), docstring);
+                    .add_module_docstring(metadata_group.namespace.name.clone(), docstring)?;
             }
             metadata_converter.add_metadata_item(Metadata::Namespace(metadata_group.namespace))?;
             for meta in metadata_group.items {
