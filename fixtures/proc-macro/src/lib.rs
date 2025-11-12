@@ -8,17 +8,21 @@ mod callback_interface;
 
 use callback_interface::TestCallbackInterface;
 
-#[derive(uniffi::Record)]
-pub struct One {
-    inner: i32,
-}
+// Test proc-macro definitions in a submodule (#2728)
+mod one {
+    #[derive(uniffi::Record)]
+    pub struct One {
+        pub inner: i32,
+    }
 
-#[uniffi::export]
-impl One {
-    fn get_inner(&self) -> i32 {
-        self.inner
+    #[uniffi::export]
+    impl One {
+        fn get_inner(&self) -> i32 {
+            self.inner
+        }
     }
 }
+pub use one::*;
 
 #[uniffi::export]
 pub fn one_inner_by_ref(one: &One) -> i32 {

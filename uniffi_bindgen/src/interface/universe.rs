@@ -48,7 +48,7 @@ impl TypeUniverse {
                 // mismatched types are bad.
                 let cur = o.get();
                 anyhow::ensure!(
-                    type_ == cur,
+                    normalize_type_module_path(type_) == normalize_type_module_path(cur),
                     "conflicting types:\ncur: {cur:?}\nnew: {type_:?}",
                 );
                 Ok(())
@@ -69,7 +69,8 @@ impl TypeUniverse {
     pub fn add_known_type(&mut self, type_: &Type) -> Result<()> {
         // Types are more likely to already be known than not, so avoid unnecessary cloning.
         if !self.all_known_types.contains(type_) {
-            self.all_known_types.insert(type_.to_owned());
+            self.all_known_types
+                .insert(normalize_type_module_path(type_));
         }
         // all sub-types, but we want to skip this type as we just added it above.
         for sub in type_.iter_nested_types() {
@@ -118,6 +119,78 @@ impl TypeUniverse {
     ) -> impl Iterator<Item = &'a Type> {
         types.filter(|t| !self.is_external(t))
     }
+}
+
+/// Normalize the `module_path` field for a type
+///
+/// Types from proc-macros include the entire module path
+/// while types from `uniffi_udl` only include the crate name.
+/// To avoid issues like #2728, we normalize the module path to only include the crate name.
+fn normalize_type_module_path(ty: &Type) -> Type {
+    match ty {
+        Type::UInt8
+        | Type::Int8
+        | Type::UInt16
+        | Type::Int16
+        | Type::UInt32
+        | Type::Int32
+        | Type::UInt64
+        | Type::Int64
+        | Type::Float32
+        | Type::Float64
+        | Type::Boolean
+        | Type::String
+        | Type::Bytes
+        | Type::Timestamp
+        | Type::Duration => ty.clone(),
+        Type::Object {
+            name,
+            imp,
+            module_path,
+        } => Type::Object {
+            module_path: normalize_module_path(module_path),
+            name: name.clone(),
+            imp: *imp,
+        },
+        Type::Record { name, module_path } => Type::Record {
+            module_path: normalize_module_path(module_path),
+            name: name.clone(),
+        },
+        Type::Enum { name, module_path } => Type::Enum {
+            module_path: normalize_module_path(module_path),
+            name: name.clone(),
+        },
+        Type::CallbackInterface { name, module_path } => Type::CallbackInterface {
+            module_path: normalize_module_path(module_path),
+            name: name.clone(),
+        },
+        Type::Optional { inner_type } => Type::Optional {
+            inner_type: Box::new(normalize_type_module_path(inner_type)),
+        },
+        Type::Sequence { inner_type } => Type::Sequence {
+            inner_type: Box::new(normalize_type_module_path(inner_type)),
+        },
+        Type::Map {
+            key_type,
+            value_type,
+        } => Type::Map {
+            key_type: Box::new(normalize_type_module_path(key_type)),
+            value_type: Box::new(normalize_type_module_path(value_type)),
+        },
+        Type::Custom {
+            name,
+            builtin,
+            module_path,
+        } => Type::Custom {
+            module_path: normalize_module_path(module_path),
+            name: name.clone(),
+            builtin: Box::new(normalize_type_module_path(builtin)),
+        },
+    }
+}
+
+fn normalize_module_path(module_path: &str) -> String {
+    module_path.split("::").next().unwrap().to_string()
 }
 
 #[cfg(test)]
