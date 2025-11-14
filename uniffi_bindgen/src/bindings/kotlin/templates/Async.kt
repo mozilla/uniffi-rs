@@ -52,9 +52,17 @@ internal inline fun<T> uniffiTraitInterfaceCallAsync(
     // Uniffi does its best to support structured concurrency across the FFI.
     // If the Rust future is dropped, `uniffiForeignFutureDroppedCallbackImpl` is called, which will cancel the Kotlin coroutine if it's still running.
     @OptIn(DelicateCoroutinesApi::class)
-    val job = GlobalScope.launch {
-        try {
-            handleSuccess(makeCall())
+    val job = GlobalScope.launch coroutineBlock@ {
+        // Note: it's important we call either `handleSuccess` or `handleError` exactly once.  Each
+        // call consumes an Arc reference, which means there should be no possibility of a double
+        // call.  The following code is structured so that will will never call both `handleSuccess`
+        // and `handleError`, even in the face of weird exceptions.
+        //
+        // In extreme circumstances we may not call either, for example if we fail to make the JNA
+        // call to `handleSuccess`.  This means we will leak the Arc reference, which is better than
+        // double-freeing it.
+        val callResult = try {
+            makeCall()
         } catch(e: kotlin.Exception) {
             handleError(
                 UniffiRustCallStatus.create(
@@ -62,7 +70,9 @@ internal inline fun<T> uniffiTraitInterfaceCallAsync(
                     {{ Type::String.borrow()|lower_fn }}(e.toString()),
                 )
             )
+            return@coroutineBlock
         }
+        handleSuccess(callResult)
     }
     val handle = uniffiForeignFutureHandleMap.insert(job)
     uniffiOutDroppedCallback.uniffiSetValue(UniffiForeignFutureDroppedCallbackStruct(handle, uniffiForeignFutureDroppedCallbackImpl))
@@ -77,9 +87,11 @@ internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallAsyncWithEr
 ) {
     // See uniffiTraitInterfaceCallAsync for details on `DelicateCoroutinesApi`
     @OptIn(DelicateCoroutinesApi::class)
-    val job = GlobalScope.launch {
-        try {
-            handleSuccess(makeCall())
+    val job = GlobalScope.launch coroutineBlock@ {
+        // See the note in uniffiTraitInterfaceCallAsync for details on `handleSuccess` and
+        // `handleError`.
+        val callResult = try {
+            makeCall()
         } catch(e: kotlin.Exception) {
             if (e is E) {
                 handleError(
@@ -96,7 +108,9 @@ internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallAsyncWithEr
                     )
                 )
             }
+            return@coroutineBlock
         }
+        handleSuccess(callResult)
     }
     val handle = uniffiForeignFutureHandleMap.insert(job)
     uniffiOutDroppedCallback.uniffiSetValue(UniffiForeignFutureDroppedCallbackStruct(handle, uniffiForeignFutureDroppedCallbackImpl))
