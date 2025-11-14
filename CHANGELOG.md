@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's fixed?
+
+- Prevented a potential segfault when completing foreign futures ([#2733](https://github.com/mozilla/uniffi-rs/pull/2733))
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...HEAD).
 
 ## v0.29.4 (backend crates: v0.29.4) - (_2025-07-24_)
