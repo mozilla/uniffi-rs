@@ -7,6 +7,7 @@ import uniffi.fixture.proc_macro.*;
 val one = makeOne(123)
 assert(one.inner == 123)
 assert(oneInnerByRef(one) == 123)
+assert(one.getInnerValue() == 123)
 
 val two = Two("a")
 assert(takeTwo(two) == "a")

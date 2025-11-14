@@ -441,7 +441,7 @@ impl Constructor {
         self.name == "new"
     }
 
-    fn derive_ffi_func(&mut self) {
+    pub fn derive_ffi_func(&mut self) {
         assert!(!self.ffi_func.name().is_empty());
         self.ffi_func
             .init(Some(FfiType::Handle), self.arguments.iter().map(Into::into));

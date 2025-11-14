@@ -100,7 +100,6 @@
 {%- let methods = obj.methods() %}
 {%- let uniffi_trait_methods = obj.uniffi_trait_methods() %}
 {%- let interface_docstring = obj.docstring() %}
-//
 {%- let is_error = ci.is_name_used_as_error(name) %}
 {%- let ffi_converter_name = obj|ffi_converter_name %}
 
@@ -225,7 +224,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         }
     }
 
-    {% for meth in obj.methods() -%}
+    {% for meth in methods -%}
     {%- call kt::func_decl("override", meth, 4) %}
     {% endfor %}
 

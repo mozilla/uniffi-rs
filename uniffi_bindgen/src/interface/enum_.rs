@@ -299,6 +299,12 @@ impl Enum {
     }
 
     pub fn derive_ffi_funcs(&mut self) -> Result<()> {
+        for c in self.constructors.iter_mut() {
+            c.derive_ffi_func();
+        }
+        for m in self.methods.iter_mut() {
+            m.derive_ffi_func()?;
+        }
         for ut in self.uniffi_traits.iter_mut() {
             ut.derive_ffi_func()?;
         }

@@ -8,6 +8,7 @@ import proc_macro
 let one = makeOne(inner: 123)
 assert(one.inner == 123)
 assert(oneInnerByRef(one: one) == 123)
+assert(one.getInnerValue() == 123)
 
 let two = Two(a: "a")
 assert(takeTwo(two: two) == "a")

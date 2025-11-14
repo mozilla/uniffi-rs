@@ -19,6 +19,10 @@ public struct {{ type_name }} {
         {%- endfor %}
     }
 
+    {% for meth in rec.methods() -%}
+    {%- call swift::func_decl("public func", meth, 4) %}
+    {% endfor %}
+
     {% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
 }
 
