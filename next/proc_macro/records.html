@@ -2325,6 +2325,9 @@ will fail).</p>
 <span class="p">}</span>
 </code></pre></div>
 <p>Most types can have <a href="../types/defaults.html">default values</a></p>
+<p>You can use <code>#[uniffi::export]</code> on an <code>impl</code> block for a record,
+making the methods available to foreign bindings.
+You can also export some <a href="../types/uniffi_traits.html">standard Rust traits</a>.</p>
 <h2 id="renaming-records">Renaming records</h2>
 <p>Records can be renamed in foreign language bindings using the <code>name</code> parameter:</p>
 <div class="highlight"><pre><span></span><code><span class="cp">#[derive(uniffi::Record)]</span>
