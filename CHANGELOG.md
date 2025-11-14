@@ -4,17 +4,17 @@
 
 <!-- next-header -->
 
-## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
-[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.5...NEXT_HEAD).
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.5...HEAD).
 
-## [[UnreleasedUniFFIVersion]] (backend crates: v0.29.5) - (_2025-11-14_)
+## v0.29.5 (backend crates: v0.29.5) - (_2025-11-14_)
 
 ### What's fixed?
 
 - Prevented a potential segfault when completing foreign futures ([#2733](https://github.com/mozilla/uniffi-rs/pull/2733))
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...HEAD).
+[All changes in v0.29.5](https://github.com/mozilla/uniffi-rs/compare/v0.29.4...v0.29.5).
 
 ## v0.29.4 (backend crates: v0.29.4) - (_2025-07-24_)
 
