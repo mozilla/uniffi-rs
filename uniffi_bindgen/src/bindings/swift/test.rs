@@ -4,7 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 
 use crate::{
     bindings::{swift::generate, BindgenLoader, GenerateOptions, RunScriptOptions, TargetLanguage},
-    cargo_metadata::CrateConfigSupplier,
+    BindgenPaths,
 };
 
 use anyhow::{bail, Context, Result};
@@ -139,8 +139,9 @@ struct GeneratedSources {
 
 impl GeneratedSources {
     fn new(crate_name: &str, cdylib_path: &Utf8Path, out_dir: &Utf8Path) -> Result<Self> {
-        let config_supplier = CrateConfigSupplier::from_cargo_metadata_command(false)?;
-        let loader = BindgenLoader::new(&config_supplier);
+        let mut paths = BindgenPaths::default();
+        paths.add_cargo_metadata_layer(false)?;
+        let loader = BindgenLoader::new(paths);
         let sources = generate(
             &loader,
             GenerateOptions {
