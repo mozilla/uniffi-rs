@@ -13,7 +13,7 @@ mod gen_ruby;
 pub mod test;
 use gen_ruby::{Config, RubyWrapper};
 
-pub fn generate(loader: &BindgenLoader<'_>, options: GenerateOptions) -> Result<()> {
+pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
     let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());

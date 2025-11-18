@@ -12,7 +12,7 @@ use std::fs;
 use anyhow::Result;
 use camino::Utf8PathBuf;
 
-use crate::BindgenLoader;
+use crate::{BindgenLoader, BindgenPaths};
 mod kotlin;
 pub mod python;
 mod ruby;
@@ -45,17 +45,17 @@ impl Default for RunScriptOptions {
 ///
 /// This implements the uniffi-bindgen command
 pub fn generate(options: GenerateOptions) -> Result<()> {
-    #[cfg(feature = "cargo-metadata")]
-    let config_supplier = crate::cargo_metadata::CrateConfigSupplier::from_cargo_metadata_command(
-        options.metadata_no_deps,
-    )?;
+    let mut paths = BindgenPaths::default();
+    if let Some(path) = &options.config_override {
+        paths.add_config_override_layer(path.clone());
+    }
 
-    #[cfg(not(feature = "cargo-metadata"))]
-    let config_supplier = crate::EmptyCrateConfigSupplier;
+    #[cfg(feature = "cargo-metadata")]
+    paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
 
     fs::create_dir_all(&options.out_dir)?;
 
-    let loader = BindgenLoader::new(&config_supplier);
+    let loader = BindgenLoader::new(paths);
     for language in options.languages.iter() {
         match language {
             TargetLanguage::Swift => {

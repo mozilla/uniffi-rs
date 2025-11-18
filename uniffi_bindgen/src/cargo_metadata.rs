@@ -10,7 +10,7 @@ use camino::Utf8PathBuf;
 use cargo_metadata::Metadata;
 use std::{collections::HashMap, fs};
 
-use crate::BindgenCrateConfigSupplier;
+use crate::{BindgenCrateConfigSupplier, BindgenPathsLayer};
 
 #[derive(Debug, Clone, Default)]
 pub struct CrateConfigSupplier {
@@ -29,22 +29,36 @@ impl CrateConfigSupplier {
     }
 }
 
+// Newer trait for finding config paths
+impl BindgenPathsLayer for CrateConfigSupplier {
+    fn get_config_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
+        let crate_root = self.paths.get(crate_name)?;
+        // Config files are optional, so only return the path if it actually exists
+        let config_path = crate_root.join("uniffi.toml");
+        config_path.exists().then_some(config_path)
+    }
+
+    fn get_udl_path(&self, crate_name: &str, udl_name: &str) -> Option<Utf8PathBuf> {
+        self.paths
+            .get(crate_name)
+            .map(|p| p.join("src").join(format!("{udl_name}.udl")))
+    }
+}
+
+// Older trait for finding config paths
 impl BindgenCrateConfigSupplier for CrateConfigSupplier {
     fn get_toml(&self, crate_name: &str) -> Result<Option<toml::value::Table>> {
         crate::load_toml_file(self.get_toml_path(crate_name).as_deref())
     }
 
     fn get_toml_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
-        self.paths.get(crate_name).map(|p| p.join("uniffi.toml"))
+        self.get_config_path(crate_name)
     }
 
     fn get_udl(&self, crate_name: &str, udl_name: &str) -> Result<String> {
         let path = self
-            .paths
-            .get(crate_name)
-            .context(format!("No path known to UDL files for '{crate_name}'"))?
-            .join("src")
-            .join(format!("{udl_name}.udl"));
+            .get_udl_path(crate_name, udl_name)
+            .context(format!("No path known to UDL files for '{crate_name}'"))?;
         if path.exists() {
             Ok(fs::read_to_string(path)?)
         } else {
