@@ -15,20 +15,20 @@ use uniffi_meta::{
 };
 
 use crate::{
-    crate_name_from_cargo_toml, interface, macro_metadata, pipeline, BindgenCrateConfigSupplier,
-    Component, ComponentInterface, Result,
+    crate_name_from_cargo_toml, interface, macro_metadata, pipeline, BindgenPaths, Component,
+    ComponentInterface, Result,
 };
 
 /// Load metadata, component interfaces, configuration, etc. for binding generators.
 ///
 /// Bindings generators use this to load all of the inputs they need to render their code.
-pub struct BindgenLoader<'a> {
-    config_supplier: &'a dyn BindgenCrateConfigSupplier,
+pub struct BindgenLoader {
+    bindgen_paths: BindgenPaths,
 }
 
-impl<'config> BindgenLoader<'config> {
-    pub fn new(config_supplier: &'config dyn BindgenCrateConfigSupplier) -> Self {
-        Self { config_supplier }
+impl BindgenLoader {
+    pub fn new(bindgen_paths: BindgenPaths) -> Self {
+        Self { bindgen_paths }
     }
 
     /// Load UniFFI metadata
@@ -166,7 +166,7 @@ impl<'config> BindgenLoader<'config> {
                     );
                 }
                 let udl = self
-                    .config_supplier
+                    .bindgen_paths
                     .get_udl(crate_name, &udl_items[0].file_stub)?;
                 let udl_group = uniffi_udl::parse_udl(&udl, crate_name)?;
                 Ok(Some(udl_group))
@@ -195,10 +195,7 @@ impl<'config> BindgenLoader<'config> {
     {
         cis.into_iter()
             .map(|ci| {
-                let toml = self
-                    .config_supplier
-                    .get_toml(ci.crate_name())?
-                    .unwrap_or_default();
+                let toml = self.bindgen_paths.get_config(ci.crate_name())?;
                 let config = parse_config(&ci, toml.into())?;
                 Ok(Component { ci, config })
             })
@@ -213,6 +210,13 @@ impl<'config> BindgenLoader<'config> {
     ) -> Result<pipeline::initial::Root> {
         let mut metadata_converter = pipeline::initial::UniffiMetaConverter::default();
         for metadata_group in metadata.into_values() {
+            if let Some(path) = self
+                .bindgen_paths
+                .get_config_path(&metadata_group.namespace.crate_name)
+            {
+                metadata_converter
+                    .add_module_config_toml(metadata_group.namespace.name.clone(), &path)?;
+            }
             if let Some(docstring) = metadata_group.namespace_docstring {
                 metadata_converter
                     .add_module_docstring(metadata_group.namespace.name.clone(), docstring)?;

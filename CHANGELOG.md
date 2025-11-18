@@ -12,6 +12,9 @@
 - Removed the `[Swift|Kotlin|Python|Ruby]BindingGenerator` types.  Use `uniffi::generate` instead
   to generate these bindings.
 
+### What's Deprecated?
+- `BindgenCrateConfigSupplier`.  Use the new `BindgenPaths` type instead.
+
 ### What's New?
 
 - Added the `uniffi::generate` function.  This implements the `uniffi-bindgen generate` command and
@@ -22,6 +25,7 @@
   [see the docs](https://mozilla.github.io/uniffi-rs/next/renaming.html).
   ([#2715](https://github.com/mozilla/uniffi-rs/pull/2715))
 - Support for methods on records ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706), [#2724](https://github.com/mozilla/uniffi-rs/pull/2724)).
+- Added the `BindgenPaths` type, which is the new way to find UDL and TOML data.
 
 ### What's Fixed
 
