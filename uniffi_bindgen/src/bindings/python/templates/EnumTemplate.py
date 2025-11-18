@@ -15,6 +15,15 @@ class {{ type_name }}(enum.Enum):
     {{ variant.name }} = {{ variant.discr.py_lit }}
     {{ variant.docstring|docstring(4) -}}
     {% endfor %}
+
+    {%- for meth in e.methods -%}
+    {%- let callable = meth.callable %}
+    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+        {{ meth.docstring|docstring(8) -}}
+        {%- filter indent(8) %}
+        {%- include "CallableBody.py" %}
+        {%- endfilter %}
+    {%- endfor %}
 {% else %}
 
 class {{ type_name }}:

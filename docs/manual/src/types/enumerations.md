@@ -49,6 +49,12 @@ pub enum MyEnum {
 
 There are some [special considerations here when using UDL](../udl/enumerations.md#remote-non-exhaustive-enums)
 
+## Methods on Enums.
+
+proc-macros allow you to use `#[uniffi::export]` on an `impl` block for an `enum`.
+and the bindings will generate a method which calls into the Rust method.
+But take care - every time one of the methods is called, the entire enum will be copied by-value across the FFI.
+
 ## Exposing methods from standard Rust traits
 
 While less useful for Enums, there are a number of standard Rust traits (`Debug`, `Eq` etc) you can expose, so, eg, Python

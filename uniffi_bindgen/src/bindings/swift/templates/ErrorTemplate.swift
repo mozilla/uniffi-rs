@@ -21,6 +21,10 @@ public enum {{ type_name }}: Swift.Error {
 
     {%- endif %}
 
+    {% for meth in e.methods() -%}
+    {%- call swift::func_decl("public func", meth, 4) %}
+    {% endfor %}
+
     {% call swift::uniffi_trait_impls(e.uniffi_trait_methods()) %}
 
     {% if !config.omit_localized_error_conformance() %}

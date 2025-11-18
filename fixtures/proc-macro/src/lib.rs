@@ -294,6 +294,13 @@ pub enum BasicError {
     UnexpectedError { reason: String },
 }
 
+#[uniffi::export]
+impl BasicError {
+    fn is_unexpected(&self) -> bool {
+        matches!(self, Self::UnexpectedError { .. })
+    }
+}
+
 #[derive(uniffi::Error, Debug)]
 pub enum SimpleError {
     A,
@@ -318,8 +325,7 @@ pub enum FlatError {
     #[error("Invalid input")]
     InvalidInput,
 
-    // Inner types that aren't FFI-convertible, as well as unnamed fields,
-    // are allowed for flat errors
+    // Inner types that aren't FFI-convertible are allowed for flat errors
     #[error("OS error: {0}")]
     OsError(std::io::Error),
 }
