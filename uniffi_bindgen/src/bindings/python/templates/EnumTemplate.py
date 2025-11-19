@@ -49,6 +49,8 @@ class {{ type_name }}:
 
     {%-     if uniffi_trait_methods.eq_eq.is_none() %}
         def __eq__(self, other):
+            if not isinstance(other, {{ type_name }}):
+                return NotImplemented
             if not other.is_{{ variant.name }}():
                 return False
             return self._values == other._values
@@ -89,6 +91,8 @@ class {{ type_name }}:
     {%-     endif %}
     {%-     if uniffi_trait_methods.eq_eq.is_none() %}
         def __eq__(self, other):
+            if not isinstance(other, {{ type_name }}):
+                return NotImplemented
             if not other.is_{{ variant.name }}():
                 return False
             {%- for field in variant.fields %}

@@ -44,5 +44,8 @@ class TestErrorTypes(unittest.TestCase):
         self.assertEqual(e.d, 0)
         self.assertEqual(e.e, 2)
 
+    def test_eq(self):
+        self.assertNotEqual(get_animal_enum(Animal.DOG), {})
+
 if __name__=='__main__':
     unittest.main()
