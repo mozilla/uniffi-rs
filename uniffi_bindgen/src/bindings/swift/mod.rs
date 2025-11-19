@@ -30,7 +30,8 @@
 //!
 
 use crate::{
-    bindings::GenerateOptions, interface::rename, BindgenLoader, Component, ComponentInterface,
+    bindings::GenerateOptions, interface::rename, BindgenLoader, BindgenPaths, Component,
+    ComponentInterface,
 };
 use anyhow::Result;
 use camino::Utf8PathBuf;
@@ -59,7 +60,7 @@ struct Bindings {
 ///
 /// Returns the components generated
 pub fn generate(
-    loader: &BindgenLoader<'_>,
+    loader: &BindgenLoader,
     options: GenerateOptions,
 ) -> Result<Vec<Component<Config>>> {
     let metadata = loader.load_metadata(&options.source)?;
@@ -127,18 +128,18 @@ pub fn generate(
 /// In the future, we may want to replace the generalized `uniffi-bindgen` with a set of
 /// specialized `uniffi-bindgen-[language]` commands.
 pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
-    #[cfg(feature = "cargo-metadata")]
-    let config_supplier = {
-        crate::cargo_metadata::CrateConfigSupplier::from_cargo_metadata_command(
-            options.metadata_no_deps,
-        )?
-    };
     #[cfg(not(feature = "cargo-metadata"))]
-    let config_supplier = crate::EmptyCrateConfigSupplier;
+    let paths = BindgenPaths::default();
+
+    #[cfg(feature = "cargo-metadata")]
+    let mut paths = BindgenPaths::default();
+
+    #[cfg(feature = "cargo-metadata")]
+    paths.add_cargo_metadata_layer(options.metadata_no_deps)?;
 
     fs::create_dir_all(&options.out_dir)?;
 
-    let loader = BindgenLoader::new(&config_supplier);
+    let loader = BindgenLoader::new(paths);
     let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;

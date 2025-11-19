@@ -101,6 +101,7 @@ use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::process::Command;
 
+mod bindgen_paths;
 pub mod bindings;
 pub mod interface;
 pub mod library_mode;
@@ -117,6 +118,7 @@ use crate::interface::{
     Argument, Constructor, Enum, FfiArgument, FfiField, Field, Function, Method, Object, Record,
     Variant,
 };
+pub use bindgen_paths::{BindgenPaths, BindgenPathsLayer};
 pub use interface::ComponentInterface;
 pub use library_mode::find_components;
 use scaffolding::RustScaffolding;

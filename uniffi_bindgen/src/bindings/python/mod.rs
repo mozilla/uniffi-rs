@@ -17,7 +17,7 @@ pub use pipeline::pipeline;
 pub mod test;
 
 /// Generate Python bindings
-pub fn generate(loader: &BindgenLoader<'_>, options: GenerateOptions) -> Result<()> {
+pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
     let metadata = loader.load_metadata(&options.source)?;
     let root = loader.load_pipeline_initial_root(&options.source, metadata)?;
     run_pipeline(root, &options.out_dir)?;
