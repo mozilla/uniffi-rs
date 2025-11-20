@@ -580,6 +580,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#methods-on-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods on Enums.
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
     <span class="md-ellipsis">
       Exposing methods from standard Rust traits
@@ -2300,6 +2309,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#methods-on-enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods on Enums.
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
     <span class="md-ellipsis">
       Exposing methods from standard Rust traits
@@ -2360,6 +2378,10 @@
 </code></pre></div>
 <h2 id="remote-non-exhaustive-enums">Remote, non-exhaustive enums</h2>
 <p>There are some <a href="../udl/enumerations.html#remote-non-exhaustive-enums">special considerations here when using UDL</a></p>
+<h2 id="methods-on-enums">Methods on Enums.</h2>
+<p>proc-macros allow you to use <code>#[uniffi::export]</code> on an <code>impl</code> block for an <code>enum</code>.
+and the bindings will generate a method which calls into the Rust method.
+But take care - every time one of the methods is called, the entire enum will be copied by-value across the FFI.</p>
 <h2 id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</h2>
 <p>While less useful for Enums, there are a number of standard Rust traits (<code>Debug</code>, <code>Eq</code> etc) you can expose, so, eg, Python
 might generate <code>__repr__()</code> or <code>__eq__()</code> methods - <a href="uniffi_traits.html">see the docs for this feature</a>.</p>
