@@ -21,7 +21,8 @@
 - All builtin bindings support renaming almost all of the interface (types, args, items, variants, etc) via TOML definitions -
   [see the docs](https://mozilla.github.io/uniffi-rs/next/renaming.html).
   ([#2715](https://github.com/mozilla/uniffi-rs/pull/2715))
-- Support for methods on records ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706), [#2724](https://github.com/mozilla/uniffi-rs/pull/2724)).
+- Support for methods on records and enums
+  ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706), [#2724](https://github.com/mozilla/uniffi-rs/pull/2724), [#2739](https://github.com/mozilla/uniffi-rs/pull/2739)).
 
 ### What's Fixed
 

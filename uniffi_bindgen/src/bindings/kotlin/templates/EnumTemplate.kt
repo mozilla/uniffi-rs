@@ -16,6 +16,10 @@ enum class {{ type_name }} {
     {{ variant|variant_name }}{% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
 
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}
+    {% endfor %}
+
     {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
     {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 
@@ -27,6 +31,10 @@ enum class {{ type_name }}(val value: {{ variant_discr_type|type_name(ci) }}) {
     {%- call kt::docstring(variant, 4) %}
     {{ variant|variant_name }}({{ e|variant_discr_literal(loop.index0) }}){% if loop.last %};{% else %},{% endif %}
     {%- endfor %}
+
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}
+    {% endfor %}
 
     {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
     {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
@@ -105,6 +113,12 @@ sealed class {{ type_name }}{% if contains_object_references %}: Disposable {% e
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
     {% endif %}
+
+    {# We also need to put methods on the object to support variants with no data.
+       We could maybe optimize this so only write when no-data variants actually exist? #}
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 4) %}
+    {% endfor %}
 
     {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 

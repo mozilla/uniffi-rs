@@ -39,6 +39,10 @@ sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references
     }
     {% endfor %}
 
+    {% for meth in e.methods() -%}
+    {%- call kt::func_decl("", meth, 8) %}
+    {% endfor %}
+
     {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {

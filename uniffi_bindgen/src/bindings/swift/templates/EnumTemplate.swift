@@ -25,6 +25,10 @@ public enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.confo
     {% endfor %}
 {% endmatch %}
 
+{% for meth in e.methods() -%}
+{%- call swift::func_decl("public func", meth, 4) %}
+{% endfor %}
+
 {% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
 }
 

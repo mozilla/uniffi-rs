@@ -55,8 +55,8 @@ assert(join(["a", "b", "c"], ":") == "a:b:c")
 
 try:
     always_fails()
-except BasicError.OsError:
-    pass
+except BasicError.OsError as e:
+    assert(not e.is_unexpected()) # method on error enum.
 else:
     raise Exception("always_fails should have thrown")
 
@@ -176,6 +176,11 @@ assert(MixedEnum.BOTH("hello", 1)[1] == 1)
 assert(MixedEnum.BOTH("hello", 1)[:] == ('hello', 1))
 assert(MixedEnum.BOTH("hello", 1)[-1] == 1)
 assert(str(MixedEnum.BOTH("hello", 2)) == "MixedEnum.BOTH('hello', 2)")
+
+# enum methods
+assert(get_bool(None).next() == MaybeBool.TRUE)
+assert(MaybeBool.TRUE.next() == MaybeBool.FALSE)
+
 assert(MixedEnum.STRING("").is_not_none())
 assert(not MixedEnum.NONE().is_not_none())
 

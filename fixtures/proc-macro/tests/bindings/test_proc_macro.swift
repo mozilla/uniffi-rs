@@ -16,6 +16,10 @@ assert(takeTwo(two: two) == "a")
 let rwb = RecordWithBytes(someBytes: Data([1, 2, 3]))
 assert(takeRecordWithBytes(rwb: rwb) == Data([1, 2, 3]))
 
+assert(MaybeBool.true.next() == MaybeBool.false)
+assert(!MixedEnum.none.isNotNone())
+assert(MixedEnum.int(1).isNotNone())
+
 var obj = Object()
 obj = Object.namedCtor(arg: 1)
 assert(obj.isHeavy() == .uncertain)
@@ -43,7 +47,12 @@ assert(join(parts: ["a", "b", "c"], sep: ":") == "a:b:c")
 do {
     try alwaysFails()
     fatalError("alwaysFails should have thrown")
-} catch BasicError.OsError {
+} catch let e as BasicError {
+    if case .OsError = e {
+        assert(!e.isUnexpected())
+    } else {
+        fatalError("Expected OsError variant")
+    }
 }
 
 try! obj.doStuff(times: 5)

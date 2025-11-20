@@ -57,6 +57,16 @@ class {{ type_name }}:  # type: ignore
 
         def __repr__(self):
             return "{{ type_name }}.{{ variant_type_name }}({})".format(str(self))
+
+    {%-     for meth in e.methods -%}
+    {%-     let callable = meth.callable %}
+        {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+            {{ meth.docstring|docstring(12) -}}
+    {%-         filter indent(12) %}
+    {%-         include "CallableBody.py" %}
+    {%-         endfilter %}
+    {%-     endfor %}
+
     {%- endif %}
     _UniffiTemp{{ type_name }}.{{ variant_type_name }} = {{ variant_type_name }} # type: ignore
     {%- endfor %}
