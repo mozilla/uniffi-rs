@@ -46,3 +46,5 @@ assert(TraitEnum.s("hi") < TraitEnum.i(1))
 let u_set: Set = [TraitEnum.i(0)]
 assert(u_set.contains(TraitEnum.i(1)))
 assert(!u_set.contains(TraitEnum.s("")))
+assert(XyzEnum.xyzNone == XyzEnum.xyzNone)
+assert(XyzEnum.xyzNamed(xyzValue: 0) < XyzEnum.xyzNamed(xyzValue: 1))

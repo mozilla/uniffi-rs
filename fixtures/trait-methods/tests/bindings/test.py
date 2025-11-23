@@ -171,5 +171,9 @@ class TestUdlEnum(unittest.TestCase):
         self.assertLess(UdlEnum.S("1"), UdlEnum.I(1))
         self.assertLessEqual(UdlEnum.S("1"), UdlEnum.I(2))
 
+class TestOddNamed(unittest.TestCase):
+    def test_odd_names(self):
+        self.assertEqual(XyzEnum.XYZ_NONE(), XyzEnum.XYZ_NONE())
+
 if __name__=='__main__':
     unittest.main()
