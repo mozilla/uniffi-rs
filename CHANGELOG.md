@@ -32,6 +32,7 @@
   `equals()`, `hashCode()`, and `compareTo()` implementations. Flat enums only support exporting `Display`. ([#2700](https://github.com/mozilla/uniffi-rs/pull/2700)).
 - Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
 - Prevented a potential segfault when completing foreign futures ([#2733](https://github.com/mozilla/uniffi-rs/pull/2733))
+- Swift: exporting `Eq`, `Cmp` etc would generate invalid code if the Rust name had unusual captialization ([#2707](https://github.com/mozilla/uniffi-rs/issues/2707)).
 
 ### ⚠️ Breaking Changes ⚠️
 - Method checksums no longer include the self type.  This shouldn't affect normal use.  However

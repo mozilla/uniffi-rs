@@ -401,6 +401,18 @@ fn throw_multiple_trait_error(i: u8) -> Result<(), MultipleTraitError> {
     }
 }
 
+// Odd naming.
+#[derive(uniffi::Enum, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
+#[uniffi::export(Debug, Eq, Ord, Hash)]
+pub enum XYZEnum {
+    XYZNone,
+    XYZStr(String),
+    #[allow(non_snake_case)]
+    XYZNamed {
+        XYZValue: u8,
+    },
+}
+
 #[cfg(test)]
 // make sure the semantics are what we expect locally.
 #[test]

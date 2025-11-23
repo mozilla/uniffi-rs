@@ -203,7 +203,7 @@ public var description: String {
 {%- endif %}
 {%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
 // The local Rust `Eq` implementation - only `eq` is used.
-public static func == (self: {{ eq.object_name() }}, other: {{ eq.object_name() }}) -> Bool {
+public static func == (self: {{ eq.object_name() | class_name }}, other: {{ eq.object_name() | class_name }}) -> Bool {
     return {% call is_try(eq) %} {{ eq.return_type().unwrap()|lift_fn }}(
         {% call to_ffi_call(eq) %}
     )
@@ -220,7 +220,7 @@ public func hash(into hasher: inout Hasher) {
 {%- endif %}
 {%- if let Some(cmp) = uniffi_trait_methods.ord_cmp %}
 // The local Rust `Ord` implementation
-public static func < (self: {{ cmp.object_name() }}, other: {{ cmp.object_name() }}) -> Bool {
+public static func < (self: {{ cmp.object_name() | class_name }}, other: {{ cmp.object_name() | class_name }}) -> Bool {
     return {% call is_try(cmp) %} {{ cmp.return_type().unwrap()|lift_fn }}(
         {% call to_ffi_call(cmp) %}
     ) < 0

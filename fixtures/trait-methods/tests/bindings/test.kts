@@ -50,6 +50,8 @@ assert(getFlatTraitEnum(2u).toString() == "FlatTraitEnum::flat-gamma")
 val flatSet = setOf(flatAlpha)
 assert(flatSet.contains(FlatTraitEnum.ALPHA))
 assert(!flatSet.contains(FlatTraitEnum.BETA))
+assert(XyzEnum.XyzNone == XyzEnum.XyzNone)
+assert(XyzEnum.XyzNamed(0u) < XyzEnum.XyzNamed(1u))
 
 // Errors
 
