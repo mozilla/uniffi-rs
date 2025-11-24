@@ -458,6 +458,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#single-crate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single crate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#multi-crate-workspaces" class="md-nav__link">
     <span class="md-ellipsis">
       Multi-crate workspaces
@@ -477,6 +486,21 @@
       Running uniffi-bindgen using a library file
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Running uniffi-bindgen using a library file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-platform-and-multi-architecture-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross platform and multi architecture support
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2331,6 +2355,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#single-crate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single crate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#multi-crate-workspaces" class="md-nav__link">
     <span class="md-ellipsis">
       Multi-crate workspaces
@@ -2350,6 +2383,21 @@
       Running uniffi-bindgen using a library file
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Running uniffi-bindgen using a library file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-platform-and-multi-architecture-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cross platform and multi architecture support
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2413,6 +2461,9 @@
 <p>Ideally you would then run the <code>uniffi-bindgen</code> binary from the <code>uniffi</code> crate to generate your bindings,
 but if not on <a href="https://doc.rust-lang.org/cargo/reference/unstable.html#artifact-dependencies">Cargo nightly</a>,
 you need to create a binary in your project that does the same thing.</p>
+<p>While the general principles are the same, the setup differs whether you are a single crate or in a cargo workspace,
+but either way, you'll end up with a <code>cargo run [...] uniffi-bindgen ...</code> command to generate the bindings.</p>
+<h3 id="single-crate">Single crate</h3>
 <p>Add the following to your <code>Cargo.toml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="k">[[bin]]</span>
 <span class="c1"># This can be whatever name makes sense for your project, but the rest of this tutorial assumes uniffi-bindgen.</span>
@@ -2432,7 +2483,7 @@ you need to create a binary in your project that does the same thing.</p>
 <li>Add this dependency to <code>Cargo.toml</code>: <code>uniffi = {version = "0.XX.0", features = ["cli"] }</code></li>
 <li>As above, add the <code>uniffi-bindgen</code> binary target</li>
 </ul>
-<p>Then your can run <code>uniffi-bindgen</code> from any crate in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
+<p>Then you can run <code>uniffi-bindgen</code> from any crate in your project using <code>cargo run -p uniffi-bindgen [args]</code></p>
 <h2 id="running-uniffi-bindgen-using-a-library-file">Running uniffi-bindgen using a library file</h2>
 <p>Use <code>generate --library</code> to generate foreign bindings by using a cdylib file built for your library.
 This can be more convenient than specifying the UDL file -- especially when multiple UniFFI-ed crates are built together in one library.
@@ -2441,7 +2492,7 @@ This should be used where possible - some "external type" features don't work ot
 <div class="highlight"><pre><span></span><code>cargo build --release
 cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --language kotlin --out-dir out
 </code></pre></div>
-(maybe <code>.dylib</code>, good luck with <code>.dll</code>!)</p>
+(probably <code>.dylib</code> on mac, good luck with <code>.dll</code>!)</p>
 <p>Then look in the <code>out</code> directory.</p>
 <p>When using library mode, if multiple crates get built into the library that use UniFFI, all will have bindings generated for them.</p>
 <p>Library mode comes with some extra requirements:</p>
@@ -2452,8 +2503,12 @@ cargo run --bin uniffi-bindgen generate --library target/release/libmath.so --la
     e.g. by using feature flags.</li>
 <li>Rust sources must use <code>uniffi::include_scaffolding!</code> to include the scaffolding code.</li>
 </ul>
+<h3 id="cross-platform-and-multi-architecture-support">Cross platform and multi architecture support</h3>
+<p>UniFFI metadata embedded in libraries is platform and architecture agnostic, which might be useful in cross-compiled environments.
+You must still take care here, as the underlying Rust code could have its own conditional compilation;
+only the exact library is guaranteed to have the correct metadata for that library.</p>
 <h2 id="running-uniffi-bindgen-with-a-single-udl-file">Running uniffi-bindgen with a single UDL file</h2>
-<p>As noted above, library mode is encouraged - building from a single UDL is not recommended.</p>
+<p>Generating from a single UDL is deprecated - a single crate with no proc-macro implementations doesn't seem realistic - but we support it aalmost by accident for legacy reasons.</p>
 <p>Use the <code>generate</code> command to generate bindings by specifying a UDL file.</p>
 <h3 id="kotlin">Kotlin</h3>
 <p>From the example directory, run:
