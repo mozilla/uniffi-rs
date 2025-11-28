@@ -14,7 +14,7 @@ keywords = ["ffi", "bindgen"]
 readme = "../README.md"
 
 [dependencies]
-uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.30.0", optional = true }
+uniffi_bindgen = { path = "../uniffi_bindgen", version = "=0.30.0", default-features = false, optional = true }
 uniffi_build = { path = "../uniffi_build", version = "=0.30.0", optional = true }
 uniffi_core = { path = "../uniffi_core", version = "=0.30.0" }
 uniffi_macros = { path = "../uniffi_macros", version = "=0.30.0" }
