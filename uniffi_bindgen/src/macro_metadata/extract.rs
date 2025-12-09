@@ -112,10 +112,15 @@ pub fn extract_from_mach(mach: Mach<'_>, file_data: &[u8]) -> anyhow::Result<Vec
     match mach {
         Mach::Binary(macho) => extract_from_macho(macho, file_data),
         // Multi-binary library, just extract the first one
-        Mach::Fat(multi_arch) => match multi_arch.get(0)? {
-            SingleArch::MachO(macho) => extract_from_macho(macho, file_data),
-            SingleArch::Archive(archive) => extract_from_archive(archive, file_data),
-        },
+        Mach::Fat(multi_arch) => {
+            let arches = multi_arch.arches()?;
+            let offset = arches[0].offset;
+            let file_data = &file_data[offset as usize..];
+            match multi_arch.get(0)? {
+                SingleArch::MachO(macho) => extract_from_macho(macho, file_data),
+                SingleArch::Archive(archive) => extract_from_archive(archive, file_data),
+            }
+        }
     }
 }
 
