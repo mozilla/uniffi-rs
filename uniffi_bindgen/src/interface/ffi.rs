@@ -242,9 +242,9 @@ impl FfiFunction {
     }
 
     /// Name of the FFI buffer version of this function that's generated when the
-    /// `scaffolding-ffi-buffer-fns` feature is enabled.
-    pub fn ffi_buffer_fn_name(&self) -> String {
-        uniffi_meta::ffi_buffer_symbol_name(&self.name)
+    /// `pointer-ffi` feature is enabled.
+    pub fn pointer_ffi_name(&self) -> String {
+        uniffi_meta::pointer_ffi_symbol_name(&self.name)
     }
 
     pub fn is_async(&self) -> bool {
