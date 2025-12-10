@@ -10,7 +10,7 @@ use std::time::SystemTime;
 use once_cell::sync::Lazy;
 
 #[cfg(test)]
-mod ffi_buffer_scaffolding_test;
+mod pointer_ffi_scaffolding_test;
 
 mod traits;
 pub use traits::{
