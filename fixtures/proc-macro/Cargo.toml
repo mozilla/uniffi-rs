@@ -15,13 +15,13 @@ ffi-trace = ["uniffi/ffi-trace"]
 myfeature = []
 
 [dependencies]
-# Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
-uniffi = { workspace = true, features = ["scaffolding-ffi-buffer-fns"] }
+# Add the "pointer-ffi" feature to make sure things can build correctly
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 thiserror = "2"
 lazy_static = "1.4"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build", "scaffolding-ffi-buffer-fns"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
