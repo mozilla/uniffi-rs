@@ -14,8 +14,8 @@ name = "uniffi-fixtures-futures"
 path = "src/bin.rs"
 
 [dependencies]
-# Add the "scaffolding-ffi-buffer-fns" feature to make sure things can build correctly
-uniffi = { workspace = true, features = ["tokio", "cli", "scaffolding-ffi-buffer-fns"] }
+# Add the "pointer-ffi" feature to make sure things can build correctly
+uniffi = { workspace = true, features = ["tokio", "cli", "pointer-ffi"] }
 async-trait = "0.1"
 futures = "0.3"
 thiserror = "2"
@@ -23,7 +23,7 @@ tokio = { version = "1.38.2", features = ["time", "sync"] }
 once_cell = "1.18.0"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build", "scaffolding-ffi-buffer-fns"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }

@@ -30,7 +30,7 @@ default = []
 # Enable the generate_and_include_scaffolding! macro
 trybuild = [ "dep:uniffi_build" ]
 # Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
-scaffolding-ffi-buffer-fns = []
+pointer-ffi = []
 # Enable extra features that require a nightly compiler:
 # * Add the full module path of exported items to FFI metadata instead of just the crate name.
 #   This may be used by language backends to generate nested module structures in the future.
