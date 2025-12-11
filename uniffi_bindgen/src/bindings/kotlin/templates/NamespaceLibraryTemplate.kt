@@ -104,6 +104,10 @@ internal object UniffiLib {
     {% filter indent(4) %}
     {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
     {% endfilter %}
+
+    {%- for name in ci.pointer_ffi_function_names() %}
+    external fun {{ name }}(uniffiFfiBuffer: Pointer)
+    {%- endfor %}
 }
 
 private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
