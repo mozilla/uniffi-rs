@@ -720,6 +720,30 @@ mod filters {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
+    pub(super) fn ffi_serializer_name(ty: &impl AsType, _: &dyn askama::Values) -> Result<String, askama::Error> {
+        let ty = ty.as_type();
+        let ffi_type = FfiType::from(&ty);
+
+        Ok(match ffi_type {
+            FfiType::Int8 => "UniffiFfiSerializerByte",
+            FfiType::Int16 => "UniffiFfiSerializerShort",
+            FfiType::Int32 => "UniffiFfiSerializerInt",
+            FfiType::Int64 => "UniffiFfiSerializerLong",
+            // Use signed UniffiFfiSerializer objects for unsigned ints, since their FfiConverter converts
+            // them to signed.
+            FfiType::UInt8 => "UniffiFfiSerializerByte",
+            FfiType::UInt16 => "UniffiFfiSerializerShort",
+            FfiType::UInt32 => "UniffiFfiSerializerInt",
+            FfiType::UInt64 => "UniffiFfiSerializerLong",
+            FfiType::Float32 => "UniffiFfiSerializerFloat",
+            FfiType::Float64 => "UniffiFfiSerializerDouble",
+            FfiType::RustBuffer(_) => "UniffiFfiSerializerRustBuffer",
+            FfiType::Handle => "UniffiFfiSerializerLong",
+            _ => unimplemented!("{ffi_type:?}"),
+        }
+        .to_string())
+    }
+
     fn fully_qualified_type_label(
         ty: &Type,
         ci: &ComponentInterface,
@@ -865,6 +889,17 @@ mod filters {
         _: &dyn askama::Values,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.var_name_raw(nm.as_ref()))
+    }
+
+    /// Get the idiomatic Kotlin rendering of an argument name
+    pub fn arg_name(arg: &Argument, _: &dyn askama::Values) -> Result<String, askama::Error> {
+        if arg.name() == "uniffi_self" {
+            // Need to special case these
+            Ok("this".into())
+        } else {
+            // All others use `var_name`
+            Ok(KotlinCodeOracle.var_name(arg.name()))
+        }
     }
 
     /// Get a String representing the name used for an individual enum variant.

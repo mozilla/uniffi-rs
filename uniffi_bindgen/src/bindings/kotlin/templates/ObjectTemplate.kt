@@ -175,7 +175,9 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         this.destroy()
     }
 
-    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+    // Run a block, ensuring the underlying handle will not be freed, even if `destroy()` is called
+    // from another thread.
+    internal inline fun <R> preventHandleFree(block: () -> R): R {
         // Check and increment the call counter, to keep the object alive.
         // This needs a compare-and-set retry loop in case of concurrent updates.
         do {
@@ -189,7 +191,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the handle being freed concurrently.
         try {
-            return block(this.uniffiCloneHandle())
+            return block()
         } finally {
             // This decrement always matches the increment we performed above.
             if (this.callCounter.decrementAndGet() == 0L) {
