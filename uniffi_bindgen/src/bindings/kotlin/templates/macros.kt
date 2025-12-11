@@ -7,7 +7,7 @@
 {%- macro to_ffi_call(func) -%}
     {%- match func.self_type() %}
     {%- when Some(Type::Object { .. }) %}
-    callWithHandle {
+    preventHandleFree {
         {%- call to_raw_ffi_call(func) %}
     }
     {% else %}
@@ -16,27 +16,53 @@
 {%- endmacro %}
 
 {%- macro to_raw_ffi_call(func) -%}
-    {%- match func.throws_type() %}
-    {%- when Some(e) %}
-    {%- if ci.is_external(e) %}
-    uniffiRustCallWithError({{ e|type_name(ci) }}ExternalErrorHandler)
-    {%- else %}
-    uniffiRustCallWithError({{ e|type_name(ci) }})
-    {%- endif %}
-    {%- else %}
-    uniffiRustCall()
-    {%- endmatch %} { _status ->
-    UniffiLib.{{ func.ffi_func().name() }}(
-    {%- match func.self_type() %}
-    {%- when Some(Type::Object { .. }) %}
-        it,
-    {%- when Some(t) %}
-        {{- t|lower_fn }}(this),
-    {%- when None %}
-    {% endmatch %}
-        {% call arg_list_lowered(func) -%}
-        _status)
-}
+    uniffiRun {
+        {%- let args = func.full_arguments() %}
+        {%- if !args.is_empty() %}
+        val uniffiFfiBuffer = Memory(
+            max(
+                // Size needed for the arguments
+                {%- for arg in args.iter() %}
+                {{ arg|ffi_serializer_name }}.size(){% if !loop.last %} + {% endif %}
+                {%- endfor -%}
+                ,
+                // Size needed for the return value
+                {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name }}.size() + {% endif -%}
+                UniffiFfiSerializerUniffiRustCallStatus.size()
+            )
+        )
+        {%- else %}
+        val uniffiFfiBuffer = Memory(
+            // Size needed for the return value
+            {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name }}.size() + {% endif -%}
+            UniffiFfiSerializerUniffiRustCallStatus.size()
+        )
+        {%- endif %}
+        {%- if !args.is_empty() %}
+        val uniffiArgsCursor = UniffiBufferCursor(uniffiFfiBuffer)
+        {%- for arg in args.iter() %}
+        {{ arg|ffi_serializer_name }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
+        {%- endfor %}
+        {%- endif %}
+
+        UniffiLib.{{ func.ffi_func().pointer_ffi_name() }}(uniffiFfiBuffer)
+        val uniffiReturnCursor = UniffiBufferCursor(uniffiFfiBuffer)
+        val uniffiCallStatus = UniffiFfiSerializerUniffiRustCallStatus.read(uniffiReturnCursor)
+
+        {%- if let Some(throws_ty) = func.throws_type() %}
+        {%- if ci.is_external(throws_ty) %}
+        uniffiCheckCallStatus({{ throws_ty|type_name(ci) }}ExternalErrorHandler, uniffiCallStatus)
+        {%- else %}
+        uniffiCheckCallStatus({{ throws_ty|type_name(ci) }}, uniffiCallStatus)
+        {%- endif %}
+        {%- else %}
+        uniffiCheckCallStatus(UniffiNullRustCallStatusErrorHandler, uniffiCallStatus)
+        {%- endif %}
+
+        {%- if let Some(return_ty) = func.return_type() %}
+        {{ return_ty|ffi_serializer_name }}.read(uniffiReturnCursor)
+        {%- endif %}
+    }
 {%- endmacro -%}
 
 {%- macro func_decl(func_decl, callable, indent) %}
@@ -71,7 +97,7 @@
 {%- macro call_async(callable) -%}
     uniffiRustCallAsync(
 {%- if callable.self_type().is_some() %}
-        callWithHandle { uniffiHandle ->
+        preventHandleFree {
             UniffiLib.{{ callable.ffi_func().name() }}(
                 uniffiHandle,
                 {% call arg_list_lowered(callable) %}
