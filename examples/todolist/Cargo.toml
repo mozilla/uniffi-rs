@@ -10,7 +10,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_todolist"
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 once_cell = "1.12"
 thiserror = "2"
 
