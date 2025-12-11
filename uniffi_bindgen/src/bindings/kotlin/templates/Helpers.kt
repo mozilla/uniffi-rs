@@ -127,3 +127,10 @@ internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallWithError(
         }
     }
 }
+
+// Execute a lambda and return it's return value
+//
+// This is used to execute a series of statements as a single expression. This works like the
+// builtin `run` function, except it's always the non-extension version.  It never tries to capture
+// the `this` value.
+private inline fun<T> uniffiRun(callback: () -> T): T = callback()

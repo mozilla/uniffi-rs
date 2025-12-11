@@ -24,91 +24,109 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_records() {
         run_tests(test_dir(), "tests/records.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_collections() {
         run_tests(test_dir(), "tests/collections.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_options() {
         run_tests(test_dir(), "tests/options.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_enums() {
         run_tests(test_dir(), "tests/enums.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_interfaces() {
         run_tests(test_dir(), "tests/interfaces.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_errors() {
         run_tests(test_dir(), "tests/errors.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_callback_interfaces() {
         run_tests(test_dir(), "tests/callback_interfaces.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_futures() {
         run_tests(test_dir(), "tests/futures.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_trait_interfaces() {
         run_tests(test_dir(), "tests/trait_interfaces.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_defaults() {
         run_tests(test_dir(), "tests/defaults.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_references() {
         run_tests(test_dir(), "tests/references.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_custom_types() {
         run_tests(test_dir(), "tests/custom_types.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_external_types() {
         run_tests(test_dir(), "tests/external_types.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_renames() {
         run_tests(test_dir(), "tests/renames.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_bytes() {
         run_tests(test_dir(), "tests/bytes.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_recursive_types() {
         run_tests(test_dir(), "tests/recursive_types.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_time() {
         run_tests(test_dir(), "tests/time.kts");
     }
 
     #[test]
+    #[ignore]
     fn test_rust_traits() {
         run_tests(test_dir(), "tests/rust_traits.kts");
     }

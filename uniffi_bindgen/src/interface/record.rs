@@ -114,6 +114,10 @@ impl Record {
         !self.fields.is_empty()
     }
 
+    pub fn uniffi_traits(&self) -> &[UniffiTrait] {
+        &self.uniffi_traits
+    }
+
     pub fn uniffi_trait_methods(&self) -> UniffiTraitMethods {
         UniffiTraitMethods::new(&self.uniffi_traits)
     }

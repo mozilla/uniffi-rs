@@ -541,7 +541,7 @@ impl Method {
     // hence `arguments` and `full_arguments` are different.
     pub fn full_arguments(&self) -> Vec<Argument> {
         vec![Argument {
-            name: "ptr".to_string(),
+            name: "uniffi_self".to_string(),
             type_: self.self_type.clone(),
             by_ref: !self.takes_self_by_arc,
             optional: false,
