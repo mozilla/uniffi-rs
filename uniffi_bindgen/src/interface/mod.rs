@@ -75,6 +75,7 @@ mod visit_mut;
 pub use ffi::{
     FfiArgument, FfiCallbackFunction, FfiDefinition, FfiField, FfiFunction, FfiStruct, FfiType,
 };
+pub mod pointer_ffi;
 pub use uniffi_meta::Radix;
 use uniffi_meta::{
     ConstructorMetadata, DefaultValueMetadata, LiteralMetadata, MethodMetadata, NamespaceMetadata,
@@ -893,6 +894,12 @@ impl ComponentInterface {
             has_rust_call_status_arg: false,
             is_object_free_function: false,
         })
+    }
+
+    pub fn pointer_ffi_definitions(
+        &self,
+    ) -> impl Iterator<Item = pointer_ffi::PointerFfiDefinition> + '_ {
+        pointer_ffi::ffi_definitions(self)
     }
 
     // Private methods for building a ComponentInterface.
