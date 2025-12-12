@@ -12,30 +12,34 @@ internal object uniffiRustFutureContinuationCallbackImpl: UniffiRustFutureContin
     }
 }
 
-internal suspend fun<T, F, E: kotlin.Exception> uniffiRustCallAsync(
+private suspend fun<T> uniffiDriveRustFutureToCompletion(
     rustFuture: Long,
-    pollFunc: (Long, UniffiRustFutureContinuationCallback, Long) -> Unit,
-    completeFunc: (Long, UniffiRustCallStatus) -> F,
-    freeFunc: (Long) -> Unit,
-    liftFunc: (F) -> T,
-    errorHandler: UniffiRustCallStatusErrorHandler<E>
+    returnValuesBufSize: Long,
+    readReturnBuf: (UniffiBufferCursor) -> T,
 ): T {
     try {
         do {
             val pollResult = suspendCancellableCoroutine<Byte> { continuation ->
-                pollFunc(
-                    rustFuture,
-                    uniffiRustFutureContinuationCallbackImpl,
-                    uniffiContinuationHandleMap.insert(continuation)
-                )
+                val continuationHandle = uniffiContinuationHandleMap.insert(continuation)
+
+                val pollFfiBuffer = Memory(16)
+                val pollArgCursor = UniffiBufferCursor(pollFfiBuffer)
+                UniffiFfiSerializerHandle.write(pollArgCursor, rustFuture)
+                UniffiFfiSerializerLong.write(pollArgCursor, continuationHandle)
+                UniffiLib.{{ ci.pointer_ffi_rust_future_poll() }}(pollFfiBuffer, uniffiRustFutureContinuationCallbackImpl)
             }
         } while (pollResult != UNIFFI_RUST_FUTURE_POLL_READY);
 
-        return liftFunc(
-            uniffiRustCallWithError(errorHandler, { status -> completeFunc(rustFuture, status) })
-        )
+        val completeFfiBuffer = Memory(max(8, returnValuesBufSize))
+        val completeArgCursor = UniffiBufferCursor(completeFfiBuffer)
+        UniffiFfiSerializerHandle.write(completeArgCursor, rustFuture)
+        UniffiLib.{{ ci.pointer_ffi_rust_future_complete() }}(completeFfiBuffer)
+        return readReturnBuf(UniffiBufferCursor(completeFfiBuffer))
     } finally {
-        freeFunc(rustFuture)
+        val freeFfiBuffer = Memory(8)
+        val freeArgCursor = UniffiBufferCursor(freeFfiBuffer)
+        UniffiFfiSerializerHandle.write(freeArgCursor, rustFuture)
+        UniffiLib.{{ ci.pointer_ffi_rust_future_free() }}(freeFfiBuffer)
     }
 }
 

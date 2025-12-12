@@ -10,13 +10,42 @@
 
 use super::{ComponentInterface, UniffiTrait};
 
+#[derive(Debug, Clone)]
 pub enum PointerFfiDefinition {
+    Callback(PointerFfiCallbackFunction),
     Function(PointerFfiFunction),
 }
 
 /// FFI function for the pointer FFI
+#[derive(Debug, Clone)]
 pub struct PointerFfiFunction {
     pub name: String,
+    pub kind: FfiFunctionKind,
+}
+
+/// Identifies the FFI function type
+///
+/// This is used in the pointer FFI to determine the argument types.
+#[derive(Debug, Clone, Copy)]
+pub enum FfiFunctionKind {
+    /// Normal function, inputs a buffer pointer
+    Normal,
+    /// Rust future poll, inputs a buffer pointer plus a function pointer for the continuation
+    /// function
+    RustFuturePoll,
+}
+
+/// FFI function for the pointer FFI
+#[derive(Debug, Clone)]
+pub struct PointerFfiCallbackFunction {
+    pub name: String,
+    pub kind: FfiCallbackFunctionKind,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum FfiCallbackFunctionKind {
+    /// Callback for the `rust_future_poll` function
+    RustFutureContinutation,
 }
 
 pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerFfiDefinition> + '_ {
@@ -25,6 +54,11 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
     [
         PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rustbuffer_alloc")),
         PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rustbuffer_free")),
+        PointerFfiDefinition::rust_future_poll(format!("uniffi_ptr_{namespace}_rust_future_poll")),
+        PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rust_future_cancel")),
+        PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rust_future_complete")),
+        PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rust_future_free")),
+        PointerFfiDefinition::rust_future_continuation("RustFutureContinuationCallback"),
     ]
     .into_iter()
     // Functions
@@ -75,8 +109,32 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
 }
 
 impl PointerFfiDefinition {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Callback(cb) => &cb.name,
+            Self::Function(f) => &f.name,
+        }
+    }
+
     fn func(name: impl Into<String>) -> Self {
-        Self::Function(PointerFfiFunction { name: name.into() })
+        Self::Function(PointerFfiFunction {
+            name: name.into(),
+            kind: FfiFunctionKind::Normal,
+        })
+    }
+
+    fn rust_future_poll(name: impl Into<String>) -> Self {
+        Self::Function(PointerFfiFunction {
+            name: name.into(),
+            kind: FfiFunctionKind::RustFuturePoll,
+        })
+    }
+
+    fn rust_future_continuation(name: impl Into<String>) -> Self {
+        Self::Callback(PointerFfiCallbackFunction {
+            name: name.into(),
+            kind: FfiCallbackFunctionKind::RustFutureContinutation,
+        })
     }
 }
 
@@ -87,5 +145,21 @@ impl ComponentInterface {
 
     pub fn pointer_ffi_rustbuffer_free(&self) -> String {
         format!("uniffi_ptr_{}_rustbuffer_free", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_poll(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_poll", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_complete(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_complete", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_cancel(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_cancel", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_free(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_free", self.ffi_namespace())
     }
 }

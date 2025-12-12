@@ -87,6 +87,12 @@ private object UniffiFfiSerializerPointer: UniffiFfiSerializer<Pointer> {
     }
 }
 
+private object UniffiFfiSerializerHandle: UniffiFfiSerializer<Long> {
+    override fun size(): Long = 8
+    override fun read(buf: UniffiBufferCursor) = buf.readLong()
+    override fun write(buf: UniffiBufferCursor, value: Long) = buf.writeLong(value)
+}
+
 private object UniffiFfiSerializerRustBuffer: UniffiFfiSerializer<RustBuffer.ByValue> {
     override fun size(): Long = 24
     override fun read(buf: UniffiBufferCursor): RustBuffer.ByValue {

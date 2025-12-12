@@ -4,7 +4,7 @@
 
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 
 use askama::Template;
@@ -12,8 +12,7 @@ use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::pointer_ffi::*, interface::*,
-    to_askama_error, Context, Result,
+    anyhow, bail, interface::pointer_ffi::*, interface::*, to_askama_error, Context, Result,
 };
 
 mod callback_interface;
@@ -321,6 +320,8 @@ pub struct KotlinWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
+    ffi_definitions: Vec<PointerFfiDefinition>,
+    legacy_ffi_definitions: Vec<FfiDefinition>,
 }
 
 impl<'a> KotlinWrapper<'a> {
@@ -328,12 +329,21 @@ impl<'a> KotlinWrapper<'a> {
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render()?;
         let type_imports = type_renderer.imports.into_inner();
+        let ffi_definitions: Vec<PointerFfiDefinition> = ci.pointer_ffi_definitions().collect();
+        let ffi_definition_names: HashSet<&str> =
+            ffi_definitions.iter().map(|def| def.name()).collect();
+        let legacy_ffi_definitions = ci
+            .ffi_definitions()
+            .filter(|ffi_def| !ffi_definition_names.contains(ffi_def.name()))
+            .collect();
 
         Ok(Self {
             config,
             ci,
             type_helper_code,
             type_imports,
+            ffi_definitions,
+            legacy_ffi_definitions,
         })
     }
 
@@ -879,47 +889,6 @@ mod filters {
     /// Get the idiomatic Kotlin rendering of an FFI struct name
     pub fn ffi_struct_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
-    }
-
-    pub fn async_poll(
-        callable: impl Callable,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_poll(ci);
-        Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.{ffi_func}(future, callback, continuation) }}"
-        ))
-    }
-
-    pub fn async_complete(
-        callable: impl Callable,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_complete(ci);
-        let call = format!("UniffiLib.{ffi_func}(future, continuation)");
-        // May need to convert the RustBuffer from our package to the RustBuffer of the external package
-        let call = match callable.return_type() {
-            Some(return_type) if ci.is_external(return_type) => {
-                let ffi_type = FfiType::from(return_type);
-                match ffi_type {
-                    FfiType::RustBuffer(Some(ExternalFfiMetadata { name, .. })) => {
-                        let suffix = KotlinCodeOracle.class_name(ci, &name);
-                        format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
-                    }
-                    _ => call,
-                }
-            }
-            _ => call,
-        };
-        Ok(format!("{{ future, continuation -> {call} }}"))
-    }
-
-    pub fn async_free(
-        callable: impl Callable,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_free(ci);
-        Ok(format!("{{ future -> UniffiLib.{ffi_func}(future) }}"))
     }
 
     /// Remove the "`" chars we put around function/variable names

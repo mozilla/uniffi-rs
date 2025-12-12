@@ -7,8 +7,23 @@ private fun findLibraryName(componentName: String): String {
     return "{{ config.cdylib_name() }}"
 }
 
-// Define FFI callback types
-{%- for def in ci.ffi_definitions() %}
+{%- for def in ffi_definitions %}
+{%- match def %}
+
+{%- when PointerFfiDefinition::Callback(cb) %}
+{%- match cb.kind %}
+{%- when FfiCallbackFunctionKind::RustFutureContinutation %}
+internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(data: Long, pollResult: Byte)
+}
+{%- endmatch %}
+
+{%- when PointerFfiDefinition::Function(func) %}
+{#- Handled below inside the `UniffiLib` definition #}
+{%- endmatch %}
+{%- endfor %}
+
+{%- for def in legacy_ffi_definitions %}
 {%- match def %}
 {%- when FfiDefinition::CallbackFunction(callback) %}
 internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callback {
@@ -42,7 +57,6 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
         {{ field.name()|var_name }} = other.{{ field.name()|var_name }}
         {%- endfor %}
     }
-
 }
 {%- when FfiDefinition::Function(_) %}
 {#- functions are handled below #}
@@ -105,11 +119,15 @@ internal object UniffiLib {
     {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
     {% endfilter %}
 
-    {%- for def in ci.pointer_ffi_definitions() %}
-    {%- match def %}
-    {%- when PointerFfiDefinition::Function(func) %}
+    {%- for def in ffi_definitions %}
+    {%- if let PointerFfiDefinition::Function(func) = def %}
+    {%- match func.kind %}
+    {%- when FfiFunctionKind::Normal %}
     external fun {{ func.name }}(uniffiFfiBuffer: Pointer)
+    {%- when FfiFunctionKind::RustFuturePoll %}
+    external fun {{ func.name }}(uniffiFfiBuffer: Pointer, callback: UniffiRustFutureContinuationCallback)
     {%- endmatch %}
+    {%- endif %}
     {%- endfor %}
 }
 
