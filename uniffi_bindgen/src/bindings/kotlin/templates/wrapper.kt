@@ -26,6 +26,7 @@ import com.sun.jna.Memory
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import com.sun.jna.Callback
+import com.sun.jna.CallbackReference
 import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -44,6 +45,7 @@ import kotlin.math.max
 {% include "FfiSerializer.kt" %}
 {% include "Helpers.kt" %}
 {% include "HandleMap.kt" %}
+{% include "FfiCallbacks.kt" %}
 
 // Contains loading, initialization code,
 // and the FFI Function declarations in a com.sun.jna.Library.

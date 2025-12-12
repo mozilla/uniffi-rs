@@ -6,13 +6,14 @@ use std::{future::Future, sync::Arc};
 
 mod future;
 mod scheduler;
-use future::*;
 use scheduler::*;
 
 #[cfg(test)]
 mod tests;
 
 use crate::{FfiDefault, Handle, LiftArgsError, LowerReturn, RustCallStatus};
+pub(crate) use future::RustFuture;
+pub(crate) use scheduler::RustFutureCallback;
 
 /// Result code for [rust_future_poll].  This is passed to the continuation function.
 #[repr(i8)]
@@ -110,7 +111,9 @@ where
     F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
     T: FutureLowerReturn<UT> + 'static,
 {
-    let rust_future = Arc::new(RustFuture::new(future, tag));
+    let rust_future = Arc::new(RustFuture::<_, RustFutureContinuationCallback>::new(
+        future, tag,
+    ));
     let handle = Handle::from_arc(rust_future);
     trace!("rust_future_new: {handle:?}");
     handle
@@ -130,8 +133,11 @@ pub unsafe fn rust_future_poll<FfiType>(
     callback: RustFutureContinuationCallback,
     data: u64,
 ) {
-    trace!("rust_future_poll: {handle:?}");
-    Handle::into_arc_borrowed::<RustFuture<FfiType>>(handle).poll(callback, data)
+    #[cfg(feature = "ffi-trace")]
+    let raw_handle = handle.as_raw();
+    trace!("rust_future_poll: {raw_handle:x}");
+    Handle::into_arc_borrowed::<RustFuture<FfiType>>(handle).poll(callback, data);
+    trace!("rust_future_poll returning: {raw_handle:x}");
 }
 
 /// Cancel a Rust future

@@ -4,7 +4,7 @@
 
 use std::mem;
 
-use super::{RustFutureContinuationCallback, RustFuturePoll};
+use crate::{RustFutureContinuationCallback, RustFuturePoll};
 
 /// Schedules a [crate::RustFuture] by managing the continuation data
 ///
@@ -20,7 +20,7 @@ use super::{RustFutureContinuationCallback, RustFuturePoll};
 ///   state, invoking any future callbacks as soon as they're stored.
 
 #[derive(Debug)]
-pub(super) enum Scheduler {
+pub(crate) enum Scheduler<Callback = RustFutureContinuationCallback> {
     /// No continuations set, neither wake() nor cancel() called.
     Empty,
     /// `wake()` was called when there was no continuation set.  The next time `store` is called,
@@ -30,44 +30,61 @@ pub(super) enum Scheduler {
     /// continuation being called with `RustFuturePoll::Ready`.
     Cancelled,
     /// Continuation set, the next time `wake()`  is called is called, we should invoke it.
-    Set(RustFutureContinuationCallback, u64),
+    Set(Callback, u64),
 }
 
-impl Scheduler {
-    pub(super) fn new() -> Self {
+/// Callback function that the scheduler stores
+///
+/// This will vary based on if we're using the legacy FFI or pointer FFI
+pub(crate) trait RustFutureCallback {
+    fn invoke(self, data: u64, poll: RustFuturePoll);
+}
+
+impl RustFutureCallback for RustFutureContinuationCallback {
+    fn invoke(self, data: u64, poll: RustFuturePoll) {
+        self(data, poll)
+    }
+}
+
+impl<Callback: RustFutureCallback> Scheduler<Callback> {
+    pub(crate) fn new() -> Self {
         Self::Empty
     }
 
     /// Store new continuation data if we are in the `Empty` state.  If we are in the `Waked` or
     /// `Cancelled` state, call the continuation immediately with the data.
-    pub(super) fn store(&mut self, callback: RustFutureContinuationCallback, data: u64) {
+    pub(crate) fn store(&mut self, callback: Callback, data: u64) {
         match self {
             Self::Empty => *self = Self::Set(callback, data),
-            Self::Set(old_callback, old_data) => {
+            Self::Set(_, _) => {
                 trace!(
                     "store: observed `Self::Set` state.  Is poll() being called from multiple threads at once?"
                 );
-                old_callback(*old_data, RustFuturePoll::Ready);
-                *self = Self::Set(callback, data);
+                let Self::Set(old_callback, old_data) =
+                    mem::replace(self, Self::Set(callback, data))
+                else {
+                    unreachable!();
+                };
+                old_callback.invoke(old_data, RustFuturePoll::Ready);
             }
             Self::Waked => {
                 *self = Self::Empty;
-                callback(data, RustFuturePoll::Wake);
+                callback.invoke(data, RustFuturePoll::Wake);
             }
             Self::Cancelled => {
-                callback(data, RustFuturePoll::Ready);
+                callback.invoke(data, RustFuturePoll::Ready);
             }
         }
     }
 
-    pub(super) fn wake(&mut self) {
+    pub(crate) fn wake(&mut self) {
         match self {
             // If we had a continuation set, then call it and transition to the `Empty` state.
-            Self::Set(callback, old_data) => {
-                let old_data = *old_data;
-                let callback = *callback;
-                *self = Self::Empty;
-                callback(old_data, RustFuturePoll::Wake);
+            Self::Set(_, _) => {
+                let Self::Set(callback, old_data) = mem::replace(self, Self::Empty) else {
+                    unreachable!();
+                };
+                callback.invoke(old_data, RustFuturePoll::Wake);
             }
             // If we were in the `Empty` state, then transition to `Waked`.  The next time `store`
             // is called, we will immediately call the continuation.
@@ -77,13 +94,13 @@ impl Scheduler {
         }
     }
 
-    pub(super) fn cancel(&mut self) {
+    pub(crate) fn cancel(&mut self) {
         if let Self::Set(callback, old_data) = mem::replace(self, Self::Cancelled) {
-            callback(old_data, RustFuturePoll::Ready);
+            callback.invoke(old_data, RustFuturePoll::Ready);
         }
     }
 
-    pub(super) fn is_cancelled(&self) -> bool {
+    pub(crate) fn is_cancelled(&self) -> bool {
         matches!(self, Self::Cancelled)
     }
 }

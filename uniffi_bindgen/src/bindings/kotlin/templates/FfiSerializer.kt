@@ -87,6 +87,35 @@ private object UniffiFfiSerializerPointer: UniffiFfiSerializer<Pointer> {
     }
 }
 
+private object UniffiFfiSerializerHandle: UniffiFfiSerializer<Long> {
+    override fun size(): Long = 8
+    override fun read(buf: UniffiBufferCursor) = buf.readLong()
+    override fun write(buf: UniffiBufferCursor, value: Long) = buf.writeLong(value)
+}
+
+private object UniffiFfiSerializerCallback: UniffiFfiSerializer<UniffiCallbackFunction> {
+    override fun size(): Long = 8
+    override fun read(buf: UniffiBufferCursor): UniffiCallbackFunction {
+        return CallbackReference.getCallback(UniffiCallbackFunction::class.java, Pointer(buf.readLong())) as UniffiCallbackFunction
+    }
+    override fun write(buf: UniffiBufferCursor, value: UniffiCallbackFunction) {
+        buf.writeLong(Pointer.nativeValue(CallbackReference.getFunctionPointer(value)))
+    }
+}
+
+private object UniffiFfiSerializerBoundCallback: UniffiFfiSerializer<UniffiBoundCallback> {
+    override fun size(): Long = 16
+    override fun read(buf: UniffiBufferCursor): UniffiBoundCallback {
+        val callback = UniffiFfiSerializerCallback.read(buf)
+        val data = UniffiFfiSerializerHandle.read(buf)
+        return UniffiBoundCallback(callback, data)
+    }
+    override fun write(buf: UniffiBufferCursor, value: UniffiBoundCallback) {
+        UniffiFfiSerializerCallback.write(buf, value.callback)
+        UniffiFfiSerializerHandle.write(buf, value.data)
+    }
+}
+
 private object UniffiFfiSerializerRustBuffer: UniffiFfiSerializer<RustBuffer.ByValue> {
     override fun size(): Long = 24
     override fun read(buf: UniffiBufferCursor): RustBuffer.ByValue {

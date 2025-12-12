@@ -147,6 +147,14 @@ fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
         format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_alloc");
     let ffi_rustbuffer_free_ident =
         format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_free");
+    let ffi_rust_future_poll =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_poll");
+    let ffi_rust_future_cancel =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_cancel");
+    let ffi_rust_future_complete =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_complete");
+    let ffi_rust_future_free =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_free");
 
     quote! {
         #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -163,6 +171,33 @@ fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
             ::uniffi::pointer_ffi::rustbuffer_free(ffi_buffer);
         }
 
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_poll(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_poll(ffi_buffer)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_cancel(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_cancel(ffi_buffer)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_complete(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_complete(ffi_buffer)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_free(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_free(ffi_buffer)
+        }
     }
 }
 
