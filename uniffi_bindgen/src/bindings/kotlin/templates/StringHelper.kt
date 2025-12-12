@@ -1,11 +1,11 @@
 /**
  * @suppress
  */
-public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
+public object FfiConverterString: FfiConverter<String, RustBuffer> {
     // Note: we don't inherit from FfiConverterRustBuffer, because we use a
     // special encoding when lowering/lifting.  We can use `RustBuffer.len` to
     // store our length and avoid writing it out to the buffer.
-    override fun lift(value: RustBuffer.ByValue): String {
+    override fun lift(value: RustBuffer): String {
         try {
             val byteArr = ByteArray(value.len.toInt())
             value.asByteBuffer()!!.get(byteArr)
@@ -30,7 +30,7 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
         }
     }
 
-    override fun lower(value: String): RustBuffer.ByValue {
+    override fun lower(value: String): RustBuffer {
         val byteBuf = toUtf8(value)
         // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
         // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.

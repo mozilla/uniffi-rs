@@ -32,7 +32,7 @@ internal object {{ trait_impl }} {
                     val uniffiReturnCursor = UniffiBufferCursor(uniffiFfiBuffer)
                     UniffiFfiSerializerUniffiRustCallStatus.write(
                         uniffiReturnCursor,
-                        UniffiRustCallStatus.create(UNIFFI_CALL_ERROR, {{ error_type|lower_fn }}(e))
+                        UniffiRustCallStatus(UNIFFI_CALL_ERROR, {{ error_type|lower_fn }}(e))
                     )
                     return
                 }
@@ -40,7 +40,7 @@ internal object {{ trait_impl }} {
 
                 val uniffiReturnCursor = UniffiBufferCursor(uniffiFfiBuffer)
                 // Default RustCallStatus signals success
-                UniffiFfiSerializerUniffiRustCallStatus.write(uniffiReturnCursor, UniffiRustCallStatus.ByValue())
+                UniffiFfiSerializerUniffiRustCallStatus.write(uniffiReturnCursor, UniffiRustCallStatus.default())
                 {%- if let Some(return_type) = meth.return_type() %}
                 {{ return_type|ffi_serializer_name(ci) }}.write(uniffiReturnCursor, {{ return_type|lower_fn }}(uniffiReturnValue))
                 {%- endif %}
@@ -50,13 +50,13 @@ internal object {{ trait_impl }} {
                     val err = {{ Type::String.borrow()|lower_fn }}(e.stackTraceToString())
                     UniffiFfiSerializerUniffiRustCallStatus.write(
                         uniffiReturnCursor,
-                        UniffiRustCallStatus.create(UNIFFI_CALL_UNEXPECTED_ERROR, err)
+                        UniffiRustCallStatus(UNIFFI_CALL_UNEXPECTED_ERROR, err)
                     )
                 } catch(_: Throwable) {
                     // Exception serializing the error message, just use an empty RustBuffer.
                     UniffiFfiSerializerUniffiRustCallStatus.write(
                         uniffiReturnCursor,
-                        UniffiRustCallStatus.create(UNIFFI_CALL_UNEXPECTED_ERROR, RustBuffer.ByValue())
+                        UniffiRustCallStatus(UNIFFI_CALL_UNEXPECTED_ERROR, RustBuffer.default())
                     )
                 }
             }
@@ -98,7 +98,7 @@ internal object {{ trait_impl }} {
                         UniffiFfiSerializerHandle.write(uniffiReturnCursor, uniffiFutureHandle)
                         UniffiFfiSerializerUniffiRustCallStatus.write(
                             uniffiReturnCursor,
-                            UniffiRustCallStatus.create(UNIFFI_CALL_ERROR, {{ error_type|lower_fn }}(e))
+                            UniffiRustCallStatus(UNIFFI_CALL_ERROR, {{ error_type|lower_fn }}(e))
                         )
                         uniffiCallback.callback(returnFfiBuffer)
                         return@uniffiCallAsync
@@ -108,7 +108,7 @@ internal object {{ trait_impl }} {
                     val uniffiReturnCursor = UniffiBufferCursor(returnFfiBuffer)
                     UniffiFfiSerializerHandle.write(uniffiReturnCursor, uniffiFutureHandle)
                     // Default RustCallStatus signals success
-                    UniffiFfiSerializerUniffiRustCallStatus.write(uniffiReturnCursor, UniffiRustCallStatus.ByValue())
+                    UniffiFfiSerializerUniffiRustCallStatus.write(uniffiReturnCursor, UniffiRustCallStatus.default())
                     {%- if let Some(return_type) = meth.return_type() %}
                     {{ return_type|ffi_serializer_name(ci) }}.write(uniffiReturnCursor, {{ return_type|lower_fn }}(uniffiReturnValue))
                     {%- endif %}
@@ -120,14 +120,14 @@ internal object {{ trait_impl }} {
                         UniffiFfiSerializerHandle.write(uniffiReturnCursor, uniffiFutureHandle)
                         UniffiFfiSerializerUniffiRustCallStatus.write(
                             uniffiReturnCursor,
-                            UniffiRustCallStatus.create(UNIFFI_CALL_UNEXPECTED_ERROR, err)
+                            UniffiRustCallStatus(UNIFFI_CALL_UNEXPECTED_ERROR, err)
                         )
                     } catch(_: Throwable) {
                         // Exception serializing the error message, just use an empty RustBuffer.
                         UniffiFfiSerializerHandle.write(uniffiReturnCursor, uniffiFutureHandle)
                         UniffiFfiSerializerUniffiRustCallStatus.write(
                             uniffiReturnCursor,
-                            UniffiRustCallStatus.create(UNIFFI_CALL_UNEXPECTED_ERROR, RustBuffer.ByValue())
+                            UniffiRustCallStatus(UNIFFI_CALL_UNEXPECTED_ERROR, RustBuffer.default())
                         )
                     }
                     uniffiCallback.callback(returnFfiBuffer)

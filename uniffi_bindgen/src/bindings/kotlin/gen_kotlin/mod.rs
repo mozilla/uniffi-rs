@@ -4,7 +4,7 @@
 
 use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
 
 use askama::Template;
@@ -322,7 +322,6 @@ pub struct KotlinWrapper<'a> {
     type_imports: BTreeSet<ImportRequirement>,
     ffi_definitions: Vec<PointerFfiDefinition>,
     integrity_ffi_definitions: Vec<PointerFfiDefinition>,
-    legacy_ffi_definitions: Vec<FfiDefinition>,
     // Crates that external types come from
     external_type_sources: Vec<ExternalTypeSource>,
 }
@@ -335,15 +334,6 @@ impl<'a> KotlinWrapper<'a> {
         let ffi_definitions: Vec<PointerFfiDefinition> = ci.pointer_ffi_definitions().collect();
         let integrity_ffi_definitions: Vec<PointerFfiDefinition> =
             pointer_ffi_integrity_ffi_definitions(ci).collect();
-        let ffi_definition_names: HashSet<&str> = ffi_definitions
-            .iter()
-            .chain(integrity_ffi_definitions.iter())
-            .map(|def| def.name())
-            .collect();
-        let legacy_ffi_definitions = ci
-            .ffi_definitions()
-            .filter(|ffi_def| !ffi_definition_names.contains(ffi_def.name()))
-            .collect();
         let external_type_sources = ci
             .iter_external_types()
             .filter_map(|ty| ty.crate_name())
@@ -364,7 +354,6 @@ impl<'a> KotlinWrapper<'a> {
             type_imports,
             ffi_definitions,
             integrity_ffi_definitions,
-            legacy_ffi_definitions,
             external_type_sources,
         })
     }
@@ -520,48 +509,6 @@ impl KotlinCodeOracle {
         format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
-    fn ffi_type_label_by_value(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
-        match ffi_type {
-            FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type, ci)),
-            FfiType::Struct(name) => format!("{}.UniffiByValue", self.ffi_struct_name(name)),
-            _ => self.ffi_type_label(ffi_type, ci),
-        }
-    }
-
-    /// FFI type name to use inside structs
-    ///
-    /// The main requirement here is that all types must have default values or else the struct
-    /// won't work in some JNA contexts.
-    fn ffi_type_label_for_ffi_struct(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
-        match ffi_type {
-            // Make callbacks function pointers nullable. This matches the semantics of a C
-            // function pointer better and allows for `null` as a default value.
-            FfiType::Callback(name) => format!("{}?", self.ffi_callback_name(name)),
-            _ => self.ffi_type_label_by_value(ffi_type, ci),
-        }
-    }
-
-    /// Default values for FFI
-    ///
-    /// This is used to:
-    ///   - Set a default return value for error results
-    ///   - Set a default for structs, which JNA sometimes requires
-    fn ffi_default_value(&self, ffi_type: &FfiType) -> String {
-        match ffi_type {
-            FfiType::UInt8 | FfiType::Int8 => "0.toByte()".to_owned(),
-            FfiType::UInt16 | FfiType::Int16 => "0.toShort()".to_owned(),
-            FfiType::UInt32 | FfiType::Int32 => "0".to_owned(),
-            FfiType::UInt64 | FfiType::Int64 => "0.toLong()".to_owned(),
-            FfiType::Float32 => "0.0f".to_owned(),
-            FfiType::Float64 => "0.0".to_owned(),
-            FfiType::Handle => "0.toLong()".to_owned(),
-            FfiType::RustBuffer(_) => "RustBuffer.ByValue()".to_owned(),
-            FfiType::Callback(_) => "null".to_owned(),
-            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue()".to_owned(),
-            _ => unimplemented!("ffi_default_value: {ffi_type:?}"),
-        }
-    }
-
     fn ffi_type_label_by_reference(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
             FfiType::Int8
@@ -599,8 +546,8 @@ impl KotlinCodeOracle {
                 }
                 _ => "RustBuffer".to_string(),
             },
-            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue".to_string(),
-            FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FfiType::RustCallStatus => "UniffiRustCallStatus".to_string(),
+            FfiType::ForeignBytes => unimplemented!(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) | FfiType::MutReference(inner) => {
@@ -869,24 +816,6 @@ mod filters {
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_type_label(type_, ci))
-    }
-
-    pub fn ffi_type_name_by_value(
-        type_: &FfiType,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
-    }
-
-    pub fn ffi_type_name_for_ffi_struct(
-        type_: &FfiType,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_, ci))
-    }
-
-    pub fn ffi_default_value(type_: FfiType) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_default_value(&type_))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
