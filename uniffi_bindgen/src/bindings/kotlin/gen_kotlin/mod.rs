@@ -11,10 +11,7 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, to_askama_error, Context,
-    Result,
-};
+use crate::{anyhow, bail, interface::*, to_askama_error, Context, Result};
 
 mod callback_interface;
 mod compounds;
@@ -720,7 +717,10 @@ mod filters {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
-    pub(super) fn ffi_serializer_name(ty: &impl AsType) -> Result<String, askama::Error> {
+    pub(super) fn ffi_serializer_name(
+        ty: &impl AsType,
+        _: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
         let ty = ty.as_type();
         let ffi_type = FfiType::from(&ty);
 
@@ -892,7 +892,7 @@ mod filters {
     }
 
     /// Get the idiomatic Kotlin rendering of an argument name
-    pub fn arg_name(arg: &Argument) -> Result<String, askama::Error> {
+    pub fn arg_name(arg: &Argument, _: &dyn askama::Values) -> Result<String, askama::Error> {
         if arg.name() == "uniffi_self" {
             // Need to special case these
             Ok("this".into())
@@ -929,50 +929,6 @@ mod filters {
         _: &dyn askama::Values,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
-    }
-
-    pub fn async_poll(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_poll(ci);
-        Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.{ffi_func}(future, callback, continuation) }}"
-        ))
-    }
-
-    pub fn async_complete(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_complete(ci);
-        let call = format!("UniffiLib.{ffi_func}(future, continuation)");
-        // May need to convert the RustBuffer from our package to the RustBuffer of the external package
-        let call = match callable.return_type() {
-            Some(return_type) if ci.is_external(return_type) => {
-                let ffi_type = FfiType::from(return_type);
-                match ffi_type {
-                    FfiType::RustBuffer(Some(ExternalFfiMetadata { name, .. })) => {
-                        let suffix = KotlinCodeOracle.class_name(ci, &name);
-                        format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
-                    }
-                    _ => call,
-                }
-            }
-            _ => call,
-        };
-        Ok(format!("{{ future, continuation -> {call} }}"))
-    }
-
-    pub fn async_free(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_free(ci);
-        Ok(format!("{{ future -> UniffiLib.{ffi_func}(future) }}"))
     }
 
     /// Remove the "`" chars we put around function/variable names
