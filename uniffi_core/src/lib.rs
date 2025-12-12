@@ -59,6 +59,9 @@ mod ffi_converter_traits;
 pub mod metadata;
 mod oneshot;
 
+#[cfg(feature = "pointer-ffi")]
+pub mod pointer_ffi;
+
 pub use ffi::*;
 pub use ffi_converter_traits::{
     ConvertError, FfiConverter, FfiConverterArc, HandleAlloc, Lift, LiftRef, LiftReturn, Lower,
