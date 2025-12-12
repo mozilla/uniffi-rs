@@ -10,7 +10,7 @@ name = "uniffi_fixture_metadata"
 
 [dependencies]
 thiserror = "2"
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["pointer-ffi"] }
 uniffi_meta = { path = "../../uniffi_meta" }
 uniffi_core = { path = "../../uniffi_core" }
 

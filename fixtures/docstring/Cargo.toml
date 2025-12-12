@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 
 [dependencies]
 thiserror = "2"
-uniffi = { path = "../../uniffi" }
+uniffi = { path = "../../uniffi", features=["pointer-ffi"] }
 
 [build-dependencies]
 uniffi = {path = "../../uniffi", features = ["build", "pointer-ffi"] }

@@ -16,7 +16,7 @@ name = "uniffi_sublib"
 
 [dependencies]
 anyhow = "1"
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["pointer-ffi"] }
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 
 [build-dependencies]

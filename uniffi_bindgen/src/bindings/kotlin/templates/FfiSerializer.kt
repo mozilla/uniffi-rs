@@ -119,33 +119,26 @@ private object UniffiFfiSerializerBoundCallback: UniffiFfiSerializer<UniffiBound
     }
 }
 
-private object UniffiFfiSerializerRustBuffer: UniffiFfiSerializer<RustBuffer.ByValue> {
+private object UniffiFfiSerializerRustBuffer: UniffiFfiSerializer<RustBuffer> {
     override fun size(): Long = 24
-    override fun read(buf: UniffiBufferCursor): RustBuffer.ByValue {
-        var rustBuffer = RustBuffer.ByValue()
-        rustBuffer.capacity = buf.readLong()
-        rustBuffer.len = buf.readLong()
-        rustBuffer.data = Pointer(buf.readLong())
-        return rustBuffer
+    override fun read(buf: UniffiBufferCursor): RustBuffer {
+        return RustBuffer(buf.readLong(), buf.readLong(), Pointer(buf.readLong()))
     }
-    override fun write(buf: UniffiBufferCursor, value: RustBuffer.ByValue) {
+    override fun write(buf: UniffiBufferCursor, value: RustBuffer) {
         buf.writeLong(value.capacity)
         buf.writeLong(value.len)
         buf.writeLong(Pointer.nativeValue(value.data))
     }
 }
 
-private object UniffiFfiSerializerUniffiRustCallStatus: UniffiFfiSerializer<UniffiRustCallStatus.ByValue> {
+private object UniffiFfiSerializerUniffiRustCallStatus: UniffiFfiSerializer<UniffiRustCallStatus> {
     override fun size(): Long = 32
-    override fun read(buf: UniffiBufferCursor): UniffiRustCallStatus.ByValue {
-        var status = UniffiRustCallStatus.ByValue()
-        status.code = buf.readByte()
-        status.error_buf = UniffiFfiSerializerRustBuffer.read(buf)
-        return status
+    override fun read(buf: UniffiBufferCursor): UniffiRustCallStatus {
+        return UniffiRustCallStatus(buf.readByte(), UniffiFfiSerializerRustBuffer.read(buf))
     }
-    override fun write(buf: UniffiBufferCursor, value: UniffiRustCallStatus.ByValue) {
+    override fun write(buf: UniffiBufferCursor, value: UniffiRustCallStatus) {
         buf.writeByte(value.code)
-        UniffiFfiSerializerRustBuffer.write(buf, value.error_buf)
+        UniffiFfiSerializerRustBuffer.write(buf, value.errorBuf)
     }
 }
 
@@ -173,16 +166,12 @@ private object UniffiFfiSerializerForeignFutureDroppedCallback: UniffiFfiSeriali
 // RustBuffer serializers for external packages that we're using external types from
 
 {%- for source in external_type_sources %}
-private object {{ source|ffi_serializer_name_external_rust_buffer }}: UniffiFfiSerializer<{{ source.package }}.RustBuffer.ByValue> {
+private object {{ source|ffi_serializer_name_external_rust_buffer }}: UniffiFfiSerializer<{{ source.package }}.RustBuffer> {
     override fun size(): Long = 24
-    override fun read(buf: UniffiBufferCursor): {{ source.package }}.RustBuffer.ByValue {
-        var rustBuffer = {{ source.package }}.RustBuffer.ByValue()
-        rustBuffer.capacity = buf.readLong()
-        rustBuffer.len = buf.readLong()
-        rustBuffer.data = Pointer(buf.readLong())
-        return rustBuffer
+    override fun read(buf: UniffiBufferCursor): {{ source.package }}.RustBuffer {
+        return {{ source.package }}.RustBuffer(buf.readLong(), buf.readLong(), Pointer(buf.readLong()))
     }
-    override fun write(buf: UniffiBufferCursor, value: {{ source.package }}.RustBuffer.ByValue) {
+    override fun write(buf: UniffiBufferCursor, value: {{ source.package }}.RustBuffer) {
         buf.writeLong(value.capacity)
         buf.writeLong(value.len)
         buf.writeLong(Pointer.nativeValue(value.data))
