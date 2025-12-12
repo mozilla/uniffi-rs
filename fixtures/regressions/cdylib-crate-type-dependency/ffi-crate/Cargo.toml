@@ -10,7 +10,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_empty"
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["pointer-ffi"] }
 uniffi-fixture-regression-cdylib-dependency = {path = "../cdylib-dependency"}
 
 [build-dependencies]

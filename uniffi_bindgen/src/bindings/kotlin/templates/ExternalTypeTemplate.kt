@@ -13,13 +13,9 @@
 {%- let class_name = name|class_name(ci) %}
 
 object {{ class_name }}ExternalErrorHandler : UniffiRustCallStatusErrorHandler<{{ class_name }}> {
-    override fun lift(error_buf: RustBuffer.ByValue): {{ class_name }} =
+    override fun lift(error_buf: RustBuffer): {{ class_name }} =
         {{ fully_qualified_type_name }}.ErrorHandler.lift(
-            {{ local_rustbuffer_name }}.ByValue().apply {
-                capacity = error_buf.capacity
-                len = error_buf.len
-                data = error_buf.data
-            }
+            {{ local_rustbuffer_name }}(error_buf.capacity, error_buf.len, error_buf.data)
         )
 }
 

@@ -245,7 +245,7 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
     {% else if is_error %}
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ impl_class_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ impl_class_name }} {
+        override fun lift(error_buf: RustBuffer): {{ impl_class_name }} {
             // Due to some mismatches in the ffi converter mechanisms, errors are a RustBuffer.
             val bb = error_buf.asByteBuffer()
             if (bb == null) {

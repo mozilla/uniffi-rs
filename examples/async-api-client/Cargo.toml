@@ -11,7 +11,7 @@ name = "uniffi_async_api_client"
 
 [dependencies]
 async-trait = "0.1"
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 serde = { version = "1", features=["derive"] }
 serde_json = "1"
 thiserror = "2"
