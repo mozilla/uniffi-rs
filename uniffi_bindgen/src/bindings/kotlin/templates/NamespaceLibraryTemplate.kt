@@ -7,7 +7,6 @@ private fun findLibraryName(componentName: String): String {
     return "{{ config.cdylib_name() }}"
 }
 
-// Define FFI callback types
 {%- for def in ci.ffi_definitions() %}
 {%- match def %}
 {%- when FfiDefinition::CallbackFunction(callback) %}
@@ -42,7 +41,6 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
         {{ field.name()|var_name }} = other.{{ field.name()|var_name }}
         {%- endfor %}
     }
-
 }
 {%- when FfiDefinition::Function(_) %}
 {#- functions are handled below #}

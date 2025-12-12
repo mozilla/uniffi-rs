@@ -254,7 +254,13 @@ pub(super) fn gen_ffi_function(
             &bits,
             &future_expr,
         ));
-        // TODO: pointer FFI version
+        #[cfg(feature = "pointer-ffi")]
+        tokens.extend(scaffolding_async_fn_pointer_ffi(
+            sig,
+            &ffi_ident,
+            &bits,
+            &future_expr,
+        ));
         tokens
     })
 }
@@ -416,6 +422,59 @@ fn scaffolding_fn_pointer_ffi(
             );
             <::uniffi::RustCallStatus as ::uniffi::FfiSerialize>::write(&mut uniffi_return_buf, uniffi_call_status);
             <#ffi_return_ty as ::uniffi::FfiSerialize>::write(&mut uniffi_return_buf, uniffi_return_value);
+        }
+    }
+}
+
+#[cfg(feature = "pointer-ffi")]
+fn scaffolding_async_fn_pointer_ffi(
+    sig: &FnSignature,
+    ident: &Ident,
+    bits: &ScaffoldingBits,
+    future_expr: &TokenStream,
+) -> TokenStream {
+    let ScaffoldingBits {
+        param_names,
+        param_types,
+        lift_closure,
+        convert_result,
+        ..
+    } = bits;
+
+    let ffi_fn_name = uniffi_meta::pointer_ffi_symbol_name(&ident.to_string());
+    let ident = Ident::new(&ffi_fn_name, proc_macro2::Span::call_site());
+    let return_ty = &sig.return_ty;
+
+    quote! {
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ident(uniffi_ffi_buffer: *mut u8) {
+            ::uniffi::deps::trace!("calling: {}", #ffi_fn_name);
+
+            let mut uniffi_args_buf = ::std::slice::from_raw_parts(
+                uniffi_ffi_buffer,
+                ::uniffi::ffi_buffer_size!((#(#param_types),*)),
+            );
+            #(
+                let #param_names = <#param_types as ::uniffi::FfiSerialize>::read(&mut uniffi_args_buf);
+            )*
+
+            let uniffi_lifted_args = (#lift_closure)();
+            ::uniffi::pointer_ffi::rust_future_new::<_, #return_ty, _>(
+                async move {
+                    match uniffi_lifted_args {
+                        ::std::result::Result::Ok(uniffi_args) => {
+                            let uniffi_result = #future_expr.await;
+                            Ok(#convert_result)
+                        }
+                        ::std::result::Result::Err((arg_name, error)) => {
+                            Err(::uniffi::LiftArgsError { arg_name, error })
+                        },
+                    }
+                },
+                crate::UniFfiTag,
+                uniffi_ffi_buffer
+            );
         }
     }
 }

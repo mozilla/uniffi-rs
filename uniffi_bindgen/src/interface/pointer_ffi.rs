@@ -17,6 +17,10 @@ impl ComponentInterface {
         [
             format!("uniffi_ptr_{namespace}_rustbuffer_alloc"),
             format!("uniffi_ptr_{namespace}_rustbuffer_free"),
+            format!("uniffi_ptr_{namespace}_rust_future_poll"),
+            format!("uniffi_ptr_{namespace}_rust_future_cancel"),
+            format!("uniffi_ptr_{namespace}_rust_future_complete"),
+            format!("uniffi_ptr_{namespace}_rust_future_free"),
         ]
         .into_iter()
         // Functions
@@ -72,5 +76,21 @@ impl ComponentInterface {
 
     pub fn pointer_ffi_rustbuffer_free(&self) -> String {
         format!("uniffi_ptr_{}_rustbuffer_free", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_poll(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_poll", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_complete(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_complete", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_cancel(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_cancel", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rust_future_free(&self) -> String {
+        format!("uniffi_ptr_{}_rust_future_free", self.ffi_namespace())
     }
 }
