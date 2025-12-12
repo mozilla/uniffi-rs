@@ -11,7 +11,7 @@ name = "uniffi_regression_logging_callback_interface"
 
 [dependencies]
 log = "0.4"
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["pointer-ffi"] }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build", "pointer-ffi"] }

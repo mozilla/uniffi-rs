@@ -200,7 +200,7 @@
 -#}
 {%- macro arg_list_ffi_decl(func) %}
     {%- for arg in func.arguments() %}
-        {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value(ci) -}},
+        {{- arg.name()|var_name }}: {{ arg.type_().borrow()|ffi_type_name(ci) -}},
     {%- endfor %}
     {%- if func.has_rust_call_status_arg() %}uniffi_out_err: UniffiRustCallStatus, {% endif %}
 {%- endmacro -%}

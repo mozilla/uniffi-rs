@@ -11,7 +11,7 @@ crate-type = ["lib", "cdylib"]
 [dependencies]
 async-std = "1.13"
 thiserror = "2"
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build", "pointer-ffi"] }

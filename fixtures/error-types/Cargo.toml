@@ -10,7 +10,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_error_types"
 
 [dependencies]
-uniffi = {path = "../../uniffi"}
+uniffi = {path = "../../uniffi", features=["pointer-ffi"]}
 anyhow = "1"
 thiserror = "2"
 

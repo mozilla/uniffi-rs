@@ -227,10 +227,7 @@ impl FfiSerialize for ForeignBytes {
 
     unsafe fn put(buf: &mut [u8], value: Self) {
         <i32 as FfiSerialize>::put(buf, value.len);
-        <*const std::ffi::c_void as FfiSerialize>::put(
-            &mut buf[8..],
-            value.data.cast_mut().cast(),
-        )
+        <*const std::ffi::c_void as FfiSerialize>::put(&mut buf[8..], value.data.cast_mut().cast())
     }
 }
 
