@@ -11,10 +11,7 @@ use askama::Template;
 use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, to_askama_error, Context,
-    Result,
-};
+use crate::{anyhow, bail, interface::*, to_askama_error, Context, Result};
 
 mod callback_interface;
 mod compounds;
@@ -1030,53 +1027,6 @@ mod filters {
         _: &dyn askama::Values,
     ) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
-    }
-
-    #[askama::filter_fn]
-    pub fn async_poll(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_poll(ci);
-        Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.{ffi_func}(future, callback, continuation) }}"
-        ))
-    }
-
-    #[askama::filter_fn]
-    pub fn async_complete(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_complete(ci);
-        let call = format!("UniffiLib.{ffi_func}(future, continuation)");
-        // May need to convert the RustBuffer from our package to the RustBuffer of the external package.
-        let call = match callable.return_type() {
-            Some(return_type) => match FfiType::from(return_type) {
-                FfiType::RustBuffer(Some(external_meta))
-                    if external_meta.crate_name() != ci.crate_name() =>
-                {
-                    let ExternalFfiMetadata { name, .. } = external_meta;
-                    let suffix = KotlinCodeOracle.class_name(ci, &name);
-                    format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
-                }
-                _ => call,
-            },
-            _ => call,
-        };
-        Ok(format!("{{ future, continuation -> {call} }}"))
-    }
-
-    #[askama::filter_fn]
-    pub fn async_free(
-        callable: impl Callable,
-        _: &dyn askama::Values,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_free(ci);
-        Ok(format!("{{ future -> UniffiLib.{ffi_func}(future) }}"))
     }
 
     /// Remove the "`" chars we put around function/variable names

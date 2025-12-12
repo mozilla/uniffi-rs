@@ -59,25 +59,21 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_futures() {
         run_tests(test_dir(), "tests/futures.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_trait_interfaces() {
         run_tests(test_dir(), "tests/trait_interfaces.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_defaults() {
         run_tests(test_dir(), "tests/defaults.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_references() {
         run_tests(test_dir(), "tests/references.kts");
     }
@@ -106,19 +102,16 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_recursive_types() {
         run_tests(test_dir(), "tests/recursive_types.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_time() {
         run_tests(test_dir(), "tests/time.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_rust_traits() {
         run_tests(test_dir(), "tests/rust_traits.kts");
     }

@@ -21,4 +21,11 @@ uniffi-bindgen-tests = { path = "../lib", default-features = false, features = [
     "custom_types",
     "errors",
     "callback_interfaces",
+    "futures",
+    "trait_interfaces",
+    "defaults",
+    "references",
+    "recursive_types",
+    "time",
+    "rust_traits"
 ] }
