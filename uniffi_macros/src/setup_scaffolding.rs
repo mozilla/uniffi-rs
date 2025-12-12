@@ -26,6 +26,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let reexport_hack_ident = format_ident!("{normalized_module_path}_uniffi_reexport_hack");
     let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&normalized_module_path);
 
+    let pointer_ffi_scaffolding_fns = setup_scaffolding_pointer_ffi(&normalized_module_path);
+
     Ok(quote! {
         // Unit struct to parameterize the FfiConverter trait.
         //
@@ -106,6 +108,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
 
         #ffi_rust_future_scaffolding_fns
 
+        #pointer_ffi_scaffolding_fns
+
         // Code to re-export the UniFFI scaffolding functions.
         //
         // Some build environments won't always re-export the functions from dependencies.
@@ -135,6 +139,36 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             };
         }
     })
+}
+
+#[cfg(feature = "pointer-ffi")]
+fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
+    let ffi_rustbuffer_alloc_ident =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_alloc");
+    let ffi_rustbuffer_free_ident =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_free");
+
+    quote! {
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rustbuffer_alloc_ident(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rustbuffer_alloc(ffi_buffer);
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rustbuffer_free_ident(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rustbuffer_free(ffi_buffer);
+        }
+
+    }
+}
+
+#[cfg(not(feature = "pointer-ffi"))]
+fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
+    TokenStream::default()
 }
 
 /// Generates the rust_future_* functions
