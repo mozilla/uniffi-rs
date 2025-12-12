@@ -15,7 +15,7 @@ sealed class {{ type_name }}(message: String): kotlin.Exception(message){% if co
         {% endfor %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
+        override fun lift(error_buf: RustBuffer): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
     }
 }
 {%- else %}
@@ -46,7 +46,7 @@ sealed class {{ type_name }}: kotlin.Exception(){% if contains_object_references
     {%- call kt::uniffi_trait_impls(uniffi_trait_methods) %}
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<{{ type_name }}> {
-        override fun lift(error_buf: RustBuffer.ByValue): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
+        override fun lift(error_buf: RustBuffer): {{ type_name }} = {{ ffi_converter_name }}.lift(error_buf)
     }
 
     {% if contains_object_references %}

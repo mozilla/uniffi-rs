@@ -10,7 +10,7 @@ name = "uniffi_simple_iface"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 thiserror = "2"
 lazy_static = "1.4"
 
