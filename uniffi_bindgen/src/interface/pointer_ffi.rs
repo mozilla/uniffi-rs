@@ -12,51 +12,65 @@ use super::{ComponentInterface, UniffiTrait};
 
 impl ComponentInterface {
     pub fn pointer_ffi_function_names(&self) -> impl Iterator<Item = String> + '_ {
-        [].into_iter()
-            // Functions
-            .chain(
-                self.function_definitions()
-                    .iter()
-                    .map(|f| f.ffi_func().pointer_ffi_name()),
-            )
-            // Constructors
-            .chain(self.object_definitions().iter().flat_map(|o| {
-                o.constructors()
-                    .into_iter()
-                    .map(|c| c.ffi_func().pointer_ffi_name())
-            }))
-            // Methods
-            .chain(
-                self.enum_definitions()
-                    .iter()
-                    .flat_map(|e| e.methods())
-                    .chain(self.record_definitions().iter().flat_map(|r| r.methods()))
-                    .chain(self.object_definitions().iter().flat_map(|o| o.methods()))
-                    .map(|m| m.ffi_func().pointer_ffi_name()),
-            )
-            // UniFFI trait methods
-            .chain(
-                self.enum_definitions()
-                    .iter()
-                    .flat_map(|e| e.uniffi_traits())
-                    .chain(
-                        self.record_definitions()
-                            .iter()
-                            .flat_map(|r| r.uniffi_traits()),
-                    )
-                    .chain(
-                        self.object_definitions()
-                            .iter()
-                            .flat_map(|o| o.uniffi_traits()),
-                    )
-                    .flat_map(|ut| match ut {
-                        UniffiTrait::Display { fmt: m }
-                        | UniffiTrait::Debug { fmt: m }
-                        | UniffiTrait::Hash { hash: m }
-                        | UniffiTrait::Ord { cmp: m } => vec![m],
-                        UniffiTrait::Eq { eq, ne } => vec![eq, ne],
-                    })
-                    .map(|m| m.ffi_func().pointer_ffi_name()),
-            )
+        let namespace = self.ffi_namespace();
+        // Builtin FFI methods
+        [
+            format!("uniffi_ptr_{namespace}_rustbuffer_alloc"),
+            format!("uniffi_ptr_{namespace}_rustbuffer_free"),
+        ]
+        .into_iter()
+        // Functions
+        .chain(
+            self.function_definitions()
+                .iter()
+                .map(|f| f.ffi_func().pointer_ffi_name()),
+        )
+        // Constructors
+        .chain(self.object_definitions().iter().flat_map(|o| {
+            o.constructors()
+                .into_iter()
+                .map(|c| c.ffi_func().pointer_ffi_name())
+        }))
+        // Methods
+        .chain(
+            self.enum_definitions()
+                .iter()
+                .flat_map(|e| e.methods())
+                .chain(self.record_definitions().iter().flat_map(|r| r.methods()))
+                .chain(self.object_definitions().iter().flat_map(|o| o.methods()))
+                .map(|m| m.ffi_func().pointer_ffi_name()),
+        )
+        // UniFFI trait methods
+        .chain(
+            self.enum_definitions()
+                .iter()
+                .flat_map(|e| e.uniffi_traits())
+                .chain(
+                    self.record_definitions()
+                        .iter()
+                        .flat_map(|r| r.uniffi_traits()),
+                )
+                .chain(
+                    self.object_definitions()
+                        .iter()
+                        .flat_map(|o| o.uniffi_traits()),
+                )
+                .flat_map(|ut| match ut {
+                    UniffiTrait::Display { fmt: m }
+                    | UniffiTrait::Debug { fmt: m }
+                    | UniffiTrait::Hash { hash: m }
+                    | UniffiTrait::Ord { cmp: m } => vec![m],
+                    UniffiTrait::Eq { eq, ne } => vec![eq, ne],
+                })
+                .map(|m| m.ffi_func().pointer_ffi_name()),
+        )
+    }
+
+    pub fn pointer_ffi_rustbuffer_alloc(&self) -> String {
+        format!("uniffi_ptr_{}_rustbuffer_alloc", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_rustbuffer_free(&self) -> String {
+        format!("uniffi_ptr_{}_rustbuffer_free", self.ffi_namespace())
     }
 }
