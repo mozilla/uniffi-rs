@@ -5,13 +5,7 @@ internal const val UNIFFI_CALL_SUCCESS = 0.toByte()
 internal const val UNIFFI_CALL_ERROR = 1.toByte()
 internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 
-@Structure.FieldOrder("code", "error_buf")
-internal open class UniffiRustCallStatus : Structure() {
-    @JvmField var code: Byte = UNIFFI_CALL_SUCCESS
-    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
-
-    class ByValue: UniffiRustCallStatus(), Structure.ByValue
-
+internal open class UniffiRustCallStatus(val code: Byte, val errorBuf: RustBuffer) {
     fun isSuccess(): Boolean {
         return code == UNIFFI_CALL_SUCCESS
     }
@@ -25,12 +19,7 @@ internal open class UniffiRustCallStatus : Structure() {
     }
 
     companion object {
-        fun create(code: Byte, errorBuf: RustBuffer.ByValue): UniffiRustCallStatus.ByValue {
-            val callStatus = UniffiRustCallStatus.ByValue()
-            callStatus.code = code
-            callStatus.error_buf = errorBuf
-            return callStatus
-        }
+        fun default() = UniffiRustCallStatus(UNIFFI_CALL_SUCCESS, RustBuffer.default())
     }
 }
 
@@ -42,7 +31,7 @@ class InternalException(message: String) : kotlin.Exception(message)
  * @suppress
  */
 interface UniffiRustCallStatusErrorHandler<E> {
-    fun lift(error_buf: RustBuffer.ByValue): E;
+    fun lift(error_buf: RustBuffer): E;
 }
 
 // Helpers for calling Rust
@@ -54,13 +43,13 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
-        throw errorHandler.lift(status.error_buf)
+        throw errorHandler.lift(status.errorBuf)
     } else if (status.isPanic()) {
         // when the rust code sees a panic, it tries to construct a rustbuffer
         // with the message.  but if that code panics, then it just sends back
         // an empty buffer.
-        if (status.error_buf.len > 0) {
-            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.error_buf))
+        if (status.errorBuf.len > 0) {
+            throw InternalException({{ Type::String.borrow()|lift_fn }}(status.errorBuf))
         } else {
             throw InternalException("Rust panic")
         }
@@ -75,7 +64,7 @@ private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustC
  * @suppress
  */
 object UniffiNullRustCallStatusErrorHandler: UniffiRustCallStatusErrorHandler<InternalException> {
-    override fun lift(error_buf: RustBuffer.ByValue): InternalException {
+    override fun lift(error_buf: RustBuffer): InternalException {
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
     }

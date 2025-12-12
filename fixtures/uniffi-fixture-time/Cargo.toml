@@ -10,7 +10,7 @@ crate-type = ["lib", "cdylib"]
 name = "uniffi_chronological"
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 thiserror = "2"
 chrono = { version = "0.4.23", default-features = false, features = ["alloc", "std"] }
 
