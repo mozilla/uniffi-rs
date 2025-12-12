@@ -93,7 +93,9 @@ pub fn method_checksum_symbol_name(module_path: &str, object_name: &str, name: &
 pub fn pointer_ffi_symbol_name(fn_name: &str) -> String {
     match fn_name.strip_prefix("uniffi_") {
         Some(rest) => format!("uniffi_ptr_{rest}"),
-        // this should never happen, but if it does let's try our best to prefix things properly.
-        None => format!("uniffi_ptr_{fn_name}"),
+        None => match fn_name.strip_prefix("ffi_") {
+            Some(rest) => format!("uniffi_ptr_{rest}"),
+            None => panic!("ffi_pointer_symbol_name: can't handle FFI function name ({fn_name})"),
+        },
     }
 }

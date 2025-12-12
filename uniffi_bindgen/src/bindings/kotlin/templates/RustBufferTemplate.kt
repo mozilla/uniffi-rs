@@ -23,13 +23,17 @@ open class RustBuffer : Structure() {
     }
 
     companion object {
-        internal fun alloc(size: ULong = 0UL) = uniffiRustCall() { status ->
-            // Note: need to convert the size to a `Long` value to make this work with JVM.
-            UniffiLib.{{ ci.ffi_rustbuffer_alloc().name() }}(size.toLong(), status)
-        }.also {
-            if(it.data == null) {
+        internal fun alloc(size: ULong = 0UL): RustBuffer.ByValue {
+            val ffiBuffer = Memory(24)
+            val argsCursor = UniffiBufferCursor(ffiBuffer)
+            UniffiFfiSerializerLong.write(argsCursor, size.toLong());
+            UniffiLib.{{ ci.pointer_ffi_rustbuffer_alloc() }}(ffiBuffer);
+            val returnCursor = UniffiBufferCursor(ffiBuffer)
+            val allocatedBuffer = UniffiFfiSerializerRustBuffer.read(returnCursor)
+            if(allocatedBuffer.data == null) {
                throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=${size})")
            }
+           return allocatedBuffer
         }
 
         internal fun create(capacity: ULong, len: ULong, data: Pointer?): RustBuffer.ByValue {
@@ -40,8 +44,11 @@ open class RustBuffer : Structure() {
             return buf
         }
 
-        internal fun free(buf: RustBuffer.ByValue) = uniffiRustCall() { status ->
-            UniffiLib.{{ ci.ffi_rustbuffer_free().name() }}(buf, status)
+        internal fun free(buf: RustBuffer.ByValue) {
+            val ffiBuffer = Memory(24)
+            val argsCursor = UniffiBufferCursor(ffiBuffer)
+            UniffiFfiSerializerRustBuffer.write(argsCursor, buf);
+            UniffiLib.{{ ci.pointer_ffi_rustbuffer_free() }}(ffiBuffer);
         }
     }
 
