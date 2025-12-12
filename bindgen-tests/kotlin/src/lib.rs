@@ -24,43 +24,36 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_records() {
         run_tests(test_dir(), "tests/records.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_collections() {
         run_tests(test_dir(), "tests/collections.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_options() {
         run_tests(test_dir(), "tests/options.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_enums() {
         run_tests(test_dir(), "tests/enums.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_interfaces() {
         run_tests(test_dir(), "tests/interfaces.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_errors() {
         run_tests(test_dir(), "tests/errors.kts");
     }
 
     #[test]
-    #[ignore]
     fn test_callback_interfaces() {
         run_tests(test_dir(), "tests/callback_interfaces.kts");
     }
@@ -90,7 +83,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_custom_types() {
         run_tests(test_dir(), "tests/custom_types.kts");
     }

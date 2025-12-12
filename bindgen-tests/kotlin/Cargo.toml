@@ -12,5 +12,13 @@ glob = "0.3"
 uniffi = { path = "../../uniffi", features = ["bindgen", "pointer-ffi"] }
 uniffi-bindgen-tests = { path = "../lib", default-features = false, features = [
     "simple_fns",
-    "primitive_types"
+    "primitive_types",
+    "records",
+    "enums",
+    "collections",
+    "options",
+    "interfaces",
+    "custom_types",
+    "errors",
+    "callback_interfaces",
 ] }
