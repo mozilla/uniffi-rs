@@ -91,8 +91,13 @@ fn build_jar(
         bail!("No kotlin sources found in {out_dir}")
     }
 
+    let installation = find_kotlinc_installation()?;
+    let kotlinx_serialization_plugin =
+        installation.join("lib/kotlin-serialization-compiler-plugin.jar");
+
     let mut command = kotlinc_command(options);
     command
+        .arg(format!("-Xplugin={kotlinx_serialization_plugin}"))
         // Our generated bindings should not produce any warnings; fail tests if they do.
         .arg("-Werror")
         .arg("-d")
@@ -118,6 +123,27 @@ fn kotlinc_command(options: &RunScriptOptions) -> Command {
         command.arg("-nowarn");
     }
     command
+}
+
+fn find_kotlinc_installation() -> Result<Utf8PathBuf> {
+    let Some(path_var) = env::var_os("PATH") else {
+        bail!("Environment variable PATH not present")
+    };
+    let kotlinc_executable_name = format!("kotlinc{}", env::consts::EXE_SUFFIX);
+    for path in env::split_paths(&path_var) {
+        // If we find <installation>/bin/kotlinc,
+        if path
+            .join(&kotlinc_executable_name)
+            .try_exists()
+            .is_ok_and(|e| e)
+        {
+            // Return <installation>.
+            if let Some(installation) = path.parent().and_then(|p| Utf8Path::from_path(p)) {
+                return Ok(installation.to_path_buf());
+            }
+        }
+    }
+    bail!("Could not find a directory containing the kotlinc executable")
 }
 
 fn calc_classpath(extra_paths: Vec<&Utf8Path>) -> String {
