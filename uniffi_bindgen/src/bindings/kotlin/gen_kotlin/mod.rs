@@ -86,6 +86,8 @@ pub struct Config {
     disable_java_cleaner: bool,
     #[serde(default)]
     pub(super) rename: toml::Table,
+    #[serde(default)]
+    generate_serializable_types: bool,
 }
 
 impl Config {
@@ -902,6 +904,78 @@ mod filters {
 
         let spaces = usize::try_from(*spaces).unwrap_or_default();
         Ok(textwrap::indent(&wrapped, &" ".repeat(spaces)))
+    }
+
+    fn serializable_type(ty: &Type, ci: &ComponentInterface) -> Result<bool, askama::Error> {
+        Ok(match ty {
+            Type::Object { .. } | Type::CallbackInterface { .. } => false,
+            Type::Record { name, .. } => serializable_record(
+                ci.get_record_definition(name)
+                    .ok_or_else(|| to_askama_error(&format!("could not find record '{name}'")))?,
+                ci,
+            )?,
+            Type::Enum { name, .. } => serializable_enum(
+                ci.get_enum_definition(name)
+                    .ok_or_else(|| to_askama_error(&format!("could not find enum '{name}'")))?,
+                ci,
+            )?,
+            Type::Optional { inner_type } | Type::Sequence { inner_type } => {
+                serializable_type(inner_type, ci)?
+            }
+            Type::Map {
+                key_type,
+                value_type,
+            } => serializable_type(key_type, ci)? && serializable_type(value_type, ci)?,
+            // Assume a custom type using a serializable type is also serializable.
+            Type::Custom { builtin, .. } => serializable_type(builtin, ci)?,
+            _ => true,
+        })
+    }
+
+    pub fn serializable_record(
+        record: &Record,
+        ci: &ComponentInterface,
+    ) -> Result<bool, askama::Error> {
+        for field in record.fields() {
+            if !serializable_type(&field.as_type(), ci)? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+
+    pub fn serializable_enum(e: &Enum, ci: &ComponentInterface) -> Result<bool, askama::Error> {
+        if ci.is_name_used_as_error(e.name()) {
+            return Ok(false);
+        }
+
+        if e.is_flat() {
+            let Some(variant_discr_type) = e.variant_discr_type() else {
+                return Ok(true);
+            };
+            return serializable_type(variant_discr_type, ci);
+        }
+
+        // Unlike records or enum variants, if any of the variants are serializable, the
+        // enum can be marked as serializable.
+        for variant in e.variants() {
+            if serializable_enum_variant(variant, ci)? {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    pub fn serializable_enum_variant(
+        variant: &Variant,
+        ci: &ComponentInterface,
+    ) -> Result<bool, askama::Error> {
+        for field in variant.fields() {
+            if !serializable_type(&field.as_type(), ci)? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
 }
 
