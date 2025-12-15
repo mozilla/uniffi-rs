@@ -19,6 +19,7 @@ pub struct Node {
     pub def: NodeDef,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone)]
 pub enum NodeDef {
     Struct(Struct),

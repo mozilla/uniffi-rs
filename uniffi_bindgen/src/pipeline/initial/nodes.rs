@@ -199,6 +199,7 @@ pub struct CallbackInterface {
     pub methods: Vec<Method>,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Node, PartialEq, Eq)]
 #[node(from(UniffiTraitMetadata))]
 pub enum UniffiTrait {

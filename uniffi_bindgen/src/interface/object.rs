@@ -636,6 +636,7 @@ impl Method {
 }
 
 /// The list of traits we support generating helper methods for.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Checksum)]
 pub enum UniffiTrait {
     Debug { fmt: Method },
