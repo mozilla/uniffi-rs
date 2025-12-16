@@ -131,7 +131,11 @@ impl RustBuffer {
     /// Panics if the requested size is too large to fit in an `u64`, and
     /// hence would risk incompatibility with some foreign-language code.
     pub fn new_with_size(size: u64) -> Self {
-        Self::from_vec(vec![0u8; size as usize])
+        let rust_buffer = Self::from_vec(vec![0u8; size as usize]);
+        trace_and_return!(
+            rust_buffer,
+            "RustBuffer.new_with_size({size}) ({rust_buffer:?}"
+        )
     }
 
     /// Consumes a `Vec<u8>` and returns its raw parts as a `RustBuffer`.
@@ -147,7 +151,8 @@ impl RustBuffer {
         let capacity = u64::try_from(v.capacity()).expect("buffer capacity cannot fit into a u64.");
         let len = u64::try_from(v.len()).expect("buffer length cannot fit into a u64.");
         let mut v = std::mem::ManuallyDrop::new(v);
-        unsafe { Self::from_raw_parts(v.as_mut_ptr(), len, capacity) }
+        let rust_buffer = unsafe { Self::from_raw_parts(v.as_mut_ptr(), len, capacity) };
+        trace_and_return!(rust_buffer, "RustBuffer.from_vec ({rust_buffer:?}")
     }
 
     /// Converts this `RustBuffer` back into an owned `Vec<u8>`.
@@ -161,6 +166,7 @@ impl RustBuffer {
     /// Panics if called on an invalid struct obtained from foreign-language code,
     /// which does not respect the invairiants on `len` and `capacity`.
     pub fn destroy_into_vec(self) -> Vec<u8> {
+        trace!("RustBuffer.destroy_into_vec {self:?}");
         // Rust will never give us a null `data` pointer for a `Vec`, but
         // foreign-language code can use it to cheaply pass an empty buffer.
         if self.data.is_null() {
@@ -188,6 +194,7 @@ impl RustBuffer {
     /// Panics if called on an invalid struct obtained from foreign-language code,
     /// which does not respect the invairiants on `len` and `capacity`.
     pub fn destroy(self) {
+        trace!("RustBuffer.destroy {self:?}");
         drop(self.destroy_into_vec());
     }
 }
