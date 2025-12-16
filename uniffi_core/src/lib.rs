@@ -95,7 +95,7 @@ pub use metadata::*;
 // Re-export the libs that we use in the generated code,
 // so the consumer doesn't have to depend on them directly.
 pub mod deps {
-    pub use crate::trace;
+    pub use crate::{trace, trace_and_return};
     pub use anyhow;
     #[cfg(feature = "tokio")]
     pub use async_compat;
