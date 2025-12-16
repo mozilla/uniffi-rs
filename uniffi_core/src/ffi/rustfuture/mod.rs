@@ -105,7 +105,6 @@ impl<UT, LR> FutureLowerReturn<UT> for LR where LR: LowerReturn<UT> {}
 /// For each exported async function, UniFFI will create a scaffolding function that uses this to
 /// create the [Handle] to pass to the foreign code.
 // Need to allow let_and_return, or clippy complains when the `ffi-trace` feature is disabled.
-#[allow(clippy::let_and_return)]
 pub fn rust_future_new<F, T, UT>(future: F, tag: UT) -> Handle
 where
     F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
@@ -115,8 +114,7 @@ where
         future, tag,
     ));
     let handle = Handle::from_arc(rust_future);
-    trace!("rust_future_new: {handle:?}");
-    handle
+    trace_and_return!(handle, "rust_future_new: {handle:?}")
 }
 
 /// Poll a Rust future

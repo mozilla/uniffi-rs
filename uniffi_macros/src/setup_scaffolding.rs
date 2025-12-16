@@ -72,7 +72,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             size: ::std::primitive::u64,
             call_status: &mut ::uniffi::RustCallStatus,
         ) -> ::uniffi::RustBuffer {
-            ::uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
+            let rust_buffer = ::uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status);
+            ::uniffi::deps::trace_and_return!(rust_buffer, "Rustbuffer alloc ({rust_buffer:?})")
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -82,7 +83,9 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             bytes: ::uniffi::ForeignBytes,
             call_status: &mut ::uniffi::RustCallStatus,
         ) -> ::uniffi::RustBuffer {
-            ::uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status)
+            let rust_buffer = ::uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status);
+            ::uniffi::deps::trace!("Rustbuffer from_bytes {rust_buffer:?}");
+            rust_buffer
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -92,6 +95,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             buf: ::uniffi::RustBuffer,
             call_status: &mut ::uniffi::RustCallStatus,
         ) {
+            ::uniffi::deps::trace!("Rustbuffer free {buf:?}");
             ::uniffi::ffi::uniffi_rustbuffer_free(buf, call_status);
         }
 
@@ -202,7 +206,7 @@ fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
 }
 
 #[cfg(not(feature = "pointer-ffi"))]
-fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
+fn setup_scaffolding_pointer_ffi(_normalized_module_path: &str) -> TokenStream {
     TokenStream::default()
 }
 

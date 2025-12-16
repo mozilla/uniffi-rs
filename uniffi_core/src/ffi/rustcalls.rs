@@ -40,6 +40,7 @@ use std::panic;
 /// };
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct RustCallStatus {
     pub code: RustCallStatusCode,
     // error_buf is owned by the foreign side.

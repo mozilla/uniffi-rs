@@ -41,10 +41,34 @@ macro_rules! trace {
     }
 }
 
+/// Print out tracing information, then return the first argument as a value
+///
+/// Use this want to run a trace while returning a value.  It's simpler and avoids the clippy
+/// let-and-return error when `ffi-trace` is disabled.
+#[cfg(feature = "ffi-trace")]
+#[macro_export]
+macro_rules! trace_and_return {
+    ($expr:expr, $($tt:tt)*) => {
+        {
+            ::std::println!($($tt)*);
+            $expr
+        }
+    }
+}
+
 #[cfg(not(feature = "ffi-trace"))]
 #[macro_export]
 macro_rules! trace {
     ($($tt:tt)*) => {};
+}
+
+#[cfg(not(feature = "ffi-trace"))]
+#[macro_export]
+macro_rules! trace_and_return {
+    ($expr:expr, $($tt:tt)*) => {
+        #[allow(clippy::let_and_return)]
+        $expr
+    };
 }
 
 use anyhow::bail;
@@ -72,7 +96,7 @@ pub use metadata::*;
 // Re-export the libs that we use in the generated code,
 // so the consumer doesn't have to depend on them directly.
 pub mod deps {
-    pub use crate::trace;
+    pub use crate::{trace, trace_and_return};
     pub use anyhow;
     #[cfg(feature = "tokio")]
     pub use async_compat;
