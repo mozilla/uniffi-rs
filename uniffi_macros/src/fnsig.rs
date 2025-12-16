@@ -415,6 +415,7 @@ pub(crate) struct Arg {
     pub(crate) kind: ArgKind,
 }
 
+#[allow(clippy::large_enum_variant)]
 pub(crate) enum ArgKind {
     Receiver(ReceiverArg),
     Named(NamedArg),

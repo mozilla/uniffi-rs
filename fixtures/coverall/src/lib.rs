@@ -253,6 +253,7 @@ pub struct DictWithDefaults {
     item_map: HashMap<String, String>,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 pub enum MaybeSimpleDict {
     Yeah { d: SimpleDict },

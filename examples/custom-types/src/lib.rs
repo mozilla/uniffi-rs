@@ -19,11 +19,9 @@ impl From<Handle> for i64 {
     }
 }
 
-impl TryFrom<i64> for Handle {
-    type Error = std::convert::Infallible;
-
-    fn try_from(val: i64) -> Result<Handle, Self::Error> {
-        Ok(Handle(val))
+impl From<i64> for Handle {
+    fn from(val: i64) -> Handle {
+        Handle(val)
     }
 }
 

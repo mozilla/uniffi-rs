@@ -313,6 +313,7 @@ pub struct VTableMethod {
     pub ffi_type: FfiTypeNode,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Node)]
 pub enum UniffiTrait {
     Debug { fmt: Method },

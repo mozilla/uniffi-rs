@@ -116,6 +116,7 @@ pub struct Callable {
     pub ffi_func: RustFfiFunctionName,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Node, Eq, PartialEq, Hash)]
 pub enum CallableKind {
     /// Toplevel function

@@ -441,9 +441,11 @@ impl KotlinCodeOracle {
     fn class_name(&self, ci: &ComponentInterface, nm: &str) -> String {
         let name = nm.to_string().to_upper_camel_case();
         // fixup errors.
-        ci.is_name_used_as_error(nm)
-            .then(|| self.convert_error_suffix(&name))
-            .unwrap_or(name)
+        if ci.is_name_used_as_error(nm) {
+            self.convert_error_suffix(&name)
+        } else {
+            name
+        }
     }
 
     fn convert_error_suffix(&self, nm: &str) -> String {

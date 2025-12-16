@@ -416,6 +416,7 @@ impl ObjectMetadata {
 /// The list of "builtin" traits we support generating helper methods for.
 /// Some interesting overlap with ObjectTraitImplMetadata, but quite different
 /// implementations for now.
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Node)]
 pub enum UniffiTraitMetadata {
     Debug {
@@ -528,6 +529,7 @@ pub fn checksum<T: Checksum>(val: &T) -> u16 {
 }
 
 /// Enum covering all the possible metadata types
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Node)]
 pub enum Metadata {
     Namespace(NamespaceMetadata),
