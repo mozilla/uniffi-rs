@@ -68,6 +68,18 @@ impl ComponentInterface {
                 })
                 .map(|m| m.ffi_func().pointer_ffi_name()),
         )
+        // VTable init functions
+        .chain(
+            self.callback_interface_definitions()
+                .iter()
+                .map(|cbi| cbi.ffi_init_callback().pointer_ffi_name()),
+        )
+        .chain(
+            self.object_definitions()
+                .iter()
+                .filter(|o| o.has_callback_interface())
+                .map(move |o| o.ffi_init_callback().pointer_ffi_name()),
+        )
     }
 
     pub fn pointer_ffi_rustbuffer_alloc(&self) -> String {
