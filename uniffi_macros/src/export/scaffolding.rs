@@ -302,8 +302,10 @@ fn scaffolding_fn_legacy_ffi(
                         let uniffi_result = #rust_fn_call;
                         ::uniffi::deps::trace!("call success: {}", #ffi_fn_name);
                         let uniffi_lowered_return = #lower_return(#convert_result);
-                        ::uniffi::deps::trace!("lower_return success: {}", #ffi_fn_name);
-                        uniffi_lowered_return
+                        ::uniffi::deps::trace_and_return!(
+                            uniffi_lowered_return,
+                            "lower_return success: {}", #ffi_fn_name,
+                        )
                     }
                     ::std::result::Result::Err((arg_name, error)) => {
                         ::uniffi::deps::trace!("lift_args error: {}", #ffi_fn_name);
@@ -384,7 +386,7 @@ fn scaffolding_fn_pointer_ffi(
         #[unsafe(no_mangle)]
         pub unsafe extern "C" fn #ident(uniffi_ffi_buffer: *mut u8) {
             #use_trait
-            ::uniffi::deps::trace!("calling(ptr): {}", #ffi_fn_name);
+            ::uniffi::deps::trace!("[pointer-ffi] calling: {}", #ffi_fn_name);
 
             let mut uniffi_args_buf = ::std::slice::from_raw_parts(
                 uniffi_ffi_buffer,
