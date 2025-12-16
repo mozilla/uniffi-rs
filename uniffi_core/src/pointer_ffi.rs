@@ -84,6 +84,7 @@ pub unsafe fn rustbuffer_alloc(ffi_buffer: *mut u8) {
     let rust_buffer = RustBuffer::new_with_size(size);
     let mut uniffi_return_buf =
         ::std::slice::from_raw_parts_mut(ffi_buffer, ffi_buffer_size!((RustBuffer)));
+    trace!("FFI rustbuffer_alloc {rust_buffer:?}");
     RustBuffer::write(&mut uniffi_return_buf, rust_buffer);
 }
 
@@ -95,6 +96,7 @@ pub unsafe fn rustbuffer_alloc(ffi_buffer: *mut u8) {
 pub unsafe fn rustbuffer_free(ffi_buffer: *mut u8) {
     let mut args_buf = slice::from_raw_parts(ffi_buffer, ffi_buffer_size!((RustBuffer)));
     let rust_buffer = <RustBuffer as FfiSerialize>::read(&mut args_buf);
+    trace!("FFI rustbuffer_free {rust_buffer:?}");
     rust_buffer.destroy();
 }
 
