@@ -16,12 +16,12 @@ pub use nodes::*;
 use anyhow::Result;
 use camino::Utf8Path;
 
-use crate::{crate_name_from_cargo_toml, interface, macro_metadata, BindgenCrateConfigSupplier};
+use crate::{crate_name_from_cargo_toml, interface, macro_metadata, BindgenPaths};
 pub use from_uniffi_meta::UniffiMetaConverter;
 
 impl Root {
     pub fn from_library(
-        config_supplier: impl BindgenCrateConfigSupplier,
+        bindgen_paths: BindgenPaths,
         path: &Utf8Path,
         crate_name: Option<String>,
     ) -> Result<Root> {
@@ -37,12 +37,12 @@ impl Root {
             match meta {
                 uniffi_meta::Metadata::UdlFile(udl) => {
                     udl_to_load.push((
-                        config_supplier.get_udl(&udl.module_path, &udl.file_stub)?,
+                        bindgen_paths.get_udl(&udl.module_path, &udl.file_stub)?,
                         udl.module_path,
                     ));
                 }
                 uniffi_meta::Metadata::Namespace(namespace) => {
-                    if let Some(path) = config_supplier.get_toml_path(&namespace.crate_name) {
+                    if let Some(path) = bindgen_paths.get_config_path(&namespace.crate_name) {
                         metadata_converter.add_module_config_toml(namespace.name.clone(), &path)?;
                     }
                     metadata_converter
@@ -55,7 +55,7 @@ impl Root {
         for (udl, module_path) in udl_to_load {
             Self::add_metadata_from_udl(
                 &mut metadata_converter,
-                &config_supplier,
+                &bindgen_paths,
                 &udl,
                 &module_path,
                 true,
@@ -67,7 +67,7 @@ impl Root {
     }
 
     pub fn from_udl(
-        config_supplier: impl BindgenCrateConfigSupplier,
+        bindgen_paths: BindgenPaths,
         path: &Utf8Path,
         crate_name: Option<String>,
     ) -> Result<Root> {
@@ -78,7 +78,7 @@ impl Root {
         };
         Self::add_metadata_from_udl(
             &mut metadata_converter,
-            &config_supplier,
+            &bindgen_paths,
             &fs::read_to_string(path)?,
             &crate_name,
             false,
@@ -88,7 +88,7 @@ impl Root {
 
     fn add_metadata_from_udl(
         metadata_converter: &mut UniffiMetaConverter,
-        config_supplier: &impl BindgenCrateConfigSupplier,
+        bindgen_paths: &BindgenPaths,
         udl: &str,
         crate_name: &str,
         library_mode: bool,
@@ -101,7 +101,7 @@ impl Root {
                 .add_module_docstring(metadata_group.namespace.name.clone(), docstring)?;
         }
         if !library_mode {
-            if let Some(path) = config_supplier.get_toml_path(&metadata_group.namespace.crate_name)
+            if let Some(path) = bindgen_paths.get_config_path(&metadata_group.namespace.crate_name)
             {
                 metadata_converter
                     .add_module_config_toml(metadata_group.namespace.name.clone(), &path)?;

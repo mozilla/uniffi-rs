@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use anyhow::Result;
 use camino::Utf8PathBuf;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fmt;
@@ -163,18 +162,6 @@ struct PipelineArgs {
     filter_name: Option<String>,
 }
 
-fn config_supplier(
-    metadata_no_deps: bool,
-) -> Result<impl uniffi_bindgen::BindgenCrateConfigSupplier> {
-    #[cfg(feature = "cargo-metadata")]
-    return uniffi_bindgen::cargo_metadata::CrateConfigSupplier::from_cargo_metadata_command(
-        metadata_no_deps,
-    );
-
-    #[cfg(not(feature = "cargo-metadata"))]
-    Ok(uniffi_bindgen::EmptyCrateConfigSupplier)
-}
-
 pub fn run_main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     match cli.command {
@@ -215,11 +202,14 @@ pub fn run_main() -> anyhow::Result<()> {
             )?;
         }
         Commands::Pipeline(args) => {
-            let config_supplier = config_supplier(args.metadata_no_deps)?;
+            let mut paths = uniffi_bindgen::BindgenPaths::default();
+            #[cfg(feature = "cargo-metadata")]
+            paths.add_cargo_metadata_layer(args.metadata_no_deps)?;
+
             let initial_root = if args.library_mode {
-                initial::Root::from_library(config_supplier, &args.source, args.crate_name)?
+                initial::Root::from_library(paths, &args.source, args.crate_name)?
             } else {
-                initial::Root::from_udl(config_supplier, &args.source, args.crate_name)?
+                initial::Root::from_udl(paths, &args.source, args.crate_name)?
             };
 
             let opts = PrintOptions {
