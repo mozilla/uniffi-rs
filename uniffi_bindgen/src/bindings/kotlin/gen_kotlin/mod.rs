@@ -819,6 +819,13 @@ mod filters {
         }
     }
 
+    pub fn ffi_type_name(
+        type_: &FfiType,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        Ok(KotlinCodeOracle.ffi_type_label(type_, ci))
+    }
+
     pub fn ffi_type_name_by_value(
         type_: &FfiType,
         ci: &ComponentInterface,

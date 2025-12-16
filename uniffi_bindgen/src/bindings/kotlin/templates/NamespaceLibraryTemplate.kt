@@ -12,10 +12,27 @@ private fun findLibraryName(componentName: String): String {
 
 {%- when PointerFfiDefinition::Callback(cb) %}
 {%- match cb.kind %}
+{%- when FfiCallbackFunctionKind::Normal %}
+internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(uniffiFfiBuffer: Pointer)
+}
 {%- when FfiCallbackFunctionKind::RustFutureContinutation %}
 internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
     fun callback(data: Long, pollResult: Byte)
 }
+{%- endmatch %}
+
+{%- when PointerFfiDefinition::Struct(st) %}
+{%- match st.kind %}
+{%- when FfiStructKind::VTable { methods } %}
+@Structure.FieldOrder("uniffiFree", "uniffiClone"{% for method_name in methods.iter() %}, "{{ method_name|var_name_raw }}"{% endfor %})
+internal open class {{ st.name|ffi_struct_name }}(
+    @JvmField internal var uniffiFree: UniffiCallbackMethod,
+    @JvmField internal var uniffiClone: UniffiCallbackMethod,
+    {%- for method_name in methods %}
+    @JvmField internal var {{ method_name|var_name }}: UniffiCallbackMethod,
+    {%- endfor %}
+) : Structure()
 {%- endmatch %}
 
 {%- when PointerFfiDefinition::Function(func) %}
@@ -126,6 +143,8 @@ internal object UniffiLib {
     external fun {{ func.name }}(uniffiFfiBuffer: Pointer)
     {%- when FfiFunctionKind::RustFuturePoll %}
     external fun {{ func.name }}(uniffiFfiBuffer: Pointer, callback: UniffiRustFutureContinuationCallback)
+    {%- when FfiFunctionKind::VTableInit %}
+    external fun {{ func.name }}(vtable: Pointer)
     {%- endmatch %}
     {%- endif %}
     {%- endfor %}

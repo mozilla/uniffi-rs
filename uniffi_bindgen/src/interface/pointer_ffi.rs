@@ -8,12 +8,13 @@
 //! feature, then both versions of the FFI will be generated.  The pointer FFI symbols are prefixed
 //! with `uniffi_ptr_` to avoid any conflicts.
 
-use super::{ComponentInterface, UniffiTrait};
+use super::{callbacks::vtable_name, ComponentInterface, UniffiTrait};
 
 #[derive(Debug, Clone)]
 pub enum PointerFfiDefinition {
     Callback(PointerFfiCallbackFunction),
     Function(PointerFfiFunction),
+    Struct(PointerFfiStruct),
 }
 
 /// FFI function for the pointer FFI
@@ -33,9 +34,11 @@ pub enum FfiFunctionKind {
     /// Rust future poll, inputs a buffer pointer plus a function pointer for the continuation
     /// function
     RustFuturePoll,
+    /// VTable init function, inputs a pointer to the VTable struct
+    VTableInit,
 }
 
-/// FFI function for the pointer FFI
+/// FFI callback function for the pointer FFI
 #[derive(Debug, Clone)]
 pub struct PointerFfiCallbackFunction {
     pub name: String,
@@ -44,8 +47,23 @@ pub struct PointerFfiCallbackFunction {
 
 #[derive(Debug, Clone, Copy)]
 pub enum FfiCallbackFunctionKind {
+    /// Normal callback function, inputs a buffer pointer
+    Normal,
     /// Callback for the `rust_future_poll` function
     RustFutureContinutation,
+}
+
+/// FFI struct for the pointer FFI
+#[derive(Debug, Clone)]
+pub struct PointerFfiStruct {
+    pub name: String,
+    pub kind: FfiStructKind,
+}
+
+#[derive(Debug, Clone)]
+pub enum FfiStructKind {
+    /// Vtable for a callback interface
+    VTable { methods: Vec<String> },
 }
 
 pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerFfiDefinition> + '_ {
@@ -59,6 +77,7 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
         PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rust_future_complete")),
         PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rust_future_free")),
         PointerFfiDefinition::rust_future_continuation("RustFutureContinuationCallback"),
+        PointerFfiDefinition::callback_func("CallbackMethod"),
     ]
     .into_iter()
     // Functions
@@ -106,6 +125,33 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
             })
             .map(|m| PointerFfiDefinition::func(m.ffi_func().pointer_ffi_name())),
     )
+    .chain(
+        ci.object_definitions()
+            .iter()
+            .filter(|o| o.has_callback_interface())
+            .flat_map(move |o| {
+                [
+                    PointerFfiDefinition::vtable_init(o.ffi_init_callback().pointer_ffi_name()),
+                    PointerFfiDefinition::vtable(
+                        vtable_name(o.name()),
+                        o.ffi_callbacks()
+                            .into_iter()
+                            .map(|cb| cb.name().to_string()),
+                    ),
+                ]
+            }),
+    )
+    .chain(ci.callback_interface_definitions().iter().flat_map(|cbi| {
+        [
+            PointerFfiDefinition::vtable_init(cbi.ffi_init_callback().pointer_ffi_name()),
+            PointerFfiDefinition::vtable(
+                vtable_name(cbi.name()),
+                cbi.ffi_callbacks()
+                    .into_iter()
+                    .map(|cb| cb.name().to_string()),
+            ),
+        ]
+    }))
 }
 
 impl PointerFfiDefinition {
@@ -113,6 +159,7 @@ impl PointerFfiDefinition {
         match self {
             Self::Callback(cb) => &cb.name,
             Self::Function(f) => &f.name,
+            Self::Struct(s) => &s.name,
         }
     }
 
@@ -130,10 +177,33 @@ impl PointerFfiDefinition {
         })
     }
 
+    fn vtable_init(name: impl Into<String>) -> Self {
+        Self::Function(PointerFfiFunction {
+            name: name.into(),
+            kind: FfiFunctionKind::VTableInit,
+        })
+    }
+
+    fn callback_func(name: impl Into<String>) -> Self {
+        Self::Callback(PointerFfiCallbackFunction {
+            name: name.into(),
+            kind: FfiCallbackFunctionKind::Normal,
+        })
+    }
+
     fn rust_future_continuation(name: impl Into<String>) -> Self {
         Self::Callback(PointerFfiCallbackFunction {
             name: name.into(),
             kind: FfiCallbackFunctionKind::RustFutureContinutation,
+        })
+    }
+
+    fn vtable(name: impl Into<String>, methods: impl IntoIterator<Item = String>) -> Self {
+        Self::Struct(PointerFfiStruct {
+            name: name.into(),
+            kind: FfiStructKind::VTable {
+                methods: methods.into_iter().collect(),
+            },
         })
     }
 }
