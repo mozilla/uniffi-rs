@@ -3,4 +3,4 @@ mkdocs==1.6.1
 mkdocs-material==9.6.12
 mkdocs-no-sitemap-plugin==0.0.1
 pygments==2.18.0
-pymdown-extensions==10.8.1
+pymdown-extensions==10.16.1
