@@ -7,17 +7,18 @@
 use std::{mem, slice, sync::Arc};
 
 use crate::{
-    ffi::rustfuture::RustFuture, ffi_buffer_size, FfiDefault, FfiSerialize, FutureLowerReturn,
-    Handle, LiftArgsError, RustBuffer, RustCallStatus, RustFutureCallback, RustFuturePoll,
-    UniffiCompatibleFuture,
+    ffi::rustfuture::RustFuture, ffi_buffer_size, oneshot, FfiDefault, FfiSerialize,
+    FutureLowerReturn, Handle, LiftArgsError, RustBuffer, RustCallStatus, RustFutureCallback,
+    RustFuturePoll, UniffiCompatibleFuture,
 };
 
 /// Pointer FFI callback function
-pub type CallbackFn = extern "C" fn(ffi_buffer: *mut u8);
+pub type CallbackFn = unsafe extern "C" fn(ffi_buffer: *mut u8);
 
 /// Callback function alongside an opaque data value
 ///
 /// This is the typically way callbacks are handled in the pointer FFI.
+#[derive(Debug)]
 pub struct BoundCallbackFn {
     pub callback: CallbackFn,
     pub data: Handle,
@@ -247,4 +248,94 @@ pub unsafe fn rust_future_free(ffi_buffer: *mut u8) {
     let future: Arc<Arc<dyn RustFuturePointerFfi>> =
         Handle::into_arc_borrowed::<Arc<dyn RustFuturePointerFfi>>(handle);
     (*future).clone().free()
+}
+
+/// Perform the initial work for calling a foreign async method
+///
+/// Returns a BoundCallbackFn to send to the foreign code and a oneshot receiver to await in the
+/// Rust code
+pub fn start_foreign_future() -> (BoundCallbackFn, oneshot::Receiver<ForeignFutureFfiBuffer>) {
+    let (sender, receiver) = oneshot::channel::<ForeignFutureFfiBuffer>();
+    let callback = BoundCallbackFn {
+        callback: foreign_future_complete,
+        data: Handle::from_pointer(sender.into_raw()),
+    };
+
+    (callback, receiver)
+}
+
+/// Foreign future FFI buffer
+///
+/// This is just a regular buffer wrapped in a newtype so that we can pass it over a oneshot
+/// channel.
+pub struct ForeignFutureFfiBuffer {
+    pub buf: *const u8,
+}
+
+unsafe impl Send for ForeignFutureFfiBuffer {}
+unsafe impl Sync for ForeignFutureFfiBuffer {}
+
+/// # Safety
+///
+/// The `ffi_buffer` argument must be serialized according to the Pointer FFI protocol.
+pub unsafe extern "C" fn foreign_future_complete(ffi_buffer: *mut u8) {
+    let mut args_buf = slice::from_raw_parts(ffi_buffer, u64::SIZE);
+    let sender_raw = u64::read(&mut args_buf);
+    let channel: oneshot::Sender<ForeignFutureFfiBuffer> =
+        unsafe { oneshot::Sender::from_raw(sender_raw as *mut ()) };
+    channel.send(ForeignFutureFfiBuffer {
+        buf: args_buf.as_ptr(),
+    });
+}
+
+/// Stores the foreign future dropped callback and calls it once this is dropped.
+///
+/// This should be stored in the generated async function.  It's drop method will ensure that the
+/// foreign callback is called when the future is called.
+pub struct ForeignFutureDroppedCallbackContainer {
+    callback: BoundCallbackFn,
+    #[allow(unused)] // only used in `drop()`
+    trait_name: &'static str,
+    #[allow(unused)] // only used in `drop()`
+    method_name: &'static str,
+}
+
+impl ForeignFutureDroppedCallbackContainer {
+    /// # Safety
+    ///
+    /// `ffi_buffer` must be contain a `u64` value to send to the callback
+    pub unsafe fn new(
+        callback: BoundCallbackFn,
+        trait_name: &'static str,
+        method_name: &'static str,
+    ) -> Self {
+        trace!(
+            "Creating foreign future dropped callback ({}::{} - {:?})",
+            trait_name,
+            method_name,
+            callback,
+        );
+        Self {
+            callback,
+            trait_name,
+            method_name,
+        }
+    }
+}
+
+impl Drop for ForeignFutureDroppedCallbackContainer {
+    fn drop(&mut self) {
+        trace!(
+            "Calling foreign future dropped callback ({}::{} - {:?})",
+            self.trait_name,
+            self.method_name,
+            self.callback
+        );
+        let mut buf = [0u8; u64::SIZE];
+        // Safety: were calling the dropped callback according to the pointer FFI protocol.
+        unsafe {
+            Handle::write(&mut buf.as_mut_slice(), mem::take(&mut self.callback.data));
+            (self.callback.callback)(buf.as_mut_ptr());
+        }
+    }
 }

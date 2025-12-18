@@ -74,7 +74,7 @@ fn trait_impl_legacy_ffi(
     let vtable_type = format_ident!("UniFfiTraitVtable{trait_name}");
     let vtable_cell = format_ident!("UNIFFI_TRAIT_CELL_{}", trait_name.to_uppercase());
     let init_ident = Ident::new(
-        &uniffi_meta::init_callback_vtable_fn_symbol_name(mod_path, &trait_name),
+        &uniffi_meta::init_callback_vtable_fn_symbol_name(mod_path, trait_name),
         Span::call_site(),
     );
 
@@ -588,7 +588,54 @@ fn gen_method_impl_pointer_ffi(
     } else {
         Ok(quote! {
             async fn #ident(#self_param, #(#params),*) -> #return_ty {
-                todo!()
+                ::uniffi::trace!("[pointer-ffi] Calling callback interface method {}::{} (handle: {:?})", #trait_name, #name, self.handle);
+                // Safety: we follow the pointer FFI when reading/writing from the buffer
+                unsafe {
+                    let vtable = #vtable_once.get().unwrap_or_else(|| ::core::panic!("UniFFI: vtable not initialized for {}", #trait_name));
+
+                    let (uniffi_callback, uniffi_receiver) = ::uniffi::pointer_ffi::start_foreign_future();
+
+                    let mut uniffi_ffi_buf = [
+                        0_u8;
+                        ::uniffi::ffi_buffer_size!(
+                            (::uniffi::Handle, #(#scaffolding_param_types,)* ::uniffi::pointer_ffi::BoundCallbackFn),
+                            (::std::option::Option<::uniffi::pointer_ffi::BoundCallbackFn>)
+                        )
+                    ];
+                    let mut uniffi_args_buf = uniffi_ffi_buf.as_mut_slice();
+                    // We're passing the handle by reference, so we can use `clone_for_ref` to
+                    // avoid an arc clone
+                    <::uniffi::Handle as ::uniffi::FfiSerialize>::write(&mut uniffi_args_buf, self.handle.clone_for_ref());
+                    #(
+                        <#scaffolding_param_types as ::uniffi::FfiSerialize>::write(&mut uniffi_args_buf, #lower_exprs);
+                    )*
+                    <::uniffi::pointer_ffi::BoundCallbackFn as ::uniffi::FfiSerialize>::write(
+                        &mut uniffi_args_buf, uniffi_callback);
+
+                    ::uniffi::trace!("calling async callback {}::{}", #trait_name, #name);
+                    (vtable.#ident)(uniffi_ffi_buf.as_mut_ptr());
+
+                    // The foreign side can optionally return a callback that will be called when
+                    // the Rust future is dropped.
+                    let mut uniffi_return_buf = uniffi_ffi_buf.as_slice();
+                    let dropped_callback = <::std::option::Option<::uniffi::pointer_ffi::BoundCallbackFn> as ::uniffi::FfiSerialize>::read(&mut uniffi_return_buf);
+                    let dropped_callback = dropped_callback.map(|callback| {
+                        ::uniffi::pointer_ffi::ForeignFutureDroppedCallbackContainer::new(callback, #trait_name, #name)
+                    });
+
+                    // Await the callback and create a new FFI buffer for reading the result
+                    let uniffi_ffi_buf = uniffi_receiver.await.buf;
+
+                    ::uniffi::trace!("async callback complete {}::{}", #trait_name, #name);
+                    let mut uniffi_return_buf = ::std::slice::from_raw_parts(
+                        uniffi_ffi_buf,
+                        ::uniffi::ffi_buffer_size!((::uniffi::RustCallStatus, #lift_return_type))
+                    );
+                    let uniffi_call_status = <::uniffi::RustCallStatus as ::uniffi::FfiSerialize>::read(&mut uniffi_return_buf);
+                    let uniffi_return_value = <#lift_return_type as ::uniffi::FfiSerialize>::read(&mut uniffi_return_buf);
+                    ::uniffi::trace!("read result {}::{} ({uniffi_call_status:?} / {uniffi_return_value:?})", #trait_name, #name);
+                    #lift_foreign_return(uniffi_return_value, uniffi_call_status)
+                }
             }
         })
     }
