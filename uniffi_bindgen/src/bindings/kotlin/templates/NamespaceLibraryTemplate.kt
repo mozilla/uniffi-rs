@@ -47,14 +47,6 @@ internal open class {{ ffi_struct.name()|ffi_struct_name }}(
 {%- endmatch %}
 {%- endfor %}
 
-{%- macro decl_kotlin_functions(func_list) -%}
-{% for func in func_list -%}
-external fun {{ func.name() }}(
-    {%- call kt::arg_list_ffi_decl(func) %}
-): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value(ci) }}{% when None %}Unit{% endmatch %}
-{% endfor %}
-{%- endmacro %}
-
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -79,9 +71,9 @@ internal object IntegrityCheckingUniffiLib {
         uniffiCheckApiChecksums(this)
 {%- endif %}
     }
-    {% filter indent(4) %}
-    {%- call decl_kotlin_functions(ci.iter_ffi_function_integrity_checks()) %}
-    {% endfilter %}
+    {%- for name in ci.pointer_ffi_integrity_function_names() %}
+    external fun {{ name }}(uniffiFfiBuffer: Pointer)
+    {%- endfor %}
 }
 
 internal object UniffiLib {
@@ -98,10 +90,6 @@ internal object UniffiLib {
         {{ fn_item }}
         {% endfor %}
     }
-    {#- XXX - this `filter indent` doesn't seem to work, even though the one above does? #}
-    {% filter indent(4) %}
-    {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
-    {% endfilter %}
 
     {%- for name in ci.pointer_ffi_function_names() %}
     external fun {{ name }}(uniffiFfiBuffer: Pointer)
@@ -112,8 +100,10 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
     // Get the bindings contract version from our ComponentInterface
     val bindings_contract_version = {{ ci.uniffi_contract_version() }}
     // Get the scaffolding contract version by calling the into the dylib
-    val scaffolding_contract_version = lib.{{ ci.ffi_uniffi_contract_version().name() }}()
-    if (bindings_contract_version != scaffolding_contract_version) {
+    val ffiBuffer = Memory(8)
+    lib.{{ ci.ffi_uniffi_contract_version().pointer_ffi_name() }}(ffiBuffer)
+    val returnCursor = UniffiBufferCursor(ffiBuffer)
+    if (bindings_contract_version != UniffiFfiSerializerInt.read(returnCursor)) {
         throw RuntimeException("UniFFI contract version mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -121,8 +111,14 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 {%- if !config.omit_checksums %}
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
-    {%- for (name, expected_checksum) in ci.iter_checksums() %}
-    if (lib.{{ name }}() != {{ expected_checksum }}.toShort()) {
+    {%- for (name, expected_checksum) in ci.pointer_ffi_iter_checksums() %}
+    {%- if loop.first %}
+    val ffiBuffer = Memory(8)
+    var returnCursor: UniffiBufferCursor
+    {%- endif %}
+    lib.{{ name }}(ffiBuffer)
+    returnCursor = UniffiBufferCursor(ffiBuffer)
+    if (UniffiFfiSerializerShort.read(returnCursor) != {{ expected_checksum }}.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     {%- endfor %}

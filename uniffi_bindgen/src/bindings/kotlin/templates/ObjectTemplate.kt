@@ -208,9 +208,10 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
                 // Fake object created with `NoHandle`, don't try to free.
                 return;
             }
-            uniffiRustCall { status ->
-                UniffiLib.{{ obj.ffi_object_free().name() }}(handle, status)
-            }
+            val ffiBuffer = Memory(8)
+            val argCursor = UniffiBufferCursor(ffiBuffer)
+            UniffiFfiSerializerHandle.write(argCursor, handle)
+            UniffiLib.{{ obj.ffi_object_free().pointer_ffi_name() }}(ffiBuffer)
         }
     }
 
@@ -221,9 +222,12 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
         if (handle == 0.toLong()) {
             throw InternalException("uniffiCloneHandle() called on NoHandle object");
         }
-        return uniffiRustCall() { status ->
-            UniffiLib.{{ obj.ffi_object_clone().name() }}(handle, status)
-        }
+        val ffiBuffer = Memory(8)
+        val argCursor = UniffiBufferCursor(ffiBuffer)
+        UniffiFfiSerializerHandle.write(argCursor, handle)
+        UniffiLib.{{ obj.ffi_object_clone().pointer_ffi_name() }}(ffiBuffer)
+        val returnCursor = UniffiBufferCursor(ffiBuffer)
+        return UniffiFfiSerializerHandle.read(returnCursor)
     }
 
     {% for meth in methods -%}

@@ -14,14 +14,26 @@ use heck::ToShoutySnakeCase;
 pub struct RustScaffolding<'a> {
     ci: &'a ComponentInterface,
     udl_base_name: &'a str,
+    pointer_ffi: bool,
 }
 impl<'a> RustScaffolding<'a> {
     pub fn new(ci: &'a ComponentInterface, udl_base_name: &'a str) -> Self {
-        Self { ci, udl_base_name }
+        Self {
+            ci,
+            udl_base_name,
+            pointer_ffi: cfg!(feature = "pointer-ffi"),
+        }
     }
 }
 mod filters {
     use super::*;
+
+    pub fn pointer_ffi_symbol_name(
+        name: &str,
+        _values: &dyn askama::Values,
+    ) -> Result<String, askama::Error> {
+        Ok(uniffi_meta::pointer_ffi_symbol_name(name))
+    }
 
     pub fn type_rs(type_: &Type, _values: &dyn askama::Values) -> Result<String, askama::Error> {
         Ok(match type_ {
