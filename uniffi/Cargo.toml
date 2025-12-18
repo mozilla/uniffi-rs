@@ -55,7 +55,7 @@ tokio = ["uniffi_core/tokio"]
 # Python, JS, etc.
 #
 # This is an experimental flag since the work is still ongoing.  Use at your own risk.
-pointer-ffi = ["uniffi_core/pointer-ffi", "uniffi_macros/pointer-ffi"]
+pointer-ffi = ["uniffi_core/pointer-ffi", "uniffi_macros/pointer-ffi", "uniffi_bindgen/pointer-ffi"]
 
 # Support for WebAssembly targets in a single-threaded environment.
 # This feature is unstable and may change in the future.
