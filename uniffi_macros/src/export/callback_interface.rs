@@ -416,8 +416,7 @@ fn trait_impl_pointer_ffi(
     let vtable_once = format_ident!("UNIFFI_POINTER_TRAIT_ONCE_{}", trait_name.to_uppercase());
     let init_ident = Ident::new(
         &uniffi_meta::pointer_ffi_symbol_name(&uniffi_meta::init_callback_vtable_fn_symbol_name(
-            mod_path,
-            trait_name,
+            mod_path, trait_name,
         )),
         Span::call_site(),
     );

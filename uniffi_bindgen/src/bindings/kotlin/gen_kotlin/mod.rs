@@ -321,6 +321,7 @@ pub struct KotlinWrapper<'a> {
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
     ffi_definitions: Vec<PointerFfiDefinition>,
+    integrity_ffi_definitions: Vec<PointerFfiDefinition>,
     legacy_ffi_definitions: Vec<FfiDefinition>,
 }
 
@@ -330,19 +331,24 @@ impl<'a> KotlinWrapper<'a> {
         let type_helper_code = type_renderer.render()?;
         let type_imports = type_renderer.imports.into_inner();
         let ffi_definitions: Vec<PointerFfiDefinition> = ci.pointer_ffi_definitions().collect();
-        let ffi_definition_names: HashSet<&str> =
-            ffi_definitions.iter().map(|def| def.name()).collect();
+        let integrity_ffi_definitions: Vec<PointerFfiDefinition> =
+            pointer_ffi_integrity_ffi_definitions(ci).collect();
+        let ffi_definition_names: HashSet<&str> = ffi_definitions
+            .iter()
+            .chain(integrity_ffi_definitions.iter())
+            .map(|def| def.name())
+            .collect();
         let legacy_ffi_definitions = ci
             .ffi_definitions()
             .filter(|ffi_def| !ffi_definition_names.contains(ffi_def.name()))
             .collect();
-
         Ok(Self {
             config,
             ci,
             type_helper_code,
             type_imports,
             ffi_definitions,
+            integrity_ffi_definitions,
             legacy_ffi_definitions,
         })
     }
@@ -372,7 +378,10 @@ impl<'a> KotlinWrapper<'a> {
             // Collect into a btree set to de-dup and order
             .collect::<BTreeSet<_>>();
 
-        init_fns.chain(extern_module_init_fns).collect()
+        init_fns
+            .chain(["uniffiEnsureInitialized()".to_string()])
+            .chain(extern_module_init_fns)
+            .collect()
     }
 
     pub fn imports(&self) -> Vec<ImportRequirement> {

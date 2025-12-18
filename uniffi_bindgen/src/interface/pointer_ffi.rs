@@ -97,11 +97,18 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
             .iter()
             .map(|f| PointerFfiDefinition::func(f.ffi_func().pointer_ffi_name())),
     )
-    // Constructors
+    // Constructors / free / clone
     .chain(ci.object_definitions().iter().flat_map(|o| {
-        o.constructors()
-            .into_iter()
-            .map(|c| PointerFfiDefinition::func(c.ffi_func().pointer_ffi_name()))
+        [
+            PointerFfiDefinition::func(o.ffi_object_clone().pointer_ffi_name()),
+            PointerFfiDefinition::func(o.ffi_object_free().pointer_ffi_name()),
+        ]
+        .into_iter()
+        .chain(
+            o.constructors()
+                .into_iter()
+                .map(|c| PointerFfiDefinition::func(c.ffi_func().pointer_ffi_name())),
+        )
     }))
     // Methods
     .chain(
@@ -153,6 +160,17 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
             PointerFfiDefinition::vtable(vtable_name(cbi.name()), cbi.methods()),
         ]
     }))
+}
+
+pub fn pointer_ffi_integrity_ffi_definitions(
+    ci: &ComponentInterface,
+) -> impl Iterator<Item = PointerFfiDefinition> + '_ {
+    ci.iter_checksums()
+        .map(|(name, _)| PointerFfiDefinition::func(uniffi_meta::pointer_ffi_symbol_name(&name)))
+        .chain([PointerFfiDefinition::func(format!(
+            "uniffi_ptr_{}_uniffi_contract_version",
+            ci.ffi_namespace()
+        ))])
 }
 
 impl PointerFfiDefinition {
@@ -248,5 +266,10 @@ impl ComponentInterface {
 
     pub fn pointer_ffi_rust_future_free(&self) -> String {
         format!("uniffi_ptr_{}_rust_future_free", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_iter_checksums(&self) -> impl Iterator<Item = (String, u16)> + '_ {
+        self.iter_checksums()
+            .map(|(name, checksum)| (uniffi_meta::pointer_ffi_symbol_name(&name), checksum))
     }
 }
