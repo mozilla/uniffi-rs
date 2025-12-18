@@ -76,8 +76,7 @@ where
     let complete_callback_data = sender.into_raw() as u64;
     // Create a `ForeignFutureDroppedCallback`.
     // Since this is owned by the `Future` that we're generating, when the future is dropped it
-    // will be dropped to.
-    // future is.
+    // will be dropped too.
     let mut foreign_future_dropped_callback = ForeignFutureDroppedCallbackStruct::default();
     // Call the async method
     call_scaffolding_function(
