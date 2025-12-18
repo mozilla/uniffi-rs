@@ -147,6 +147,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
 
 #[cfg(feature = "pointer-ffi")]
 fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
+    let ffi_contract_version_ident =
+        format_ident!("uniffi_ptr_{normalized_module_path}_uniffi_contract_version");
     let ffi_rustbuffer_alloc_ident =
         format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_alloc");
     let ffi_rustbuffer_free_ident =
@@ -161,6 +163,18 @@ fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
         format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_free");
 
     quote! {
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_contract_version_ident(ffi_buffer: *mut u8) {
+            let mut uniffi_return_buf =
+                ::std::slice::from_raw_parts_mut(ffi_buffer, ::uniffi::ffi_buffer_size!((::std::primitive::u32)));
+            // Safety: we follow the pointer FFI when reading/writing from the buffer
+            unsafe {
+                <::std::primitive::u32 as ::uniffi::FfiSerialize>::write(&mut uniffi_return_buf, #UNIFFI_CONTRACT_VERSION);
+            }
+        }
+
         #[allow(clippy::missing_safety_doc, missing_docs)]
         #[doc(hidden)]
         #[unsafe(no_mangle)]
