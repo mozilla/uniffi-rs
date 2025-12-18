@@ -16,6 +16,10 @@ private fun findLibraryName(componentName: String): String {
 internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
     fun callback(uniffiFfiBuffer: Pointer)
 }
+{%- when FfiCallbackFunctionKind::Async %}
+internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(uniffiFfiBuffer: Pointer, uniffiCallback: UniffiForeignFutureCallback): UniffiForeignFutureDroppedCallback
+}
 {%- when FfiCallbackFunctionKind::RustFutureContinutation %}
 internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
     fun callback(data: Long, pollResult: Byte)
@@ -25,12 +29,16 @@ internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
 {%- when PointerFfiDefinition::Struct(st) %}
 {%- match st.kind %}
 {%- when FfiStructKind::VTable { methods } %}
-@Structure.FieldOrder("uniffiFree", "uniffiClone"{% for method_name in methods.iter() %}, "{{ method_name|var_name_raw }}"{% endfor %})
+@Structure.FieldOrder("uniffiFree", "uniffiClone"{% for meth in methods.iter() %}, "{{ meth.name|var_name_raw }}"{% endfor %})
 internal open class {{ st.name|ffi_struct_name }}(
     @JvmField internal var uniffiFree: UniffiCallbackMethod,
     @JvmField internal var uniffiClone: UniffiCallbackMethod,
-    {%- for method_name in methods %}
-    @JvmField internal var {{ method_name|var_name }}: UniffiCallbackMethod,
+    {%- for meth in methods %}
+    {%- if meth.is_async %}
+    @JvmField internal var {{ meth.name|var_name }}: UniffiAsyncCallbackMethod,
+    {%- else %}
+    @JvmField internal var {{ meth.name|var_name }}: UniffiCallbackMethod,
+    {%- endif %}
     {%- endfor %}
 ) : Structure()
 {%- endmatch %}

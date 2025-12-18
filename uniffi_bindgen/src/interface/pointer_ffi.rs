@@ -8,7 +8,7 @@
 //! feature, then both versions of the FFI will be generated.  The pointer FFI symbols are prefixed
 //! with `uniffi_ptr_` to avoid any conflicts.
 
-use super::{callbacks::vtable_name, ComponentInterface, UniffiTrait};
+use crate::interface::{self, callbacks::vtable_name, ComponentInterface, UniffiTrait};
 
 #[derive(Debug, Clone)]
 pub enum PointerFfiDefinition {
@@ -51,6 +51,8 @@ pub enum FfiCallbackFunctionKind {
     Normal,
     /// Callback for the `rust_future_poll` function
     RustFutureContinutation,
+    /// Callback for an async method
+    Async,
 }
 
 /// FFI struct for the pointer FFI
@@ -63,7 +65,13 @@ pub struct PointerFfiStruct {
 #[derive(Debug, Clone)]
 pub enum FfiStructKind {
     /// Vtable for a callback interface
-    VTable { methods: Vec<String> },
+    VTable { methods: Vec<FfiCallbackFunction> },
+}
+
+#[derive(Debug, Clone)]
+pub struct FfiCallbackFunction {
+    pub name: String,
+    pub is_async: bool,
 }
 
 pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerFfiDefinition> + '_ {
@@ -78,6 +86,9 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
         PointerFfiDefinition::func(format!("uniffi_ptr_{namespace}_rust_future_free")),
         PointerFfiDefinition::rust_future_continuation("RustFutureContinuationCallback"),
         PointerFfiDefinition::callback_func("CallbackMethod"),
+        PointerFfiDefinition::async_callback_func("AsyncCallbackMethod"),
+        PointerFfiDefinition::callback_func("ForeignFutureCallback"),
+        PointerFfiDefinition::callback_func("ForeignFutureDroppedCallback"),
     ]
     .into_iter()
     // Functions
@@ -132,24 +143,14 @@ pub fn ffi_definitions(ci: &ComponentInterface) -> impl Iterator<Item = PointerF
             .flat_map(move |o| {
                 [
                     PointerFfiDefinition::vtable_init(o.ffi_init_callback().pointer_ffi_name()),
-                    PointerFfiDefinition::vtable(
-                        vtable_name(o.name()),
-                        o.ffi_callbacks()
-                            .into_iter()
-                            .map(|cb| cb.name().to_string()),
-                    ),
+                    PointerFfiDefinition::vtable(vtable_name(o.name()), o.methods()),
                 ]
             }),
     )
     .chain(ci.callback_interface_definitions().iter().flat_map(|cbi| {
         [
             PointerFfiDefinition::vtable_init(cbi.ffi_init_callback().pointer_ffi_name()),
-            PointerFfiDefinition::vtable(
-                vtable_name(cbi.name()),
-                cbi.ffi_callbacks()
-                    .into_iter()
-                    .map(|cb| cb.name().to_string()),
-            ),
+            PointerFfiDefinition::vtable(vtable_name(cbi.name()), cbi.methods()),
         ]
     }))
 }
@@ -191,6 +192,13 @@ impl PointerFfiDefinition {
         })
     }
 
+    fn async_callback_func(name: impl Into<String>) -> Self {
+        Self::Callback(PointerFfiCallbackFunction {
+            name: name.into(),
+            kind: FfiCallbackFunctionKind::Async,
+        })
+    }
+
     fn rust_future_continuation(name: impl Into<String>) -> Self {
         Self::Callback(PointerFfiCallbackFunction {
             name: name.into(),
@@ -198,11 +206,20 @@ impl PointerFfiDefinition {
         })
     }
 
-    fn vtable(name: impl Into<String>, methods: impl IntoIterator<Item = String>) -> Self {
+    fn vtable<'a>(
+        name: impl Into<String>,
+        methods: impl IntoIterator<Item = &'a interface::Method>,
+    ) -> Self {
         Self::Struct(PointerFfiStruct {
             name: name.into(),
             kind: FfiStructKind::VTable {
-                methods: methods.into_iter().collect(),
+                methods: methods
+                    .into_iter()
+                    .map(|meth| FfiCallbackFunction {
+                        name: meth.name().to_string(),
+                        is_async: meth.is_async(),
+                    })
+                    .collect(),
             },
         })
     }
