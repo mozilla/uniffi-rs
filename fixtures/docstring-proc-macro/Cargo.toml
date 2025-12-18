@@ -15,7 +15,7 @@ thiserror = "2"
 uniffi = { path = "../../uniffi" }
 
 [build-dependencies]
-uniffi = { path = "../../uniffi", features = ["build"] }
+uniffi = { path = "../../uniffi", features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 glob = "0.3"

@@ -49,14 +49,6 @@ interface UniffiRustCallStatusErrorHandler<E> {
 // In practice we usually need to be synchronized to call this safely, so it doesn't
 // synchronize itself
 
-// Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
-private inline fun <U, E: kotlin.Exception> uniffiRustCallWithError(errorHandler: UniffiRustCallStatusErrorHandler<E>, callback: (UniffiRustCallStatus) -> U): U {
-    var status = UniffiRustCallStatus()
-    val return_value = callback(status)
-    uniffiCheckCallStatus(errorHandler, status)
-    return return_value
-}
-
 // Check UniffiRustCallStatus and throw an error if the call wasn't successful
 private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustCallStatusErrorHandler<E>, status: UniffiRustCallStatus) {
     if (status.isSuccess()) {
@@ -87,11 +79,6 @@ object UniffiNullRustCallStatusErrorHandler: UniffiRustCallStatusErrorHandler<In
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
     }
-}
-
-// Call a rust function that returns a plain value
-private inline fun <U> uniffiRustCall(callback: (UniffiRustCallStatus) -> U): U {
-    return uniffiRustCallWithError(UniffiNullRustCallStatusErrorHandler, callback)
 }
 
 // Execute a lambda and return it's return value

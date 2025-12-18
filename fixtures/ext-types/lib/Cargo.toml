@@ -35,7 +35,7 @@ uniffi-example-custom-types = {path = "../../../examples/custom-types"}
 url = "2.2"
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests"] }
