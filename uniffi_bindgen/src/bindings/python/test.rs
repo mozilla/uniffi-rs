@@ -40,8 +40,9 @@ pub fn run_script(
     let cdylib_path = test_helper.copy_cdylib_to_out_dir(&out_dir)?;
 
     // Generate bindings
-    let config_supplier = CrateConfigSupplier::from(test_helper.cargo_metadata());
-    let root = initial::Root::from_library(config_supplier, &cdylib_path, None)?;
+    let mut paths = crate::BindgenPaths::default();
+    paths.add_layer(CrateConfigSupplier::from(test_helper.cargo_metadata()));
+    let root = initial::Root::from_library(paths, &cdylib_path, None)?;
     run_pipeline(root, &out_dir)?;
 
     // Run the python script

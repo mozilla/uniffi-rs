@@ -43,9 +43,16 @@ impl Default for RunScriptOptions {
 
 /// Generate bindings
 ///
-/// This implements the uniffi-bindgen command
+/// This implements the default uniffi-bindgen command
 pub fn generate(options: GenerateOptions) -> Result<()> {
-    let mut paths = BindgenPaths::default();
+    generate_with_bindgen_paths(options, BindgenPaths::default())
+}
+
+/// Generate bindings with custom bindgen paths.
+pub fn generate_with_bindgen_paths(
+    options: GenerateOptions,
+    mut paths: BindgenPaths,
+) -> Result<()> {
     if let Some(path) = &options.config_override {
         paths.add_config_override_layer(path.clone());
     }
