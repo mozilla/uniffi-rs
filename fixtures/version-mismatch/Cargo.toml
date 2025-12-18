@@ -24,4 +24,4 @@ proc_macro_v2 = []
 uniffi = { workspace = true, features = ["cli"]}
 
 [build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+uniffi = { workspace = true, features = ["build", "pointer-ffi"] }
