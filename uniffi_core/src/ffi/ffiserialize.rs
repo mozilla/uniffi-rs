@@ -234,6 +234,24 @@ impl FfiSerialize for RustCallStatus {
     }
 }
 
+// Options are serialized by writing a `u8` code optionally followed by the value itself.
+impl<T: FfiSerialize> FfiSerialize for Option<T> {
+    const SIZE: usize = T::SIZE + 8;
+
+    unsafe fn get(buf: &[u8]) -> Self {
+        let code = <u8 as FfiSerialize>::get(buf);
+        (code == 1).then(|| <T as FfiSerialize>::get(&buf[8..]))
+    }
+
+    unsafe fn put(buf: &mut [u8], value: Self) {
+        let code = if value.is_some() { 1 } else { 0 };
+        <u8 as FfiSerialize>::put(buf, code);
+        if let Some(v) = value {
+            <T as FfiSerialize>::put(&mut buf[8..], v);
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

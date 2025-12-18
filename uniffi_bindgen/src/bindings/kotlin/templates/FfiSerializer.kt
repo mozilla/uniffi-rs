@@ -39,6 +39,9 @@ private class UniffiBufferCursor(val pointer: Pointer, var offset: Long = 0) {
     fun writeFloat(value: Float) = pointer.setFloat(offset, value).also { offset += 8 }
     fun readDouble(): Double = pointer.getDouble(offset).also { offset += 8 }
     fun writeDouble(value: Double) = pointer.setDouble(offset, value).also { offset += 8 }
+    fun advance(amount: Long) {
+        this.offset += amount;
+    }
 }
 
 private object UniffiFfiSerializerByte: UniffiFfiSerializer<Byte> {
@@ -143,5 +146,26 @@ private object UniffiFfiSerializerUniffiRustCallStatus: UniffiFfiSerializer<Unif
     override fun write(buf: UniffiBufferCursor, value: UniffiRustCallStatus.ByValue) {
         buf.writeByte(value.code)
         UniffiFfiSerializerRustBuffer.write(buf, value.error_buf)
+    }
+}
+
+private object UniffiFfiSerializerForeignFutureDroppedCallback: UniffiFfiSerializer<UniffiBoundCallback?> {
+    override fun size(): Long = 24
+    override fun read(buf: UniffiBufferCursor): UniffiBoundCallback? {
+        val code = UniffiFfiSerializerByte.read(buf)
+        if (code == 0.toByte()) {
+            buf.advance(16);
+            return null
+        }
+        return UniffiFfiSerializerBoundCallback.read(buf)
+    }
+    override fun write(buf: UniffiBufferCursor, value: UniffiBoundCallback?) {
+        if (value == null) {
+            UniffiFfiSerializerByte.write(buf, 0)
+            buf.advance(16)
+            return;
+        }
+        UniffiFfiSerializerByte.write(buf, 1)
+        UniffiFfiSerializerBoundCallback.write(buf, value)
     }
 }
