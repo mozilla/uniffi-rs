@@ -29,11 +29,18 @@ impl ComponentInterface {
                 .iter()
                 .map(|f| f.ffi_func().pointer_ffi_name()),
         )
-        // Constructors
+        // Constructors / free / clone
         .chain(self.object_definitions().iter().flat_map(|o| {
-            o.constructors()
-                .into_iter()
-                .map(|c| c.ffi_func().pointer_ffi_name())
+            [
+                o.ffi_object_clone().pointer_ffi_name(),
+                o.ffi_object_free().pointer_ffi_name(),
+            ]
+            .into_iter()
+            .chain(
+                o.constructors()
+                    .into_iter()
+                    .map(|c| c.ffi_func().pointer_ffi_name()),
+            )
         }))
         // Methods
         .chain(
@@ -82,6 +89,16 @@ impl ComponentInterface {
         )
     }
 
+    pub fn pointer_ffi_integrity_function_names(&self) -> impl Iterator<Item = String> + '_ {
+        let namespace = self.ffi_namespace();
+        [format!("uniffi_ptr_{namespace}_uniffi_contract_version")]
+            .into_iter()
+            .chain(
+                self.iter_checksums()
+                    .map(|(name, _)| uniffi_meta::pointer_ffi_symbol_name(&name)),
+            )
+    }
+
     pub fn pointer_ffi_rustbuffer_alloc(&self) -> String {
         format!("uniffi_ptr_{}_rustbuffer_alloc", self.ffi_namespace())
     }
@@ -104,5 +121,10 @@ impl ComponentInterface {
 
     pub fn pointer_ffi_rust_future_free(&self) -> String {
         format!("uniffi_ptr_{}_rust_future_free", self.ffi_namespace())
+    }
+
+    pub fn pointer_ffi_iter_checksums(&self) -> impl Iterator<Item = (String, u16)> + '_ {
+        self.iter_checksums()
+            .map(|(name, checksum)| (uniffi_meta::pointer_ffi_symbol_name(&name), checksum))
     }
 }

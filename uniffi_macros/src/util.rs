@@ -113,6 +113,14 @@ pub fn create_metadata_items(
     let static_ident = format_ident!("UNIFFI_META_{crate_name_upper}_{kind_upper}_{name_upper}");
     let checksum_fn = checksum_fn_name.map(|name| {
         let ident = Ident::new(&name, Span::call_site());
+
+        #[cfg(feature = "pointer-ffi")]
+        let pointer_ident = Ident::new(
+            &uniffi_meta::pointer_ffi_symbol_name(&name),
+            Span::call_site(),
+        );
+
+        #[cfg(not(feature = "pointer-ffi"))]
         quote! {
             #[doc(hidden)]
             #[unsafe(no_mangle)]
@@ -122,6 +130,31 @@ pub fn create_metadata_items(
                 // 2. The metadata buffer is not embedded into the binary.
                 const CHECKSUM: u16 = #const_ident.checksum();
                 CHECKSUM
+            }
+        }
+
+        #[cfg(feature = "pointer-ffi")]
+        quote! {
+            #[doc(hidden)]
+            #[unsafe(no_mangle)]
+            pub extern "C" fn #ident() -> u16 {
+                // Force constant evaluation to ensure:
+                // 1. The checksum is computed at compile time; and
+                // 2. The metadata buffer is not embedded into the binary.
+                const CHECKSUM: u16 = #const_ident.checksum();
+                CHECKSUM
+            }
+
+            #[doc(hidden)]
+            #[unsafe(no_mangle)]
+            pub unsafe extern "C" fn #pointer_ident(uniffi_ffi_buffer: *mut u8) {
+                const CHECKSUM: u16 = #const_ident.checksum();
+
+                let mut uniffi_return_buf = ::std::slice::from_raw_parts_mut(
+                    uniffi_ffi_buffer,
+                    ::uniffi::ffi_buffer_size!((u16)),
+                );
+                <u16 as ::uniffi::FfiSerialize>::write(&mut uniffi_return_buf, CHECKSUM);
             }
         }
     });

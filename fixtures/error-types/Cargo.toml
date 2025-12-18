@@ -15,7 +15,7 @@ anyhow = "1"
 thiserror = "2"
 
 [build-dependencies]
-uniffi = {path = "../../uniffi", features = ["build"] }
+uniffi = {path = "../../uniffi", features = ["build", "pointer-ffi"] }
 
 [dev-dependencies]
 uniffi = {path = "../../uniffi", features = ["bindgen-tests"] }

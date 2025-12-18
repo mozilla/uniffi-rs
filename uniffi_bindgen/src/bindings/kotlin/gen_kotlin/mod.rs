@@ -325,6 +325,7 @@ impl<'a> KotlinWrapper<'a> {
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render()?;
         let type_imports = type_renderer.imports.into_inner();
+
         Ok(Self {
             config,
             ci,
@@ -358,7 +359,10 @@ impl<'a> KotlinWrapper<'a> {
             // Collect into a btree set to de-dup and order
             .collect::<BTreeSet<_>>();
 
-        init_fns.chain(extern_module_init_fns).collect()
+        init_fns
+            .chain(["uniffiEnsureInitialized()".to_string()])
+            .chain(extern_module_init_fns)
+            .collect()
     }
 
     pub fn imports(&self) -> Vec<ImportRequirement> {
