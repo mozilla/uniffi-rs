@@ -21,8 +21,7 @@ name = "uniffi_ext_types_lib"
 [dependencies]
 anyhow = "1"
 bytes = "1.3"
-uniffi = { workspace = true }
-
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 uniffi-fixture-ext-types-external-crate = {path = "../external-crate"}
 uniffi-fixture-ext-types-lib-one = {path = "../uniffi-one"}
 uniffi-fixture-ext-types-custom-types = {path = "../custom-types"}

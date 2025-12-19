@@ -169,3 +169,23 @@ private object UniffiFfiSerializerForeignFutureDroppedCallback: UniffiFfiSeriali
         UniffiFfiSerializerBoundCallback.write(buf, value)
     }
 }
+
+// RustBuffer serializers for external packages that we're using external types from
+
+{%- for source in external_type_sources %}
+private object {{ source|ffi_serializer_name_external_rust_buffer }}: UniffiFfiSerializer<{{ source.package }}.RustBuffer.ByValue> {
+    override fun size(): Long = 24
+    override fun read(buf: UniffiBufferCursor): {{ source.package }}.RustBuffer.ByValue {
+        var rustBuffer = {{ source.package }}.RustBuffer.ByValue()
+        rustBuffer.capacity = buf.readLong()
+        rustBuffer.len = buf.readLong()
+        rustBuffer.data = Pointer(buf.readLong())
+        return rustBuffer
+    }
+    override fun write(buf: UniffiBufferCursor, value: {{ source.package }}.RustBuffer.ByValue) {
+        buf.writeLong(value.capacity)
+        buf.writeLong(value.len)
+        buf.writeLong(Pointer.nativeValue(value.data))
+    }
+}
+{%- endfor %}
