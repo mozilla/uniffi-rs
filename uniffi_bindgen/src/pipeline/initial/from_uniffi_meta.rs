@@ -4,12 +4,8 @@
 
 //! Organize the metadata, transforming it from a simple list to a more tree-like structure.
 
-use anyhow::{anyhow, bail, Context, Result};
-use camino::Utf8Path;
-use std::{
-    collections::{btree_map::Entry, BTreeMap},
-    fs,
-};
+use anyhow::{anyhow, bail, Result};
+use std::collections::{btree_map::Entry, BTreeMap};
 
 use super::nodes::*;
 use uniffi_pipeline::Node;
@@ -31,7 +27,7 @@ pub struct UniffiMetaConverter {
     namespaces: BTreeMap<String, Namespace>,
     // Top-level type definitions and functions, keyed by module name
     module_docstrings: BTreeMap<String, String>,
-    module_toml: BTreeMap<String, String>,
+    module_toml: BTreeMap<String, toml::Table>,
     functions: BTreeMap<String, BTreeMap<String, Function>>,
     records: BTreeMap<String, BTreeMap<String, Record>>,
     callback_interfaces: BTreeMap<String, BTreeMap<String, CallbackInterface>>,
@@ -204,13 +200,12 @@ impl UniffiMetaConverter {
         Ok(())
     }
 
-    pub fn add_module_config_toml(&mut self, module_name: String, path: &Utf8Path) -> Result<()> {
-        if !path.exists() {
-            return Ok(());
-        }
-        let contents =
-            fs::read_to_string(path).with_context(|| format!("read file: {:?}", path))?;
-        self.module_toml.insert_unique(module_name, contents)?;
+    pub fn add_module_config_toml(
+        &mut self,
+        module_name: String,
+        table: toml::Table,
+    ) -> Result<()> {
+        self.module_toml.insert_unique(module_name, table)?;
         Ok(())
     }
 
@@ -236,13 +231,14 @@ impl UniffiMetaConverter {
             })?;
             namespace.docstring = Some(docstring);
         }
-        for (namespace_name, toml) in self.module_toml {
+        for (namespace_name, table) in self.module_toml {
             // already the namespace name, so no need to convert.
             // we should maybe ignore an error here?
             let namespace = root.namespaces.get_mut(&namespace_name).ok_or_else(|| {
                 anyhow!("namespace specified in toml doesn't exist: {namespace_name:?}")
             })?;
-            namespace.config_toml = Some(toml);
+            // ideally `namespace.config_toml` would be a `toml::Table`, but all members must implement `Node`.
+            namespace.config_toml = Some(toml::to_string(&table)?);
         }
         for (module_path, funcs) in self.functions {
             get_namespace(&self.module_path_map, &mut root, &module_path)?

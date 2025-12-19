@@ -42,8 +42,9 @@ impl Root {
                     ));
                 }
                 uniffi_meta::Metadata::Namespace(namespace) => {
-                    if let Some(path) = bindgen_paths.get_config_path(&namespace.crate_name) {
-                        metadata_converter.add_module_config_toml(namespace.name.clone(), &path)?;
+                    let table = bindgen_paths.get_config(&namespace.crate_name)?;
+                    if !table.is_empty() {
+                        metadata_converter.add_module_config_toml(namespace.name.clone(), table)?;
                     }
                     metadata_converter
                         .add_metadata_item(uniffi_meta::Metadata::Namespace(namespace))?;
@@ -101,10 +102,10 @@ impl Root {
                 .add_module_docstring(metadata_group.namespace.name.clone(), docstring)?;
         }
         if !library_mode {
-            if let Some(path) = bindgen_paths.get_config_path(&metadata_group.namespace.crate_name)
-            {
+            let table = bindgen_paths.get_config(&metadata_group.namespace.crate_name)?;
+            if !table.is_empty() {
                 metadata_converter
-                    .add_module_config_toml(metadata_group.namespace.name.clone(), &path)?;
+                    .add_module_config_toml(metadata_group.namespace.name.clone(), table)?;
             }
         }
         metadata_converter
