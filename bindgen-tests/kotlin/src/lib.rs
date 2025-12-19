@@ -84,7 +84,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_external_types() {
         run_tests(test_dir(), "tests/external_types.kts");
     }

@@ -27,5 +27,6 @@ uniffi-bindgen-tests = { path = "../lib", default-features = false, features = [
     "references",
     "recursive_types",
     "time",
-    "rust_traits"
+    "rust_traits",
+    "external-types",
 ] }

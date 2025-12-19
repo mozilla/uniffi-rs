@@ -99,7 +99,7 @@ pub fn expand_object(input: DeriveInput, options: DeriveOptions) -> syn::Result<
             ObjectImpl::Struct,
             object.docstring(),
         )
-            .unwrap_or_else(syn::Error::into_compile_error)
+        .unwrap_or_else(syn::Error::into_compile_error)
     }));
 
     Ok(tokens)
