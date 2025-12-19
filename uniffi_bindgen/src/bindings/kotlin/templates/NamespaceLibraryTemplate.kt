@@ -86,7 +86,7 @@ internal object UniffiLib {
 
     init {
         Native.register(UniffiLib::class.java, findLibraryName(componentName = "{{ ci.namespace() }}"))
-        {% for fn_item in self.initialization_fns(ci) -%}
+        {% for fn_item in self.initialization_fns() -%}
         {{ fn_item }}
         {% endfor %}
     }
