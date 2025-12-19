@@ -9,7 +9,7 @@ internal object {{ trait_impl }} {
             var uniffiArgCursor = UniffiBufferCursor(uniffiFfiBuffer)
             val uniffiMethodHandle = UniffiFfiSerializerHandle.read(uniffiArgCursor)
             {%- for arg in meth.arguments() %}
-            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name }}.read(uniffiArgCursor);
+            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name(ci) }}.read(uniffiArgCursor);
             {%- endfor %}
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiMethodHandle)
 
@@ -42,7 +42,7 @@ internal object {{ trait_impl }} {
                 // Default RustCallStatus signals success
                 UniffiFfiSerializerUniffiRustCallStatus.write(uniffiReturnCursor, UniffiRustCallStatus.ByValue())
                 {%- if let Some(return_type) = meth.return_type() %}
-                {{ return_type|ffi_serializer_name }}.write(uniffiReturnCursor, {{ return_type|lower_fn }}(uniffiReturnValue))
+                {{ return_type|ffi_serializer_name(ci) }}.write(uniffiReturnCursor, {{ return_type|lower_fn }}(uniffiReturnValue))
                 {%- endif %}
             } catch(e: kotlin.Exception) {
                 val uniffiReturnCursor = UniffiBufferCursor(uniffiFfiBuffer)
@@ -68,7 +68,7 @@ internal object {{ trait_impl }} {
             var uniffiArgCursor = UniffiBufferCursor(uniffiFfiBuffer)
             val uniffiMethodHandle = UniffiFfiSerializerHandle.read(uniffiArgCursor)
             {%- for arg in meth.arguments() %}
-            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name }}.read(uniffiArgCursor);
+            val {{ arg.name()|var_name }} = {{ arg|ffi_serializer_name(ci) }}.read(uniffiArgCursor);
             {%- endfor %}
             val uniffiCallback = UniffiFfiSerializerBoundCallback.read(uniffiArgCursor)
             val uniffiObj = {{ ffi_converter_name }}.handleMap.get(uniffiMethodHandle)
@@ -77,7 +77,7 @@ internal object {{ trait_impl }} {
                 val returnFfiBuffer = Memory(
                     UniffiFfiSerializerHandle.size()
                     + UniffiFfiSerializerUniffiRustCallStatus.size()
-                    {% if let Some(return_ty) = meth.return_type() %}+ {{ return_ty|ffi_serializer_name }}.size(){% endif %}
+                    {% if let Some(return_ty) = meth.return_type() %}+ {{ return_ty|ffi_serializer_name(ci) }}.size(){% endif %}
                 )
                 try {
                     {%- match meth.throws_type() %}
@@ -111,7 +111,7 @@ internal object {{ trait_impl }} {
                     // Default RustCallStatus signals success
                     UniffiFfiSerializerUniffiRustCallStatus.write(uniffiReturnCursor, UniffiRustCallStatus.ByValue())
                     {%- if let Some(return_type) = meth.return_type() %}
-                    {{ return_type|ffi_serializer_name }}.write(uniffiReturnCursor, {{ return_type|lower_fn }}(uniffiReturnValue))
+                    {{ return_type|ffi_serializer_name(ci) }}.write(uniffiReturnCursor, {{ return_type|lower_fn }}(uniffiReturnValue))
                     {%- endif %}
                     uniffiCallback.callback.callback(returnFfiBuffer)
                 } catch(e: kotlin.Exception) {
