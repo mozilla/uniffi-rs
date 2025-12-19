@@ -23,25 +23,25 @@
             max(
                 // Size needed for the arguments
                 {%- for arg in args.iter() %}
-                {{ arg|ffi_serializer_name }}.size(){% if !loop.last %} + {% endif %}
+                {{ arg|ffi_serializer_name(ci) }}.size(){% if !loop.last %} + {% endif %}
                 {%- endfor -%}
                 ,
                 // Size needed for the return value
-                {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name }}.size() + {% endif -%}
+                {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name(ci) }}.size() + {% endif -%}
                 UniffiFfiSerializerUniffiRustCallStatus.size()
             )
         )
         {%- else %}
         val uniffiFfiBuffer = Memory(
             // Size needed for the return value
-            {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name }}.size() + {% endif -%}
+            {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name(ci) }}.size() + {% endif -%}
             UniffiFfiSerializerUniffiRustCallStatus.size()
         )
         {%- endif %}
         {%- if !args.is_empty() %}
         val uniffiArgsCursor = UniffiBufferCursor(uniffiFfiBuffer)
         {%- for arg in args.iter() %}
-        {{ arg|ffi_serializer_name }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
+        {{ arg|ffi_serializer_name(ci) }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
         {%- endfor %}
         {%- endif %}
 
@@ -62,7 +62,7 @@
         {%- endif %}
 
         {%- if let Some(return_ty) = func.return_type() %}
-        {{ return_ty|ffi_serializer_name }}.read(uniffiReturnCursor)
+        {{ return_ty|ffi_serializer_name(ci) }}.read(uniffiReturnCursor)
         {%- endif %}
     }
 {%- endmacro -%}
@@ -107,7 +107,7 @@
     {% endmatch %}
 
     val uniffiReturnBufSize = UniffiFfiSerializerUniffiRustCallStatus.size()
-        {%- if let Some(return_ty) = callable.return_type() %} + {{ return_ty|ffi_serializer_name }}.size(){% endif %}
+        {%- if let Some(return_ty) = callable.return_type() %} + {{ return_ty|ffi_serializer_name(ci) }}.size(){% endif %}
 
     return uniffiDriveRustFutureToCompletion(uniffiRustFuture, uniffiReturnBufSize) { uniffiFfiBuffer ->
         val uniffiCallStatus = UniffiFfiSerializerUniffiRustCallStatus.read(uniffiFfiBuffer)
@@ -124,7 +124,7 @@
 
         {%- if let Some(return_ty) = callable.return_type() %}
         {{ return_ty|lift_fn }}(
-            {{ return_ty|ffi_serializer_name }}.read(uniffiFfiBuffer)
+            {{ return_ty|ffi_serializer_name(ci) }}.read(uniffiFfiBuffer)
         )
         {%- endif %}
     }
@@ -138,18 +138,18 @@
             max(
                 // Size needed for the arguments
                 {%- for arg in args.iter() %}
-                {{ arg|ffi_serializer_name }}.size(){% if !loop.last %} + {% endif %}
+                {{ arg|ffi_serializer_name(ci) }}.size(){% if !loop.last %} + {% endif %}
                 {%- endfor -%}
                 ,
                 // Size needed for the return value
-                {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name }}.size() + {% endif -%}
+                {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name(ci) }}.size() + {% endif -%}
                 UniffiFfiSerializerUniffiRustCallStatus.size()
             )
         )
         {%- else %}
         val uniffiFfiBuffer = Memory(
             // Size needed for the return value
-            {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name }}.size() + {% endif -%}
+            {% if let Some(return_ty) = func.return_type() %}{{ return_ty|ffi_serializer_name(ci) }}.size() + {% endif -%}
             UniffiFfiSerializerUniffiRustCallStatus.size()
         )
         {%- endif %}
@@ -157,7 +157,7 @@
         {%- if !args.is_empty() %}
         val uniffiArgsCursor = UniffiBufferCursor(uniffiFfiBuffer)
         {%- for arg in args.iter() %}
-        {{ arg|ffi_serializer_name }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
+        {{ arg|ffi_serializer_name(ci) }}.write(uniffiArgsCursor, {{ arg|lower_fn }}({{ arg|arg_name }}));
         {%- endfor %}
         {%- endif %}
 

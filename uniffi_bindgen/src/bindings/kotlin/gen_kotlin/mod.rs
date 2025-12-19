@@ -323,6 +323,8 @@ pub struct KotlinWrapper<'a> {
     ffi_definitions: Vec<PointerFfiDefinition>,
     integrity_ffi_definitions: Vec<PointerFfiDefinition>,
     legacy_ffi_definitions: Vec<FfiDefinition>,
+    // Crates that external types come from
+    external_type_sources: Vec<ExternalTypeSource>,
 }
 
 impl<'a> KotlinWrapper<'a> {
@@ -342,6 +344,19 @@ impl<'a> KotlinWrapper<'a> {
             .ffi_definitions()
             .filter(|ffi_def| !ffi_definition_names.contains(ffi_def.name()))
             .collect();
+        let external_type_sources = ci
+            .iter_external_types()
+            .filter_map(|ty| ty.crate_name())
+            .collect::<BTreeSet<&str>>()
+            .into_iter()
+            .map(|crate_name| {
+                let namespace = ci.namespace_for_module_path(crate_name).unwrap();
+                ExternalTypeSource {
+                    crate_name: crate_name.to_string(),
+                    package: config.external_package_name(crate_name, Some(namespace)),
+                }
+            })
+            .collect();
         Ok(Self {
             config,
             ci,
@@ -350,10 +365,11 @@ impl<'a> KotlinWrapper<'a> {
             ffi_definitions,
             integrity_ffi_definitions,
             legacy_ffi_definitions,
+            external_type_sources,
         })
     }
 
-    pub fn initialization_fns(&self, ci: &ComponentInterface) -> Vec<String> {
+    pub fn initialization_fns(&self) -> Vec<String> {
         let init_fns = self
             .ci
             .iter_local_types()
@@ -365,14 +381,10 @@ impl<'a> KotlinWrapper<'a> {
         // For example, we need to make sure that all callback interface vtables are registered
         // (#2343).
         let extern_module_init_fns = self
-            .ci
-            .iter_external_types()
-            .filter_map(|ty| ty.crate_name())
-            .map(|crate_name| {
-                let namespace = ci.namespace_for_module_path(crate_name).unwrap();
-                let package_name = self
-                    .config
-                    .external_package_name(crate_name, Some(namespace));
+            .external_type_sources
+            .iter()
+            .map(|source| {
+                let package_name = &source.package;
                 format!("{package_name}.uniffiEnsureInitialized()")
             })
             // Collect into a btree set to de-dup and order
@@ -387,6 +399,11 @@ impl<'a> KotlinWrapper<'a> {
     pub fn imports(&self) -> Vec<ImportRequirement> {
         self.type_imports.iter().cloned().collect()
     }
+}
+
+pub struct ExternalTypeSource {
+    pub crate_name: String,
+    pub package: String,
 }
 
 /// Get the name of the interface and class name for a trait.
@@ -712,28 +729,47 @@ mod filters {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
-    pub(super) fn ffi_serializer_name(ty: &impl AsType) -> Result<String, askama::Error> {
+    pub(super) fn ffi_serializer_name(
+        ty: &impl AsType,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
         let ty = ty.as_type();
         let ffi_type = FfiType::from(&ty);
 
         Ok(match ffi_type {
-            FfiType::Int8 => "UniffiFfiSerializerByte",
-            FfiType::Int16 => "UniffiFfiSerializerShort",
-            FfiType::Int32 => "UniffiFfiSerializerInt",
-            FfiType::Int64 => "UniffiFfiSerializerLong",
+            FfiType::Int8 => "UniffiFfiSerializerByte".to_string(),
+            FfiType::Int16 => "UniffiFfiSerializerShort".to_string(),
+            FfiType::Int32 => "UniffiFfiSerializerInt".to_string(),
+            FfiType::Int64 => "UniffiFfiSerializerLong".to_string(),
             // Use signed UniffiFfiSerializer objects for unsigned ints, since their FfiConverter converts
             // them to signed.
-            FfiType::UInt8 => "UniffiFfiSerializerByte",
-            FfiType::UInt16 => "UniffiFfiSerializerShort",
-            FfiType::UInt32 => "UniffiFfiSerializerInt",
-            FfiType::UInt64 => "UniffiFfiSerializerLong",
-            FfiType::Float32 => "UniffiFfiSerializerFloat",
-            FfiType::Float64 => "UniffiFfiSerializerDouble",
-            FfiType::RustBuffer(_) => "UniffiFfiSerializerRustBuffer",
-            FfiType::Handle => "UniffiFfiSerializerLong",
+            FfiType::UInt8 => "UniffiFfiSerializerByte".to_string(),
+            FfiType::UInt16 => "UniffiFfiSerializerShort".to_string(),
+            FfiType::UInt32 => "UniffiFfiSerializerInt".to_string(),
+            FfiType::UInt64 => "UniffiFfiSerializerLong".to_string(),
+            FfiType::Float32 => "UniffiFfiSerializerFloat".to_string(),
+            FfiType::Float64 => "UniffiFfiSerializerDouble".to_string(),
+            FfiType::RustBuffer(maybe_external) => match maybe_external {
+                Some(external_meta) if external_meta.crate_name() != ci.crate_name() => {
+                    format!(
+                        "UniffiFfiSerializerRustBuffer{}",
+                        external_meta.crate_name().to_upper_camel_case()
+                    )
+                }
+                _ => "UniffiFfiSerializerRustBuffer".to_string(),
+            },
+            FfiType::Handle => "UniffiFfiSerializerLong".to_string(),
             _ => unimplemented!("{ffi_type:?}"),
-        }
-        .to_string())
+        })
+    }
+
+    pub(super) fn ffi_serializer_name_external_rust_buffer(
+        source: &ExternalTypeSource,
+    ) -> Result<String, askama::Error> {
+        Ok(format!(
+            "UniffiFfiSerializerRustBuffer{}",
+            source.crate_name.to_upper_camel_case()
+        ))
     }
 
     fn fully_qualified_type_label(
