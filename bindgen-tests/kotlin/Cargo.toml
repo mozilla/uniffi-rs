@@ -29,4 +29,5 @@ uniffi-bindgen-tests = { path = "../lib", default-features = false, features = [
     "time",
     "rust_traits",
     "external-types",
+    "renames",
 ] }

@@ -89,7 +89,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn test_renames() {
         run_tests(test_dir(), "tests/renames.kts");
     }
