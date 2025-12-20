@@ -84,6 +84,7 @@ impl ComponentInterface {
 
             for method in object.methods.iter_mut() {
                 visitor.visit_method(&object_name, method);
+                visitor.visit_type(&mut method.self_type);
 
                 for argument in method.arguments.iter_mut() {
                     visitor.visit_argument(argument);
@@ -105,6 +106,7 @@ impl ComponentInterface {
 
             for constructor in object.constructors.iter_mut() {
                 visitor.visit_constructor(&object_name, constructor);
+                visitor.visit_type(&mut constructor.self_type);
 
                 for argument in constructor.arguments.iter_mut() {
                     visitor.visit_argument(argument);
