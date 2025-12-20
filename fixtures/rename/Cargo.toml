@@ -9,7 +9,7 @@ publish = false
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features = ["pointer-ffi"] }
 thiserror = "2"
 
 [build-dependencies]
