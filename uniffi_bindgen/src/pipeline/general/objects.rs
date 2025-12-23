@@ -21,17 +21,31 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
                 is_async: false,
                 arguments: vec![FfiArgument {
                     name: "ptr".to_string(),
-                    ty: FfiType::Handle(HandleKind::Interface {
-                        namespace: namespace_name.clone(),
-                        interface_name: int.name.to_string(),
+                    ty: FfiType::Handle(if int.imp.has_struct() {
+                        HandleKind::StructInterface {
+                            namespace: namespace_name.clone(),
+                            interface_name: int.name.to_string(),
+                        }
+                    } else {
+                        HandleKind::TraitInterface {
+                            namespace: namespace_name.clone(),
+                            interface_name: int.name.to_string(),
+                        }
                     })
                     .into(),
                 }],
                 return_type: FfiReturnType {
                     ty: Some(
-                        FfiType::Handle(HandleKind::Interface {
-                            namespace: namespace_name.clone(),
-                            interface_name: int.name.to_string(),
+                        FfiType::Handle(if int.imp.has_struct() {
+                            HandleKind::StructInterface {
+                                namespace: namespace_name.clone(),
+                                interface_name: int.name.to_string(),
+                            }
+                        } else {
+                            HandleKind::TraitInterface {
+                                namespace: namespace_name.clone(),
+                                interface_name: int.name.to_string(),
+                            }
                         })
                         .into(),
                     ),
@@ -48,9 +62,16 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
                 is_async: false,
                 arguments: vec![FfiArgument {
                     name: "ptr".to_string(),
-                    ty: FfiType::Handle(HandleKind::Interface {
-                        namespace: namespace_name.clone(),
-                        interface_name: int.name.to_string(),
+                    ty: FfiType::Handle(if int.imp.has_struct() {
+                        HandleKind::StructInterface {
+                            namespace: namespace_name.clone(),
+                            interface_name: int.name.to_string(),
+                        }
+                    } else {
+                        HandleKind::TraitInterface {
+                            namespace: namespace_name.clone(),
+                            interface_name: int.name.to_string(),
+                        }
                     })
                     .into(),
                 }],

@@ -441,7 +441,7 @@ pub enum Type {
     },
 }
 
-#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, Node, PartialEq, Eq, Hash)]
 pub enum ObjectImpl {
     // A single Rust type
     Struct,
@@ -586,7 +586,11 @@ pub enum HandleKind {
     ForeignFuture,
     ForeignFutureCallbackData,
     // Interface, trait interface, or callback interface
-    Interface {
+    StructInterface {
+        namespace: String,
+        interface_name: String,
+    },
+    TraitInterface {
         namespace: String,
         interface_name: String,
     },
@@ -683,5 +687,9 @@ impl Type {
 impl ObjectImpl {
     pub fn has_callback_interface(&self) -> bool {
         matches!(self, Self::CallbackTrait)
+    }
+
+    pub fn has_struct(&self) -> bool {
+        matches!(self, Self::Struct)
     }
 }

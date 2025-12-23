@@ -57,7 +57,14 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
         (Some(FfiType::Float32), "f32"),
         (Some(FfiType::Float64), "f64"),
         (
-            Some(FfiType::Handle(HandleKind::Interface {
+            Some(FfiType::Handle(HandleKind::StructInterface {
+                namespace: "".into(),
+                interface_name: "".into(),
+            })),
+            "u64",
+        ),
+        (
+            Some(FfiType::Handle(HandleKind::TraitInterface {
                 namespace: "".into(),
                 interface_name: "".into(),
             })),

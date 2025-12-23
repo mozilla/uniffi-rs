@@ -56,7 +56,7 @@ pub fn pass(root: &mut Root) -> Result<()> {
         let namespace_name = namespace.name.clone();
         namespace.visit_mut(|int: &mut Interface| {
             let interface_name = int.name.clone();
-            let interface_imp = int.imp.clone();
+            let interface_imp = int.imp;
             let self_type = int.self_type.clone();
             int.visit_mut(|cons: &mut Constructor| {
                 cons.callable = Callable {
@@ -72,7 +72,7 @@ pub fn pass(root: &mut Root) -> Result<()> {
                             ty: Type::Interface {
                                 namespace: namespace_name.clone(),
                                 name: interface_name.clone(),
-                                imp: interface_imp.clone(),
+                                imp: interface_imp,
                             },
                             ..TypeNode::default()
                         }),
