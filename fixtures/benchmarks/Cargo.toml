@@ -11,7 +11,7 @@ name = "uniffi_benchmarks"
 bench = false
 
 [dependencies]
-uniffi = { workspace = true }
+uniffi = { workspace = true, features=["pointer-ffi"] }
 clap = { version = "4", features = ["cargo", "std", "derive"] }
 criterion = "0.5.1"
 regex = "1.5.1"

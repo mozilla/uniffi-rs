@@ -49,9 +49,13 @@ bindgen-tests = [ "dep:uniffi_bindgen", "uniffi_bindgen?/bindgen-tests" ]
 # Enable support for Tokio's futures.
 # This must still be opted into on a per-function basis using `#[uniffi::export(async_runtime = "tokio")]`.
 tokio = ["uniffi_core/tokio"]
-# Generate extra scaffolding functions that use FfiBuffer to pass arguments and return values
-# This is needed for the gecko-js bindings.
-scaffolding-ffi-buffer-fns = ["uniffi_core/scaffolding-ffi-buffer-fns", "uniffi_macros/scaffolding-ffi-buffer-fns"]
+# Generate pointer FFI versions of scaffolding functions
+#
+# This will eventually be the a new FFI that's optimized for languages not based in C like Kotin,
+# Python, JS, etc.
+#
+# This is an experimental flag since the work is still ongoing.  Use at your own risk.
+pointer-ffi = ["uniffi_core/pointer-ffi", "uniffi_macros/pointer-ffi", "uniffi_bindgen/pointer-ffi"]
 
 # Support for WebAssembly targets in a single-threaded environment.
 # This feature is unstable and may change in the future.

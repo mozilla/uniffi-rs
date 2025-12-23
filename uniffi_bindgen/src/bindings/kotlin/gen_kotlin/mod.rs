@@ -12,8 +12,7 @@ use heck::{ToLowerCamelCase, ToShoutySnakeCase, ToUpperCamelCase};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    anyhow, bail, interface::ffi::ExternalFfiMetadata, interface::*, to_askama_error, Context,
-    Result,
+    anyhow, bail, interface::pointer_ffi::*, interface::*, to_askama_error, Context, Result,
 };
 
 mod callback_interface;
@@ -321,6 +320,10 @@ pub struct KotlinWrapper<'a> {
     ci: &'a ComponentInterface,
     type_helper_code: String,
     type_imports: BTreeSet<ImportRequirement>,
+    ffi_definitions: Vec<PointerFfiDefinition>,
+    integrity_ffi_definitions: Vec<PointerFfiDefinition>,
+    // Crates that external types come from
+    external_type_sources: Vec<ExternalTypeSource>,
 }
 
 impl<'a> KotlinWrapper<'a> {
@@ -328,15 +331,34 @@ impl<'a> KotlinWrapper<'a> {
         let type_renderer = TypeRenderer::new(&config, ci);
         let type_helper_code = type_renderer.render()?;
         let type_imports = type_renderer.imports.into_inner();
+        let ffi_definitions: Vec<PointerFfiDefinition> = ci.pointer_ffi_definitions().collect();
+        let integrity_ffi_definitions: Vec<PointerFfiDefinition> =
+            pointer_ffi_integrity_ffi_definitions(ci).collect();
+        let external_type_sources = ci
+            .iter_external_types()
+            .filter_map(|ty| ty.crate_name())
+            .collect::<BTreeSet<&str>>()
+            .into_iter()
+            .map(|crate_name| {
+                let namespace = ci.namespace_for_module_path(crate_name).unwrap();
+                ExternalTypeSource {
+                    crate_name: crate_name.to_string(),
+                    package: config.external_package_name(crate_name, Some(namespace)),
+                }
+            })
+            .collect();
         Ok(Self {
             config,
             ci,
             type_helper_code,
             type_imports,
+            ffi_definitions,
+            integrity_ffi_definitions,
+            external_type_sources,
         })
     }
 
-    pub fn initialization_fns(&self, ci: &ComponentInterface) -> Vec<String> {
+    pub fn initialization_fns(&self) -> Vec<String> {
         let init_fns = self
             .ci
             .iter_local_types()
@@ -348,25 +370,29 @@ impl<'a> KotlinWrapper<'a> {
         // For example, we need to make sure that all callback interface vtables are registered
         // (#2343).
         let extern_module_init_fns = self
-            .ci
-            .iter_external_types()
-            .filter_map(|ty| ty.crate_name())
-            .map(|crate_name| {
-                let namespace = ci.namespace_for_module_path(crate_name).unwrap();
-                let package_name = self
-                    .config
-                    .external_package_name(crate_name, Some(namespace));
+            .external_type_sources
+            .iter()
+            .map(|source| {
+                let package_name = &source.package;
                 format!("{package_name}.uniffiEnsureInitialized()")
             })
             // Collect into a btree set to de-dup and order
             .collect::<BTreeSet<_>>();
 
-        init_fns.chain(extern_module_init_fns).collect()
+        init_fns
+            .chain(["uniffiEnsureInitialized()".to_string()])
+            .chain(extern_module_init_fns)
+            .collect()
     }
 
     pub fn imports(&self) -> Vec<ImportRequirement> {
         self.type_imports.iter().cloned().collect()
     }
+}
+
+pub struct ExternalTypeSource {
+    pub crate_name: String,
+    pub package: String,
 }
 
 /// Get the name of the interface and class name for a trait.
@@ -485,48 +511,6 @@ impl KotlinCodeOracle {
         format!("Uniffi{}", nm.to_upper_camel_case())
     }
 
-    fn ffi_type_label_by_value(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
-        match ffi_type {
-            FfiType::RustBuffer(_) => format!("{}.ByValue", self.ffi_type_label(ffi_type, ci)),
-            FfiType::Struct(name) => format!("{}.UniffiByValue", self.ffi_struct_name(name)),
-            _ => self.ffi_type_label(ffi_type, ci),
-        }
-    }
-
-    /// FFI type name to use inside structs
-    ///
-    /// The main requirement here is that all types must have default values or else the struct
-    /// won't work in some JNA contexts.
-    fn ffi_type_label_for_ffi_struct(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
-        match ffi_type {
-            // Make callbacks function pointers nullable. This matches the semantics of a C
-            // function pointer better and allows for `null` as a default value.
-            FfiType::Callback(name) => format!("{}?", self.ffi_callback_name(name)),
-            _ => self.ffi_type_label_by_value(ffi_type, ci),
-        }
-    }
-
-    /// Default values for FFI
-    ///
-    /// This is used to:
-    ///   - Set a default return value for error results
-    ///   - Set a default for structs, which JNA sometimes requires
-    fn ffi_default_value(&self, ffi_type: &FfiType) -> String {
-        match ffi_type {
-            FfiType::UInt8 | FfiType::Int8 => "0.toByte()".to_owned(),
-            FfiType::UInt16 | FfiType::Int16 => "0.toShort()".to_owned(),
-            FfiType::UInt32 | FfiType::Int32 => "0".to_owned(),
-            FfiType::UInt64 | FfiType::Int64 => "0.toLong()".to_owned(),
-            FfiType::Float32 => "0.0f".to_owned(),
-            FfiType::Float64 => "0.0".to_owned(),
-            FfiType::Handle => "0.toLong()".to_owned(),
-            FfiType::RustBuffer(_) => "RustBuffer.ByValue()".to_owned(),
-            FfiType::Callback(_) => "null".to_owned(),
-            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue()".to_owned(),
-            _ => unimplemented!("ffi_default_value: {ffi_type:?}"),
-        }
-    }
-
     fn ffi_type_label_by_reference(&self, ffi_type: &FfiType, ci: &ComponentInterface) -> String {
         match ffi_type {
             FfiType::Int8
@@ -564,8 +548,8 @@ impl KotlinCodeOracle {
                 }
                 _ => "RustBuffer".to_string(),
             },
-            FfiType::RustCallStatus => "UniffiRustCallStatus.ByValue".to_string(),
-            FfiType::ForeignBytes => "ForeignBytes.ByValue".to_string(),
+            FfiType::RustCallStatus => "UniffiRustCallStatus".to_string(),
+            FfiType::ForeignBytes => unimplemented!(),
             FfiType::Callback(name) => self.ffi_callback_name(name),
             FfiType::Struct(name) => self.ffi_struct_name(name),
             FfiType::Reference(inner) | FfiType::MutReference(inner) => {
@@ -694,6 +678,49 @@ mod filters {
         Ok(format!("{}.read", as_ct.as_codetype().ffi_converter_name()))
     }
 
+    pub(super) fn ffi_serializer_name(
+        ty: &impl AsType,
+        ci: &ComponentInterface,
+    ) -> Result<String, askama::Error> {
+        let ty = ty.as_type();
+        let ffi_type = FfiType::from(&ty);
+
+        Ok(match ffi_type {
+            FfiType::Int8 => "UniffiFfiSerializerByte".to_string(),
+            FfiType::Int16 => "UniffiFfiSerializerShort".to_string(),
+            FfiType::Int32 => "UniffiFfiSerializerInt".to_string(),
+            FfiType::Int64 => "UniffiFfiSerializerLong".to_string(),
+            // Use signed UniffiFfiSerializer objects for unsigned ints, since their FfiConverter converts
+            // them to signed.
+            FfiType::UInt8 => "UniffiFfiSerializerByte".to_string(),
+            FfiType::UInt16 => "UniffiFfiSerializerShort".to_string(),
+            FfiType::UInt32 => "UniffiFfiSerializerInt".to_string(),
+            FfiType::UInt64 => "UniffiFfiSerializerLong".to_string(),
+            FfiType::Float32 => "UniffiFfiSerializerFloat".to_string(),
+            FfiType::Float64 => "UniffiFfiSerializerDouble".to_string(),
+            FfiType::RustBuffer(maybe_external) => match maybe_external {
+                Some(external_meta) if external_meta.crate_name() != ci.crate_name() => {
+                    format!(
+                        "UniffiFfiSerializerRustBuffer{}",
+                        external_meta.crate_name().to_upper_camel_case()
+                    )
+                }
+                _ => "UniffiFfiSerializerRustBuffer".to_string(),
+            },
+            FfiType::Handle => "UniffiFfiSerializerLong".to_string(),
+            _ => unimplemented!("{ffi_type:?}"),
+        })
+    }
+
+    pub(super) fn ffi_serializer_name_external_rust_buffer(
+        source: &ExternalTypeSource,
+    ) -> Result<String, askama::Error> {
+        Ok(format!(
+            "UniffiFfiSerializerRustBuffer{}",
+            source.crate_name.to_upper_camel_case()
+        ))
+    }
+
     fn fully_qualified_type_label(
         ty: &Type,
         ci: &ComponentInterface,
@@ -786,22 +813,11 @@ mod filters {
         }
     }
 
-    pub fn ffi_type_name_by_value(
+    pub fn ffi_type_name(
         type_: &FfiType,
         ci: &ComponentInterface,
     ) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label_by_value(type_, ci))
-    }
-
-    pub fn ffi_type_name_for_ffi_struct(
-        type_: &FfiType,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_type_label_for_ffi_struct(type_, ci))
-    }
-
-    pub fn ffi_default_value(type_: FfiType) -> Result<String, askama::Error> {
-        Ok(KotlinCodeOracle.ffi_default_value(&type_))
+        Ok(KotlinCodeOracle.ffi_type_label(type_, ci))
     }
 
     /// Get the idiomatic Kotlin rendering of a function name.
@@ -827,6 +843,17 @@ mod filters {
         Ok(KotlinCodeOracle.var_name_raw(nm.as_ref()))
     }
 
+    /// Get the idiomatic Kotlin rendering of an argument name
+    pub fn arg_name(arg: &Argument) -> Result<String, askama::Error> {
+        if arg.name() == "uniffi_self" {
+            // Need to special case these
+            Ok("this".into())
+        } else {
+            // All others use `var_name`
+            Ok(KotlinCodeOracle.var_name(arg.name()))
+        }
+    }
+
     /// Get a String representing the name used for an individual enum variant.
     pub fn variant_name(v: &Variant) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.enum_variant_name(v.name()))
@@ -845,47 +872,6 @@ mod filters {
     /// Get the idiomatic Kotlin rendering of an FFI struct name
     pub fn ffi_struct_name<S: AsRef<str>>(nm: S) -> Result<String, askama::Error> {
         Ok(KotlinCodeOracle.ffi_struct_name(nm.as_ref()))
-    }
-
-    pub fn async_poll(
-        callable: impl Callable,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_poll(ci);
-        Ok(format!(
-            "{{ future, callback, continuation -> UniffiLib.{ffi_func}(future, callback, continuation) }}"
-        ))
-    }
-
-    pub fn async_complete(
-        callable: impl Callable,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_complete(ci);
-        let call = format!("UniffiLib.{ffi_func}(future, continuation)");
-        // May need to convert the RustBuffer from our package to the RustBuffer of the external package
-        let call = match callable.return_type() {
-            Some(return_type) if ci.is_external(return_type) => {
-                let ffi_type = FfiType::from(return_type);
-                match ffi_type {
-                    FfiType::RustBuffer(Some(ExternalFfiMetadata { name, .. })) => {
-                        let suffix = KotlinCodeOracle.class_name(ci, &name);
-                        format!("{call}.let {{ RustBuffer{suffix}.create(it.capacity.toULong(), it.len.toULong(), it.data) }}")
-                    }
-                    _ => call,
-                }
-            }
-            _ => call,
-        };
-        Ok(format!("{{ future, continuation -> {call} }}"))
-    }
-
-    pub fn async_free(
-        callable: impl Callable,
-        ci: &ComponentInterface,
-    ) -> Result<String, askama::Error> {
-        let ffi_func = callable.ffi_rust_future_free(ci);
-        Ok(format!("{{ future -> UniffiLib.{ffi_func}(future) }}"))
     }
 
     /// Remove the "`" chars we put around function/variable names

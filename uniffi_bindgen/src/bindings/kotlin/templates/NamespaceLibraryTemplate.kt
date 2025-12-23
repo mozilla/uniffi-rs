@@ -7,55 +7,46 @@ private fun findLibraryName(componentName: String): String {
     return "{{ config.cdylib_name() }}"
 }
 
-// Define FFI callback types
-{%- for def in ci.ffi_definitions() %}
+{%- for def in ffi_definitions %}
 {%- match def %}
-{%- when FfiDefinition::CallbackFunction(callback) %}
-internal interface {{ callback.name()|ffi_callback_name }} : com.sun.jna.Callback {
-    fun callback(
-        {%- for arg in callback.arguments() -%}
-        {{ arg.name().borrow()|var_name }}: {{ arg.type_().borrow()|ffi_type_name_by_value(ci) }},
-        {%- endfor -%}
-        {%- if callback.has_rust_call_status_arg() -%}
-        uniffiCallStatus: UniffiRustCallStatus,
-        {%- endif -%}
-    )
-    {%- if let Some(return_type) = callback.return_type() %}
-    : {{ return_type|ffi_type_name_by_value(ci) }}
+
+{%- when PointerFfiDefinition::Callback(cb) %}
+{%- match cb.kind %}
+{%- when FfiCallbackFunctionKind::Normal %}
+internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(uniffiFfiBuffer: Pointer)
+}
+{%- when FfiCallbackFunctionKind::Async %}
+internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(uniffiFfiBuffer: Pointer, uniffiCallback: UniffiForeignFutureCallback): UniffiForeignFutureDroppedCallback
+}
+{%- when FfiCallbackFunctionKind::RustFutureContinutation %}
+internal interface {{ cb.name|ffi_callback_name }} : com.sun.jna.Callback {
+    fun callback(data: Long, pollResult: Byte)
+}
+{%- endmatch %}
+
+{%- when PointerFfiDefinition::Struct(st) %}
+{%- match st.kind %}
+{%- when FfiStructKind::VTable { methods } %}
+@Structure.FieldOrder("uniffiFree", "uniffiClone"{% for meth in methods.iter() %}, "{{ meth.name|var_name_raw }}"{% endfor %})
+internal open class {{ st.name|ffi_struct_name }}(
+    @JvmField internal var uniffiFree: UniffiCallbackMethod,
+    @JvmField internal var uniffiClone: UniffiCallbackMethod,
+    {%- for meth in methods %}
+    {%- if meth.is_async %}
+    @JvmField internal var {{ meth.name|var_name }}: UniffiAsyncCallbackMethod,
+    {%- else %}
+    @JvmField internal var {{ meth.name|var_name }}: UniffiCallbackMethod,
     {%- endif %}
-}
-{%- when FfiDefinition::Struct(ffi_struct) %}
-@Structure.FieldOrder({% for field in ffi_struct.fields() %}"{{ field.name()|var_name_raw }}"{% if !loop.last %}, {% endif %}{% endfor %})
-internal open class {{ ffi_struct.name()|ffi_struct_name }}(
-    {%- for field in ffi_struct.fields() %}
-    @JvmField internal var {{ field.name()|var_name }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct(ci) }} = {{ field.type_()|ffi_default_value }},
     {%- endfor %}
-) : Structure() {
-    class UniffiByValue(
-        {%- for field in ffi_struct.fields() %}
-        {{ field.name()|var_name }}: {{ field.type_().borrow()|ffi_type_name_for_ffi_struct(ci) }} = {{ field.type_()|ffi_default_value }},
-        {%- endfor %}
-    ): {{ ffi_struct.name()|ffi_struct_name }}({%- for field in ffi_struct.fields() %}{{ field.name()|var_name }}, {%- endfor %}), Structure.ByValue
+) : Structure()
+{%- endmatch %}
 
-   internal fun uniffiSetValue(other: {{ ffi_struct.name()|ffi_struct_name }}) {
-        {%- for field in ffi_struct.fields() %}
-        {{ field.name()|var_name }} = other.{{ field.name()|var_name }}
-        {%- endfor %}
-    }
-
-}
-{%- when FfiDefinition::Function(_) %}
-{#- functions are handled below #}
+{%- when PointerFfiDefinition::Function(func) %}
+{#- Handled below inside the `UniffiLib` definition #}
 {%- endmatch %}
 {%- endfor %}
-
-{%- macro decl_kotlin_functions(func_list) -%}
-{% for func in func_list -%}
-external fun {{ func.name() }}(
-    {%- call kt::arg_list_ffi_decl(func) %}
-): {% match func.return_type() %}{% when Some with (return_type) %}{{ return_type.borrow()|ffi_type_name_by_value(ci) }}{% when None %}Unit{% endmatch %}
-{% endfor %}
-{%- endmacro %}
 
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
@@ -81,9 +72,11 @@ internal object IntegrityCheckingUniffiLib {
         uniffiCheckApiChecksums(this)
 {%- endif %}
     }
-    {% filter indent(4) %}
-    {%- call decl_kotlin_functions(ci.iter_ffi_function_integrity_checks()) %}
-    {% endfilter %}
+    {%- for def in integrity_ffi_definitions %}
+    {%- if let PointerFfiDefinition::Function(func) = def %}
+    external fun {{ func.name }}(uniffiFfiBuffer: Pointer)
+    {%- endif %}
+    {%- endfor %}
 }
 
 internal object UniffiLib {
@@ -96,22 +89,33 @@ internal object UniffiLib {
 
     init {
         Native.register(UniffiLib::class.java, findLibraryName(componentName = "{{ ci.namespace() }}"))
-        {% for fn_item in self.initialization_fns(ci) -%}
+        {% for fn_item in self.initialization_fns() -%}
         {{ fn_item }}
         {% endfor %}
     }
-    {#- XXX - this `filter indent` doesn't seem to work, even though the one above does? #}
-    {% filter indent(4) %}
-    {%- call decl_kotlin_functions(ci.iter_ffi_function_definitions_excluding_integrity_checks()) %}
-    {% endfilter %}
+
+    {%- for def in ffi_definitions %}
+    {%- if let PointerFfiDefinition::Function(func) = def %}
+    {%- match func.kind %}
+    {%- when FfiFunctionKind::Normal %}
+    external fun {{ func.name }}(uniffiFfiBuffer: Pointer)
+    {%- when FfiFunctionKind::RustFuturePoll %}
+    external fun {{ func.name }}(uniffiFfiBuffer: Pointer, callback: UniffiRustFutureContinuationCallback)
+    {%- when FfiFunctionKind::VTableInit %}
+    external fun {{ func.name }}(vtable: Pointer)
+    {%- endmatch %}
+    {%- endif %}
+    {%- endfor %}
 }
 
 private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
     // Get the bindings contract version from our ComponentInterface
     val bindings_contract_version = {{ ci.uniffi_contract_version() }}
     // Get the scaffolding contract version by calling the into the dylib
-    val scaffolding_contract_version = lib.{{ ci.ffi_uniffi_contract_version().name() }}()
-    if (bindings_contract_version != scaffolding_contract_version) {
+    val ffiBuffer = Memory(8)
+    lib.{{ ci.ffi_uniffi_contract_version().pointer_ffi_name() }}(ffiBuffer)
+    val returnCursor = UniffiBufferCursor(ffiBuffer)
+    if (bindings_contract_version != UniffiFfiSerializerInt.read(returnCursor)) {
         throw RuntimeException("UniFFI contract version mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -119,8 +123,14 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 {%- if !config.omit_checksums %}
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
-    {%- for (name, expected_checksum) in ci.iter_checksums() %}
-    if (lib.{{ name }}() != {{ expected_checksum }}.toShort()) {
+    {%- for (name, expected_checksum) in ci.pointer_ffi_iter_checksums() %}
+    {%- if loop.first %}
+    val ffiBuffer = Memory(8)
+    var returnCursor: UniffiBufferCursor
+    {%- endif %}
+    lib.{{ name }}(ffiBuffer)
+    returnCursor = UniffiBufferCursor(ffiBuffer)
+    if (UniffiFfiSerializerShort.read(returnCursor) != {{ expected_checksum }}.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     {%- endfor %}

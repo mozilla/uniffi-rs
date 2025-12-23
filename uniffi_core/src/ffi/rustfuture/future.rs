@@ -180,7 +180,7 @@ impl<FfiType> WrappedFuture<FfiType> {
 }
 
 /// Future that the foreign code is awaiting
-pub(super) struct RustFuture<FfiType> {
+pub(crate) struct RustFuture<FfiType> {
     // This Mutex should never block if our code is working correctly, since there should not be
     // multiple threads calling [Self::poll] and/or [Self::complete] at the same time.
     future: Mutex<WrappedFuture<FfiType>>,
@@ -188,7 +188,7 @@ pub(super) struct RustFuture<FfiType> {
 }
 
 impl<FfiType> RustFuture<FfiType> {
-    pub(super) fn new<F, T, UT>(future: F, _tag: UT) -> Self
+    pub(crate) fn new<F, T, UT>(future: F, _tag: UT) -> Self
     where
         F: UniffiCompatibleFuture<Result<T, LiftArgsError>> + 'static,
         T: FutureLowerReturn<UT, ReturnType = FfiType>,
@@ -199,7 +199,7 @@ impl<FfiType> RustFuture<FfiType> {
         }
     }
 
-    pub(super) fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
+    pub(crate) fn poll(self: Arc<Self>, callback: RustFutureContinuationCallback, data: u64) {
         let cancelled = self.is_cancelled();
         let ready = cancelled || {
             let mut locked = self.future.lock().unwrap();
@@ -214,22 +214,22 @@ impl<FfiType> RustFuture<FfiType> {
         }
     }
 
-    pub(super) fn is_cancelled(&self) -> bool {
+    pub(crate) fn is_cancelled(&self) -> bool {
         self.scheduler.lock().unwrap().is_cancelled()
     }
 
-    pub(super) fn cancel(&self) {
+    pub(crate) fn cancel(&self) {
         self.scheduler.lock().unwrap().cancel();
     }
 
-    pub(super) fn complete(&self, call_status: &mut RustCallStatus) -> FfiType
+    pub(crate) fn complete(&self, call_status: &mut RustCallStatus) -> FfiType
     where
         FfiType: FfiDefault,
     {
         self.future.lock().unwrap().complete(call_status)
     }
 
-    pub(super) fn free(self: Arc<Self>) {
+    pub(crate) fn free(&self) {
         // Call cancel() to send any leftover data to the continuation callback
         self.scheduler.lock().unwrap().cancel();
         // Ensure we drop our inner future, releasing all held references
