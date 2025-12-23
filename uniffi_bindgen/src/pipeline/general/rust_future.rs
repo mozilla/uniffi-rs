@@ -56,10 +56,12 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
         (Some(FfiType::Int64), "i64"),
         (Some(FfiType::Float32), "f32"),
         (Some(FfiType::Float64), "f64"),
+        // XXX - do we need to duplicate this but other `imp` values??
         (
             Some(FfiType::Handle(HandleKind::Interface {
                 namespace: "".into(),
                 interface_name: "".into(),
+                imp: ObjectImpl::Trait,
             })),
             "u64",
         ),

@@ -37,15 +37,20 @@ fn generate_ffi_type(ty: &Type, current_namespace: &str) -> FfiType {
         Type::Bytes => FfiType::RustBuffer(None),
         // Objects are pointers to an Arc<>
         Type::Interface {
-            namespace, name, ..
+            namespace,
+            name,
+            imp,
+            ..
         } => FfiType::Handle(HandleKind::Interface {
             namespace: namespace.clone(),
             interface_name: name.clone(),
+            imp: *imp,
         }),
         // Callback interfaces are passed as opaque integer handles.
         Type::CallbackInterface { namespace, name } => FfiType::Handle(HandleKind::Interface {
             namespace: namespace.clone(),
             interface_name: name.clone(),
+            imp: ObjectImpl::CallbackTrait,
         }),
         // Other types are serialized into a bytebuffer and deserialized on the other side.
         Type::Enum { namespace, .. } | Type::Record { namespace, .. } => {

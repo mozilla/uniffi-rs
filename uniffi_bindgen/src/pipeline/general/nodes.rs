@@ -441,7 +441,7 @@ pub enum Type {
     },
 }
 
-#[derive(Debug, Clone, Node, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, Node, PartialEq, Eq, Hash)]
 pub enum ObjectImpl {
     // A single Rust type
     Struct,
@@ -589,6 +589,9 @@ pub enum HandleKind {
     Interface {
         namespace: String,
         interface_name: String,
+        // XXX - I think we only case about "interface vs trait", and not "trait vs callback trait"?
+        // If so, maybe a new enum?
+        imp: ObjectImpl,
     },
 }
 

@@ -24,6 +24,7 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
                     ty: FfiType::Handle(HandleKind::Interface {
                         namespace: namespace_name.clone(),
                         interface_name: int.name.to_string(),
+                        imp: int.imp,
                     })
                     .into(),
                 }],
@@ -32,6 +33,7 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
                         FfiType::Handle(HandleKind::Interface {
                             namespace: namespace_name.clone(),
                             interface_name: int.name.to_string(),
+                            imp: int.imp,
                         })
                         .into(),
                     ),
@@ -51,6 +53,7 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
                     ty: FfiType::Handle(HandleKind::Interface {
                         namespace: namespace_name.clone(),
                         interface_name: int.name.to_string(),
+                        imp: int.imp,
                     })
                     .into(),
                 }],
