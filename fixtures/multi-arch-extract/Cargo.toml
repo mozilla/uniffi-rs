@@ -1,0 +1,11 @@
+[package]
+name = "uniffi-fixture-multi-arch-extract"
+version = "0.22.0"
+edition = "2021"
+license = "MPL-2.0"
+publish = false
+
+[dev-dependencies]
+uniffi_bindgen = { path = "../../uniffi_bindgen" }
+xshell = "0.2.7"
+tempfile = "3"
