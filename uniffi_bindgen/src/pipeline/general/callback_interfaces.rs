@@ -105,6 +105,7 @@ fn add_vtable_ffi_definitions(namespace: &mut Namespace) -> Result<()> {
         let handle_type = FfiType::Handle(HandleKind::Interface {
             namespace: module_name.to_string(),
             interface_name: interface_name.to_string(),
+            imp: ObjectImpl::Trait, // XXX - here and elsewhere - do we care if it's ObjectImpl::CallbackTrait?
         });
         // FFI Function Type for each method in the VTable
         for (i, meth) in vtable.methods.iter().enumerate() {
@@ -268,6 +269,7 @@ fn vtable_method(
             ty: FfiType::Handle(HandleKind::Interface {
                 namespace: module_name.to_string(),
                 interface_name: interface_name.to_string(),
+                imp: ObjectImpl::Trait,
             })
             .into(),
         })
@@ -306,6 +308,7 @@ fn vtable_method_async(
             ty: FfiType::Handle(HandleKind::Interface {
                 namespace: module_name.to_string(),
                 interface_name: interface_name.to_string(),
+                imp: ObjectImpl::Trait,
             })
             .into(),
         })
