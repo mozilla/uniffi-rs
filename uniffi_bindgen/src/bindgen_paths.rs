@@ -44,25 +44,14 @@ impl BindgenPaths {
         self.layers.push(Box::new(layer));
     }
 
-    /// Get the config path for a crate
-    pub fn get_config_path(&self, crate_name: &str) -> Option<Utf8PathBuf> {
-        self.layers
-            .iter()
-            .find_map(|l| l.get_config_path(crate_name))
-    }
-
     /// Get the config table for a crate
     pub fn get_config(&self, crate_name: &str) -> Result<toml::value::Table> {
-        match self.get_config_path(crate_name) {
-            Some(path) => {
-                let contents =
-                    fs::read_to_string(&path).with_context(|| format!("read file: {:?}", path))?;
-                let toml = toml::de::from_str(&contents)
-                    .with_context(|| format!("parse toml: {:?}", path))?;
-                Ok(toml)
+        for layer in &self.layers {
+            if let Some(table) = layer.get_config(crate_name)? {
+                return Ok(table);
             }
-            None => Ok(toml::value::Table::default()),
         }
+        Ok(toml::value::Table::default())
     }
 
     /// Get the UDL path for a crate
@@ -83,11 +72,16 @@ impl BindgenPaths {
 
 /// Trait for finding UDL and config paths
 pub trait BindgenPathsLayer {
-    /// Lookup the config TOML file path.
+    /// Lookup and load the config TOML for a crate.
     ///
-    /// This is usually `[crate-root]/uniffi.toml`
-    fn get_config_path(&self, _crate_name: &str) -> Option<Utf8PathBuf> {
-        None
+    /// This is usually loaded from `[crate-root]/uniffi.toml`. However, layers are
+    /// free to obtain the TOML table for a crate however they want. For example:
+    /// * There could be a shared TOML file for all crates and this method could
+    ///   return one of the child table values for the specified crate.
+    /// * The TOML could be hard-coded into source code and not loaded from a file at all.
+    /// * etc.
+    fn get_config(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
+        Ok(None)
     }
 
     /// Lookup the a UDL file path.
@@ -103,7 +97,13 @@ struct ConfigOverrideLayer {
 }
 
 impl BindgenPathsLayer for ConfigOverrideLayer {
-    fn get_config_path(&self, _crate_name: &str) -> Option<Utf8PathBuf> {
-        Some(self.path.clone())
+    fn get_config(&self, _crate_name: &str) -> Result<Option<toml::value::Table>> {
+        // ConfigOverrideLayer is used when an expected config override is expected to exist
+        // (eg, --config args), so the file not existing should be an error.
+        let contents = fs::read_to_string(&self.path)
+            .with_context(|| format!("read file: {:?}", self.path))?;
+        let toml = toml::de::from_str(&contents)
+            .with_context(|| format!("parse toml: {:?}", self.path))?;
+        Ok(Some(toml))
     }
 }

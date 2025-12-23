@@ -210,12 +210,12 @@ impl BindgenLoader {
     ) -> Result<pipeline::initial::Root> {
         let mut metadata_converter = pipeline::initial::UniffiMetaConverter::default();
         for metadata_group in metadata.into_values() {
-            if let Some(path) = self
+            let table = self
                 .bindgen_paths
-                .get_config_path(&metadata_group.namespace.crate_name)
-            {
+                .get_config(&metadata_group.namespace.crate_name)?;
+            if !table.is_empty() {
                 metadata_converter
-                    .add_module_config_toml(metadata_group.namespace.name.clone(), &path)?;
+                    .add_module_config_toml(metadata_group.namespace.name.clone(), table)?;
             }
             if let Some(docstring) = metadata_group.namespace_docstring {
                 metadata_converter
