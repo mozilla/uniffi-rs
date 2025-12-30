@@ -1,6 +1,6 @@
 {%- for arg in callable.arguments %}
 {%- if let Some(default) = arg.default %}
-{%- if !default.is_arg_literal %}
+{%- if !default.is_arg_literal() %}
 if {{ arg.name }} is {{ default.arg_literal }}:
     {{ arg.name }} = {{ default.py_default }}
 {%- endif %}
@@ -31,14 +31,11 @@ _uniffi_lift_return = lambda val: None
 
 {%- match callable.throws_type.ty %}
 {%- when Some(e) %}
-{%-    match e.ty %}
-{%-    when Type::Enum { .. } %}
-_uniffi_error_converter = {{ e.ffi_converter_name }}
-{%-    when Type::Interface { .. } %}
+{%-    if callable.throws_type.from_interface %}
 _uniffi_error_converter = {{ e.ffi_converter_name }}__as_error
 {%-    else %}
-_uniffi_error_converter = "UNSUPPORTED ERROR TYPE: {{"{:?}"|format(e) }}"
-{%-    endmatch %}
+_uniffi_error_converter = {{ e.ffi_converter_name }}
+{%-    endif %}
 {%- when None %}
 _uniffi_error_converter = None
 {%- endmatch %}

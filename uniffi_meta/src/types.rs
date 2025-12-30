@@ -17,9 +17,10 @@
 //! about how these API-level types map into the lower-level types of the FFI layer as represented
 //! by the [`ffi::FfiType`](super::ffi::FfiType) enum, but that's a detail that is invisible to end users.
 
-use crate::{Checksum, Node};
+use crate::Checksum;
+use uniffi_pipeline::{MapNode, Node};
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd, Node)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Checksum, Ord, PartialOrd, Node, MapNode)]
 pub enum ObjectImpl {
     // A single Rust type
     Struct,
@@ -49,12 +50,16 @@ impl ObjectImpl {
     pub fn has_callback_interface(&self) -> bool {
         matches!(self, Self::CallbackTrait)
     }
+
+    pub fn has_struct(&self) -> bool {
+        matches!(self, Self::Struct)
+    }
 }
 
 /// Represents all the different high-level types that can be used in a component interface.
 /// At this level we identify user-defined types by name, without knowing any details
 /// of their internal structure apart from what type of thing they are (record, enum, etc).
-#[derive(Debug, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd, Node)]
+#[derive(Debug, Clone, Eq, PartialEq, Checksum, Ord, PartialOrd)]
 pub enum Type {
     // Primitive types.
     UInt8,

@@ -60,7 +60,7 @@ class {{ type_name }}:  # type: ignore
 
     {%-     for meth in e.methods -%}
     {%-     let callable = meth.callable %}
-        {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+        {% if callable.is_async() %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
             {{ meth.docstring|docstring(12) -}}
     {%-         filter indent(12) %}
     {%-         include "CallableBody.py" %}

@@ -4,47 +4,25 @@
 
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
+pub fn ffi_definitions(namespace: &initial::Namespace) -> Result<Vec<FfiDefinition>> {
+    if !has_async_fns(namespace) {
+        return Ok(vec![]);
+    }
+
     let crate_name = namespace.crate_name.clone();
+    let mut ffi_defs = vec![];
 
-    // Add Future-related FFI definitions
-    namespace.ffi_definitions.extend([
-        FfiFunctionType {
-            name: FfiFunctionTypeName("RustFutureContinuationCallback".to_owned()),
-            arguments: vec![
-                FfiArgument::new("data", FfiType::Handle(HandleKind::RustFuture)),
-                FfiArgument::new("poll_result", FfiType::Int8),
-            ],
-            return_type: FfiReturnType { ty: None },
-            has_rust_call_status_arg: false,
-        }
-        .into(),
-        FfiFunctionType {
-            name: FfiFunctionTypeName("ForeignFutureDroppedCallback".to_owned()),
-            arguments: vec![FfiArgument::new(
-                "handle",
-                FfiType::Handle(HandleKind::ForeignFuture),
-            )],
-            return_type: FfiReturnType { ty: None },
-            has_rust_call_status_arg: false,
-        }
-        .into(),
-        FfiStruct {
-            name: FfiStructName("ForeignFutureDroppedCallbackStruct".to_owned()),
-            fields: vec![
-                FfiField::new("handle", FfiType::Handle(HandleKind::ForeignFuture)),
-                FfiField::new(
-                    "free",
-                    FfiType::Function(FfiFunctionTypeName(
-                        "ForeignFutureDroppedCallback".to_owned(),
-                    )),
-                ),
-            ],
-        }
-        .into(),
-    ]);
+    ffi_defs.extend([FfiFunctionType {
+        name: FfiFunctionTypeName("RustFutureContinuationCallback".to_owned()),
+        arguments: vec![
+            FfiArgument::new("data", FfiType::Handle(HandleKind::RustFuture)),
+            FfiArgument::new("poll_result", FfiType::Int8),
+        ],
+        return_type: FfiReturnType { ty: None },
+        has_rust_call_status_arg: false,
+    }
+    .into()]);
 
-    // Add ffi definitions to support async calls and populate the maps
     let all_async_return_types = [
         (Some(FfiType::UInt8), "u8"),
         (Some(FfiType::Int8), "i8"),
@@ -75,26 +53,18 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
     ];
     for (return_type, return_type_name) in all_async_return_types {
         let poll_name = format!("ffi_{crate_name}_rust_future_poll_{return_type_name}");
-        namespace
-            .ffi_definitions
-            .insert(ffi_rust_future_poll(poll_name));
+        ffi_defs.push(ffi_rust_future_poll(poll_name));
 
         let cancel_name = format!("ffi_{crate_name}_rust_future_cancel_{return_type_name}");
-        namespace
-            .ffi_definitions
-            .insert(ffi_rust_future_cancel(cancel_name));
+        ffi_defs.push(ffi_rust_future_cancel(cancel_name));
 
         let complete_name = format!("ffi_{crate_name}_rust_future_complete_{return_type_name}");
-        namespace
-            .ffi_definitions
-            .insert(ffi_rust_future_complete(return_type.clone(), complete_name));
+        ffi_defs.push(ffi_rust_future_complete(return_type.clone(), complete_name));
 
         let free_name = format!("ffi_{crate_name}_rust_future_free_{return_type_name}");
-        namespace
-            .ffi_definitions
-            .insert(ffi_rust_future_free(free_name));
+        ffi_defs.push(ffi_rust_future_free(free_name));
     }
-    Ok(())
+    Ok(ffi_defs)
 }
 
 fn ffi_rust_future_poll(symbol_name: String) -> FfiDefinition {
@@ -104,24 +74,22 @@ fn ffi_rust_future_poll(symbol_name: String) -> FfiDefinition {
         arguments: vec![
             FfiArgument {
                 name: "handle".to_owned(),
-                ty: FfiType::Handle(HandleKind::RustFuture).into(),
+                ty: FfiType::Handle(HandleKind::RustFuture),
             },
             FfiArgument {
                 name: "callback".to_owned(),
                 ty: FfiType::Function(FfiFunctionTypeName(
                     "RustFutureContinuationCallback".to_owned(),
-                ))
-                .into(),
+                )),
             },
             FfiArgument {
                 name: "callback_data".to_owned(),
-                ty: FfiType::Handle(HandleKind::RustFuture).into(),
+                ty: FfiType::Handle(HandleKind::RustFuture),
             },
         ],
         return_type: FfiReturnType { ty: None },
         has_rust_call_status_arg: false,
         kind: FfiFunctionKind::RustFuturePoll,
-        ..FfiFunction::default()
     }
     .into()
 }
@@ -132,12 +100,11 @@ fn ffi_rust_future_cancel(symbol_name: String) -> FfiDefinition {
         async_data: None,
         arguments: vec![FfiArgument {
             name: "handle".to_owned(),
-            ty: FfiType::Handle(HandleKind::RustFuture).into(),
+            ty: FfiType::Handle(HandleKind::RustFuture),
         }],
         return_type: FfiReturnType { ty: None },
         has_rust_call_status_arg: false,
         kind: FfiFunctionKind::RustFutureCancel,
-        ..FfiFunction::default()
     }
     .into()
 }
@@ -148,14 +115,11 @@ fn ffi_rust_future_complete(return_type: Option<FfiType>, symbol_name: String) -
         async_data: None,
         arguments: vec![FfiArgument {
             name: "handle".to_owned(),
-            ty: FfiType::Handle(HandleKind::RustFuture).into(),
+            ty: FfiType::Handle(HandleKind::RustFuture),
         }],
-        return_type: FfiReturnType {
-            ty: return_type.map(FfiTypeNode::from),
-        },
+        return_type: FfiReturnType { ty: return_type },
         has_rust_call_status_arg: true,
         kind: FfiFunctionKind::RustFutureComplete,
-        ..FfiFunction::default()
     }
     .into()
 }
@@ -166,12 +130,17 @@ fn ffi_rust_future_free(symbol_name: String) -> FfiDefinition {
         async_data: None,
         arguments: vec![FfiArgument {
             name: "handle".to_owned(),
-            ty: FfiType::Handle(HandleKind::RustFuture).into(),
+            ty: FfiType::Handle(HandleKind::RustFuture),
         }],
         return_type: FfiReturnType { ty: None },
         has_rust_call_status_arg: false,
         kind: FfiFunctionKind::RustFutureFree,
-        ..FfiFunction::default()
     }
     .into()
+}
+
+fn has_async_fns(namespace: &initial::Namespace) -> bool {
+    namespace.has_descendant(|func: &initial::Function| func.is_async)
+        || namespace.has_descendant(|meth: &initial::Method| meth.is_async)
+        || namespace.has_descendant(|cons: &initial::Constructor| cons.is_async)
 }

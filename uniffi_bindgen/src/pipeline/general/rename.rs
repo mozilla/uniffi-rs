@@ -7,34 +7,13 @@
 //! Then mutate all itens based on these lookups.
 
 use super::*;
-use std::collections::HashMap;
 
-pub fn pass(root: &mut Root, bindings_toml_key: &str) -> Result<()> {
-    let mut namespace_renames: HashMap<String, toml::Table> = HashMap::new();
-
-    for namespace in root.namespaces.values() {
-        if let Some(renames) = extract_rename_table(namespace, bindings_toml_key)? {
-            namespace_renames.insert(namespace.name.clone(), renames);
-        }
-    }
-
-    if namespace_renames.is_empty() {
-        return Ok(());
-    }
-
-    for namespace in root.namespaces.values_mut() {
-        apply_renames(namespace, &namespace_renames)?;
-    }
-
-    Ok(())
-}
-
-fn extract_rename_table(
-    namespace: &Namespace,
+pub fn extract_rename_table(
+    namespace: &initial::Namespace,
     bindings_toml_key: &str,
-) -> Result<Option<toml::Table>> {
+) -> Result<toml::Table> {
     let Some(config_toml) = &namespace.config_toml else {
-        return Ok(None);
+        return Ok(toml::Table::default());
     };
     let config: toml::Table = toml::from_str(config_toml)?;
 
@@ -45,140 +24,67 @@ fn extract_rename_table(
         .and_then(|p| p.as_table())
         .and_then(|p| p.get("rename"))
         .and_then(|r| r.as_table())
-        .cloned())
+        .cloned()
+        .unwrap_or_default())
 }
 
-fn apply_renames(
-    namespace: &mut Namespace,
-    namespace_renames: &HashMap<String, toml::Table>,
-) -> Result<()> {
-    let ns = namespace.name.clone();
-
-    namespace.visit_mut(|callable: &mut Callable| {
-        rename_callable(callable, &ns, namespace_renames);
-    });
-
-    // rename all the types and any sub-elements in them.
-    for type_def in namespace.type_definitions.iter_mut() {
-        match type_def {
-            TypeDefinition::Interface(interface) => {
-                if let Some(new_name) = new_name(&ns, &interface.name, namespace_renames) {
-                    interface.name = new_name;
-                }
-            }
-            TypeDefinition::CallbackInterface(callback) => {
-                if let Some(new_name) = new_name(&ns, &callback.name, namespace_renames) {
-                    callback.name = new_name;
-                }
-            }
-            TypeDefinition::Record(record) => {
-                rename_record(record, &ns, namespace_renames);
-            }
-            TypeDefinition::Enum(enum_) => {
-                rename_enum(enum_, &ns, namespace_renames);
-            }
-            _ => {}
-        }
-    }
-
-    rename_types(namespace, namespace_renames);
-
-    Ok(())
+pub fn type_(namespace: &str, name: String, context: &Context) -> Result<String> {
+    Ok(context
+        .new_name_from_rename_table(namespace, &name)?
+        .unwrap_or(name))
 }
 
-fn new_name(namespace: &str, name: &str, renames: &HashMap<String, toml::Table>) -> Option<String> {
-    renames
-        .get(namespace)
-        .and_then(|table| table.get(name))
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string())
+pub fn field(field_name: String, context: &Context) -> Result<String> {
+    let namespace = context.namespace_name()?;
+    let type_name = context.current_type_name()?;
+    let key = match &context.current_variant {
+        None => format!("{type_name}.{field_name}"),
+        Some(v) => {
+            let variant_name = &v.name;
+            format!("{type_name}.{variant_name}.{field_name}")
+        }
+    };
+    Ok(context
+        .new_name_from_rename_table(&namespace, &key)?
+        .unwrap_or(field_name))
 }
 
-fn rename_types(ns: &mut Namespace, renames: &HashMap<String, toml::Table>) {
-    ns.visit_mut(|ty: &mut Type| match ty {
-        Type::Record {
-            namespace, name, ..
-        }
-        | Type::Enum {
-            namespace, name, ..
-        }
-        | Type::Interface {
-            namespace, name, ..
-        }
-        | Type::Custom {
-            namespace, name, ..
-        } => {
-            if let Some(new_name) = new_name(namespace, name, renames) {
-                *name = new_name;
-            }
-        }
-        _ => {}
-    });
+pub fn variant(variant_name: String, context: &Context) -> Result<String> {
+    let namespace = context.namespace_name()?;
+    let key = format!("{}.{variant_name}", context.current_type_name()?);
+    Ok(context
+        .new_name_from_rename_table(&namespace, &key)?
+        .unwrap_or(variant_name))
 }
 
-fn rename_callable(
-    callable: &mut Callable,
-    namespace: &str,
-    renames: &HashMap<String, toml::Table>,
-) {
-    let fn_name = callable.name.clone();
-
-    let callable_key = match &callable.kind {
-        CallableKind::Constructor { self_type, .. }
-        | CallableKind::Method { self_type }
-        | CallableKind::VTableMethod { self_type, .. } => Some(self_type.ty.name().unwrap()),
-        CallableKind::Function => None,
-    }
-    .map(|ob_prefix| format!("{ob_prefix}.{fn_name}"))
-    .unwrap_or(fn_name);
-
-    for arg in &mut callable.arguments {
-        let arg_path = format!("{callable_key}.{}", arg.name);
-        if let Some(new_name) = new_name(namespace, &arg_path, renames) {
-            arg.name = new_name;
-        }
-    }
-
-    if let Some(new_name) = new_name(namespace, &callable_key, renames) {
-        callable.name = new_name;
-    }
+pub fn func(fn_name: String, context: &Context) -> Result<String> {
+    let namespace = context.namespace_name()?;
+    Ok(context
+        .new_name_from_rename_table(&namespace, &fn_name)?
+        .unwrap_or(fn_name))
 }
 
-fn rename_record(record: &mut Record, namespace: &str, renames: &HashMap<String, toml::Table>) {
-    let record_name = record.name.clone();
-
-    for field in &mut record.fields {
-        let field_path = format!("{}.{}", record_name, field.name);
-        if let Some(new_name) = new_name(namespace, &field_path, renames) {
-            field.name = new_name;
-        }
-    }
-
-    if let Some(new_name) = new_name(namespace, &record_name, renames) {
-        record.name = new_name;
-    }
+pub fn func_arg(arg_name: String, fn_name: &str, context: &Context) -> Result<String> {
+    let namespace = context.namespace_name()?;
+    let key = format!("{fn_name}.{arg_name}");
+    Ok(context
+        .new_name_from_rename_table(&namespace, &key)?
+        .unwrap_or(arg_name))
 }
 
-fn rename_enum(enum_: &mut Enum, namespace: &str, renames: &HashMap<String, toml::Table>) {
-    let enum_name = enum_.name.clone();
+/// Get the new name for a method or constructor
+pub fn method(method_name: String, context: &Context) -> Result<String> {
+    let namespace = context.namespace_name()?;
+    let key = format!("{}.{method_name}", context.current_type_name()?);
+    Ok(context
+        .new_name_from_rename_table(&namespace, &key)?
+        .unwrap_or(method_name))
+}
 
-    for variant in &mut enum_.variants {
-        let variant_name = variant.name.clone();
-        let variant_path = format!("{}.{}", enum_name, variant_name);
-
-        for field in &mut variant.fields {
-            let field_path = format!("{}.{}", variant_path, field.name);
-            if let Some(new_name) = new_name(namespace, &field_path, renames) {
-                field.name = new_name;
-            }
-        }
-
-        if let Some(new_name) = new_name(namespace, &variant_path, renames) {
-            variant.name = new_name;
-        }
-    }
-
-    if let Some(new_name) = new_name(namespace, &enum_name, renames) {
-        enum_.name = new_name;
-    }
+pub fn method_arg(arg_name: String, method_name: &str, context: &Context) -> Result<String> {
+    let namespace = context.namespace_name()?;
+    let key = format!("{}.{method_name}.{arg_name}", context.current_type_name()?);
+    Ok(context
+        .new_name_from_rename_table(&namespace, &key)?
+        .unwrap_or(arg_name))
 }
