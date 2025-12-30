@@ -8,7 +8,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 
 {%- for cons in int.constructors %}
 {%-     let callable = cons.callable %}
-{%-     if callable.is_primary_constructor() && callable.is_async %}
+{%-     if callable.is_primary_constructor() && callable.is_async() %}
     def __init__(self, *args, **kw):
         raise ValueError("async constructors not supported.")
 {%-     elif callable.is_primary_constructor() %}
@@ -19,7 +19,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
         {%- endfilter %}
 {%-     else %}
     @classmethod
-    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(cls, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+    {% if callable.is_async() %}async {% endif %}def {{ callable.name }}(cls, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
         {{ cons.docstring|docstring(8) -}}
         {%- filter indent(8) %}
         {%- include "CallableBody.py" %}
@@ -27,7 +27,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 {%-     endif %}
 {%- endfor %}
 
-{%- if !int.has_primary_constructor %}
+{%- if !int.has_primary_constructor() %}
     {# Define __init__ to prevent construction without a handle, which can confuse #}
     def __init__(self, *args, **kwargs):
         raise ValueError("This class has no default constructor")
@@ -53,7 +53,7 @@ class {{ int.name }}({{ int.base_classes|join(", ") }}):
 
 {%- for meth in int.methods -%}
 {%-     let callable = meth.callable %}
-    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+    {% if callable.is_async() %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
         {{ meth.docstring|docstring(8) -}}
         {%- filter indent(8) %}
         {%- include "CallableBody.py" %}

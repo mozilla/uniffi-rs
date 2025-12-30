@@ -4,15 +4,17 @@
 
 use super::*;
 
-pub fn pass(cbi: &mut CallbackInterface) -> Result<()> {
-    cbi.protocol = Protocol {
+pub fn protocol(cbi: &general::CallbackInterface, context: &Context) -> Result<Protocol> {
+    Ok(Protocol {
         // Use the main name for the protocol, the callback interface class will get the `Impl`
         // suffix.
         name: cbi.name.clone(),
         base_classes: vec!["typing.Protocol".to_string()],
-        methods: cbi.methods.clone(),
+        methods: cbi.methods.clone().map_node(context)?,
         docstring: cbi.docstring.clone(),
-    };
-    cbi.name = format!("{}Impl", cbi.name);
-    Ok(())
+    })
+}
+
+pub fn callback_interface_name(cbi: &general::CallbackInterface) -> String {
+    names::type_name(&format!("{}Impl", cbi.name))
 }

@@ -12,7 +12,7 @@ class {{ rec.self_type.type_name }}:
         {%- when None %}
         self.{{ field.name }} = {{ field.name }}
         {%- when Some(default) %}
-        {%- if default.is_arg_literal %}
+        {%- if default.is_arg_literal() %}
         self.{{ field.name }} = {{ field.name }}
         {%- else %}
         if {{ field.name }} is {{ default.arg_literal }}:
@@ -32,7 +32,7 @@ class {{ rec.self_type.type_name }}:
 
 {%- for meth in rec.methods -%}
 {%-     let callable = meth.callable %}
-    {% if callable.is_async %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
+    {% if callable.is_async() %}async {% endif %}def {{ callable.name }}(self, {% include "CallableArgs.py" %}) -> {{ callable.return_type.type_name }}:
         {{ meth.docstring|docstring(8) -}}
         {%- filter indent(8) %}
         {%- include "CallableBody.py" %}

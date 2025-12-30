@@ -2,20 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! Add [TypeNode::ffi_type]
-
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    let namespace_name = namespace.name.clone();
-    namespace.visit_mut(|node: &mut TypeNode| {
-        node.ffi_type = FfiTypeNode::from(generate_ffi_type(&node.ty, &namespace_name));
-    });
-    Ok(())
-}
-
-fn generate_ffi_type(ty: &Type, current_namespace: &str) -> FfiType {
-    match ty {
+pub fn ffi_type(ty: &Type, context: &Context) -> Result<FfiType> {
+    Ok(match ty {
         // Types that are the same map to themselves, naturally.
         Type::UInt8 => FfiType::UInt8,
         Type::Int8 => FfiType::Int8,
@@ -41,17 +31,7 @@ fn generate_ffi_type(ty: &Type, current_namespace: &str) -> FfiType {
             name,
             imp,
             ..
-        } => FfiType::Handle(if imp.has_struct() {
-            HandleKind::StructInterface {
-                namespace: namespace.clone(),
-                interface_name: name.clone(),
-            }
-        } else {
-            HandleKind::TraitInterface {
-                namespace: namespace.clone(),
-                interface_name: name.clone(),
-            }
-        }),
+        } => interface_ffi_type(namespace, name, imp)?,
         // Callback interfaces are passed as opaque integer handles.
         Type::CallbackInterface { namespace, name } => {
             FfiType::Handle(HandleKind::TraitInterface {
@@ -60,9 +40,9 @@ fn generate_ffi_type(ty: &Type, current_namespace: &str) -> FfiType {
             })
         }
         // Other types are serialized into a bytebuffer and deserialized on the other side.
-        Type::Enum { namespace, .. } | Type::Record { namespace, .. } => {
-            FfiType::RustBuffer((namespace != current_namespace).then_some(namespace.clone()))
-        }
+        Type::Enum { namespace, .. } | Type::Record { namespace, .. } => FfiType::RustBuffer(
+            (*namespace != context.namespace_name()?).then_some(namespace.clone()),
+        ),
         Type::Optional { .. }
         | Type::Sequence { .. }
         | Type::Map { .. }
@@ -71,16 +51,35 @@ fn generate_ffi_type(ty: &Type, current_namespace: &str) -> FfiType {
         Type::Custom {
             namespace, builtin, ..
         } => {
-            match generate_ffi_type(builtin, current_namespace) {
+            match ffi_type(builtin, context)? {
                 // Fixup `module_name` for primitive types that lower to `RustBuffer`.
                 //
                 // This is needed to handle external custom types, where the builtin type is
                 // something like `String`.
-                FfiType::RustBuffer(None) if namespace != current_namespace => {
+                FfiType::RustBuffer(None) if *namespace != context.namespace_name()? => {
                     FfiType::RustBuffer(Some(namespace.clone()))
                 }
                 ffi_type => ffi_type,
             }
         }
-    }
+    })
+}
+
+pub fn interface_ffi_type(
+    namespace: &str,
+    interface_name: &str,
+    imp: &ObjectImpl,
+) -> Result<FfiType> {
+    let kind = if imp.has_struct() {
+        HandleKind::StructInterface {
+            namespace: namespace.to_string(),
+            interface_name: interface_name.to_string(),
+        }
+    } else {
+        HandleKind::TraitInterface {
+            namespace: namespace.to_string(),
+            interface_name: interface_name.to_string(),
+        }
+    };
+    Ok(FfiType::Handle(kind))
 }

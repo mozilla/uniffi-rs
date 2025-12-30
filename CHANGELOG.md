@@ -25,6 +25,9 @@
   library directly without a UDL file.
 - Removed the `[Swift|Kotlin|Python|Ruby]BindingGenerator` types.  Use `uniffi::generate` instead
   to generate these bindings.
+- Reworked the experimental pipeline bindgen code.  Any external binding generators using this will
+  need to be reworked as well.  See [#2787](https://github.com/mozilla/uniffi-rs/pull/2787) for
+  examples of how this can be done.
 
 ### What's Deprecated?
 - `BindgenCrateConfigSupplier`.  Use the new `BindgenPaths` type instead.

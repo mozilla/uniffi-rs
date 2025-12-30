@@ -7,9 +7,9 @@ Our current recommendation for other external bindings authors is to avoid using
 The Bindings IR pipeline is used to transform different [intermediate representations of the generated bindings](./bindings_ir.md).
 
 * The foundational code lives in the `uniffi_pipeline` crate.
-  This defines things like the `Node` trait.
+  This defines things like the `Node` and `MapNode` traits.
 * The macro code lives in the `uniffi_internal_macros` crate.
-  This defines things like the `Node` derive macro.
+  This defines derive macros for `Node` and `MapNode`.
 * `uniffi_bindgen` defines the general pipeline.
   This converts `uniffi_meta` metadata to the initial IR then converts that to the general IR.
 * Finally, each language defines their own pipeline, which extends the general pipeline and outputs a language-specific IR.
@@ -20,163 +20,227 @@ Types inside an IR are called "nodes" and they must derive a `Node` trait impl.
 The top-level node is always named `Root`.
 When this document talks about converting between two IRs, this means converting between the root nodes of those IRs.
 
-`Node` trait provides functionality to:
+`Node` trait provides functionality for walking the IR tree.
 
-* Traverse the node tree.  `Node::visit()` and `Node::visit_mut()` allows you to visit all
-  descendants with a given type.
-* Convert between any two nodes using `Node::try_from_node`.  This conversion is described in the
-  next section.
+* `Node::visit()` and `Node::try_visit()` allows you to visit all descendants with a given type.
+* `Node::has_descendant()` tests if a predicate is true for any descendant.
 
-## Node conversions
+These are useful when you want to populate a node field using it's descendants.  For example,
+building up the FFI definitions by visiting all functions/methods inside a namespace.
 
-`Node::try_from_node` attempts to convert a node from one IR to the corresponding node from another IR.
-For example, `from_ir::Node` will be converted to `into_ir::Node` using the following rules:
+Node methods input a closure that inputs a node type, for example `root_node.visit(|func: Function| ...)`.
+`visit()` will walk the node tree and call that closure with all matching nodes.  The methods panic
+if there are no descendant types with the input node type.  This checks the types involved, not the
+values.  If there is a `Vec<Function>` field then `visit()` will not panic, even if the vec is empty.
 
-* Any fields in `into_ir::Node`, but not `from_ir::Node` are added using `Default::default`, which the `Node` derive macro also derives.
-* Any fields in `from_ir::Node`, but not `into_ir::Node` are ignored
-* Any fields in both are recursively converted using `Node::try_from_node`.
-* `try_from_node` is automatically derived using the `Node` derive macro.
-  The conversion can be customized using macro attributes.
+## MapNode
 
-Renamed node types, variants, and fields can be handled by adding the `#[node(from([name]))]` attribute:
+The `MapNode` trait is used to convert from one node to another and is defined like this:
 
 ```rust
-#[derive(Node)]
-pub struct Node {
-    /// `from_ir::Node::prev_name` fields become `into_ir::Node::new_name` fields.
-    #[node(from(prev_name))]
-    new_name: String,
+pub trait MapNode<Output, Context> {
+    fn map_node(self, context: &Context) -> Result<Output>;
 }
 ```
 
-Also, nodes can be "wrapped" in the new IR using the `#[node(wraps([type]))]` attribute:
+* `Self` is a node type from the previous IR
+* `Output` is a node type from current IR
+* `Context` is a generic context type which can be used to pass data to descendant nodes.
+
+Here's an example of how a `MapNode` implementation might look:
 
 ```rust
-#[derive(Node)]
-pub struct Node {
-    /// `into_ir::Node` wraps `from_ir::WrappedNode`.
-    /// All `from_ir::WrappedNode` values will be replaced with `Node { wrapped: wrapped_node }` values.
-    /// Any other fields will be initialized to their default values.
-    ///
-    /// This is mostly used as a way to add fields to enum types.
-    /// Wrap the enum with a struct, then add fields to that struct.
-    /// For example, `TypeNode` wraps the `Type` enum from `uniffi_meta`.
-    #[node(wraps)]
-    wrapped: WrappedNode,
+impl MapNode<Namespace, Context> for prev_ir::Namespace {
+    fn map_node(self, context: &Context) -> Result<Namespace> {
+        // Create a new context for our descendants
+        let mut child_context = context.clone();
+        let context = &mut context;
+        context.set_namespace_name(&self.name);
+        // Map the previous `Namespace` node into the current version
+        Ok(Namespace {
+            // New fields are usually populated by calling a function
+            ffi_definitions: generate_ffi_definitions(&self, context)?,
+            // Existing fields are usually converted using recursive `map_node` calls.
+            name: self.name,
+            functions: self.functions.map_node(context)?,
+            type_definitions: self.type_definitions.map_node(context)?,
+            // ...
+        });
+    }
 }
 ```
 
-### Field Conversion order
-
-Fields are converted in declaration order.
-This matters when a field is listed twice with one of them using `#[node(from(<name_of_the_other_field>)]`.
-In this case the first field declared will be initialized with the data from the previous pass and the second field will be initialized to the default value.
-
-You can take advantage of this to convert an optional value into a non-optional value.
-For example:
+`MapNode` can be derived automatically.  For the previous impl that would look like:
 
 ```rust
-#[derive(Node)]
-pub struct SourceNode {
-    name: Option<String>
-}
-
-#[derive(Node)]
-pub struct DestNode {
-    /// This field will be set to `SourceNode::name`
-    #[node(from(name))]
-    name_from_previous_pass: Option<String>
-    /// This field will be a non-optional version of `SourceNode::name`.
-    /// It will be initialized to an empty string, then a pipeline pass will populate it using
-    /// `name_from_previous_pass` combined with logic to handle the `None` case.
+#[derive(Node, MapNode)]
+// Use `#[map_node(from([type_name]))]` to declare the type we're mapping from
+#[map_node(from(prev_ir::Namespace))]
+// Use `#[map_node(update_context([expr]))]` update the context for descendant `map_node()` calls.
+#[map_node(update_context(context.set_namespace_name(&self.name)))]
+pub struct Namespace {
+    // Use `#[map_node(expr)]` to manually define the expression to populate a field.
+    #[map_node(generate_ffi_definitions(&self, context)?)]
+    ffi_definitions: Vec<FfiDefinition>,
+    // If no `#[map_node]` attribute is present, then fields will be mapped using recursive
+    // `map_node()` calls.
     name: String,
+    functions: Vec<Function>,
+    type_definitions: Vec<TypeDefinition>,
+    // Note: The derived impl will convert fields in the order they're defined in.  This means we
+    // need to put `ffi_definitions` first, so that we can take a reference to `self` before `self`
+    // is deconstructed for the `map_node` calls.
 }
 ```
+
+The `MapNode` derive macro supports a few other attributes:
+
+```rust
+#[derive(Node, MapNode)]
+#[map_node(from(prev_ir::TypeNode))]
+// When the type itself has the `#[map_node([path-to-function])]` attribute, then that function will
+// be used for the entire mapping logic. In this case `MapNode::map_node` will forward the call
+// `types::map_type_node`.
+//
+// Use this as an escape hatch for mappings that can't be auto-generated.
+#[map_node(types::map_type_node)]
+pub struct TypeNode {
+    //...
+}
+
+#[derive(Node, MapNode)]
+#[map_node(from(uniffi_meta::Type))]
+pub enum Type {
+    // Use `#[map_node(from)]` on variants/fields when they've been renamed from the previous IR
+    #[map_node(from(Object))]
+    Interface {
+        #[map_node(from(prev_name_field))]
+        name: String,
+        // ...
+    },
+    // Use `#[map_node(added)]` for variants that have been added in this IR.  The generated code
+    // will not try to map these variants since they didn't exist in the previous IR
+    #[map_node(added)]
+    External {
+        // ...
+    },
+}
+```
+
+A common pattern is wanting mapping an enum to a struct so that we can add fields that apply to all
+variants.  This can be achieved like this:
+
+```rust
+#[derive(Node, MapNode)]
+#[map_node(from(uniffi_meta::Type))]
+pub struct TypeNode {
+    #[map_node(ffi_types::ffi_type(&self, context)?)]
+    ffi_type: FfiType,
+    #[map_node(self)]
+    ty: Type,
+}
+```
+
+Finally, if a type hasn't changed at all between IRs, then it can be re-used using the
+`use_prev_node!` macro.  Note this only works if none of the fields have been changed either.
+
+```rust
+// Radix is a very simple Enum and doesn't change between IRs
+use_prev_node!(uniffi_meta::Radix);
+// Sometimes we want to map unchanged types using a function.  For example, applying rename
+// logic to certain `Type` variants.  This can be achieved by specifying the map function as the
+// second argument.
+use_prev_node!(uniffi_meta::Type, types::map_type);
+```
+## Context types
+
+The `Context` type provides a way for nodes to pass data from one node down to the `map_node()`
+methods of descendant nodes. Here are some examples of how it's used:
+
+* Passing the crate name down so it can be used to derive FFI function names.
+* Passing the namespace name down so it can be used to determine which types are external.
+* Passing the current type down so it can be used to populate `CallableKind::Method.self_type`.
+
+`Context` can also be used to store data from outside the pass.  For example, to implement the
+renaming logic in the general pass, it needs to know the key in the TOML file that contains the
+rename map (`python`, `kotlin`, `swift` etc).  To handle this, the `general::Context` struct is
+constructed with that key stored inside it.
+
+Finally, `Context` types also act as marker types for the `MapNode` trait.  For example, the above
+code wants to call `types::map_type` when mapping `Type` for one pass, but it shouldn't be called
+for the next pass. This works because the `MapNode` impl is specific to the `Context` type for the
+pass.
 
 ## Module structure
 
-Each IRs will typically have a module dedicated to them with the following structure:
+Each IR will typically have a module dedicated to them with the following structure:
 
-* `mod.rs` -- Top-level module.  This is where the pipeline for the IR is defined.
-* `nodes.rs` -- Node definitions.
-* *other submodules* -- Define pipeline pass functions.  These are named `pass()` by convention.
+* `mod.rs` -- Top-level module.
+* `nodes.rs` -- Node definitions with `MapNode` derives.
+* `context.rs` -- Defines the `Context` struct
+* *other submodules* -- Define functions to implement the IR pass
 
-## Defining IRs
+## Assembling a pipeline
 
-* Start with an existing IR, let's assume it lives in the `from_ir` module.
-* Define a new module for your IR, let's call it `into_ir`
-* Copy the `from_ir/nodes.rs` to `into_ir/nodes.rs`
-* Add new fields to the structs in `into_ir::nodes`
-* Define pipeline passes to populate the new fields, using the existing fields.  For example, `into_ir/mod.rs` might define a pipeline like this:
+Pipelines are assembled by adding a series of passes that map one root node to another.
+
+For example:
 
 ```rust
-// The output type is a pipeline that converts from `initial::Root` to the `Root` node from this IR.
+// Pipeline defined `uniffi_bindgen::pipeline::general`
+//
+// This is the shared start for all bindings pipelines.
+// It maps `uniffi_bindgen::pipeline::initial::Root` to
+// `uniffi_bindgen::pipeline::general::Root`
+//
+// Note that the context is constructed with `bindings_toml_key`.  This is how you can pass data
+// from outside the pass into the `map_node` methods.
+pub fn pipeline(bindings_toml_key: &str) -> Pipeline<initial::Root, Root> {
+    new_pipeline()
+        .pass::<Root, Context>(Context::new(bindings_toml_key))
+}
+```
+
+```rust
+// Pipeline defined `uniffi_bindgen::python::pipeline`
+//
+// This extends the general pipeline to map to
+// `uniffi_bindgen::python::pipeline::Root`
 pub fn pipeline() -> Pipeline<initial::Root, Root> {
-    // Start with `from_ir's` pipeline.  This converts `initial::root` to `from_ir::Root`.
-    from_ir::pipeline()
-        // Convert to `into_ir::Root`.
-        // This will use the logic from the Node conversions section above.
-        .convert_ir_pass::<Root>()
-        // Add passes to populate the new fields, mutate existing fields, etc.
-        .pass(foo::pass)
-        .pass(bar::pass)
-        .pass(baz::pass)
+    general::pipeline()
+        .pass::<Root, Context>(Context::default())
 }
 ```
 
-* Define the pipeline passes.
-  These input a node type in the IR and mutate all instances of that node.
-  `visit()` and `visit_mut()` are extremely helpful here.
-  For example, the general IR pass that adds FFI types to types looks like this:
+## Starting a IR for binding generation
 
-```rust
-// Visiting all `Module` nodes
-pub fn pass(module: &mut Module) -> Result<()> {
-    // Save a copy of the module name, then visit all `TypeNode` nodes.
-    // Note: TypeNode wraps the `Type` enum from the initial IR
-    let module_name = module.name.clone();
-    // Visit all `TypeNode` instances that are descendants of `Module`.
-    module.visit_mut(|node: &mut TypeNode| {
-        // Derive the FfiType from the type and module name
-        node.ffi_type = generate_ffi_type(&node.ty, &module_name);
-    });
-    Ok(())
-}
-```
+The first step is creating a skeleton for your IR:
 
-See `uniffi_bindgen::pipeline::general` for examples.
+* Define `pipeline` module in your crate.
+* Define a `Context` type in `pipeline/context.rs`.  To start with, this can be an empty struct that
+  derives `Default`.
+* Define the IR nodes in `pipeline/node.rs`.  To start, this can just be `use_prev_node!` macros for
+  each node from the general IR.
+* Setup imports (optional).
+   * `pipeline/mod.rs` file will normally import `nodes::*`, `anyhow::{anyhow, bail, Result}` and
+     other items that are commonly used in the IR.
+   * The other mods will normally import `super::*`.
+   * This step is definitely not necessary, it's just how pipeline modules are typically setup.
 
-## Constructing nodes with partial field data
+From there you can evolve the code to match your needs.  For example:
 
-Passes that construct new nodes often only want to specify partial field data and let a later pass populate the rest of the fields.
-Use the `Default::default()` to handle this case, which the `Node` derive also implements.
-Here's how this works in the `callables` pass:
-
-```rust
-pub fn pass(root: &mut Root) -> Result<()> {
-    root.visit_mut(|func: &mut Function| {
-        func.callable = Callable {
-            // Most of the fields are simply copied from `Function`
-            name: func.name.clone(),
-            is_async: func.is_async,
-            kind: CallableKind::Function,
-            arguments: func.inputs.clone(),
-            return_type: ReturnType! {
-                ty: func.return_type.clone().map(|ty| TypeNode! { ty }),
-            },
-            throws_type: ThrowsType! {
-                ty: func.throws.clone().map(|ty| TypeNode! { ty }),
-            },
-            checksum: func.checksum,
-            // However, `async_data` and `ffi_func` are derived in a later pass.
-            // Use `default()` to create placeholder values for now
-            ..Callable::default()
-        }
-    });
-    // ... repeat for methods and constructors
-    Ok(())
-}
-```
+* **Adding a new field**
+    1. Copy and paste the type definition from the general IR into your `nodes.rs` file.
+    2. Remove any `#[map_node]` attributes.
+    3. Add `#[map_node(from(general::[NodeType]))` to the type itself.
+    4. Add the new field with a `#[map_node([expression_to_generate_field])` attribute.
+    5. Find any types that reference the changed type and repeat steps 1-3.
+* **Mapping an enum to a struct**
+    1. Define a new struct type.
+       If your enum is named `Foo`, this will typically be named `FooNode`.
+    2. Add a field that stores the original enum.  Wrap this with a `#[map_node(self)]` attribute.
+    3. Add a new field, with a `#[map_node(expr)]` attribute
+    5. Find any types that reference the changed type and repeat steps 1-3 from adding a new field.
 
 ## Peeking behind the curtains with the `pipeline` CLI
 

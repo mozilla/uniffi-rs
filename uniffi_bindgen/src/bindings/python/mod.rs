@@ -11,7 +11,7 @@ use crate::{bindings::GenerateOptions, BindgenLoader};
 
 pub mod filters;
 mod pipeline;
-pub use pipeline::pipeline;
+pub use pipeline::{pipeline, Root};
 
 #[cfg(feature = "bindgen-tests")]
 pub mod test;
@@ -40,7 +40,7 @@ pub fn run_pipeline(
     if !out_dir.exists() {
         fs::create_dir_all(out_dir)?;
     }
-    for module in python_root.namespaces.values() {
+    for module in python_root.modules.values() {
         if let Some(crate_filter) = crate_filter {
             if module.crate_name != crate_filter {
                 continue;
