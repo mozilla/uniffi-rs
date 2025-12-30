@@ -6,78 +6,148 @@
 
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    let crate_name = namespace.crate_name.clone();
+pub fn ffi_definitions(
+    namespace: &initial::Namespace,
+    context: &Context,
+) -> Result<Vec<FfiDefinition>> {
+    let crate_name = context.crate_name()?;
+    let namespace_name = &namespace.name;
     let mut ffi_definitions = vec![];
 
-    namespace.visit_mut(|callable: &mut Callable| {
-        let name = &callable.name;
-        let ffi_func_name = match &callable.kind {
-            CallableKind::Function => uniffi_meta::fn_symbol_name(&crate_name, name),
-            CallableKind::Method { self_type } => {
-                uniffi_meta::method_symbol_name(&crate_name, self_type.ty.name().unwrap(), name)
-            }
-            CallableKind::Constructor { self_type, .. } => uniffi_meta::constructor_symbol_name(
-                &crate_name,
-                self_type.ty.name().unwrap(),
-                name,
-            ),
-            // VTable methods for callback interfaces don't have FFI functions for them
-            CallableKind::VTableMethod { .. } => return,
+    namespace.try_visit(|func: &initial::Function| {
+        let name = uniffi_meta::fn_symbol_name(&crate_name, &func.name);
+        let async_data = ffi_async_data::function_async_data(func, context)?;
+        let ffi_def = ffi_def(
+            name,
+            &func.inputs,
+            func.return_type.as_ref(),
+            async_data,
+            context,
+        )?;
+        ffi_definitions.push(ffi_def);
+        Ok(())
+    })?;
+
+    namespace.try_visit(|int: &initial::Interface| {
+        let interface_name = int.name.clone();
+        let imp = int.imp;
+        let self_type = Type::Interface {
+            namespace: namespace_name.to_string(),
+            name: int.name.clone(),
+            imp: int.imp,
         };
-        callable.ffi_func = RustFfiFunctionName(ffi_func_name.clone());
-
-        let receiver_argument = match &callable.kind {
-            CallableKind::Method { self_type, .. } => Some(FfiArgument {
-                name: "uniffi_self".to_string(),
-                ty: self_type.ffi_type.clone(),
-            }),
-            _ => None,
+        int.try_visit(|meth: &initial::Method| {
+            ffi_definitions.push(method_ffi_def(meth, &crate_name, &self_type, context)?);
+            Ok(())
+        })?;
+        int.try_visit(|cons: &initial::Constructor| {
+            let name =
+                uniffi_meta::constructor_symbol_name(&crate_name, &interface_name, &cons.name);
+            let async_data =
+                ffi_async_data::constructor_async_data(cons, &interface_name, &imp, context)?;
+            let ffi_def = ffi_def(name, &cons.inputs, Some(&self_type), async_data, context)?;
+            ffi_definitions.push(ffi_def);
+            Ok(())
+        })?;
+        Ok(())
+    })?;
+    namespace.try_visit(|record: &initial::Record| {
+        let self_type = Type::Record {
+            namespace: namespace_name.to_string(),
+            name: record.name.clone(),
         };
-        let base_arguments = callable.arguments.iter().map(|arg| FfiArgument {
-            name: arg.name.clone(),
-            ty: arg.ty.ffi_type.clone(),
-        });
+        record.try_visit(|meth: &initial::Method| {
+            ffi_definitions.push(method_ffi_def(meth, &crate_name, &self_type, context)?);
+            Ok(())
+        })?;
+        Ok(())
+    })?;
+    namespace.try_visit(|record: &initial::Enum| {
+        let self_type = Type::Enum {
+            namespace: namespace_name.to_string(),
+            name: record.name.clone(),
+        };
+        record.try_visit(|meth: &initial::Method| {
+            ffi_definitions.push(method_ffi_def(meth, &crate_name, &self_type, context)?);
+            Ok(())
+        })?;
+        Ok(())
+    })?;
+    Ok(ffi_definitions)
+}
 
-        ffi_definitions.push(if callable.async_data.is_none() {
-            FfiFunction {
-                name: RustFfiFunctionName(ffi_func_name),
-                async_data: None,
-                arguments: receiver_argument
-                    .into_iter()
-                    .chain(base_arguments)
-                    .collect(),
-                return_type: FfiReturnType {
-                    ty: callable
-                        .return_type
-                        .ty
-                        .as_ref()
-                        .map(|ty| ty.ffi_type.clone()),
-                },
-                has_rust_call_status_arg: true,
-                kind: FfiFunctionKind::Scaffolding,
-                ..FfiFunction::default()
-            }
-            .into()
-        } else {
-            FfiFunction {
-                name: RustFfiFunctionName(ffi_func_name),
-                async_data: callable.async_data.clone(),
-                arguments: receiver_argument
-                    .into_iter()
-                    .chain(base_arguments)
-                    .collect(),
-                return_type: FfiReturnType {
-                    ty: Some(FfiType::Handle(HandleKind::RustFuture).into()),
-                },
-                has_rust_call_status_arg: false,
-                kind: FfiFunctionKind::Scaffolding,
-                ..FfiFunction::default()
-            }
-            .into()
-        });
-    });
+fn method_ffi_def(
+    meth: &initial::Method,
+    crate_name: &str,
+    receiver_ty: &Type,
+    context: &Context,
+) -> Result<FfiDefinition> {
+    let type_name = match receiver_ty {
+        Type::CallbackInterface { name, .. }
+        | Type::Interface { name, .. }
+        | Type::Record { name, .. }
+        | Type::Enum { name, .. }
+        | Type::Custom { name, .. } => name,
+        _ => bail!("invalid type"),
+    };
+    let name = uniffi_meta::method_symbol_name(crate_name, type_name, &meth.name);
+    let async_data = ffi_async_data::method_async_data(meth, context)?;
+    let mut all_args = vec![initial::Argument {
+        name: "uniffi_self".to_string(),
+        ty: receiver_ty.clone(),
+        optional: false,
+        default: None,
+    }];
+    all_args.extend(meth.inputs.clone());
+    ffi_def(
+        name,
+        &all_args,
+        meth.return_type.as_ref(),
+        async_data,
+        context,
+    )
+}
 
-    namespace.ffi_definitions.extend(ffi_definitions);
-    Ok(())
+fn ffi_def(
+    name: String,
+    arguments: &[initial::Argument],
+    return_type: Option<&Type>,
+    async_data: Option<AsyncData>,
+    context: &Context,
+) -> Result<FfiDefinition> {
+    let arguments: Vec<FfiArgument> = arguments
+        .iter()
+        .map(|a| {
+            Ok(FfiArgument {
+                name: a.name.clone(),
+                ty: ffi_types::ffi_type(&a.ty, context)?,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+
+    Ok(FfiDefinition::RustFunction(if async_data.is_none() {
+        FfiFunction {
+            name: RustFfiFunctionName(name),
+            async_data: None,
+            arguments,
+            return_type: FfiReturnType {
+                ty: return_type
+                    .map(|ty| ffi_types::ffi_type(ty, context))
+                    .transpose()?,
+            },
+            has_rust_call_status_arg: true,
+            kind: FfiFunctionKind::Scaffolding,
+        }
+    } else {
+        FfiFunction {
+            name: RustFfiFunctionName(name),
+            async_data,
+            arguments,
+            return_type: FfiReturnType {
+                ty: Some(FfiType::Handle(HandleKind::RustFuture)),
+            },
+            has_rust_call_status_arg: false,
+            kind: FfiFunctionKind::Scaffolding,
+        }
+    }))
 }

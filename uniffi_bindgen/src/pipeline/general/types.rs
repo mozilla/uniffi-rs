@@ -2,47 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//! Set the TypeNode::is_used_as_error field
-//!
-//! Bindings often treat error types differently, for example by adding `Exception` to their names.
-
-use anyhow::bail;
-use indexmap::IndexSet;
-
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    let mut used_as_error = IndexSet::<String>::default();
-    namespace.try_visit(|callable: &Callable| {
-        if let Some(ty) = &callable.throws_type.ty {
-            let type_name = match ty.ty.name() {
-                Some(name) => name.to_string(),
-                _ => bail!("Invalid throws type: {:?}", ty.ty),
-            };
-            used_as_error.insert(type_name);
-        }
-        Ok(())
-    })?;
-    // Enums with `EnumShape::Error` are always considered errors, even if they're not directly
-    // used as errors in the interface.  See the `FlatInner` error from the `error-types` fixture
-    // for an example.  It's not totally clear that this is correct, but this is how things have
-    // historically worked.
-    namespace.visit(|en: &Enum| {
-        if matches!(en.shape, EnumShape::Error { .. }) {
-            used_as_error.insert(en.name.clone());
-        }
-    });
-
-    namespace.visit_mut(|type_node: &mut TypeNode| {
-        if let Some(name) = type_node.ty.name() {
-            type_node.is_used_as_error = used_as_error.contains(name);
-        }
-        type_node.canonical_name = canonical_name(&type_node.ty);
-    });
-    Ok(())
-}
-
-fn canonical_name(ty: &Type) -> String {
+pub fn canonical_name(ty: &Type) -> String {
     match ty {
         Type::UInt8 => "UInt8".to_string(),
         Type::Int8 => "Int8".to_string(),
@@ -60,9 +22,9 @@ fn canonical_name(ty: &Type) -> String {
         Type::Timestamp => "Timestamp".to_string(),
         Type::Duration => "Duration".to_string(),
         Type::Interface { name, .. }
+        | Type::CallbackInterface { name, .. }
         | Type::Record { name, .. }
         | Type::Enum { name, .. }
-        | Type::CallbackInterface { name, .. }
         | Type::Custom { name, .. } => format!("Type{name}"),
         Type::Optional { inner_type } => {
             format!("Optional{}", canonical_name(inner_type))
@@ -82,4 +44,54 @@ fn canonical_name(ty: &Type) -> String {
             canonical_name(value_type),
         ),
     }
+}
+
+pub fn map_type(mut ty: Type, context: &Context) -> Result<Type> {
+    Ok(match ty {
+        // Map names for top-level types
+        Type::Record {
+            ref namespace,
+            ref mut name,
+            ..
+        }
+        | Type::Enum {
+            ref namespace,
+            ref mut name,
+            ..
+        }
+        | Type::Interface {
+            ref namespace,
+            ref mut name,
+            ..
+        }
+        | Type::CallbackInterface {
+            ref namespace,
+            ref mut name,
+            ..
+        }
+        | Type::Custom {
+            ref namespace,
+            ref mut name,
+            ..
+        } => {
+            *name = rename::type_(namespace, name.clone(), context)?;
+            ty
+        }
+        // Map inner types
+        Type::Optional { inner_type } => Type::Optional {
+            inner_type: Box::new(map_type(*inner_type, context)?),
+        },
+        Type::Sequence { inner_type } => Type::Sequence {
+            inner_type: Box::new(map_type(*inner_type, context)?),
+        },
+        Type::Map {
+            key_type,
+            value_type,
+        } => Type::Map {
+            key_type: Box::new(map_type(*key_type, context)?),
+            value_type: Box::new(map_type(*value_type, context)?),
+        },
+        // All other types can be returned unchanged
+        _ => ty,
+    })
 }
