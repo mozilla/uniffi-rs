@@ -32,7 +32,7 @@ pub fn pass(namespace: &mut Namespace) -> Result<()> {
             ty: Type::Interface {
                 namespace: namespace_name.clone(),
                 name: int.name.clone(),
-                imp: int.imp.clone(),
+                imp: int.imp,
             },
             ..TypeNode::default()
         };

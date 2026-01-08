@@ -617,7 +617,11 @@ pub enum HandleKind {
     RustFuture,
     ForeignFuture,
     ForeignFutureCallbackData,
-    Interface {
+    StructInterface {
+        module_name: String,
+        interface_name: String,
+    },
+    TraitInterface {
         module_name: String,
         interface_name: String,
     },

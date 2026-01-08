@@ -102,7 +102,7 @@ fn add_vtable_ffi_definitions(namespace: &mut Namespace) -> Result<()> {
     let module_name = namespace.name.clone();
     namespace.try_visit(|vtable: &VTable| {
         let interface_name = &vtable.interface_name;
-        let handle_type = FfiType::Handle(HandleKind::Interface {
+        let handle_type = FfiType::Handle(HandleKind::TraitInterface {
             namespace: module_name.to_string(),
             interface_name: interface_name.to_string(),
         });
@@ -265,7 +265,7 @@ fn vtable_method(
         name: FfiFunctionTypeName(method_name),
         arguments: std::iter::once(FfiArgument {
             name: "uniffi_handle".into(),
-            ty: FfiType::Handle(HandleKind::Interface {
+            ty: FfiType::Handle(HandleKind::TraitInterface {
                 namespace: module_name.to_string(),
                 interface_name: interface_name.to_string(),
             })
@@ -303,7 +303,7 @@ fn vtable_method_async(
         name: FfiFunctionTypeName(method_name),
         arguments: std::iter::once(FfiArgument {
             name: "uniffi_handle".into(),
-            ty: FfiType::Handle(HandleKind::Interface {
+            ty: FfiType::Handle(HandleKind::TraitInterface {
                 namespace: module_name.to_string(),
                 interface_name: interface_name.to_string(),
             })
