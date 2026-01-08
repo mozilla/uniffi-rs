@@ -55,10 +55,12 @@ pub(crate) fn expand_export(
             trait_,
         } => {
             if let Some(rt) = &args.async_runtime {
-                if items
-                    .iter()
-                    .all(|item| !matches!(item, ImplItem::Method(sig) if sig.is_async))
-                {
+                let has_async_methods = items.iter().any(|item| {
+                    matches!(item, ImplItem::Method(sig) if sig.is_async)
+                        || matches!(item, ImplItem::Constructor(sig) if sig.is_async)
+                });
+
+                if !has_async_methods {
                     return Err(syn::Error::new_spanned(
                         rt,
                         "no async methods in this impl block",
