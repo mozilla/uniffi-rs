@@ -20,6 +20,9 @@ mod one {
         fn get_inner_value(&self) -> i32 {
             self.inner
         }
+
+        #[doc(hidden)]
+        fn parses_with_doc_attribute(&self) {}
     }
 }
 pub use one::*;
