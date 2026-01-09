@@ -63,7 +63,7 @@ pub fn generate(
     loader: &BindgenLoader,
     options: GenerateOptions,
 ) -> Result<Vec<Component<Config>>> {
-    let metadata = options.load_metadata(loader)?;
+    let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);

@@ -11,7 +11,6 @@ use std::fs;
 
 use anyhow::Result;
 use camino::Utf8PathBuf;
-use uniffi_meta::MetadataGroupMap;
 
 use crate::{BindgenLoader, BindgenPaths};
 mod kotlin;
@@ -104,16 +103,6 @@ pub struct GenerateOptions {
     /// This can be used in environments when all types are in the namespace and fetching
     /// all sub-dependencies causes obscure platform specific problems.
     pub metadata_no_deps: bool,
-}
-
-impl GenerateOptions {
-    fn load_metadata(&self, loader: &BindgenLoader) -> Result<MetadataGroupMap> {
-        let mut metadata = loader.load_metadata(&self.source)?;
-        if let Some(crate_filter) = &self.crate_filter {
-            metadata = loader.filter_metadata_by_crate(crate_filter, metadata)?;
-        }
-        Ok(metadata)
-    }
 }
 
 #[derive(Clone, Debug)]

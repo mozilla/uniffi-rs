@@ -86,23 +86,6 @@ impl BindgenLoader {
         }
     }
 
-    /// Filter metadata, retaining only metadata for a specific crate
-    pub fn filter_metadata_by_crate(
-        &self,
-        crate_name: &str,
-        metadata: MetadataGroupMap,
-    ) -> Result<MetadataGroupMap> {
-        let filtered: MetadataGroupMap = metadata
-            .into_iter()
-            .filter(|(metadata_crate_name, _)| metadata_crate_name == crate_name)
-            .collect();
-        match filtered.len() {
-            0 => bail!("Metadata for {crate_name} not found"),
-            1 => Ok(filtered),
-            n => bail!("{n} metadata groups for {crate_name} found"),
-        }
-    }
-
     /// Add checksums for metadata parsed from UDL
     fn add_checksums_to_udl_group(metadata_group: &mut MetadataGroup) {
         // Need to temporarily take items BTree set, since we're technically mutating it's contents

@@ -18,7 +18,7 @@ pub mod test;
 
 /// Generate Kotlin bindings
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
-    let metadata = options.load_metadata(loader)?;
+    let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());
     let mut components =
