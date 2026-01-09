@@ -1,7 +1,11 @@
 {%- let rec = ci.get_record_definition(name).unwrap() %}
+{%- let should_generate_serializable = config.generate_serializable_types && rec|serializable_record(ci) %}
 
 {%- if rec.has_fields() %}
 {%- call kt::docstring(rec, 0) %}
+{%- if should_generate_serializable -%}
+@kotlinx.serialization.Serializable
+{%- endif %}
 data class {{ type_name }} (
     {%- for field in rec.fields() %}
     {%- call kt::docstring(field, 4) %}
@@ -32,6 +36,9 @@ data class {{ type_name }} (
 }
 {%- else -%}
 {%- call kt::docstring(rec, 0) %}
+{%- if should_generate_serializable -%}
+@kotlinx.serialization.Serializable
+{%- endif %}
 class {{ type_name }} {
     override fun equals(other: Any?): Boolean {
         return other is {{ type_name }}
