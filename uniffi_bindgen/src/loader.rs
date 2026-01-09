@@ -261,8 +261,4 @@ impl BindgenLoader {
         let is_library = !self.is_udl(source_path);
         is_library.then(|| self.source_basename(source_path))
     }
-
-    pub fn filter_metadata_by_crate_name(&self, metadata: &mut MetadataGroupMap, crate_name: &str) {
-        metadata.retain(|_, metadata_group| metadata_group.namespace.crate_name == crate_name)
-    }
 }

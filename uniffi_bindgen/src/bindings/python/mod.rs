@@ -20,18 +20,27 @@ pub mod test;
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
     let metadata = loader.load_metadata(&options.source)?;
     let root = loader.load_pipeline_initial_root(&options.source, metadata)?;
-    run_pipeline(root, &options.out_dir)?;
+    run_pipeline(root, &options.out_dir, options.crate_filter.as_deref())?;
 
     Ok(())
 }
 
-pub fn run_pipeline(initial_root: pipeline::initial::Root, out_dir: &Utf8Path) -> Result<()> {
+pub fn run_pipeline(
+    initial_root: pipeline::initial::Root,
+    out_dir: &Utf8Path,
+    crate_filter: Option<&str>,
+) -> Result<()> {
     let python_root = pipeline().execute(initial_root)?;
     println!("writing out {out_dir}");
     if !out_dir.exists() {
         fs::create_dir_all(out_dir)?;
     }
     for module in python_root.namespaces.values() {
+        if let Some(crate_filter) = crate_filter {
+            if module.crate_name != crate_filter {
+                continue;
+            }
+        }
         let path = out_dir.join(format!("{}.py", module.name));
         let content = module.render()?;
         println!("writing {path}");

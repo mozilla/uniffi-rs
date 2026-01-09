@@ -23,6 +23,11 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
         c.ci.derive_ffi_funcs()?;
     }
     for Component { ci, config, .. } in components {
+        if let Some(crate_filter) = &options.crate_filter {
+            if ci.crate_name() != crate_filter {
+                continue;
+            }
+        }
         let rb_file = options.out_dir.join(format!("{}.rb", ci.namespace()));
         fs::write(&rb_file, generate_ruby_bindings(&config, &ci)?)?;
 

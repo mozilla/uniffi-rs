@@ -31,6 +31,12 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
     }
 
     for Component { ci, config, .. } in components {
+        if let Some(crate_filter) = &options.crate_filter {
+            if ci.crate_name() != crate_filter {
+                continue;
+            }
+        }
+
         let mut kt_file = full_bindings_path(&config, &options.out_dir);
         fs::create_dir_all(&kt_file)?;
         kt_file.push(format!("{}.kt", ci.namespace()));

@@ -73,6 +73,11 @@ pub fn generate(
     }
 
     for Component { ci, config, .. } in components.iter_mut() {
+        if let Some(crate_filter) = &options.crate_filter {
+            if ci.crate_name() != crate_filter {
+                continue;
+            }
+        }
         let Bindings {
             header,
             library,
