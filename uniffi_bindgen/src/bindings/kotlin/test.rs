@@ -42,7 +42,6 @@ pub fn run_script(
         languages: vec![TargetLanguage::Kotlin],
         source: cdylib_path.to_path_buf(),
         out_dir: out_dir.to_path_buf(),
-        crate_filter: Some(crate_name.to_string()),
         ..GenerateOptions::default()
     })?;
     let jar_file = build_jar(crate_name, &out_dir, options)?;

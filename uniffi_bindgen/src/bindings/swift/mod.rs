@@ -64,7 +64,7 @@ pub fn generate(
     options: GenerateOptions,
 ) -> Result<Vec<Component<Config>>> {
     let metadata = loader.load_metadata(&options.source)?;
-    let cis = loader.load_cis(metadata)?;
+    let cis = loader.load_cis(metadata, options.crate_filter)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);
     for c in components.iter_mut() {
@@ -141,7 +141,7 @@ pub fn generate_swift_bindings(options: SwiftBindingsOptions) -> Result<()> {
 
     let loader = BindgenLoader::new(paths);
     let metadata = loader.load_metadata(&options.source)?;
-    let cis = loader.load_cis(metadata)?;
+    let cis = loader.load_cis(metadata, None)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);
     // Call derive_ffi_funcs after apply_renames()
