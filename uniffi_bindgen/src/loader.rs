@@ -86,23 +86,6 @@ impl BindgenLoader {
         }
     }
 
-    /// Filter metadata, retaining only metadata for a specific crate
-    pub fn filter_metadata_by_crate(
-        &self,
-        crate_name: &str,
-        metadata: MetadataGroupMap,
-    ) -> Result<MetadataGroupMap> {
-        let filtered: MetadataGroupMap = metadata
-            .into_iter()
-            .filter(|(metadata_crate_name, _)| metadata_crate_name == crate_name)
-            .collect();
-        match filtered.len() {
-            0 => bail!("Metadata for {crate_name} not found"),
-            1 => Ok(filtered),
-            n => bail!("{n} metadata groups for {crate_name} found"),
-        }
-    }
-
     /// Add checksums for metadata parsed from UDL
     fn add_checksums_to_udl_group(metadata_group: &mut MetadataGroup) {
         // Need to temporarily take items BTree set, since we're technically mutating it's contents
@@ -132,7 +115,11 @@ impl BindgenLoader {
     ///
     /// This converts the metadata into `ComponentInterface` instances, which contains additional
     /// derived information about the interface, like FFI functions signatures.
-    pub fn load_cis(&self, metadata: MetadataGroupMap) -> Result<Vec<ComponentInterface>> {
+    pub fn load_cis(
+        &self,
+        metadata: MetadataGroupMap,
+        crate_filter: Option<String>,
+    ) -> Result<Vec<ComponentInterface>> {
         let crate_to_namespace_map: BTreeMap<String, NamespaceMetadata> = metadata
             .iter()
             .map(|(k, v)| (k.clone(), v.namespace.clone()))
@@ -155,6 +142,10 @@ impl BindgenLoader {
         ci_list
             .iter_mut()
             .for_each(|ci| ci.set_all_component_interfaces(ci_list2.clone()));
+        // Apply the crate filter now, after `set_all_component_interfaces` has been called.
+        if let Some(crate_filter) = crate_filter {
+            ci_list.retain(|ci| ci.crate_name() == crate_filter)
+        }
         Ok(ci_list)
     }
 
@@ -224,6 +215,7 @@ impl BindgenLoader {
         &self,
         source_path: &Utf8Path,
         metadata: MetadataGroupMap,
+        crate_filter: Option<String>,
     ) -> Result<pipeline::initial::Root> {
         let mut metadata_converter = pipeline::initial::UniffiMetaConverter::default();
         for metadata_group in metadata.into_values() {
@@ -245,6 +237,15 @@ impl BindgenLoader {
         }
         let mut root = metadata_converter.try_into_initial_ir()?;
         root.cdylib = self.library_name(source_path).map(str::to_string);
+        // Apply the crate filter now, after the `initial::Root` has been constructed and external
+        // type information has been setup.
+        if let Some(crate_filter) = crate_filter {
+            root.namespaces = root
+                .namespaces
+                .into_iter()
+                .filter(|(_, n)| n.crate_name == crate_filter)
+                .collect();
+        };
         Ok(root)
     }
 
@@ -277,9 +278,5 @@ impl BindgenLoader {
     pub fn library_name<'a>(&self, source_path: &'a Utf8Path) -> Option<&'a str> {
         let is_library = !self.is_udl(source_path);
         is_library.then(|| self.source_basename(source_path))
-    }
-
-    pub fn filter_metadata_by_crate_name(&self, metadata: &mut MetadataGroupMap, crate_name: &str) {
-        metadata.retain(|_, metadata_group| metadata_group.namespace.crate_name == crate_name)
     }
 }

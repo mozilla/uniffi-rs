@@ -18,8 +18,9 @@ pub mod test;
 
 /// Generate Python bindings
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
-    let metadata = options.load_metadata(loader)?;
-    let root = loader.load_pipeline_initial_root(&options.source, metadata)?;
+    let metadata = loader.load_metadata(&options.source)?;
+    let root =
+        loader.load_pipeline_initial_root(&options.source, metadata, options.crate_filter)?;
     run_pipeline(root, &options.out_dir)?;
 
     Ok(())
