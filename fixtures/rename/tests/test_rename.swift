@@ -9,7 +9,7 @@ import uniffi_fixture_rename
 let record = RenamedRecord(item: 42)
 assert(record.item == 42)
 
-let enum1 = RenamedEnum.variantA
+let enum1 = RenamedEnum.renamedVariant
 let enum2 = RenamedEnum.record(record)
 
 // Test renamed function

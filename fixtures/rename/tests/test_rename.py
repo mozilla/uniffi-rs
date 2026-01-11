@@ -12,7 +12,7 @@ class TestRename(unittest.TestCase):
         self.assertEqual(record.item, 42)
 
         # Test renamed enum
-        enum1 = RenamedEnum.VARIANT_A()
+        enum1 = RenamedEnum.RENAMED_VARIANT()
         enum2 = RenamedEnum.RECORD(record)
         self.assertEqual(enum2[0].item, 42)
 

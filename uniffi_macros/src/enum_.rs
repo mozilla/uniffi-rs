@@ -376,7 +376,10 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
                     default_value_metadata_calls(&attrs.default)
                 })
                 .collect::<syn::Result<Vec<_>>>()?;
-            let name = ident_to_string(&v.ident);
+
+            let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
+
+            let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
             let value_tokens = variant_value(v)?;
 
             let docstring = extract_docstring(&v.attrs)?;
@@ -446,6 +449,32 @@ impl UniffiAttributeArgs for EnumAttr {
         Ok(Self {
             flat_error: either_attribute_arg(self.flat_error, other.flat_error)?,
             with_try_read: either_attribute_arg(self.with_try_read, other.with_try_read)?,
+            name: either_attribute_arg(self.name, other.name)?,
+        })
+    }
+}
+
+/// Handle #[uniffi(...)] attributes for enum variants
+#[derive(Clone, Default)]
+struct VariantAttr {
+    pub name: Option<String>,
+}
+
+impl UniffiAttributeArgs for VariantAttr {
+    fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self { name })
+        } else {
+            Err(lookahead.error())
+        }
+    }
+
+    fn merge(self, other: Self) -> syn::Result<Self> {
+        Ok(Self {
             name: either_attribute_arg(self.name, other.name)?,
         })
     }

@@ -16,6 +16,7 @@ pub struct Record {
 #[derive(uniffi::Enum)]
 #[uniffi(name = "RenamedEnum")]
 pub enum Enum {
+    #[uniffi(name = "RenamedVariant")]
     VariantA,
     Record(Record),
 }

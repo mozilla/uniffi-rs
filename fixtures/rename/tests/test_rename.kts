@@ -8,7 +8,7 @@ import uniffi.uniffi_fixture_rename.*;
 val record = RenamedRecord(item = 42)
 assert(record.item == 42)
 
-val enum1 = RenamedEnum.VariantA
+val enum1 = RenamedEnum.RenamedVariant
 val enum2 = RenamedEnum.Record(record)
 
 // Test renamed function
