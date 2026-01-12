@@ -27,6 +27,7 @@
 - Support for methods on records and enums
   ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706), [#2724](https://github.com/mozilla/uniffi-rs/pull/2724), [#2739](https://github.com/mozilla/uniffi-rs/pull/2739)).
 - Added the `BindgenPaths` type, which is the new way to find UDL and TOML data.
+- Enum variants can now be renamed with the proc-macro `name = "NewVariantName"` attribute ([#2783](https://github.com/mozilla/uniffi-rs/pull/2783))
 
 ### What's Fixed
 
