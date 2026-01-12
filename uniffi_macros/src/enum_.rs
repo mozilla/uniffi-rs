@@ -456,7 +456,7 @@ impl UniffiAttributeArgs for EnumAttr {
 
 /// Handle #[uniffi(...)] attributes for enum variants
 #[derive(Clone, Default)]
-struct VariantAttr {
+pub struct VariantAttr {
     pub name: Option<String>,
 }
 

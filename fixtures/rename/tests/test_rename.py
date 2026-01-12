@@ -26,7 +26,7 @@ class TestRename(unittest.TestCase):
         self.assertEqual(obj.renamed_method(), 123)
 
         # Test renamed error type exists
-        self.assertTrue(hasattr(RenamedError, 'Simple'))
+        self.assertTrue(hasattr(RenamedError, 'RenamedErrorVariant'))
 
         # Test trait method renaming.
         trait_impl = create_trait_impl(5)

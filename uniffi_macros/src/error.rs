@@ -4,11 +4,11 @@ use syn::{DeriveInput, Index};
 use uniffi_meta::EnumShape;
 
 use crate::{
-    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem},
+    enum_::{rich_error_ffi_converter_impl, variant_metadata, EnumItem, VariantAttr},
     ffiops,
     util::{
-        chain, create_metadata_items, extract_docstring, ident_to_string,
-        try_metadata_value_from_usize, AttributeSliceExt,
+        create_metadata_items, extract_docstring, ident_to_string, try_metadata_value_from_usize,
+        AttributeSliceExt,
     },
     DeriveOptions,
 };
@@ -25,13 +25,10 @@ pub fn expand_error(input: DeriveInput, options: DeriveOptions) -> syn::Result<T
         .variants
         .iter()
         .flat_map(|variant| {
-            chain(
-                variant.attrs.uniffi_attr_args_not_allowed_here(),
-                variant
-                    .fields
-                    .iter()
-                    .flat_map(|field| field.attrs.uniffi_attr_args_not_allowed_here()),
-            )
+            variant
+                .fields
+                .iter()
+                .flat_map(|field| field.attrs.uniffi_attr_args_not_allowed_here())
         })
         .map(syn::Error::into_compile_error)
         .collect();
@@ -204,7 +201,9 @@ pub fn flat_error_variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStre
         try_metadata_value_from_usize(enum_.variants.len(), "UniFFI limits enums to 256 variants")?;
     std::iter::once(Ok(quote! { .concat_value(#variants_len) }))
         .chain(enum_.variants.iter().map(|v| {
-            let name = ident_to_string(&v.ident);
+            let attrs = v.attrs.parse_uniffi_attr_args::<VariantAttr>()?;
+            let name = attrs.name.unwrap_or(ident_to_string(&v.ident));
+
             let docstring = extract_docstring(&v.attrs)?;
             Ok(quote! {
                 .concat_str(#name)

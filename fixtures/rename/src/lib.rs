@@ -25,6 +25,7 @@ pub enum Enum {
 #[uniffi(name = "RenamedError")]
 pub enum MyError {
     #[error("Simple error")]
+    #[uniffi(name = "RenamedErrorVariant")]
     Simple,
 }
 
