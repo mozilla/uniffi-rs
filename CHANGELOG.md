@@ -28,6 +28,8 @@
   ([#2706](https://github.com/mozilla/uniffi-rs/pull/2706), [#2724](https://github.com/mozilla/uniffi-rs/pull/2724), [#2739](https://github.com/mozilla/uniffi-rs/pull/2739)).
 - Added the `BindgenPaths` type, which is the new way to find UDL and TOML data.
 - Enum variants can now be renamed with the proc-macro `name = "NewVariantName"` attribute ([#2783](https://github.com/mozilla/uniffi-rs/pull/2783))
+- It's now possible to build a `uniffi-bindgen` that doesn't depend on `cargo-metadata` ([#2746](https://github.com/mozilla/uniffi-rs/pull/2746))
+- MSR is now 1.87, our CI runs against 1.90.
 
 ### What's Fixed
 
@@ -38,6 +40,10 @@
 - Kotlin: Initialization functions now have a stable ordering ([#2718](https://github.com/mozilla/uniffi-rs/pull/2718))
 - Prevented a potential segfault when completing foreign futures ([#2733](https://github.com/mozilla/uniffi-rs/pull/2733))
 - Swift: exporting `Eq`, `Cmp` etc would generate invalid code if the Rust name had unusual captialization ([#2707](https://github.com/mozilla/uniffi-rs/issues/2707)).
+- Fix an issue when an impl block has only async constructors ([#2778](https://github.com/mozilla/uniffi-rs/pull/2778))
+- Fix issues parsing some `#[doc(...)]` attributes in exported blocks ([#2777](https://github.com/mozilla/uniffi-rs/pull/2777))
+- Fix extracting metadata from multi-arch binary files ([#2750](https://github.com/mozilla/uniffi-rs/pull/2750))
+- Python: improve generated code for `__eq__` ([#2741](https://github.com/mozilla/uniffi-rs/pull/2741))
 
 ### ⚠️ Breaking Changes ⚠️
 - Method checksums no longer include the self type.  This shouldn't affect normal use.  However
