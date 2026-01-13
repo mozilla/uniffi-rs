@@ -64,6 +64,17 @@ If you do not supply conversions to and from the bridge type, and assuming `Seri
 the `TryInto::Error` type can be anything that implements `Into<anyhow::Error>`.
 - `TryFrom<String>` and `From<SerializableStruct>` will also work, using the blanket impl from the core library.
 
+#### Custom remote types
+
+The above examples assume that the custom type is declared in the same crate as the type itself - but if
+`SerializableStruct` was in a different crate than the `uniffi::custom_type!` declaration,
+you'd get an error saying something like:
+
+> type parameter `UT` must be used as the type parameter for some local type
+
+We call these types defined in other crates "remote types" - see our documentation
+for [custom remote types](./remote_ext_types.md#remote-custom-types)
+
 ### `custom_newtype!`
 
 The `custom_newtype!` macro is able to handle Rust newtype-style structs which wrap a UniFFI type.
