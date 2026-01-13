@@ -43,7 +43,7 @@ pub fn run_script(
     let mut paths = crate::BindgenPaths::default();
     paths.add_layer(CrateConfigSupplier::from(test_helper.cargo_metadata()));
     let root = initial::Root::from_library(paths, &cdylib_path, None)?;
-    run_pipeline(root, &out_dir)?;
+    run_pipeline(root, &out_dir, None)?;
 
     // Run the python script
     let pythonpath = env::var_os("PYTHONPATH").unwrap_or_else(|| OsString::from(""));

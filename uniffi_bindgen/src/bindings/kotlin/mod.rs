@@ -18,7 +18,7 @@ pub mod test;
 
 /// Generate Kotlin bindings
 pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> {
-    let metadata = options.load_metadata(loader)?;
+    let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let cdylib = loader.library_name(&options.source).map(|l| l.to_string());
     let mut components =
@@ -31,6 +31,12 @@ pub fn generate(loader: &BindgenLoader, options: GenerateOptions) -> Result<()> 
     }
 
     for Component { ci, config, .. } in components {
+        if let Some(crate_filter) = &options.crate_filter {
+            if ci.crate_name() != crate_filter {
+                continue;
+            }
+        }
+
         let mut kt_file = full_bindings_path(&config, &options.out_dir);
         fs::create_dir_all(&kt_file)?;
         kt_file.push(format!("{}.kt", ci.namespace()));

@@ -63,7 +63,7 @@ pub fn generate(
     loader: &BindgenLoader,
     options: GenerateOptions,
 ) -> Result<Vec<Component<Config>>> {
-    let metadata = options.load_metadata(loader)?;
+    let metadata = loader.load_metadata(&options.source)?;
     let cis = loader.load_cis(metadata)?;
     let mut components = loader.load_components(cis, parse_config)?;
     apply_renames(&mut components);
@@ -73,6 +73,11 @@ pub fn generate(
     }
 
     for Component { ci, config, .. } in components.iter_mut() {
+        if let Some(crate_filter) = &options.crate_filter {
+            if ci.crate_name() != crate_filter {
+                continue;
+            }
+        }
         let Bindings {
             header,
             library,
