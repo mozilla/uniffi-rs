@@ -794,6 +794,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="custom_type! conversions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-remote-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom remote types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2373,6 +2388,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="custom_type! conversions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-remote-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom remote types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2506,6 +2536,15 @@ Use this when the trait implementations do not exist, or they aren't desirable f
 the <code>TryInto::Error</code> type can be anything that implements <code>Into&lt;anyhow::Error&gt;</code>.</li>
 <li><code>TryFrom&lt;String&gt;</code> and <code>From&lt;SerializableStruct&gt;</code> will also work, using the blanket impl from the core library.</li>
 </ul>
+<h4 id="custom-remote-types">Custom remote types</h4>
+<p>The above examples assume that the custom type is declared in the same crate as the type itself - but if
+<code>SerializableStruct</code> was in a different crate than the <code>uniffi::custom_type!</code> declaration,
+you'd get an error saying something like:</p>
+<blockquote>
+<p>type parameter <code>UT</code> must be used as the type parameter for some local type</p>
+</blockquote>
+<p>We call these types defined in other crates "remote types" - see our documentation
+for <a href="remote_ext_types.html#remote-custom-types">custom remote types</a></p>
 <h3 id="custom_newtype"><code>custom_newtype!</code></h3>
 <p>The <code>custom_newtype!</code> macro is able to handle Rust newtype-style structs which wrap a UniFFI type.</p>
 <p>eg, our <code>Handle</code> object above could be declared as:
