@@ -16,6 +16,7 @@ pub struct Record {
 #[derive(uniffi::Enum)]
 #[uniffi(name = "RenamedEnum")]
 pub enum Enum {
+    #[uniffi(name = "RenamedVariant")]
     VariantA,
     Record(Record),
 }
@@ -24,6 +25,7 @@ pub enum Enum {
 #[uniffi(name = "RenamedError")]
 pub enum MyError {
     #[error("Simple error")]
+    #[uniffi(name = "RenamedErrorVariant")]
     Simple,
 }
 

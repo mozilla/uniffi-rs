@@ -12,7 +12,7 @@ class TestRename(unittest.TestCase):
         self.assertEqual(record.item, 42)
 
         # Test renamed enum
-        enum1 = RenamedEnum.VARIANT_A()
+        enum1 = RenamedEnum.RENAMED_VARIANT()
         enum2 = RenamedEnum.RECORD(record)
         self.assertEqual(enum2[0].item, 42)
 
@@ -26,7 +26,7 @@ class TestRename(unittest.TestCase):
         self.assertEqual(obj.renamed_method(), 123)
 
         # Test renamed error type exists
-        self.assertTrue(hasattr(RenamedError, 'Simple'))
+        self.assertTrue(hasattr(RenamedError, 'RenamedErrorVariant'))
 
         # Test trait method renaming.
         trait_impl = create_trait_impl(5)
