@@ -1,0 +1,2811 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="errors.html">
+      
+      
+        <link rel="next" href="callback_interfaces.html">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+    
+    
+      
+        <title>Interfaces, Objects and Traits - The UniFFI user guide</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#interfaces-objects-and-traits" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="The UniFFI user guide" class="md-header__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            The UniFFI user guide
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Interfaces, Objects and Traits
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mozilla/uniffi-rs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="The UniFFI user guide" class="md-nav__button md-logo" aria-label="The UniFFI user guide" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    The UniFFI user guide
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mozilla/uniffi-rs" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Motivation.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Motivation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorial
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Getting_started.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/Prerequisites.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Prerequisites
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/udl_file.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Describing the interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/Rust_scaffolding.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rust scaffolding
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/foreign_language_bindings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign-language bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    UniFFI type model
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            UniFFI type model
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="namespace.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Namespace
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="builtin_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Built-in types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="enumerations.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enumerations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="records.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Records
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Functions
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Functions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="functions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Functions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="errors.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Throwing errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Interfaces, Objects and Traits
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="interfaces.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interfaces, Objects and Traits
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#constructors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constructors
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#destructors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Destructors
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing methods from standard Rust traits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exposing-traits-as-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing Traits as interfaces
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exposing Traits as interfaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proc-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proc-macros
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udl" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foreign-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign implementations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#traits-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Traits example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-shared-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      Managing Shared References
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrent-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concurrent Access
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="callback_interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Callback interfaces
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="remote_ext_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Remote and External types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="custom_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Custom types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="defaults.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="uniffi_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exposing standard Rust traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Describing the interface
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Describing the interface
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../describing.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Describing the interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    UDL Files
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            UDL Files
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The UDL file
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/enumerations.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enums in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/errors.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Errors in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/functions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Functions in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interfaces in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/records.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Records in UDL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/external_types.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Using types defined outside a UDL.
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../udl/docstrings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docstrings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Proc macros
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Proc macros
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Procedural Macros: Attributes and Derives
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/enumerations.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Enumerations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/errors.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Error derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/functions.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Functions, Constructors, Methods
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/interfaces.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Object derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/records.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The uniffi::Record derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming via proc-macros
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proc_macro/docstrings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Docstrings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../renaming.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Renaming
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../futures.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Async/Future support
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Bindings
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Bindings
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bindings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Generating bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../foreign_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Kotlin
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            Kotlin
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kotlin/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kotlin/gradle.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integrating with Gradle
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kotlin/lifetimes.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Kotlin Lifetimes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_4" id="__nav_7_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Swift
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_4">
+            <span class="md-nav__icon md-icon"></span>
+            Swift
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/overview.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Swift Bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/uniffi-bindgen-swift.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    uniffi-bindgen-swift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/module.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Compiling a Swift module
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../swift/xcode.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integrating with Xcode
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Python
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    WASM
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            WASM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wasm/configuration.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WASM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Internals
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Internals
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/design_principles.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Design Principles
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/crates.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Navigating the code
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Glossary
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/lifting_and_lowering.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lifting, Lowering and Serialization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/ffi_converter_traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Ffi converter traits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/rust_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Foreign -&gt; Rust calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/foreign_calls.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rust -&gt; Foreign calls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/object_references.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Managing Object References
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/async-overview.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Async Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/async-ffi.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    UniFFI Async FFI details
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/rendering_foreign_bindings.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rendering Foreign Bindings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/bindings_ir.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    The UniFFI Bindings IR
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../internals/bindings_ir_pipeline.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bindings IR Pipeline
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrading.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Upgrading v0.28.x -&gt; v0.29.x
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#constructors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constructors
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#destructors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Destructors
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exposing-methods-from-standard-rust-traits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing methods from standard Rust traits
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exposing-traits-as-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exposing Traits as interfaces
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exposing Traits as interfaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proc-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proc-macros
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#udl" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDL
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foreign-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Foreign implementations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#traits-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Traits example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-shared-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      Managing Shared References
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrent-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concurrent Access
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="interfaces-objects-and-traits">Interfaces, Objects and Traits</h1>
+<p>Interfaces can have constructors and have methods. In Rust, they are represented as <code>impl</code> blocks. In the Kotlin or Swift world, they are a class, so they are often known as "Objects"</p>
+<p>Interfaces are passed by reference so can not have data items - unlike a <a href="records.html">Record</a> or <a href="enumerations.html">Enum</a>, which are passed by value so <em>only</em> have data fields and no methods.</p>
+<p>Interfaces must be exposed via <a href="../udl/interfaces.html">UDL</a> or <a href="../proc_macro/interfaces.html">proc-macros</a></p>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="nc">RwLock</span><span class="o">&lt;</span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;&gt;</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="w"> </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="nc">RwLock</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="nb">Vec</span><span class="p">::</span><span class="n">new</span><span class="p">())</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">add_item</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">todo</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">write</span><span class="p">().</span><span class="n">unwrap</span><span class="p">().</span><span class="n">push</span><span class="p">(</span><span class="n">todo</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">get_items</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="nb">String</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">read</span><span class="p">().</span><span class="n">unwrap</span><span class="p">().</span><span class="n">clone</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>These <code>interface</code> objects are live Rust structs behind an <code>Arc&lt;&gt;</code> that have a proxy object on the foreign language side;
+calling any methods on them, including a constructor results in the corresponding methods being called in Rust.</p>
+<p>UniFFI will generate these proxies with an interface or protocol to help with testing in the foreign-language code. For example in Kotlin, the <code>TodoList</code> would generate:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">TodoListInterface</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">addItem</span><span class="p">(</span><span class="n">todo</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">)</span>
+<span class="w">    </span><span class="kd">fun</span><span class="w"> </span><span class="nf">getItems</span><span class="p">():</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span>
+<span class="p">};</span>
+
+<span class="kd">class</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TodoListInterface</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="c1">// implementations to call the Rust code.</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>When working with these objects, it may be helpful to always pass the interface or protocol, but construct the concrete implementation. For example in Swift:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">let</span> <span class="nv">todoList</span> <span class="p">=</span> <span class="n">TodoList</span><span class="p">()</span>
+<span class="n">todoList</span><span class="p">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">todo</span><span class="p">:</span> <span class="s">&quot;Write documentation&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="n">todoList</span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">display</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="n">TodoListProtocol</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nv">items</span> <span class="p">=</span> <span class="n">list</span><span class="p">.</span><span class="n">getItems</span><span class="p">()</span>
+    <span class="n">items</span><span class="p">.</span><span class="n">forEach</span> <span class="p">{</span>
+        <span class="bp">print</span><span class="p">(</span><span class="nv">$0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Following this pattern will make it easier for you to provide mock implementation of the Rust-based objects
+for testing.</p>
+<h2 id="constructors">Constructors</h2>
+<p>Interfaces can have one or more constructors. They must have a constructor to be directly created from foreign bindings.</p>
+<p><code>TodoList</code> has a <code>new()</code> method. This can be exposed via UDL with <code>constructor</code>, or via proc-macros with a <code>#[uniffi::constructor]</code> attribute.</p>
+<p>Along with a default constructor, an interface can have named constructors, implemented as static functions.</p>
+<p>Constructors:
+* may omit or include the outer <code>Arc&lt;&gt;</code> - eg, we could have written <code>fn new() -&gt; Arc&lt;Self&gt;</code>
+* can return a <code>Result&lt;&gt;</code>
+* can be async, although foreign language constraints means support for async primary constructors is patchy.</p>
+<h2 id="destructors">Destructors</h2>
+<p>The foreign bindings will typically generate destructors, but regardless of the foreign semantics, they always hold an <code>Arc&lt;&gt;</code> to the Rust object, so these destructors will only drop their reference and may not drop the Rust object.</p>
+<h2 id="exposing-methods-from-standard-rust-traits">Exposing methods from standard Rust traits</h2>
+<p>There are a number of standard Rust traits (<code>Debug</code>, <code>Eq</code> etc) you can expose; eg, Python
+might generate <code>__repr__()</code> or <code>__eq__()</code> - <a href="uniffi_traits.html">see the docs for this feature</a>.</p>
+<h2 id="exposing-traits-as-interfaces">Exposing Traits as interfaces</h2>
+<p>It's possible to have UniFFI expose a Rust trait as an interface.</p>
+<div class="highlight"><pre><span></span><code><span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Button</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">StopButton</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="k">impl</span><span class="w"> </span><span class="n">Button</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">StopButton</span><span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s">&quot;stop&quot;</span><span class="p">.</span><span class="n">to_string</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><a href="../internals/object_references.html#concurrency">Uniffi enforces all interfaces are <code>Send + Sync</code></a>, meaning exported traits need to be explicitly bound.</p>
+<p>References to traits are passed around like normal interface objects - in an <code>Arc&lt;&gt;</code>.
+For example, your Rust would have these signatures:</p>
+<div class="highlight"><pre><span></span><code><span class="k">fn</span><span class="w"> </span><span class="nf">get_buttons</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Button</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+<span class="k">fn</span><span class="w"> </span><span class="nf">press</span><span class="p">(</span><span class="n">button</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Button</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">Button</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">..</span><span class="p">.</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="proc-macros">Proc-macros</h3>
+<p>Wrap the trait with `#[uniffi::export]</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Button</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="udl">UDL</h3>
+<p>Add a <code>Trait</code> attribute to the UDL interface and <code>#[uniffi::trait_interface]</code> to the Rust trait</p>
+<div class="highlight"><pre><span></span><code><span class="p">[</span><span class="nd">Trait</span><span class="p">]</span>
+<span class="k">interface</span> <span class="nc">Button</span> <span class="p">{</span>
+    <span class="err">...</span>
+<span class="err">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::trait_interface]</span>
+<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Button</span><span class="p">:</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">..</span><span class="p">.</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="foreign-implementations">Foreign implementations</h3>
+<p>It's possible in both UDL (via a <code>[Foreign]</code> attribute) and proc-macros (via <code>#[uniffi::export(with_foreign)]</code>)
+to declare the trait can also be implemented on the foreign side passed into Rust, for example:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PyButton</span><span class="p">(</span><span class="n">uniffi_module</span><span class="o">.</span><span class="n">Button</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;PyButton&quot;</span>
+
+<span class="n">uniffi_module</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">PyButton</span><span class="p">())</span>
+</code></pre></div>
+<p>Note: This is currently only supported on Python, Kotlin, and Swift.</p>
+<h3 id="traits-example">Traits example</h3>
+<p>See the <a href="https://github.com/mozilla/uniffi-rs/tree/main/examples/traits">"traits" example</a> for more.</p>
+<h2 id="managing-shared-references">Managing Shared References</h2>
+<p>To the foreign-language consumer, UniFFI object instances are designed to behave as much like
+regular language objects as possible. They can be freely passed as arguments or returned as values,
+like this:</p>
+<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>TodoList<span class="w"> </span>{
+<span class="w">    </span>...
+
+<span class="w">    </span><span class="o">//</span><span class="w"> </span>Copy<span class="w"> </span>the<span class="w"> </span>items<span class="w"> </span>from<span class="w"> </span>another<span class="w"> </span>TodoList<span class="w"> </span>into<span class="w"> </span>this<span class="w"> </span>one.
+<span class="w">    </span>void<span class="w"> </span>import_items(TodoList<span class="w"> </span>other);
+
+<span class="w">    </span><span class="o">//</span><span class="w"> </span>Make<span class="w"> </span>a<span class="w"> </span>copy<span class="w"> </span><span class="k">of</span><span class="w"> </span>this<span class="w"> </span>TodoList<span class="w"> </span>as<span class="w"> </span>a<span class="w"> </span>new<span class="w"> </span>instance.
+<span class="w">    </span>TodoList<span class="w"> </span>duplicate();
+
+<span class="w">    </span><span class="o">//</span><span class="w"> </span>Create<span class="w"> </span>a<span class="w"> </span><span class="nb">list</span><span class="w"> </span><span class="k">of</span><span class="w"> </span>lists,<span class="w"> </span>one<span class="w"> </span><span class="k">for</span><span class="w"> </span>each<span class="w"> </span>item<span class="w"> </span>this<span class="w"> </span>one
+<span class="w">    </span>sequence<span class="o">&lt;</span>TodoList<span class="o">&gt;</span><span class="w"> </span>split();
+};
+</code></pre></div>
+<p>To ensure that this is safe, UniFFI allocates every object instance on the heap using
+<a href="https://doc.rust-lang.org/std/sync/struct.Arc.html"><code>Arc</code></a>, Rust's built-in smart pointer
+type for managing shared references at runtime.</p>
+<p>The use of <code>Arc</code> is transparent to the foreign-language code, but sometimes shows up
+in the function signatures of the underlying Rust code.</p>
+<p>When returning interface objects, UniFFI supports both Rust functions that wrap the value in an
+<code>Arc&lt;&gt;</code> and ones that don't.  This only applies if the interface type is returned directly:</p>
+<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// When the foreign function/method returns `TodoList`, the Rust code can return either `TodoList` or `Arc&lt;TodoList&gt;`.</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">duplicate</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="nc">RwLock</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">read</span><span class="p">().</span><span class="n">unwrap</span><span class="p">().</span><span class="n">clone</span><span class="p">())</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// However, if TodoList is nested inside another type then `Arc&lt;TodoList&gt;` is required</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Vec</span><span class="o">&lt;</span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">TodoList</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">read</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="n">iter</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="o">|</span><span class="n">i</span><span class="o">|</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">TodoList</span><span class="p">::</span><span class="n">from_item</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">clone</span><span class="p">()))</span>
+<span class="w">            </span><span class="p">.</span><span class="n">collect</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>By default, object instances passed as function arguments will also be passed as an <code>Arc&lt;T&gt;</code>, so the
+Rust implementation of <code>TodoList::import_items</code> would also need to accept an <code>Arc&lt;TodoList&gt;</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">import_items</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="n">TodoList</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">write</span><span class="p">().</span><span class="n">unwrap</span><span class="p">().</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">get_items</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>If the Rust code does not need an owned reference to the <code>Arc</code>, you can use the <code>[ByRef]</code> UDL attribute
+to signal that a function accepts a borrowed reference:</p>
+<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>TodoList<span class="w"> </span>{
+<span class="w">    </span>...
+<span class="w">    </span><span class="o">//</span><span class="w">                  </span><span class="o">+--</span><span class="w"> </span>indicate<span class="w"> </span>that<span class="w"> </span>we<span class="w"> </span>only<span class="w"> </span>need<span class="w"> </span>to<span class="w"> </span>borrow<span class="w"> </span>the<span class="w"> </span>other<span class="w"> </span><span class="nb">list</span>
+<span class="w">    </span><span class="o">//</span><span class="w">                  </span>V
+<span class="w">    </span>void<span class="w"> </span>import_items([ByRef]<span class="w"> </span>TodoList<span class="w"> </span>other);
+<span class="w">    </span>...
+};
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">//                              +-- don&#39;t need to care about the `Arc` here</span>
+<span class="w">    </span><span class="c1">//                              V</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">import_items</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">TodoList</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">write</span><span class="p">().</span><span class="n">unwrap</span><span class="p">().</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">get_items</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Conversely, if the Rust code explicitly <em>wants</em> to deal with an <code>Arc&lt;T&gt;</code> in the special case of
+the <code>self</code> parameter, it can signal this using the <code>[Self=ByArc]</code> UDL attribute on the method:</p>
+<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>TodoList<span class="w"> </span>{
+<span class="w">    </span>...
+<span class="w">    </span><span class="o">//</span><span class="w"> </span><span class="o">+--</span><span class="w"> </span>indicate<span class="w"> </span>that<span class="w"> </span>we<span class="w"> </span>want<span class="w"> </span>the<span class="w"> </span>`Arc`<span class="w"> </span>containing<span class="w"> </span>`self`
+<span class="w">    </span><span class="o">//</span><span class="w"> </span>V
+<span class="w">    </span>[Self<span class="o">=</span>ByArc]
+<span class="w">    </span>void<span class="w"> </span>import_items(TodoList<span class="w"> </span>other);
+<span class="w">    </span>...
+};
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">impl</span><span class="w"> </span><span class="n">TodoList</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// `Arc`s everywhere! --+-----------------+</span>
+<span class="w">    </span><span class="c1">//                      V                 V</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">import_items</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="bp">Self</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="n">TodoList</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">items</span><span class="p">.</span><span class="n">write</span><span class="p">().</span><span class="n">unwrap</span><span class="p">().</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">get_items</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>You can read more about the technical details in the docs on the
+<a href="../internals/object_references.html">internal details of managing object references</a>.</p>
+<h2 id="concurrent-access">Concurrent Access</h2>
+<p>Since interfaces represent mutable data, UniFFI has to take extra care
+to uphold Rust's safety guarantees around shared and mutable references.
+The foreign-language code may attempt to operate on an interface instance
+from multiple threads, and it's important that this not violate Rust's
+assumption that there is at most a single mutable reference to a struct
+at any point in time.</p>
+<p>UniFFI enforces this by requiring that the Rust implementation of an interface
+be <code>Sync+Send</code>, and you will get a compile-time error if your implementation
+does not satisfy this requirement. For example, consider a small "counter"
+object declared like so:</p>
+<div class="highlight"><pre><span></span><code>interface<span class="w"> </span>Counter<span class="w"> </span>{
+<span class="w">    </span>constructor();
+<span class="w">    </span>void<span class="w"> </span>increment();
+<span class="w">    </span>u64<span class="w"> </span>get();
+};
+</code></pre></div>
+<p>For this to be safe, the underlying Rust struct must adhere to certain restrictions, and
+UniFFI's generated Rust scaffolding will emit compile-time errors if it does not.</p>
+<p>The Rust struct must not expose any methods that take <code>&amp;mut self</code>. The following implementation
+of the <code>Counter</code> interface will fail to compile because it relies on mutable references:</p>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="kt">u64</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="w"> </span><span class="n">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">Self</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// No mutable references to self allowed in UniFFI interfaces.</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">increment</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u64</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">value</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Implementations can instead use Rust's "interior mutability" pattern. However, they
+must do so in a way that is both <code>Sync</code> and <code>Send</code>, since the foreign-language code
+may operate on the instance from multiple threads. The following implementation of the
+<code>Counter</code> interface will fail to compile because <code>RefCell</code> is not <code>Sync</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">RefCell</span><span class="o">&lt;</span><span class="kt">u64</span><span class="o">&gt;</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="w"> </span><span class="n">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// `RefCell` is not `Sync`, so neither is `Counter`.</span>
+<span class="w">        </span><span class="bp">Self</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">RefCell</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">increment</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">borrow_mut</span><span class="p">();</span>
+<span class="w">        </span><span class="o">*</span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">value</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u64</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">borrow</span><span class="p">()</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This version uses an <code>AtomicU64</code> for interior mutability, which is both <code>Sync</code> and
+<code>Send</code> and hence will compile successfully:</p>
+<div class="highlight"><pre><span></span><code><span class="k">struct</span><span class="w"> </span><span class="nc">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">AtomicU64</span>
+<span class="p">}</span>
+
+<span class="k">impl</span><span class="w"> </span><span class="n">Counter</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">Self</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">value</span><span class="p">:</span><span class="w"> </span><span class="nc">AtomicU64</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">increment</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">fetch_add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">Ordering</span><span class="p">::</span><span class="n">SeqCst</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u64</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="bp">self</span><span class="p">.</span><span class="n">value</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">Ordering</span><span class="p">::</span><span class="n">SeqCst</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>You can read more about the technical details in the docs on the
+<a href="../internals/object_references.html">internal details of managing object references</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
