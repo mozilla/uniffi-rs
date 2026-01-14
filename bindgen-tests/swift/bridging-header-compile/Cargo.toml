@@ -18,7 +18,7 @@ uniffi = { workspace = true, features = ["build"] }
 
 [dev-dependencies]
 uniffi = { workspace = true, features = ["bindgen-tests", "cli"] }
-uniffi_testing = { path = "../../uniffi_testing" }
+uniffi_testing = { path = "../../../uniffi_testing" }
 anyhow = "1"
 
 [features]
