@@ -1,0 +1,36 @@
+[package]
+name = "uniffi-bindgen-tests"
+version = "0.31.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+async-trait = "0.1"
+camino = "1"
+glob = "0.3"
+thiserror = "1"
+uniffi = { workspace = true, features = ["bindgen", "ffi-trace"] }
+url = "2.5"
+
+uniffi-bindgen-tests-external-types-source = { path = "../external-types" }
+
+[features]
+default = ["simple_fns", "primitive_types", "complex_fns", "compound_types", "records", "enums",
+    "interfaces", "custom_types", "errors", "callback_interfaces", "trait_interfaces", "futures",
+    "external-types", "renames"]
+simple_fns = []
+primitive_types = []
+complex_fns = []
+compound_types = []
+records = []
+enums = []
+interfaces = []
+custom_types = []
+errors = []
+callback_interfaces = []
+trait_interfaces = []
+futures = []
+external-types = []
+renames = []
