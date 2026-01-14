@@ -2060,7 +2060,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "askama",
@@ -2085,7 +2085,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_build"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "camino",
@@ -2094,7 +2094,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_core"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "async-compat",
@@ -2105,7 +2105,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_internal_macros"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "indexmap",
@@ -2116,7 +2116,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_macros"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "camino",
  "fs-err",
@@ -2132,7 +2132,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_meta"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "siphasher",
@@ -2142,7 +2142,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_pipeline"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "heck",
@@ -2153,7 +2153,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_testing"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "camino",
@@ -2164,7 +2164,7 @@ dependencies = [
 
 [[package]]
 name = "uniffi_udl"
-version = "0.30.0"
+version = "0.31.0"
 dependencies = [
  "anyhow",
  "textwrap",

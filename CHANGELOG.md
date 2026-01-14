@@ -4,7 +4,11 @@
 
 <!-- next-header -->
 
-## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+## [[NextUnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
+
+[All changes in [[NextUnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...NEXT_HEAD).
+
+## [[UnreleasedUniFFIVersion]] (backend crates: v0.31.0) - (_2026-01-14_)
 
 ### ⚠️ Breaking Changes ⚠️
 - The `uniffi-bindgen` command no longer accepts the `--lib-file` argument.  Instead, pass the
