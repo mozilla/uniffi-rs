@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...HEAD).
+
+## v0.31.0 (backend crates: v0.31.0) - (_2026-01-14_)
+
 ### ⚠️ Breaking Changes ⚠️
 - The `uniffi-bindgen` command no longer accepts the `--lib-file` argument.  Instead, pass the
   library directly without a UDL file.
@@ -55,7 +59,7 @@
   External bindings authors will probably need to make some minor changes to work with this.
   See https://github.com/mozilla/uniffi-rs/pull/2695/ for examples.
 
-[All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...HEAD).
+[All changes in v0.31.0](https://github.com/mozilla/uniffi-rs/compare/v0.30.0...v0.31.0).
 
 ## v0.30.0 (backend crates: v0.30.0) - (_2025-10-08_)
 

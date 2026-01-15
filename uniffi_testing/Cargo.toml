@@ -1,6 +1,6 @@
 [package]
 name = "uniffi_testing"
-version = "0.30.0"
+version = "0.31.0"
 description = "a multi-language bindings generator for rust (testing helpers)"
 documentation = "https://mozilla.github.io/uniffi-rs"
 homepage = "https://mozilla.github.io/uniffi-rs"
