@@ -109,6 +109,41 @@ unsafe impl<UT> FfiConverter<UT> for bool {
     const TYPE_ID_META: MetadataBuffer = MetadataBuffer::from_code(metadata::codes::TYPE_BOOL);
 }
 
+/// Support for passing mutable byte slices via the FFI.
+///
+/// This is useful for high performance applications such as audio processing
+/// where the overhead of copying is not acceptable.
+///
+unsafe impl<UT> FfiConverter<UT> for &mut [u8] {
+    ffi_converter_rust_buffer_lift_and_lower!(UT);
+
+    fn write(obj: &mut [u8], buf: &mut Vec<u8>) {
+        // TODO: as noted elsewhere, it probably isn't a good idea to panic here.
+        let len = i32::try_from(obj.len()).unwrap();
+        let ptr_value = (obj.as_ptr() as usize) as u64;
+
+        buf.put_i32(len);
+        buf.put_u64(ptr_value);
+    }
+
+    fn try_read(buf: &mut &[u8]) -> Result<Self> {
+        check_remaining(buf, 12)?;
+        let len = usize::try_from(buf.get_i32())?;
+        if len == 0 {
+            return Ok(&mut []);
+        }
+        let ptr = usize::try_from(buf.get_u64())? as *mut u8;
+        if ptr.is_null() {
+            bail!("Cannot form mutable slice from null pointer")
+        }
+        let slice = unsafe { std::slice::from_raw_parts_mut(ptr, len) };
+        Ok(slice)
+    }
+
+    const TYPE_ID_META: MetadataBuffer =
+        MetadataBuffer::from_code(metadata::codes::TYPE_MUTABLE_SLICE);
+}
+
 /// Support for passing Strings via the FFI.
 ///
 /// Unlike many other implementations of `FfiConverter`, this passes a struct containing
