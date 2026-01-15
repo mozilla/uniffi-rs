@@ -5,9 +5,10 @@
 use camino::Utf8PathBuf;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fmt;
-// TODO: remove blanket import
-use uniffi_bindgen::bindings::*;
-use uniffi_bindgen::pipeline::initial;
+use uniffi_bindgen::{
+    bindings::{generate, python, GenerateOptions, TargetLanguage},
+    pipeline::initial,
+};
 use uniffi_pipeline::PrintOptions;
 
 /// TargetLanguage uniffi_bindgen, with a `clap::ValueEnum` derive.
