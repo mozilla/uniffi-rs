@@ -5,8 +5,8 @@
 import uniffi.uniffi_fixture_rename.*;
 
 // Test renamed types - should be accessible by their custom names
-val record = RenamedRecord(item = 42)
-assert(record.item == 42)
+val record = RenamedRecord(renamedField = 42)
+assert(record.renamedField == 42)
 
 val enum1 = RenamedEnum.RenamedVariant
 val enum2 = RenamedEnum.Record(record)
@@ -14,7 +14,7 @@ val enum2 = RenamedEnum.Record(record)
 // Test renamed function
 val result = renamedFunction(record)
 assert(result is RenamedEnum.Record)
-assert((result as RenamedEnum.Record).v1.item == 42)
+assert((result as RenamedEnum.Record).v1.renamedField == 42)
 
 // Test renamed object with renamed constructor and method
 val obj = RenamedObject.renamedConstructor(123)

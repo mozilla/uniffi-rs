@@ -147,26 +147,41 @@ fn write_field(f: &Field) -> TokenStream {
 #[derive(Default)]
 pub struct FieldAttributeArguments {
     pub(crate) default: Option<DefaultValue>,
+    pub(crate) name: Option<String>,
 }
 
 impl UniffiAttributeArgs for FieldAttributeArguments {
     fn parse_one(input: ParseStream<'_>) -> syn::Result<Self> {
-        let _: kw::default = input.parse()?;
         let lookahead = input.lookahead1();
-        let default = if lookahead.peek(Token![=]) {
+        if lookahead.peek(kw::default) {
+            let _: kw::default = input.parse()?;
+            let default = Some(if input.peek(Token![=]) {
+                let _: Token![=] = input.parse()?;
+                input.parse()?
+            } else {
+                DefaultValue::Default
+            });
+            Ok(Self {
+                default,
+                ..Self::default()
+            })
+        } else if lookahead.peek(kw::name) {
+            let _: kw::name = input.parse()?;
             let _: Token![=] = input.parse()?;
-            input.parse()?
+            let name = Some(input.parse::<LitStr>()?.value());
+            Ok(Self {
+                name,
+                ..Self::default()
+            })
         } else {
-            DefaultValue::Default
-        };
-        Ok(Self {
-            default: Some(default),
-        })
+            Err(lookahead.error())
+        }
     }
 
     fn merge(self, other: Self) -> syn::Result<Self> {
         Ok(Self {
             default: either_attribute_arg(self.default, other.default)?,
+            name: either_attribute_arg(self.name, other.name)?,
         })
     }
 }
@@ -188,7 +203,9 @@ fn record_meta_static_var(record: &RecordItem) -> syn::Result<TokenStream> {
                 .attrs
                 .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
 
-            let name = ident_to_string(f.ident.as_ref().unwrap());
+            let name = attrs
+                .name
+                .unwrap_or(ident_to_string(f.ident.as_ref().unwrap()));
             let docstring = extract_docstring(&f.attrs)?;
             let default = default_value_metadata_calls(&attrs.default)?;
             let type_id_meta = ffiops::type_id_meta(&f.ty);

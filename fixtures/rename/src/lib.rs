@@ -10,6 +10,7 @@ pub fn function(record: Record) -> Enum {
 #[derive(uniffi::Record)]
 #[uniffi(name = "RenamedRecord")]
 pub struct Record {
+    #[uniffi(name = "renamed_field")]
     item: i32,
 }
 

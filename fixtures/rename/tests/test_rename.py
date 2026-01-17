@@ -8,17 +8,17 @@ from uniffi_fixture_rename import *
 class TestRename(unittest.TestCase):
     def test_rename(self):
         # Test renamed record
-        record = RenamedRecord(item=42)
-        self.assertEqual(record.item, 42)
+        record = RenamedRecord(renamed_field=42)
+        self.assertEqual(record.renamed_field, 42)
 
         # Test renamed enum
         enum1 = RenamedEnum.RENAMED_VARIANT()
         enum2 = RenamedEnum.RECORD(record)
-        self.assertEqual(enum2[0].item, 42)
+        self.assertEqual(enum2[0].renamed_field, 42)
 
         # Test renamed function
         result = renamed_function(record)
-        self.assertEqual(result[0].item, 42)
+        self.assertEqual(result[0].renamed_field, 42)
 
         # Test renamed object with renamed constructor and method
         obj = RenamedObject.renamed_constructor(123)
