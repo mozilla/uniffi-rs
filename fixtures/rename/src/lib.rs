@@ -22,6 +22,16 @@ pub enum Enum {
     Record(Record),
 }
 
+#[derive(uniffi::Enum)]
+#[uniffi(name = "RenamedEnumWithFields")]
+pub enum EnumWithFields {
+    #[uniffi(name = "RenamedVariantWithFields")]
+    VariantWithFields {
+        #[uniffi(name = "renamed_variant_field")]
+        field: u32,
+    },
+}
+
 #[derive(thiserror::Error, uniffi::Error, Debug)]
 #[uniffi(name = "RenamedError")]
 pub enum MyError {

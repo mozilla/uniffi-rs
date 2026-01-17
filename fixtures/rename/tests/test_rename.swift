@@ -11,6 +11,7 @@ assert(record.renamedField == 42)
 
 let enum1 = RenamedEnum.renamedVariant
 let enum2 = RenamedEnum.record(record)
+let enum3 = RenamedEnumWithFields.renamedVariantWithFields(renamedVariantField: 42)
 
 // Test renamed function
 let result = renamedFunction(record: record)

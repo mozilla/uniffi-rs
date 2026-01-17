@@ -14,6 +14,7 @@ class TestRename(unittest.TestCase):
         # Test renamed enum
         enum1 = RenamedEnum.RENAMED_VARIANT()
         enum2 = RenamedEnum.RECORD(record)
+        enum3 = RenamedEnumWithFields.RENAMED_VARIANT_WITH_FIELDS(renamed_variant_field=42)
         self.assertEqual(enum2[0].renamed_field, 42)
 
         # Test renamed function

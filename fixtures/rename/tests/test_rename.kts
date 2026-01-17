@@ -10,6 +10,7 @@ assert(record.renamedField == 42)
 
 val enum1 = RenamedEnum.RenamedVariant
 val enum2 = RenamedEnum.Record(record)
+val enum3 = RenamedEnumWithFields.RenamedVariantWithFields(renamedVariantField = 42)
 
 // Test renamed function
 val result = renamedFunction(record)
