@@ -1,36 +1,37 @@
 import uniffi.chronological.*;
-import java.time.Duration
-import java.time.Instant
-import java.time.DateTimeException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 // Test passing timestamp and duration while returning timestamp
-assert(add(Instant.ofEpochSecond(100, 100), Duration.ofSeconds(1, 1))
-        .equals(Instant.ofEpochSecond(101, 101)))
+assert(add(Instant.fromEpochSeconds(100, 100), 1.seconds + 1.nanoseconds)
+        .equals(Instant.fromEpochSeconds(101, 101)))
 
 // Test passing timestamp while returning duration
-assert(diff(Instant.ofEpochSecond(101, 101), Instant.ofEpochSecond(100, 100))
-        .equals(Duration.ofSeconds(1, 1)))
+assert(diff(Instant.fromEpochSeconds(101, 101), Instant.fromEpochSeconds(100, 100))
+        .equals(1.seconds + 1.nanoseconds))
 
 // Test pre-epoch timestamps
-assert(add(Instant.parse("1955-11-05T00:06:00.283000001Z"), Duration.ofSeconds(1, 1))
+assert(add(Instant.parse("1955-11-05T00:06:00.283000001Z"), 1.seconds + 1.nanoseconds)
         .equals(Instant.parse("1955-11-05T00:06:01.283000002Z")))
 
 // Test exceptions are propagated
 try {
-        diff(Instant.ofEpochSecond(100), Instant.ofEpochSecond(101))
+        diff(Instant.fromEpochSeconds(100), Instant.fromEpochSeconds(101))
         throw RuntimeException("Should have thrown a TimeDiffError exception!")
 } catch (e: ChronologicalException) {
         // It's okay!
 }
 
 // Test max Instant upper bound
-assert(add(Instant.MAX, Duration.ofSeconds(0)).equals(Instant.MAX))
+assert(add(Instant.MAX, 0.seconds).equals(Instant.MAX))
 
 // Test max Instant upper bound overflow
 try {
-        add(Instant.MAX, Duration.ofSeconds(1))
-        throw RuntimeException("Should have thrown a DateTimeException exception!")
-} catch (e: DateTimeException) {
+        add(Instant.MAX, 1.seconds)
+        throw RuntimeException("Should have thrown an IllegalArgumentException exception!")
+} catch (e: IllegalArgumentException) {
         // It's okay!
 }
 
@@ -47,6 +48,6 @@ assert(kotlinBefore.isBefore(rustNow))
 assert(kotlinAfter.isAfter(rustNow))
 
 // Test optional values work
-assert(optional(Instant.MAX, Duration.ofSeconds(0)))
-assert(optional(null, Duration.ofSeconds(0)) == false)
+assert(optional(Instant.MAX, 0.seconds))
+assert(optional(null, 0.seconds) == false)
 assert(optional(Instant.MAX, null) == false)

@@ -22,6 +22,6 @@ macro_rules! impl_code_type_for_miscellany {
     };
 }
 
-impl_code_type_for_miscellany!(TimestampCodeType, "java.time.Instant", "Timestamp");
+impl_code_type_for_miscellany!(TimestampCodeType, "kotlin.time.Instant", "Timestamp");
 
-impl_code_type_for_miscellany!(DurationCodeType, "java.time.Duration", "Duration");
+impl_code_type_for_miscellany!(DurationCodeType, "kotlin.time.Duration", "Duration");

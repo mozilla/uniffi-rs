@@ -1,41 +1,43 @@
+internal val UNIFFI_INSTANT_EPOCH = kotlin.time.Instant.fromEpochSeconds(0, 0)
+
 /**
  * @suppress
  */
-public object FfiConverterTimestamp: FfiConverterRustBuffer<java.time.Instant> {
-    override fun read(buf: ByteBuffer): java.time.Instant {
+public object FfiConverterTimestamp: FfiConverterRustBuffer<kotlin.time.Instant> {
+    override fun read(buf: ByteBuffer): kotlin.time.Instant {
         val seconds = buf.getLong()
         // Type mismatch (should be u32) but we check for overflow/underflow below
         val nanoseconds = buf.getInt().toLong()
         if (nanoseconds < 0) {
-            throw java.time.DateTimeException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
+            throw IllegalArgumentException("Instant nanoseconds exceed minimum or maximum supported by uniffi")
         }
-        if (seconds >= 0) {
-            return java.time.Instant.EPOCH.plus(java.time.Duration.ofSeconds(seconds, nanoseconds))
+        return if (seconds >= 0) {
+            UNIFFI_INSTANT_EPOCH + seconds.toDuration(kotlin.time.DurationUnit.SECONDS) + nanoseconds.toDuration(kotlin.time.DurationUnit.NANOSECONDS)
         } else {
-            return java.time.Instant.EPOCH.minus(java.time.Duration.ofSeconds(-seconds, nanoseconds))
+            UNIFFI_INSTANT_EPOCH - ((-seconds).toDuration(kotlin.time.DurationUnit.SECONDS) + nanoseconds.toDuration(kotlin.time.DurationUnit.NANOSECONDS))
         }
     }
 
     // 8 bytes for seconds, 4 bytes for nanoseconds
-    override fun allocationSize(value: java.time.Instant) = 12UL
+    override fun allocationSize(value: kotlin.time.Instant) = 12UL
 
-    override fun write(value: java.time.Instant, buf: ByteBuffer) {
-        var epochOffset = java.time.Duration.between(java.time.Instant.EPOCH, value)
+    override write(value: kotlin.time.Instant, buf: ByteBuffer) {
+        var epochOffset: kotlin.time.Duration = value.epochSeconds.toDuration(kotlin.time.DurationUnit.SECONDS) + value.nanosecondsOfSecond.toDuration(kotlin.time.DurationUnit.NANOSECONDS)
 
         var sign = 1
         if (epochOffset.isNegative()) {
             sign = -1
-            epochOffset = epochOffset.negated()
+            epochOffset = -epochOffset
         }
 
-        if (epochOffset.nano < 0) {
-            // Java docs provide guarantee that nano will always be positive, so this should be impossible
-            // See: https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html
+        val nanoseconds = epochOffset.inWholeNanoseconds
+        if (nanoseconds < 0) {
+            // Kotlin docs provide guarantee that Companion.nanoseconds will always be positive, so this should be impossible
             throw IllegalArgumentException("Invalid timestamp, nano value must be non-negative")
         }
 
-        buf.putLong(sign * epochOffset.seconds)
+        buf.putLong(sign * epochOffset.inWholeSeconds)
         // Type mismatch (should be u32) but since values will always be between 0 and 999,999,999 it should be OK
-        buf.putInt(epochOffset.nano)
+        buf.putInt(nanoseconds.toInt())
     }
 }

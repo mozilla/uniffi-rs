@@ -32,6 +32,7 @@ import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.toDuration
 
 {%- for req in self.imports() %}
 {{ req.render() }}
