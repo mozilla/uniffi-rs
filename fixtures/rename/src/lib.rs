@@ -10,6 +10,7 @@ pub fn function(record: Record) -> Enum {
 #[derive(uniffi::Record)]
 #[uniffi(name = "RenamedRecord")]
 pub struct Record {
+    #[uniffi(name = "renamed_field")]
     item: i32,
 }
 
@@ -19,6 +20,16 @@ pub enum Enum {
     #[uniffi(name = "RenamedVariant")]
     VariantA,
     Record(Record),
+}
+
+#[derive(uniffi::Enum)]
+#[uniffi(name = "RenamedEnumWithFields")]
+pub enum EnumWithFields {
+    #[uniffi(name = "RenamedVariantWithFields")]
+    VariantWithFields {
+        #[uniffi(name = "renamed_variant_field")]
+        field: u32,
+    },
 }
 
 #[derive(thiserror::Error, uniffi::Error, Debug)]

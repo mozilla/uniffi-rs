@@ -363,8 +363,15 @@ pub fn variant_metadata(item: &EnumItem) -> syn::Result<Vec<TokenStream>> {
             let field_names = v
                 .fields
                 .iter()
-                .map(|f| f.ident.as_ref().map(ident_to_string).unwrap_or_default())
-                .collect::<Vec<_>>();
+                .map(|f| {
+                    let attrs = f
+                        .attrs
+                        .parse_uniffi_attr_args::<FieldAttributeArguments>()?;
+                    Ok(attrs
+                        .name
+                        .unwrap_or(f.ident.as_ref().map(ident_to_string).unwrap_or_default()))
+                })
+                .collect::<syn::Result<Vec<_>>>()?;
 
             let field_defaults = v
                 .fields

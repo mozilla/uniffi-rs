@@ -6,16 +6,17 @@ import Foundation
 import uniffi_fixture_rename
 
 // Test renamed types - should be accessible by their custom names
-let record = RenamedRecord(item: 42)
-assert(record.item == 42)
+let record = RenamedRecord(renamedField: 42)
+assert(record.renamedField == 42)
 
 let enum1 = RenamedEnum.renamedVariant
 let enum2 = RenamedEnum.record(record)
+let enum3 = RenamedEnumWithFields.renamedVariantWithFields(renamedVariantField: 42)
 
 // Test renamed function
 let result = renamedFunction(record: record)
 if case .record(let recordResult) = result {
-    assert(recordResult.item == 42)
+    assert(recordResult.renamedField == 42)
 }
 
 // Test renamed object with renamed constructor and method

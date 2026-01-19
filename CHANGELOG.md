@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's New?
+
+- Record fields can now be renamed with the proc-macro `name = "new_field_name"` attribute ([#2794](https://github.com/mozilla/uniffi-rs/pull/2794))
+
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...HEAD).
 
 ## v0.31.0 (backend crates: v0.31.0) - (_2026-01-14_)
