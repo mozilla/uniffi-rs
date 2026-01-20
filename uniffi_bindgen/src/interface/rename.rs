@@ -24,8 +24,9 @@ struct TomlRenamer<'a> {
 
 impl TomlRenamer<'_> {
     fn new_name(&self, module_path: &str, name: &str) -> Option<String> {
+        let crate_name = module_path.split("::").next().unwrap();
         self.renames
-            .get(module_path)
+            .get(crate_name)
             .and_then(|rename_table| rename_table.get(name))
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
@@ -88,7 +89,8 @@ impl VisitMut for TomlRenamer<'_> {
 
     fn visit_type(&self, type_: &mut Type) {
         let module_path = type_.module_path().unwrap_or(&self.this_module_path);
-        let self_renames = self.renames.get(module_path);
+        let crate_name = module_path.split("::").next().unwrap();
+        let self_renames = self.renames.get(crate_name);
         type_.rename_recursive(&|name| {
             self_renames
                 .and_then(|renames| renames.get(name))
