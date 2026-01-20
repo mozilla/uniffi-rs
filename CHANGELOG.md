@@ -800,7 +800,7 @@ Significant patches to UniFFI's builtin bindings which you will need to port inc
 
 - Error handling when converting custom types has been updated. If your `wrap()`
   function returns an `Err`, in some cases it now [may not panic but instead
-  return the error declared by the function](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html#error-handling-during-conversion).
+  return the error declared by the function](https://mozilla.github.io/uniffi-rs/latest/types/custom_types.html#error-handling-during-conversion).
 
 ### What's Changed
 
@@ -824,7 +824,7 @@ Significant patches to UniFFI's builtin bindings which you will need to port inc
   constructor, you must add one explicitly.
 
 ### What's Changed
-- Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/udl/ext_types_wrapped.html).
+- Kotlin and Swift, like Python, now support [simple "wrapped" types](https://mozilla.github.io/uniffi-rs/latest/types/custom_types.html).
 
 - The Python backend has been refactored to more closely match the other backends, but this
   should be invisible to consumers.
