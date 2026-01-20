@@ -6,6 +6,10 @@
 
 ## [[UnreleasedUniFFIVersion]] (backend crates: [[UnreleasedBackendVersion]]) - (_[[ReleaseDate]]_)
 
+### What's Fixed
+
+- Fixed bug that sometimes prevented renaming items inside a submodule [#2792](https://github.com/mozilla/uniffi-rs/pull/2792)
+
 ### What's New?
 
 - Record fields can now be renamed with the proc-macro `name = "new_field_name"` attribute ([#2794](https://github.com/mozilla/uniffi-rs/pull/2794))
