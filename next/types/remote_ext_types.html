@@ -2240,7 +2240,7 @@ They are grouped this section, since they're often used together.</p>
 <p>"Remote types" refer to types defined in other crates that do not use UniFFI.
 This normally means types from crates that you depend on but don't control.
 Remote types require extra handling to use them in UniFFI APIs, because of Rust's <a href="https://doc.rust-lang.org/book/traits.html#rules-for-implementing-traits">orphan rule</a>.
-See https://github.com/mozilla/uniffi-rs/tree/main/examples/log-formatter for example code.</p>
+See https://github.com/mozilla/uniffi-rs/tree/main/examples/remote-types for example code.</p>
 <p>In general, using remote types in UniFFI requires writing a type definition that mirrors the real definition found in the remote crate.</p>
 <h2 id="proc-macros">Proc-macros</h2>
 <div class="highlight"><pre><span></span><code><span class="c1">// Type aliases can be used to give remote types nicer names when exposed in the UniFFI api.</span>
