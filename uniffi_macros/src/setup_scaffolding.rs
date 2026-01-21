@@ -26,6 +26,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
     let reexport_hack_ident = format_ident!("{normalized_module_path}_uniffi_reexport_hack");
     let ffi_rust_future_scaffolding_fns = rust_future_scaffolding_fns(&normalized_module_path);
 
+    let pointer_ffi_scaffolding_fns = setup_scaffolding_pointer_ffi(&normalized_module_path);
+
     Ok(quote! {
         // Unit struct to parameterize the FfiConverter trait.
         //
@@ -70,7 +72,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             size: ::std::primitive::u64,
             call_status: &mut ::uniffi::RustCallStatus,
         ) -> ::uniffi::RustBuffer {
-            ::uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status)
+            let rust_buffer = ::uniffi::ffi::uniffi_rustbuffer_alloc(size, call_status);
+            ::uniffi::deps::trace_and_return!(rust_buffer, "Rustbuffer alloc ({rust_buffer:?})")
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -80,7 +83,9 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             bytes: ::uniffi::ForeignBytes,
             call_status: &mut ::uniffi::RustCallStatus,
         ) -> ::uniffi::RustBuffer {
-            ::uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status)
+            let rust_buffer = ::uniffi::ffi::uniffi_rustbuffer_from_bytes(bytes, call_status);
+            ::uniffi::deps::trace!("Rustbuffer from_bytes {rust_buffer:?}");
+            rust_buffer
         }
 
         #[allow(clippy::missing_safety_doc, missing_docs)]
@@ -90,6 +95,7 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             buf: ::uniffi::RustBuffer,
             call_status: &mut ::uniffi::RustCallStatus,
         ) {
+            ::uniffi::deps::trace!("Rustbuffer free {buf:?}");
             ::uniffi::ffi::uniffi_rustbuffer_free(buf, call_status);
         }
 
@@ -105,6 +111,8 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
         }
 
         #ffi_rust_future_scaffolding_fns
+
+        #pointer_ffi_scaffolding_fns
 
         // Code to re-export the UniFFI scaffolding functions.
         //
@@ -135,6 +143,82 @@ pub fn setup_scaffolding(namespace: String) -> Result<TokenStream> {
             };
         }
     })
+}
+
+#[cfg(feature = "pointer-ffi")]
+fn setup_scaffolding_pointer_ffi(normalized_module_path: &str) -> TokenStream {
+    let ffi_contract_version_ident =
+        format_ident!("uniffi_ptr_{normalized_module_path}_uniffi_contract_version");
+    let ffi_rustbuffer_alloc_ident =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_alloc");
+    let ffi_rustbuffer_free_ident =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rustbuffer_free");
+    let ffi_rust_future_poll =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_poll");
+    let ffi_rust_future_cancel =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_cancel");
+    let ffi_rust_future_complete =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_complete");
+    let ffi_rust_future_free =
+        format_ident!("uniffi_ptr_{normalized_module_path}_rust_future_free");
+
+    quote! {
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_contract_version_ident(ffi_buffer: *mut u8) {
+            let mut uniffi_return_buf =
+                ::std::slice::from_raw_parts_mut(ffi_buffer, ::uniffi::ffi_buffer_size!((::std::primitive::u32)));
+            <::std::primitive::u32 as ::uniffi::FfiSerialize>::write(&mut uniffi_return_buf, #UNIFFI_CONTRACT_VERSION);
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rustbuffer_alloc_ident(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rustbuffer_alloc(ffi_buffer);
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rustbuffer_free_ident(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rustbuffer_free(ffi_buffer);
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_poll(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_poll(ffi_buffer)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_cancel(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_cancel(ffi_buffer)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_complete(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_complete(ffi_buffer)
+        }
+
+        #[allow(clippy::missing_safety_doc, missing_docs)]
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn #ffi_rust_future_free(ffi_buffer: *mut u8) {
+            ::uniffi::pointer_ffi::rust_future_free(ffi_buffer)
+        }
+    }
+}
+
+#[cfg(not(feature = "pointer-ffi"))]
+fn setup_scaffolding_pointer_ffi(_normalized_module_path: &str) -> TokenStream {
+    TokenStream::default()
 }
 
 /// Generates the rust_future_* functions
