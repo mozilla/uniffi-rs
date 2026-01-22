@@ -1,2 +1,5 @@
+[bindings.kotlin]
+generate_serializable_types = true
+
 [bindings.swift]
 generate_codable_conformance = true
