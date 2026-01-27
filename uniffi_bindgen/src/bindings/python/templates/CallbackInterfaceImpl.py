@@ -10,7 +10,7 @@ class {{ trait_impl }}:
             {%- for arg in callable.arguments %}
             {{ arg.name }},
             {%- endfor -%}
-            {%- if !callable.is_async %}
+            {%- if !callable.is_async() %}
             uniffi_out_return,
             uniffi_call_status_ptr,
             {%- else %}

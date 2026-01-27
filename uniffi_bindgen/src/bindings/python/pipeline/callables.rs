@@ -4,10 +4,10 @@
 
 use super::*;
 
-pub fn pass(namespace: &mut Namespace) -> Result<()> {
-    namespace.string_type_node = TypeNode {
-        ty: Type::String,
-        ..TypeNode::default()
-    };
-    Ok(())
+pub fn name(callable: &general::Callable) -> String {
+    if callable.is_primary_constructor() {
+        "__init__".to_string()
+    } else {
+        names::function_name(&callable.name)
+    }
 }

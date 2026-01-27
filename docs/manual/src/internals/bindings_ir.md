@@ -134,55 +134,25 @@ This phase transforms inputs the metadata and creates an IR from it.
 The Initial IR contains the metadata items with a couple changes.
 The main change is the flat list is converted into a tree structure.
 
-```rust
-/// Root node of the Initial IR
-///
-/// Note: The `Node` derive also implements `Default` and `Default` should not be listed in the
-/// #[derive] list.
-#[derive(Debug, Clone, Node)]
-pub struct Root {
-    pub modules: IndexMap<String, Module>,
-    /// The library path the user passed to us, if we're in library mode
-    pub cdylib: Option<String>,
-}
-
-#[derive(Debug, Clone, Node)]
-pub struct Module {
-    pub name: String,
-    pub crate_name: String,
-    pub docstring: Option<String>,
-    pub functions: Vec<Function>,
-    pub type_definitions: Vec<TypeDefinition>,
-}
-
-#[derive(Debug, Clone, Node)]
-// This is just FnMetadata with a new struct name
-#[node(from(FnMetadata))]
-pub struct Function {
-    pub name: String,
-    pub is_async: bool,
-    pub inputs: Vec<Argument>,
-    pub return_type: Option<Type>,
-    pub throws: Option<Type>,
-    pub checksum: Option<u16>,
-    pub docstring: Option<String>,
-}
-
-#[derive(Debug, Clone, Node)]
-pub enum TypeDefinition {
-    /// RecordMetadata with a new struct name
-    /// This has `FieldMetadata` as child nodes
-    Record(Record),
-    /// RecordMetadata with a new struct name
-    /// This has `VariantMetadata` as child nodes and `FieldMetadata` as grand children.
-    Enum(Enum),
-    /// ObjectMetadata with a new struct name
-    /// This has child nodes for ConstructorMetadata, MethodMetadata, and several other metadata
-    /// items.
-    Interface(Interface),
-    /// ...etc
-    CallbackInterface(CallbackInterface),
-    Custom(CustomType),
+The initial IR might look something like:
+```
+Root {
+    namespaces: [
+        Namespace {
+            name: "arithmetic",
+            functions: [
+                FnMetadata {
+                    module_path: "arithmetic",
+                    name: "add",
+                    ...
+                },
+                ...
+            ],
+            ...
+        },
+        ...
+    ],
+    cdylib: Some("arithmetical"),
 }
 ```
 
