@@ -43,9 +43,9 @@ class {{ obj.name()|class_name_rb }}
 
   {%- match obj.primary_constructor() %}
   {%- when Some with (cons) %}
-  def initialize({% call rb::arg_list_decl(cons) -%})
-    {%- call rb::setup_args_extra_indent(cons) %}
-    handle = {% call rb::to_ffi_call(cons) %}
+  def initialize({% call rb::arg_list_decl(cons) %}{% endcall -%})
+    {%- call rb::setup_args_extra_indent(cons) %}{% endcall %}
+    handle = {% call rb::to_ffi_call(cons) %}{% endcall %}
     @handle = handle
     ObjectSpace.define_finalizer(self, self.class.uniffi_define_finalizer_by_handle(handle, self.object_id))
   end
@@ -53,12 +53,12 @@ class {{ obj.name()|class_name_rb }}
   {%- endmatch %}
 
   {% for cons in obj.alternate_constructors() -%}
-  def self.{{ cons.name()|fn_name_rb }}({% call rb::arg_list_decl(cons) %})
-    {%- call rb::setup_args_extra_indent(cons) %}
+  def self.{{ cons.name()|fn_name_rb }}({% call rb::arg_list_decl(cons) %}{% endcall %})
+    {%- call rb::setup_args_extra_indent(cons) %}{% endcall %}
     # Call the (fallible) function before creating any half-baked object instances.
     # Lightly yucky way to bypass the usual "initialize" logic
     # and just create a new instance with the required handle.
-    return uniffi_allocate({% call rb::to_ffi_call(cons) %})
+    return uniffi_allocate({% call rb::to_ffi_call(cons) %}{% endcall %})
   end
   {% endfor %}
 
@@ -66,16 +66,16 @@ class {{ obj.name()|class_name_rb }}
   {%- match meth.return_type() -%}
 
   {%- when Some with (return_type) -%}
-  def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
-    {%- call rb::setup_args_extra_indent(meth) %}
-    result = {% call rb::to_ffi_call_with_prefix("uniffi_clone_handle()", meth) %}
+  def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %}{% endcall %})
+    {%- call rb::setup_args_extra_indent(meth) %}{% endcall %}
+    result = {% call rb::to_ffi_call_with_prefix("uniffi_clone_handle()", meth) %}{% endcall %}
     return {{ "result"|lift_rb(return_type) }}
   end
 
   {%- when None -%}
-  def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %})
-      {%- call rb::setup_args_extra_indent(meth) %}
-      {% call rb::to_ffi_call_with_prefix("uniffi_clone_handle()", meth) %}
+  def {{ meth.name()|fn_name_rb }}({% call rb::arg_list_decl(meth) %}{% endcall %})
+      {%- call rb::setup_args_extra_indent(meth) %}{% endcall %}
+      {% call rb::to_ffi_call_with_prefix("uniffi_clone_handle()", meth) %}{% endcall %}
   end
   {% endmatch %}
   {% endfor %}

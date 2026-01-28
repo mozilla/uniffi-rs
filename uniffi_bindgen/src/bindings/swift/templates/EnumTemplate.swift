@@ -1,4 +1,4 @@
-{%- call swift::docstring(e, 0) %}
+{%- call swift::docstring(e, 0) %}{% endcall %}
 {%- let uniffi_trait_methods = e.uniffi_trait_methods() %}
 {% match e.variant_discr_type() %}
 {% when None %}
@@ -9,27 +9,27 @@ enum {{ type_name }}: {{ config.conformance_list_for_enum(e, contains_object_ref
 enum {{ type_name }} {
 {%- endif %}
     {% for variant in e.variants() %}
-    {%- call swift::docstring(variant, 4) %}
+    {%- call swift::docstring(variant, 4) %}{% endcall %}
     case {{ variant.name()|enum_variant_swift_quoted }}{% if variant.fields().len() > 0 %}(
-        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
+        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}{% endcall %}
     ){% endif -%}
     {% endfor %}
 {% when Some(variant_discr_type) %}
 public {% if ci.is_recursive(e.name()) %}indirect {% endif -%}
 enum {{ type_name }}: {{ variant_discr_type|type_name }}, {{ config.conformance_list_for_enum(e, contains_object_references) }} {
     {% for variant in e.variants() %}
-    {%- call swift::docstring(variant, 4) %}
+    {%- call swift::docstring(variant, 4) %}{% endcall %}
     case {{ variant.name()|enum_variant_swift_quoted }} = {{ e|variant_discr_literal(loop.index0) }}{% if variant.fields().len() > 0 %}(
-        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
+        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}{% endcall %}
     ){% endif -%}
     {% endfor %}
 {% endmatch %}
 
 {% for meth in e.methods() -%}
-{%- call swift::func_decl("public func", meth, 4) %}
+{%- call swift::func_decl("public func", meth, 4) %}{% endcall %}
 {% endfor %}
 
-{% call swift::uniffi_trait_impls(uniffi_trait_methods) %}
+{% call swift::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
 }
 
 #if compiler(>=6)
@@ -65,10 +65,10 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
         switch value {
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
-        case let .{{ variant.name()|enum_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+        case let .{{ variant.name()|enum_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) %}{% endcall -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             writeInt(&buf, Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}, into: &buf)
+            {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}{% endcall %}, into: &buf)
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|enum_variant_swift_quoted }}:

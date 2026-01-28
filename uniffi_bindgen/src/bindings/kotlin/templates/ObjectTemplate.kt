@@ -105,7 +105,7 @@
 
 {%- include "Interface.kt" %}
 
-{%- call kt::docstring(obj, 0) %}
+{%- call kt::docstring(obj, 0) %}{% endcall %}
 {% if (is_error) %}
 open class {{ impl_class_name }} : kotlin.Exception, Disposable, AutoCloseable, {{ interface_name }} {
 {% else -%}
@@ -142,9 +142,9 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
 
     {%- if let Some(cons) = obj.primary_constructor() %}
-    {%- call kt::docstring(cons, 4) %}
-    constructor({% call kt::arg_list(cons, true) -%}) :
-        this(UniffiWithHandle, {% call kt::to_ffi_call(cons) %})
+    {%- call kt::docstring(cons, 4) %}{% endcall %}
+    constructor({% call kt::arg_list(cons, true) -%}{% endcall -%}) :
+        this(UniffiWithHandle, {% call kt::to_ffi_call(cons) %}{% endcall %})
     {%- endif %}
 
     protected val handle: Long
@@ -224,16 +224,16 @@ open class {{ impl_class_name }}: Disposable, AutoCloseable, {{ interface_name }
     }
 
     {% for meth in methods -%}
-    {%- call kt::func_decl("override", meth, 4) %}
+    {%- call kt::func_decl("override", meth, 4) %}{% endcall %}
     {% endfor %}
 
-    {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}
+    {% call kt::uniffi_trait_impls(uniffi_trait_methods) %}{% endcall %}
 
     {# XXX - "companion object" confusion? How to have alternate constructors *and* be an error? #}
     {% if !obj.alternate_constructors().is_empty() -%}
     companion object {
         {% for cons in obj.alternate_constructors() -%}
-        {% call kt::func_decl("", cons, 4) %}
+        {% call kt::func_decl("", cons, 4) %}{% endcall %}
         {% endfor %}
     }
     {% else if is_error %}
