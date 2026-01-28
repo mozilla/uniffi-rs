@@ -8,10 +8,10 @@
     {%- match func.self_type() %}
     {%- when Some(Type::Object { .. }) %}
     callWithHandle {
-        {%- call to_raw_ffi_call(func) %}
+        {%- call to_raw_ffi_call(func) %}{% endcall %}
     }
     {% else %}
-        {%- call to_raw_ffi_call(func) %}
+        {%- call to_raw_ffi_call(func) %}{% endcall %}
     {% endmatch %}
 {%- endmacro %}
 
@@ -34,13 +34,13 @@
         {{- t|lower_fn }}(this),
     {%- when None %}
     {% endmatch %}
-        {% call arg_list_lowered(func) -%}
+        {% call arg_list_lowered(func) %}{% endcall -%}
         _status)
 }
 {%- endmacro -%}
 
 {%- macro func_decl(func_decl, callable, indent) %}
-    {%- call docstring(callable, indent) %}
+    {%- call docstring(callable, indent) %}{% endcall %}
 
     {%- match callable.throws_type() -%}
     {%-     when Some(throwable) %}
@@ -50,20 +50,20 @@
     {%- if callable.is_async() %}
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     {{ func_decl }} suspend fun {{ callable.name()|fn_name }}(
-        {%- call arg_list(callable, callable.self_type().is_none()) -%}
+        {%- call arg_list(callable, callable.self_type().is_none()) %}{% endcall -%}
     ){% match callable.return_type() %}{% when Some(return_type) %} : {{ return_type|type_name(ci) }}{% when None %}{%- endmatch %} {
-        return {% call call_async(callable) %}
+        return {% call call_async(callable) %}{% endcall %}
     }
     {%- else -%}
     {{ func_decl }} fun {{ callable.name()|fn_name }}(
-        {%- call arg_list(callable, callable.self_type().is_none()) -%}
+        {%- call arg_list(callable, callable.self_type().is_none()) %}{% endcall -%}
     ){%- match callable.return_type() -%}
     {%-         when Some(return_type) -%}
         : {{ return_type|type_name(ci) }} {
-            return {{ return_type|lift_fn }}({% call to_ffi_call(callable) %})
+            return {{ return_type|lift_fn }}({% call to_ffi_call(callable) %}{% endcall %})
     }
     {%-         when None %}
-        = {% call to_ffi_call(callable) %}
+        = {% call to_ffi_call(callable) %}{% endcall %}
     {%-     endmatch %}
     {% endif %}
 {% endmacro %}
@@ -74,11 +74,11 @@
         callWithHandle { uniffiHandle ->
             UniffiLib.{{ callable.ffi_func().name() }}(
                 uniffiHandle,
-                {% call arg_list_lowered(callable) %}
+                {% call arg_list_lowered(callable) %}{% endcall %}
             )
         },
 {%- else %}
-        UniffiLib.{{ callable.ffi_func().name() }}({% call arg_list_lowered(callable) %}),
+        UniffiLib.{{ callable.ffi_func().name() }}({% call arg_list_lowered(callable) %}{% endcall %}),
 {%- endif %}
         {{ callable|async_poll(ci) }},
         {{ callable|async_complete(ci) }},
@@ -160,7 +160,7 @@ v{{- field_num -}}
 {%- macro destroy_fields(member) %}
     Disposable.destroy(
     {%- for field in member.fields() %}
-        this.{%- call field_name(field, loop.index) -%}{% if loop.last %}{% else %},{% endif -%}
+        this.{%- call field_name(field, loop.index) %}{% endcall -%}{% if loop.last %}{% else %},{% endif -%}
     {%- endfor %}
     )
 {%- endmacro -%}
@@ -174,7 +174,7 @@ v{{- field_num -}}
 {%- endmacro %}
 
 {%- macro docstring(defn, indent_spaces) %}
-{%- call docstring_value(defn.docstring(), indent_spaces) %}
+{%- call docstring_value(defn.docstring(), indent_spaces) %}{% endcall %}
 {%- endmacro %}
 
 // macro for uniffi_trait implementations.
@@ -183,26 +183,26 @@ v{{- field_num -}}
 {%- if let Some(fmt) = uniffi_trait_methods.display_fmt.or(uniffi_trait_methods.debug_fmt.clone()) %}
     // The local Rust `Display`/`Debug` implementation.
     override fun toString(): String {
-        return {{ fmt.return_type().unwrap()|lift_fn }}({% call to_ffi_call(fmt) %})
+        return {{ fmt.return_type().unwrap()|lift_fn }}({% call to_ffi_call(fmt) %}{% endcall %})
     }
 {%- endif %}
 {%- if let Some(eq) = uniffi_trait_methods.eq_eq %}
     // The local Rust `Eq` implementation - only `eq` is used.
     override fun equals(other: Any?): Boolean {
         if (other !is {{ eq.object_name()|class_name(ci) }}) return false
-        return {{ eq.return_type().unwrap()|lift_fn }}({% call to_ffi_call(eq) %})
+        return {{ eq.return_type().unwrap()|lift_fn }}({% call to_ffi_call(eq) %}{% endcall %})
     }
 {%- endif %}
 {%- if let Some(hash) = uniffi_trait_methods.hash_hash %}
     // The local Rust `Hash` implementation
     override fun hashCode(): Int {
-        return {{ hash.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(hash) %}).toInt()
+        return {{ hash.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(hash) %}{% endcall %}).toInt()
     }
 {%- endif %}
 {%- if let Some(cmp) = uniffi_trait_methods.ord_cmp %}
     // The local Rust `Ord` implementation
     override fun compareTo(other: {{ cmp.object_name()|class_name(ci) }}): Int {
-        return {{ cmp.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(cmp) %}).toInt()
+        return {{ cmp.return_type().unwrap()|lift_fn }}({%- call to_ffi_call(cmp) %}{% endcall %}).toInt()
     }
 {%- endif %}
 {%- endmacro %}

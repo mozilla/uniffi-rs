@@ -1,4 +1,4 @@
-{%- call swift::docstring(e, 0) %}
+{%- call swift::docstring(e, 0) %}{% endcall %}
 {%- if config.error_has_additional_conformances(e, contains_object_references) %}
 public enum {{ type_name }}: Swift.Error, {{ config.additional_conformance_list_for_error(e, contains_object_references) }} {
 {%- else %}
@@ -7,25 +7,25 @@ public enum {{ type_name }}: Swift.Error {
 
     {% if e.is_flat() %}
     {% for variant in e.variants() %}
-    {%- call swift::docstring(variant, 4) %}
+    {%- call swift::docstring(variant, 4) %}{% endcall %}
     case {{ variant.name()|class_name }}(message: String)
     {% endfor %}
 
     {%- else %}
     {% for variant in e.variants() %}
-    {%- call swift::docstring(variant, 4) %}
+    {%- call swift::docstring(variant, 4) %}{% endcall %}
     case {{ variant.name()|class_name }}{% if variant.fields().len() > 0 %}(
-        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}
+        {%- call swift::field_list_decl(variant, variant.has_nameless_fields()) %}{% endcall %}
     ){% endif -%}
     {% endfor %}
 
     {%- endif %}
 
     {% for meth in e.methods() -%}
-    {%- call swift::func_decl("public func", meth, 4) %}
+    {%- call swift::func_decl("public func", meth, 4) %}{% endcall %}
     {% endfor %}
 
-    {% call swift::uniffi_trait_impls(e.uniffi_trait_methods()) %}
+    {% call swift::uniffi_trait_impls(e.uniffi_trait_methods()) %}{% endcall %}
 
     {% if !config.omit_localized_error_conformance() %}
     public var errorDescription: String? {
@@ -90,10 +90,10 @@ public struct {{ ffi_converter_name }}: FfiConverterRustBuffer {
 
         {% for variant in e.variants() %}
         {% if variant.has_fields() %}
-        case let .{{ variant.name()|error_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
+        case let .{{ variant.name()|error_variant_swift_quoted }}({% for field in variant.fields() %}{%- call swift::field_name(field, loop.index) %}{% endcall -%}{%- if loop.last -%}{%- else -%},{%- endif -%}{% endfor %}):
             writeInt(&buf, Int32({{ loop.index }}))
             {% for field in variant.fields() -%}
-            {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}, into: &buf)
+            {{ field|write_fn }}({% call swift::field_name(field, loop.index) %}{% endcall %}, into: &buf)
             {% endfor -%}
         {% else %}
         case .{{ variant.name()|class_name }}:
