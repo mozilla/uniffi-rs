@@ -13,6 +13,7 @@
 ### What's New?
 
 - Record fields can now be renamed with the proc-macro `name = "new_field_name"` attribute ([#2794](https://github.com/mozilla/uniffi-rs/pull/2794))
+- Updated `askama` version to `0.15.4`
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...HEAD).
 
