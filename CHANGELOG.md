@@ -12,6 +12,7 @@
 
 ### What's New?
 
+- `Box<T>` now automatically implements FFI traits when `T` implements them, allowing direct use in enum variants and function parameters without NewType wrappers ([#2808](https://github.com/mozilla/uniffi-rs/pull/2808))
 - Record fields can now be renamed with the proc-macro `name = "new_field_name"` attribute ([#2794](https://github.com/mozilla/uniffi-rs/pull/2794))
 
 [All changes in [[UnreleasedUniFFIVersion]]](https://github.com/mozilla/uniffi-rs/compare/v0.31.0...HEAD).

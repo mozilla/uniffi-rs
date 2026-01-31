@@ -12,8 +12,9 @@ in Rust, and the types used in UDL.
 | `String`             | `string`               |                                                                 |
 | `Vec<u8>`            | `bytes`                | Different from `sequence<u8>` only in foreign type mappings     |
 | `SystemTime`         | `timestamp`            | Precision may be lost when converting to Python and Swift types |
-| `Duration  `         | `duration`             | Precision may be lost when converting to Python and Swift types |
+| `Duration`           | `duration`             | Precision may be lost when converting to Python and Swift types |
 | `&T`                 | `[ByRef] T`            | This works for `&str` and `&[T]`                                |
+| `Box<T>`             | `T`                    |                                                                 |
 | `Option<T>`          | `T?`                   |                                                                 |
 | `Vec<T>`             | `sequence<T>`          |                                                                 |
 | `HashMap<K, V>`      | `record<K, T>`         |                                                                 |
