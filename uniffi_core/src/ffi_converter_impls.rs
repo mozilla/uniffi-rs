@@ -291,6 +291,39 @@ impl<UT, T: TypeId<UT>> TypeId<UT> for Option<T> {
         MetadataBuffer::from_code(metadata::codes::TYPE_OPTION).concat(T::TYPE_ID_META);
 }
 
+// Support for passing Box<T> values via the FFI.
+//
+// Box<T> is a transparent wrapper around T, so we can simply delegate to T's implementation.
+// From the FFI perspective, Box<T> is serialized/deserialized exactly the same as T.
+
+unsafe impl<UT, T: Lower<UT>> Lower<UT> for Box<T> {
+    type FfiType = T::FfiType;
+
+    fn write(obj: Box<T>, buf: &mut Vec<u8>) {
+        T::write(*obj, buf)
+    }
+
+    fn lower(obj: Box<T>) -> Self::FfiType {
+        T::lower(*obj)
+    }
+}
+
+unsafe impl<UT, T: Lift<UT>> Lift<UT> for Box<T> {
+    type FfiType = T::FfiType;
+
+    fn try_read(buf: &mut &[u8]) -> Result<Box<T>> {
+        T::try_read(buf).map(Box::new)
+    }
+
+    fn try_lift(v: Self::FfiType) -> Result<Box<T>> {
+        T::try_lift(v).map(Box::new)
+    }
+}
+
+impl<UT, T: TypeId<UT>> TypeId<UT> for Box<T> {
+    const TYPE_ID_META: MetadataBuffer = T::TYPE_ID_META;
+}
+
 // Support for passing vectors of values via the FFI.
 //
 // Vectors are currently always passed by serializing to a buffer.
@@ -425,6 +458,11 @@ derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Option<T> where Option<T>: Lo
 derive_ffi_traits!(impl<T, UT> LowerError<UT> for Option<T> where Option<T>: Lower<UT>);
 derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Option<T> where Option<T>: Lift<UT>);
 derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Option<T> where Option<T>: Lift<UT>);
+
+derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Box<T> where Box<T>: Lower<UT>);
+derive_ffi_traits!(impl<T, UT> LowerError<UT> for Box<T> where Box<T>: Lower<UT>);
+derive_ffi_traits!(impl<T, UT> LiftReturn<UT> for Box<T> where Box<T>: Lift<UT>);
+derive_ffi_traits!(impl<T, UT> LiftRef<UT> for Box<T> where Box<T>: Lift<UT>);
 
 derive_ffi_traits!(impl<T, UT> LowerReturn<UT> for Vec<T> where Vec<T>: Lower<UT>);
 derive_ffi_traits!(impl<T, UT> LowerError<UT> for Vec<T> where Vec<T>: Lower<UT>);
