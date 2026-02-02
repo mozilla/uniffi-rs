@@ -1212,15 +1212,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-uniffiexportcallback_interface-attribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      The #[uniffi::export(callback_interface)] attribute
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#conditional-compilation" class="md-nav__link">
     <span class="md-ellipsis">
       Conditional compilation
@@ -1367,6 +1358,29 @@
   
   <span class="md-ellipsis">
     The uniffi::Record derive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="traits.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Traits
     
   </span>
   
@@ -2371,15 +2385,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-uniffiexportcallback_interface-attribute" class="md-nav__link">
-    <span class="md-ellipsis">
-      The #[uniffi::export(callback_interface)] attribute
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#conditional-compilation" class="md-nav__link">
     <span class="md-ellipsis">
       Conditional compilation
@@ -2466,6 +2471,7 @@ blocks, and <code>trait</code> definitions to make UniFFI aware of them.</p>
 <li><a href="records.html">Records</a></li>
 <li><a href="enumerations.html">Enums</a></li>
 <li><a href="interfaces.html">Interfaces</a></li>
+<li><a href="traits.html">Traits</a></li>
 <li><a href="functions.html">Functions, constructors, methods</a></li>
 <li><a href="errors.html">Errors</a></li>
 <li><a href="renaming.html">Renaming</a></li>
@@ -2507,21 +2513,6 @@ interface<span class="w"> </span>Foo<span class="w"> </span>{
 </code></pre></div>
 <h2 id="the-unifficustom_type-and-unifficustom_newtype-macros">The <code>uniffi::custom_type</code> and <code>uniffi::custom_newtype</code> macros</h2>
 <p>See the general <a href="../types/custom_types.html">documentation for Custom Types</a>, which apply equally to proc-macros as to UDL.</p>
-<h2 id="the-uniffiexportcallback_interface-attribute">The <code>#[uniffi::export(callback_interface)]</code> attribute</h2>
-<p><code>#[uniffi::export(callback_interface)]</code> can be used to export a <a href="../types/callback_interfaces.html">callback interface</a> definition.
-This allows the foreign bindings to implement the interface and pass an instance to the Rust code.</p>
-<div class="highlight"><pre><span></span><code><span class="cp">#[uniffi::export(callback_interface)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">trait</span><span class="w"> </span><span class="n">Person</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">name</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">String</span><span class="p">;</span>
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">age</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="kt">u32</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="c1">// Corresponding UDL:</span>
-<span class="c1">// callback interface Person {</span>
-<span class="c1">//     string name();</span>
-<span class="c1">//     u32 age();</span>
-<span class="c1">// }</span>
-</code></pre></div>
 <h2 id="conditional-compilation">Conditional compilation</h2>
 <p>In many cases you can use Rust's <code>#[cfg()]</code> for conditional compilation.
 For example, with the <code>export</code> macro:</p>
